@@ -883,9 +883,9 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Implement read-only roadmap-driven version computation and validation for pre-release active state and closed release metadata, including changelog/version agreement, checklist/report/branch consistency and existing tag identity.
   - Implemented read-only release checks and eight isolated acceptance/rejection contracts, including version rules, active drift/open work, closed changelog/report/type mismatch and annotated-tag identity. Added the contracts to the final gate and documented the existing doctor command. VERSION remains 0.0.0; no closure/tag/publication performed.
 
-- [ ] 16c. **Include release version in the production frontend build**
+- [x] 16c. **Include release version in the production frontend build**
   - Host preparation for point 17 reproduced an unresolved `../../../VERSION?raw` import from the footer: the frontend Docker stage omitted the version file.
-  - Copy the canonical VERSION into the frontend build stage and verify the actual exact-commit production build before restarting final verification.
+  - Copied canonical VERSION into the frontend stage. Host Docker built both exact-commit production images successfully at `f68c0e8`; frontend compilation and runtime image capability/isolation probes passed. No dependency or runtime-version change was required.
 
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Preparation (2026-10-18): points 16a/16b repair stale frontend diagnostics and the release-doctor placeholder. Repository/docs/maintenance/tooling checks and live frontend diagnostics pass; version computation remains 0.0.0 -> 0.1.0. No final-gate PASS, version bump, closure, merge or publication is claimed.
