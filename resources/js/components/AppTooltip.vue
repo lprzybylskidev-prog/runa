@@ -19,13 +19,15 @@ onScopeDispose(() => document.removeEventListener('keydown', dismiss));
     @focusout="visible = false"
   >
     <slot :description-id="descriptionId" />
-    <span
-      v-show="visible"
-      :id="descriptionId"
-      role="tooltip"
-      class="tooltip-content"
-      ><span>{{ text }}</span></span
-    >
+    <Transition name="tooltip-fade">
+      <span
+        v-show="visible"
+        :id="descriptionId"
+        role="tooltip"
+        class="tooltip-content"
+        ><span>{{ text }}</span></span
+      >
+    </Transition>
   </span>
 </template>
 
@@ -58,5 +60,23 @@ onScopeDispose(() => document.removeEventListener('keydown', dismiss));
       var(--runa-shadow) var(--runa-shadow-opacity),
       transparent
     );
+}
+
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: opacity 140ms ease-out;
+}
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
+  opacity: 0;
+}
+.tooltip-fade-leave-active {
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-fade-enter-active,
+  .tooltip-fade-leave-active {
+    transition: none;
+  }
 }
 </style>
