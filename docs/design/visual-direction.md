@@ -208,3 +208,7 @@ User decision (2026-10-17): preserve the current split-panel view as `resources/
 ## Component reuse
 
 User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and AuthLayout owns the split-page structure. Reuse and extend these instead of rebuilding controls for each page.
+
+## Preference change screen
+
+User decision: activating language or theme controls first covers the entire viewport with the shared AppLoadingOverlay and centered circular loading indicator. Apply the change only after the cover enters, then reveal the updated view after rendering. Block underlying interaction and repeated changes until completion, restore focus to the initiating button, and respect reduced-motion settings. This is a local visual transition, not a page reload or network request.

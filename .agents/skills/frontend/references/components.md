@@ -49,3 +49,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Source: `resources/js/components/AppFooter.vue`.
 - Shared responsive footer: current-year copyright for Łukasz Przybylski, Runa GitHub repository link and actual build version imported from root `VERSION`.
 - Props: translated `versionLabel`; do not hardcode a future release version. Canonical use: AuthLayout.
+
+## AppLoadingOverlay
+
+- Source: `resources/js/components/AppLoadingOverlay.vue`.
+- Teleported opaque full-screen loading cover, centered circular spinner and accessible status label. Props: `active`, `label`; emits `covered` after enter and `revealed` after leave.
+- Shared 180ms opacity transitions and 700ms spinner cycle, disabled for reduced motion. Caller owns pending operation, inert/busy state and focus restoration; AuthLayout provides the canonical language/theme flow.

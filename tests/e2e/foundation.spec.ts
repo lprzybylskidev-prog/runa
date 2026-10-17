@@ -17,7 +17,26 @@ test('critical: API readiness and compact language/theme preferences', async ({
     name: 'Ustawienia wyświetlania',
   });
   await expect(preferences.getByRole('button')).toHaveCount(2);
+  await page.evaluate(() => {
+    const observer = new MutationObserver(() => {
+      const cover = document.querySelector('.loading-overlay');
+      document.documentElement.dataset.coverOpacityAtChange = cover
+        ? getComputedStyle(cover).opacity
+        : 'absent';
+      observer.disconnect();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['lang'],
+    });
+  });
   await preferences.getByRole('button', { name: /^Język:/ }).click();
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-cover-opacity-at-change',
+    '1',
+  );
+  await expect(page.getByRole('button', { name: /^Language:/ })).toBeFocused();
+  await expect(page.locator('.loading-overlay')).toHaveCount(0);
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   const theme = page.getByRole('button', { name: /^Theme:/ });
   await expect(theme).toHaveAccessibleName('Theme: System. Switch to: Light');

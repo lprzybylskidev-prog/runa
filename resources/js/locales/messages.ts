@@ -2,6 +2,7 @@ export const messages = {
   pl: {
     skip: 'Przejdź do treści',
     preferences: 'Ustawienia wyświetlania',
+    applyingPreferences: 'Zmienianie ustawień…',
     language: 'Język',
     switchTo: 'Zmień na',
     changeLanguage: 'Zmień język',
@@ -17,6 +18,7 @@ export const messages = {
   en: {
     skip: 'Skip to content',
     preferences: 'Display preferences',
+    applyingPreferences: 'Applying preferences…',
     language: 'Language',
     switchTo: 'Switch to',
     changeLanguage: 'Change language',

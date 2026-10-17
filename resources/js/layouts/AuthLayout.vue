@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onScopeDispose, ref } from 'vue';
 import AppIcon from '../components/AppIcon.vue';
 import AppButton from '../components/AppButton.vue';
 import AppFooter from '../components/AppFooter.vue';
+import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
 import AppTooltip from '../components/AppTooltip.vue';
 import { useLocale } from '../composables/useLocale';
 import { useTheme } from '../composables/useTheme';
@@ -23,10 +24,54 @@ const languageLabel = computed(
   () =>
     `${t('language')}: ${locale.value === 'pl' ? 'Polski' : 'English'}. ${t('switchTo')}: ${locale.value === 'pl' ? 'English' : 'Polski'}`,
 );
+const changingPreference = ref(false);
+const coverVisible = ref(false);
+let pendingPreference: 'language' | 'theme' | undefined;
+let trigger: globalThis.HTMLElement | undefined;
+let frame = 0;
+let disposed = false;
+onScopeDispose(() => {
+  disposed = true;
+  window.cancelAnimationFrame(frame);
+});
+function changePreference(preference: 'language' | 'theme', event: Event) {
+  if (changingPreference.value) return;
+  trigger =
+    event.currentTarget instanceof window.HTMLElement
+      ? event.currentTarget
+      : undefined;
+  pendingPreference = preference;
+  changingPreference.value = true;
+  coverVisible.value = true;
+}
+async function applyPreference() {
+  if (pendingPreference === 'language')
+    locale.value = locale.value === 'pl' ? 'en' : 'pl';
+  else if (pendingPreference === 'theme') theme.value = nextTheme.value;
+  pendingPreference = undefined;
+  await nextTick();
+  // Keep the opaque cover through a paint of the newly selected theme/locale.
+  if (disposed) return;
+  frame = window.requestAnimationFrame(() => {
+    frame = window.requestAnimationFrame(() => {
+      coverVisible.value = false;
+    });
+  });
+}
+async function finishPreferenceChange() {
+  changingPreference.value = false;
+  await nextTick();
+  trigger?.focus({ preventScroll: true });
+  trigger = undefined;
+}
 </script>
 
 <template>
-  <div class="auth-page flex min-h-dvh flex-col text-ink">
+  <div
+    class="auth-page flex min-h-dvh flex-col text-ink"
+    :inert="changingPreference"
+    :aria-busy="changingPreference"
+  >
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header
       class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"
@@ -48,7 +93,7 @@ const languageLabel = computed(
               compact
               :aria-label="languageLabel"
               :aria-describedby="descriptionId"
-              @click="locale = locale === 'pl' ? 'en' : 'pl'"
+              @click="changePreference('language', $event)"
             >
               {{ locale.toUpperCase() }}
             </AppButton>
@@ -60,7 +105,7 @@ const languageLabel = computed(
               compact
               :aria-label="themeLabel"
               :aria-describedby="descriptionId"
-              @click="theme = nextTheme"
+              @click="changePreference('theme', $event)"
             >
               <AppIcon
                 :name="
@@ -103,4 +148,10 @@ const languageLabel = computed(
     </main>
     <AppFooter :version-label="t('version')" />
   </div>
+  <AppLoadingOverlay
+    :active="coverVisible"
+    :label="t('applyingPreferences')"
+    @covered="applyPreference"
+    @revealed="finishPreferenceChange"
+  />
 </template>
