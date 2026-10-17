@@ -41,52 +41,98 @@
 .app-backdrop::before,
 .app-backdrop::after {
   content: '';
-  position: fixed;
-  z-index: -1;
+  position: absolute;
   pointer-events: none;
   border-radius: 50%;
+  aspect-ratio: 1;
+  /* Feather both edges of the colored ribbon; keep the center transparent. */
+  mask-image: radial-gradient(
+    closest-side,
+    transparent 71%,
+    black 74%,
+    black 96%,
+    transparent 100%
+  );
 }
 .app-backdrop::before {
   width: min(85vw, 1000px);
-  aspect-ratio: 1;
   top: -40%;
   left: -20%;
-  background: radial-gradient(
-    circle,
-    color-mix(
-        in srgb,
-        var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 100%),
-        transparent
-      )
-      20%,
-    transparent 72%
-  );
-  border: clamp(35px, 7vw, 110px) solid
+  background: conic-gradient(
+    from 30deg,
     color-mix(
       in srgb,
-      var(--runa-circle-rose) calc(var(--runa-circle-rose-opacity) * 100%),
+      var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 260%),
       transparent
-    );
+    ),
+    color-mix(
+        in srgb,
+        var(--runa-gradient-primary-end)
+          calc(var(--runa-circle-violet-opacity) * 120%),
+        transparent
+      )
+      27%,
+    color-mix(
+        in srgb,
+        var(--runa-circle-rose) calc(var(--runa-circle-rose-opacity) * 300%),
+        transparent
+      )
+      49%,
+    color-mix(
+        in srgb,
+        var(--runa-gradient-primary-start)
+          calc(var(--runa-circle-violet-opacity) * 240%),
+        transparent
+      )
+      66%,
+    color-mix(
+        in srgb,
+        var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 80%),
+        transparent
+      )
+      84%,
+    color-mix(
+      in srgb,
+      var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 260%),
+      transparent
+    )
+  );
 }
 .app-backdrop::after {
   width: min(75vw, 850px);
-  aspect-ratio: 1;
   right: -20%;
   bottom: -35%;
-  background: radial-gradient(
-    circle,
+  background: conic-gradient(
+    from 200deg,
     color-mix(
       in srgb,
-      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 100%),
+      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 260%),
       transparent
     ),
-    transparent 75%
-  );
-  border: clamp(30px, 6vw, 95px) solid
+    color-mix(
+        in srgb,
+        var(--runa-gradient-cool-end)
+          calc(var(--runa-circle-cyan-opacity) * 230%),
+        transparent
+      )
+      30%,
+    color-mix(
+        in srgb,
+        var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 150%),
+        transparent
+      )
+      52%,
+    color-mix(
+        in srgb,
+        var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 65%),
+        transparent
+      )
+      76%,
     color-mix(
       in srgb,
-      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 100%),
+      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 260%),
       transparent
-    );
+    )
+  );
 }
 </style>

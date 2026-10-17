@@ -216,3 +216,5 @@ User decision: activating language or theme controls first covers the entire vie
 ## Background depth refinement
 
 User direction: retain the quiet composition and large corner shapes, adding one or two subtle layers for depth around the main card. Shared AppBackdrop adds broad, diffused violet/cyan/rose radial washes near the center and a very faint masked technical grid. Keep the card opaque and dominant; avoid clutter and decorative animation. No noise texture is introduced in this iteration. Both themes reuse approved palette colors.
+
+Corner-ring refinement: user requested more perceptible gradient variation specifically in the two decorative rings. AppBackdrop uses softly feathered radial masks over conic color transitions: violet/lavender/rose in the upper-left and cyan/blue/violet in the lower-right. Vary opacity along each arc for depth; preserve their scale/corner placement and keep central washes/grid restrained. This stronger decorative treatment is local to the rings, not a general increase in UI gradient intensity.
