@@ -82,10 +82,10 @@ const languageLabel = computed(
       class="mx-auto flex w-full max-w-7xl flex-1 items-center px-6 py-8 sm:px-10 sm:py-14"
     >
       <div class="welcome-panel w-full">
-        <div
-          class="grid gap-12 px-6 py-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:items-stretch lg:gap-14"
-        >
-          <div class="flex flex-col justify-center">
+        <div class="grid lg:grid-cols-2 lg:items-stretch">
+          <div
+            class="flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16"
+          >
             <h1
               class="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl xl:text-6xl"
             >
