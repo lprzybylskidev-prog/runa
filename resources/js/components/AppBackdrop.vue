@@ -14,19 +14,19 @@
   background:
     radial-gradient(
       ellipse 78% 85% at -5% -12%,
-      color-mix(in srgb, var(--runa-circle-violet) 48%, transparent),
-      color-mix(in srgb, var(--runa-gradient-primary-end) 21%, transparent) 40%,
+      color-mix(in srgb, var(--runa-circle-violet) 34%, transparent),
+      color-mix(in srgb, var(--runa-gradient-primary-end) 15%, transparent) 40%,
       transparent 76%
     ),
     radial-gradient(
       ellipse 58% 64% at 8% 0%,
-      color-mix(in srgb, var(--runa-circle-rose) 26%, transparent),
+      color-mix(in srgb, var(--runa-circle-rose) 18%, transparent),
       transparent 73%
     ),
     radial-gradient(
       ellipse 78% 85% at 105% 112%,
-      color-mix(in srgb, var(--runa-circle-cyan) 44%, transparent),
-      color-mix(in srgb, var(--runa-gradient-cool-end) 20%, transparent) 42%,
+      color-mix(in srgb, var(--runa-circle-cyan) 31%, transparent),
+      color-mix(in srgb, var(--runa-gradient-cool-end) 14%, transparent) 42%,
       transparent 76%
     );
 }
