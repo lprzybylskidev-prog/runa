@@ -204,3 +204,7 @@ Root artwork placement: the decorative illustration fills the entire right half 
 ## Reusable auth layout
 
 User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused immediately by the temporary root page and later by auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. Root removal must not remove the shared layout or its assets. Authentication behavior and actual forms remain outside this change.
+
+## Component reuse
+
+User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and AuthLayout owns the split-page structure. Reuse and extend these instead of rebuilding controls for each page.

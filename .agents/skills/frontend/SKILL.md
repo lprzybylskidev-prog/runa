@@ -30,3 +30,5 @@ Consider motion when designing component states: make appropriate visual changes
 Vue implementation details belong to the Vue skill. Tailwind implementation details belong to the Tailwind skill.
 
 Use concise, factual, professional interface copy. Avoid generic promotional slogans and motivational filler; omit text that adds no useful information.
+
+Keep repeated controls and their hover/focus/disabled/transition styling in shared components (for example `AppButton`, `AppTooltip`), not page-local copies. Check the component catalogue before adding markup; extend existing components when a real additional use requires it. Shared layout or design tokens alone do not replace reusable controls.

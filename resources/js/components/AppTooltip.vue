@@ -28,3 +28,35 @@ onScopeDispose(() => document.removeEventListener('keydown', dismiss));
     >
   </span>
 </template>
+
+<style scoped>
+.app-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+.tooltip-content {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  right: 0;
+  padding-top: 8px;
+  width: max-content;
+  max-width: min(280px, 75vw);
+}
+.tooltip-content > span {
+  display: block;
+  padding: 8px 12px;
+  background: var(--runa-surface-raised);
+  color: var(--runa-text);
+  border: 1px solid var(--runa-control-border);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px
+    color-mix(
+      in srgb,
+      var(--runa-shadow) var(--runa-shadow-opacity),
+      transparent
+    );
+}
+</style>

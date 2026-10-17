@@ -28,10 +28,18 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## Root preference buttons
 
 - Source: `resources/js/layouts/AuthLayout.vue`.
-- Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names and application tooltips describe current and next values. Existing composables preserve preferences. No select or submit step.
+- Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names describe current/next values; short application tooltips identify the action. Both controls use AppButton. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip
 
 - Source: `resources/js/components/AppTooltip.vue`.
 - Application-styled tooltip on pointer hover or keyboard focus, dismissible with Escape. Pointer can enter the tooltip; it stays visible until pointer leave, focus leave or dismissal.
 - Props: `text`; scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
+
+## AppButton
+
+- Source: `resources/js/components/AppButton.vue`.
+- Shared native button with slot content and scoped appearance: borders, 4px radii, hover/active/focus/disabled states and subtle transitions respecting reduced motion.
+- Props: `type` (defaults to safe `button`), `compact` (44px square), `disabled`. Native attributes, ARIA labels and click listeners inherit onto the button.
+- Use this component for actions rather than styling native buttons independently in each view. Extend it only for demonstrated new variants; do not introduce speculative component APIs.
+- Canonical use: language/theme controls in AuthLayout. Icon-only uses require an accessible name; tooltip remains a separate component.

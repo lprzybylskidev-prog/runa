@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import AppIcon from '../components/AppIcon.vue';
+import AppButton from '../components/AppButton.vue';
 import AppTooltip from '../components/AppTooltip.vue';
 import { useLocale } from '../composables/useLocale';
 import { useTheme } from '../composables/useTheme';
@@ -42,22 +43,20 @@ const languageLabel = computed(
       <div :aria-label="t('preferences')" class="flex gap-2" role="group">
         <AppTooltip :text="t('changeLanguage')">
           <template #default="{ descriptionId }">
-            <button
-              type="button"
-              class="preference-button"
+            <AppButton
+              compact
               :aria-label="languageLabel"
               :aria-describedby="descriptionId"
               @click="locale = locale === 'pl' ? 'en' : 'pl'"
             >
               {{ locale.toUpperCase() }}
-            </button>
+            </AppButton>
           </template>
         </AppTooltip>
         <AppTooltip :text="t('changeTheme')">
           <template #default="{ descriptionId }">
-            <button
-              type="button"
-              class="preference-button"
+            <AppButton
+              compact
               :aria-label="themeLabel"
               :aria-describedby="descriptionId"
               @click="theme = nextTheme"
@@ -71,7 +70,7 @@ const languageLabel = computed(
                       : 'moon'
                 "
               />
-            </button>
+            </AppButton>
           </template>
         </AppTooltip>
       </div>
