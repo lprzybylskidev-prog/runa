@@ -33,6 +33,18 @@ def validate_report(report, policy, today=None):
         raise ValueError('Finding set changed; reassess even removed findings.')
 
 
+
+def bind_report(report, installed, policy):
+    # docker image save omits repository digests. Bind its unchanged content ID
+    # to the exact digest independently verified against Docker's image metadata.
+    metadata = report.get('Metadata', {})
+    digest = 'postgres@' + policy['image'].split('@', 1)[1]
+    if installed.get('Id') != metadata.get('ImageID') or digest not in installed.get('RepoDigests', []) or installed.get('Architecture') != policy['architecture']:
+        raise ValueError('Archive content ID is not bound to the approved repository digest.')
+    if metadata.get('RepoDigests') and digest not in metadata['RepoDigests']:
+        raise ValueError('Report contains a conflicting repository digest.')
+    return dict(report, Metadata=dict(metadata, RepoDigests=[digest]))
+
 def apply(image, report_path):
     policy_path = ROOT / 'docs/security/postgres-gosu-not-affected.json'
     policy = json.loads(policy_path.read_text())
@@ -41,11 +53,11 @@ def apply(image, report_path):
     if hashlib.sha256((ROOT / policy['evidence']).read_bytes()).hexdigest() != policy['evidence_sha256']:
         raise ValueError('gosu assessment evidence changed.')
     data = json.loads(Path(report_path).read_text())
-    validate_report(data, policy)
     identity = run(['docker', 'image', 'inspect', image], capture_output=True, text=True).stdout
     installed = json.loads(identity)[0]
     if installed['Id'] != data['Metadata'].get('ImageID') or installed.get('Architecture') != policy['architecture']:
         raise ValueError('Scanned/inspected artifact identity differs.')
+    validate_report(bind_report(data, installed, policy), policy)
     binary_hash = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sha256sum', installed['Id'], '/usr/local/bin/gosu'], capture_output=True, text=True).stdout.split()[0]
     version = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', '/usr/local/bin/gosu', installed['Id'], '--version'], capture_output=True, text=True).stdout.strip()
     expected = policy['gosu_version'] + ' (' + policy['go_version'].replace('v', 'go', 1) + ' on linux/amd64; gc)'

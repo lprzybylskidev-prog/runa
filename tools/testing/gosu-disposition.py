@@ -8,7 +8,7 @@ import sys
 import unittest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/project'))
-from gosu_disposition import validate_report
+from gosu_disposition import validate_report, bind_report
 POLICY = json.loads((ROOT / 'docs/security/postgres-gosu-not-affected.json').read_text())
 
 
@@ -17,6 +17,19 @@ def fixture():
 
 
 class DispositionContracts(unittest.TestCase):
+    def test_archive_without_digest_requires_same_content_id_and_verified_docker_digest(self):
+        report = fixture()
+        report['Metadata'].pop('RepoDigests')
+        report['Metadata']['ImageID'] = 'sha256:content'
+        installed = {'Id': 'sha256:content', 'Architecture': 'amd64', 'RepoDigests': ['postgres@' + POLICY['image'].split('@')[1]]}
+        bound = bind_report(report, installed, POLICY)
+        validate_report(bound, POLICY, date(2026,10,17))
+        self.assertNotIn('RepoDigests', report['Metadata'])
+        for change in ({'Id':'sha256:other'}, {'RepoDigests':[]}, {'Architecture':'arm64'}):
+            altered = dict(installed, **change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                bind_report(report, altered, POLICY)
+
     def test_exact_set_accepted_and_expired_rejected(self):
         validate_report(fixture(), POLICY, date(2026,10,17))
         with self.assertRaises(ValueError):validate_report(fixture(), POLICY, date(2026,11,17))
