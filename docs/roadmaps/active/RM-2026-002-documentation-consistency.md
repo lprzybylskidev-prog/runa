@@ -106,6 +106,8 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 
 ### Decisions
 
+- 2026-10-18 — Point 3 implemented a shared read-only validator used by doctor docs and doctor release, with installed Symfony YAML timestamp handling. Seven documentation contracts and eleven release contracts pass, including the stale v0.1.0 README scenario through the actual CLI, positive history cases, state transitions, draft-only main commits, invalid tags and runtime drift. Eight scheduler contracts pass. The existing final contract step now includes offline docs and knowledge contracts; every final release check validates README irrespective of impact selection. No dependency or runtime change.
+
 - 2026-10-18 — Point 2 reconciled README, command/environment/production/quality/Boost/knowledge guidance with closed acceptance evidence and implementation. Updated owning workflow rules, concise AGENTS clauses and source/index responsibility; no unrelated domain skill required a documentation rule copy. Dated measurements, version initialization, missing REF-003 and deferred business/authentication scope remain historical or explicitly deferred. Focused format/diff and existing docs checks passed; new contract checks follow in point 3.
 
 - 2026-10-18 — Point 1 confirmed the recorded source findings after origin refresh. The README block uses exact markers `<!-- runa:current-state -->` / `<!-- /runa:current-state -->` and three ordered list fields: `Current version`, `Active roadmap`, `Production ever deployed`; values are inline code, with `none` and lowercase booleans. YAML source state uses the installed Symfony parser, not a second YAML implementation. Invalid production timestamps and roadmap frontmatter fail explicitly.
@@ -126,7 +128,7 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 - [x] 2. Repair current-state documentation and clarify agent ownership.
   - Prerequisites: point 1.
   - Completion: reconcile confirmed documentation defects, add the README projection, update the owning workflow/agent rules and only affected skill procedures; preserve history and deferred features. Review prose against source and run proportionate structural/format checks. Commit and update this checklist.
-- [ ] 3. Enforce deterministic documentation consistency in existing quality/release tooling.
+- [x] 3. Enforce deterministic documentation consistency in existing quality/release tooling.
   - Prerequisites: point 2.
   - Completion: shared read-only validation, doctor integration, reliable final-gate selection and regression tests for stale README, lifecycle transitions, historical immunity and release-tag integrity; document exact coverage. Run focused contracts, commit and update this checklist.
 - [ ] 4. Correct knowledge classification and verify guidance synchronization.

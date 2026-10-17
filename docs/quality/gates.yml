@@ -234,13 +234,13 @@ impact_areas:
 final:
   - id: release-metadata-contract
     depends_on: []
-    description: Verify isolated release versioning and metadata rejection contracts.
-    command: python3 tools/testing/release.py
+    description: Verify isolated release, documentation and knowledge metadata rejection contracts.
+    command: python3 tools/testing/release.py --with-docs-and-knowledge
     severity: hard_fail
 
   - id: version-changelog-roadmap
     depends_on: [release-metadata-contract]
-    description: Validate VERSION, CHANGELOG, roadmap state, release type, and final report facts.
+    description: Validate README state, command documentation, VERSION, CHANGELOG, roadmap state, release type, and final report facts.
     command: ./bin/doctor release
     severity: hard_fail
 

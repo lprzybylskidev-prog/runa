@@ -98,12 +98,8 @@ def maintenance():
 
 
 def docs():
-    text = (ROOT / 'docs/tooling/commands.md').read_text()
-    for path in (ROOT / 'bin').iterdir():
-        if path.is_file() and os.access(path, os.X_OK) and path.name not in ('check', 'passthrough'):
-            if './bin/' + path.name not in text:
-                raise ValueError('Undocumented command: ' + path.name)
-    print('PASS: every implemented public command is documented.')
+    from docs_checks import validate
+    validate(ROOT)
 
 
 def tooling():
