@@ -215,6 +215,4 @@ User decision: activating language or theme controls first covers the entire vie
 
 ## Background depth refinement
 
-Current user direction supersedes the earlier multi-ring experiments: preserve the technical grid and line details, but use only two deliberate corner motifs. Prefer heavily cropped fragments of large arcs with low opacity and gentle edge/along-arc fading, supported by quiet corner glows. Avoid readable full circles, scattered secondary rings and decoration concentrated behind the main card. The main card stays opaque and visually dominant. Ring shapes are optional if a softer solution better serves this direction.
-
-AppBackdrop implements two off-screen conic-gradient arcs with radial masks and broad corner washes. It removes the three secondary rings, reduces color intensity and quiets central decoration. No noise or decorative animation is added. Validate the composition in both themes and narrow viewports.
+Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid and quiet violet/cyan/rose corner washes. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. This version is pending user visual review.
