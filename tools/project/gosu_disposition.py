@@ -2,6 +2,7 @@
 from datetime import date
 import hashlib
 import json
+import tarfile
 from pathlib import Path
 from runtime import ROOT, run
 
@@ -34,18 +35,28 @@ def validate_report(report, policy, today=None):
 
 
 
-def bind_report(report, installed, policy):
-    # docker image save omits repository digests. Bind its unchanged content ID
-    # to the exact digest independently verified against Docker's image metadata.
+def archive_config_id(archive):
+    # Read members only; never extract an image archive into the filesystem.
+    with tarfile.open(archive) as saved:
+        entries = json.load(saved.extractfile('manifest.json'))
+        if len(entries) != 1:
+            raise ValueError('Expected exactly one saved image configuration.')
+        config = saved.extractfile(entries[0]['Config']).read()
+    return 'sha256:' + hashlib.sha256(config).hexdigest()
+
+
+def bind_report(report, installed, policy, config_id):
+    # Bind the scanner's configuration ID to the exact saved archive; Docker's
+    # inspected ID may instead identify a manifest or index.
     metadata = report.get('Metadata', {})
     digest = 'postgres@' + policy['image'].split('@', 1)[1]
-    if installed.get('Id') != metadata.get('ImageID') or digest not in installed.get('RepoDigests', []) or installed.get('Architecture') != policy['architecture']:
+    if config_id != metadata.get('ImageID') or digest not in installed.get('RepoDigests', []) or installed.get('Architecture') != policy['architecture']:
         raise ValueError('Archive content ID is not bound to the approved repository digest.')
     if metadata.get('RepoDigests') and digest not in metadata['RepoDigests']:
         raise ValueError('Report contains a conflicting repository digest.')
     return dict(report, Metadata=dict(metadata, RepoDigests=[digest]))
 
-def apply(image, report_path):
+def apply(image, report_path, archive_path):
     policy_path = ROOT / 'docs/security/postgres-gosu-not-affected.json'
     policy = json.loads(policy_path.read_text())
     if image != policy['image']:
@@ -55,15 +66,14 @@ def apply(image, report_path):
     data = json.loads(Path(report_path).read_text())
     identity = run(['docker', 'image', 'inspect', image], capture_output=True, text=True).stdout
     installed = json.loads(identity)[0]
-    if installed['Id'] != data['Metadata'].get('ImageID') or installed.get('Architecture') != policy['architecture']:
-        raise ValueError('Scanned/inspected artifact identity differs.')
-    validate_report(bind_report(data, installed, policy), policy)
+    config_id = archive_config_id(archive_path)
+    validate_report(bind_report(data, installed, policy, config_id), policy)
     binary_hash = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sha256sum', installed['Id'], '/usr/local/bin/gosu'], capture_output=True, text=True).stdout.split()[0]
     version = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', '/usr/local/bin/gosu', installed['Id'], '--version'], capture_output=True, text=True).stdout.strip()
     expected = policy['gosu_version'] + ' (' + policy['go_version'].replace('v', 'go', 1) + ' on linux/amd64; gc)'
     if binary_hash != policy['binary_sha256'] or version != expected:
         raise ValueError('gosu binary/version drift.')
-    evidence = {'status':'not_affected', 'image':image, 'image_id':installed['Id'], 'policy_sha256':hashlib.sha256(policy_path.read_bytes()).hexdigest(), 'report_sha256':hashlib.sha256(Path(report_path).read_bytes()).hexdigest(), 'cves':policy['cves'], 'review_by':policy['review_by']}
+    evidence = {'status':'not_affected', 'image':image, 'image_id':installed['Id'], 'config_id':config_id, 'policy_sha256':hashlib.sha256(policy_path.read_bytes()).hexdigest(), 'report_sha256':hashlib.sha256(Path(report_path).read_bytes()).hexdigest(), 'cves':policy['cves'], 'review_by':policy['review_by']}
     path = Path(report_path).with_suffix('.disposition.json')
     path.write_text(json.dumps(evidence, indent=2) + '\n')
     path.chmod(0o600)

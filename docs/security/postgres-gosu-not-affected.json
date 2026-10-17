@@ -9,7 +9,7 @@
   "path": "usr/local/bin/gosu",
   "binary_sha256": "52c8749d0142edd234e9d6bd5237dff2d81e71f43537e2f4f66f75dd4b243dd0",
   "evidence": "docs/security/gosu-assessment.md",
-  "evidence_sha256": "0106095f3ddb5b6564997dcad78e26fc36a4c444f8479222edfe1552120afa21",
+  "evidence_sha256": "82e32847ea68afdd719bdac45eeca5aa7bbdb5170553dd61584984938b763c1b",
   "cves": [
     "CVE-2025-61726",
     "CVE-2025-61729",
