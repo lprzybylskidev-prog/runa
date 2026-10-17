@@ -181,7 +181,7 @@ Production operations share one nonblocking lock, including lifecycle and backup
 
 ## Isolated local production acceptance
 
-Set `RUNA_PRODUCTION_MODE=simulation` in `.env.prod.compose` and pass `--simulation` to install/deploy. This selects `runa-prod-simulation`, its own volumes/network, and the configured loopback port. Real mode selects `runa-prod`; a mode mismatch is rejected. A first managed deployment refuses existing unmanaged containers/volumes rather than adopting unknown data. Keep the prior point-13 diagnostic stack separate; stop its listener if it occupies the simulation port without deleting its volumes.
+Set `RUNA_PRODUCTION_MODE=simulation` in `.env.prod.compose` and pass `--simulation` to install/deploy. This selects `runa-prod-icu-simulation`, its own volumes/network, and the configured loopback port. Real mode selects `runa-prod`; a mode mismatch is rejected. A first managed deployment refuses existing unmanaged containers/volumes rather than adopting unknown data. Keep the prior point-13 diagnostic stack separate; stop its listener if it occupies the simulation port without deleting its volumes.
 
 When no production env files exist:
 
