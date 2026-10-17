@@ -211,7 +211,7 @@ User requirement: repeated UI elements, including buttons and their visual state
 
 ## Preference change screen
 
-User decision: activating language or theme controls first covers the entire viewport with the shared AppLoadingOverlay and centered circular loading indicator. Apply the change only after the cover enters, then hold the opaque cover for an additional 500ms after rendering before revealing the updated view, as requested during visual review. Block underlying interaction and repeated changes until completion, restore focus to the initiating button, and respect reduced-motion settings. This is a local visual transition, not a page reload or network request.
+User decision: activating language or theme controls first covers the entire viewport with the shared AppLoadingOverlay and centered circular loading indicator. Apply the change only after the cover enters, then hold the opaque cover for an additional 500ms after rendering before revealing the updated view, as requested during visual review. Block underlying interaction and repeated changes until completion, restore focus to the initiating button, and respect reduced-motion settings. The cover fades in/out over 340ms with smooth easing, preserving its activation-time colors until dismissal so a theme change does not flash through the overlay itself. Its fully opaque hold must not override the leave animation. This is a local visual transition, not a page reload or network request.
 
 ## Background depth refinement
 
