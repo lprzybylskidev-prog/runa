@@ -61,12 +61,33 @@ RUN npx --yes playwright@1.64.1 install --with-deps chromium firefox \
     && rm -rf /var/lib/apt/lists/* /root/.npm
 USER runa
 
-FROM runtime AS php-dependencies
+# Production keeps the same PHP version/capabilities on the approved Alpine candidate.
+# Development retains its browser-compatible Debian toolchain.
+FROM php:8.4.26-fpm-alpine3.24@sha256:78cd8de9970a9cd6ff4d98860a94eb5bf37dd2d5776b4785562dbfad01c29d5a AS production-runtime
+ARG RUNA_UID=1000
+ARG RUNA_GID=1000
+RUN apk add --no-cache libpq icu-libs icu-data-full libzip oniguruma fcgi tzdata \
+    && apk add --no-cache --virtual .runa-build-deps \
+        $PHPIZE_DEPS libpq-dev icu-dev libzip-dev oniguruma-dev \
+    && docker-php-ext-install -j2 pdo_pgsql intl bcmath opcache pcntl zip mbstring \
+    && apk del .runa-build-deps \
+    && addgroup -g "${RUNA_GID}" -S runa \
+    && adduser -u "${RUNA_UID}" -G runa -D -h /home/runa -s /bin/sh runa \
+    && mkdir -p /workspace /home/runa/.cache/composer /home/runa/.config/composer \
+    && chown -R runa:runa /workspace /home/runa \
+    && rm /usr/local/etc/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/docker.conf
+COPY docker/php/pool.conf /usr/local/etc/php-fpm.d/runa.conf
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/runa.ini
+COPY --chmod=755 docker/php/healthcheck /usr/local/bin/runa-fpm-health
+WORKDIR /workspace
+USER runa
+HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 CMD ["runa-fpm-health"]
+CMD ["php-fpm", "-F"]
+
+FROM production-runtime AS php-dependencies
 USER root
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends unzip \
-    && rm -rf /var/lib/apt/lists/* \
+RUN apk add --no-cache unzip \
     && mkdir -p /tmp/runa-build && chown runa:runa /tmp/runa-build
 USER runa
 ENV COMPOSER_HOME=/tmp/composer
@@ -86,8 +107,8 @@ COPY resources/ resources/
 COPY vite.config.mjs tsconfig.json ./
 RUN pnpm run build
 
-FROM runtime AS production
-COPY --from=runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+FROM production-runtime AS production
+COPY --from=production-runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 ENV APP_ENV=production APP_DEBUG=false KNOWLEDGE_ENABLED=false
 COPY --chmod=755 docker/php/production-entrypoint /usr/local/bin/runa-production-entrypoint
 ENTRYPOINT ["runa-production-entrypoint"]

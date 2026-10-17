@@ -45,8 +45,9 @@ def trivy():
             print('FAIL: ' + failures[-1] + '; continuing to collect remaining reports.', flush=True)
     def report(name):
         path = reports / name
-        path.touch(mode=0o600, exist_ok=True)
-        path.chmod(0o600)
+        # A failed scanner must not leave an old report looking freshly generated.
+        path.unlink(missing_ok=True)
+        path.touch(mode=0o600, exist_ok=False)
         return str(path) if scanner.is_file() else '/reports/' + name
     scanner = ROOT / '.runtime/tools/trivy'
     if scanner.is_file():

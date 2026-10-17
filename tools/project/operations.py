@@ -22,7 +22,7 @@ STATE = ROOT / '.runtime/production'
 WRITERS = ['nginx', 'queue', 'scheduler', 'app']
 SPARSE = ['/app/', '/bootstrap/', '/config/', '/database/', '/lang/', '/public/', '/resources/', '/routes/',
           '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/docs/project/state.yml',
-          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
+          '/tools/testing/production-runtime.php', '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
           '/artisan', '/composer.json', '/composer.lock', '/package.json', '/pnpm-lock.yaml',
           '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/VERSION',

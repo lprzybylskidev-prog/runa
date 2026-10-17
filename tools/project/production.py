@@ -89,20 +89,11 @@ def verify_images(command, environment):
         actual = run(['docker', 'image', 'inspect', '--format', '{{.Config.User}}', image], capture_output=True, text=True).stdout.strip()
         if actual != user:
             raise ValueError('Unexpected runtime image user.')
-    code = r'''require '/workspace/vendor/autoload.php';
-foreach (['pdo_pgsql', 'mbstring', 'intl', 'bcmath', 'Zend OPcache', 'pcntl', 'zip', 'curl', 'xml'] as $extension) {
-    if (!extension_loaded($extension)) { throw new RuntimeException('Missing runtime extension: '.$extension); }
-}
-if (extension_loaded('xdebug')) { throw new RuntimeException('Development extension in runtime.'); }
-foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'vendor/laravel/boost', 'vendor/pestphp', 'vendor/phpstan'] as $path) {
-    if (file_exists('/workspace/'.$path)) { throw new RuntimeException('Development material in runtime: '.$path); }
-}
-$installed = json_decode(file_get_contents('/workspace/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
-if ($installed['dev'] !== false) { throw new RuntimeException('Development dependencies included.'); }
-if (!is_file('/workspace/public/build/index.html')) { throw new RuntimeException('Missing SPA build.'); }
-fwrite(STDOUT, "PASS: runtime extensions, production dependencies, SPA assets and development isolation.\n");'''
+    code = (ROOT / 'tools/testing/production-runtime.php').read_text().removeprefix('<?php').lstrip()
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php', php, '-r', code])
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-c', 'for tool in composer node npm pnpm codex python3 git gcc g++; do if command -v "$tool" >/dev/null 2>&1; then echo "Development tool in runtime: $tool" >&2; exit 1; fi; done'])
+    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php-fpm', php, '-tt'])
+    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-ec', 'mkdir -p /tmp/source/app /tmp/restore; printf probe > /tmp/source/app/probe; tar -C /tmp/source -czf /tmp/probe.tar.gz app; tar -C /tmp/restore --no-same-owner -xzf /tmp/probe.tar.gz; test "$(cat /tmp/restore/app/probe)" = probe; find /tmp/restore/app -mindepth 1 -delete; test ! -e /tmp/restore/app/probe'])
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--add-host', 'app:127.0.0.1', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', nginx, '-t'])
 
 

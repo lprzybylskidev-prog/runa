@@ -25,6 +25,9 @@ class ReviewContracts(unittest.TestCase):
             binary = root / '.runtime/tools/trivy'
             binary.parent.mkdir(parents=True)
             binary.touch()
+            reports = root / '.runtime/security'
+            reports.mkdir()
+            (reports / 'repository.json').write_text('{"stale": true}')
             images = ['postgres:18.6-bookworm', 'runa-production:' + 'a' * 40, 'runa-nginx:' + 'a' * 40]
             def execute(args, **kwargs):
                 if '--version' in args:
@@ -40,6 +43,7 @@ class ReviewContracts(unittest.TestCase):
                 self.assertIn('--include-dev-deps', scans[0])
                 audits.assert_called_once()
                 self.assertFalse((root / '.runtime/trivy-image.tar').exists())
+                self.assertEqual((reports / 'repository.json').read_text(), '')
 
     def test_missing_stale_blocking_and_changed_report_evidence_rejected(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(security, 'ROOT', Path(folder)), patch.object(security, 'surface', return_value={'app/example.php': 'current'}):
