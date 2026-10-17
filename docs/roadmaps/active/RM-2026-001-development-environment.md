@@ -891,15 +891,22 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Current exact-image Trivy scan found HIGH CVE-2026-77214 in inherited libexpat 2.8.5-r0; Alpine's security tracker confirms 2.9.0-r0 fixes it on branch 3.24.
   - Upgraded only the existing library to exact 2.9.0-r0, retaining Nginx 1.31.7. Host production build/runtime probes passed at `6576296`; actual Nginx image Trivy vulnerability/secret scan exited 0 with no HIGH/CRITICAL findings. No suppression was added. Full final gate must start from the beginning.
 
+- [x] 16e. **Serialize production scanning and establish task Docker cleanup**
+  - The full host gate at `7066c16` passed all executed checks except image scanning, which overlapped production health/isolation and failed on their shared operation lock. Final dependent checks were blocked; no PASS is claimed.
+  - Add image scanning to the existing production exclusion group and cover the actual gate definition with a regression contract.
+  - Implemented the shared exclusion group; all eight scheduler contracts pass, including verification of every actual host production gate's group. Updated execution docs and renewed the source security review.
+  - User instruction (2026-10-18): clean task-created disposable Docker resources after final checks. Record scoped cleanup authority and protected data in AGENTS and Docker guidance; perform final inventory/removal after the rerun, preserving development, rollback/data/cache volumes, backups and reports.
+
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Preparation (2026-10-18): points 16a/16b repair stale frontend diagnostics and the release-doctor placeholder. Repository/docs/maintenance/tooling checks and live frontend diagnostics pass; version computation remains 0.0.0 -> 0.1.0. No final-gate PASS, version bump, closure, merge or publication is claimed.
-  - Host continuation required: all impact areas include Docker-host-only production/scanner gates; the devcontainer cannot coordinate them. Inspect actual host resources before preparing the current exact-commit ICU simulation. Root private Compose settings and `.runtime/production/deployment.json` still identify the older pre-ICU simulation and must not be blindly reused/adopted. Preserve active development and protected data/rollback volumes. Renew actual final changed-surface review evidence after reviewing current sources and host scanner results; prior point-14 evidence is not full-roadmap approval. Start `./bin/quality final --background` from the correctly prepared host checkout and return status/full failed logs; follow the no-polling background-run contract.
+  - Host preparation completed: obsolete pre-ICU private settings/state were archived, fresh dedicated ICU simulation was deployed, and source security review was renewed. Continue using current exact-commit simulation and preserve development/protected volumes. The first final run failed only on scanner/production lock coordination; point 16e repairs it. Rerun `./bin/quality final --background` from the host and follow the no-polling background-run contract.
   - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.
   - Run `./bin/quality final` with all impact areas.
   - If a failure needs work, insert a fix point immediately before this point and rerun final verification from the beginning.
   - Resolve all hard failures.
   - Justify any allowed warnings.
   - Confirm no scratch/debug residue or temporary audit material remains.
+  - After the last checks requiring Docker test resources, inventory and remove task-created test/simulation containers, networks, image tags and disposable simulation volumes under the user-approved cleanup rule. Preserve development/test database data, rollback volumes, caches, backups/reports and other projects; report exact removals.
   - Confirm docs/skills/tooling help match implementation, all declared gate commands exist, and the maintenance registry covers every actual external component.
   - Review changed Laravel code for unnecessary complexity while preserving behavior; review the complete durable documentation for drift without refactoring unrelated application areas.
   - Run focused release-metadata validation after version/changelog/closure edits. Substantive post-gate changes require the full final gate again.

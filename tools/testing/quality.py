@@ -24,6 +24,12 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_actual_host_production_gates_share_the_operation_group(self):
+        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        nodes = quality.select(definition, ['production', 'security'])
+        for key in ('production-compose', 'production-build', 'production-health', 'production-ai-isolation', 'repository-container-scan'):
+            self.assertEqual(nodes[key]['exclusive_group'], 'production-simulation', key)
+
     def test_host_coordinator_delegates_only_application_steps(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=False), patch.object(quality, 'app_command', return_value=['true']) as delegate:
             nodes = [node('app', 'application-check'), dict(node('host', 'true'), execution_context='host')]

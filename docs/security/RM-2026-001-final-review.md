@@ -20,4 +20,6 @@ The preceding complete current-image scan passed repository, PHP and dependency 
 
 Focused operations (16), scanner (3), gosu (4) and production (2) contracts passed. Production contracts must run without another live production operation holding its lock. Development doctor, knowledge freshness/retrieval, documentation/maintenance/tooling checks and release metadata checks passed. Full final quality PASS is not asserted by this report.
 
+The first full gate at `7066c16` passed the application, browser, production runtime/isolation and knowledge checks but exposed an operation-lock collision: image scanning lacked the production exclusion group. Point 16e adds that group without weakening locks or scanning; all eight scheduler contracts, including the actual gate-definition regression, pass. The task cleanup rule authorizes only inventoried disposable resources after their final checks and explicitly protects durable data and other projects. These follow-up changes were reviewed before renewing the content-bound evidence; the full gate must rerun.
+
 No unresolved source-review blocking finding remains in the inspected boundaries. Real production remains never-deployed; local simulation evidence does not establish real HTTPS/SMTP operation. Future business/authentication surfaces require their own review.

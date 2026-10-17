@@ -142,7 +142,7 @@ Generated runtime artifacts may be gitignored.
 
 While running, status tails each process log and finishes with `Process is still running.` When finished or interrupted, tail each relevant log, show full-log paths and finish with the overall status. Preserve per-step results and the last known step locally. Do not add automatic runner/step deadlines; application network timeouts or separately designed job semantics are different concerns.
 
-The runner uses the dependency graph in `gates.yml`; independent nodes may run concurrently and shared-state checks are serialized. A deterministic command may prepare evidence, but `review-changed-surface` also requires an actual agent review with findings/disposition. It cannot be a stub that claims human/agent reasoning occurred.
+The runner uses the dependency graph in `gates.yml`; independent nodes may run concurrently and shared-state checks are serialized. Production Compose/build/health/isolation and image scanning share `production-simulation`, matching their common production operation lock. A deterministic command may prepare evidence, but `review-changed-surface` also requires an actual agent review with findings/disposition. It cannot be a stub that claims human/agent reasoning occurred.
 
 Before final verification, commit implementation/cleanup so the gate checks a coherent candidate. Its own checklist item is necessarily pending during execution. Version/changelog/closure metadata are finalized afterward using focused consistency checks, as defined in `docs/workflows/releases.md`. If substantive code/config/behavior changes occur after the gate, invalidate the result and run the full final gate again.
 

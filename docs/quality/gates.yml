@@ -208,6 +208,7 @@ impact_areas:
 
     - id: repository-container-scan
       execution_context: host
+      exclusive_group: production-simulation
       depends_on: [configuration]
       depends_on_if_selected: [production-build]
       command: ./bin/security trivy

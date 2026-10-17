@@ -27,6 +27,6 @@
 25. Validate actual resolved Compose config and health after infrastructure changes, not just YAML syntax.
 26. Do not add Kubernetes, Swarm, Docker Agent/Sandboxes, or another orchestrator to the baseline.
 27. Do not force distroless/Alpine as a dogma.
-28. Do not auto-prune resources.
+28. Clean task-created disposable test/simulation resources after their final checks, following the scoped inventory and protected-data rules in `AGENTS.md`. Never global-prune resources.
 29. Do not use Docker socket/privileged mode as a convenience shortcut.
 30. Production AI/RAG isolation rules remain mandatory regardless of generic Docker recommendations.
