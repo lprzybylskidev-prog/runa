@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+.runtime
+vendor
+node_modules
+artifacts
+coverage
+storage/logs

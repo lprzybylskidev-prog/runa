@@ -575,7 +575,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Resolve current supported framework/tool/runtime versions from official sources and record pinned selections plus dependency assessment.
   - Update maintenance registry with selected versions/review dates.
 
-- [ ] 2. **Build the base development container toolchain**
+- [x] 2. **Build the base development container toolchain**
   - Prerequisites: Point 1.
   - Create host Compose/devcontainer skeleton without Docker-in-Docker.
   - Pin PHP/Composer/Node/pnpm/base image versions.
@@ -584,6 +584,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Configure Corepack/pnpm and base CLI tooling.
   - Establish resource profile configuration and `./bin/dev profile`.
   - Ensure build/rebuild is deterministic/idempotent.
+  - Verified: real image build and cached rebuild, non-root execution, required PHP extensions/tool versions, FastCGI health, resolved preset/custom limits and cache persistence through container recreation. VS Code GUI reopen remains part of first-run acceptance.
 
 - [ ] 3. **Install and clean the Laravel application**
   - Prerequisites: Point 2.

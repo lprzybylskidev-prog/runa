@@ -306,3 +306,20 @@ Host Compose owns container lifecycle/build/production simulation. Host wrappers
 Qdrant and the local embeddings service start automatically with the devcontainer. On first setup, build a missing knowledge index; on subsequent opens check health/freshness and use incremental indexing when needed. Required services perform lightweight readiness checks and doctor supplies deeper self-tests.
 
 Select `high` locally for the initial project owner's environment; the portable repository default remains `standard`. Document profile selection, effective whole-stack limits and tuning for other hardware.
+
+## Base container commands
+
+The initial container uses `docker/php/Dockerfile` with a shared `runtime` stage and a `development` stage. Runtime PHP extensions are compiled once in the shared stage; Composer, Node, Corepack/pnpm, Git and Python are added only to development. The non-root `runa` user uses the host UID/GID recorded during `./bin/dev prepare`. PHP-FPM serves port 9000 on the internal Compose network, with a FastCGI ping health check and no published host port.
+
+Host Python 3 and Docker Compose are required for the host wrapper and VS Code initialize command. Run:
+
+```sh
+./bin/dev prepare
+./bin/dev build
+./bin/dev up
+./bin/dev shell
+```
+
+`./bin/dev config` prints resolved Compose configuration; `./bin/dev down` stops/removes this project's containers while preserving named volumes. There is no destructive volume-reset shortcut. At the base-toolchain stage, only app/FPM exists; application, Nginx and sibling services are completed by the following roadmap points.
+
+The devcontainer initializes the resource override before Compose starts and attaches as `runa`. It sets the versioned hooks path after creation; hook scripts become available in their implementation point. Opening or rebuilding does not delete application data. See [toolchain selections](toolchain.md) and [resource profiles](resources.md).

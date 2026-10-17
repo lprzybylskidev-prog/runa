@@ -1,0 +1,25 @@
+name: runa-dev
+services:
+  app:
+    image: runa-development:rm-2026-001
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+      args:
+        RUNA_UID: ${RUNA_UID:-1000}
+        RUNA_GID: ${RUNA_GID:-1000}
+    init: true
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - composer-cache:/home/runa/.cache/composer
+    environment:
+      APP_ENV: local
+      TEST_WORKERS: ${TEST_WORKERS:-4}
+      PLAYWRIGHT_WORKERS: ${PLAYWRIGHT_WORKERS:-2}
+    cpus: ${DEV_CPU_LIMIT:-4}
+    mem_limit: ${DEV_MEMORY_LIMIT:-4G}
+    stop_grace_period: 30s
+volumes:
+  composer-cache:
