@@ -106,6 +106,10 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 
 ### Decisions
 
+- 2026-10-18 — Point 1 confirmed the recorded source findings after origin refresh. The README block uses exact markers `<!-- runa:current-state -->` / `<!-- /runa:current-state -->` and three ordered list fields: `Current version`, `Active roadmap`, `Production ever deployed`; values are inline code, with `none` and lowercase booleans. YAML source state uses the installed Symfony parser, not a second YAML implementation. Invalid production timestamps and roadmap frontmatter fail explicitly.
+- 2026-10-18 — Existing annotated tags must identify HEAD, except on main where a tagged ancestor with identical release/runtime content may be followed only by changes under docs/roadmaps/draft/*.md. Validate the tagged release metadata itself as well as ancestry and the exact changed-path allowlist; reject runtime changes, forged/stale metadata and non-ancestor tags. This narrow exception supports approved draft planning without weakening release identity.
+- 2026-10-18 — The final gate always checks docs through release validation; add offline docs/knowledge regression contracts to the existing final contract step. Post-gate release-only edits may change the checked README version/active-roadmap fields and roadmap review evidence, but capability prose or validator changes require a fix point and a new full gate. Remote access succeeded for fetch; release publication will be verified separately.
+
 - 2026-10-18 — The user approved execution through release ("Ogarnij całość"). Refreshed origin/main; activated the approved roadmap on its dedicated branch.
 
 - 2026-10-18 — User requested audit and draft only before explicit approval. This document is not activation authorization; no implementation, version bump, branch activation, merge, tag or publication occurs in the planning phase.
@@ -114,7 +118,7 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 
 ## Implementation plan
 
-- [ ] 1. Confirm audit dispositions and finalize the documentation/release contract.
+- [x] 1. Confirm audit dispositions and finalize the documentation/release contract.
   - Prerequisites: explicit user approval, normal activation and branch creation from refreshed main.
   - Completion: recheck findings against current sources; settle README field syntax, post-gate edits, planning-after-tag validation and review evidence; retain the audit/specification here without creating a duplicate report.
 - [ ] 2. Repair current-state documentation and clarify agent ownership.
