@@ -49,34 +49,36 @@ import AppConstellation from './AppConstellation.vue';
 }
 
 .constellation-one {
-  top: 8%;
-  right: 4%;
-  width: 260px;
+  top: -12%;
+  right: -8%;
+  width: clamp(580px, 56vw, 1100px);
   color: var(--runa-accent-text);
+  opacity: 0.45;
 }
 .constellation-two {
-  bottom: 5%;
-  left: 4%;
-  width: 300px;
+  bottom: -18%;
+  left: -12%;
+  width: clamp(650px, 62vw, 1200px);
+  opacity: 0.4;
 }
 .constellation-three {
-  top: 3%;
-  left: 42%;
-  width: 200px;
-  opacity: 0.4;
+  top: -22%;
+  left: 16%;
+  width: clamp(500px, 48vw, 950px);
+  opacity: 0.22;
 }
 @media (max-width: 47.99rem) {
   .constellation-one {
-    top: 12%;
-    right: -6%;
-    width: 180px;
-    opacity: 0.4;
+    top: -2%;
+    right: -50%;
+    width: 580px;
+    opacity: 0.3;
   }
   .constellation-two {
-    left: -8%;
-    bottom: 4%;
-    width: 210px;
-    opacity: 0.4;
+    bottom: -10%;
+    left: -65%;
+    width: 650px;
+    opacity: 0.25;
   }
   .constellation-three {
     display: none;
