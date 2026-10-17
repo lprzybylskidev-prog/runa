@@ -7,11 +7,11 @@ import re
 import subprocess
 import time
 import urllib.request
-from runtime import ROOT, run
+from runtime import ROOT, run, app_command
 
 
 def yaml(path):
-    return json.loads(run(['php', str(ROOT / 'tools/project/read-yaml.php'), str(path)], capture_output=True, text=True).stdout)
+    return json.loads(run(app_command(['php', 'tools/project/read-yaml.php', str(path.relative_to(ROOT))]), capture_output=True, text=True).stdout)
 
 
 def repository():

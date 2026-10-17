@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/project'))
@@ -23,6 +24,20 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_host_coordinator_delegates_only_application_steps(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=False), patch.object(quality, 'app_command', return_value=['true']) as delegate:
+            nodes = [node('app', 'application-check'), dict(node('host', 'true'), execution_context='host')]
+            state = {'status': 'running', 'steps': {n['id']: dict(n, status='pending') for n in nodes}}
+            self.assertEqual(quality.execute(Path(folder), state), 0)
+            delegate.assert_called_once_with(['application-check'])
+
+    def test_container_coordinator_cannot_report_pass_for_host_step(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=True):
+            host = dict(node('host', 'true'), execution_context='host', status='pending')
+            state = {'status': 'running', 'steps': {'host': host}}
+            self.assertEqual(quality.execute(Path(folder), state), 1)
+            self.assertIn('requires the host', (Path(folder) / 'host.log').read_text())
+
     def test_selection_deduplicates_and_validates_graph(self):
         a = node('a', 'true')
         b = node('b', 'true', ['a'])

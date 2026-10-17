@@ -20,8 +20,6 @@ try:
         raise SystemExit(0)
     if not args or args[0] not in ('show', 'roadmap', 'final', 'status') or args[1:] not in ([], ['--background']) or (len(args) > 1 and args[0] in ('show', 'status')):
         raise ValueError('Invalid arguments. See ./bin/quality --help.')
-    if not inside():
-        raise SystemExit(subprocess.run(app_command(['./bin/quality', *args]), cwd=ROOT).returncode)
     directory = ROOT / '.runtime/quality'
     directory.mkdir(parents=True, exist_ok=True)
     # Stable lock inode lives outside the replaceable latest-run directory.
@@ -39,6 +37,8 @@ try:
             for key, node in nodes.items():
                 print(key + ': ' + node['command'] + ' [after: ' + ', '.join(node['depends_on']) + ']')
             raise SystemExit(0)
+        if inside() and any(node.get('execution_context') == 'host' for node in nodes.values()):
+            raise ValueError('Selected production gates need the Docker host. Run ./bin/quality ' + args[0] + ' in the host terminal; it delegates application checks to the devcontainer.')
         if active:
             raise ValueError('Another quality run is active. Use ./bin/quality status.')
         # Refuse surviving children from a crashed coordinator before replacing evidence.

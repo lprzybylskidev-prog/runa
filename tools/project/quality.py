@@ -8,7 +8,7 @@ import signal
 import subprocess
 import time
 from checks import yaml
-from runtime import ROOT
+from runtime import ROOT, inside, app_command
 
 
 def select(definition, areas, final=False):
@@ -45,7 +45,7 @@ def plan(final=False):
         raise ValueError('Exactly one active roadmap is required.')
     header = active[0].read_text().split('---', 2)[1]
     # Use the existing Symfony YAML parser without introducing Python dependencies.
-    result = subprocess.run(['php', '-r', 'require "vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));'], input=header, text=True, capture_output=True, check=True, cwd=ROOT)
+    result = subprocess.run(app_command(['php', '-r', 'require "vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
     roadmap = json.loads(result.stdout)
     return roadmap, select(yaml(ROOT / 'docs/quality/gates.yml'), roadmap['impact_areas'], final)
 
@@ -95,7 +95,13 @@ def execute(directory, state):
                         continue
                     log = (directory / (key + '.log')).open('w')
                     try:
-                        process = subprocess.Popen(shlex.split(node['command']), cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                        arguments = shlex.split(node['command'])
+                        if node.get('execution_context') == 'host':
+                            if inside():
+                                raise OSError('This gate requires the host coordinator: run ./bin/quality from the Docker host.')
+                        elif not inside():
+                            arguments = app_command(arguments)
+                        process = subprocess.Popen(arguments, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
                     except OSError as error:
                         log.write(str(error) + '\n'); log.close()
                         node.update(status='failed', exit_code=127)

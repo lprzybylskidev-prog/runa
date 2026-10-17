@@ -9,11 +9,13 @@ sys.path.insert(0, str(ROOT / 'tools/project'))
 from runtime import app_command, host_stack_health, inside, run
 import checks
 
-AREAS = ('repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'release', 'cleanliness', 'development')
+AREAS = ('repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'release', 'cleanliness', 'development', 'production')
 try:
     args = sys.argv[1:]
     if args == ['--help']:
         print('Usage: ./bin/doctor [area]\nNo area: quick whole-development diagnostic. Focused areas: ' + ', '.join(AREAS) + '.\nChecks never repair or deploy. Database-migrations resets only the guarded testing database.')
+    elif args == ['production']:
+        run([str(ROOT / 'bin/production'), 'self-test'])
     elif not inside():
         if not args or args == ['development']:
             host_stack_health()

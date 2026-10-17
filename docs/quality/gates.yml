@@ -145,25 +145,34 @@ impact_areas:
       severity: hard_fail
 
   production:
+    - id: production-operation-contracts
+      depends_on: [configuration]
+      command: python3 tools/testing/operations.py
+      severity: hard_fail
+
     - id: production-build
+      execution_context: host
       depends_on: [production-compose]
       exclusive_group: production-simulation
       command: ./bin/production build
       severity: hard_fail
 
     - id: production-compose
+      execution_context: host
       depends_on: [configuration]
       exclusive_group: production-simulation
       command: ./bin/production validate
       severity: hard_fail
 
     - id: production-health
+      execution_context: host
       depends_on: [production-build]
       exclusive_group: production-simulation
       command: ./bin/production self-test
       severity: hard_fail
 
     - id: production-ai-isolation
+      execution_context: host
       depends_on: [production-health]
       exclusive_group: production-simulation
       command: ./bin/production verify-ai-isolation
@@ -192,7 +201,13 @@ impact_areas:
       severity: hard_fail
 
   security:
+    - id: security-review-contracts
+      depends_on: [configuration]
+      command: python3 tools/testing/security.py
+      severity: hard_fail
+
     - id: repository-container-scan
+      execution_context: host
       depends_on: [configuration]
       depends_on_if_selected: [production-build]
       command: ./bin/security trivy
