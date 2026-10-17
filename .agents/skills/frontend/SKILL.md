@@ -28,3 +28,5 @@ Before visual design or UI changes, read `docs/design/visual-direction.md` and t
 Consider motion when designing component states: make appropriate visual changes smooth and subtle, avoid animating everything, preserve immediate feedback and respect reduced-motion preferences. Follow the motion decisions in `docs/design/visual-direction.md`.
 
 Vue implementation details belong to the Vue skill. Tailwind implementation details belong to the Tailwind skill.
+
+Use concise, factual, professional interface copy. Avoid generic promotional slogans and motivational filler; omit text that adds no useful information.

@@ -190,3 +190,9 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Footer copyright wording and GitHub link target.
 - Practical light-theme validation against the approved palette.
 - Complete visual-specification approval and concrete implementation/acceptance tasks.
+
+## Interface copy and preference controls
+
+User correction: use concise, professional, factual UI copy. Avoid promotional slogans, generic motivational wording and repeated workspace/growth taglines. Omit unnecessary text instead of replacing it with another slogan.
+
+Language and theme preferences use explicit button groups with a visible active choice, not select controls. Preserve system/light/dark options, keyboard operation, accessible pressed states and preference persistence.

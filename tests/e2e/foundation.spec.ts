@@ -13,8 +13,11 @@ test('critical: API readiness, language/theme preferences and error recovery', a
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
   await expect(page.getByRole('status')).toContainText('Połączenie działa');
-  await page.getByLabel('Język').selectOption('en');
-  await page.getByLabel('Theme').selectOption('dark');
+  await page.getByRole('button', { name: 'English', exact: true }).click();
+  await page.getByRole('button', { name: 'Dark', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Dark', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');

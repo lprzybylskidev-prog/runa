@@ -293,27 +293,6 @@ input:-webkit-autofill {
       transparent
     );
 }
-.panel-topline {
-  border-bottom: 1px solid var(--runa-border);
-  background: linear-gradient(
-    100deg,
-    var(--runa-primary-subtle),
-    var(--runa-surface)
-  );
-}
-.panel-bottom {
-  border-top: 1px solid var(--runa-border);
-  background: var(--runa-surface-muted);
-}
-.accent-rule {
-  width: 36px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--runa-primary-solid),
-    var(--runa-accent-solid)
-  );
-}
 .runa-art {
   height: 235px;
   position: relative;
@@ -460,4 +439,31 @@ input:-webkit-autofill {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+.preference-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  border: 1px solid var(--runa-control-border);
+  border-radius: 4px;
+  padding: 3px;
+  background: var(--runa-surface);
+}
+.preference-group button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  color: var(--runa-text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+.preference-group button:hover {
+  background: var(--runa-surface-hover);
+  color: var(--runa-text);
+}
+.preference-group button[aria-pressed='true'] {
+  background: var(--runa-primary-subtle);
+  color: var(--runa-primary-text);
+  box-shadow: inset 0 -2px var(--runa-primary-solid);
 }

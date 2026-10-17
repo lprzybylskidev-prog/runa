@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onScopeDispose, ref } from 'vue';
-import AppSelect from './components/AppSelect.vue';
-import AppForm from './components/AppForm.vue';
 import AppIcon from './components/AppIcon.vue';
 import { useLocale } from './composables/useLocale';
 import { useTheme } from './composables/useTheme';
@@ -56,26 +54,38 @@ onScopeDispose(() => controller?.abort());
         /></span>
         runa<span class="brand-dot" aria-hidden="true">.</span>
       </a>
-      <AppForm
+      <div
         :aria-label="t('preferences')"
-        class="flex flex-wrap gap-3 sm:gap-5"
+        class="flex flex-wrap gap-4"
+        role="group"
       >
-        <AppSelect
-          :label="t('language')"
-          :model-value="locale"
-          :options="[
-            { value: 'pl', label: 'Polski' },
-            { value: 'en', label: 'English' },
-          ]"
-          @update:model-value="setLocale"
-        />
-        <AppSelect
-          :label="t('theme')"
-          :model-value="theme"
-          :options="themeOptions"
-          @update:model-value="setTheme"
-        />
-      </AppForm>
+        <div role="group" :aria-label="t('language')" class="preference-group">
+          <button
+            v-for="option in [
+              { value: 'pl', label: 'PL' },
+              { value: 'en', label: 'EN' },
+            ]"
+            :key="option.value"
+            type="button"
+            :aria-label="option.value === 'pl' ? 'Polski' : 'English'"
+            :aria-pressed="locale === option.value"
+            @click="setLocale(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        <div role="group" :aria-label="t('theme')" class="preference-group">
+          <button
+            v-for="option in themeOptions"
+            :key="option.value"
+            type="button"
+            :aria-pressed="theme === option.value"
+            @click="setTheme(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
     </header>
     <main
       id="main"
@@ -84,22 +94,9 @@ onScopeDispose(() => controller?.abort());
     >
       <div class="welcome-panel w-full">
         <div
-          class="panel-topline flex items-center justify-between gap-4 px-6 py-4 sm:px-10"
-        >
-          <span class="flex items-center gap-2 text-xs text-muted"
-            ><AppIcon name="sparkles" class="size-4 text-primary" />{{
-              t('eyebrow')
-            }}</span
-          >
-          <span class="text-xs text-muted" aria-hidden="true">R / 01</span>
-        </div>
-        <div
           class="grid gap-12 px-6 py-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:items-center lg:gap-14"
         >
           <div>
-            <p class="mb-5 text-xs uppercase tracking-widest text-primary">
-              {{ t('welcomeLabel') }}
-            </p>
             <h1
               class="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl xl:text-6xl"
             >
@@ -110,9 +107,6 @@ onScopeDispose(() => controller?.abort());
             >
               {{ t('description') }}
             </p>
-            <div class="mt-9 flex items-center gap-3 text-xs text-muted">
-              <span class="accent-rule" aria-hidden="true" />{{ t('footer') }}
-            </div>
           </div>
           <div class="space-y-5">
             <div class="runa-art" aria-hidden="true">
@@ -120,7 +114,7 @@ onScopeDispose(() => controller?.abort());
                 class="art-orbit orbit-two"
               /><span class="art-orbit orbit-three" /><span class="art-core"
                 ><AppIcon name="layers-intersect" /></span
-              ><span class="art-coordinate">RUNA / {{ t('workspace') }}</span
+              ><span class="art-coordinate">RUNA</span
               ><span class="art-plus">+</span>
             </div>
             <section
@@ -168,24 +162,12 @@ onScopeDispose(() => controller?.abort());
             </section>
           </div>
         </div>
-        <div
-          class="panel-bottom flex flex-wrap items-center justify-between gap-3 px-6 py-4 text-xs text-muted sm:px-10"
-        >
-          <span>{{ t('foundation') }}</span
-          ><span class="flex items-center gap-2"
-            ><span
-              class="size-1.5 rounded-full bg-primary"
-              aria-hidden="true"
-            />{{ t('growing') }}</span
-          >
-        </div>
       </div>
     </main>
     <footer
       class="mx-auto flex w-full max-w-7xl flex-wrap justify-between gap-4 px-6 py-6 text-xs text-muted sm:px-10"
     >
-      <span>© {{ new Date().getFullYear() }} Runa</span
-      ><span>{{ t('footer') }}</span>
+      <span>© {{ new Date().getFullYear() }} Runa</span>
     </footer>
   </div>
 </template>
