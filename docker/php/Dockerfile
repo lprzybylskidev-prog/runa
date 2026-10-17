@@ -64,7 +64,10 @@ USER runa
 FROM runtime AS php-dependencies
 USER root
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
-RUN mkdir -p /tmp/runa-build && chown runa:runa /tmp/runa-build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /tmp/runa-build && chown runa:runa /tmp/runa-build
 USER runa
 ENV COMPOSER_HOME=/tmp/composer
 WORKDIR /tmp/runa-build

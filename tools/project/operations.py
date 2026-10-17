@@ -94,6 +94,9 @@ def command(release=None):
 
 
 def dc(args, release=None, **kwargs):
+    # Noninteractive Compose clients must not consume the caller's shell script.
+    if 'stdin' not in kwargs and 'input' not in kwargs:
+        kwargs['stdin'] = subprocess.DEVNULL
     return run(command(release) + args, env=environment(), **kwargs)
 
 

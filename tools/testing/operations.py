@@ -17,6 +17,26 @@ import operations as ops
 
 
 class OperationContracts(unittest.TestCase):
+    def test_compose_cannot_consume_remaining_parent_script_input(self):
+        code = """import sys
+sys.path.insert(0, 'tools/project')
+import operations
+operations.command = lambda release=None: [sys.executable, '-c', 'import sys; print("child:" + sys.stdin.read())']
+operations.dc([])
+print('parent:' + sys.stdin.read())
+"""
+        result = subprocess.run([sys.executable, '-c', code], cwd=ROOT, input='remaining shell commands', text=True, capture_output=True, check=True)
+        self.assertEqual(result.stdout, 'child:\nparent:remaining shell commands\n')
+
+    def test_explicit_backup_stream_and_input_are_preserved(self):
+        with patch.object(ops, 'command', return_value=['compose']), patch.object(ops, 'run') as run:
+            stream = object()
+            ops.dc(['exec'], stdin=stream)
+            self.assertIs(run.call_args.kwargs['stdin'], stream)
+            ops.dc(['exec'], input=b'archive')
+            self.assertEqual(run.call_args.kwargs['input'], b'archive')
+            self.assertNotIn('stdin', run.call_args.kwargs)
+
     def test_atomic_evidence_is_private_and_valid_json(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'private/state.json'
