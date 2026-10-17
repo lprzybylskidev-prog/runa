@@ -165,3 +165,9 @@ def cleanliness():
     if any(line.startswith('??') or (len(line) > 1 and line[1] != ' ') for line in result.splitlines()):
         raise ValueError('Untracked/unstaged changes require review before finalization.')
     print('PASS: no unreviewed scratch/untracked/unstaged source residue.')
+
+
+def release():
+    from release_checks import validate
+    repository()
+    validate(ROOT)

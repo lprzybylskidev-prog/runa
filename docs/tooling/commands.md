@@ -107,7 +107,7 @@ Project provides:
 
 `./bin/doctor` and `./bin/doctor <area>`
 
-Implemented areas: `repository`, `config`, `maintenance`, `hooks`, `frontend`, `database-migrations`, `database`, `seeding`, `boost`, `tooling`, `docs`, `cleanliness`, `development`, `production`. The `release` area currently rejects execution with a message about pending release tooling; it cannot report PASS before that implementation. `frontend` uses the real browser diagnostic script and requires the testing Nginx service. `database-migrations` resets only the guarded isolated test database; `database` and `seeding` run the relevant backend contracts. `cleanliness` rejects unreviewed scratch and untracked/unstaged files; staged reviewed changes are allowed.
+Implemented areas: `repository`, `config`, `maintenance`, `hooks`, `frontend`, `database-migrations`, `database`, `seeding`, `boost`, `tooling`, `docs`, `cleanliness`, `development`, `production`, `release`. The read-only `release` check computes the expected version from main and the active roadmap, permits only the final verification item to remain open, and rejects premature version/tag drift. After closure metadata edits it verifies VERSION/changelog/closed-roadmap/checklist/report agreement, release-type arithmetic and any existing annotated tag identity; remote publication is verified separately. `frontend` uses the real browser diagnostic script and requires the testing Nginx service. `database-migrations` resets only the guarded isolated test database; `database` and `seeding` run the relevant backend contracts. `cleanliness` rejects unreviewed scratch and untracked/unstaged files; staged reviewed changes are allowed.
 
 Do not turn doctor into one giant opaque script. Subcommands should have clear responsibilities.
 

@@ -878,6 +878,11 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Update the diagnostic to exercise the compact preference controls, loading cover, factual heading and independent API readiness. Preserve PL/EN, light/dark/system, responsive, 200% text, keyboard, persistence/storage-denial, network/console and Firefox coverage.
   - Verified: the updated live diagnostic passes PL/EN, light/dark/system, three viewports, 200% text, keyboard skip, font loading, footer, storage denial/reduced motion, console/network and Firefox. Updated testing coverage documentation and reconciled the frontend content-order rule with the accepted design.
 
+- [x] 16b. **Complete deterministic release metadata validation**
+  - Found during point 17 preparation: `doctor release` remains a fail-closed placeholder despite the required release/version tooling scope.
+  - Implement read-only roadmap-driven version computation and validation for pre-release active state and closed release metadata, including changelog/version agreement, checklist/report/branch consistency and existing tag identity.
+  - Implemented read-only release checks and eight isolated acceptance/rejection contracts, including version rules, active drift/open work, closed changelog/report/type mismatch and annotated-tag identity. Added the contracts to the final gate and documented the existing doctor command. VERSION remains 0.0.0; no closure/tag/publication performed.
+
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.
   - Run `./bin/quality final` with all impact areas.

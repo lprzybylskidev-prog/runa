@@ -37,9 +37,6 @@ try:
                 'database': ['./bin/test', '--filter=Database'],
                 'seeding': ['./bin/test', '--filter=Seeding'],
             }
-            if area == 'release':
-                checks.repository()
-                raise ValueError('Full release metadata validation awaits release tooling in RM-2026-001; no release PASS claimed.')
             run(commands[area])
 except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as error:
     print(f'Doctor failed: {error}', file=sys.stderr)
