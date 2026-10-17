@@ -67,3 +67,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Source: `resources/js/components/RunaLogo.vue`.
 - Shared decorative project mark based on the supplied transparent PNG alpha mask. Inherits `currentColor`; CSS mask crops transparent padding without modifying the original image. Default height 28px with the mark's natural aspect ratio; CSS may override height.
 - Use in brand links and decorative artwork instead of the temporary Tabler mark. The owning link/control supplies its accessible name; the decorative mark is hidden from assistive technology. Source/provenance: `docs/design/assets.md`.
+
+## AppConstellation
+
+- Source: `resources/js/components/AppConstellation.vue`.
+- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three small patterns. No motion, randomness, image asset or dependency.
+- Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.

@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import AppConstellation from './AppConstellation.vue';
+</script>
+
 <template>
   <div class="app-backdrop" aria-hidden="true">
     <span class="backdrop-geometry" />
+    <AppConstellation variant="one" class="constellation-one" />
+    <AppConstellation variant="two" class="constellation-two" />
+    <AppConstellation variant="three" class="constellation-three" />
   </div>
 </template>
 
@@ -39,5 +46,40 @@
     linear-gradient(90deg, var(--runa-text-secondary) 1px, transparent 1px);
   background-size: 88px 88px;
   mask-image: radial-gradient(ellipse at 50% 42%, black, transparent 72%);
+}
+
+.constellation-one {
+  top: 11%;
+  right: 7%;
+  width: 180px;
+  color: var(--runa-accent-text);
+}
+.constellation-two {
+  bottom: 8%;
+  left: 4%;
+  width: 200px;
+}
+.constellation-three {
+  top: 8%;
+  left: 44%;
+  width: 120px;
+  opacity: 0.4;
+}
+@media (max-width: 47.99rem) {
+  .constellation-one {
+    top: 12%;
+    right: -6%;
+    width: 125px;
+    opacity: 0.4;
+  }
+  .constellation-two {
+    left: -8%;
+    bottom: 4%;
+    width: 145px;
+    opacity: 0.4;
+  }
+  .constellation-three {
+    display: none;
+  }
 }
 </style>
