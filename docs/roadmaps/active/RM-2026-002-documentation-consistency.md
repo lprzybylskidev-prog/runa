@@ -1,10 +1,10 @@
 ---
 id: RM-2026-002
 title: Documentation consistency and release workflow fixes
-status: draft
+status: active
 branch: roadmap/RM-2026-002-documentation-consistency
 created_at: 2026-10-18
-activated_at: null
+activated_at: 2026-10-18
 closed_at: null
 release_type: fix
 impact_areas:
@@ -105,6 +105,8 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 - No new dependencies. Run the complete gate selected by the declared impacts, not merely documentation tests. Review changes to impact areas if implementation broadens the surface.
 
 ### Decisions
+
+- 2026-10-18 — The user approved execution through release ("Ogarnij całość"). Refreshed origin/main; activated the approved roadmap on its dedicated branch.
 
 - 2026-10-18 — User requested audit and draft only before explicit approval. This document is not activation authorization; no implementation, version bump, branch activation, merge, tag or publication occurs in the planning phase.
 - 2026-10-18 — Proposed release is fix 0.1.0 -> 0.1.1. Preserve published and closed history; improve existing mechanisms with bounded deterministic checks plus mandatory source review.
