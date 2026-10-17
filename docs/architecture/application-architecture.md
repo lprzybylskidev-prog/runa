@@ -1,0 +1,103 @@
+# Application Architecture
+
+## Backend shape
+
+Laravel is the backend framework. The application frontend is a Vue SPA consuming `/api/...` endpoints. Blade is not the application rendering layer.
+
+Controllers remain transport-oriented:
+- accept validated input,
+- call application behavior,
+- return resources/responses.
+
+Substantial use cases belong in Actions. Shared/cross-cutting or integration behavior may use Services. Complex read/list/report behavior may use Query classes. Simple Eloquent behavior may stay direct when it is clearer.
+
+Do not create generic `SomethingService`, `Helpers`, `Utils`, or repository layers as dumping grounds.
+
+## Application behavior
+
+### Actions
+
+Use an Action when a use case has meaningful orchestration, state transitions, multiple collaborators, transaction boundaries, or reusable application behavior.
+
+### Services
+
+Use a Service for genuinely shared capability, cross-cutting technical behavior, or integration boundaries. A Service must have a clear responsibility.
+
+### Query classes
+
+Use Query classes for complex reads:
+- non-trivial filtering,
+- reports,
+- aggregates,
+- multi-relation listings,
+- reusable query construction.
+
+Queries are read-only by design.
+
+### DTOs
+
+Use DTOs when input is complex, crosses multiple layers, belongs to an integration contract, or loose arrays would obscure meaning. Do not create a DTO for every endpoint mechanically.
+
+### Events
+
+Events represent facts that already happened. Prefer past-tense names. Use them for real asynchronous/cross-cutting reactions, not as disguised commands. A critical immediate cross-module operation should usually be an explicit call.
+
+### Jobs
+
+Use jobs for asynchronous, heavy, or long-running work. Jobs delegate business behavior to Actions/Services rather than becoming the business layer.
+
+Where duplicate execution can happen:
+- make jobs idempotent when possible,
+- define retry/backoff deliberately,
+- classify dependency failures as retryable or non-retryable.
+
+### Lifecycle/state transitions
+
+Business status transitions go through explicit application behavior, normally an Action. Do not scatter raw status updates. Validate allowed transitions.
+
+Do not install a state-machine dependency until repeated, real behavior justifies it.
+
+## Transactions and side effects
+
+Use short database transactions for atomic multi-record changes.
+
+Do not keep external HTTP calls, long file operations, or other slow external effects inside database transactions.
+
+Dispatch work/events after commit when they depend on committed data.
+
+Nested transactions/savepoints are conscious choices, not accidental framework behavior.
+
+## Dependency direction
+
+Dependencies should be readable. Introduce an interface when there is a real boundary, swap requirement, or integration seam. Do not create interfaces for every class.
+
+Use explicit dependency injection. Avoid service-locator patterns such as scattered `app()` calls in business code.
+
+Facades may be used pragmatically at framework boundaries when they remain clear and testable.
+
+## Hidden behavior
+
+Avoid critical business behavior in:
+- Eloquent observers,
+- model hooks,
+- hidden global scopes,
+- accessors/casts that issue database queries,
+- implicit static/global mutable state.
+
+Global scopes are reserved for true global invariants, not hidden business filters.
+
+## Time and randomness
+
+When logic depends on "now", use a controllable/testable time source.
+
+When randomness affects behavior, make it controllable for tests and deterministic workflows.
+
+## Refactoring
+
+A refactor should preserve behavior unless behavior change was discussed. Protect risky refactors with tests before changing structure.
+
+## Cache contract
+
+Cache only an identified expensive read/computation. Document the canonical source, namespaced key, purpose, TTL and invalidation path. Cache never becomes the source of truth. Use Laravel cache APIs rather than coupling business logic to a specific driver. Redis remains deferred.
+
+Each request has a safe correlation ID for diagnostics, propagated to related work where useful; validate externally supplied identifiers before logging them.

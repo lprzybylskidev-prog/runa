@@ -1,0 +1,108 @@
+version: 1
+
+review_policy:
+  skill_sources_default_days: 180
+  frameworks_and_tooling_default_days: 90
+  security_and_base_images_default_days: 30
+
+entries:
+  - id: upstream-skill-openai
+    type: skill_source
+    name: OpenAI Skills
+    url: https://github.com/openai/skills
+    pinned_revision: 49f948faa9258a0c61caceaf225e179651397431
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - security
+      - skill-policy
+
+  - id: upstream-skill-laravel-boost
+    type: framework_tooling
+    name: Laravel Boost
+    url: https://github.com/laravel/boost
+    pinned_revision: f1411f90d54cb01ffe30606b7ca92789aad737d9
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+    used_by:
+      - laravel
+
+  - id: upstream-skill-vue
+    type: skill_source
+    name: vuejs-ai skills
+    url: https://github.com/vuejs-ai/skills
+    pinned_revision: c9d355ff23f654309dd02006be671859df0a134c
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - vue
+
+  - id: upstream-skill-community
+    type: skill_source
+    name: Sablier Labs Agent Skills
+    url: https://github.com/sablier-labs/agent-skills
+    pinned_revision: 41e29982b5551b17c3fc6dc81720310bb05b2482
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - frontend
+      - tailwind
+
+  - id: upstream-skill-agents
+    type: skill_source
+    name: wshobson Agents
+    url: https://github.com/wshobson/agents
+    pinned_revision: 044b4b21f083948e69ec878a7b07c8d0951a6ffa
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - backend
+      - postgresql
+
+  - id: upstream-skill-docker
+    type: skill_source
+    name: Docker Skills
+    url: https://github.com/docker/skills
+    pinned_revision: 25f7e03184ce455ea1604bea00f7b40f95ca50e5
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+    used_by:
+      - docker
+
+  - id: upstream-skill-qdrant
+    type: skill_source
+    name: Qdrant Skills
+    url: https://github.com/qdrant/skills
+    pinned_revision: d2127f6e1b9c6611fff10fe939c6fb17761aaec2
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+    used_by:
+      - rag
+
+  - id: laravel-framework
+    type: framework
+    name: Laravel
+    version: resolve-and-pin-in-RM-2026-001
+    last_reviewed: null
+    review_every_days: 90
+
+  - id: php-runtime
+    type: runtime
+    name: PHP
+    version: prefer-8.4-if-compatible-resolve-and-pin-in-RM-2026-001
+    last_reviewed: null
+    review_every_days: 90
+
+  - id: node-runtime
+    type: runtime
+    name: Node.js LTS
+    version: resolve-current-supported-lts-and-pin-in-RM-2026-001
+    last_reviewed: null
+    review_every_days: 90
+
+  - id: docker-base-images
+    type: security_runtime
+    name: Production and development base images
+    version: resolve-and-pin-in-RM-2026-001
+    last_reviewed: null
+    review_every_days: 30

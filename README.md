@@ -1,0 +1,72 @@
+# Runa
+
+Runa is a Laravel-based business application designed to evolve under an explicit, roadmap-driven engineering workflow. This repository is intended to contain the application, development environment, production runtime definition, local quality tooling, AI/Codex guidance, and the project knowledge system in one versioned source of truth.
+
+## Current state
+
+This package represents the pre-implementation project specification. Runtime implementation starts with `RM-2026-001-development-environment`.
+
+Initial version: `0.0.0`.
+
+RM-2026-001 remains a draft until the user explicitly declares it ready for activation. Intended commands/runtime files in the documentation are requirements, not installed tools.
+
+The first feature roadmap is expected to produce `0.1.0` when it is fully verified, closed, merged, tagged, and released.
+
+## Core stack direction
+
+- Laravel backend
+- PostgreSQL database
+- Vue 3 + TypeScript frontend
+- Tailwind CSS
+- Vite
+- Nginx + PHP-FPM
+- Docker Compose and VS Code Dev Containers
+- Qdrant + local embeddings for development-only project knowledge retrieval
+- Laravel Boost for version-aware Laravel MCP tooling
+- Codex CLI inside the development container
+
+Exact supported and pinned versions are resolved during `RM-2026-001` from current official sources and compatibility constraints.
+
+## Engineering model
+
+Runa does not implement application changes without an active roadmap. One roadmap corresponds to one branch and one release. Planning may happen on `main`; implementation may not.
+
+The repository intentionally has no CI or GitHub Actions quality pipeline. Quality enforcement is local, explicit, versioned, and driven by project scripts and Git hooks.
+
+Read `AGENTS.md` first. It contains the compact operating contract and routes to the detailed documentation and local skills.
+
+## Documentation map
+
+- `AGENTS.md` — compact agent operating contract
+- `docs/architecture/` — application, database, API, frontend, configuration, naming
+- `docs/workflows/` — roadmap, Git, release workflow
+- `docs/testing/` — backend/frontend/E2E testing strategy
+- `docs/quality/` — local quality-gate model
+- `docs/development/` — development environment requirements
+- `docs/production/` — production runtime, deployment, rollback, backup
+- `docs/ai/` — local skills, Laravel Boost, knowledge/RAG system
+- `docs/security/` — security baseline
+- `docs/data/` — seeding model
+- `docs/maintenance/` — dependency/upstream registry, backlog, deprecations
+- `docs/release/` — release-readiness guidance
+- `docs/tooling/` — canonical command surface
+- `docs/roadmaps/` — roadmap lifecycle and instances
+
+## Language policy
+
+Repository content is English-only: code, identifiers, technical logs, CLI output/help, documentation, scripts, configuration, database names, API contracts, commit messages, and agent guidance.
+
+User-facing application UI supports Polish and English, with Polish as the default. The mandatory administration panel is English-only.
+
+## Repository
+
+Canonical remote:
+
+`https://github.com/lprzybylskidev-prog/runa`
+
+Git identity for project work:
+
+- Name: `Łukasz Przybylski`
+- Email: `lprzybylskidev@gmail.com`
+
+The identity values above are repository metadata requirements. All repository prose remains English.

@@ -1,0 +1,61 @@
+# Lifecycle, Health, Logging, Resources, and Devcontainer
+
+## Entrypoint/lifecycle
+
+1. Keep entrypoints small and predictable.
+2. Do not hide hundreds of lines of installer/migration/build/chmod behavior in runtime entrypoint.
+3. Container start should not perform heavy/destructive bootstrap automatically.
+4. Use `exec` for the final foreground process in shell entrypoints so signals reach PID 1 correctly.
+5. Services must handle SIGTERM/graceful shutdown correctly.
+6. Choose graceful-stop behavior according to process type; queue workers may need job completion semantics.
+7. Do not use meaningless infinite shell loops only to keep a container alive.
+8. Health checks diagnose; they do not repair, migrate, restart, or clear cache.
+
+## Health/diagnostics
+
+9. Health checks should test a real ability to serve/function, not merely that a PID exists.
+10. Health checks remain lightweight; do not run full doctor/migrations/heavy queries/external-provider fan-out.
+11. Distinguish liveness vs readiness semantics even though Compose is simpler than Kubernetes.
+12. An app health check must not create a cascade of external provider requests.
+13. Diagnose Docker in a stable order:
+    - resolved Compose config,
+    - container state,
+    - logs,
+    - health,
+    - network/DNS,
+    - mounts/permissions,
+    - image/build,
+    - host resources.
+14. Inspect `docker compose config` before guessing how env/overrides resolved.
+15. Do not bypass architecture to "fix" a service (for example, do not replace broken Nginx/PHP-FPM with `artisan serve`).
+
+## Logging
+
+16. Container processes primarily log to stdout/stderr.
+17. Do not store huge logs in ephemeral container filesystems.
+18. Configure practical log growth/rotation for production Docker logging.
+19. Aggregated project logs should make service/process origin obvious.
+
+## Resources
+
+20. Do not hardcode magical production CPU/memory values; production values are environment/workload specific.
+21. OOM is a diagnostic signal, not an instruction to double the limit without investigation.
+22. Worker concurrency must make sense relative to CPU/memory allocation.
+23. Heavy development tooling such as embeddings/Qdrant/tests should not starve the app/database unnecessarily.
+
+## Devcontainer
+
+24. Devcontainer builds must be deterministic/reproducible within pinned dependencies.
+25. Rebuilding the devcontainer must not destroy persistent data the developer expects to keep.
+26. Developer-only tools belong in the dev image, not production.
+27. Development may have more diagnostic tools than production, but application runtime requirements maintain parity.
+28. Post-create/setup scripts must be idempotent.
+29. Distinguish first bootstrap from normal reopen; do not repeat expensive setup needlessly.
+30. Never run `migrate:fresh` automatically on each rebuild/reopen.
+31. If the database is empty, initialize safely; otherwise run normal safe migrations/checks.
+32. Do not require private absolute host paths; use ignored local overrides.
+33. GPU support for embeddings is optional and CPU-fallback-safe.
+34. Do not build multi-arch images before a real platform need.
+35. If architecture/platform becomes relevant, declare it explicitly.
+36. Do not introduce Docker Bake before build complexity justifies it.
+37. Use one canonical build path so developer/deploy/test do not use three divergent undocumented flag sets.
