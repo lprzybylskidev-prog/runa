@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import AppIcon from '../components/AppIcon.vue';
 import AppButton from '../components/AppButton.vue';
+import AppFooter from '../components/AppFooter.vue';
 import AppTooltip from '../components/AppTooltip.vue';
 import { useLocale } from '../composables/useLocale';
 import { useTheme } from '../composables/useTheme';
@@ -100,10 +101,6 @@ const languageLabel = computed(
         </div>
       </div>
     </main>
-    <footer
-      class="mx-auto flex w-full max-w-7xl flex-wrap justify-between gap-4 px-6 py-6 text-xs text-muted sm:px-10"
-    >
-      <span>© {{ new Date().getFullYear() }} Runa</span>
-    </footer>
+    <AppFooter :version-label="t('version')" />
   </div>
 </template>

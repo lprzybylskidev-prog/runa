@@ -43,3 +43,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Props: `type` (defaults to safe `button`), `compact` (44px square), `disabled`. Native attributes, ARIA labels and click listeners inherit onto the button.
 - Use this component for actions rather than styling native buttons independently in each view. Extend it only for demonstrated new variants; do not introduce speculative component APIs.
 - Canonical use: language/theme controls in AuthLayout. Icon-only uses require an accessible name; tooltip remains a separate component.
+
+## AppFooter
+
+- Source: `resources/js/components/AppFooter.vue`.
+- Shared responsive footer: current-year copyright for Łukasz Przybylski, Runa GitHub repository link and actual build version imported from root `VERSION`.
+- Props: translated `versionLabel`; do not hardcode a future release version. Canonical use: AuthLayout.

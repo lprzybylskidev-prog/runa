@@ -93,7 +93,7 @@ Do not copy dashboard content, cards, charts or their appearance from this refer
 
 ### Footer
 
-Include a footer at the bottom of the shell with copyright information, a link to the user's GitHub and the application version. Additional footer content may be agreed later. Exact copyright wording and GitHub target remain to be confirmed.
+Include a footer at the bottom of the shell with copyright information, a link to the user's GitHub and the application version. Additional footer content may be agreed later. Current shared footer uses “© {current year} Łukasz Przybylski”, the Runa repository at https://github.com/lprzybylskidev-prog/runa and the version read from root VERSION at build time.
 
 ### Remaining scope
 
@@ -187,7 +187,7 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- Footer copyright wording and GitHub link target.
+- User review of the implemented shared footer.
 - Practical light-theme validation against the approved palette.
 - Complete visual-specification approval and concrete implementation/acceptance tasks.
 
