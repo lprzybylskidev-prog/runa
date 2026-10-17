@@ -35,7 +35,7 @@
   --runa-art-divider: color-mix(in srgb, var(--runa-border) 35%, transparent);
   --runa-art-surface: color-mix(
     in srgb,
-    var(--runa-surface) 92%,
+    var(--runa-surface) 80%,
     var(--runa-border)
   );
   --runa-art-violet-opacity: 14%;
