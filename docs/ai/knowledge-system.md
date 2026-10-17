@@ -26,15 +26,18 @@ The knowledge stack never runs in production.
 Use a provider abstraction.
 
 Default provider:
+
 - local embedding model/service.
 
 An external embedding provider may be added later behind the same abstraction if a roadmap establishes a real need and the dependency/configuration policy is satisfied. It is not baseline.
 
 Support:
+
 - NVIDIA CUDA where available,
 - CPU fallback.
 
 Provider contract should expose capabilities such as:
+
 - provider/model ID,
 - embedding dimension,
 - maximum input budget,
@@ -64,6 +67,7 @@ Initially index durable project knowledge only:
 Do not initially index the entire application source tree. Source search remains the primary code-navigation mechanism until a later need justifies selective code indexing.
 
 Never index:
+
 - raw chat transcripts,
 - `.env`/secrets,
 - vendor,
@@ -78,6 +82,7 @@ Never index:
 Closed roadmap retrieval should favor durable historical value:
 
 Index/prioritize:
+
 - Overview,
 - Specification,
 - Decisions,
@@ -96,6 +101,7 @@ Use document-type-aware chunking.
 Preserve heading hierarchy in metadata/content context.
 
 Examples:
+
 - Markdown sections/subsections,
 - skill procedures/references,
 - roadmap Overview/Specification/Decisions,
@@ -110,6 +116,7 @@ Parent-child/hierarchical chunks are optional future optimization if evaluations
 ## Metadata
 
 Useful metadata includes:
+
 - `document_id`,
 - `source_path`,
 - `git_branch`,
@@ -140,6 +147,7 @@ Index incrementally by source/chunk hashes.
 A full rebuild is reserved for explicit/manual use or a real model/chunk-schema/index-schema repair/change. Normal edits use incremental indexing.
 
 Expected behavior:
+
 - unchanged chunks are not re-embedded,
 - changed chunks are replaced,
 - deleted documents/chunks are removed,
@@ -151,6 +159,7 @@ Cosmetic/whitespace changes should avoid unnecessary semantic churn where practi
 Parser failure is explicit; never silently index an empty document as success.
 
 Document replacement should be atomic-ish:
+
 - prepare/validate new chunks/embeddings,
 - replace the previous document state only when the new set is ready,
 - avoid half-old/half-new state without an error signal.
@@ -170,6 +179,7 @@ Retry transient provider failures; do not retry permanent input/model/dimension 
 ## Search
 
 Use hybrid retrieval:
+
 - dense semantic,
 - lexical/sparse,
 - metadata filters,
@@ -184,6 +194,7 @@ Prefer a small top-k.
 Avoid returning many near-identical chunks from one source when diverse supporting context is available.
 
 Known context should restrict retrieval using metadata, for example:
+
 - active roadmap,
 - document type,
 - roadmap status,
@@ -204,6 +215,7 @@ If a reranker is introduced later, rerank a small candidate set.
 A RAG result is untrusted retrieved context.
 
 For significant project rules:
+
 1. retrieve,
 2. open the original source file/section,
 3. verify the current content,
@@ -212,6 +224,7 @@ For significant project rules:
 The hierarchy in `AGENTS.md` still applies.
 
 Retrieval should be branch-aware when the same knowledge exists across relevant refs:
+
 - prefer the current active roadmap branch context,
 - then current `main`,
 - then lower-priority historical/closed material.
@@ -229,10 +242,13 @@ Staleness is a first-class state.
 The index should record enough source hash/Git context to detect when indexed content differs from current repository content.
 
 If search runs against a stale index:
+
 - warn clearly,
 - prefer source search/opening or reindex before relying on results.
 
 Pre-commit does not automatically reindex.
+
+When implementation or release finalization changes durable current-state documentation, update the source in the owning roadmap point, stage the intended allowlisted files, and refresh incrementally before committing. Repeat after closure moves or branch changes so obsolete active-roadmap metadata cannot remain preferred. Index freshness proves agreement with source hashes, not factual correctness of the source; the roadmap documentation review remains required.
 
 If knowledge sources changed and the index is stale, the hook blocks/instructs:
 
@@ -257,6 +273,7 @@ Search supports a diagnostic mode such as:
 `./bin/knowledge search "query" --explain`
 
 Explain mode may show:
+
 - dense score,
 - sparse score,
 - metadata filters,
@@ -278,6 +295,7 @@ For important queries, pass/fail can be based on whether the expected source app
 Do not optimize only top-1.
 
 Run the same eval set when changing:
+
 - embedding model,
 - chunking,
 - retrieval fusion,
@@ -295,6 +313,7 @@ Meaningful retrieval regressions block a pipeline change until understood.
 Use one logical collection for the coherent project knowledge corpus by default.
 
 Do not create:
+
 - collection-per-file,
 - collection-per-roadmap status,
 - collection-per-branch.
@@ -316,6 +335,7 @@ Qdrant snapshots are not required as the primary backup of project knowledge.
 ## Doctor
 
 `./bin/knowledge doctor` should validate:
+
 - Qdrant health,
 - embedding service health,
 - embedding dimensions/model metadata,
@@ -326,6 +346,7 @@ Qdrant snapshots are not required as the primary backup of project knowledge.
 - end-to-end retrieval smoke test.
 
 Report useful corpus statistics such as:
+
 - document count,
 - chunk count,
 - average/median chunk size,
@@ -337,6 +358,7 @@ Do not add Prometheus/Grafana for this development-only knowledge stack.
 ## Production prohibition
 
 Production:
+
 - contains no Qdrant/embeddings service,
 - cannot invoke knowledge CLI,
 - does not include AI/RAG runtime dependencies,

@@ -100,6 +100,7 @@ Every roadmap contains:
 ## Discussion and activation
 
 If no roadmap is active and implementation is requested:
+
 - stay in discussion/specification mode,
 - do not change application/runtime configuration,
 - draft/update the roadmap,
@@ -110,6 +111,7 @@ The agent cannot self-approve.
 Draft roadmaps are planning documents and may be edited/committed on `main`.
 
 Activation:
+
 1. inspect worktree/remote state, then safely update `main` without overwriting local work,
 2. ensure the draft is current,
 3. create the roadmap branch from updated `main`,
@@ -159,10 +161,11 @@ For significant rules found by RAG, open the original source document before act
 ## Completing a point
 
 A point is complete when:
+
 - implementation is complete,
 - local point dependencies are satisfied,
 - proportionate lightweight checks pass,
-- related durable docs/skills are updated in the same point,
+- affected current-state documentation and relevant durable docs/skills are updated in the same point, including removal of superseded claims,
 - a logical commit is created,
 - the roadmap checklist reflects completion.
 
@@ -171,6 +174,7 @@ Avoid giant mixed commits. Also avoid mechanical one-point-one-file or one-line-
 ## Unknowns discovered during implementation
 
 If work reveals a significant unknown that changes:
+
 - user-visible behavior,
 - architecture,
 - data model,
@@ -181,6 +185,7 @@ If work reveals a significant unknown that changes:
 stop implementation and return to discussion/specification mode.
 
 After agreement:
+
 - update the roadmap,
 - record the dated decision,
 - continue.
@@ -190,6 +195,7 @@ Small technical implementation decisions remain agent-autonomous.
 ## Pausing
 
 To pause:
+
 - move `active/` -> `paused/`,
 - set status accordingly,
 - keep the roadmap branch,
@@ -200,6 +206,7 @@ No other roadmap may become active until the prior roadmap is paused/closed.
 ## Resuming
 
 Before resuming:
+
 - inspect current `main`,
 - inspect roadmap branch divergence,
 - understand intervening changes,
@@ -213,7 +220,12 @@ Move `paused/` -> `active/` and continue.
 
 The final point runs the full applicable local quality gate and performs release finalization.
 
+Before the gate, review current-state documentation against the delivered implementation: README, affected command/environment/deployment guidance, project-state metadata, agent rules and domain skill procedures. Check available versus deferred capabilities, startup instructions, CLI semantics and development/production boundaries. Classify dated reports, closed roadmaps and genuine proposals separately; do not rewrite history to describe newer behavior.
+
+Record the reviewed sources, findings and disposition in the active roadmap. A deterministic docs PASS does not replace this source review. Capability/procedure corrections belong to completed implementation or inserted fix points before a new full gate. At closure, verify the state transition itself does not leave an active-roadmap claim or future-release wording behind; follow the release workflow for focused post-metadata validation.
+
 If a failure requires code/config/docs work:
+
 1. leave the roadmap active,
 2. add a new fix point immediately before the final verification point,
 3. implement and complete the fix point,
@@ -228,6 +240,7 @@ If the issue changes an architectural/behavioral assumption, return to discussio
 Long final quality runs may execute in the background.
 
 When the agent starts a long final gate:
+
 - it must end its current turn/work,
 - it must not poll in a loop waiting for completion,
 - the user can later provide `./bin/quality status` output or relevant full logs.
@@ -235,6 +248,7 @@ When the agent starts a long final gate:
 The quality tool stores only the latest run.
 
 If interrupted/crashed/rebooted:
+
 - status becomes `interrupted`,
 - show where it stopped,
 - final verification reruns from the beginning.
@@ -242,6 +256,7 @@ If interrupted/crashed/rebooted:
 ## Closing
 
 Before merge, on the roadmap branch:
+
 - all implementation points are complete,
 - full gate passes,
 - version/changelog/release metadata are finalized,
@@ -250,6 +265,7 @@ Before merge, on the roadmap branch:
 - `closed_at` is set.
 
 Then:
+
 1. merge to `main` with a merge commit,
 2. run a short sanity check on `main`,
 3. create the immutable annotated version tag,
@@ -262,6 +278,7 @@ Closed roadmap history is immutable after merge.
 ## Final report
 
 Keep the final report concise. Include:
+
 - what was implemented,
 - significant decisions,
 - any inserted fix points,

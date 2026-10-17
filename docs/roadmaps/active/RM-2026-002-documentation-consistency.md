@@ -106,6 +106,8 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 
 ### Decisions
 
+- 2026-10-18 — Point 2 reconciled README, command/environment/production/quality/Boost/knowledge guidance with closed acceptance evidence and implementation. Updated owning workflow rules, concise AGENTS clauses and source/index responsibility; no unrelated domain skill required a documentation rule copy. Dated measurements, version initialization, missing REF-003 and deferred business/authentication scope remain historical or explicitly deferred. Focused format/diff and existing docs checks passed; new contract checks follow in point 3.
+
 - 2026-10-18 — Point 1 confirmed the recorded source findings after origin refresh. The README block uses exact markers `<!-- runa:current-state -->` / `<!-- /runa:current-state -->` and three ordered list fields: `Current version`, `Active roadmap`, `Production ever deployed`; values are inline code, with `none` and lowercase booleans. YAML source state uses the installed Symfony parser, not a second YAML implementation. Invalid production timestamps and roadmap frontmatter fail explicitly.
 - 2026-10-18 — Existing annotated tags must identify HEAD, except on main where a tagged ancestor with identical release/runtime content may be followed only by changes under docs/roadmaps/draft/*.md. Validate the tagged release metadata itself as well as ancestry and the exact changed-path allowlist; reject runtime changes, forged/stale metadata and non-ancestor tags. This narrow exception supports approved draft planning without weakening release identity.
 - 2026-10-18 — The final gate always checks docs through release validation; add offline docs/knowledge regression contracts to the existing final contract step. Post-gate release-only edits may change the checked README version/active-roadmap fields and roadmap review evidence, but capability prose or validator changes require a fix point and a new full gate. Remote access succeeded for fetch; release publication will be verified separately.
@@ -121,7 +123,7 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 - [x] 1. Confirm audit dispositions and finalize the documentation/release contract.
   - Prerequisites: explicit user approval, normal activation and branch creation from refreshed main.
   - Completion: recheck findings against current sources; settle README field syntax, post-gate edits, planning-after-tag validation and review evidence; retain the audit/specification here without creating a duplicate report.
-- [ ] 2. Repair current-state documentation and clarify agent ownership.
+- [x] 2. Repair current-state documentation and clarify agent ownership.
   - Prerequisites: point 1.
   - Completion: reconcile confirmed documentation defects, add the README projection, update the owning workflow/agent rules and only affected skill procedures; preserve history and deferred features. Review prose against source and run proportionate structural/format checks. Commit and update this checklist.
 - [ ] 3. Enforce deterministic documentation consistency in existing quality/release tooling.

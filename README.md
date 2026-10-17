@@ -4,13 +4,19 @@ Runa is a Laravel-based business application designed to evolve under an explici
 
 ## Current state
 
-`RM-2026-001-development-environment` is active. The initial foundation includes a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, a responsive Vue SPA with Polish/English and light/dark/system preferences, Mailpit, a database queue worker and scheduler.
+<!-- runa:current-state -->
 
-Initial version: `0.0.0`.
+- Current version: `0.1.0`
+- Active roadmap: `RM-2026-002`
+- Production ever deployed: `false`
 
-The roadmap checklist records implementation progress. Remaining quality, knowledge, development-service and production-operation requirements are not yet delivered; this is not a completed release. Run `./bin/dev --help` for currently implemented lifecycle commands.
+<!-- /runa:current-state -->
 
-The first feature roadmap is expected to produce `0.1.0` when it is fully verified, closed, merged, tagged, and released.
+The released foundation provides a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, and a responsive Vue SPA with Polish/English and light/dark/system preferences. Mailpit, a database queue worker, scheduler, local quality gates, Git hooks, Laravel Boost and development-only knowledge retrieval are implemented.
+
+Production tooling provides isolated runtime images, deployment, guarded rollback, coordinated backups/restores, health and isolation checks, with local simulation acceptance. No business modules are included. Simulation acceptance does not constitute a real production deployment.
+
+Use `./bin/dev --help` for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION, roadmap directories and docs/project/state.yml; release publication is verified separately.
 
 ## Core stack direction
 

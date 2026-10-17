@@ -91,7 +91,7 @@ Trivy 0.76.0 scanned the following final images on 2026-10-17 with `--scanners v
 
 Reports are local artifacts under `.runtime/security/knowledge-*.json`; future image rebuilds require fresh scans. This is vulnerability-scan evidence for the selected severities and detected components, not a claim that binaries or images have no possible defects.
 
-Eleven offline contracts and the real-service disposable-collection tests pass on the final images. Live checks cover CPU/CUDA dimensions and cosine similarity (>0.99999), token-budget rejection, CPU fallback, initial/no-op indexing, add/edit/delete, orphan cleanup, interrupted-state recovery and branch refresh. The disposable collection is removed afterward. The existing corpus survived service recreation; repeated CPU/CUDA indexing embedded zero unchanged chunks. Full setup and its fingerprint fast path pass without dependency changes or destructive migrations. Point 10 adds retrieval acceptance below; complete production isolation remains points 13–15.
+Eleven offline contracts and the real-service disposable-collection tests pass on the final images. Live checks cover CPU/CUDA dimensions and cosine similarity (>0.99999), token-budget rejection, CPU fallback, initial/no-op indexing, add/edit/delete, orphan cleanup, interrupted-state recovery and branch refresh. The disposable collection is removed afterward. The existing corpus survived service recreation; repeated CPU/CUDA indexing embedded zero unchanged chunks. Full setup and its fingerprint fast path pass without dependency changes or destructive migrations. Retrieval acceptance is recorded below; complete production isolation baseline evidence is recorded in closed RM-2026-001. These dated service measurements are historical evidence, not current image scan results.
 
 CUDA startup exceeded the initial 2 GiB container RAM limit (Docker OOM/exit 137). The accepted limit is 4 GiB with a 2048-token server batch; a post-startup host snapshot showed approximately 482 MiB RAM (CPU approximately 270 MiB). These are steady-state snapshots, not startup peak measurements. Pinned model cache reuse was verified across service recreation. New-image startup completed in approximately 8 seconds for CPU, 12 seconds for Qdrant and 159 seconds for CUDA on the current host; this is acceptance evidence, not a performance guarantee.
 
@@ -100,7 +100,7 @@ CUDA startup exceeded the initial 2 GiB container RAM limit (Docker OOM/exit 137
 ```sh
 ./bin/knowledge search "PostgreSQL public_id UUIDv7"
 ./bin/knowledge search "production knowledge prohibition" --source-path docs/ai/knowledge-system.md
-./bin/knowledge search "hybrid retrieval" --roadmap-id RM-2026-001 --status active --explain
+./bin/knowledge search "hybrid retrieval" --roadmap-id RM-2026-001 --status closed --explain
 ./bin/knowledge search "embedding fallback" --top-k 10 --device cpu
 ./bin/knowledge doctor
 ./bin/knowledge eval

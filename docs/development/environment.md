@@ -340,7 +340,7 @@ The devcontainer's post-create command is `./bin/dev setup`, executed inside the
 
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
-The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses a separate production configuration with restrictive browser headers and readiness checks. `compose.production.yaml` defines all five production services; point 14 completes deployment, isolation verification and production operations. It must not be treated as an installer/deployment procedure yet.
+The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses a separate production configuration with restrictive browser headers and readiness checks. `compose.production.yaml` defines all five production services; deployment, isolation verification and production operations are implemented. Follow docs/production/deployment.md for installer and deployment procedures.
 
 ## PostgreSQL initialization
 
@@ -356,7 +356,7 @@ Post-create `./bin/dev setup` installs `pnpm-lock.yaml` with `--frozen-lockfile`
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 
-The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Production container behavior and host build checks are documented in `docs/production/architecture.md` and `docs/tooling/commands.md`; full operational self-test remains point 14.
+The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Production container behavior and host build checks are documented in `docs/production/architecture.md` and `docs/tooling/commands.md`; operational self-tests and their baseline host simulation evidence are recorded in closed RM-2026-001.
 
 Point 5 browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. Browser binaries/system dependencies were provisioned for this acceptance run; reproducible test-image/browser provisioning is completed in point 7.
 
