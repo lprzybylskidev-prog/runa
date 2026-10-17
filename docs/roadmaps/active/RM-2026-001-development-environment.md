@@ -210,6 +210,32 @@ Use a single thin HTTP client/wrapper rather than scattered fetch calls.
 
 Disable native form validation behavior where controlled custom UX requires it.
 
+### Polish Laravel localization assessment — decision pending
+
+Research performed on 2026-10-17 before point 5. No localization dependency has been added to the application. The user must choose the solution before implementation continues at that point.
+
+| Candidate | Activity and compatibility | Dependency footprint over the current 73-package Laravel lock |
+|---|---|---|
+| `laravel-lang/lang` 15.37.4 | Released 2026-10-09; PHP ^8.2; its required publisher 16.8.0 explicitly supports Laravel 13. Composer resolved successfully with PHP 8.4/Laravel 13.37. | 86 packages total, 13 additional packages. Includes publisher/locales/config support. |
+| `laravel-lang/common` 6.8.0 | Released 2026-03-17; resolves with the selected stack and pulls the same lang/publisher family. | 98 packages total, 25 additional packages. Adds actions, attributes, HTTP statuses, model/route/starter-kit/MoonShine translation integrations beyond this foundation's needs. |
+| Pinned translation-data snapshot from `Laravel-Lang/lang` | Uses the same reviewed 15.37.4 source revision with Laravel's native translation loader. Copy only required PL framework translation data, preserve attribution and verify keys/placeholders against installed Laravel's English catalog. This option has not been implemented or approved. | No additional Composer/pnpm packages. The five upstream Polish source files total 83,853 bytes before selecting/converting the required catalog. No publisher runtime. Updates become explicit repository maintenance. |
+
+Both packages and the translation source are MIT-licensed. The upstream license is copyright Laravel Lang Team 2013–2026 and requires preservation of its notice. Source revision for lang 15.37.4: `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`.
+
+The direct-package Packagist advisory records for lang/common/publisher were empty on the research date. A separate temporary lang lockfile was resolved and audited without installing its packages or changing the application lockfile: no vulnerability advisories, but Composer audit returned failure for abandoned `dragon-code/pretty-array` and `dragon-code/support`. The common dry-run graph reports the same abandoned packages. Absence of published advisories is not a guarantee of future safety. No scanner finding was suppressed.
+
+The focused lang package provides framework translation catalogs plus publication/update support. The common meta-package overlaps future modules and third-party integrations that Runa has not selected; it provides no necessary frontend Vue localization capability. A source-data snapshot would cover framework messages using the built-in loader, independently of frontend UI translations and without changing English-only technical/backend defaults.
+
+Recommendation pending user approval: use a pinned translation-data snapshot with MIT attribution, record source/version in maintenance metadata, test supported keys/placeholders, and update it deliberately alongside framework reviews. Do not install either package or adopt the snapshot until the user decides.
+
+Primary research sources:
+- https://repo.packagist.org/p2/laravel-lang/lang.json
+- https://repo.packagist.org/p2/laravel-lang/common.json
+- https://repo.packagist.org/p2/laravel-lang/publisher.json
+- https://packagist.org/api/security-advisories/?packages[]=laravel-lang/lang&packages[]=laravel-lang/publisher&packages[]=laravel-lang/common
+- https://github.com/Laravel-Lang/lang/tree/a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7/locales/pl
+- https://github.com/Laravel-Lang/lang/blob/a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7/LICENSE
+
 ### Formatting/lint/static analysis
 
 Implement:
