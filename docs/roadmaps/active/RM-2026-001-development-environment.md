@@ -835,6 +835,15 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Validate production deploy/rollback/backup/restore behavior in a safe local production simulation where feasible.
   - Prove production has no AI/RAG runtime.
   - Fix acceptance findings through inserted roadmap fix points rather than hiding them inside this checklist item.
+  - Local acceptance (2026-10-17): development doctor, actual queued email to Mailpit, heartbeat/SMTP rejection, guarded test-database reset, backend 18 tests/63 assertions, frontend 8 tests, build, strict TypeScript, ESLint, PHPStan and formatting passed. Knowledge doctor/eight evals/explained search and live CPU/CUDA ingestion/fallback passed (cosine >0.999999); disposable collection removed. Actual agent Boost application-info and Laravel 13.x documentation search succeeded; CLI 0.163.0 and generated-skill cleanup verified.
+  - Setup acceptance: normal locked setup succeeded and repeated `setup --if-needed` skipped dependency installation/frontend build, preserving the existing database. Composer fixture PSR-4 warnings are addressed separately in point 15a. No lifecycle operation or app/devcontainer restart was performed.
+  - Host cleanup evidence accepted: 17 test containers, three test networks and 14 Runa production/Nginx image tags removed; six explicitly approved simulation volumes removed. Active dev/ICU database, old rollback volume, Qdrant, other projects and backup/report files preserved. The user separately approved and cleared the shared host builder cache.
+  - Existing point-14 production installer/deploy/rollback/backup/restore/isolation/security evidence remains valid for its exact reviewed artifacts; those disposable stacks were subsequently removed deliberately. No real deployment occurred. Current browser checks need the removed testing-only app/Nginx pair; clean-checkout/reopen/rebuild and manual Codex/Database Client editor acceptance remain open. Do not recreate production simulations merely to replace already reviewed evidence.
+
+- [x] 15a. **Fix acceptance finding: PSR-4 compliant seeding test fixtures**
+  - Found during point 15 setup acceptance: Composer skips six test fixture classes because they share `tests/Fixtures/Seeders.php` despite the Tests PSR-4 namespace mapping.
+  - Split fixtures into matching class files, remove the manual include, preserve seeding-test semantics, and verify strict Composer autoload generation and backend tests.
+  - Verified: `composer dump-autoload --optimize --strict-psr` succeeds without fixture warnings; backend 18 tests/63 assertions pass using normal Composer autoloading. No dependency or runtime change.
 
 - [ ] 16. **Discuss and agree the frontend visual redesign, then implement the approved direction**
   - Prerequisite: Point 15 and its acceptance fixes.

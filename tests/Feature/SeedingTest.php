@@ -10,8 +10,6 @@ use Tests\Fixtures\FixtureSeed;
 use Tests\Fixtures\ReferenceSeed;
 use Tests\Fixtures\ScenarioSeed;
 
-require_once __DIR__.'/../Fixtures/Seeders.php';
-
 it('orders production before development and excludes manual scenarios from automatic Seeding', function () {
     $graph = new SeedGraph([ScenarioSeed::class, DemoSeed::class, ReferenceSeed::class]);
     expect($graph->plan('default', 'local'))->toBe([ReferenceSeed::class, DemoSeed::class]);
