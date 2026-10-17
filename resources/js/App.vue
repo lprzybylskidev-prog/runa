@@ -40,7 +40,7 @@ const languageLabel = computed(
         runa<span class="brand-dot" aria-hidden="true">.</span>
       </a>
       <div :aria-label="t('preferences')" class="flex gap-2" role="group">
-        <AppTooltip :text="languageLabel">
+        <AppTooltip :text="t('changeLanguage')">
           <template #default="{ descriptionId }">
             <button
               type="button"
@@ -53,7 +53,7 @@ const languageLabel = computed(
             </button>
           </template>
         </AppTooltip>
-        <AppTooltip :text="themeLabel">
+        <AppTooltip :text="t('changeTheme')">
           <template #default="{ descriptionId }">
             <button
               type="button"

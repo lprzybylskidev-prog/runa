@@ -32,11 +32,11 @@ test('critical: API readiness and compact language/theme preferences', async ({
   const restored = page.getByRole('button', { name: /^Theme:/ });
   await restored.focus();
   await expect(
-    page.getByRole('tooltip').filter({ hasText: 'Theme:' }),
+    page.getByRole('tooltip').filter({ hasText: 'Change theme' }),
   ).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(
-    page.getByRole('tooltip').filter({ hasText: 'Theme:' }),
+    page.getByRole('tooltip').filter({ hasText: 'Change theme' }),
   ).toBeHidden();
   await page.keyboard.press('Enter');
   await expect(restored).toHaveAccessibleName(
