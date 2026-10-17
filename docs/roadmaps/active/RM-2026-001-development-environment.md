@@ -551,6 +551,8 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
 
 ### Decisions
 
+- 2026-10-17 — Toolchain pins and compatibility assessment are recorded in `docs/development/toolchain.md`; TypeScript 6.0.3 is selected to satisfy the supported typescript-eslint range.
+
 - 2026-10-17 — Runa uses local quality/hook enforcement; no CI/GitHub Actions baseline.
 - 2026-10-17 — First environment build is itself the first roadmap, rather than an out-of-band bootstrap implementation.
 - 2026-10-17 — The empty repository may receive one planning-only baseline commit before RM-2026-001 branch creation.
@@ -565,7 +567,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
 
 ## Implementation plan
 
-- [ ] 1. **Activate and validate the roadmap baseline**
+- [x] 1. **Activate and validate the roadmap baseline**
   - Prerequisites: Explicit user activation readiness, audited planning baseline and roadmap branch.
   - Confirm branch/remote/Git identity and that the audited package is clean.
   - Confirm this roadmap is the only active roadmap after activation.

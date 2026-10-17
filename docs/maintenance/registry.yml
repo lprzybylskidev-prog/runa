@@ -82,27 +82,243 @@ entries:
   - id: laravel-framework
     type: framework
     name: Laravel
-    version: resolve-and-pin-in-RM-2026-001
-    last_reviewed: null
+    version: 13.37.0
+    last_reviewed: 2026-10-17
     review_every_days: 90
 
   - id: php-runtime
     type: runtime
     name: PHP
-    version: prefer-8.4-if-compatible-resolve-and-pin-in-RM-2026-001
-    last_reviewed: null
+    version: 8.4.26
+    last_reviewed: 2026-10-17
     review_every_days: 90
 
   - id: node-runtime
     type: runtime
     name: Node.js LTS
-    version: resolve-current-supported-lts-and-pin-in-RM-2026-001
-    last_reviewed: null
+    version: 24.22.0
+    last_reviewed: 2026-10-17
     review_every_days: 90
 
   - id: docker-base-images
     type: security_runtime
     name: Production and development base images
-    version: resolve-and-pin-in-RM-2026-001
-    last_reviewed: null
+    version: php-8.4.26-fpm-bookworm-and-node-24.22.0-bookworm-slim
+    last_reviewed: 2026-10-17
+    review_every_days: 30
+
+  - id: composer
+    type: framework_tooling
+    name: composer
+    version: 2.10.3
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: corepack
+    type: framework_tooling
+    name: corepack
+    version: 0.36.0
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: pnpm
+    type: framework_tooling
+    name: pnpm
+    version: 12.14.0
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: postgresql
+    type: framework_tooling
+    name: postgresql
+    version: 18.6
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: nginx
+    type: framework_tooling
+    name: nginx
+    version: 1.31.7
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: qdrant
+    type: framework_tooling
+    name: qdrant
+    version: 1.19.2
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: mailpit
+    type: framework_tooling
+    name: mailpit
+    version: 1.31.6
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vue
+    type: framework_tooling
+    name: vue
+    version: 3.5.44
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: typescript
+    type: framework_tooling
+    name: typescript
+    version: 6.0.3
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: tailwindcss
+    type: framework_tooling
+    name: tailwindcss
+    version: 4.3.3
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vite
+    type: framework_tooling
+    name: vite
+    version: 8.3.4
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: eslint
+    type: framework_tooling
+    name: eslint
+    version: 10.13.0
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: typescript-eslint
+    type: framework_tooling
+    name: typescript-eslint
+    version: 8.71.2
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: eslint-plugin-vue
+    type: framework_tooling
+    name: eslint-plugin-vue
+    version: 10.11.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: prettier
+    type: framework_tooling
+    name: prettier
+    version: 3.9.10
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vue-tsc
+    type: framework_tooling
+    name: vue-tsc
+    version: 3.3.13
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: pint
+    type: framework_tooling
+    name: pint
+    version: 1.32.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: larastan
+    type: framework_tooling
+    name: larastan
+    version: 3.13.0
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: phpstan
+    type: framework_tooling
+    name: phpstan
+    version: 2.3.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: pest
+    type: framework_tooling
+    name: pest
+    version: 5.3.2
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: pest-laravel-plugin
+    type: framework_tooling
+    name: pest-laravel-plugin
+    version: 5.0.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vitest
+    type: framework_tooling
+    name: vitest
+    version: 5.0.5
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vue-test-utils
+    type: framework_tooling
+    name: vue-test-utils
+    version: 2.5.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: playwright
+    type: framework_tooling
+    name: playwright
+    version: 1.64.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: laravel-boost-package
+    type: framework_tooling
+    name: laravel-boost-package
+    version: 2.10.3
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: gitleaks
+    type: framework_tooling
+    name: gitleaks
+    version: 8.30.1
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 30
+
+  - id: trivy
+    type: framework_tooling
+    name: trivy
+    version: 0.76.0
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
     review_every_days: 30
