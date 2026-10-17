@@ -1,23 +1,15 @@
 {
   "name": "Runa",
-  "dockerComposeFile": [
-    "../compose.yaml",
-    "compose.resources.yaml"
-  ],
+  "dockerComposeFile": ["../compose.yaml", "compose.resources.yaml"],
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "runa",
   "updateRemoteUserUID": false,
   "overrideCommand": false,
   "shutdownAction": "stopCompose",
-  "initializeCommand": [
-    "./bin/dev",
-    "prepare"
-  ],
+  "initializeCommand": ["./bin/dev", "prepare"],
   "postCreateCommand": "./bin/dev setup --if-needed",
-  "forwardPorts": [
-    5173
-  ],
+  "forwardPorts": [5173],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -31,7 +23,9 @@
         "ms-azuretools.vscode-docker",
         "eamodio.gitlens",
         "cweijan.vscode-database-client2",
-        "xdebug.php-debug"
+        "xdebug.php-debug",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -51,11 +45,7 @@
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
         "php.validate.executablePath": "/usr/local/bin/php",
-        "eslint.validate": [
-          "javascript",
-          "typescript",
-          "vue"
-        ]
+        "eslint.validate": ["javascript", "typescript", "vue"]
       }
     }
   }

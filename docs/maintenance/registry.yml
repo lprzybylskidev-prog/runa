@@ -458,3 +458,23 @@ entries:
     url: https://hub.docker.com/_/ubuntu
     last_reviewed: 2026-10-17
     review_every_days: 30
+
+  - id: vscode-python
+    type: editor_extension
+    name: Microsoft Python
+    version: marketplace-managed
+    extension_id: ms-python.python
+    url: https://marketplace.visualstudio.com/items?itemName=ms-python.python
+    source: .devcontainer/devcontainer.json
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vscode-pylance
+    type: editor_extension
+    name: Microsoft Pylance
+    version: marketplace-managed
+    extension_id: ms-python.vscode-pylance
+    url: https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance
+    source: .devcontainer/devcontainer.json
+    last_reviewed: 2026-10-17
+    review_every_days: 90

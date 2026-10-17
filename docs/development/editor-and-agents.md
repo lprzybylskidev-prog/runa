@@ -2,7 +2,7 @@
 
 ## VS Code
 
-Open the repository with **Dev Containers: Reopen in Container**. The devcontainer installs the extensions declared in `.devcontainer/devcontainer.json`, including PHP Debug, and enables format-on-save. Vue/TypeScript/JavaScript/JSON use the locked project Prettier; PHP uses Intelephense for interactive formatting. `./bin/format` remains the canonical Pint/Prettier repository formatter. Run it before committing.
+Open the repository with **Dev Containers: Reopen in Container**. The devcontainer installs the extensions declared in `.devcontainer/devcontainer.json`, including PHP Debug, Microsoft Python (`ms-python.python`) and Pylance (`ms-python.vscode-pylance`), and enables format-on-save. Vue/TypeScript/JavaScript/JSON use the locked project Prettier; PHP uses Intelephense for interactive formatting. `./bin/format` remains the canonical Pint/Prettier repository formatter. Run it before committing.
 
 Install the OpenAI/Codex extension manually inside the devcontainer. It is deliberately absent from automatic extension installation. Sign in interactively; do not put authentication in repository configuration or images.
 
