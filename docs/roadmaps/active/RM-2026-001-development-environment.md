@@ -751,7 +751,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Added safe application passthrough/lifecycle/log wrappers, global/focused doctor, package-to-maintenance-version mappings and maintenance/deprecation/comment consistency checks. Production lifecycle/release diagnostics explicitly fail as pending until their later implementation; host-only Docker commands remain outside the devcontainer.
   - Verified: 16 backend tests/55 assertions in four workers, maximum-level static analysis, installed-hook contracts, three wrapper-context/argument tests, three maintenance rejection tests, configuration/Boost/help/docs checks and live development diagnostics. Host forwarding is simulated without Docker access; full host lifecycle acceptance remains point 15. No Composer/pnpm dependencies, business tables or CI were added.
 
-- [ ] 12. **Implement the local quality runner**
+- [x] 12. **Implement the local quality runner**
   - Prerequisites: Point 11; production-dependent blocks become runnable after points 13–14.
   - Implement `docs/quality/gates.yml` execution.
   - `show`, `roadmap`, `final`, `status`, including explicit `--background` support.
@@ -763,6 +763,10 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Interrupted-state handling.
   - Debug residue/scratch cleanup checks.
   - Verify no CI/GitHub Actions were introduced.
+  - Completed (2026-10-17): dependency-selected/deduplicated gate execution with cycle/missing/conflict checks, four independent concurrent steps, exclusive shared-state groups, final-phase dependencies, failed-dependent blocking, separate logs and atomic latest-run evidence with branch/commit/roadmap metadata.
+  - Added foreground/background execution, inherited OS lock for one-active-run protection, terminal detachment, signal-driven process-group termination, crash detection and refusal to overwrite evidence while recorded children survive. Status tails 30 lines and reports full finished-log paths. No automatic deadlines or CI were added.
+  - Added application/test debug-residue and visible-scratch checks. Frontend unit tests now share the testing-state exclusive group because the existing test wrapper uses the same lock as backend/browser suites.
+  - Verified five isolated contracts covering graph validation/deduplication, dependency failure, shared-state serialization with independent overlap, stale-run/tail reporting, and actual background lock/signal/child cleanup; checked live roadmap selection, command help, repository/docs diagnostics and debug residue. Production/security/release blocks remain explicit failures until their later tooling is delivered; no full final gate PASS is claimed.
 
 - [ ] 13. **Build production images and production Compose**
   - Prerequisites: Points 2–7 and 11–12; earlier paired production definitions.

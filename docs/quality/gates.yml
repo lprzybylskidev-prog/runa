@@ -75,6 +75,12 @@ base:
     command: ./bin/quality-check debug-residue
     severity: hard_fail
 
+  - id: quality-runner-contract
+    depends_on: [repository-state]
+    description: Validate graph selection, failure propagation, parallel exclusion, background locking and interruption.
+    command: python3 tools/testing/quality.py
+    severity: hard_fail
+
   - id: maintenance-consistency
     depends_on: [repository-state]
     description: Validate maintenance backlog, deprecations, external registry, TODO links, and command documentation consistency.
@@ -102,6 +108,7 @@ impact_areas:
 
     - id: frontend-tests
       depends_on: [configuration]
+      exclusive_group: testing-state
       command: ./bin/test frontend
       severity: hard_fail
 

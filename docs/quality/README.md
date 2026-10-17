@@ -3,6 +3,7 @@
 Runa intentionally has no CI/GitHub Actions pipeline.
 
 Quality is enforced locally through:
+
 - versioned Git hooks,
 - `./bin/quality`,
 - framework/tool commands,
@@ -31,10 +32,12 @@ Run final closure verification. Semantically equivalent to the strictest applica
 Inspect the latest run.
 
 While running:
+
 - show the last 30 lines from every active parallel log,
 - finish with `Process is still running.`
 
 When finished or interrupted:
+
 - show the last 30 lines from each relevant log,
 - show full log paths,
 - finish with the overall status.
@@ -72,6 +75,7 @@ When an agent starts a long final quality run, it must end its turn rather than 
 The user may later provide `./bin/quality status` or relevant full logs.
 
 If the run is interrupted by crash/reboot/manual termination:
+
 - record `interrupted`,
 - show the last known step,
 - final verification must rerun from the beginning.
@@ -83,6 +87,7 @@ If the run is interrupted by crash/reboot/manual termination:
 `warning` may proceed only with explicit justification in the final report.
 
 The following categories cannot be downgraded merely to finish:
+
 - security,
 - migration/data-loss safety,
 - production health/isolation.
@@ -92,6 +97,7 @@ The following categories cannot be downgraded merely to finish:
 Temporary debug output is allowed during an active roadmap when useful.
 
 Final verification rejects accidental residue including common forms such as:
+
 - `var_dump`,
 - `dd`,
 - `dump`,
@@ -109,6 +115,7 @@ unless the occurrence is intentionally permanent and justified.
 Allowed during implementation.
 
 Before roadmap closure:
+
 - remove them, or
 - link them to a real `MT-*` maintenance item or explicitly planned future roadmap.
 
@@ -123,6 +130,7 @@ Temporary scripts belong under a visible location such as:
 Scratch source files must not be hidden by `.gitignore`; they must remain visible to repository review until removed or promoted.
 
 Before roadmap closure:
+
 - remove them, or
 - promote them to a durable tool/test.
 
@@ -137,3 +145,13 @@ While running, status tails each process log and finishes with `Process is still
 The runner uses the dependency graph in `gates.yml`; independent nodes may run concurrently and shared-state checks are serialized. A deterministic command may prepare evidence, but `review-changed-surface` also requires an actual agent review with findings/disposition. It cannot be a stub that claims human/agent reasoning occurred.
 
 Before final verification, commit implementation/cleanup so the gate checks a coherent candidate. Its own checklist item is necessarily pending during execution. Version/changelog/closure metadata are finalized afterward using focused consistency checks, as defined in `docs/workflows/releases.md`. If substantive code/config/behavior changes occur after the gate, invalidate the result and run the full final gate again.
+
+## Runner implementation
+
+The runner executes at most four ready nodes concurrently, preserving definition order for scheduling. `exclusive_group` serializes all members; frontend unit tests also share the test wrapper's lock and therefore belong to `testing-state`. Dependencies are selected as a union, deduplicated by ID and validated for missing nodes, conflicts and cycles before execution. Optional dependencies apply only when both steps are selected. Final nodes wait for every selected base/impact node.
+
+Commands execute as argument arrays without a shell. Missing commands fail with exit code 127; failed dependencies block their descendants while unrelated checks continue. Nonzero warning steps remain visible in evidence and block their dependents; warnings require release-report justification. Unimplemented production/security/release commands are failures until the remaining environment roadmap delivers them.
+
+A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. A final run always starts from the beginning.
+
+`./bin/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/testing/quality.py`.
