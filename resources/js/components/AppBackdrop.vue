@@ -40,7 +40,7 @@ import AppConstellation from './AppConstellation.vue';
 .backdrop-geometry {
   position: absolute;
   inset: 0;
-  opacity: 0.045;
+  opacity: var(--runa-backdrop-grid-opacity);
   background-image:
     linear-gradient(var(--runa-text-secondary) 1px, transparent 1px),
     linear-gradient(90deg, var(--runa-text-secondary) 1px, transparent 1px);

@@ -55,7 +55,7 @@ const pattern = computed(() => patterns[props.variant]);
       stroke="currentColor"
       stroke-width=".6"
       vector-effect="non-scaling-stroke"
-      stroke-opacity=".2"
+      class="constellation-links"
     />
     <g
       v-for="([x, y], index) in pattern.points"
@@ -75,5 +75,8 @@ const pattern = computed(() => patterns[props.variant]);
   width: 180px;
   color: var(--runa-primary-text);
   opacity: 0.65;
+}
+.constellation-links {
+  stroke-opacity: var(--runa-constellation-line-opacity);
 }
 </style>

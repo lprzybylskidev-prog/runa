@@ -30,6 +30,12 @@
 
 :root {
   color-scheme: light;
+  --runa-backdrop-grid-opacity: 0.09;
+  --runa-constellation-line-opacity: 0.48;
+  --runa-art-divider: color-mix(in srgb, var(--runa-border) 35%, transparent);
+  --runa-art-surface: var(--runa-surface);
+  --runa-art-violet-opacity: 14%;
+  --runa-art-cyan-opacity: 12%;
   --runa-primary-solid: #8650ba;
   --runa-primary-hover: #7540a8;
   --runa-primary-foreground: #ffffff;
@@ -96,6 +102,12 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --runa-backdrop-grid-opacity: 0.045;
+  --runa-constellation-line-opacity: 0.2;
+  --runa-art-divider: var(--runa-border);
+  --runa-art-surface: var(--runa-surface-raised);
+  --runa-art-violet-opacity: 18%;
+  --runa-art-cyan-opacity: 16%;
   --runa-primary-solid: #b784df;
   --runa-primary-hover: #c394e7;
   --runa-primary-foreground: #191525;
@@ -247,20 +259,28 @@ input:-webkit-autofill {
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-top: 1px solid var(--runa-border);
+  border-top: 1px solid var(--runa-art-divider);
   border-radius: 0 0 3px 3px;
   background:
     radial-gradient(
       ellipse at 35% 40%,
-      color-mix(in srgb, var(--runa-gradient-primary-start) 18%, transparent),
+      color-mix(
+        in srgb,
+        var(--runa-gradient-primary-start) var(--runa-art-violet-opacity),
+        transparent
+      ),
       transparent 70%
     ),
     radial-gradient(
       ellipse at 80% 75%,
-      color-mix(in srgb, var(--runa-gradient-cool-start) 16%, transparent),
+      color-mix(
+        in srgb,
+        var(--runa-gradient-cool-start) var(--runa-art-cyan-opacity),
+        transparent
+      ),
       transparent 70%
     ),
-    var(--runa-surface-raised);
+    var(--runa-art-surface);
 }
 .art-grid {
   position: absolute;
@@ -383,7 +403,7 @@ input:-webkit-autofill {
   .runa-art {
     height: 100%;
     border-top: 0;
-    border-left: 1px solid var(--runa-border);
+    border-left: 1px solid var(--runa-art-divider);
     border-radius: 0 3px 3px 0;
   }
 }
