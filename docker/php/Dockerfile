@@ -88,6 +88,7 @@ COPY --from=runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php
 ENV APP_ENV=production APP_DEBUG=false KNOWLEDGE_ENABLED=false
 COPY --chmod=755 docker/php/production-entrypoint /usr/local/bin/runa-production-entrypoint
 ENTRYPOINT ["runa-production-entrypoint"]
+CMD ["php-fpm", "-F"]
 # Laravel command discovery reads the application namespace from this metadata.
 COPY --chown=runa:runa composer.json /workspace/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/

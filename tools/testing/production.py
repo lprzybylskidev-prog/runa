@@ -35,6 +35,13 @@ class ProductionContracts(unittest.TestCase):
         self.assertTrue(public['read_only'])
         self.assertEqual(public['volume']['subpath'], 'app/public')
         self.assertEqual(set(data['volumes']), {'application-storage', 'postgres-data'})
+        for service in services.values():
+            for mount in service.get('tmpfs', []):
+                self.assertTrue(mount.startswith('/'), 'tmpfs options must stay inside one quoted mount string')
+        self.assertEqual(len(services['nginx']['tmpfs']), 1)
+        production_stage = (ROOT / 'docker/php/Dockerfile').read_text().split('FROM runtime AS production\n')[1].split('FROM nginx:')[0]
+        self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
+        self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
 
     def test_context_and_argument_validation(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(production, 'ROOT', Path(folder)), patch.object(production, 'inside', return_value=False), patch.object(production, 'run') as run, patch.dict(production.os.environ, {'RUNA_IMAGE_TAG': 'latest', 'RUNA_HTTP_PORT': '80', 'COMPOSE_PROJECT_NAME': 'runa-dev'}), contextlib.redirect_stdout(io.StringIO()):
