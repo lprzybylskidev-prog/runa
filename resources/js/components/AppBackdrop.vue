@@ -1,5 +1,8 @@
 <template>
   <div class="app-backdrop" aria-hidden="true">
+    <span class="backdrop-ring ring-distant-one" />
+    <span class="backdrop-ring ring-distant-two" />
+    <span class="backdrop-ring ring-distant-three" />
     <span class="backdrop-geometry" />
   </div>
 </template>
@@ -45,12 +48,12 @@
   pointer-events: none;
   border-radius: 50%;
   aspect-ratio: 1;
-  /* Feather both edges of the colored ribbon; keep the center transparent. */
+  /* Main rings keep clear edges; only distant rings are softened. */
   mask-image: radial-gradient(
     closest-side,
-    transparent 71%,
+    transparent 73.8%,
     black 74%,
-    black 96%,
+    black 99.8%,
     transparent 100%
   );
 }
@@ -134,5 +137,47 @@
       transparent
     )
   );
+}
+
+.backdrop-ring {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 40deg,
+    var(--runa-circle-violet),
+    var(--runa-circle-cyan),
+    var(--runa-circle-rose),
+    var(--runa-circle-violet)
+  );
+  mask-image: radial-gradient(
+    closest-side,
+    transparent 73%,
+    black 78%,
+    black 93%,
+    transparent 100%
+  );
+  filter: blur(7px);
+  opacity: 0.1;
+}
+.ring-distant-one {
+  width: min(42vw, 570px);
+  right: 6%;
+  top: -18%;
+}
+.ring-distant-two {
+  width: min(48vw, 650px);
+  left: -8%;
+  bottom: -23%;
+  opacity: 0.08;
+  filter: blur(11px);
+}
+.ring-distant-three {
+  width: min(35vw, 480px);
+  left: 38%;
+  top: 8%;
+  opacity: 0.055;
+  filter: blur(14px);
 }
 </style>
