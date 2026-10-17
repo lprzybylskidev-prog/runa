@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import subprocess
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -16,6 +18,29 @@ import security
 
 
 class ReviewContracts(unittest.TestCase):
+    def test_failed_repository_and_image_scans_collect_all_images_and_keep_failure(self):
+        import operations
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            binary = root / '.runtime/tools/trivy'
+            binary.parent.mkdir(parents=True)
+            binary.touch()
+            images = ['postgres:18.6-bookworm', 'runa-production:' + 'a' * 40, 'runa-nginx:' + 'a' * 40]
+            def execute(args, **kwargs):
+                if '--version' in args:
+                    return SimpleNamespace(stdout='Version: 0.76.0')
+                if args[0] == str(binary):
+                    raise subprocess.CalledProcessError(1, args)
+                return SimpleNamespace(stdout='')
+            with patch.object(security, 'ROOT', root), patch.object(security, 'inside', return_value=False), patch.object(security, 'run', side_effect=execute) as run, patch.object(operations, 'active_release', return_value=None), patch.object(operations, 'dc', return_value=SimpleNamespace(stdout='\n'.join(images))), patch.object(security, 'dependencies') as audits, contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(ValueError, 'Security checks failed'):
+                    security.trivy()
+                scans = [call.args[0] for call in run.call_args_list if call.args[0][0] == str(binary) and '--version' not in call.args[0]]
+                self.assertEqual(len(scans), 4)
+                self.assertIn('--include-dev-deps', scans[0])
+                audits.assert_called_once()
+                self.assertFalse((root / '.runtime/trivy-image.tar').exists())
+
     def test_missing_stale_blocking_and_changed_report_evidence_rejected(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(security, 'ROOT', Path(folder)), patch.object(security, 'surface', return_value={'app/example.php': 'current'}):
             root = Path(folder)

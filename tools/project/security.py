@@ -35,6 +35,14 @@ def trivy():
     reports = ROOT / '.runtime/security'
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     reports.chmod(0o700)
+    failures = []
+    def scan_command(arguments, label):
+        print('Scanning: ' + label, flush=True)
+        try:
+            run(arguments)
+        except subprocess.CalledProcessError as error:
+            failures.append(label + ' (exit ' + str(error.returncode) + ')')
+            print('FAIL: ' + failures[-1] + '; continuing to collect remaining reports.', flush=True)
     def report(name):
         path = reports / name
         path.touch(mode=0o600, exist_ok=True)
@@ -52,10 +60,10 @@ def trivy():
     if 'Version: 0.76.0' not in output:
         raise ValueError('Trivy version must be exactly 0.76.0.')
     print('Private Trivy reports: ' + str(reports), flush=True)
-    run(prefix + ['fs', '--format', 'json', '--output', report('repository.json'), '--scanners', 'vuln,secret,misconfig', '--severity', 'HIGH,CRITICAL', '--exit-code', '1',
-                  '--skip-dirs', '.git,.runtime,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'])
+    scan_command(prefix + ['fs', '--include-dev-deps', '--format', 'json', '--output', report('repository.json'), '--scanners', 'vuln,secret,misconfig', '--severity', 'HIGH,CRITICAL', '--exit-code', '1',
+                  '--skip-dirs', '.git,.runtime,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
     if inside():
-        raise ValueError('Repository scan passed; final runtime-image scanning still requires the Docker host.')
+        raise ValueError('Repository scan finished; final runtime-image scanning still requires the Docker host.')
     import operations
     release = operations.active_release()
     selected = operations.dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
@@ -71,10 +79,15 @@ def trivy():
                 scan = ['docker', 'run', '--rm', '-v', str(archive) + ':/image.tar:ro',
                         '-v', 'runa-trivy-cache:/root/.cache/trivy', '-v', str(reports) + ':/reports', 'aquasec/trivy:0.76.0']
                 target = '/image.tar'
-            run(scan + ['image', '--format', 'json', '--output', report('image-' + hashlib.sha256(image.encode()).hexdigest()[:12] + '.json'), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'])
+            scan_command(scan + ['image', '--format', 'json', '--output', report('image-' + hashlib.sha256(image.encode()).hexdigest()[:12] + '.json'), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'], image)
         finally:
             archive.unlink(missing_ok=True)
-    dependencies()
+    try:
+        dependencies()
+    except subprocess.CalledProcessError as error:
+        failures.append('dependency audit (exit ' + str(error.returncode) + ')')
+    if failures:
+        raise ValueError('Security checks failed: ' + '; '.join(failures) + '. Inspect the private JSON reports.')
     print('PASS: repository, exact production images and locked dependency audits.')
 
 
