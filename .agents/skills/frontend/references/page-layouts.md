@@ -1,13 +1,17 @@
 # Page Patterns
 
-## Temporary root welcome view
+## Auth layout
 
-Canonical source: `resources/js/App.vue`.
+Canonical source: `resources/js/layouts/AuthLayout.vue`.
 
-Use a semantic header with brand/preferences, a skip link targeting focusable main content, and a restrained footer. The current foundation is a temporary welcome/connection design preview, neither the auth layout nor the future app/admin shell. It uses a CSS circular backdrop, a two-column welcome/abstract illustration panel that stacks on narrow screens, with the illustration filling the right half flush to the outer panel edges. Padding belongs to the text half only; on narrow screens the artwork is a full-width lower section. The user explicitly removed the connection-status panel; the root no longer polls API health. API readiness remains verified independently. The layout uses a shared max-width container, responsive spacing and semantic light/dark tokens from `resources/css/app.css`.
+Reusable split-panel layout approved during root preview review. Owns CSS circular backdrop, brand, two compact cycling preference buttons with application tooltips, keyboard skip link/focusable main, right-side CSS illustration and footer. The default slot contains left-side page/form content and exposes the translator as `t`. This layout owns locale/theme composables once; consuming pages use the scoped translator rather than initializing duplicate preference state.
 
-Locale/theme state is owned once at the application root through `useLocale`/`useTheme`. Administration must use English at its future boundary; no administration module exists yet. Preserve keyboard focus and preference usability when browser storage is blocked.
+The illustration is flush with the top/right/bottom panel edges; content padding belongs to the left side. At narrow widths the illustration becomes a full-width lower section. Both themes use `resources/css/app.css` tokens, local IBM Plex Mono and Tabler SVGs. Design decisions/provenance live under `docs/design/`.
 
-The approved palette, local IBM Plex Mono and selected Tabler SVGs are implemented here. Design direction and asset provenance live under `docs/design/`. The view awaits user visual acceptance under roadmap point 16.
+## Temporary root view
 
-No list/index page exists yet. When one is introduced, inspect existing analogous pages and retain the established breadcrumbs, page header, filters, statistics and main-content hierarchy where applicable. Do not fabricate catalogue examples.
+`resources/js/App.vue` consumes AuthLayout and supplies only the current heading and description. Removing this page later must preserve AuthLayout and its shared assets. No login/registration behavior exists. The root no longer polls health; API readiness is verified independently. User acceptance of point 16 remains pending.
+
+## Future application/admin pages
+
+The future app/admin shell is separate from AuthLayout. No module/list page exists yet. Follow the agreed structure in `docs/design/visual-direction.md`: breadcrumbs, optional statistics, optional filters, then main content. Admin is English-only. Do not invent catalogue examples for unimplemented pages.

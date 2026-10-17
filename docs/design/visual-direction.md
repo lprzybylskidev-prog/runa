@@ -48,9 +48,9 @@ Original author/source URL: not supplied.
 
 ### Selected direction
 
-- Apply this reference only to authentication view layout: a single panel with a decorative section on the left and the login or registration form on the right.
+- Apply this reference only to authentication view layout: a single panel with content and a decorative section. The later approved reusable layout places content/forms on the left and the illustration on the right, matching the refined root preview.
 - Behind the entire authentication panel, use the gray circular CSS background selected from REF-001, adapted to the active theme.
-- Inside the left section, use an attractive background with a CSS-created decorative illustration. Abstract shapes similar to this reference are acceptable; the exact composition remains open.
+- Inside the decorative section, use an attractive background with a CSS-created decorative illustration. Abstract shapes similar to this reference are acceptable; the exact composition remains open.
 - Integrate the illustration with Runa's agreed palette and restrained gradients.
 
 ### Not selected from this reference
@@ -164,9 +164,9 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 ## Implementation scope discussion
 
-Agreed first implementation scope (2026-10-17): as the last stage of roadmap point 16, redesign the existing root `/` dashboard to demonstrate the agreed general visual language. This page is neither an authentication view nor an application/admin shell; do not apply REF-002's auth layout or REF-003's shell/navigation template to it. Apply the approved palette, IBM Plex Mono, Tabler Icons, restrained CSS background/gradients, component styling, transitions, responsive and accessible behavior where relevant to the existing page.
+Agreed first implementation scope (2026-10-17): as the last stage of roadmap point 16, redesign the existing root `/` dashboard to demonstrate the agreed general visual language. The root remains a temporary welcome view rather than functional authentication or an app/admin shell. Following subsequent user review, its split panel is now extracted as the reusable AuthLayout; do not apply REF-003's app/admin navigation template. Apply the approved palette, IBM Plex Mono, Tabler Icons, restrained CSS background/gradients, component styling, transitions, responsive and accessible behavior where relevant to the existing page.
 
-The dashboard is temporary and expected to be removed soon. Keep the work proportionate, preserve its existing useful behavior and avoid adding business functionality or building auth/app layouts for this preview. Review the rendered result with the user and refine the visual decisions if needed. Technical verification alone does not complete point 16: explicit user acceptance of the generated view is required before closure.
+The dashboard is temporary and expected to be removed soon. Keep the work proportionate, preserve its existing useful behavior and avoid adding business functionality or app/admin layouts. The user subsequently authorized extracting the current view as the reusable auth layout, without implementing authentication. Review the rendered result with the user and refine the visual decisions if needed. Technical verification alone does not complete point 16: explicit user acceptance of the generated view is required before closure.
 
 ## Motion and transitions
 
@@ -200,3 +200,7 @@ Language and theme preferences use exactly two compact buttons, not selects or e
 Root preview refinement: remove the visible application-connection/status block and its request from the root view. Expand the existing CSS illustration to occupy the right column. Backend health behavior remains available independently.
 
 Root artwork placement: the decorative illustration fills the entire right half of the outer panel, flush with its top, right and bottom edges, following the split-panel composition clarified using REF-002. Padding belongs only to the text section; the illustration is not an inset card. On narrow screens it becomes a full-width lower section. This specific root layout refinement does not add auth behavior.
+
+## Reusable auth layout
+
+User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused immediately by the temporary root page and later by auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. Root removal must not remove the shared layout or its assets. Authentication behavior and actual forms remain outside this change.

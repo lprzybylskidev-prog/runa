@@ -27,7 +27,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## Root preference buttons
 
-- Source: `resources/js/App.vue`.
+- Source: `resources/js/layouts/AuthLayout.vue`.
 - Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names and application tooltips describe current and next values. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip

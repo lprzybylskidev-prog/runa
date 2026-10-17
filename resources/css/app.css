@@ -188,20 +188,20 @@ input:-webkit-autofill {
   -webkit-text-fill-color: var(--runa-text);
   caret-color: var(--runa-text);
 }
-.welcome-page {
+.auth-page {
   position: relative;
   isolation: isolate;
   background: var(--runa-background);
 }
-.welcome-page::before,
-.welcome-page::after {
+.auth-page::before,
+.auth-page::after {
   content: '';
   position: fixed;
   z-index: -1;
   pointer-events: none;
   border-radius: 50%;
 }
-.welcome-page::before {
+.auth-page::before {
   width: min(85vw, 1000px);
   aspect-ratio: 1;
   top: -40%;
@@ -223,7 +223,7 @@ input:-webkit-autofill {
       transparent
     );
 }
-.welcome-page::after {
+.auth-page::after {
   width: min(75vw, 850px);
   aspect-ratio: 1;
   right: -20%;
@@ -282,7 +282,7 @@ input:-webkit-autofill {
   margin-left: -0.65rem;
   color: var(--runa-accent-text);
 }
-.welcome-panel {
+.auth-panel {
   border: 1px solid var(--runa-border);
   border-radius: 4px;
   background: var(--runa-surface);
