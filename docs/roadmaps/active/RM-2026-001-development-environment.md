@@ -873,6 +873,11 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Completed (2026-10-18): user explicitly accepted the final rendered view and authorized closing point 16. Final scope includes the reusable AuthLayout, shared controls/tooltips/loading cover/footer/logo/backdrop/constellations, approved themes/font/icons and professional copy. Functional authentication and app/admin navigation remain outside scope.
   - Final point checks: latest build/strict TypeScript, ESLint, eight frontend tests and three Playwright projects passed. Final Chromium review covered 390/768/1440px in both themes, 200% text, reduced-motion preference transitions and keyboard skip. Actual overlay opacity interpolation and focus restoration were verified. Full-roadmap quality/release gates remain point 17.
 
+- [x] 16a. **Align final frontend diagnostics with the accepted root view**
+  - Found during point 17 preparation: `tools/testing/frontend.mjs` still expects select controls, promotional headings and the removed root health/retry card.
+  - Update the diagnostic to exercise the compact preference controls, loading cover, factual heading and independent API readiness. Preserve PL/EN, light/dark/system, responsive, 200% text, keyboard, persistence/storage-denial, network/console and Firefox coverage.
+  - Verified: the updated live diagnostic passes PL/EN, light/dark/system, three viewports, 200% text, keyboard skip, font loading, footer, storage denial/reduced motion, console/network and Firefox. Updated testing coverage documentation and reconciled the frontend content-order rule with the accepted design.
+
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.
   - Run `./bin/quality final` with all impact areas.

@@ -5,6 +5,7 @@
 Tests protect meaningful behavior and regressions. Runa does not pursue arbitrary coverage percentages.
 
 Before writing tests, identify the scenarios that matter:
+
 - normal success,
 - validation,
 - authorization/authentication when relevant,
@@ -32,12 +33,14 @@ Initial test database:
 `runa_test`
 
 Tests may use the same PostgreSQL container as development but must use:
+
 - a separate test database,
 - testing environment configuration,
 - isolated storage,
 - isolated cache/queue namespaces.
 
 Before destructive test setup, hard guards verify:
+
 - `APP_ENV=testing`,
 - the selected database is clearly a test database such as `_test`,
 - expected test connection/host values.
@@ -49,6 +52,7 @@ Never run destructive tests against the development or production database.
 ## Parallel execution
 
 Tests should be parallel-safe from the start:
+
 - no test order dependency,
 - no shared dirty global state,
 - deterministic setup/cleanup.
@@ -58,6 +62,7 @@ Canonical command:
 `./bin/test --parallel`
 
 If parallel execution reveals a concurrency/isolation defect:
+
 1. create a minimal reproduction,
 2. fix the isolation/concurrency problem,
 3. rerun focused tests,
@@ -78,6 +83,7 @@ Development seed randomness is defined separately in `docs/data/seeding.md`.
 ## Frontend unit/component tests
 
 Use:
+
 - Vitest,
 - Vue Test Utils.
 
@@ -92,6 +98,7 @@ Do not assert internal implementation details merely to increase test count.
 Install Playwright from day one as part of the accepted frontend/testing toolchain.
 
 Browsers:
+
 - Chromium: primary automation target,
 - Firefox: installed and used where useful,
 - WebKit: add later only if a real compatibility need appears.
@@ -99,6 +106,7 @@ Browsers:
 ### Durable E2E tests
 
 Keep durable E2E tests focused on:
+
 - critical user flows,
 - important regressions,
 - application-wide infrastructure behavior.
@@ -118,11 +126,13 @@ Canonical demo data may use stable known public IDs/accounts where useful.
 Every meaningful frontend change should be visually inspected, with proportionate Playwright/manual support.
 
 Representative sizes:
+
 - desktop: approximately 1440x900,
 - tablet: approximately 1024x768,
 - mobile: approximately 390x844.
 
 Check where relevant:
+
 - light and dark,
 - Polish and English smoke behavior,
 - console errors/warnings,
@@ -132,6 +142,7 @@ Check where relevant:
 - forms/validation.
 
 The final gate normally includes:
+
 - Chromium critical desktop flows,
 - selected mobile flows,
 - light/dark where relevant,
@@ -143,6 +154,7 @@ The final gate normally includes:
 Temporary Playwright exploration belongs in visible project scratch locations rather than hidden local junk.
 
 Generated browser artifacts such as:
+
 - screenshots,
 - videos,
 - traces,
@@ -160,6 +172,7 @@ When fixing a reproducible security defect such as XSS, access-control leakage, 
 Do not weaken tests merely to make a gate green.
 
 Investigate whether:
+
 - behavior changed intentionally,
 - test expectation is stale,
 - code is defective,
@@ -196,16 +209,16 @@ The regression script deliberately resets only the guarded test database after v
 
 Run these from the host or development container:
 
-| Command | Purpose |
-|---|---|
+| Command                                 | Purpose                                                                           |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
 | `./bin/format` / `./bin/format --check` | Pint for project PHP; Prettier for frontend, frontend tests and root tool configs |
-| `./bin/lint` | ESLint recommended JS/TS/Vue correctness rules; zero warnings |
-| `./bin/typecheck` | Strict Vue/TypeScript application and test checking |
-| `./bin/analyse` | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit |
-| `./bin/test` | Backend feature tests, serial |
-| `./bin/test --parallel` | Backend feature tests, `TEST_WORKERS` from the resource profile |
-| `./bin/test frontend` | Vitest + Vue Test Utils in headless Chromium |
-| `./bin/test e2e --critical` | Current critical Playwright suite in Chromium, Firefox and mobile Chromium |
+| `./bin/lint`                            | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
+| `./bin/typecheck`                       | Strict Vue/TypeScript application and test checking                               |
+| `./bin/analyse`                         | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
+| `./bin/test`                            | Backend feature tests, serial                                                     |
+| `./bin/test --parallel`                 | Backend feature tests, `TEST_WORKERS` from the resource profile                   |
+| `./bin/test frontend`                   | Vitest + Vue Test Utils in headless Chromium                                      |
+| `./bin/test e2e --critical`             | Current critical Playwright suite in Chromium, Firefox and mobile Chromium        |
 
 Runner options can follow the test selector, for example `./bin/test --filter=Health` or `./bin/test e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. `bin/check` is their shared dispatcher. Run `./bin/dev prepare` and start the development environment first.
 
@@ -231,4 +244,4 @@ From the host, `./bin/test e2e --critical` starts the testing profile and waits 
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-This explicit host lifecycle keeps Docker sockets out of the devcontainer. E2E uses one worker because all browser projects share one testing endpoint. Each test gets a fresh browser context. Critical coverage checks health, responsive overflow, PL/EN preferences, dark-theme persistence, API failure/retry and unexpected console/page errors. Failure traces live in ignored `artifacts/playwright/results/`. `tools/testing/frontend.mjs` remains the broader visual diagnostic and also targets the isolated testing endpoint.
+This explicit host lifecycle keeps Docker sockets out of the devcontainer. E2E uses one worker because all browser projects share one testing endpoint. Each test gets a fresh browser context. Critical coverage checks independent API health, responsive overflow, compact PL/EN and system/light/dark controls, preference persistence, opaque loading-cover sequencing, focus restoration, tooltip dismissal and unexpected console/page errors. HTTP-client failure behavior remains covered by frontend unit contracts; the root intentionally has no connection/retry panel. Failure traces live in ignored `artifacts/playwright/results/`. `tools/testing/frontend.mjs` remains the broader visual diagnostic and also targets the isolated testing endpoint.
