@@ -11,8 +11,10 @@ import security
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('action', choices=['trivy', 'review-changed-surface', 'dependencies', 'secrets'])
+parser.add_argument('--dependencies-root', type=Path, help='Existing development checkout for audits from an isolated installer clone; lockfiles must match')
 try:
     options = parser.parse_args()
+    security.AUDIT_ROOT = options.dependencies_root.resolve() if options.dependencies_root else None
     if options.action == 'trivy':
         import operations
         with operations.lock():

@@ -45,6 +45,18 @@ class ReviewContracts(unittest.TestCase):
                 self.assertFalse((root / '.runtime/trivy-image.tar').exists())
                 self.assertEqual((reports / 'repository.json').read_text(), '')
 
+    def test_isolated_audits_reject_different_locks_before_docker(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / 'installer'
+            dev = Path(folder) / 'dev'
+            root.mkdir(); dev.mkdir()
+            (root / 'composer.lock').write_text('one')
+            (dev / 'composer.lock').write_text('two')
+            with patch.object(security, 'ROOT', root), patch.object(security, 'AUDIT_ROOT', dev), patch.object(security, 'inside', return_value=False), patch.object(security.subprocess, 'run') as run:
+                with self.assertRaisesRegex(ValueError, 'lockfiles differ'):
+                    security.dependencies()
+                run.assert_not_called()
+
     def test_missing_stale_blocking_and_changed_report_evidence_rejected(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(security, 'ROOT', Path(folder)), patch.object(security, 'surface', return_value={'app/example.php': 'current'}):
             root = Path(folder)

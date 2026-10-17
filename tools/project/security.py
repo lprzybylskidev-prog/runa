@@ -100,7 +100,22 @@ def trivy():
     print('PASS: repository, exact production images and locked dependency audits.')
 
 
+AUDIT_ROOT = None
+
+
 def dependencies():
+    if AUDIT_ROOT is not None:
+        if inside():
+            raise ValueError('Explicit development checkout delegation is host-only.')
+        for name in ('composer.lock', 'pnpm-lock.yaml'):
+            if (ROOT / name).read_bytes() != (AUDIT_ROOT / name).read_bytes():
+                raise ValueError('Dependency audit checkout lockfiles differ from the scanned checkout.')
+        if not (AUDIT_ROOT / '.env.dev.local').is_file() or not (AUDIT_ROOT / '.devcontainer/compose.resources.yaml').is_file():
+            raise ValueError('The audit target is not a prepared development checkout.')
+        context = ['docker', 'compose', '--project-directory', str(AUDIT_ROOT), '--env-file', str(AUDIT_ROOT / '.env.dev.local'), '-f', str(AUDIT_ROOT / 'compose.yaml'), '-f', str(AUDIT_ROOT / '.devcontainer/compose.resources.yaml'), 'exec', '-T', 'app']
+        for command in (['composer', 'audit'], ['pnpm', 'audit', '--audit-level=high']):
+            subprocess.run(context + command, cwd=AUDIT_ROOT, stdin=subprocess.DEVNULL, check=True)
+        return
     run(app_command(['composer', 'audit']))
     run(app_command(['pnpm', 'audit', '--audit-level=high']))
 
