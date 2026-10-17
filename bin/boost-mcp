@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+"""Start the development-only Boost stdio MCP server."""
+import os
+from pathlib import Path
+import sys
+
+root = Path(__file__).resolve().parents[1]
+os.chdir(root)
+if Path('/.dockerenv').exists():
+    if os.environ.get('APP_ENV') == 'production':
+        sys.exit('Boost is development-only.')
+    os.execvp('php', ['php', 'artisan', 'boost:mcp'])
+os.execvp('docker', ['docker', 'compose', '--project-directory', str(root),
+                     'exec', '-T', 'app', 'php', 'artisan', 'boost:mcp'])

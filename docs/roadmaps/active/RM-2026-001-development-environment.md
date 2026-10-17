@@ -676,6 +676,9 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Remove Boost-generated skills/instructions immediately after setup and verify local Runa skills are intact.
   - Register Boost MCP.
   - Execute a real Boost version-aware tool call from the actual Codex agent session and verify the result. If session reload/manual extension setup is required, keep acceptance pending until the agent can really invoke MCP.
+  - Implementation status (2026-10-17): Xdebug 3.5.3, VS Code customizations/debug configuration, Codex CLI 0.163.0, Boost 2.10.3 and host/container MCP launcher are implemented. Setup registers the container MCP through the official Codex CLI and remains idempotent. Runa instruction/skill checksums remained identical; MCP-only installation generated no skills or guidelines, and the unrelated Copilot MCP file was removed.
+  - Verified: development image build; Codex version and MCP registration inside/ outside the container; default-off/on/off Xdebug; actual PHP-FPM HTTP trigger, DBGp source breakpoint, resume and HTTP 200; Composer and isolated Codex npm audits; PHPStan highest level; 11 backend tests/29 assertions; canonical formatting checks. Transport-only MCP checks returned Laravel 13.37.0 application information and Laravel 13.x documentation.
+  - Acceptance pending: reopen/rebuild VS Code in the devcontainer, verify editor format-on-save/debug UI, install the Codex extension manually if needed, and start a new agent session with Boost tools visible. The current session does not expose Boost as an agent tool; transport-only checks do not satisfy the required real-session acceptance. Point 8 deliberately remains unchecked. Setup and next-session instructions: `docs/development/editor-and-agents.md`.
 
 - [ ] 9. **Build Qdrant, embeddings, and knowledge ingestion**
   - Prerequisites: Points 2 and 6.

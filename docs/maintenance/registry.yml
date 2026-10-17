@@ -389,3 +389,21 @@ entries:
     source: docs/development/toolchain.md
     last_reviewed: 2026-10-17
     review_every_days: 90
+
+  - id: codex-cli
+    type: framework_tooling
+    name: Codex CLI
+    version: 0.163.0
+    url: https://github.com/openai/codex
+    source: docs/development/editor-and-agents.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: xdebug
+    type: framework_tooling
+    name: Xdebug
+    version: 3.5.3
+    url: https://xdebug.org
+    source: docs/development/editor-and-agents.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90

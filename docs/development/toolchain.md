@@ -35,6 +35,8 @@ Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not
 | Vitest | 5.0.5 | https://registry.npmjs.org/vitest/5.0.5 |
 | Vue Test Utils | 2.5.1 | https://registry.npmjs.org/@vue/test-utils/2.5.1 |
 | Playwright | 1.64.1 | https://registry.npmjs.org/@playwright/test/1.64.1 |
+| Codex CLI | 0.163.0 | https://registry.npmjs.org/@openai/codex/0.163.0 |
+| Xdebug | 3.5.3 | https://pecl.php.net/package/xdebug/3.5.3 |
 | Laravel Boost | 2.10.3 | https://repo.packagist.org/p2/laravel/boost.json |
 | Gitleaks | 8.30.1 | https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1 |
 | Trivy | 0.76.0 | https://github.com/aquasecurity/trivy/releases/tag/v0.76.0 |
@@ -49,6 +51,10 @@ Package registry metadata identifies MIT licenses for the selected Composer tool
 
 PHP, Laravel and JavaScript tooling have published security histories; current versions alone do not prove absence of vulnerabilities. Installation must run Composer/pnpm audits against the actual lockfiles, and final image/filesystem checks must use Trivy. Findings block affected implementation until resolved or handled according to the security policy. This document records compatibility research, not a clean security scan of an unbuilt environment.
 
-The embedding model/runtime remains unselected; evaluate the model at point 9. The user approved vendored Polish Laravel validation data from Laravel-Lang/lang 15.37.4 at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, with no Composer localization dependency; see `localization.md`. Codex CLI version/configuration is resolved from official OpenAI documentation at point 8.
+The embedding model/runtime remains unselected; evaluate the model at point 9. The user approved vendored Polish Laravel validation data from Laravel-Lang/lang 15.37.4 at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, with no Composer localization dependency; see `localization.md`. Codex CLI and Xdebug selections are recorded above; configuration is documented in `editor-and-agents.md`.
 
 Point 7 installed the selected formatting/analysis/test packages. The matching Vitest browser provider, ESLint recommended-JS config and Vue parser are MIT-licensed integration components with compatible peer ranges, verified against their exact npm version metadata on 2026-10-17. The provider requires matching Vitest 5.0.5; its Playwright peer resolves to the existing 1.64.1. No additional application runtime dependency was added. `pnpm-workspace.yaml` records only the deliberately reviewed exact ESLint release age exception emitted by pnpm during this installation; it does not permit unbounded version exceptions. Future dependency changes require deliberate roadmap review.
+
+Point 8 adds Boost 2.10.3 (MIT) with five new locked development packages and no upgrades to existing packages. Composer audit reported no advisories. Codex CLI 0.163.0 (Apache-2.0) supports Node >=16; its launcher selects one native platform package rather than a JavaScript runtime dependency tree. Xdebug 3.5.3 uses the Xdebug license and supports PHP 8.4. Both are development-only. Review sources: https://github.com/openai/codex, https://registry.npmjs.org/@openai/codex/0.163.0, https://xdebug.org/docs/compat and https://pecl.php.net/package/xdebug. No scanner result is suppressed.
+
+The isolated Codex 0.163.0 npm lock audit (launcher plus selected platform package, 3 audited packages) reported zero vulnerabilities on 2026-10-17. This temporary lock is diagnostic evidence under ignored `.runtime`, not an application dependency.

@@ -108,6 +108,12 @@ def setup_fingerprint():
     return digest.hexdigest()
 
 
+def register_boost():
+    # Register in the container user's configuration before project trust is established.
+    subprocess.run(['codex', 'mcp', 'add', 'laravel-boost', '--', str(ROOT / 'bin/boost-mcp')],
+                   cwd=ROOT, check=True)
+
+
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
@@ -148,6 +154,7 @@ def main():
             subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
             subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
             subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
+            register_boost()
             print('Development setup is current; dependency installation and frontend build skipped.')
             return 0
         subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
@@ -162,6 +169,7 @@ def main():
         subprocess.run(['pnpm', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
         subprocess.run(['pnpm', 'run', 'build'], cwd=ROOT, check=True)
         subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
+        register_boost()
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(setup_fingerprint() + '\n')
         return 0

@@ -36,7 +36,7 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && apt-get update \
     && apt-get install -y --no-install-recommends git openssh-client curl unzip zip python3 procps ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install --global corepack@0.36.0 \
+    && npm install --global corepack@0.36.0 @openai/codex@0.163.0 \
     && corepack enable \
     && COREPACK_HOME=/opt/corepack corepack install --global pnpm@12.14.0 \
     && chown -R runa:runa /opt/corepack
@@ -47,6 +47,14 @@ RUN pnpm --version
 
 FROM development-toolchain AS development
 USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends $PHPIZE_DEPS \
+    && pecl install xdebug-3.5.3 \
+    && docker-php-ext-enable xdebug \
+    && apt-get purge -y --auto-remove $PHPIZE_DEPS \
+    && rm -rf /var/lib/apt/lists/* /tmp/pear
+COPY docker/php/xdebug.ini /usr/local/etc/php/conf.d/zz-runa-xdebug.ini
+RUN chown runa:runa /usr/local/etc/php/conf.d/zz-runa-xdebug.ini
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
 RUN npx --yes playwright@1.64.1 install --with-deps chromium firefox \
     && chmod -R a+rX /opt/playwright \
