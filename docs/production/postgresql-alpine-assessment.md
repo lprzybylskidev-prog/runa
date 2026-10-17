@@ -74,3 +74,19 @@ Proposed safe reinitialization for separate user approval:
 5. Apply the same baseline to first real production initialization. Existing local production simulation remains separate; do not point its old Bookworm cluster at Alpine. Agree a new isolated simulation volume before repeating deploy/backup/restore/security acceptance.
 
 This proposal avoids destroying even the apparently disposable technical data and provides a return path. If the user identifies additional data requiring preservation, stop and agree a logical export/restore plan before switching. No existing live production migration framework is needed because real production has not been deployed.
+
+## Authorized selective development switch
+
+The user explicitly approved the new volume and selective PostgreSQL service replacement on 2026-10-17. App/devcontainer must stay running: no Compose down, app restart/rebuild, socket mount, broad prune or volume deletion is permitted. `tools/testing/switch-postgres-icu.py` is the host-only execution path. It refuses an existing target volume or prior switch state, records actual project/container/volume identities, and targets only queue/scheduler and PostgreSQL. The new development mount is `postgres-icu-data`; `postgres-data` remains declared and preserved.
+
+The script pulls the approved image first, stops queue/scheduler and cleanly stops the old PostgreSQL service, then fingerprints the old volume through a read-only mount using the exact original image and its postgres user. Normal clean shutdown necessarily checkpoints the running old cluster; the no-write preservation boundary is after that shutdown. It never performs SQL, reindex, locale changes or any write mount against the stopped old cluster. Content hashes are compared again after the switch. Volume metadata alone is not represented as proof of unchanged contents.
+
+It replaces only PostgreSQL with `--no-deps`, initializes the new cluster, invokes migrations/seeders/tests from the still-running app, checks base and parallel test database locale/index semantics and test guards, brings queue/scheduler back with health waiting and checks unrelated container IDs/start timestamps. Failures preserve evidence and all volumes; do not retry blindly. The existing simulation is deliberately not switched by this script. Full production backup/restore/security/installer acceptance and scoped cleanup instructions remain outstanding until the development baseline is verified.
+
+Run from the host repository:
+
+```bash
+python3 tools/testing/switch-postgres-icu.py </dev/null 2>&1 | tee .runtime/postgres-icu-switch.log
+```
+
+Evidence is stored at `.runtime/postgres-icu-switch/state.json`. It records the old physical volume name for later rollback/cleanup review. Cleanup must never include that volume or the new active volume without separate explicit permission. A final cleanup document will list inspected test resources, precise container/network/image removals, separately approval-gated test volumes and expected retained development state; it will never execute cleanup automatically.
