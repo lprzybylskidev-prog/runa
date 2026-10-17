@@ -71,5 +71,5 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppConstellation
 
 - Source: `resources/js/components/AppConstellation.vue`.
-- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three small patterns. No motion, randomness, image asset or dependency.
+- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths are 260/300/200px; mobile uses 180/210px for the two retained patterns. Lines retain thin non-scaling strokes. No motion, randomness, image asset or dependency.
 - Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.
