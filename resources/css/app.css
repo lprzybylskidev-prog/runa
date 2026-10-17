@@ -319,9 +319,8 @@ input:-webkit-autofill {
       transparent
     );
 }
-.art-core svg {
-  width: 40px;
-  height: 40px;
+.art-core .runa-logo {
+  height: 48px;
 }
 .art-coordinate {
   position: absolute;

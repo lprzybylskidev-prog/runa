@@ -74,7 +74,7 @@ Use the same shell design and navigation behavior for the user application and a
 Use the background selected from REF-001 for both shells: a gray base with large circular shapes and restrained gradients, rendered in CSS and adapted to the active light/dark theme. REF-003 does not replace that background direction.
 
 - The sidebar contains module links. Every sidebar link has a Tabler icon.
-- At the top of the sidebar, display the Runa logo and application name. A temporary mark is acceptable until the user supplies the final logo.
+- At the top of the sidebar, display the Runa logo and application name. Use the user-supplied Runa mark through the shared RunaLogo component.
 - Support expanded and collapsed sidebar states with an explicit toggle. Expanded: show link icons and labels, plus logo and application name. Collapsed: retain link icons and the logo, hiding link labels and the application name.
 - Collapsed links reveal their labels through a reusable, application-styled tooltip component. Do not rely on native browser `title` tooltips. Tooltips must also work on keyboard focus, and icon-only controls retain accessible names.
 - The top navigation displays the current module's additional links on the left, when that module has any. The sidebar selects the module; top links navigate within it.
@@ -216,3 +216,7 @@ User decision: activating language or theme controls first covers the entire vie
 ## Background depth refinement
 
 Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. This version is pending user visual review.
+
+## Project logo
+
+The user supplied `resources/images/runa-logo.png`. Its transparent alpha enables recoloring using a CSS mask; RunaLogo preserves the original and compensates for its transparent padding. The auth-layout header and central illustration now use this mark, inheriting the theme’s primary text color. No SVG tracing or generated reinterpretation is performed.

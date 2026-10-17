@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onScopeDispose, ref } from 'vue';
 import AppIcon from '../components/AppIcon.vue';
+import RunaLogo from '../components/RunaLogo.vue';
 import AppButton from '../components/AppButton.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
@@ -83,9 +84,7 @@ async function finishPreferenceChange() {
         aria-label="Runa"
         class="brand flex min-h-11 items-center gap-3 text-xl font-semibold tracking-tight"
       >
-        <span class="brand-mark" aria-hidden="true"
-          ><AppIcon name="layers-intersect"
-        /></span>
+        <span class="brand-mark" aria-hidden="true"><RunaLogo /></span>
         runa<span class="brand-dot" aria-hidden="true">.</span>
       </a>
       <div :aria-label="t('preferences')" class="flex gap-2" role="group">
@@ -140,7 +139,7 @@ async function finishPreferenceChange() {
               <span class="art-grid" /><span class="art-orbit orbit-one" /><span
                 class="art-orbit orbit-two"
               /><span class="art-orbit orbit-three" /><span class="art-core"
-                ><AppIcon name="layers-intersect" /></span
+                ><RunaLogo /></span
               ><span class="art-coordinate">RUNA</span
               ><span class="art-plus">+</span>
             </div>

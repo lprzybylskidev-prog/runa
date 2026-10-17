@@ -61,3 +61,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Source: `resources/js/components/AppBackdrop.vue`.
 - Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at 4.5% opacity. Page-background rings/arcs are removed. No raster texture, animation or external assets.
 - Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: AuthLayout. Follow the current background direction in `docs/design/visual-direction.md`.
+
+## RunaLogo
+
+- Source: `resources/js/components/RunaLogo.vue`.
+- Shared decorative project mark based on the supplied transparent PNG alpha mask. Inherits `currentColor`; CSS mask crops transparent padding without modifying the original image. Default height 28px with the mark's natural aspect ratio; CSS may override height.
+- Use in brand links and decorative artwork instead of the temporary Tabler mark. The owning link/control supplies its accessible name; the decorative mark is hidden from assistive technology. Source/provenance: `docs/design/assets.md`.

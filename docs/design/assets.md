@@ -30,3 +30,13 @@ Current Tabler subset: layers-intersect, sun, moon and device-desktop.
 | `resources/icons/layers-intersect.svg` | `5bbc8a450c6b6d1bc236e9e8397670c1dc2c18cbe8de5cba7287bb3d8f517332` |
 | `resources/icons/moon.svg`             | `7cabaae40eea65310da478d3cad30b23cf1d7e99adad56378f82824338079668` |
 | `resources/icons/sun.svg`              | `6677490605af8987d55d6e4185b1f6c241eced65b63ccfece68cadb7ce90fbb5` |
+
+## Runa logo
+
+User-supplied original: `resources/images/runa-logo.png`, 1254 × 1254 RGBA PNG with transparent background. Source bytes are preserved. Visible alpha bounds (threshold 128): x=435..850, y=195..1097.
+
+`RunaLogo.vue` uses the image as an alpha mask, removing transparent padding through CSS mask sizing/position rather than rewriting the raster. The rendered mark inherits `currentColor`; its mask also permits a CSS background gradient when deliberately styled. It remains a raster mask, not a traced SVG; avoid enlarging it beyond its useful source resolution.
+
+SHA256: `5bd3b20c783ddf15917b5f1d576028e3dca0dd22d0447ea606cb36d39af837f5`.
+
+The user supplied this as Runa's project logo; no third-party source or license was supplied. Do not replace it with a generated approximation.
