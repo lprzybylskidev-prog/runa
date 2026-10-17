@@ -104,7 +104,7 @@ RUN npm install --global corepack@0.36.0 && corepack enable && corepack install 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY resources/ resources/
-COPY vite.config.mjs tsconfig.json ./
+COPY vite.config.mjs tsconfig.json VERSION ./
 RUN pnpm run build
 
 FROM production-runtime AS production
