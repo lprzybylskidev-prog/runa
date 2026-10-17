@@ -45,6 +45,8 @@ Laravel Boost 2.10.3 is a Composer development dependency. `.codex/config.toml` 
 
 The setup uses the official `php artisan boost:install --mcp --no-interaction` feature flag. Runa guidance and skills were hashed before setup and verified identical afterward. MCP-only setup generated no skills or agent instructions; the unrelated auto-detected Copilot MCP configuration was removed. `boost.json` records Codex only, guidelines disabled, and no generated skills. Do not run unrestricted `boost:install` or `boost:update`; follow `docs/ai/laravel-boost.md` for any future setup or update.
 
-After rebuilding/reopening, start a new Codex session and have the agent invoke Boost `application-info` and `search-docs`. Verify Laravel 13.37.0 and installed package versions. Point 8 remains open until a real tool invocation from the actual agent session succeeds. A subprocess MCP smoke test is only transport evidence.
+After rebuilding/reopening, start a new Codex session and have the agent invoke Boost `application-info` and `search-docs`. Verify Laravel 13.37.0 and installed package versions. A subprocess MCP smoke test is only transport evidence.
+
+Real-session acceptance passed on 2026-10-17 inside the devcontainer: the actual Codex agent successfully invoked both tools. Application inspection returned PHP 8.4, Laravel 13.37.0, PostgreSQL and Boost 2.10.3; documentation search returned health-route guidance for `laravel/framework@13.x`. Point 8 still requires manual confirmation of format-on-save and the VS Code debugger UI.
 
 Official setup references: [Codex CLI](https://developers.openai.com/codex/cli), [Codex MCP](https://developers.openai.com/codex/mcp), and [Laravel Boost](https://laravel.com/docs/13.x/boost).
