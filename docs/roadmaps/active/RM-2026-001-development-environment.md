@@ -887,9 +887,9 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Host preparation for point 17 reproduced an unresolved `../../../VERSION?raw` import from the footer: the frontend Docker stage omitted the version file.
   - Copied canonical VERSION into the frontend stage. Host Docker built both exact-commit production images successfully at `f68c0e8`; frontend compilation and runtime image capability/isolation probes passed. No dependency or runtime-version change was required.
 
-- [ ] 16d. **Patch the production Nginx libexpat vulnerability**
+- [x] 16d. **Patch the production Nginx libexpat vulnerability**
   - Current exact-image Trivy scan found HIGH CVE-2026-77214 in inherited libexpat 2.8.5-r0; Alpine's security tracker confirms 2.9.0-r0 fixes it on branch 3.24.
-  - Upgrade only the existing library to the exact fixed package, retain Nginx version, rebuild and scan the actual resulting images before restarting final verification. No suppression is permitted.
+  - Upgraded only the existing library to exact 2.9.0-r0, retaining Nginx 1.31.7. Host production build/runtime probes passed at `6576296`; actual Nginx image Trivy vulnerability/secret scan exited 0 with no HIGH/CRITICAL findings. No suppression was added. Full final gate must start from the beginning.
 
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Preparation (2026-10-18): points 16a/16b repair stale frontend diagnostics and the release-doctor placeholder. Repository/docs/maintenance/tooling checks and live frontend diagnostics pass; version computation remains 0.0.0 -> 0.1.0. No final-gate PASS, version bump, closure, merge or publication is claimed.
