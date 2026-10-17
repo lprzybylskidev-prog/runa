@@ -106,6 +106,9 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 
 ### Decisions
 
+- 2026-10-18 — Point 4 corrected roadmap classification from lifecycle path plus leading frontmatter, preserving real roadmap identity across closure. Fourteen offline contracts, three isolated real-service retrieval tests, real CPU/CUDA/fallback ingestion, knowledge doctor and all eight golden queries passed. Corrected the golden dataset's stale active path/filter for the now-closed baseline roadmap; expected historical source and query remain unchanged. Disposable test collections were removed by the tests; no Docker resources were created.
+- 2026-10-18 — The final cross-document review additionally found a broken active-roadmap design link and bootstrap-era pending wording in environment/knowledge/command guidance. Reconciled those current instructions, linked the closed history and clearly labeled earlier PHP candidate evaluation as historical without rewriting its dated evidence. Confirmed production Compose uses the accepted Alpine/ICU baseline. GitHub API independently confirms published v0.1.0 and authenticated push/admin access; no published artifact was changed.
+
 - 2026-10-18 — Point 3 implemented a shared read-only validator used by doctor docs and doctor release, with installed Symfony YAML timestamp handling. Seven documentation contracts and eleven release contracts pass, including the stale v0.1.0 README scenario through the actual CLI, positive history cases, state transitions, draft-only main commits, invalid tags and runtime drift. Eight scheduler contracts pass. The existing final contract step now includes offline docs and knowledge contracts; every final release check validates README irrespective of impact selection. No dependency or runtime change.
 
 - 2026-10-18 — Point 2 reconciled README, command/environment/production/quality/Boost/knowledge guidance with closed acceptance evidence and implementation. Updated owning workflow rules, concise AGENTS clauses and source/index responsibility; no unrelated domain skill required a documentation rule copy. Dated measurements, version initialization, missing REF-003 and deferred business/authentication scope remain historical or explicitly deferred. Focused format/diff and existing docs checks passed; new contract checks follow in point 3.
@@ -120,6 +123,20 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 - 2026-10-18 — Proposed release is fix 0.1.0 -> 0.1.1. Preserve published and closed history; improve existing mechanisms with bounded deterministic checks plus mandatory source review.
 - 2026-10-18 — The workflow clarifications and final-gate selection change are submitted for user approval here because quality/release workflow belongs to the project constitution.
 
+## Current-state review evidence
+
+Reviewed before final verification on 2026-10-18:
+
+- README and docs/project/state.yml against VERSION, CHANGELOG, lifecycle directories and actual foundation/CLI implementation: released foundation is available, RM-2026-002 is active, no business/auth modules or real production deployment are claimed.
+- AGENTS.md, roadmap/release/Git/quality workflows, docs index and local skill guidance: point-level documentation duty is explicit; the roadmap workflow owns semantic review, release workflow owns the state block/closure sequence, and the RAG reference owns classification. No duplicated domain-wide closure checklist or new skill/dependency/CI was introduced.
+- Command/environment/editor/Boost/knowledge guidance against bin wrappers, setup/runtime scripts and closed acceptance evidence: obsolete pending milestones removed, supported command names retained, host-only production and development-only AI boundaries preserved. Existing onboarding requirements and manual editor acceptance limits remain visible.
+- Production architecture against Compose/Dockerfile, deployment code and closed security/host evidence: implementation/simulation acceptance distinguished from actual deployment. Earlier candidate measurements/reports and the standalone PostgreSQL assessment remain historical evidence.
+- Design guidance and references against source assets and closed roadmap location: repaired the moved-roadmap link; retained missing REF-003 and deferred shell/auth scope. No visual or application behavior change.
+- Current-state source searches found no remaining unqualified completed-work-as-pending claims in the reviewed guidance. Initial version references in versioning policy, dated evidence and closed checklists remain intentionally unchanged.
+- Deterministic regressions cover the stale README, lifecycle transitions and historical immunity. Golden roadmap filtering now uses the actual closed baseline. Incremental indexing reports current state and no orphan/missing chunks; parser reclassification has both offline legacy-index recovery and real-service retrieval coverage.
+
+Closure review still required after the full gate: update only the reviewed release metadata and README version/active-roadmap fields together, check no stale active/future-release claim remains, run focused docs/release validation and refresh knowledge after the branch transition. This pending transition is not claimed complete here.
+
 ## Implementation plan
 
 - [x] 1. Confirm audit dispositions and finalize the documentation/release contract.
@@ -131,7 +148,7 @@ Manual review covers free prose, actual capability delivery, command semantics, 
 - [x] 3. Enforce deterministic documentation consistency in existing quality/release tooling.
   - Prerequisites: point 2.
   - Completion: shared read-only validation, doctor integration, reliable final-gate selection and regression tests for stale README, lifecycle transitions, historical immunity and release-tag integrity; document exact coverage. Run focused contracts, commit and update this checklist.
-- [ ] 4. Correct knowledge classification and verify guidance synchronization.
+- [x] 4. Correct knowledge classification and verify guidance synchronization.
   - Prerequisites: point 3.
   - Completion: narrow frontmatter/path classification fix and regressions; review AGENTS/skills/workflows for contradiction or duplication; refresh the index incrementally and run applicable knowledge checks/evals; record source-based current-state review evidence. Commit and update this checklist.
 - [ ] 5. Full verification, release finalization, merge, and final report.

@@ -2,13 +2,13 @@
 
 Status: final root view and implemented visual direction explicitly accepted by the user on 2026-10-18; roadmap point 16 is complete. Future auth behavior and app/admin template implementation remain outside this scope.
 
-Roadmap: [RM-2026-001, point 16](../roadmaps/active/RM-2026-001-development-environment.md).
+Roadmap: [RM-2026-001, point 16](../roadmaps/closed/RM-2026-001-development-environment.md).
 
 ## Reference interpretation
 
 Reference images contribute only the features explicitly selected by the user. An image is not approval to reproduce its entire interface. Unmentioned layout, typography, components, spacing and decoration remain undecided. Explicit rejections are recorded separately; the user does not need to enumerate everything they dislike.
 
-Combine selected features from subsequent references into a coherent interface. Do not treat any single reference as the complete design. Record further decisions here before implementation and obtain explicit approval of the complete specification under roadmap point 16.
+Combine selected features from subsequent references into a coherent interface. Do not treat any single reference as the complete design. Record further decisions here before implementation and obtain explicit approval under the relevant active roadmap. The baseline point-16 specification and acceptance are recorded in closed RM-2026-001.
 
 ## REF-001 — Dark palette and circular background
 

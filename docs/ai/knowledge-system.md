@@ -138,6 +138,8 @@ Useful metadata includes:
 
 Chunk IDs should be deterministic/derivable so reindex behavior is predictable.
 
+Only actual roadmap files in draft/active/paused/closed directories receive roadmap identity/status, taken from their leading frontmatter and checked against filename/location. Workflow and template examples are documentation; never infer their identity from fenced examples or body text. An active-to-closed move retains the real roadmap document identity while updating status and source path.
+
 Create Qdrant payload indexes only for fields actually used in retrieval filtering.
 
 ## Ingestion

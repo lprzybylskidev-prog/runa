@@ -134,6 +134,56 @@ class KnowledgeContracts(unittest.TestCase):
                          [['Root', 'First'], ['Root', 'Second'], ['Root', 'Next']])
         self.assertIn('# Literal heading', parsed[1][1])
 
+    def test_roadmap_examples_and_templates_are_documentation(self):
+        text = '# Workflow\n```yaml\nid: RM-2026-003\nstatus: active\n```\n'
+        for name in ('docs/workflows/roadmaps.md', 'docs/roadmaps/roadmap-template.md'):
+            with self.subTest(source=name):
+                path = self.write(name, text)
+                meta = corpus.metadata(path, self.root, text)
+                self.assertEqual(meta['document_type'], 'documentation')
+                self.assertIsNone(meta['roadmap_id'])
+                self.assertIsNone(meta['status'])
+                self.assertEqual(meta['document_id'], corpus.identity('source:' + name))
+
+    def test_real_roadmap_identity_survives_closure_and_ignores_body_examples(self):
+        text = '---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n```yaml\nid: RM-2026-003\nstatus: closed\n```\n'
+        active = self.write('docs/roadmaps/active/RM-2026-099-test.md', text)
+        before = corpus.metadata(active, self.root, text)
+        closed_text = text.replace('status: active', 'status: closed', 1)
+        closed = self.write('docs/roadmaps/closed/RM-2026-099-test.md', closed_text)
+        after = corpus.metadata(closed, self.root, closed_text)
+        self.assertEqual(before['document_id'], after['document_id'])
+        self.assertEqual(before['roadmap_id'], 'RM-2026-099')
+        self.assertEqual(before['status'], 'active')
+        self.assertEqual(after['status'], 'closed')
+        for invalid in [text.replace('status: active', 'status: closed', 1),
+                        text.replace('id: RM-2026-099', 'id: RM-2026-098', 1),
+                        text.replace('id: RM-2026-099', 'id: RM-2026-099\nid: RM-2026-099', 1),
+                        '# No actual frontmatter\n' + text]:
+            with self.assertRaises(ValueError):
+                corpus.metadata(active, self.root, invalid)
+
+    def test_parser_refresh_removes_false_roadmap_filter_without_emptying_docs(self):
+        name = 'docs/workflows/roadmaps.md'
+        text = '# Workflow\n```yaml\nid: RM-2026-003\nstatus: draft\n```\n'
+        self.write(name, text)
+        self.track()
+        original = corpus.metadata
+        def legacy_metadata(path, root, text):
+            meta = original(path, root, text)
+            if meta['source_path'] == name:
+                meta.update(document_id=corpus.identity('roadmap:RM-2026-003'),
+                            document_type='roadmap', roadmap_id='RM-2026-003', status='draft')
+            return meta
+        with patch.object(corpus, 'metadata', legacy_metadata), patch.object(ingest, 'metadata', legacy_metadata), patch.object(ingest, 'parser_hash', return_value='legacy-parser'):
+            self.index()
+        self.assertTrue(any(p.get('roadmap_id') == 'RM-2026-003' for p in Store(CONFIG).all_points().values()))
+        self.assertTrue(ingest.status(self.root, CONFIG)['parser_changed'])
+        self.index()
+        points = Store(CONFIG).all_points()
+        self.assertTrue(any(p['source_path'] == name for p in points.values()))
+        self.assertFalse(any(p.get('roadmap_id') == 'RM-2026-003' for p in points.values()))
+
     def test_idempotent_then_edit_delete_and_orphan_cleanup(self):
         self.write('docs/architecture/example.md', '# Rule\n\nOriginal technical contract.\n')
         self.track()

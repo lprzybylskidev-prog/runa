@@ -86,12 +86,21 @@ def sections(text, markdown=True):
 
 def metadata(path, root, text):
     name = path.relative_to(root).as_posix()
-    roadmap = re.search(r'^id:\s*(RM-\d{4}-\d{3})\s*$', text, re.M)
-    status = re.search(r'^status:\s*(\w+)\s*$', text, re.M) if roadmap else None
-    kind = 'roadmap' if roadmap else ('skill' if name.startswith('.agents/skills/') else ('config' if path.suffix != '.md' else 'documentation'))
-    return {'document_id': identity('roadmap:' + roadmap[1] if roadmap else 'source:' + name),
+    location = re.fullmatch(r'docs/roadmaps/(draft|active|paused|closed)/([^/]+)\.md', name)
+    identifier, status = None, None
+    if location:
+        header = re.match(r'\A---\n(.*?)\n---\n', text, re.S)
+        if not header:
+            raise ValueError('Missing roadmap frontmatter: ' + name)
+        ids = re.findall(r'^id: (RM-\d{4}-\d{3})$', header[1], re.M)
+        states = re.findall(r'^status: (draft|active|paused|closed)$', header[1], re.M)
+        if len(ids) != 1 or len(states) != 1 or states[0] != location[1] or not re.fullmatch(re.escape(ids[0]) + r'(?:-.+)?', location[2]):
+            raise ValueError('Invalid roadmap identity/status/location: ' + name)
+        identifier, status = ids[0], states[0]
+    kind = 'roadmap' if identifier else ('skill' if name.startswith('.agents/skills/') else ('config' if path.suffix != '.md' else 'documentation'))
+    return {'document_id': identity('roadmap:' + identifier if identifier else 'source:' + name),
             'source_path': name, 'document_type': kind, 'scope': name.split('/')[1] if name.startswith('docs/') else 'project',
-            'roadmap_id': roadmap[1] if roadmap else None, 'status': status[1] if status else None,
+            'roadmap_id': identifier, 'status': status,
             'tags': [kind], 'source_hash': digest(text)}
 
 

@@ -27,11 +27,16 @@
     "query": "production knowledge prohibition",
     "source_path": "docs/ai/knowledge-system.md",
     "section": "Production prohibition",
-    "filters": { "source_path": "docs/ai/knowledge-system.md" }
+    "filters": {
+      "source_path": "docs/ai/knowledge-system.md"
+    }
   },
   {
     "query": "hybrid knowledge retrieval evaluation doctor",
-    "source_path": "docs/roadmaps/active/RM-2026-001-development-environment.md",
-    "filters": { "roadmap_id": "RM-2026-001", "status": "active" }
+    "source_path": "docs/roadmaps/closed/RM-2026-001-development-environment.md",
+    "filters": {
+      "roadmap_id": "RM-2026-001",
+      "status": "closed"
+    }
   }
 ]

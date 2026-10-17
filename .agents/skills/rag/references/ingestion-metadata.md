@@ -10,7 +10,7 @@
 8. Do not force one fixed token count for every document type.
 9. Split oversized sections further only as needed.
 10. Keep overlap small; large overlap creates near-duplicate retrieval results.
-11. Treat metadata as retrieval design, not decoration.
+11. Treat metadata as retrieval design, not decoration. Roadmap identity/status comes only from real roadmap frontmatter in lifecycle directories, with ID/filename/status/location agreement. Fenced examples and workflow/template documents remain documentation, even when they show roadmap fields.
 12. Use stable `document_id` where practical independently from path; record relevant Git branch/ref metadata for branch-aware retrieval.
 13. Use deterministic/derivable chunk IDs.
 14. Create payload indexes only for metadata fields actually filtered on.
