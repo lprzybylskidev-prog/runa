@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""Development-only project knowledge CLI (ingestion foundation)."""
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tools/knowledge'))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Development-only knowledge ingestion. Retrieval/doctor/eval are roadmap point 10.')
+    parser.add_argument('command', choices=['index', 'status', 'stale'])
+    parser.add_argument('--device', choices=['auto', 'cpu'], default=None, help='Prefer CUDA when reachable, or force CPU for fallback acceptance.')
+    args = parser.parse_args()
+    if os.environ.get('APP_ENV') == 'production' or not (ROOT / 'artisan').exists():
+        raise ValueError('Knowledge CLI is unavailable in production.')
+    if not Path('/.dockerenv').exists():
+        return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(ROOT / '.env.dev.local'),
+                               '-f', str(ROOT / 'compose.yaml'), '-f', str(ROOT / '.devcontainer/compose.resources.yaml'),
+                               'exec', '-T', 'app', './bin/knowledge', *sys.argv[1:]], cwd=ROOT).returncode
+    # Also inspect Laravel's actual local environment, rather than trusting the caller's default.
+    environment = ROOT / '.env'
+    if not environment.exists() or 'APP_ENV=local' not in environment.read_text().splitlines():
+        raise ValueError('Knowledge CLI requires the local development environment.')
+    from ingest import index, status
+    config = json.loads((ROOT / 'tools/knowledge/config.json').read_text())
+    lock_dir = ROOT / '.runtime/knowledge'
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    with (lock_dir / 'index.lock').open('w') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise ValueError('Knowledge indexing is running; retry after completion.') from error
+        if args.command == 'index':
+            local = ROOT / '.env.dev.local'
+            cuda = local.exists() and 'EMBEDDINGS_CUDA=1' in local.read_text().splitlines()
+            return index(ROOT, config, args.device or ('auto' if cuda else 'cpu'))
+        result = status(ROOT, config)
+        print(json.dumps(result, indent=2))
+        if result['stale']:
+            print('Run ./bin/knowledge index before relying on knowledge results.', file=sys.stderr)
+        return 1 if result['stale'] else 0
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (ValueError, OSError, RuntimeError, subprocess.CalledProcessError) as error:
+        print(f'Error: {error}', file=sys.stderr)
+        sys.exit(1)

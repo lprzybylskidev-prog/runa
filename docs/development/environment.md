@@ -384,3 +384,7 @@ Mailpit UI is published only at `http://localhost:8025`. SMTP stays internal at 
 Laravel's SMTP configuration lives in `config/mail.php` and all app env examples. Development uses Mailpit; testing uses the array mailer. Credentials are optional as a pair, but invalid types/ports/schemes/sender values fail validation. Production requires actual outbound SMTP, TLS and the database queue; it rejects Mailpit/localhost/template-host settings and the array mailer. Never log credentials or mail payloads.
 
 PostgreSQL data, Mailpit captures and application storage survive container recreation/rebuild. Named-volume owners are prepared by the images; no root ownership repair or destructive bootstrap is required on an ordinary reopen. Container logs have local rotation (10 MB, 3 files). Profile-specific service budgets are documented in `resources.md`.
+
+## Knowledge services (point 9)
+
+The development stack now also starts Qdrant and CPU embeddings automatically; the generated host override adds CUDA embeddings when selected. Setup waits for vector-store/CPU readiness, initializes a missing index, and reports staleness without automatically re-embedding existing changed documents. Model cache and vector data persist in named volumes. All knowledge services remain development-only and expose no host ports. Hardware selection, resource limits, pinned images/model and actual acceptance evidence are documented in [knowledge.md](knowledge.md); retrieval/doctor/evaluation are point 10.

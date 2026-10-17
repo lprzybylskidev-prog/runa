@@ -57,3 +57,9 @@ The generated override also applies bounded sibling allocations. These are initi
 | Mailpit | 0.25 / 0.25 / 0.25 | 128M / 128M / 128M |
 
 The one-shot setup service uses the selected app budget because dependency installation and frontend compilation run there. Custom retains standard sibling budgets and accepts the documented app/test-worker overrides. Limits are ceilings rather than reservations; do not interpret their sum as guaranteed dedicated CPUs. Production budgets are configured separately in the production-finalization points, not inherited from these development presets.
+
+## Knowledge service budgets
+
+Qdrant uses 0.5 CPU/256 MB (low), 1 CPU/512 MB (standard/custom), or 2 CPU/1 GB (high). CPU embeddings uses 1/2/4 CPUs respectively and 2 GB memory. Optional CUDA embeddings uses 2 CPUs/4 GiB system memory in addition to GPU memory; it is a separate sibling so CPU fallback remains available after a GPU failure. These are initial limits verified through service startup, not workload benchmarks. Both embedding services share a persistent model cache. Select hardware with host-only `./bin/dev embeddings auto|cpu|cuda`; automatic detection requires NVIDIA compute capability >=7.5 and the Docker NVIDIA runtime. See `knowledge.md`.
+
+The first CUDA startup exceeded its initial 2 GiB container RAM limit: Docker recorded OOM events and exit code 137. Startup succeeded with a 4 GiB limit and a smaller 2048-token server batch (CPU remains at 8192). The post-startup snapshot showed 482.1 MiB CUDA-service RAM and 270.1 MiB CPU-service RAM; startup peak usage has not been measured.

@@ -7,7 +7,7 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
-This file defines the intended command surface. RM-2026-001 implements the initial commands. Currently `bin/dev` provides profile/prepare/setup/build/up/down/config/shell; `setup --if-needed` supports the Compose initialization service and skips unchanged dependency/frontend work; other wrappers below remain roadmap requirements until their implementation points.
+This file defines the intended command surface. RM-2026-001 implements the initial commands. Currently `bin/dev` provides profile/prepare/setup/build/up/down/config/shell and host-only `embeddings auto|cpu|cuda`; `setup --if-needed` supports the Compose initialization service and skips unchanged dependency/frontend work; other wrappers below remain roadmap requirements until their implementation points.
 
 ## Development
 
@@ -76,6 +76,8 @@ Xdebug is development-only and off by default.
 See `docs/data/seeding.md`.
 
 ## Knowledge/RAG
+
+Point 9 implements `index`, `status` and `stale`, with `--device cpu` to verify the fallback path. `python3 tools/testing/knowledge.py` runs offline ingestion contracts; `python3 tools/testing/knowledge-live.py` checks real CPU/CUDA services using a disposable collection and checkout. `./bin/dev embeddings auto|cpu|cuda` selects the host GPU policy; apply it with build/up. See `docs/development/knowledge.md`. Search, rebuild, doctor and eval below remain point 10 requirements.
 
 - `./bin/knowledge search <query>`
 - `./bin/knowledge search <query> --explain`

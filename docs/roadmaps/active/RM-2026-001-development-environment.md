@@ -681,7 +681,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Real-session Boost acceptance passed (2026-10-17): after reopening inside the devcontainer, the actual Codex agent invoked Boost `application-info` and `search-docs` successfully. Inspection returned PHP 8.4, Laravel 13.37.0, PostgreSQL and Boost 2.10.3; the documentation search returned `laravel/framework@13.x` health-route guidance, matching the installed framework. No setup regeneration or runtime configuration change was needed.
   - Manual editor acceptance passed (2026-10-17): the user confirmed format-on-save and the VS Code breakpoint/resume HTTP debugging flow inside the devcontainer. Xdebug was returned to `mode=off` and its status verified afterward. Point 8 is complete. Setup and acceptance instructions: `docs/development/editor-and-agents.md`.
 
-- [ ] 9. **Build Qdrant, embeddings, and knowledge ingestion**
+- [x] 9. **Build Qdrant, embeddings, and knowledge ingestion**
   - Prerequisites: Points 2 and 6.
   - Add sibling Qdrant and local embedding services with health checks and automatic devcontainer startup. Select an English technical-documentation model after license/security/compatibility assessment; register the actual model/runtime dependencies.
   - Implement CUDA path and CPU fallback.
@@ -689,6 +689,10 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Implement provider capability abstraction.
   - Implement allowlisted structural ingestion, deterministic IDs, metadata, incremental hash state, deletion/orphan cleanup, and staleness tracking.
   - Ensure secrets/raw chats/vendor/runtime artifacts are excluded.
+  - Completed (2026-10-17): Qdrant 1.19.2 and TEI 1.9.4 CPU/CUDA siblings with health checks, automatic Compose/devcontainer startup, persistent Qdrant/model-cache volumes and explicit CPU fallback. Selected MIT BGE small English v1.5 at `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a` (384 dimensions/512 tokens). No Composer/pnpm dependency was added.
+  - Implemented allowlisted tracked-source ingestion, structural/model-token-aware chunks, deterministic IDs, source/Git/model metadata, incremental hashes/vector reuse, stale/parser/branch detection, deleted/orphan cleanup and recoverable interrupted-write state. Commands: `./bin/knowledge index|status|stale`; retrieval/rebuild/doctor/eval remain point 10.
+  - Verified: 11 offline contracts; real CPU/CUDA cosine >0.99999; token-budget rejection/fallback; live initial/no-op/add/edit/delete/orphan/recovery/branch acceptance in a disposable collection; persisted corpus/cache across service recreation; full setup and fingerprint fast path. No unchanged document chunks were re-embedded.
+  - Security/runtime acceptance: final pinned Ubuntu 24.04 CPU/Qdrant runtime images retain exact upstream binaries and omit unused dashboard/development dependencies. CUDA uses the patched upstream image; 4 GiB RAM/2048-token batches resolved startup OOM. Trivy 0.76.0 reports zero HIGH/CRITICAL vulnerabilities in all three final images; host confirmed those exact image IDs healthy with zero restarts. No suppressions. Setup, provenance, limits and evidence: `docs/development/knowledge.md`.
 
 - [ ] 10. **Implement hybrid knowledge retrieval, evaluation, and doctor**
   - Prerequisites: Point 9.

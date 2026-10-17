@@ -10,3 +10,7 @@
 /storage/*.key
 /bootstrap/cache/*.php
 /coverage/
+
+# Python tooling bytecode is generated locally.
+__pycache__/
+*.pyc

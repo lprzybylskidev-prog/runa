@@ -14,6 +14,8 @@ Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not
 | Laravel | 13.37.0 | https://repo.packagist.org/p2/laravel/framework.json |
 | PostgreSQL | 18.6 | https://www.postgresql.org/versions.json |
 | Nginx | 1.31.7 | https://github.com/nginx/nginx/releases/tag/release-1.31.7 |
+| Text Embeddings Inference | 1.9.4 | https://github.com/huggingface/text-embeddings-inference/releases/tag/v1.9.4 |
+| BGE small English | v1.5 / `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a` | https://huggingface.co/BAAI/bge-small-en-v1.5 |
 | Qdrant | 1.19.2 | https://github.com/qdrant/qdrant/releases/tag/v1.19.2 |
 | Mailpit | 1.31.6 | https://github.com/axllent/mailpit/releases/tag/v1.31.6 |
 | Vue | 3.5.44 | https://registry.npmjs.org/vue/3.5.44 |
@@ -51,7 +53,7 @@ Package registry metadata identifies MIT licenses for the selected Composer tool
 
 PHP, Laravel and JavaScript tooling have published security histories; current versions alone do not prove absence of vulnerabilities. Installation must run Composer/pnpm audits against the actual lockfiles, and final image/filesystem checks must use Trivy. Findings block affected implementation until resolved or handled according to the security policy. This document records compatibility research, not a clean security scan of an unbuilt environment.
 
-The embedding model/runtime remains unselected; evaluate the model at point 9. The user approved vendored Polish Laravel validation data from Laravel-Lang/lang 15.37.4 at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, with no Composer localization dependency; see `localization.md`. Codex CLI and Xdebug selections are recorded above; configuration is documented in `editor-and-agents.md`.
+Point 9 selects TEI 1.9.4 and BAAI/bge-small-en-v1.5 at revision `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a`; selection, image digests, security assessment and acceptance are documented in `knowledge.md`. The user approved vendored Polish Laravel validation data from Laravel-Lang/lang 15.37.4 at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, with no Composer localization dependency; see `localization.md`. Codex CLI and Xdebug selections are recorded above; configuration is documented in `editor-and-agents.md`.
 
 Point 7 installed the selected formatting/analysis/test packages. The matching Vitest browser provider, ESLint recommended-JS config and Vue parser are MIT-licensed integration components with compatible peer ranges, verified against their exact npm version metadata on 2026-10-17. The provider requires matching Vitest 5.0.5; its Playwright peer resolves to the existing 1.64.1. No additional application runtime dependency was added. `pnpm-workspace.yaml` records only the deliberately reviewed exact ESLint release age exception emitted by pnpm during this installation; it does not permit unbounded version exceptions. Future dependency changes require deliberate roadmap review.
 

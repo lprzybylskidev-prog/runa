@@ -18,12 +18,12 @@ PRESETS = {
     'high': ('20', '16G', '12', '4'),
 }
 KEYS = ('DEV_CPU_LIMIT', 'DEV_MEMORY_LIMIT', 'TEST_WORKERS', 'PLAYWRIGHT_WORKERS')
-ALLOWED = set(KEYS) | {'DEV_PROFILE', 'RUNA_UID', 'RUNA_GID'}
+ALLOWED = set(KEYS) | {'DEV_PROFILE', 'RUNA_UID', 'RUNA_GID', 'EMBEDDINGS_DEVICE', 'EMBEDDINGS_CUDA'}
 
 
 def load():
     values = dict(zip(KEYS, PRESETS['standard']))
-    values.update(DEV_PROFILE='standard', RUNA_UID=str(os.getuid()), RUNA_GID=str(os.getgid()))
+    values.update(DEV_PROFILE='standard', RUNA_UID=str(os.getuid()), RUNA_GID=str(os.getgid()), EMBEDDINGS_DEVICE='auto', EMBEDDINGS_CUDA='0')
     if LOCAL.exists():
         for line in LOCAL.read_text().splitlines():
             if not line.strip() or line.lstrip().startswith('#'):
@@ -37,6 +37,8 @@ def load():
 
 
 def validate(values):
+    if values['EMBEDDINGS_DEVICE'] not in ('auto', 'cpu', 'cuda') or values['EMBEDDINGS_CUDA'] not in ('0', '1'):
+        raise ValueError('Invalid embeddings device settings.')
     if values['DEV_PROFILE'] not in (*PRESETS, 'custom'):
         raise ValueError('DEV_PROFILE must be low, standard, high or custom.')
     if not re.fullmatch(r'[0-9]+(?:\.[0-9]+)?', values['DEV_CPU_LIMIT']) or float(values['DEV_CPU_LIMIT']) <= 0:
@@ -50,7 +52,7 @@ def validate(values):
 
 def persist(values):
     validate(values)
-    LOCAL.write_text(''.join(f'{key}={values[key]}\n' for key in ('DEV_PROFILE', *KEYS, 'RUNA_UID', 'RUNA_GID')))
+    LOCAL.write_text(''.join(f'{key}={values[key]}\n' for key in ('DEV_PROFILE', *KEYS, 'RUNA_UID', 'RUNA_GID', 'EMBEDDINGS_DEVICE', 'EMBEDDINGS_CUDA')))
     LOCAL.chmod(0o600)
     # VS Code invokes Compose itself, so it needs the same resolved settings.
     service = {'cpus': float(values['DEV_CPU_LIMIT']), 'mem_limit': values['DEV_MEMORY_LIMIT'],
@@ -70,7 +72,63 @@ def persist(values):
     }
     for role in ('setup', 'queue', 'scheduler'):
         siblings[role]['build'] = {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}}
+    siblings['qdrant'] = {'cpus': {'low': .5, 'standard': 1, 'high': 2}[tier],
+                          'mem_limit': {'low': '256M', 'standard': '512M', 'high': '1G'}[tier],
+                          'build': {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}}}
+    siblings['embeddings'] = {'cpus': {'low': 1, 'standard': 2, 'high': 4}[tier], 'mem_limit': '2G',
+                             'build': {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}}}
+    if values['EMBEDDINGS_CUDA'] == '1':
+        config = json.loads((ROOT / 'tools/knowledge/config.json').read_text())
+        siblings['embeddings-gpu'] = {
+            'image': 'runa-embeddings-cuda:rm-2026-001',
+            'build': {'context': '.', 'dockerfile': 'docker/embeddings/cuda.Dockerfile', 'args': {
+                'RUNA_UID': values['RUNA_UID'], 'RUNA_GID': values['RUNA_GID']}},
+            'command': ['--model-id', config['model_id'], '--revision', config['model_revision'],
+                        '--dtype', 'float32', '--auto-truncate', 'false', '--pooling', 'cls', '--port', '8080',
+                        '--max-client-batch-size', '16', '--max-batch-tokens', '2048', '--tokenization-workers', '2', '--json-output'],
+            'depends_on': {'embeddings': {'condition': 'service_healthy'}},
+            'volumes': ['embedding-cache:/data'],
+            'deploy': {'resources': {'reservations': {'devices': [{'driver': 'nvidia', 'count': 1, 'capabilities': ['gpu']}]}}},
+            'cap_drop': ['ALL'], 'security_opt': ['no-new-privileges:true'],
+            'logging': {'driver': 'json-file', 'options': {'max-size': '10m', 'max-file': '3'}},
+            'cpus': 2, 'mem_limit': '4G', 'restart': 'unless-stopped',
+        }
     OVERRIDE.write_text(json.dumps({'services': {'app': service, **siblings}}, indent=2) + '\n')
+
+
+def resolve_embeddings(values):
+    if Path('/.dockerenv').exists():
+        return
+    enabled = False
+    if values['EMBEDDINGS_DEVICE'] != 'cpu':
+        try:
+            gpu = subprocess.run(['nvidia-smi', '--query-gpu=compute_cap', '--format=csv,noheader'],
+                                 check=True, capture_output=True, text=True)
+            runtimes = subprocess.run(['docker', 'info', '--format', '{{json .Runtimes}}'],
+                                      check=True, capture_output=True, text=True)
+            enabled = 'nvidia' in json.loads(runtimes.stdout) and any(float(line) >= 7.5 for line in gpu.stdout.splitlines())
+        except (OSError, ValueError, subprocess.CalledProcessError):
+            enabled = False
+    if values['EMBEDDINGS_DEVICE'] == 'cuda' and not enabled:
+        raise ValueError('CUDA requested but no supported NVIDIA GPU/Docker runtime was found. Use embeddings cpu or fix the host runtime.')
+    values['EMBEDDINGS_CUDA'] = '1' if enabled else '0'
+    print('Embeddings: CUDA preferred with CPU fallback.' if enabled else 'Embeddings: CPU (CUDA disabled or unavailable).')
+
+
+def knowledge_setup():
+    result = subprocess.run([str(ROOT / 'bin/knowledge'), 'status'], cwd=ROOT, check=False)
+    if result.returncode == 0:
+        return
+    if result.returncode != 1:
+        raise ValueError('Knowledge status failed.')
+    # Initialize only a missing collection. Existing stale indexes require explicit indexing.
+    sys.path.insert(0, str(ROOT / 'tools/knowledge'))
+    from store import Store
+    config = json.loads((ROOT / 'tools/knowledge/config.json').read_text())
+    if not Store(config).exists():
+        subprocess.run([str(ROOT / 'bin/knowledge'), 'index'], cwd=ROOT, check=True)
+    else:
+        print('Knowledge index requires attention; run ./bin/knowledge index explicitly.')
 
 
 def environment_files():
@@ -119,12 +177,21 @@ def main():
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/dev profile [low|standard|high|custom KEY=VALUE ...]\n'
               '       ./bin/dev prepare|build|up|down|config|shell\n'
+              '       ./bin/dev embeddings auto|cpu|cuda (host only)\n'
               '       ./bin/dev setup [--if-needed] (inside the devcontainer)\n'
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
               'down preserves volumes; destructive volume deletion is not supported.')
         return 0
     values = load()
     command = args.pop(0)
+    if command == 'embeddings':
+        if Path('/.dockerenv').exists() or len(args) != 1 or args[0] not in ('auto', 'cpu', 'cuda'):
+            raise ValueError('Run ./bin/dev embeddings auto|cpu|cuda on the host.')
+        values['EMBEDDINGS_DEVICE'] = args[0]
+        resolve_embeddings(values)
+        persist(values)
+        print('Apply using ./bin/dev build and ./bin/dev up (persistent data preserved).')
+        return 0
     if command == 'profile':
         if args:
             profile = args.pop(0)
@@ -155,6 +222,7 @@ def main():
             subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
             subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
             register_boost()
+            knowledge_setup()
             print('Development setup is current; dependency installation and frontend build skipped.')
             return 0
         subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
@@ -170,11 +238,13 @@ def main():
         subprocess.run(['pnpm', 'run', 'build'], cwd=ROOT, check=True)
         subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
         register_boost()
+        knowledge_setup()
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(setup_fingerprint() + '\n')
         return 0
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
+    resolve_embeddings(values)
     persist(values)
     if command == 'prepare':
         environment_files()
@@ -182,7 +252,7 @@ def main():
         return 0
     if Path('/.dockerenv').exists():
         raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
-    commands = {'build': ['build', 'app', 'mailpit'], 'up': ['up', '-d', '--wait'],
+    commands = {'build': ['build', 'app', 'mailpit', 'qdrant', 'embeddings', *(['embeddings-gpu'] if values['EMBEDDINGS_CUDA'] == '1' else [])], 'up': ['up', '-d', '--wait'],
                 'down': ['down'], 'config': ['config'], 'shell': ['exec', 'app', 'bash']}
     if command not in commands:
         raise ValueError('Unknown command. See ./bin/dev --help.')

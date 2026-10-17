@@ -7,7 +7,7 @@ description: "Runa development-only knowledge/RAG guidance for ingestion, chunki
 
 Use this skill when changing or diagnosing the development-only project knowledge system.
 
-Read `docs/ai/knowledge-system.md`.
+Read `docs/ai/knowledge-system.md`. For implemented commands, source allowlisting, image/model pins and hardware lifecycle, consult `docs/development/knowledge.md`; search/doctor/eval availability follows the active roadmap.
 
 Load only:
 - `references/ingestion-metadata.md`
