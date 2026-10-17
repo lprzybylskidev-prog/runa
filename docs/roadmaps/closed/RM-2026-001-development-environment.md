@@ -1,11 +1,11 @@
 ---
 id: RM-2026-001
 title: Initial development and production environment
-status: active
+status: closed
 branch: roadmap/RM-2026-001-development-environment
 created_at: 2026-10-17
 activated_at: 2026-10-17
-closed_at: null
+closed_at: 2026-10-18
 release_type: feature
 impact_areas:
   - development
@@ -897,7 +897,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Implemented the shared exclusion group; all eight scheduler contracts pass, including verification of every actual host production gate's group. Updated execution docs and renewed the source security review.
   - User instruction (2026-10-18): clean task-created disposable Docker resources after final checks. Record scoped cleanup authority and protected data in AGENTS and Docker guidance; perform final inventory/removal after the rerun, preserving development, rollback/data/cache volumes, backups and reports.
 
-- [ ] 17. **Full final verification, release finalization, merge, and report**
+- [x] 17. **Full final verification, release finalization, merge, and report**
   - Preparation (2026-10-18): points 16a/16b repair stale frontend diagnostics and the release-doctor placeholder. Repository/docs/maintenance/tooling checks and live frontend diagnostics pass; version computation remains 0.0.0 -> 0.1.0. No final-gate PASS, version bump, closure, merge or publication is claimed.
   - Host preparation completed: obsolete pre-ICU private settings/state were archived, fresh dedicated ICU simulation was deployed, and source security review was renewed. Continue using current exact-commit simulation and preserve development/protected volumes. The first final run failed only on scanner/production lock coordination; point 16e repairs it. Rerun `./bin/quality final --background` from the host and follow the no-polling background-run contract.
   - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.
@@ -920,3 +920,15 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Push and publish GitHub Release from the same roadmap facts.
   - Delete roadmap branch.
   - Produce the concise final roadmap report.
+
+## Final report
+
+RM-2026-001 delivers feature release 0.1.0: the Laravel/PostgreSQL/Vue environment foundation, reproducible development containers, local quality/hooks, development-only knowledge retrieval, and isolated production deployment/backup/restore tooling. Business modules remain outside scope; real production has never been deployed.
+
+Final verification: all 37 selected checks passed on `b4239c2871ba0d8c32125da0b10403917aae4c9f`, including backend 18 tests/63 assertions, maximum-level static analysis, frontend 8 tests, three browser projects, rendered diagnostics, database/seeding guards, production image/health/isolation checks, dependency/secret/image scanning, actual source security review, knowledge evaluations and release metadata contracts. VERSION/changelog/closure edits receive focused release validation; the versioned frontend rebuild and three browser projects also passed after setting 0.1.0.
+
+Final preparation repairs are recorded in points 16a–16e: frontend diagnostics, deterministic release validation, VERSION build input, fixed Nginx libexpat package and serialized production scans. No failed gate was accepted. The existing exact-artifact 25-CVE gosu not-affected assessment remains bounded by its policy and review date 2026-11-16; no global suppression or new security waiver was introduced.
+
+Task cleanup completed after the last browser checks: removed seven test/simulation containers (five `runa-prod-icu-simulation` services plus `runa-dev-app-test-1` and `runa-dev-nginx-test-1`), the simulation network, its two disposable volumes and ten exact-commit production/Nginx image tags. Verified preserved development container identities and development/test database, old rollback, Qdrant/model-cache volumes. Backups, scanner/quality evidence and other projects remain intact; no global prune or builder-cache deletion occurred. Private deployment state was archived so removed simulation resources are not advertised as a live deployment.
+
+Release finalization uses an annotated v0.1.0 tag and a merge commit preserving roadmap history. Remote merge/tag/publication results are reported in chat after focused checks; this closed roadmap is immutable after merge.
