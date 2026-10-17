@@ -121,7 +121,7 @@ Examples include the required framework/tooling families:
 
 Any additional Composer/pnpm package not explicitly mandated still requires explicit user approval.
 
-The exact external Polish Laravel localization solution is intentionally not pre-approved. Research the current candidate(s), present the dependency assessment, and obtain explicit user approval before installation.
+The user approved a pinned Polish translation-data snapshot on 2026-10-17. Do not add `laravel-lang/lang` or `laravel-lang/common` as project dependencies. Import only required framework translation data with exact provenance, MIT attribution and deliberate diff-based maintenance.
 
 Do not add convenience packages such as class-merging helpers, UI frameworks, state managers, validation frameworks, VueUse, or Tailwind plugins without a demonstrated need plus approval.
 
@@ -202,7 +202,7 @@ Polish user UI is default and English is secondary.
 
 Admin panel convention is English-only, but the roadmap does not build the business admin module.
 
-Establish localization infrastructure and install a Polish Laravel localization package/provider only after explicit approval.
+Establish PL/EN UI localization and the approved pinned snapshot of Polish Laravel validation data, using the native translator.
 
 Support light/dark foundation and responsive application shell without designing business pages.
 
@@ -210,15 +210,15 @@ Use a single thin HTTP client/wrapper rather than scattered fetch calls.
 
 Disable native form validation behavior where controlled custom UX requires it.
 
-### Polish Laravel localization assessment — decision pending
+### Polish Laravel localization assessment and approved decision
 
-Research performed on 2026-10-17 before point 5. No localization dependency has been added to the application. The user must choose the solution before implementation continues at that point.
+Research performed on 2026-10-17 before point 5. The user subsequently approved the pinned translation-data snapshot and explicitly prohibited adding the lang/common packages. Implementation and update procedure: `docs/development/localization.md`.
 
 | Candidate | Activity and compatibility | Dependency footprint over the current 73-package Laravel lock |
 |---|---|---|
 | `laravel-lang/lang` 15.37.4 | Released 2026-10-09; PHP ^8.2; its required publisher 16.8.0 explicitly supports Laravel 13. Composer resolved successfully with PHP 8.4/Laravel 13.37. | 86 packages total, 13 additional packages. Includes publisher/locales/config support. |
 | `laravel-lang/common` 6.8.0 | Released 2026-03-17; resolves with the selected stack and pulls the same lang/publisher family. | 98 packages total, 25 additional packages. Adds actions, attributes, HTTP statuses, model/route/starter-kit/MoonShine translation integrations beyond this foundation's needs. |
-| Pinned translation-data snapshot from `Laravel-Lang/lang` | Uses the same reviewed 15.37.4 source revision with Laravel's native translation loader. Copy only required PL framework translation data, preserve attribution and verify keys/placeholders against installed Laravel's English catalog. This option has not been implemented or approved. | No additional Composer/pnpm packages. The five upstream Polish source files total 83,853 bytes before selecting/converting the required catalog. No publisher runtime. Updates become explicit repository maintenance. |
+| Pinned translation-data snapshot from `Laravel-Lang/lang` | Uses the same reviewed 15.37.4 source revision with Laravel's native translation loader. Copy only required PL framework translation data, preserve attribution and verify keys/placeholders against installed Laravel's English catalog. Approved for the required validation catalog only. | No additional Composer/pnpm packages. The five upstream Polish source files total 83,853 bytes before selecting/converting the required catalog. No publisher runtime. Updates become explicit repository maintenance. |
 
 Both packages and the translation source are MIT-licensed. The upstream license is copyright Laravel Lang Team 2013–2026 and requires preservation of its notice. Source revision for lang 15.37.4: `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`.
 
@@ -226,7 +226,7 @@ The direct-package Packagist advisory records for lang/common/publisher were emp
 
 The focused lang package provides framework translation catalogs plus publication/update support. The common meta-package overlaps future modules and third-party integrations that Runa has not selected; it provides no necessary frontend Vue localization capability. A source-data snapshot would cover framework messages using the built-in loader, independently of frontend UI translations and without changing English-only technical/backend defaults.
 
-Recommendation pending user approval: use a pinned translation-data snapshot with MIT attribution, record source/version in maintenance metadata, test supported keys/placeholders, and update it deliberately alongside framework reviews. Do not install either package or adopt the snapshot until the user decides.
+Approved decision: use a pinned translation-data snapshot with MIT attribution, exact provenance, key/placeholder checks and deliberate review through diffs. The update tool must never overwrite local corrections. No Composer localization packages are permitted.
 
 Primary research sources:
 - https://repo.packagist.org/p2/laravel-lang/lang.json
@@ -589,7 +589,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
 - 2026-10-17 — Database queue driver is the initial queue mechanism; Redis/Horizon is deferred.
 - 2026-10-17 — PostgreSQL is the only database engine.
 - 2026-10-17 — Polish user UI is default, English secondary; administration panel remains English-only.
-- 2026-10-17 — Exact external Polish localization dependency remains a user-approval decision during this roadmap.
+- 2026-10-17 — The user approved the Laravel-Lang/lang 15.37.4 translation-data snapshot at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, limited to required Polish framework messages, with MIT attribution and controlled diff review. No lang/common Composer dependencies.
 
 ## Implementation plan
 
@@ -632,16 +632,17 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Verify migrations/bootstrap work from a clean state without creating fake business tables.
   - Verified: development/test/temporary parallel database migrations, bigint ALWAYS identity in real DDL, empty public schemas, non-superuser role separation, destructive-command regression checks, authenticated TCP health and idempotent credential/setup behavior. Full parallel runner/storage isolation follows in point 7.
 
-- [ ] 5. **Build the Vue, TypeScript, Tailwind, localization, and HTTP foundation**
-  - Prerequisites: Points 3–4; exact external localization package approval before installing it.
+- [x] 5. **Build the Vue, TypeScript, Tailwind, localization, and HTTP foundation**
+  - Prerequisites: Points 3–4; user-approved pinned localization-data snapshot.
   - Install/configure Vue 3, TS strict, Vite, Tailwind using current-version syntax.
   - Establish responsive/light-dark clean application shell.
   - Establish user-facing PL-default/EN-secondary localization infrastructure.
-  - Research the exact Polish Laravel localization dependency and obtain user approval before installation if an external package is needed.
+  - Import only required Polish framework messages from the approved snapshot, record exact provenance/license/maintenance metadata and provide a review-only update tool that preserves local changes.
   - Establish admin-panel English-only convention without implementing business admin features.
   - Create the thin HTTP client/wrapper and minimal API connectivity smoke.
   - Configure controlled form/browser-validation baseline.
   - Add real component/page/form/table catalogue entries only for implemented reusable patterns; do not fabricate business screens.
+  - Verified: 137 native Polish validation messages and interpolation, offline provenance/license/key checks and review-only candidate generation; strict Vue/TS build, frozen installation and dependency audits; rendered PL/EN and light/dark/system at desktop/tablet/mobile, 200% text, keyboard skip, storage denial, failure/retry and Firefox smoke; Vite proxy/HMR page; locked PHP/Nginx production frontend builds and runtime-data isolation. Browser provisioning becomes reproducible in point 7.
 
 - [ ] 6. **Complete the development Compose services**
   - Prerequisites: Points 2–5.

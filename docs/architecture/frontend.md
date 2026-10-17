@@ -24,7 +24,7 @@ The mandatory administration panel is English-only and is not translated to Poli
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
-Polish Laravel validation/localization resources are required from the start for user-facing messages. Technical backend output, machine codes and admin messages remain English. The exact external localization package/provider must be researched and explicitly approved before installation; do not treat this requirement as approval of an unnamed package.
+Polish Laravel validation/localization resources are required from the start for user-facing messages. Technical backend output, machine codes and admin messages remain English. The approved implementation uses pinned vendored translation data with Laravel’s native loader; no `laravel-lang/lang` or `laravel-lang/common` dependency is permitted. Provenance, MIT attribution and deliberate update instructions are in `docs/development/localization.md`.
 
 ## Responsive and themes
 

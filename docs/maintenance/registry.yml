@@ -330,3 +330,34 @@ entries:
     url: https://github.com/laravel/laravel/tree/v13.11.0
     last_reviewed: 2026-10-17
     review_every_days: 90
+
+  - id: polish-laravel-validation-data
+    type: vendored_localization_data
+    name: Laravel Lang Polish validation snapshot
+    url: https://github.com/Laravel-Lang/lang
+    version: 15.37.4
+    pinned_revision: a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7
+    imported_at: 2026-10-17
+    license: MIT
+    source: lang/SOURCE.json
+    review_procedure: docs/development/localization.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+    used_by:
+      - lang/pl/validation.php
+
+  - id: vite-vue-adapter
+    type: framework_tooling
+    name: Vite Vue integration
+    version: 6.0.10
+    url: https://github.com/vitejs/vite-plugin-vue
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: tailwind-vite-adapter
+    type: framework_tooling
+    name: Tailwind Vite integration
+    version: 4.3.3
+    url: https://github.com/tailwindlabs/tailwindcss
+    last_reviewed: 2026-10-17
+    review_every_days: 90

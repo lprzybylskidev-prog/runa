@@ -52,6 +52,15 @@ RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY --chown=runa:runa app/ app/
 RUN composer dump-autoload --no-dev --no-scripts --optimize
 
+FROM node AS frontend-build
+WORKDIR /build
+RUN npm install --global corepack@0.36.0 && corepack enable && corepack install --global pnpm@12.14.0
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY resources/ resources/
+COPY vite.config.mjs tsconfig.json ./
+RUN pnpm run build
+
 FROM runtime AS production
 ENV APP_ENV=production
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
@@ -60,6 +69,15 @@ COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
 COPY --chown=runa:runa config/ /workspace/config/
 COPY --chown=runa:runa database/ /workspace/database/
 COPY --chown=runa:runa routes/ /workspace/routes/
-COPY --chown=runa:runa public/ /workspace/public/
+COPY --chown=runa:runa lang/ /workspace/lang/
+COPY --chown=runa:runa public/index.php /workspace/public/index.php
+COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
 COPY --chown=runa:runa storage/ /workspace/storage/
 COPY --chown=runa:runa artisan /workspace/artisan
+
+FROM nginx:1.31.7-alpine AS production-nginx
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY --from=frontend-build /build/public/build/ /workspace/public/build/
+USER nginx
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD wget -qO- http://127.0.0.1:8080/api/health || exit 1

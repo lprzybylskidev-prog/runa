@@ -38,7 +38,8 @@ services:
     image: runa-nginx:rm-2026-001
     build:
       context: .
-      dockerfile: docker/nginx/Dockerfile
+      dockerfile: docker/php/Dockerfile
+      target: production-nginx
     depends_on:
       app:
         condition: service_healthy

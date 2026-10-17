@@ -7,7 +7,9 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(api: __DIR__.'/../routes/api.php')
+    ->withRouting(api: __DIR__.'/../routes/api.php', then: function (): void {
+        require __DIR__.'/../routes/spa.php';
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AssignRequestId::class);
     })

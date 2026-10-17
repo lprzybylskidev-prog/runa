@@ -7,7 +7,7 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
-This file defines the intended command surface. RM-2026-001 implements the initial commands.
+This file defines the intended command surface. RM-2026-001 implements the initial commands. Currently `bin/dev` provides profile/prepare/setup/build/up/down/config/shell; other wrappers below remain roadmap requirements until their implementation points.
 
 ## Development
 
@@ -26,6 +26,10 @@ Doctor output includes effective resource values.
 ### `./bin/dev doctor`
 
 Validate development stack, services, health checks, runtime/tooling, and local profile.
+
+### Frontend and localization checks currently available
+
+Inside the devcontainer: `pnpm run typecheck`, `pnpm run build`, `pnpm run dev` (HMR port 5173 at `/build/`), `python3 tools/localization/snapshot.py check`, `php tools/testing/localization.php`. `./bin/dev setup` now includes locked frontend installation/build. Snapshot review/update commands are documented in `docs/development/localization.md` and never overwrite local catalogs.
 
 ## Formatting/lint/type/static analysis
 

@@ -341,3 +341,14 @@ The initial production build target copies an allowlist of runtime files and loc
 PostgreSQL 18.6 persists data under the named volume mounted at `/var/lib/postgresql`. Its TCP health check authenticates as the application role and executes `SELECT 1`, avoiding premature readiness while the entrypoint's temporary Unix-socket-only initialization server runs. The application depends on this health check. PostgreSQL has no published host port; VS Code's future database client uses service DNS within the devcontainer.
 
 Initialization scripts run only for an empty volume. Changing local passwords does not rewrite an existing database. Reconcile credentials/roles deliberately; do not delete a volume to repair ordinary configuration. Rebuild/reopen preserves databases. Production uses its own Compose project, volume and `.env.prod.database`; production operations remain pending points 13–14.
+
+
+## Frontend foundation
+
+Post-create `./bin/dev setup` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
+
+For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
+
+The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Remaining production-stack verification is still owned by points 13–14.
+
+Point 5 browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. Browser binaries/system dependencies were provisioned for this acceptance run; reproducible test-image/browser provisioning is completed in point 7.

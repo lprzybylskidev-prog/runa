@@ -124,6 +124,8 @@ def main():
             testing.write_text(testing.read_text().replace('APP_KEY=\n', key + '\n'))
         subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
         subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
+        subprocess.run(['pnpm', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
+        subprocess.run(['pnpm', 'run', 'build'], cwd=ROOT, check=True)
         subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
         return 0
     if args:

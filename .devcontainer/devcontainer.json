@@ -1,12 +1,21 @@
 {
   "name": "Runa",
-  "dockerComposeFile": ["../compose.yaml", "compose.resources.yaml"],
+  "dockerComposeFile": [
+    "../compose.yaml",
+    "compose.resources.yaml"
+  ],
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "runa",
   "updateRemoteUserUID": false,
   "overrideCommand": false,
   "shutdownAction": "stopCompose",
-  "initializeCommand": ["./bin/dev", "prepare"],
-  "postCreateCommand": "./bin/dev setup"
+  "initializeCommand": [
+    "./bin/dev",
+    "prepare"
+  ],
+  "postCreateCommand": "./bin/dev setup",
+  "forwardPorts": [
+    5173
+  ]
 }
