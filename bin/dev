@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import sys
 
@@ -61,7 +62,7 @@ def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/dev profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/dev prepare|build|up|down|config|shell\n'
+              '       ./bin/dev prepare|setup|build|up|down|config|shell\n'
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
               'down preserves volumes; destructive volume deletion is not supported.')
         return 0
@@ -85,6 +86,20 @@ def main():
             persist(values)
         print('\n'.join(f'{key}={values[key]}' for key in ('DEV_PROFILE', *KEYS)))
         return 0
+    if command == 'setup':
+        if args or not Path('/.dockerenv').exists():
+            raise ValueError('Run ./bin/dev setup inside the devcontainer, without arguments.')
+        env = ROOT / '.env'
+        if not env.exists():
+            env.write_text((ROOT / '.env.dev.example').read_text().replace(
+                'DB_PASSWORD=\n', 'DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n'))
+            env.chmod(0o600)
+        subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
+        if any(line == 'APP_KEY=' for line in env.read_text().splitlines()):
+            subprocess.run(['php', 'artisan', 'key:generate', '--force'], cwd=ROOT, check=True)
+        subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
+        subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
+        return 0
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
     persist(values)
@@ -106,6 +121,6 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
         print(f'Error: {error}', file=sys.stderr)
         sys.exit(1)

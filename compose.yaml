@@ -21,5 +21,27 @@ services:
     cpus: ${DEV_CPU_LIMIT:-4}
     mem_limit: ${DEV_MEMORY_LIMIT:-4G}
     stop_grace_period: 30s
+  nginx:
+    image: nginx:1.31.7-alpine
+    user: nginx
+    entrypoint: [nginx, -g, 'daemon off;']
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:8080:8080'
+    volumes:
+      - ./public:/workspace/public:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:8080/api/health]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 volumes:
   composer-cache:

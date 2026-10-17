@@ -323,3 +323,13 @@ Host Python 3 and Docker Compose are required for the host wrapper and VS Code i
 `./bin/dev config` prints resolved Compose configuration; `./bin/dev down` stops/removes this project's containers while preserving named volumes. There is no destructive volume-reset shortcut. At the base-toolchain stage, only app/FPM exists; application, Nginx and sibling services are completed by the following roadmap points.
 
 The devcontainer initializes the resource override before Compose starts and attaches as `runa`. It sets the versioned hooks path after creation; hook scripts become available in their implementation point. Opening or rebuilding does not delete application data. See [toolchain selections](toolchain.md) and [resource profiles](resources.md).
+
+## Laravel foundation
+
+The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
+
+The devcontainer's post-create command is `./bin/dev setup`, executed inside the container. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Database setup and frontend installation are completed by their roadmap points.
+
+Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
+
+The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses the same HTTP configuration. `compose.production.yaml` is an incomplete paired runtime foundation; points 13–14 complete the stack, isolation verification and production operations. It must not be treated as a deployment procedure yet.

@@ -586,7 +586,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Ensure build/rebuild is deterministic/idempotent.
   - Verified: real image build and cached rebuild, non-root execution, required PHP extensions/tool versions, FastCGI health, resolved preset/custom limits and cache persistence through container recreation. VS Code GUI reopen remains part of first-run acceptance.
 
-- [ ] 3. **Install and clean the Laravel application**
+- [x] 3. **Install and clean the Laravel application**
   - Prerequisites: Point 2.
   - Install the pinned Laravel version inside the intended environment. Generate into an isolated temporary directory if the framework installer requires an empty directory; merge deliberately without overwriting audited docs/skills/VERSION.
   - Remove starter/welcome/demo artifacts.
@@ -594,6 +594,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Establish minimal named health/application route(s) required for environment validation.
   - Implement configuration/env templates and config validation foundation.
   - Keep repository prose/code English-only.
+  - Verified: locked dependency installation/audit, PHP syntax, named minimal API route via Nginx/PHP-FPM, safe request IDs, configuration rejection cases, idempotent setup/key preservation and a built production PHP foundation without Composer/Node/compiler/Git/AI material.
 
 - [ ] 4. **Configure PostgreSQL and testing database foundation**
   - Prerequisites: Point 3.

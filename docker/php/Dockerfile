@@ -44,3 +44,21 @@ ENV COREPACK_HOME=/opt/corepack
 ENV COMPOSER_HOME=/home/runa/.config/composer
 USER runa
 RUN pnpm --version
+
+FROM development AS php-dependencies
+WORKDIR /tmp/runa-build
+COPY --chown=runa:runa composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
+COPY --chown=runa:runa app/ app/
+RUN composer dump-autoload --no-dev --no-scripts --optimize
+
+FROM runtime AS production
+ENV APP_ENV=production
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
+COPY --chown=runa:runa app/ /workspace/app/
+COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
+COPY --chown=runa:runa config/ /workspace/config/
+COPY --chown=runa:runa routes/ /workspace/routes/
+COPY --chown=runa:runa public/ /workspace/public/
+COPY --chown=runa:runa storage/ /workspace/storage/
+COPY --chown=runa:runa artisan /workspace/artisan

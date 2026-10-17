@@ -8,5 +8,5 @@
   "overrideCommand": false,
   "shutdownAction": "stopCompose",
   "initializeCommand": ["./bin/dev", "prepare"],
-  "postCreateCommand": "git config core.hooksPath .githooks"
+  "postCreateCommand": "./bin/dev setup"
 }

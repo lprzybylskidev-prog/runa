@@ -322,3 +322,11 @@ entries:
     source: docs/development/toolchain.md
     last_reviewed: 2026-10-17
     review_every_days: 30
+
+  - id: laravel-application-skeleton
+    type: framework_tooling
+    name: Laravel application skeleton
+    version: 13.11.0
+    url: https://github.com/laravel/laravel/tree/v13.11.0
+    last_reviewed: 2026-10-17
+    review_every_days: 90
