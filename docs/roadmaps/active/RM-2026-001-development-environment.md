@@ -887,6 +887,10 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Host preparation for point 17 reproduced an unresolved `../../../VERSION?raw` import from the footer: the frontend Docker stage omitted the version file.
   - Copied canonical VERSION into the frontend stage. Host Docker built both exact-commit production images successfully at `f68c0e8`; frontend compilation and runtime image capability/isolation probes passed. No dependency or runtime-version change was required.
 
+- [ ] 16d. **Patch the production Nginx libexpat vulnerability**
+  - Current exact-image Trivy scan found HIGH CVE-2026-77214 in inherited libexpat 2.8.5-r0; Alpine's security tracker confirms 2.9.0-r0 fixes it on branch 3.24.
+  - Upgrade only the existing library to the exact fixed package, retain Nginx version, rebuild and scan the actual resulting images before restarting final verification. No suppression is permitted.
+
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Preparation (2026-10-18): points 16a/16b repair stale frontend diagnostics and the release-doctor placeholder. Repository/docs/maintenance/tooling checks and live frontend diagnostics pass; version computation remains 0.0.0 -> 0.1.0. No final-gate PASS, version bump, closure, merge or publication is claimed.
   - Host continuation required: all impact areas include Docker-host-only production/scanner gates; the devcontainer cannot coordinate them. Inspect actual host resources before preparing the current exact-commit ICU simulation. Root private Compose settings and `.runtime/production/deployment.json` still identify the older pre-ICU simulation and must not be blindly reused/adopted. Preserve active development and protected data/rollback volumes. Renew actual final changed-surface review evidence after reviewing current sources and host scanner results; prior point-14 evidence is not full-roadmap approval. Start `./bin/quality final --background` from the correctly prepared host checkout and return status/full failed logs; follow the no-polling background-run contract.
