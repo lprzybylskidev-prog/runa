@@ -6,8 +6,8 @@ Runa is a Laravel-based business application designed to evolve under an explici
 
 <!-- runa:current-state -->
 
-- Current version: `0.1.0`
-- Active roadmap: `RM-2026-002`
+- Current version: `0.1.1`
+- Active roadmap: `none`
 - Production ever deployed: `false`
 
 <!-- /runa:current-state -->

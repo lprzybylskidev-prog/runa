@@ -1,11 +1,11 @@
 ---
 id: RM-2026-002
 title: Documentation consistency and release workflow fixes
-status: active
+status: closed
 branch: roadmap/RM-2026-002-documentation-consistency
 created_at: 2026-10-18
 activated_at: 2026-10-18
-closed_at: null
+closed_at: 2026-10-18
 release_type: fix
 impact_areas:
   - documentation
@@ -135,7 +135,7 @@ Reviewed before final verification on 2026-10-18:
 - Current-state source searches found no remaining unqualified completed-work-as-pending claims in the reviewed guidance. Initial version references in versioning policy, dated evidence and closed checklists remain intentionally unchanged.
 - Deterministic regressions cover the stale README, lifecycle transitions and historical immunity. Golden roadmap filtering now uses the actual closed baseline. Incremental indexing reports current state and no orphan/missing chunks; parser reclassification has both offline legacy-index recovery and real-service retrieval coverage.
 
-Closure review still required after the full gate: update only the reviewed release metadata and README version/active-roadmap fields together, check no stale active/future-release claim remains, run focused docs/release validation and refresh knowledge after the branch transition. This pending transition is not claimed complete here.
+Closure review completed on 2026-10-18: VERSION and the newest changelog entry identify 0.1.1, the README block identifies 0.1.1 with no active roadmap, and closure metadata/checklist/report agree. No capability prose, procedure, validator or runtime changes followed the full gate. Focused docs/release checks and incremental knowledge refresh validate this transition; main sanity and publication are performed after the closure commit without editing this history.
 
 ## Implementation plan
 
@@ -151,6 +151,16 @@ Closure review still required after the full gate: update only the reviewed rele
 - [x] 4. Correct knowledge classification and verify guidance synchronization.
   - Prerequisites: point 3.
   - Completion: narrow frontmatter/path classification fix and regressions; review AGENTS/skills/workflows for contradiction or duplication; refresh the index incrementally and run applicable knowledge checks/evals; record source-based current-state review evidence. Commit and update this checklist.
-- [ ] 5. Full verification, release finalization, merge, and final report.
+- [x] 5. Full verification, release finalization, merge, and final report.
   - Prerequisites: points 1–4 committed and complete, safe synchronized worktree.
   - Completion: run the full applicable local final gate under the existing background handoff contract. Any findings require a fix point immediately before this item and full verification restarted. After PASS, synchronize 0.1.1 VERSION/changelog/README and closure facts, refresh knowledge and run focused docs/release validation; close on the branch, merge with a merge commit, sanity-check main, create annotated v0.1.1, push and publish the GitHub Release, then delete the roadmap branch. Verify publication using available authenticated tooling. Inspect and show exact task-created disposable Docker resources before authorized scoped cleanup; preserve development databases/caches/backups/reports. Report checks, review evidence, release identity and cleanup. Do not edit closed history afterward.
+
+## Final report
+
+RM-2026-002 delivers fix release 0.1.1. Repaired current-state documentation, clarified point-level documentation ownership and mandatory closure review, added deterministic README/command checks to docs and every final release gate, and corrected knowledge roadmap classification and historical search expectations. Preserved closed RM-2026-001 and published v0.1.0 history.
+
+The full local final gate passed all 20 selected steps on branch roadmap/RM-2026-002-documentation-consistency at candidate c2108a5463443131c66dbc58419faddfc256be8e with documentation, tooling and ai_environment impacts. Evidence remains under .runtime/quality/. Coverage includes 18 backend tests/63 assertions, static analysis, formatting/lint, dependency/secret scans, hooks, eight scheduler contracts, seven docs contracts, eleven release contracts, fourteen offline knowledge contracts and eight knowledge eval cases. Three isolated real-service retrieval tests and CPU/CUDA/fallback ingestion acceptance also passed before the full gate. No inserted final-verification fix points were needed.
+
+Only reviewed release metadata and README version/active-roadmap values changed after the full gate. Focused docs/release validation and incremental indexing cover closure; merge/main sanity, annotated v0.1.1 and GitHub publication are subsequent workflow actions whose results are reported in chat.
+
+No migrations, application behavior changes, runtime configuration changes, new dependencies or real production deployment. No task-created Docker containers, networks, image tags or volumes required removal. Disposable knowledge test collections were removed by their tests; development/test databases, caches, existing simulation/rollback data, backups and verification reports were preserved. Arbitrary prose still requires the recorded source review; local metadata checks do not prove remote publication.
