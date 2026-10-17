@@ -20,7 +20,15 @@ foreach (['pdo_pgsql', 'mbstring', 'intl', 'bcmath', 'Zend OPcache', 'pcntl', 'z
 $expect(! extension_loaded('xdebug'), 'Development extension in runtime.');
 $expect(in_array('pgsql', PDO::getAvailableDrivers(), true), 'Missing PDO PostgreSQL driver.');
 $expect(mb_strtolower('ZAŻÓŁĆ GĘŚLĄ JAŹŃ', 'UTF-8') === 'zażółć gęślą jaźń', 'Polish multibyte conversion failed.');
-$expect(iconv('UTF-8', 'ASCII//TRANSLIT', 'Zażółć gęślą jaźń') === 'Zazolc gesla jazn', 'GNU iconv transliteration capability changed.');
+$text = 'Zażółć gęślą jaźń';
+$encoded = iconv('UTF-8', 'UTF-16LE', $text);
+$expect(is_string($encoded) && iconv('UTF-16LE', 'UTF-8', $encoded) === $text, 'Lossless iconv Unicode round trip failed.');
+$expectedTransliteration = match (ICONV_IMPL) {
+    'libiconv' => "Zaz'ol'c ge'sla ja'z'n",
+    'glibc' => 'Zazolc gesla jazn',
+    default => throw new RuntimeException('Unreviewed iconv implementation: '.ICONV_IMPL),
+};
+$expect(iconv('UTF-8', 'ASCII//TRANSLIT', $text) === $expectedTransliteration, 'Implementation-specific iconv transliteration changed.');
 $expect(Str::ascii('Zażółć gęślą jaźń', 'pl') === 'Zazolc gesla jazn', 'Laravel Polish transliteration failed.');
 $collator = new Collator('pl_PL');
 $alphabet = ['ż', 'ź', 'z', 'ś', 's', 'ó', 'o', 'ń', 'n', 'ł', 'l', 'ę', 'e', 'ć', 'c', 'ą', 'a'];
