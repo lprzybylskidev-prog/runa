@@ -1,6 +1,6 @@
 # Runa Visual Direction
 
-Status: general visual direction and temporary root-preview implementation approved. The root view is implemented and awaits explicit user visual acceptance under roadmap point 16. Future auth/app template details remain open.
+Status: final root view and implemented visual direction explicitly accepted by the user on 2026-10-18; roadmap point 16 is complete. Future auth behavior and app/admin template implementation remain outside this scope.
 
 Roadmap: [RM-2026-001, point 16](../roadmaps/active/RM-2026-001-development-environment.md).
 
@@ -117,7 +117,7 @@ Exact weights, sizes, line heights and font delivery remain to be established du
 
 Approved starting semantic color values for both themes: [color palette](color-palette.md), accepted by the user on 2026-10-17 together with the SVG preview. Practical adjustments may follow rendered validation during application development.
 
-Palette review direction: retain the current dark palette as the baseline. Give light mode more cool lavender/blue-indigo character, with tinted surfaces instead of pure white and neutral gray. Both themes retain violet and cyan accents and soft, diffuse, restrained gradients. The palette explicitly maps common business UI states through shared tokens and aliases; the revised palette is approved as the baseline, while the root preview awaits user visual acceptance.
+Palette review direction: retain the current dark palette as the baseline. Give light mode more cool lavender/blue-indigo character, with tinted surfaces instead of pure white and neutral gray. Both themes retain violet and cyan accents and soft, diffuse, restrained gradients. The palette explicitly maps common business UI states through shared tokens and aliases; the revised palette is approved as the baseline, while the final root preview was accepted on 2026-10-18.
 
 User direction (2026-10-17): Runa is a business system. Readability is essential, while the interface should remain visually engaging. Balance restrained decoration with visible color accents; avoid both a bland, colorless interface and loud, heavily saturated surfaces.
 
@@ -174,7 +174,7 @@ User direction (2026-10-17): consider motion from the start of component design 
 
 Visual state changes should generally transition smoothly rather than jump abruptly. For example, hover changes to background, text, border or shadow should feel continuous. Apply the same principle where appropriate to focus/selected states, dropdowns and sidebar changes, without animating every element or adding decorative motion by default. Feedback must remain immediate; transitions must not delay actions or obscure state.
 
-Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Exact durations, easing and component-specific transitions remain to be established and checked in rendered UI; no numerical timing specification has been approved yet.
+Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Exact durations, easing and component-specific transitions remain to be established and checked in rendered UI; the implemented shared control transitions (160ms), tooltip fades (140ms), cover fades (340ms) and additional 500ms cover hold are accepted with the final root view.
 
 ## Open decisions
 
@@ -187,9 +187,9 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- User review of the implemented shared footer.
-- Practical light-theme validation against the approved palette.
-- Complete visual-specification approval and concrete implementation/acceptance tasks.
+- Future additions to the accepted shared footer, when needed.
+- Further component-specific theme validation as new views are implemented.
+- Future auth/app view implementation scope; the current root preview is accepted.
 
 ## Interface copy and preference controls
 
@@ -215,7 +215,7 @@ User decision: activating language or theme controls first covers the entire vie
 
 ## Background depth refinement
 
-Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep them static and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This version is pending user visual review.
+Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep them static and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This background was accepted as part of the final root view on 2026-10-18.
 
 ## Project logo
 

@@ -1,6 +1,6 @@
 # Runa Color Palette
 
-Status: approved by the user on 2026-10-17 as the starting palette for both themes. Dark mode retains its existing base; light mode is revised toward cool lavender/indigo surfaces. The temporary root view now uses these values; rendered visual acceptance remains pending.
+Status: approved by the user on 2026-10-17 as the starting palette for both themes. Dark mode retains its existing base; light mode is revised toward cool lavender/indigo surfaces. The temporary root view now uses these values; the user accepted the rendered root view on 2026-10-18.
 
 Related: [visual direction](visual-direction.md), [REF-001](references/REF-001-dark-palette.webp).
 
