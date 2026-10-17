@@ -7,6 +7,10 @@ export const messages = {
     light: 'Jasny',
     dark: 'Ciemny',
     system: 'Systemowy',
+    welcomeLabel: 'Twoja przestrzeń do pracy',
+    workspace: 'PRZESTRZEŃ',
+    foundation: 'Dobry początek. Przestrzeń na więcej.',
+    growing: 'Rozwijamy się',
     eyebrow: 'Miejsce na Twoją pracę',
     title: 'Witaj w Runie.',
     description:
@@ -27,6 +31,10 @@ export const messages = {
     light: 'Light',
     dark: 'Dark',
     system: 'System',
+    welcomeLabel: 'Your workspace',
+    workspace: 'WORKSPACE',
+    foundation: 'A solid start. Room for more.',
+    growing: 'Growing together',
     eyebrow: 'Room for your work',
     title: 'Welcome to Runa.',
     description:

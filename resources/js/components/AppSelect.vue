@@ -16,7 +16,7 @@ function update(event: Event) {
     {{ label }}
     <select
       :value="modelValue"
-      class="min-h-11 rounded-lg border border-control bg-surface px-3 py-2 text-sm text-ink hover:border-accent"
+      class="min-h-11 rounded border border-control bg-input px-3 py-2 text-sm text-ink hover:border-primary"
       @change="update"
     >
       <option

@@ -850,6 +850,8 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
 
 - [ ] 16. **Discuss and agree the frontend visual redesign, then implement the approved direction**
   - Prerequisite: Point 15 and its acceptance fixes.
+  - Discussion record: [visual direction and reference mapping](../../design/visual-direction.md). REF-001 records only the user-selected dark palette, restrained gradients and CSS circular background, with the supplied WebP reference stored alongside the specification. The user selected Tabler Icons as the icon family. The general visual direction and root-preview implementation were authorized by the user; auth/app templates remain future design guidance. Rendered user acceptance is pending.
+  - Palette approved (2026-10-17): the user accepted [both-theme colors and SVG preview](../../design/color-palette.md) as the starting baseline, with practical validation during application development. Subsequent decisions cover motion, typography, component density, feedback and the temporary root preview; see the design document.
   - User-requested addition (2026-10-17): the current frontend is technically correct, but its visual presentation needs redesign.
   - Mandatory discussion stop: when reaching this point, stop implementation and enter discussion with the user. Do not autonomously choose or implement a visual direction.
   - Review the user's reference images and discuss visual direction, layout, typography, colors, light/dark themes, responsive behavior and the intended scope of the existing application shell.
@@ -857,6 +859,13 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Record the agreed specification and concrete implementation/acceptance tasks in this roadmap before resuming implementation. Keep business modules outside scope unless separately agreed.
   - Implement the agreed redesign, update relevant component/pattern documentation, and verify rendered UI, accessibility, responsive layouts, both themes and applicable frontend checks.
   - Keep this point open until the discussion, approved implementation and verification are complete.
+  - Root preview verification (2026-10-17): build/strict TypeScript, ESLint, eight frontend tests and all three existing Playwright projects passed. Actual local fonts load; six additional Chromium checks cover 390/768/1440px, both themes, 200% text, keyboard skip and denied preference storage. Screenshots are under ignored `artifacts/playwright/root-*.png`. No auth/app template or business behavior added. User visual review remains pending; point 16 stays open.
+  - Agreed final stage (2026-10-17): redesign the current `/` dashboard as a temporary demonstration of the agreed general visual language. This view is neither auth nor app/admin; do not impose their layout templates. Do not build authentication, business modules or app/admin navigation for this preview.
+  - Concrete implementation/acceptance tasks:
+    - [x] Apply the approved both-theme palette, IBM Plex Mono, Tabler Icons, restrained CSS background/gradients, modest radii/shadows and subtle state transitions to the existing root view, preserving its useful behavior.
+    - [x] Verify rendered desktop/tablet/phone layouts, light/dark themes, keyboard/accessibility/reduced-motion behavior and proportionate frontend checks; update relevant component/pattern documentation.
+    - [ ] Present the rendered root view to the user, incorporate agreed visual refinements and update durable design documentation.
+    - [ ] Obtain explicit user acceptance of the generated view before completing point 16. Keep it open while visual review or requested adjustments remain; technical checks alone are insufficient.
 
 - [ ] 17. **Full final verification, release finalization, merge, and report**
   - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.

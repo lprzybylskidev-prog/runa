@@ -487,3 +487,23 @@ entries:
     source: .devcontainer/devcontainer.json
     last_reviewed: 2026-10-17
     review_every_days: 90
+
+  - id: ibm-plex-mono
+    type: vendored_font
+    name: IBM Plex Mono
+    url: https://github.com/IBM/plex
+    pinned_revision: 71f558992315a12ca1f06a2215d57962a1992162
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - frontend
+
+  - id: tabler-icons
+    type: vendored_icons
+    name: Tabler Icons
+    url: https://github.com/tabler/tabler-icons
+    pinned_revision: a4ce1404bc6d24d3c365afe7b258d6bf6f48d62d
+    last_reviewed: 2026-10-17
+    review_every_days: 180
+    used_by:
+      - frontend

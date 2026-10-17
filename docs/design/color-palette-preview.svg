@@ -1,0 +1,714 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="4355" viewBox="0 0 1840 4355">
+<title>Runa approved palette baseline — dark and light</title>
+<desc>All colors labeled with HEX values, including resolved states and softened gradient previews.</desc>
+<defs>
+<linearGradient id="dark-primary"><stop stop-color="#BE82D8"/><stop offset="1" stop-color="#9D88DE"/></linearGradient>
+<linearGradient id="dark-cool"><stop stop-color="#57BEC7"/><stop offset="1" stop-color="#709AD0"/></linearGradient>
+<radialGradient id="dark-violet"><stop stop-color="#9776B8"/><stop offset="1" stop-color="#9776B8" stop-opacity="0"/></radialGradient>
+<radialGradient id="dark-rose"><stop stop-color="#B383A4"/><stop offset="1" stop-color="#B383A4" stop-opacity="0"/></radialGradient>
+<radialGradient id="dark-cyan"><stop stop-color="#4B9BA9"/><stop offset="1" stop-color="#4B9BA9" stop-opacity="0"/></radialGradient>
+<linearGradient id="light-primary"><stop stop-color="#A56DC5"/><stop offset="1" stop-color="#8E7ACB"/></linearGradient>
+<linearGradient id="light-cool"><stop stop-color="#53ADB7"/><stop offset="1" stop-color="#658FC1"/></linearGradient>
+<radialGradient id="light-violet"><stop stop-color="#9776B8"/><stop offset="1" stop-color="#9776B8" stop-opacity="0"/></radialGradient>
+<radialGradient id="light-rose"><stop stop-color="#B383A4"/><stop offset="1" stop-color="#B383A4" stop-opacity="0"/></radialGradient>
+<radialGradient id="light-cyan"><stop stop-color="#4B9BA9"/><stop offset="1" stop-color="#4B9BA9" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="0" y="0" width="920" height="4355" fill="#111321" />
+<text x="24" y="44" fill="#EEF0F7" font-family="sans-serif" font-size="28">DARK — approved palette baseline</text>
+<text x="24" y="78" fill="#BDC0D2" font-family="sans-serif" font-size="17">Color / role                         HEX                 RGB</text>
+<text x="24" y="135" fill="#EEF0F7" font-family="sans-serif" font-size="23">Semantic roles</text>
+<rect x="24" y="156" width="92" height="30" fill="#B784DF" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="178" fill="#EEF0F7" font-family="sans-serif" font-size="15">primary.solid</text>
+<text x="490" y="178" fill="#EEF0F7" font-family="sans-serif" font-size="16">#B784DF</text>
+<text x="605" y="178" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(183, 132, 223)</text>
+<rect x="24" y="201" width="92" height="30" fill="#C394E7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="223" fill="#EEF0F7" font-family="sans-serif" font-size="15">primary.hover</text>
+<text x="490" y="223" fill="#EEF0F7" font-family="sans-serif" font-size="16">#C394E7</text>
+<text x="605" y="223" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(195, 148, 231)</text>
+<rect x="24" y="246" width="92" height="30" fill="#191525" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="268" fill="#EEF0F7" font-family="sans-serif" font-size="15">primary.foreground</text>
+<text x="490" y="268" fill="#EEF0F7" font-family="sans-serif" font-size="16">#191525</text>
+<text x="605" y="268" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(25, 21, 37)</text>
+<rect x="24" y="291" width="92" height="30" fill="#30253F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="313" fill="#EEF0F7" font-family="sans-serif" font-size="15">primary.subtle</text>
+<text x="490" y="313" fill="#EEF0F7" font-family="sans-serif" font-size="16">#30253F</text>
+<text x="605" y="313" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(48, 37, 63)</text>
+<rect x="24" y="336" width="92" height="30" fill="#D9B6F0" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="358" fill="#EEF0F7" font-family="sans-serif" font-size="15">primary.text</text>
+<text x="490" y="358" fill="#EEF0F7" font-family="sans-serif" font-size="16">#D9B6F0</text>
+<text x="605" y="358" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(217, 182, 240)</text>
+<rect x="24" y="381" width="92" height="30" fill="#82799F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="403" fill="#EEF0F7" font-family="sans-serif" font-size="15">secondary.solid</text>
+<text x="490" y="403" fill="#EEF0F7" font-family="sans-serif" font-size="16">#82799F</text>
+<text x="605" y="403" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(130, 121, 159)</text>
+<rect x="24" y="426" width="92" height="30" fill="#9389AF" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="448" fill="#EEF0F7" font-family="sans-serif" font-size="15">secondary.hover</text>
+<text x="490" y="448" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9389AF</text>
+<text x="605" y="448" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(147, 137, 175)</text>
+<rect x="24" y="471" width="92" height="30" fill="#111321" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="493" fill="#EEF0F7" font-family="sans-serif" font-size="15">secondary.foreground</text>
+<text x="490" y="493" fill="#EEF0F7" font-family="sans-serif" font-size="16">#111321</text>
+<text x="605" y="493" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(17, 19, 33)</text>
+<rect x="24" y="516" width="92" height="30" fill="#292638" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="538" fill="#EEF0F7" font-family="sans-serif" font-size="15">secondary.subtle</text>
+<text x="490" y="538" fill="#EEF0F7" font-family="sans-serif" font-size="16">#292638</text>
+<text x="605" y="538" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(41, 38, 56)</text>
+<rect x="24" y="561" width="92" height="30" fill="#C8C1DC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="583" fill="#EEF0F7" font-family="sans-serif" font-size="15">secondary.text</text>
+<text x="490" y="583" fill="#EEF0F7" font-family="sans-serif" font-size="16">#C8C1DC</text>
+<text x="605" y="583" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(200, 193, 220)</text>
+<rect x="24" y="606" width="92" height="30" fill="#65C4AC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="628" fill="#EEF0F7" font-family="sans-serif" font-size="15">success.solid</text>
+<text x="490" y="628" fill="#EEF0F7" font-family="sans-serif" font-size="16">#65C4AC</text>
+<text x="605" y="628" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(101, 196, 172)</text>
+<rect x="24" y="651" width="92" height="30" fill="#7CD0BB" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="673" fill="#EEF0F7" font-family="sans-serif" font-size="15">success.hover</text>
+<text x="490" y="673" fill="#EEF0F7" font-family="sans-serif" font-size="16">#7CD0BB</text>
+<text x="605" y="673" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(124, 208, 187)</text>
+<rect x="24" y="696" width="92" height="30" fill="#101D1C" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="718" fill="#EEF0F7" font-family="sans-serif" font-size="15">success.foreground</text>
+<text x="490" y="718" fill="#EEF0F7" font-family="sans-serif" font-size="16">#101D1C</text>
+<text x="605" y="718" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(16, 29, 28)</text>
+<rect x="24" y="741" width="92" height="30" fill="#203833" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="763" fill="#EEF0F7" font-family="sans-serif" font-size="15">success.subtle</text>
+<text x="490" y="763" fill="#EEF0F7" font-family="sans-serif" font-size="16">#203833</text>
+<text x="605" y="763" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(32, 56, 51)</text>
+<rect x="24" y="786" width="92" height="30" fill="#9DDECA" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="808" fill="#EEF0F7" font-family="sans-serif" font-size="15">success.text</text>
+<text x="490" y="808" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9DDECA</text>
+<text x="605" y="808" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(157, 222, 202)</text>
+<rect x="24" y="831" width="92" height="30" fill="#DF8CA8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="853" fill="#EEF0F7" font-family="sans-serif" font-size="15">danger.solid</text>
+<text x="490" y="853" fill="#EEF0F7" font-family="sans-serif" font-size="16">#DF8CA8</text>
+<text x="605" y="853" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(223, 140, 168)</text>
+<rect x="24" y="876" width="92" height="30" fill="#E69DB6" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="898" fill="#EEF0F7" font-family="sans-serif" font-size="15">danger.hover</text>
+<text x="490" y="898" fill="#EEF0F7" font-family="sans-serif" font-size="16">#E69DB6</text>
+<text x="605" y="898" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(230, 157, 182)</text>
+<rect x="24" y="921" width="92" height="30" fill="#25141E" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="943" fill="#EEF0F7" font-family="sans-serif" font-size="15">danger.foreground</text>
+<text x="490" y="943" fill="#EEF0F7" font-family="sans-serif" font-size="16">#25141E</text>
+<text x="605" y="943" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(37, 20, 30)</text>
+<rect x="24" y="966" width="92" height="30" fill="#3B2736" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="988" fill="#EEF0F7" font-family="sans-serif" font-size="15">danger.subtle</text>
+<text x="490" y="988" fill="#EEF0F7" font-family="sans-serif" font-size="16">#3B2736</text>
+<text x="605" y="988" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(59, 39, 54)</text>
+<rect x="24" y="1011" width="92" height="30" fill="#F0B3C8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1033" fill="#EEF0F7" font-family="sans-serif" font-size="15">danger.text</text>
+<text x="490" y="1033" fill="#EEF0F7" font-family="sans-serif" font-size="16">#F0B3C8</text>
+<text x="605" y="1033" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(240, 179, 200)</text>
+<rect x="24" y="1056" width="92" height="30" fill="#DDBA7E" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1078" fill="#EEF0F7" font-family="sans-serif" font-size="15">warning.solid</text>
+<text x="490" y="1078" fill="#EEF0F7" font-family="sans-serif" font-size="16">#DDBA7E</text>
+<text x="605" y="1078" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(221, 186, 126)</text>
+<rect x="24" y="1101" width="92" height="30" fill="#E8CA96" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1123" fill="#EEF0F7" font-family="sans-serif" font-size="15">warning.hover</text>
+<text x="490" y="1123" fill="#EEF0F7" font-family="sans-serif" font-size="16">#E8CA96</text>
+<text x="605" y="1123" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(232, 202, 150)</text>
+<rect x="24" y="1146" width="92" height="30" fill="#272116" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1168" fill="#EEF0F7" font-family="sans-serif" font-size="15">warning.foreground</text>
+<text x="490" y="1168" fill="#EEF0F7" font-family="sans-serif" font-size="16">#272116</text>
+<text x="605" y="1168" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(39, 33, 22)</text>
+<rect x="24" y="1191" width="92" height="30" fill="#383126" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1213" fill="#EEF0F7" font-family="sans-serif" font-size="15">warning.subtle</text>
+<text x="490" y="1213" fill="#EEF0F7" font-family="sans-serif" font-size="16">#383126</text>
+<text x="605" y="1213" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(56, 49, 38)</text>
+<rect x="24" y="1236" width="92" height="30" fill="#ECD3A7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1258" fill="#EEF0F7" font-family="sans-serif" font-size="15">warning.text</text>
+<text x="490" y="1258" fill="#EEF0F7" font-family="sans-serif" font-size="16">#ECD3A7</text>
+<text x="605" y="1258" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(236, 211, 167)</text>
+<rect x="24" y="1281" width="92" height="30" fill="#71B5DC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1303" fill="#EEF0F7" font-family="sans-serif" font-size="15">info.solid</text>
+<text x="490" y="1303" fill="#EEF0F7" font-family="sans-serif" font-size="16">#71B5DC</text>
+<text x="605" y="1303" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(113, 181, 220)</text>
+<rect x="24" y="1326" width="92" height="30" fill="#89C3E3" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1348" fill="#EEF0F7" font-family="sans-serif" font-size="15">info.hover</text>
+<text x="490" y="1348" fill="#EEF0F7" font-family="sans-serif" font-size="16">#89C3E3</text>
+<text x="605" y="1348" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(137, 195, 227)</text>
+<rect x="24" y="1371" width="92" height="30" fill="#101C28" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1393" fill="#EEF0F7" font-family="sans-serif" font-size="15">info.foreground</text>
+<text x="490" y="1393" fill="#EEF0F7" font-family="sans-serif" font-size="16">#101C28</text>
+<text x="605" y="1393" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(16, 28, 40)</text>
+<rect x="24" y="1416" width="92" height="30" fill="#203143" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1438" fill="#EEF0F7" font-family="sans-serif" font-size="15">info.subtle</text>
+<text x="490" y="1438" fill="#EEF0F7" font-family="sans-serif" font-size="16">#203143</text>
+<text x="605" y="1438" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(32, 49, 67)</text>
+<rect x="24" y="1461" width="92" height="30" fill="#A5D4EC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1483" fill="#EEF0F7" font-family="sans-serif" font-size="15">info.text</text>
+<text x="490" y="1483" fill="#EEF0F7" font-family="sans-serif" font-size="16">#A5D4EC</text>
+<text x="605" y="1483" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(165, 212, 236)</text>
+<rect x="24" y="1506" width="92" height="30" fill="#52C4CB" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1528" fill="#EEF0F7" font-family="sans-serif" font-size="15">accent.solid</text>
+<text x="490" y="1528" fill="#EEF0F7" font-family="sans-serif" font-size="16">#52C4CB</text>
+<text x="605" y="1528" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(82, 196, 203)</text>
+<rect x="24" y="1551" width="92" height="30" fill="#70D1D6" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1573" fill="#EEF0F7" font-family="sans-serif" font-size="15">accent.hover</text>
+<text x="490" y="1573" fill="#EEF0F7" font-family="sans-serif" font-size="16">#70D1D6</text>
+<text x="605" y="1573" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(112, 209, 214)</text>
+<rect x="24" y="1596" width="92" height="30" fill="#101D23" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1618" fill="#EEF0F7" font-family="sans-serif" font-size="15">accent.foreground</text>
+<text x="490" y="1618" fill="#EEF0F7" font-family="sans-serif" font-size="16">#101D23</text>
+<text x="605" y="1618" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(16, 29, 35)</text>
+<rect x="24" y="1641" width="92" height="30" fill="#1D353C" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1663" fill="#EEF0F7" font-family="sans-serif" font-size="15">accent.subtle</text>
+<text x="490" y="1663" fill="#EEF0F7" font-family="sans-serif" font-size="16">#1D353C</text>
+<text x="605" y="1663" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(29, 53, 60)</text>
+<rect x="24" y="1686" width="92" height="30" fill="#97E0E3" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1708" fill="#EEF0F7" font-family="sans-serif" font-size="15">accent.text</text>
+<text x="490" y="1708" fill="#EEF0F7" font-family="sans-serif" font-size="16">#97E0E3</text>
+<text x="605" y="1708" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(151, 224, 227)</text>
+<text x="24" y="1755" fill="#EEF0F7" font-family="sans-serif" font-size="23">Surfaces / text / states</text>
+<rect x="24" y="1776" width="92" height="30" fill="#2B3042" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1798" fill="#EEF0F7" font-family="sans-serif" font-size="15">background</text>
+<text x="490" y="1798" fill="#EEF0F7" font-family="sans-serif" font-size="16">#2B3042</text>
+<text x="605" y="1798" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(43, 48, 66)</text>
+<rect x="24" y="1821" width="92" height="30" fill="#111321" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1843" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface</text>
+<text x="490" y="1843" fill="#EEF0F7" font-family="sans-serif" font-size="16">#111321</text>
+<text x="605" y="1843" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(17, 19, 33)</text>
+<rect x="24" y="1866" width="92" height="30" fill="#191C2F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1888" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-raised</text>
+<text x="490" y="1888" fill="#EEF0F7" font-family="sans-serif" font-size="16">#191C2F</text>
+<text x="605" y="1888" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(25, 28, 47)</text>
+<rect x="24" y="1911" width="92" height="30" fill="#181B2C" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1933" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-muted</text>
+<text x="490" y="1933" fill="#EEF0F7" font-family="sans-serif" font-size="16">#181B2C</text>
+<text x="605" y="1933" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(24, 27, 44)</text>
+<rect x="24" y="1956" width="92" height="30" fill="#24273D" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="1978" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-hover</text>
+<text x="490" y="1978" fill="#EEF0F7" font-family="sans-serif" font-size="16">#24273D</text>
+<text x="605" y="1978" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(36, 39, 61)</text>
+<rect x="24" y="2001" width="92" height="30" fill="#15182A" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2023" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-background</text>
+<text x="490" y="2023" fill="#EEF0F7" font-family="sans-serif" font-size="16">#15182A</text>
+<text x="605" y="2023" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(21, 24, 42)</text>
+<rect x="24" y="2046" width="92" height="30" fill="#EEF0F7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2068" fill="#EEF0F7" font-family="sans-serif" font-size="15">text</text>
+<text x="490" y="2068" fill="#EEF0F7" font-family="sans-serif" font-size="16">#EEF0F7</text>
+<text x="605" y="2068" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(238, 240, 247)</text>
+<rect x="24" y="2091" width="92" height="30" fill="#BDC0D2" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2113" fill="#EEF0F7" font-family="sans-serif" font-size="15">text-secondary</text>
+<text x="490" y="2113" fill="#EEF0F7" font-family="sans-serif" font-size="16">#BDC0D2</text>
+<text x="605" y="2113" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(189, 192, 210)</text>
+<rect x="24" y="2136" width="92" height="30" fill="#9B9FB7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2158" fill="#EEF0F7" font-family="sans-serif" font-size="15">text-muted</text>
+<text x="490" y="2158" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9B9FB7</text>
+<text x="605" y="2158" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(155, 159, 183)</text>
+<rect x="24" y="2181" width="92" height="30" fill="#2B2E45" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2203" fill="#EEF0F7" font-family="sans-serif" font-size="15">border</text>
+<text x="490" y="2203" fill="#EEF0F7" font-family="sans-serif" font-size="16">#2B2E45</text>
+<text x="605" y="2203" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(43, 46, 69)</text>
+<rect x="24" y="2226" width="92" height="30" fill="#777B97" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2248" fill="#EEF0F7" font-family="sans-serif" font-size="15">control-border</text>
+<text x="490" y="2248" fill="#EEF0F7" font-family="sans-serif" font-size="16">#777B97</text>
+<text x="605" y="2248" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(119, 123, 151)</text>
+<rect x="24" y="2271" width="92" height="30" fill="#C495E7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2293" fill="#EEF0F7" font-family="sans-serif" font-size="15">focus-ring</text>
+<text x="490" y="2293" fill="#EEF0F7" font-family="sans-serif" font-size="16">#C495E7</text>
+<text x="605" y="2293" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(196, 149, 231)</text>
+<rect x="24" y="2316" width="92" height="30" fill="#252738" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2338" fill="#EEF0F7" font-family="sans-serif" font-size="15">disabled-background</text>
+<text x="490" y="2338" fill="#EEF0F7" font-family="sans-serif" font-size="16">#252738</text>
+<text x="605" y="2338" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(37, 39, 56)</text>
+<rect x="24" y="2361" width="92" height="30" fill="#777A91" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2383" fill="#EEF0F7" font-family="sans-serif" font-size="15">disabled-text</text>
+<text x="490" y="2383" fill="#EEF0F7" font-family="sans-serif" font-size="16">#777A91</text>
+<text x="605" y="2383" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(119, 122, 145)</text>
+<rect x="24" y="2406" width="92" height="30" fill="#0B0D18" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2428" fill="#EEF0F7" font-family="sans-serif" font-size="15">overlay</text>
+<text x="490" y="2428" fill="#EEF0F7" font-family="sans-serif" font-size="16">#0B0D18</text>
+<text x="605" y="2428" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(11, 13, 24)</text>
+<rect x="24" y="2451" width="92" height="30" fill="#080A13" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2473" fill="#EEF0F7" font-family="sans-serif" font-size="15">shadow</text>
+<text x="490" y="2473" fill="#EEF0F7" font-family="sans-serif" font-size="16">#080A13</text>
+<text x="605" y="2473" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(8, 10, 19)</text>
+<text x="24" y="2520" fill="#EEF0F7" font-family="sans-serif" font-size="23">State aliases (shared values)</text>
+<rect x="24" y="2541" width="92" height="30" fill="#191C2F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2563" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-card</text>
+<text x="490" y="2563" fill="#EEF0F7" font-family="sans-serif" font-size="16">#191C2F</text>
+<text x="605" y="2563" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(25, 28, 47)</text>
+<rect x="24" y="2586" width="92" height="30" fill="#30253F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2608" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-selected</text>
+<text x="490" y="2608" fill="#EEF0F7" font-family="sans-serif" font-size="16">#30253F</text>
+<text x="605" y="2608" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(48, 37, 63)</text>
+<rect x="24" y="2631" width="92" height="30" fill="#30253F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2653" fill="#EEF0F7" font-family="sans-serif" font-size="15">surface-active</text>
+<text x="490" y="2653" fill="#EEF0F7" font-family="sans-serif" font-size="16">#30253F</text>
+<text x="605" y="2653" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(48, 37, 63)</text>
+<rect x="24" y="2676" width="92" height="30" fill="#D9B6F0" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2698" fill="#EEF0F7" font-family="sans-serif" font-size="15">text-selected</text>
+<text x="490" y="2698" fill="#EEF0F7" font-family="sans-serif" font-size="16">#D9B6F0</text>
+<text x="605" y="2698" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(217, 182, 240)</text>
+<rect x="24" y="2721" width="92" height="30" fill="#B784DF" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2743" fill="#EEF0F7" font-family="sans-serif" font-size="15">selected-indicator</text>
+<text x="490" y="2743" fill="#EEF0F7" font-family="sans-serif" font-size="16">#B784DF</text>
+<text x="605" y="2743" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(183, 132, 223)</text>
+<rect x="24" y="2766" width="92" height="30" fill="#EEF0F7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2788" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-text</text>
+<text x="490" y="2788" fill="#EEF0F7" font-family="sans-serif" font-size="16">#EEF0F7</text>
+<text x="605" y="2788" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(238, 240, 247)</text>
+<rect x="24" y="2811" width="92" height="30" fill="#9B9FB7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2833" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-placeholder</text>
+<text x="490" y="2833" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9B9FB7</text>
+<text x="605" y="2833" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(155, 159, 183)</text>
+<rect x="24" y="2856" width="92" height="30" fill="#777B97" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2878" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-border</text>
+<text x="490" y="2878" fill="#EEF0F7" font-family="sans-serif" font-size="16">#777B97</text>
+<text x="605" y="2878" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(119, 123, 151)</text>
+<rect x="24" y="2901" width="92" height="30" fill="#82799F" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2923" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-hover-border</text>
+<text x="490" y="2923" fill="#EEF0F7" font-family="sans-serif" font-size="16">#82799F</text>
+<text x="605" y="2923" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(130, 121, 159)</text>
+<rect x="24" y="2946" width="92" height="30" fill="#C495E7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="2968" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-focus-border</text>
+<text x="490" y="2968" fill="#EEF0F7" font-family="sans-serif" font-size="16">#C495E7</text>
+<text x="605" y="2968" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(196, 149, 231)</text>
+<rect x="24" y="2991" width="92" height="30" fill="#252738" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3013" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-disabled-background</text>
+<text x="490" y="3013" fill="#EEF0F7" font-family="sans-serif" font-size="16">#252738</text>
+<text x="605" y="3013" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(37, 39, 56)</text>
+<rect x="24" y="3036" width="92" height="30" fill="#777A91" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3058" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-disabled-text</text>
+<text x="490" y="3058" fill="#EEF0F7" font-family="sans-serif" font-size="16">#777A91</text>
+<text x="605" y="3058" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(119, 122, 145)</text>
+<rect x="24" y="3081" width="92" height="30" fill="#15182A" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3103" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-autofill-background</text>
+<text x="490" y="3103" fill="#EEF0F7" font-family="sans-serif" font-size="16">#15182A</text>
+<text x="605" y="3103" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(21, 24, 42)</text>
+<rect x="24" y="3126" width="92" height="30" fill="#EEF0F7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3148" fill="#EEF0F7" font-family="sans-serif" font-size="15">input-autofill-text</text>
+<text x="490" y="3148" fill="#EEF0F7" font-family="sans-serif" font-size="16">#EEF0F7</text>
+<text x="605" y="3148" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(238, 240, 247)</text>
+<rect x="24" y="3171" width="92" height="30" fill="#D9B6F0" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3193" fill="#EEF0F7" font-family="sans-serif" font-size="15">link</text>
+<text x="490" y="3193" fill="#EEF0F7" font-family="sans-serif" font-size="16">#D9B6F0</text>
+<text x="605" y="3193" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(217, 182, 240)</text>
+<rect x="24" y="3216" width="92" height="30" fill="#D9B6F0" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3238" fill="#EEF0F7" font-family="sans-serif" font-size="15">link-hover</text>
+<text x="490" y="3238" fill="#EEF0F7" font-family="sans-serif" font-size="16">#D9B6F0</text>
+<text x="605" y="3238" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(217, 182, 240)</text>
+<rect x="24" y="3261" width="92" height="30" fill="#C8C1DC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3283" fill="#EEF0F7" font-family="sans-serif" font-size="15">link-visited</text>
+<text x="490" y="3283" fill="#EEF0F7" font-family="sans-serif" font-size="16">#C8C1DC</text>
+<text x="605" y="3283" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(200, 193, 220)</text>
+<rect x="24" y="3306" width="92" height="30" fill="#DF8CA8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3328" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-error-border</text>
+<text x="490" y="3328" fill="#EEF0F7" font-family="sans-serif" font-size="16">#DF8CA8</text>
+<text x="605" y="3328" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(223, 140, 168)</text>
+<rect x="24" y="3351" width="92" height="30" fill="#F0B3C8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3373" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-error-text</text>
+<text x="490" y="3373" fill="#EEF0F7" font-family="sans-serif" font-size="16">#F0B3C8</text>
+<text x="605" y="3373" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(240, 179, 200)</text>
+<rect x="24" y="3396" width="92" height="30" fill="#3B2736" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3418" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-error-background</text>
+<text x="490" y="3418" fill="#EEF0F7" font-family="sans-serif" font-size="16">#3B2736</text>
+<text x="605" y="3418" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(59, 39, 54)</text>
+<rect x="24" y="3441" width="92" height="30" fill="#65C4AC" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3463" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-success-border</text>
+<text x="490" y="3463" fill="#EEF0F7" font-family="sans-serif" font-size="16">#65C4AC</text>
+<text x="605" y="3463" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(101, 196, 172)</text>
+<rect x="24" y="3486" width="92" height="30" fill="#9DDECA" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3508" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-success-text</text>
+<text x="490" y="3508" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9DDECA</text>
+<text x="605" y="3508" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(157, 222, 202)</text>
+<rect x="24" y="3531" width="92" height="30" fill="#203833" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3553" fill="#EEF0F7" font-family="sans-serif" font-size="15">validation-success-background</text>
+<text x="490" y="3553" fill="#EEF0F7" font-family="sans-serif" font-size="16">#203833</text>
+<text x="605" y="3553" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(32, 56, 51)</text>
+<text x="24" y="3600" fill="#EEF0F7" font-family="sans-serif" font-size="23">Decoration tokens</text>
+<rect x="24" y="3621" width="92" height="30" fill="#BE82D8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3643" fill="#EEF0F7" font-family="sans-serif" font-size="15">gradient-primary-start</text>
+<text x="490" y="3643" fill="#EEF0F7" font-family="sans-serif" font-size="16">#BE82D8</text>
+<text x="605" y="3643" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(190, 130, 216)</text>
+<rect x="24" y="3666" width="92" height="30" fill="#9D88DE" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3688" fill="#EEF0F7" font-family="sans-serif" font-size="15">gradient-primary-end</text>
+<text x="490" y="3688" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9D88DE</text>
+<text x="605" y="3688" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(157, 136, 222)</text>
+<rect x="24" y="3711" width="92" height="30" fill="#57BEC7" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3733" fill="#EEF0F7" font-family="sans-serif" font-size="15">gradient-cool-start</text>
+<text x="490" y="3733" fill="#EEF0F7" font-family="sans-serif" font-size="16">#57BEC7</text>
+<text x="605" y="3733" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(87, 190, 199)</text>
+<rect x="24" y="3756" width="92" height="30" fill="#709AD0" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3778" fill="#EEF0F7" font-family="sans-serif" font-size="15">gradient-cool-end</text>
+<text x="490" y="3778" fill="#EEF0F7" font-family="sans-serif" font-size="16">#709AD0</text>
+<text x="605" y="3778" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(112, 154, 208)</text>
+<rect x="24" y="3801" width="92" height="30" fill="#9776B8" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3823" fill="#EEF0F7" font-family="sans-serif" font-size="15">circle-violet</text>
+<text x="490" y="3823" fill="#EEF0F7" font-family="sans-serif" font-size="16">#9776B8</text>
+<text x="605" y="3823" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(151, 118, 184)</text>
+<rect x="24" y="3846" width="92" height="30" fill="#B383A4" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3868" fill="#EEF0F7" font-family="sans-serif" font-size="15">circle-rose</text>
+<text x="490" y="3868" fill="#EEF0F7" font-family="sans-serif" font-size="16">#B383A4</text>
+<text x="605" y="3868" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(179, 131, 164)</text>
+<rect x="24" y="3891" width="92" height="30" fill="#4B9BA9" stroke="#777B97" stroke-width="0.5"/>
+<text x="135" y="3913" fill="#EEF0F7" font-family="sans-serif" font-size="15">circle-cyan</text>
+<text x="490" y="3913" fill="#EEF0F7" font-family="sans-serif" font-size="16">#4B9BA9</text>
+<text x="605" y="3913" fill="#BDC0D2" font-family="sans-serif" font-size="14">rgb(75, 155, 169)</text>
+<text x="24" y="3945" fill="#EEF0F7" font-family="sans-serif" font-size="23">Soft gradient washes / backdrop</text>
+<rect x="24" y="3970" width="420" height="48" fill="#111321" />
+<rect x="24" y="3970" width="420" height="48" fill="url(#dark-primary)" opacity="0.28"/>
+<text x="465" y="4000" fill="#EEF0F7" font-family="sans-serif" font-size="17">primary wash</text>
+<rect x="24" y="4034" width="420" height="48" fill="#111321" />
+<rect x="24" y="4034" width="420" height="48" fill="url(#dark-cool)" opacity="0.28"/>
+<text x="465" y="4064" fill="#EEF0F7" font-family="sans-serif" font-size="17">cool wash</text>
+<rect x="24" y="4110" width="420" height="150" fill="#2B3042" />
+<svg x="24" y="4110" width="420" height="150"><circle cx="80" cy="40" r="180" fill="url(#dark-violet)" opacity="0.2"/></svg>
+<svg x="24" y="4110" width="420" height="150"><circle cx="190" cy="135" r="160" fill="url(#dark-rose)" opacity="0.14"/></svg>
+<svg x="24" y="4110" width="420" height="150"><circle cx="330" cy="80" r="180" fill="url(#dark-cyan)" opacity="0.16"/></svg>
+<text x="465" y="4155" fill="#EEF0F7" font-family="sans-serif" font-size="16">Backdrop / diffuse circles</text>
+<rect x="465" y="4185" width="185" height="40" fill="#111321" />
+<rect x="465" y="4185" width="185" height="40" fill="#0B0D18" opacity="0.52"/>
+<text x="465" y="4248" fill="#EEF0F7" font-family="sans-serif" font-size="15">overlay 52%</text>
+<rect x="675" y="4185" width="185" height="40" fill="#111321" />
+<rect x="675" y="4185" width="185" height="40" fill="#080A13" opacity="0.2"/>
+<text x="675" y="4248" fill="#EEF0F7" font-family="sans-serif" font-size="15">shadow 20%</text>
+<rect x="920" y="0" width="920" height="4355" fill="#F1F1FA" />
+<text x="944" y="44" fill="#262A45" font-family="sans-serif" font-size="28">LIGHT — approved palette baseline</text>
+<text x="944" y="78" fill="#535A79" font-family="sans-serif" font-size="17">Color / role                         HEX                 RGB</text>
+<text x="944" y="135" fill="#262A45" font-family="sans-serif" font-size="23">Semantic roles</text>
+<rect x="944" y="156" width="92" height="30" fill="#8650BA" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="178" fill="#262A45" font-family="sans-serif" font-size="15">primary.solid</text>
+<text x="1410" y="178" fill="#262A45" font-family="sans-serif" font-size="16">#8650BA</text>
+<text x="1525" y="178" fill="#535A79" font-family="sans-serif" font-size="14">rgb(134, 80, 186)</text>
+<rect x="944" y="201" width="92" height="30" fill="#7540A8" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="223" fill="#262A45" font-family="sans-serif" font-size="15">primary.hover</text>
+<text x="1410" y="223" fill="#262A45" font-family="sans-serif" font-size="16">#7540A8</text>
+<text x="1525" y="223" fill="#535A79" font-family="sans-serif" font-size="14">rgb(117, 64, 168)</text>
+<rect x="944" y="246" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="268" fill="#262A45" font-family="sans-serif" font-size="15">primary.foreground</text>
+<text x="1410" y="268" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="268" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="291" width="92" height="30" fill="#F2EAF9" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="313" fill="#262A45" font-family="sans-serif" font-size="15">primary.subtle</text>
+<text x="1410" y="313" fill="#262A45" font-family="sans-serif" font-size="16">#F2EAF9</text>
+<text x="1525" y="313" fill="#535A79" font-family="sans-serif" font-size="14">rgb(242, 234, 249)</text>
+<rect x="944" y="336" width="92" height="30" fill="#704094" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="358" fill="#262A45" font-family="sans-serif" font-size="15">primary.text</text>
+<text x="1410" y="358" fill="#262A45" font-family="sans-serif" font-size="16">#704094</text>
+<text x="1525" y="358" fill="#535A79" font-family="sans-serif" font-size="14">rgb(112, 64, 148)</text>
+<rect x="944" y="381" width="92" height="30" fill="#686184" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="403" fill="#262A45" font-family="sans-serif" font-size="15">secondary.solid</text>
+<text x="1410" y="403" fill="#262A45" font-family="sans-serif" font-size="16">#686184</text>
+<text x="1525" y="403" fill="#535A79" font-family="sans-serif" font-size="14">rgb(104, 97, 132)</text>
+<rect x="944" y="426" width="92" height="30" fill="#57516F" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="448" fill="#262A45" font-family="sans-serif" font-size="15">secondary.hover</text>
+<text x="1410" y="448" fill="#262A45" font-family="sans-serif" font-size="16">#57516F</text>
+<text x="1525" y="448" fill="#535A79" font-family="sans-serif" font-size="14">rgb(87, 81, 111)</text>
+<rect x="944" y="471" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="493" fill="#262A45" font-family="sans-serif" font-size="15">secondary.foreground</text>
+<text x="1410" y="493" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="493" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="516" width="92" height="30" fill="#EEECF4" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="538" fill="#262A45" font-family="sans-serif" font-size="15">secondary.subtle</text>
+<text x="1410" y="538" fill="#262A45" font-family="sans-serif" font-size="16">#EEECF4</text>
+<text x="1525" y="538" fill="#535A79" font-family="sans-serif" font-size="14">rgb(238, 236, 244)</text>
+<rect x="944" y="561" width="92" height="30" fill="#59516F" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="583" fill="#262A45" font-family="sans-serif" font-size="15">secondary.text</text>
+<text x="1410" y="583" fill="#262A45" font-family="sans-serif" font-size="16">#59516F</text>
+<text x="1525" y="583" fill="#535A79" font-family="sans-serif" font-size="14">rgb(89, 81, 111)</text>
+<rect x="944" y="606" width="92" height="30" fill="#237768" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="628" fill="#262A45" font-family="sans-serif" font-size="15">success.solid</text>
+<text x="1410" y="628" fill="#262A45" font-family="sans-serif" font-size="16">#237768</text>
+<text x="1525" y="628" fill="#535A79" font-family="sans-serif" font-size="14">rgb(35, 119, 104)</text>
+<rect x="944" y="651" width="92" height="30" fill="#1B6558" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="673" fill="#262A45" font-family="sans-serif" font-size="15">success.hover</text>
+<text x="1410" y="673" fill="#262A45" font-family="sans-serif" font-size="16">#1B6558</text>
+<text x="1525" y="673" fill="#535A79" font-family="sans-serif" font-size="14">rgb(27, 101, 88)</text>
+<rect x="944" y="696" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="718" fill="#262A45" font-family="sans-serif" font-size="15">success.foreground</text>
+<text x="1410" y="718" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="718" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="741" width="92" height="30" fill="#E7F3EF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="763" fill="#262A45" font-family="sans-serif" font-size="15">success.subtle</text>
+<text x="1410" y="763" fill="#262A45" font-family="sans-serif" font-size="16">#E7F3EF</text>
+<text x="1525" y="763" fill="#535A79" font-family="sans-serif" font-size="14">rgb(231, 243, 239)</text>
+<rect x="944" y="786" width="92" height="30" fill="#216859" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="808" fill="#262A45" font-family="sans-serif" font-size="15">success.text</text>
+<text x="1410" y="808" fill="#262A45" font-family="sans-serif" font-size="16">#216859</text>
+<text x="1525" y="808" fill="#535A79" font-family="sans-serif" font-size="14">rgb(33, 104, 89)</text>
+<rect x="944" y="831" width="92" height="30" fill="#B13F65" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="853" fill="#262A45" font-family="sans-serif" font-size="15">danger.solid</text>
+<text x="1410" y="853" fill="#262A45" font-family="sans-serif" font-size="16">#B13F65</text>
+<text x="1525" y="853" fill="#535A79" font-family="sans-serif" font-size="14">rgb(177, 63, 101)</text>
+<rect x="944" y="876" width="92" height="30" fill="#9B3457" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="898" fill="#262A45" font-family="sans-serif" font-size="15">danger.hover</text>
+<text x="1410" y="898" fill="#262A45" font-family="sans-serif" font-size="16">#9B3457</text>
+<text x="1525" y="898" fill="#535A79" font-family="sans-serif" font-size="14">rgb(155, 52, 87)</text>
+<rect x="944" y="921" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="943" fill="#262A45" font-family="sans-serif" font-size="15">danger.foreground</text>
+<text x="1410" y="943" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="943" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="966" width="92" height="30" fill="#F8EAF0" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="988" fill="#262A45" font-family="sans-serif" font-size="15">danger.subtle</text>
+<text x="1410" y="988" fill="#262A45" font-family="sans-serif" font-size="16">#F8EAF0</text>
+<text x="1525" y="988" fill="#535A79" font-family="sans-serif" font-size="14">rgb(248, 234, 240)</text>
+<rect x="944" y="1011" width="92" height="30" fill="#9D3558" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1033" fill="#262A45" font-family="sans-serif" font-size="15">danger.text</text>
+<text x="1410" y="1033" fill="#262A45" font-family="sans-serif" font-size="16">#9D3558</text>
+<text x="1525" y="1033" fill="#535A79" font-family="sans-serif" font-size="14">rgb(157, 53, 88)</text>
+<rect x="944" y="1056" width="92" height="30" fill="#E4BC77" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1078" fill="#262A45" font-family="sans-serif" font-size="15">warning.solid</text>
+<text x="1410" y="1078" fill="#262A45" font-family="sans-serif" font-size="16">#E4BC77</text>
+<text x="1525" y="1078" fill="#535A79" font-family="sans-serif" font-size="14">rgb(228, 188, 119)</text>
+<rect x="944" y="1101" width="92" height="30" fill="#D6AA62" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1123" fill="#262A45" font-family="sans-serif" font-size="15">warning.hover</text>
+<text x="1410" y="1123" fill="#262A45" font-family="sans-serif" font-size="16">#D6AA62</text>
+<text x="1525" y="1123" fill="#535A79" font-family="sans-serif" font-size="14">rgb(214, 170, 98)</text>
+<rect x="944" y="1146" width="92" height="30" fill="#292215" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1168" fill="#262A45" font-family="sans-serif" font-size="15">warning.foreground</text>
+<text x="1410" y="1168" fill="#262A45" font-family="sans-serif" font-size="16">#292215</text>
+<text x="1525" y="1168" fill="#535A79" font-family="sans-serif" font-size="14">rgb(41, 34, 21)</text>
+<rect x="944" y="1191" width="92" height="30" fill="#F9F1E2" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1213" fill="#262A45" font-family="sans-serif" font-size="15">warning.subtle</text>
+<text x="1410" y="1213" fill="#262A45" font-family="sans-serif" font-size="16">#F9F1E2</text>
+<text x="1525" y="1213" fill="#535A79" font-family="sans-serif" font-size="14">rgb(249, 241, 226)</text>
+<rect x="944" y="1236" width="92" height="30" fill="#79581E" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1258" fill="#262A45" font-family="sans-serif" font-size="15">warning.text</text>
+<text x="1410" y="1258" fill="#262A45" font-family="sans-serif" font-size="16">#79581E</text>
+<text x="1525" y="1258" fill="#535A79" font-family="sans-serif" font-size="14">rgb(121, 88, 30)</text>
+<rect x="944" y="1281" width="92" height="30" fill="#326F99" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1303" fill="#262A45" font-family="sans-serif" font-size="15">info.solid</text>
+<text x="1410" y="1303" fill="#262A45" font-family="sans-serif" font-size="16">#326F99</text>
+<text x="1525" y="1303" fill="#535A79" font-family="sans-serif" font-size="14">rgb(50, 111, 153)</text>
+<rect x="944" y="1326" width="92" height="30" fill="#295F85" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1348" fill="#262A45" font-family="sans-serif" font-size="15">info.hover</text>
+<text x="1410" y="1348" fill="#262A45" font-family="sans-serif" font-size="16">#295F85</text>
+<text x="1525" y="1348" fill="#535A79" font-family="sans-serif" font-size="14">rgb(41, 95, 133)</text>
+<rect x="944" y="1371" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1393" fill="#262A45" font-family="sans-serif" font-size="15">info.foreground</text>
+<text x="1410" y="1393" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="1393" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="1416" width="92" height="30" fill="#E8F2F8" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1438" fill="#262A45" font-family="sans-serif" font-size="15">info.subtle</text>
+<text x="1410" y="1438" fill="#262A45" font-family="sans-serif" font-size="16">#E8F2F8</text>
+<text x="1525" y="1438" fill="#535A79" font-family="sans-serif" font-size="14">rgb(232, 242, 248)</text>
+<rect x="944" y="1461" width="92" height="30" fill="#2F6589" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1483" fill="#262A45" font-family="sans-serif" font-size="15">info.text</text>
+<text x="1410" y="1483" fill="#262A45" font-family="sans-serif" font-size="16">#2F6589</text>
+<text x="1525" y="1483" fill="#535A79" font-family="sans-serif" font-size="14">rgb(47, 101, 137)</text>
+<rect x="944" y="1506" width="92" height="30" fill="#187C88" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1528" fill="#262A45" font-family="sans-serif" font-size="15">accent.solid</text>
+<text x="1410" y="1528" fill="#262A45" font-family="sans-serif" font-size="16">#187C88</text>
+<text x="1525" y="1528" fill="#535A79" font-family="sans-serif" font-size="14">rgb(24, 124, 136)</text>
+<rect x="944" y="1551" width="92" height="30" fill="#126A75" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1573" fill="#262A45" font-family="sans-serif" font-size="15">accent.hover</text>
+<text x="1410" y="1573" fill="#262A45" font-family="sans-serif" font-size="16">#126A75</text>
+<text x="1525" y="1573" fill="#535A79" font-family="sans-serif" font-size="14">rgb(18, 106, 117)</text>
+<rect x="944" y="1596" width="92" height="30" fill="#FFFFFF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1618" fill="#262A45" font-family="sans-serif" font-size="15">accent.foreground</text>
+<text x="1410" y="1618" fill="#262A45" font-family="sans-serif" font-size="16">#FFFFFF</text>
+<text x="1525" y="1618" fill="#535A79" font-family="sans-serif" font-size="14">rgb(255, 255, 255)</text>
+<rect x="944" y="1641" width="92" height="30" fill="#E5F3F5" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1663" fill="#262A45" font-family="sans-serif" font-size="15">accent.subtle</text>
+<text x="1410" y="1663" fill="#262A45" font-family="sans-serif" font-size="16">#E5F3F5</text>
+<text x="1525" y="1663" fill="#535A79" font-family="sans-serif" font-size="14">rgb(229, 243, 245)</text>
+<rect x="944" y="1686" width="92" height="30" fill="#176773" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1708" fill="#262A45" font-family="sans-serif" font-size="15">accent.text</text>
+<text x="1410" y="1708" fill="#262A45" font-family="sans-serif" font-size="16">#176773</text>
+<text x="1525" y="1708" fill="#535A79" font-family="sans-serif" font-size="14">rgb(23, 103, 115)</text>
+<text x="944" y="1755" fill="#262A45" font-family="sans-serif" font-size="23">Surfaces / text / states</text>
+<rect x="944" y="1776" width="92" height="30" fill="#E2E3F0" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1798" fill="#262A45" font-family="sans-serif" font-size="15">background</text>
+<text x="1410" y="1798" fill="#262A45" font-family="sans-serif" font-size="16">#E2E3F0</text>
+<text x="1525" y="1798" fill="#535A79" font-family="sans-serif" font-size="14">rgb(226, 227, 240)</text>
+<rect x="944" y="1821" width="92" height="30" fill="#F1F1FA" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1843" fill="#262A45" font-family="sans-serif" font-size="15">surface</text>
+<text x="1410" y="1843" fill="#262A45" font-family="sans-serif" font-size="16">#F1F1FA</text>
+<text x="1525" y="1843" fill="#535A79" font-family="sans-serif" font-size="14">rgb(241, 241, 250)</text>
+<rect x="944" y="1866" width="92" height="30" fill="#F7F6FD" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1888" fill="#262A45" font-family="sans-serif" font-size="15">surface-raised</text>
+<text x="1410" y="1888" fill="#262A45" font-family="sans-serif" font-size="16">#F7F6FD</text>
+<text x="1525" y="1888" fill="#535A79" font-family="sans-serif" font-size="14">rgb(247, 246, 253)</text>
+<rect x="944" y="1911" width="92" height="30" fill="#E8E8F5" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1933" fill="#262A45" font-family="sans-serif" font-size="15">surface-muted</text>
+<text x="1410" y="1933" fill="#262A45" font-family="sans-serif" font-size="16">#E8E8F5</text>
+<text x="1525" y="1933" fill="#535A79" font-family="sans-serif" font-size="14">rgb(232, 232, 245)</text>
+<rect x="944" y="1956" width="92" height="30" fill="#DEDEF0" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="1978" fill="#262A45" font-family="sans-serif" font-size="15">surface-hover</text>
+<text x="1410" y="1978" fill="#262A45" font-family="sans-serif" font-size="16">#DEDEF0</text>
+<text x="1525" y="1978" fill="#535A79" font-family="sans-serif" font-size="14">rgb(222, 222, 240)</text>
+<rect x="944" y="2001" width="92" height="30" fill="#F5F4FC" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2023" fill="#262A45" font-family="sans-serif" font-size="15">input-background</text>
+<text x="1410" y="2023" fill="#262A45" font-family="sans-serif" font-size="16">#F5F4FC</text>
+<text x="1525" y="2023" fill="#535A79" font-family="sans-serif" font-size="14">rgb(245, 244, 252)</text>
+<rect x="944" y="2046" width="92" height="30" fill="#262A45" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2068" fill="#262A45" font-family="sans-serif" font-size="15">text</text>
+<text x="1410" y="2068" fill="#262A45" font-family="sans-serif" font-size="16">#262A45</text>
+<text x="1525" y="2068" fill="#535A79" font-family="sans-serif" font-size="14">rgb(38, 42, 69)</text>
+<rect x="944" y="2091" width="92" height="30" fill="#535A79" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2113" fill="#262A45" font-family="sans-serif" font-size="15">text-secondary</text>
+<text x="1410" y="2113" fill="#262A45" font-family="sans-serif" font-size="16">#535A79</text>
+<text x="1525" y="2113" fill="#535A79" font-family="sans-serif" font-size="14">rgb(83, 90, 121)</text>
+<rect x="944" y="2136" width="92" height="30" fill="#575E7B" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2158" fill="#262A45" font-family="sans-serif" font-size="15">text-muted</text>
+<text x="1410" y="2158" fill="#262A45" font-family="sans-serif" font-size="16">#575E7B</text>
+<text x="1525" y="2158" fill="#535A79" font-family="sans-serif" font-size="14">rgb(87, 94, 123)</text>
+<rect x="944" y="2181" width="92" height="30" fill="#CACCE1" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2203" fill="#262A45" font-family="sans-serif" font-size="15">border</text>
+<text x="1410" y="2203" fill="#262A45" font-family="sans-serif" font-size="16">#CACCE1</text>
+<text x="1525" y="2203" fill="#535A79" font-family="sans-serif" font-size="14">rgb(202, 204, 225)</text>
+<rect x="944" y="2226" width="92" height="30" fill="#7C819F" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2248" fill="#262A45" font-family="sans-serif" font-size="15">control-border</text>
+<text x="1410" y="2248" fill="#262A45" font-family="sans-serif" font-size="16">#7C819F</text>
+<text x="1525" y="2248" fill="#535A79" font-family="sans-serif" font-size="14">rgb(124, 129, 159)</text>
+<rect x="944" y="2271" width="92" height="30" fill="#8650BA" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2293" fill="#262A45" font-family="sans-serif" font-size="15">focus-ring</text>
+<text x="1410" y="2293" fill="#262A45" font-family="sans-serif" font-size="16">#8650BA</text>
+<text x="1525" y="2293" fill="#535A79" font-family="sans-serif" font-size="14">rgb(134, 80, 186)</text>
+<rect x="944" y="2316" width="92" height="30" fill="#DDDDEC" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2338" fill="#262A45" font-family="sans-serif" font-size="15">disabled-background</text>
+<text x="1410" y="2338" fill="#262A45" font-family="sans-serif" font-size="16">#DDDDEC</text>
+<text x="1525" y="2338" fill="#535A79" font-family="sans-serif" font-size="14">rgb(221, 221, 236)</text>
+<rect x="944" y="2361" width="92" height="30" fill="#7D819B" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2383" fill="#262A45" font-family="sans-serif" font-size="15">disabled-text</text>
+<text x="1410" y="2383" fill="#262A45" font-family="sans-serif" font-size="16">#7D819B</text>
+<text x="1525" y="2383" fill="#535A79" font-family="sans-serif" font-size="14">rgb(125, 129, 155)</text>
+<rect x="944" y="2406" width="92" height="30" fill="#111321" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2428" fill="#262A45" font-family="sans-serif" font-size="15">overlay</text>
+<text x="1410" y="2428" fill="#262A45" font-family="sans-serif" font-size="16">#111321</text>
+<text x="1525" y="2428" fill="#535A79" font-family="sans-serif" font-size="14">rgb(17, 19, 33)</text>
+<rect x="944" y="2451" width="92" height="30" fill="#303553" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2473" fill="#262A45" font-family="sans-serif" font-size="15">shadow</text>
+<text x="1410" y="2473" fill="#262A45" font-family="sans-serif" font-size="16">#303553</text>
+<text x="1525" y="2473" fill="#535A79" font-family="sans-serif" font-size="14">rgb(48, 53, 83)</text>
+<text x="944" y="2520" fill="#262A45" font-family="sans-serif" font-size="23">State aliases (shared values)</text>
+<rect x="944" y="2541" width="92" height="30" fill="#F7F6FD" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2563" fill="#262A45" font-family="sans-serif" font-size="15">surface-card</text>
+<text x="1410" y="2563" fill="#262A45" font-family="sans-serif" font-size="16">#F7F6FD</text>
+<text x="1525" y="2563" fill="#535A79" font-family="sans-serif" font-size="14">rgb(247, 246, 253)</text>
+<rect x="944" y="2586" width="92" height="30" fill="#F2EAF9" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2608" fill="#262A45" font-family="sans-serif" font-size="15">surface-selected</text>
+<text x="1410" y="2608" fill="#262A45" font-family="sans-serif" font-size="16">#F2EAF9</text>
+<text x="1525" y="2608" fill="#535A79" font-family="sans-serif" font-size="14">rgb(242, 234, 249)</text>
+<rect x="944" y="2631" width="92" height="30" fill="#F2EAF9" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2653" fill="#262A45" font-family="sans-serif" font-size="15">surface-active</text>
+<text x="1410" y="2653" fill="#262A45" font-family="sans-serif" font-size="16">#F2EAF9</text>
+<text x="1525" y="2653" fill="#535A79" font-family="sans-serif" font-size="14">rgb(242, 234, 249)</text>
+<rect x="944" y="2676" width="92" height="30" fill="#704094" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2698" fill="#262A45" font-family="sans-serif" font-size="15">text-selected</text>
+<text x="1410" y="2698" fill="#262A45" font-family="sans-serif" font-size="16">#704094</text>
+<text x="1525" y="2698" fill="#535A79" font-family="sans-serif" font-size="14">rgb(112, 64, 148)</text>
+<rect x="944" y="2721" width="92" height="30" fill="#8650BA" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2743" fill="#262A45" font-family="sans-serif" font-size="15">selected-indicator</text>
+<text x="1410" y="2743" fill="#262A45" font-family="sans-serif" font-size="16">#8650BA</text>
+<text x="1525" y="2743" fill="#535A79" font-family="sans-serif" font-size="14">rgb(134, 80, 186)</text>
+<rect x="944" y="2766" width="92" height="30" fill="#262A45" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2788" fill="#262A45" font-family="sans-serif" font-size="15">input-text</text>
+<text x="1410" y="2788" fill="#262A45" font-family="sans-serif" font-size="16">#262A45</text>
+<text x="1525" y="2788" fill="#535A79" font-family="sans-serif" font-size="14">rgb(38, 42, 69)</text>
+<rect x="944" y="2811" width="92" height="30" fill="#575E7B" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2833" fill="#262A45" font-family="sans-serif" font-size="15">input-placeholder</text>
+<text x="1410" y="2833" fill="#262A45" font-family="sans-serif" font-size="16">#575E7B</text>
+<text x="1525" y="2833" fill="#535A79" font-family="sans-serif" font-size="14">rgb(87, 94, 123)</text>
+<rect x="944" y="2856" width="92" height="30" fill="#7C819F" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2878" fill="#262A45" font-family="sans-serif" font-size="15">input-border</text>
+<text x="1410" y="2878" fill="#262A45" font-family="sans-serif" font-size="16">#7C819F</text>
+<text x="1525" y="2878" fill="#535A79" font-family="sans-serif" font-size="14">rgb(124, 129, 159)</text>
+<rect x="944" y="2901" width="92" height="30" fill="#686184" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2923" fill="#262A45" font-family="sans-serif" font-size="15">input-hover-border</text>
+<text x="1410" y="2923" fill="#262A45" font-family="sans-serif" font-size="16">#686184</text>
+<text x="1525" y="2923" fill="#535A79" font-family="sans-serif" font-size="14">rgb(104, 97, 132)</text>
+<rect x="944" y="2946" width="92" height="30" fill="#8650BA" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="2968" fill="#262A45" font-family="sans-serif" font-size="15">input-focus-border</text>
+<text x="1410" y="2968" fill="#262A45" font-family="sans-serif" font-size="16">#8650BA</text>
+<text x="1525" y="2968" fill="#535A79" font-family="sans-serif" font-size="14">rgb(134, 80, 186)</text>
+<rect x="944" y="2991" width="92" height="30" fill="#DDDDEC" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3013" fill="#262A45" font-family="sans-serif" font-size="15">input-disabled-background</text>
+<text x="1410" y="3013" fill="#262A45" font-family="sans-serif" font-size="16">#DDDDEC</text>
+<text x="1525" y="3013" fill="#535A79" font-family="sans-serif" font-size="14">rgb(221, 221, 236)</text>
+<rect x="944" y="3036" width="92" height="30" fill="#7D819B" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3058" fill="#262A45" font-family="sans-serif" font-size="15">input-disabled-text</text>
+<text x="1410" y="3058" fill="#262A45" font-family="sans-serif" font-size="16">#7D819B</text>
+<text x="1525" y="3058" fill="#535A79" font-family="sans-serif" font-size="14">rgb(125, 129, 155)</text>
+<rect x="944" y="3081" width="92" height="30" fill="#F5F4FC" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3103" fill="#262A45" font-family="sans-serif" font-size="15">input-autofill-background</text>
+<text x="1410" y="3103" fill="#262A45" font-family="sans-serif" font-size="16">#F5F4FC</text>
+<text x="1525" y="3103" fill="#535A79" font-family="sans-serif" font-size="14">rgb(245, 244, 252)</text>
+<rect x="944" y="3126" width="92" height="30" fill="#262A45" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3148" fill="#262A45" font-family="sans-serif" font-size="15">input-autofill-text</text>
+<text x="1410" y="3148" fill="#262A45" font-family="sans-serif" font-size="16">#262A45</text>
+<text x="1525" y="3148" fill="#535A79" font-family="sans-serif" font-size="14">rgb(38, 42, 69)</text>
+<rect x="944" y="3171" width="92" height="30" fill="#704094" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3193" fill="#262A45" font-family="sans-serif" font-size="15">link</text>
+<text x="1410" y="3193" fill="#262A45" font-family="sans-serif" font-size="16">#704094</text>
+<text x="1525" y="3193" fill="#535A79" font-family="sans-serif" font-size="14">rgb(112, 64, 148)</text>
+<rect x="944" y="3216" width="92" height="30" fill="#704094" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3238" fill="#262A45" font-family="sans-serif" font-size="15">link-hover</text>
+<text x="1410" y="3238" fill="#262A45" font-family="sans-serif" font-size="16">#704094</text>
+<text x="1525" y="3238" fill="#535A79" font-family="sans-serif" font-size="14">rgb(112, 64, 148)</text>
+<rect x="944" y="3261" width="92" height="30" fill="#59516F" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3283" fill="#262A45" font-family="sans-serif" font-size="15">link-visited</text>
+<text x="1410" y="3283" fill="#262A45" font-family="sans-serif" font-size="16">#59516F</text>
+<text x="1525" y="3283" fill="#535A79" font-family="sans-serif" font-size="14">rgb(89, 81, 111)</text>
+<rect x="944" y="3306" width="92" height="30" fill="#B13F65" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3328" fill="#262A45" font-family="sans-serif" font-size="15">validation-error-border</text>
+<text x="1410" y="3328" fill="#262A45" font-family="sans-serif" font-size="16">#B13F65</text>
+<text x="1525" y="3328" fill="#535A79" font-family="sans-serif" font-size="14">rgb(177, 63, 101)</text>
+<rect x="944" y="3351" width="92" height="30" fill="#9D3558" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3373" fill="#262A45" font-family="sans-serif" font-size="15">validation-error-text</text>
+<text x="1410" y="3373" fill="#262A45" font-family="sans-serif" font-size="16">#9D3558</text>
+<text x="1525" y="3373" fill="#535A79" font-family="sans-serif" font-size="14">rgb(157, 53, 88)</text>
+<rect x="944" y="3396" width="92" height="30" fill="#F8EAF0" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3418" fill="#262A45" font-family="sans-serif" font-size="15">validation-error-background</text>
+<text x="1410" y="3418" fill="#262A45" font-family="sans-serif" font-size="16">#F8EAF0</text>
+<text x="1525" y="3418" fill="#535A79" font-family="sans-serif" font-size="14">rgb(248, 234, 240)</text>
+<rect x="944" y="3441" width="92" height="30" fill="#237768" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3463" fill="#262A45" font-family="sans-serif" font-size="15">validation-success-border</text>
+<text x="1410" y="3463" fill="#262A45" font-family="sans-serif" font-size="16">#237768</text>
+<text x="1525" y="3463" fill="#535A79" font-family="sans-serif" font-size="14">rgb(35, 119, 104)</text>
+<rect x="944" y="3486" width="92" height="30" fill="#216859" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3508" fill="#262A45" font-family="sans-serif" font-size="15">validation-success-text</text>
+<text x="1410" y="3508" fill="#262A45" font-family="sans-serif" font-size="16">#216859</text>
+<text x="1525" y="3508" fill="#535A79" font-family="sans-serif" font-size="14">rgb(33, 104, 89)</text>
+<rect x="944" y="3531" width="92" height="30" fill="#E7F3EF" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3553" fill="#262A45" font-family="sans-serif" font-size="15">validation-success-background</text>
+<text x="1410" y="3553" fill="#262A45" font-family="sans-serif" font-size="16">#E7F3EF</text>
+<text x="1525" y="3553" fill="#535A79" font-family="sans-serif" font-size="14">rgb(231, 243, 239)</text>
+<text x="944" y="3600" fill="#262A45" font-family="sans-serif" font-size="23">Decoration tokens</text>
+<rect x="944" y="3621" width="92" height="30" fill="#A56DC5" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3643" fill="#262A45" font-family="sans-serif" font-size="15">gradient-primary-start</text>
+<text x="1410" y="3643" fill="#262A45" font-family="sans-serif" font-size="16">#A56DC5</text>
+<text x="1525" y="3643" fill="#535A79" font-family="sans-serif" font-size="14">rgb(165, 109, 197)</text>
+<rect x="944" y="3666" width="92" height="30" fill="#8E7ACB" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3688" fill="#262A45" font-family="sans-serif" font-size="15">gradient-primary-end</text>
+<text x="1410" y="3688" fill="#262A45" font-family="sans-serif" font-size="16">#8E7ACB</text>
+<text x="1525" y="3688" fill="#535A79" font-family="sans-serif" font-size="14">rgb(142, 122, 203)</text>
+<rect x="944" y="3711" width="92" height="30" fill="#53ADB7" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3733" fill="#262A45" font-family="sans-serif" font-size="15">gradient-cool-start</text>
+<text x="1410" y="3733" fill="#262A45" font-family="sans-serif" font-size="16">#53ADB7</text>
+<text x="1525" y="3733" fill="#535A79" font-family="sans-serif" font-size="14">rgb(83, 173, 183)</text>
+<rect x="944" y="3756" width="92" height="30" fill="#658FC1" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3778" fill="#262A45" font-family="sans-serif" font-size="15">gradient-cool-end</text>
+<text x="1410" y="3778" fill="#262A45" font-family="sans-serif" font-size="16">#658FC1</text>
+<text x="1525" y="3778" fill="#535A79" font-family="sans-serif" font-size="14">rgb(101, 143, 193)</text>
+<rect x="944" y="3801" width="92" height="30" fill="#9776B8" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3823" fill="#262A45" font-family="sans-serif" font-size="15">circle-violet</text>
+<text x="1410" y="3823" fill="#262A45" font-family="sans-serif" font-size="16">#9776B8</text>
+<text x="1525" y="3823" fill="#535A79" font-family="sans-serif" font-size="14">rgb(151, 118, 184)</text>
+<rect x="944" y="3846" width="92" height="30" fill="#B383A4" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3868" fill="#262A45" font-family="sans-serif" font-size="15">circle-rose</text>
+<text x="1410" y="3868" fill="#262A45" font-family="sans-serif" font-size="16">#B383A4</text>
+<text x="1525" y="3868" fill="#535A79" font-family="sans-serif" font-size="14">rgb(179, 131, 164)</text>
+<rect x="944" y="3891" width="92" height="30" fill="#4B9BA9" stroke="#7C819F" stroke-width="0.5"/>
+<text x="1055" y="3913" fill="#262A45" font-family="sans-serif" font-size="15">circle-cyan</text>
+<text x="1410" y="3913" fill="#262A45" font-family="sans-serif" font-size="16">#4B9BA9</text>
+<text x="1525" y="3913" fill="#535A79" font-family="sans-serif" font-size="14">rgb(75, 155, 169)</text>
+<text x="944" y="3945" fill="#262A45" font-family="sans-serif" font-size="23">Soft gradient washes / backdrop</text>
+<rect x="944" y="3970" width="420" height="48" fill="#F1F1FA" />
+<rect x="944" y="3970" width="420" height="48" fill="url(#light-primary)" opacity="0.24"/>
+<text x="1385" y="4000" fill="#262A45" font-family="sans-serif" font-size="17">primary wash</text>
+<rect x="944" y="4034" width="420" height="48" fill="#F1F1FA" />
+<rect x="944" y="4034" width="420" height="48" fill="url(#light-cool)" opacity="0.24"/>
+<text x="1385" y="4064" fill="#262A45" font-family="sans-serif" font-size="17">cool wash</text>
+<rect x="944" y="4110" width="420" height="150" fill="#E2E3F0" />
+<svg x="944" y="4110" width="420" height="150"><circle cx="80" cy="40" r="180" fill="url(#light-violet)" opacity="0.1"/></svg>
+<svg x="944" y="4110" width="420" height="150"><circle cx="190" cy="135" r="160" fill="url(#light-rose)" opacity="0.08"/></svg>
+<svg x="944" y="4110" width="420" height="150"><circle cx="330" cy="80" r="180" fill="url(#light-cyan)" opacity="0.08"/></svg>
+<text x="1385" y="4155" fill="#262A45" font-family="sans-serif" font-size="16">Backdrop / diffuse circles</text>
+<rect x="1385" y="4185" width="185" height="40" fill="#F1F1FA" />
+<rect x="1385" y="4185" width="185" height="40" fill="#111321" opacity="0.28"/>
+<text x="1385" y="4248" fill="#262A45" font-family="sans-serif" font-size="15">overlay 28%</text>
+<rect x="1595" y="4185" width="185" height="40" fill="#F1F1FA" />
+<rect x="1595" y="4185" width="185" height="40" fill="#303553" opacity="0.08"/>
+<text x="1595" y="4248" fill="#262A45" font-family="sans-serif" font-size="15">shadow 8%</text>
+</svg>
