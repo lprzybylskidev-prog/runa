@@ -33,7 +33,11 @@
   --runa-backdrop-grid-opacity: 0.09;
   --runa-constellation-line-opacity: 0.48;
   --runa-art-divider: color-mix(in srgb, var(--runa-border) 35%, transparent);
-  --runa-art-surface: var(--runa-surface);
+  --runa-art-surface: color-mix(
+    in srgb,
+    var(--runa-surface) 92%,
+    var(--runa-border)
+  );
   --runa-art-violet-opacity: 14%;
   --runa-art-cyan-opacity: 12%;
   --runa-primary-solid: #8650ba;

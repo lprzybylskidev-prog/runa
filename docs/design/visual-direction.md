@@ -225,4 +225,4 @@ The logo illustration’s orbital outlines also carry small static glowing point
 
 ## Light-theme visibility refinement
 
-User accepts the current dark direction; keep dark values unchanged. Light mode uses a more legible technical grid (9% versus dark 4.5%) and stronger constellation line opacity (48% versus dark 20%, before group opacity). The illustration shares the main surface base in light mode with slightly gentler violet/cyan washes and a much quieter divider, reducing the split-card appearance. These are contextual decoration tokens, not a replacement semantic palette.
+User accepts the current dark direction; keep dark values unchanged. Light mode uses a more legible technical grid (9% versus dark 4.5%) and stronger constellation line opacity (48% versus dark 20%, before group opacity). The illustration uses the main surface base in light mode, gently darkened with 8% of the border token after user review, with gentler violet/cyan washes and a much quieter divider. Keep this modest tint local to the artwork; preserve the accepted page background and dark theme. These are contextual decoration tokens, not a replacement semantic palette.
