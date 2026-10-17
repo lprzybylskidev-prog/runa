@@ -810,8 +810,18 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Prove production has no AI/RAG runtime.
   - Fix acceptance findings through inserted roadmap fix points rather than hiding them inside this checklist item.
 
-- [ ] 16. **Full final verification, release finalization, merge, and report**
-  - Prerequisites: Point 15 and every inserted fix point; all applicable commands implemented.
+- [ ] 16. **Discuss and agree the frontend visual redesign, then implement the approved direction**
+  - Prerequisite: Point 15 and its acceptance fixes.
+  - User-requested addition (2026-10-17): the current frontend is technically correct, but its visual presentation needs redesign.
+  - Mandatory discussion stop: when reaching this point, stop implementation and enter discussion with the user. Do not autonomously choose or implement a visual direction.
+  - Review the user's reference images and discuss visual direction, layout, typography, colors, light/dark themes, responsive behavior and the intended scope of the existing application shell.
+  - Wait for the user's explicit agreement on the visual specification; reference images alone do not authorize implementation.
+  - Record the agreed specification and concrete implementation/acceptance tasks in this roadmap before resuming implementation. Keep business modules outside scope unless separately agreed.
+  - Implement the agreed redesign, update relevant component/pattern documentation, and verify rendered UI, accessibility, responsive layouts, both themes and applicable frontend checks.
+  - Keep this point open until the discussion, approved implementation and verification are complete.
+
+- [ ] 17. **Full final verification, release finalization, merge, and report**
+  - Prerequisites: Points 15–16 and every inserted fix point; all applicable commands implemented.
   - Run `./bin/quality final` with all impact areas.
   - If a failure needs work, insert a fix point immediately before this point and rerun final verification from the beginning.
   - Resolve all hard failures.
