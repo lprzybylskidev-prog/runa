@@ -1,8 +1,8 @@
 <!--
-tags: [reload, sync, update, reset, arrows, loader, spinner, restart, refresh]
-category: Arrows
+tags: [night, dark-mode, dark, theme, crescent, sleep, lunar, evening, moon]
+category: Weather
 version: "1.0"
-unicode: "eb13"
+unicode: "eaf8"
 -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
@@ -15,6 +15,5 @@ unicode: "eb13"
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008" />
 </svg>

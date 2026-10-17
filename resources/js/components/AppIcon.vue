@@ -1,15 +1,6 @@
 <script setup lang="ts">
-defineProps<{
-  name:
-    | 'refresh'
-    | 'circle-check'
-    | 'alert-circle'
-    | 'loader-2'
-    | 'layers-intersect'
-    | 'sparkles';
-}>();
+defineProps<{ name: 'layers-intersect' | 'sun' | 'moon' | 'device-desktop' }>();
 </script>
-
 <template>
   <svg
     aria-hidden="true"
@@ -23,22 +14,6 @@ defineProps<{
     stroke-linecap="round"
     stroke-linejoin="round"
   >
-    <g v-if="name === 'refresh'">
-      <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-      <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
-    </g>
-    <g v-if="name === 'circle-check'">
-      <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-      <path d="M9 12l2 2l4 -4" />
-    </g>
-    <g v-if="name === 'alert-circle'">
-      <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-      <path d="M12 8v4" />
-      <path d="M12 16h.01" />
-    </g>
-    <g v-if="name === 'loader-2'">
-      <path d="M12 3a9 9 0 1 0 9 9" />
-    </g>
     <g v-if="name === 'layers-intersect'">
       <path
         d="M8 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"
@@ -47,10 +22,24 @@ defineProps<{
         d="M4 10a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"
       />
     </g>
-    <g v-if="name === 'sparkles'">
+    <g v-if="name === 'sun'">
+      <path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
       <path
-        d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6"
+        d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"
       />
+    </g>
+    <g v-if="name === 'moon'">
+      <path
+        d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008"
+      />
+    </g>
+    <g v-if="name === 'device-desktop'">
+      <path
+        d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10"
+      />
+      <path d="M7 20h10" />
+      <path d="M9 16v4" />
+      <path d="M15 16v4" />
     </g>
   </svg>
 </template>

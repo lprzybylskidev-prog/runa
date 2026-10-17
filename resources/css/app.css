@@ -294,7 +294,8 @@ input:-webkit-autofill {
     );
 }
 .runa-art {
-  height: 235px;
+  min-height: 340px;
+  width: 100%;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--runa-border);
@@ -387,50 +388,6 @@ input:-webkit-autofill {
   top: 12px;
   color: var(--runa-accent-text);
 }
-.connection-panel {
-  padding: 22px;
-  border: 1px solid var(--runa-border);
-  border-bottom: 2px solid var(--runa-control-border);
-  border-radius: 4px;
-  background: var(--runa-surface-raised);
-}
-.connection-connected {
-  border-bottom-color: var(--runa-success-solid);
-}
-.connection-failed {
-  border-bottom-color: var(--runa-danger-solid);
-}
-.status-icon {
-  color: var(--runa-text-secondary);
-  padding: 10px;
-  background: var(--runa-surface-muted);
-  border-radius: 4px;
-}
-.connection-connected .status-icon {
-  background: var(--runa-success-subtle);
-  color: var(--runa-success-text);
-}
-.connection-failed .status-icon {
-  background: var(--runa-danger-subtle);
-  color: var(--runa-danger-text);
-}
-.retry-button {
-  background: var(--runa-primary-solid);
-  color: var(--runa-primary-foreground);
-  border-radius: 4px;
-  cursor: pointer;
-}
-.retry-button:hover {
-  background: var(--runa-primary-hover);
-}
-.status-loading {
-  animation: status-spin 1.2s linear infinite;
-}
-@keyframes status-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -441,29 +398,49 @@ input:-webkit-autofill {
   }
 }
 
-.preference-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
+.preference-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--runa-control-border);
   border-radius: 4px;
-  padding: 3px;
   background: var(--runa-surface);
-}
-.preference-group button {
-  min-height: 44px;
-  padding: 8px 12px;
-  border-radius: 2px;
   color: var(--runa-text-secondary);
   cursor: pointer;
   font-size: 12px;
 }
-.preference-group button:hover {
+.preference-button:hover {
   background: var(--runa-surface-hover);
-  color: var(--runa-text);
-}
-.preference-group button[aria-pressed='true'] {
-  background: var(--runa-primary-subtle);
   color: var(--runa-primary-text);
-  box-shadow: inset 0 -2px var(--runa-primary-solid);
+  border-color: var(--runa-primary-solid);
+}
+.app-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+.tooltip-content {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  right: 0;
+  padding-top: 8px;
+  width: max-content;
+  max-width: min(280px, 75vw);
+}
+.tooltip-content > span {
+  display: block;
+  padding: 8px 12px;
+  background: var(--runa-surface-raised);
+  color: var(--runa-text);
+  border: 1px solid var(--runa-control-border);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px
+    color-mix(
+      in srgb,
+      var(--runa-shadow) var(--runa-shadow-opacity),
+      transparent
+    );
 }

@@ -22,10 +22,16 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppIcon
 
 - Source: `resources/js/components/AppIcon.vue`.
-- Typed subset of six Tabler outline icons; decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
+- Typed subset of four Tabler outline icons; decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
 - Local source assets, licenses and revision/hash provenance: `docs/design/assets.md`.
 
 ## Root preference buttons
 
 - Source: `resources/js/App.vue`.
-- Language and system/light/dark theme use labeled button groups with `aria-pressed`, 44px targets, active indicators and existing preference composables. No select or submit step.
+- Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names and application tooltips describe current and next values. Existing composables preserve preferences. No select or submit step.
+
+## AppTooltip
+
+- Source: `resources/js/components/AppTooltip.vue`.
+- Application-styled tooltip on pointer hover or keyboard focus, dismissible with Escape. Pointer can enter the tooltip; it stays visible until pointer leave, focus leave or dismissal.
+- Props: `text`; scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
