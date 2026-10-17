@@ -17,6 +17,17 @@ Database Client is installed automatically. Create a PostgreSQL connection manua
 
 Do not export a connection containing a password to workspace files. Database ports remain internal. Use the separate `runa_test` role/database only for isolated testing.
 
+## Reopen recovery and manual verification
+
+Run Docker lifecycle commands in a host terminal. If reopening fails because `setup` exits with a missing tool that exists in the current development image, run `./bin/dev up`, then `./bin/dev doctor`. Compose recreates outdated containers; restarting alone retains their old images. VS Code may reuse existing containers with `--no-recreate`. Preserve named volumes and local credentials during recovery. If the current image itself is outdated, use `./bin/dev build` before `./bin/dev up`.
+
+After the host doctor passes:
+
+1. Select **Dev Containers: Reopen in Container** from the VS Code Command Palette. Confirm the workspace is `/workspace` and the terminal reports user `runa` with `whoami`.
+2. In Extensions, install the OpenAI/Codex extension in **Dev Container: Runa** if needed, open its panel and sign in interactively. Start a session from `/workspace` and ask it to call Boost `application-info` and `search-docs`; check the installed versions. A successful CLI check alone does not verify the extension.
+3. Open Database Client, add the PostgreSQL connection described above, connect and run `SELECT current_database(), current_user;`. Both values should be `runa`. Keep the password in the extension's private credential field.
+4. Run `./bin/dev doctor` in the container terminal. Report editor-specific failures separately from the host service checks.
+
 ## Xdebug
 
 Xdebug 3.5.3 exists only in the `development` Docker target. It starts with `xdebug.mode=off` and is absent from the production runtime. Run from the host or devcontainer:
