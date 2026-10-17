@@ -44,8 +44,8 @@
     var(--runa-accent-solid) 55%,
     var(--runa-gradient-cool-end)
   );
-  --runa-art-violet-opacity: 42%;
-  --runa-art-cyan-opacity: 36%;
+  --runa-art-violet-opacity: 34%;
+  --runa-art-cyan-opacity: 29%;
   --runa-primary-solid: #8650ba;
   --runa-primary-hover: #7540a8;
   --runa-primary-foreground: #ffffff;
