@@ -694,7 +694,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Verified: 11 offline contracts; real CPU/CUDA cosine >0.99999; token-budget rejection/fallback; live initial/no-op/add/edit/delete/orphan/recovery/branch acceptance in a disposable collection; persisted corpus/cache across service recreation; full setup and fingerprint fast path. No unchanged document chunks were re-embedded.
   - Security/runtime acceptance: final pinned Ubuntu 24.04 CPU/Qdrant runtime images retain exact upstream binaries and omit unused dashboard/development dependencies. CUDA uses the patched upstream image; 4 GiB RAM/2048-token batches resolved startup OOM. Trivy 0.76.0 reports zero HIGH/CRITICAL vulnerabilities in all three final images; host confirmed those exact image IDs healthy with zero restarts. No suppressions. Setup, provenance, limits and evidence: `docs/development/knowledge.md`.
 
-- [ ] 10. **Implement hybrid knowledge retrieval, evaluation, and doctor**
+- [x] 10. **Implement hybrid knowledge retrieval, evaluation, and doctor**
   - Prerequisites: Point 9.
   - Dense + lexical/sparse retrieval with simple configurable fusion.
   - Metadata filtering/branch-roadmap preference.
@@ -703,6 +703,9 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - `./bin/knowledge search|index|status|rebuild|stale|doctor|eval`.
   - End-to-end smoke retrieval, dimensions/model/schema/orphan/missing/stale checks.
   - Verify source-file grounding workflow.
+  - Completed (2026-10-17): all seven knowledge commands work, including explicit preflight-validated rebuild. Dense Qdrant query + standard-library BM25 use shared metadata/current-branch filters and configurable weighted RRF, source diversity and active/historical preference. No additional dependencies or embedding representations.
+  - Added eight fixed golden queries, concise source/section excerpts, diagnostic ranks/scores/hash/model metadata, and doctor checks for model/schema/freshness/missing/orphan states, corpus statistics and end-to-end retrieval. Stale search/eval fail with explicit indexing instructions; original-source grounding was verified against production isolation policy.
+  - Verified: 11 offline ingestion contracts, three real-service retrieval contracts in disposable collections (filters/exact identifiers/diversity/stale/branch/missing/mixed-model/rebuild), CPU/CUDA live ingestion acceptance and 8/8 golden queries at top five. Warm per-query retrieval was approximately 10–50 ms on the current corpus; doctor passed with zero missing/orphan/invalid-metadata chunks. Updated knowledge command/operator and RAG skill guidance.
 
 - [ ] 11. **Implement seeding, Git hooks, maintenance validation, and project command contracts**
   - Prerequisites: Points 7–10.

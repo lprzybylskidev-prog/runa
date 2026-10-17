@@ -1,8 +1,8 @@
-# Development knowledge ingestion
+# Development knowledge system
 
 ## Selection and boundaries
 
-RM-2026-001 point 9 uses Qdrant 1.19.2 (Apache-2.0), Hugging Face Text Embeddings Inference (TEI) 1.9.4 (Apache-2.0), and `BAAI/bge-small-en-v1.5` (MIT), pinned to model revision `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a`. The model provides 384-dimensional English embeddings with a 512-token input limit; weights contain approximately 33.36 million parameters (about 133 MB in float32). This is a modest local documentation baseline, not a claim of optimal retrieval quality; point 10 supplies project retrieval evaluations.
+RM-2026-001 point 9 uses Qdrant 1.19.2 (Apache-2.0), Hugging Face Text Embeddings Inference (TEI) 1.9.4 (Apache-2.0), and `BAAI/bge-small-en-v1.5` (MIT), pinned to model revision `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a`. The model provides 384-dimensional English embeddings with a 512-token input limit; weights contain approximately 33.36 million parameters (about 133 MB in float32). This is a modest local documentation baseline, not a claim of optimal retrieval quality; the versioned golden queries below measure project retrieval quality.
 
 TEI is an actively released Rust inference service supporting this BERT model on CPU and NVIDIA CUDA. It supplies tokenization and batching, avoiding a Python/PyTorch/Transformers installation in the Laravel devcontainer. The knowledge client uses Python's standard library only: no new Composer or pnpm dependency, SDK or RAG framework. Qdrant stores vectors and metadata; TEI only produces embeddings, so responsibilities do not overlap.
 
@@ -46,7 +46,7 @@ python3 tools/testing/knowledge.py
 python3 tools/testing/knowledge-live.py
 ```
 
-The same CLI delegates to the app container from the host. Status/stale exit 1 when missing, stale or incompatible; errors also exit nonzero with a diagnostic. No search, rebuild, doctor or eval is claimed yet: those belong to point 10.
+The same CLI delegates to the app container from the host. Status/stale exit 1 when missing, stale or incompatible; errors also exit nonzero with a diagnostic. Search/eval refuse stale indexes; doctor reports freshness failures with repair instructions. All commands return nonzero on failures.
 
 The corpus is the intersection of Git-tracked paths and `tools/knowledge/config.json`'s explicit allowlist: Markdown under `docs` and `.agents/skills`, AGENTS/README and three procedural YAML registries. Newly created durable documents must be staged before indexing. Untracked notes, raw chat files, application source, environment files, dependencies, logs and generated artifacts are excluded. Symlink sources or parents are rejected. Do not place transcripts or secrets in allowlisted durable documentation.
 
@@ -54,11 +54,11 @@ Markdown is split at headings, respecting code fences; oversized sections split 
 
 Roadmap document IDs derive from roadmap IDs and survive lifecycle path changes. Other documents use deterministic path IDs (renames are remove+insert). Chunk IDs derive from document, headings, content hash and duplicate occurrence. Whitespace at source edges/line endings is normalized; meaningful code whitespace remains significant.
 
-The provider validates model/revision/runtime/input limits and vector dimensions before collection writes. `runa_knowledge` is one rebuildable collection, with a reserved metadata point describing model/schema identity and the source/chunk manifest. Future retrieval must filter `kind=chunk` to exclude this point. No payload indexes are created before point 10 establishes actual filtering queries.
+The provider validates model/revision/runtime/input limits and vector dimensions before collection writes. `runa_knowledge` is one rebuildable collection, with a reserved metadata point describing model/schema identity and the source/chunk manifest. Retrieval filters `kind=chunk` and the current branch to exclude metadata and obsolete branch context. The small local corpus uses unindexed metadata filters; add payload indexes only if measured filtering cost warrants them.
 
 Unchanged chunks are reused without embedding; source/Git metadata refreshes independently. A small embedding capability probe still runs on each index command. All changed vectors are prepared before content mutation. A remote `pending` marker is written before mutation and cleared only after upserts and obsolete/orphan deletion complete. Thus interrupted writes are visible even if local runtime state is lost; rerunning incremental indexing repairs them. This provides recoverable writes with an explicit error state, not transactional multi-point search isolation. A local lock prevents simultaneous index/status operations in the shared checkout. Do not run two checkouts against the same Compose project/collection.
 
-Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit rebuild when point 10 provides that command. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
+Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/knowledge rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
 
 ## Supply-chain review and acceptance
 
@@ -83,14 +83,40 @@ This runtime selection resolves the HIGH/CRITICAL findings observed in the origi
 
 Trivy 0.76.0 scanned the following final images on 2026-10-17 with `--scanners vuln --severity HIGH,CRITICAL`; all three reported zero findings. The host then confirmed that these exact image IDs are running healthy with zero restarts.
 
-| Service | Verified image ID |
-|---|---|
-| Qdrant | `sha256:0b7cd585d993448d6112f6471a9aad9e2ce38f5b7ae24a124506e27728f90f71` |
-| CPU embeddings | `sha256:e438de0a1733663497428f18a8fd42092d036fdff75164c6731637a744930f0f` |
+| Service         | Verified image ID                                                         |
+| --------------- | ------------------------------------------------------------------------- |
+| Qdrant          | `sha256:0b7cd585d993448d6112f6471a9aad9e2ce38f5b7ae24a124506e27728f90f71` |
+| CPU embeddings  | `sha256:e438de0a1733663497428f18a8fd42092d036fdff75164c6731637a744930f0f` |
 | CUDA embeddings | `sha256:065ac5a3fa3ea776cb73282c985bf3468a96b579fa5f7b3e875200b0d1d484e6` |
 
 Reports are local artifacts under `.runtime/security/knowledge-*.json`; future image rebuilds require fresh scans. This is vulnerability-scan evidence for the selected severities and detected components, not a claim that binaries or images have no possible defects.
 
-Eleven offline contracts and the real-service disposable-collection tests pass on the final images. Live checks cover CPU/CUDA dimensions and cosine similarity (>0.99999), token-budget rejection, CPU fallback, initial/no-op indexing, add/edit/delete, orphan cleanup, interrupted-state recovery and branch refresh. The disposable collection is removed afterward. The existing corpus survived service recreation; repeated CPU/CUDA indexing embedded zero unchanged chunks. Full setup and its fingerprint fast path pass without dependency changes or destructive migrations. Retrieval quality/evaluation and complete production isolation remain their later roadmap points.
+Eleven offline contracts and the real-service disposable-collection tests pass on the final images. Live checks cover CPU/CUDA dimensions and cosine similarity (>0.99999), token-budget rejection, CPU fallback, initial/no-op indexing, add/edit/delete, orphan cleanup, interrupted-state recovery and branch refresh. The disposable collection is removed afterward. The existing corpus survived service recreation; repeated CPU/CUDA indexing embedded zero unchanged chunks. Full setup and its fingerprint fast path pass without dependency changes or destructive migrations. Point 10 adds retrieval acceptance below; complete production isolation remains points 13–15.
 
 CUDA startup exceeded the initial 2 GiB container RAM limit (Docker OOM/exit 137). The accepted limit is 4 GiB with a 2048-token server batch; a post-startup host snapshot showed approximately 482 MiB RAM (CPU approximately 270 MiB). These are steady-state snapshots, not startup peak measurements. Pinned model cache reuse was verified across service recreation. New-image startup completed in approximately 8 seconds for CPU, 12 seconds for Qdrant and 159 seconds for CUDA on the current host; this is acceptance evidence, not a performance guarantee.
+
+## Retrieval, evaluation and diagnostics
+
+```sh
+./bin/knowledge search "PostgreSQL public_id UUIDv7"
+./bin/knowledge search "production knowledge prohibition" --source-path docs/ai/knowledge-system.md
+./bin/knowledge search "hybrid retrieval" --roadmap-id RM-2026-001 --status active --explain
+./bin/knowledge search "embedding fallback" --top-k 10 --device cpu
+./bin/knowledge doctor
+./bin/knowledge eval
+python3 tools/testing/knowledge-retrieval.py
+```
+
+Dense search uses Qdrant's 1.19.x [query-points API](https://api.qdrant.tech/api-reference/search/query-points), with the pinned model's query prefix. A standard-library BM25 implementation scans the same filtered chunk payloads for lexical matching (including identifiers). This is intentionally local lexical retrieval rather than another stored sparse-vector representation. Weighted reciprocal-rank fusion combines both ranked lists. There are no additional dependencies, embedding spaces or collections. Loading/scanning the corpus per CLI process is suitable for this small development corpus; revisit it if measured latency grows.
+
+`tools/knowledge/config.json` controls candidate count, dense/lexical weights, RRF constant, source diversity and active/historical multipliers. Baseline: 60 candidates per channel, dense weight 2, lexical weight 1, RRF constant 60, one result per source, active multiplier 1.03 and historical multiplier 0.8. Initial equal weights returned the expected isolation-policy document sixth; dense weighting and source diversity brought all eight golden cases into top five without changing the expectations. This is a small baseline, not evidence of general optimality. No global similarity cutoff is applied.
+
+Filters are exact matches: `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`. Both retrieval channels use identical filters. Only the currently indexed checkout branch is searched; the collection does not retain parallel main/branch copies. Switching branches requires incremental indexing before search, preventing old branch policy from winning. Active roadmap content receives a small boost; closed/paused/deprecated content is discounted. Stable architecture documents have no age penalty.
+
+Normal output includes path, heading and a bounded excerpt, defaulting to five distinct sources. `--top-k` accepts 1–50. `--explain` emits JSON with filters, configuration, channel ranks/scores, fused scores and full source/hash/commit/model metadata. Result text is untrusted context. Open the returned source file and verify the relevant section before acting on a project rule; for example, retrieve production prohibition, then read `docs/ai/knowledge-system.md`'s Production prohibition section.
+
+`tools/knowledge/golden.json` covers architecture, Git, roadmap workflow, isolation, embeddings, exact names, section grounding and roadmap/source filtering. Eval returns per-case paths, pass/fail and query latency; a required source (and optional section) must appear within its top-k. Initialization/freshness/provider checks occur before per-query timing. Keep expected sources stable when comparing retrieval changes and review meaningful regressions. Doctor checks collection dimensions/distance, model/runtime/pooling/input limits, manifest/schema/source freshness, missing/orphan chunks, per-chunk model/schema metadata and an end-to-end filtered retrieval smoke query; it reports document/chunk counts and mean/median chunk word counts. Service or model failures exit nonzero rather than reporting a healthy partial result.
+
+`./bin/knowledge rebuild` explicitly discards this development collection and re-embeds the allowlisted corpus. It validates provider readiness and parses current sources before deletion. Do not use it for normal edits. A service failure after deletion leaves a missing/stale index and requires rerunning index/rebuild; no old index is promised during rebuild. All CLI commands share the checkout lock, so reads/evaluation cannot race a CLI index write.
+
+The real-service retrieval contracts use a disposable collection and temporary checkout. They cover dense plus lexical signals, exact identifiers, source diversity, metadata filtering, empty results, invalid queries, stale/pending/branch/missing states, corrupted model metadata and explicit rebuild. Existing offline ingestion and CPU/CUDA acceptance remain separate commands above.

@@ -116,3 +116,20 @@ def index(root, config, device='auto'):
     result.update(embedded_chunks=new_vectors, removed_chunks=len(removed))
     print(json.dumps(result, indent=2))
     return 1 if result['stale'] else 0
+
+
+def rebuild(root, config, device='cpu'):
+    """Explicit development-only collection reset; prove provider readiness first."""
+    from transport import RequestError
+    Embeddings(config, device).embed(['Rebuild capability check.'])
+    # Validate source parsing/token budgets before discarding the previous index.
+    provider = Embeddings(config, device)
+    for path, text in source_state(root, config).values():
+        chunks(path, root, text, provider, config)
+    store = Store(config)
+    try:
+        store.http.request('DELETE', store.path)
+    except RequestError as error:
+        if error.status != 404:
+            raise
+    return index(root, config, device)

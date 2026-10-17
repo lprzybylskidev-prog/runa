@@ -19,11 +19,17 @@
     "docs/maintenance/registry.yml",
     "docs/project/state.yml"
   ],
-  "markdown_roots": [
-    "docs",
-    ".agents/skills"
-  ],
+  "markdown_roots": ["docs", ".agents/skills"],
   "pooling": "cls",
   "dtype": "float32",
-  "normalize": true
+  "normalize": true,
+  "retrieval": {
+    "candidates": 60,
+    "dense_weight": 2.0,
+    "lexical_weight": 1.0,
+    "rrf_k": 60,
+    "per_source": 1,
+    "active_boost": 1.03,
+    "historical_weight": 0.8
+  }
 }

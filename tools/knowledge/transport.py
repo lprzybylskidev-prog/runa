@@ -30,6 +30,7 @@ class Http:
             except urllib.error.HTTPError as error:
                 # Never echo source text or service response bodies to logs.
                 failure = RequestError(f'{self.base}{path}: HTTP {error.code}', error.code)
+                error.close()
                 if error.code not in (408, 429, 500, 502, 503, 504):
                     raise failure from error
             except (urllib.error.URLError, TimeoutError, ConnectionError) as error:

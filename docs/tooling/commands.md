@@ -1,6 +1,7 @@
 # Canonical Tooling Commands
 
 Every durable `./bin/*` command must:
+
 - use English help/output,
 - support `--help`,
 - fail with meaningful exit codes,
@@ -16,6 +17,7 @@ This file defines the intended command surface. RM-2026-001 implements the initi
 Show or change development resource profile.
 
 Profiles:
+
 - low
 - standard
 - high
@@ -77,7 +79,7 @@ See `docs/data/seeding.md`.
 
 ## Knowledge/RAG
 
-Point 9 implements `index`, `status` and `stale`, with `--device cpu` to verify the fallback path. `python3 tools/testing/knowledge.py` runs offline ingestion contracts; `python3 tools/testing/knowledge-live.py` checks real CPU/CUDA services using a disposable collection and checkout. `./bin/dev embeddings auto|cpu|cuda` selects the host GPU policy; apply it with build/up. See `docs/development/knowledge.md`. Search, rebuild, doctor and eval below remain point 10 requirements.
+All seven knowledge commands are implemented. Search supports `--top-k 1..50`, `--explain`, `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`; quote multiword queries. `--device cpu` forces CPU. Search/eval require a fresh index; doctor reports failures and rebuild explicitly resets the development collection. `python3 tools/testing/knowledge.py` runs offline ingestion contracts, `python3 tools/testing/knowledge-live.py` checks CPU/CUDA ingestion, and `python3 tools/testing/knowledge-retrieval.py` checks real hybrid retrieval in an isolated collection. `./bin/dev embeddings auto|cpu|cuda` selects host GPU policy; apply it with build/up. See `docs/development/knowledge.md`.
 
 - `./bin/knowledge search <query>`
 - `./bin/knowledge search <query> --explain`
@@ -119,6 +121,7 @@ Expected wrapper surface:
 - `./bin/security review-changed-surface`
 
 Underlying tools include:
+
 - Composer audit,
 - pnpm audit,
 - Gitleaks,
@@ -159,6 +162,7 @@ Use only after the first real successful production deployment to update version
 ## Destructive commands
 
 Any destructive reset/prune/restore command must:
+
 - state what will be destroyed,
 - scope itself to Runa resources,
 - require explicit confirmation interactively,
@@ -169,6 +173,7 @@ Do not expose a "fix Docker" command that runs global host prune operations.
 ## Container lifecycle and passthrough commands
 
 Host-side development lifecycle:
+
 - `./bin/dev up`
 - `./bin/dev down`
 - `./bin/dev restart [service]`
@@ -178,6 +183,7 @@ Host-side development lifecycle:
 Production lifecycle uses `./bin/prod up|down|restart|status|logs` with an explicit production Compose context. `./bin/production` owns build/validate/self-test/isolation operations; `prod` may delegate to that shared implementation but must not contain a second independent Compose configuration path.
 
 Host application wrappers:
+
 - `./bin/artisan <arguments>`
 - `./bin/composer <arguments>`
 - `./bin/pnpm <arguments>`
