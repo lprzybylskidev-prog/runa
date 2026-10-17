@@ -778,6 +778,10 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Non-root/minimal privileges where practical.
   - Logging/rotation.
   - No development-only services/tooling.
+  - Implementation prepared (2026-10-17): complete five-service production Compose with exact release/commit image tags, loopback-only HTTP, persistent storage, shared-state health signals, non-root/read-only PHP and Nginx, bounded logs/resources and graceful shutdown. Separate production Nginx configuration adds same-origin CSP, static/public storage handling and query-free access logs.
+  - Production dependencies no longer build through the development/Codex toolchain. Allowlisted image copies and build-context exclusions keep development/AI material out; per-container startup validates configuration and creates a runtime-only config cache without implicit migrations or data resets.
+  - Added safe database-backed readiness separately from basic liveness, host-only production validate/build/lifecycle operations and post-build checks of the actual selected images. Operational deployment/self-test/security scanning remains point 14.
+  - Local checks: 18 backend tests/63 assertions in four workers, maximum-level static analysis, frontend build, production topology/command contracts and existing wrapper contracts. Actual Docker build/image/config/health verification is pending a host terminal: this devcontainer has neither Docker CLI nor Docker-socket access. Keep this point open until host evidence is reviewed; do not claim production acceptance from source checks.
 
 - [ ] 14. **Implement production installer, deployment, rollback, backups, and isolation self-test**
   - Prerequisites: Point 13; shared tooling from points 11–12.

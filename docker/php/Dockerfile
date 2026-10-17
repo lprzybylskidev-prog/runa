@@ -61,11 +61,17 @@ RUN npx --yes playwright@1.64.1 install --with-deps chromium firefox \
     && rm -rf /var/lib/apt/lists/* /root/.npm
 USER runa
 
-FROM development-toolchain AS php-dependencies
+FROM runtime AS php-dependencies
+USER root
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+RUN mkdir -p /tmp/runa-build && chown runa:runa /tmp/runa-build
+USER runa
+ENV COMPOSER_HOME=/tmp/composer
 WORKDIR /tmp/runa-build
 COPY --chown=runa:runa composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY --chown=runa:runa app/ app/
+COPY --chown=runa:runa database/ database/
 RUN composer dump-autoload --no-dev --no-scripts --optimize
 
 FROM node AS frontend-build
@@ -78,7 +84,10 @@ COPY vite.config.mjs tsconfig.json ./
 RUN pnpm run build
 
 FROM runtime AS production
-ENV APP_ENV=production
+COPY --from=runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+ENV APP_ENV=production APP_DEBUG=false KNOWLEDGE_ENABLED=false
+COPY --chmod=755 docker/php/production-entrypoint /usr/local/bin/runa-production-entrypoint
+ENTRYPOINT ["runa-production-entrypoint"]
 # Laravel command discovery reads the application namespace from this metadata.
 COPY --chown=runa:runa composer.json /workspace/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
@@ -95,8 +104,8 @@ RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data
 COPY --chown=runa:runa artisan /workspace/artisan
 
 FROM nginx:1.31.7-alpine AS production-nginx
-COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/production.conf /etc/nginx/nginx.conf
 COPY --from=frontend-build /build/public/build/ /workspace/public/build/
 USER nginx
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
-HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD wget -qO- http://127.0.0.1:8080/api/health || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD wget -qO- http://127.0.0.1:8080/api/ready || exit 1

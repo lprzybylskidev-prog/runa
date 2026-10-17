@@ -18,11 +18,11 @@ try:
             'pnpm': 'Usage: ./bin/pnpm <pnpm arguments>\nRun the pinned pnpm inside the app container.',
             'seed': 'Usage: ./bin/seed default|production|development|occasional <Seeder>|graph [--force]\nValidate and run semantic seeders. Production requires confirmation or explicit --force.',
             'logs': 'Usage: ./bin/logs [service]\nHost only. Show the last 100 development service log lines; logs must never contain secrets.',
-            'prod': 'Usage: ./bin/prod up|down|restart|status|logs\nHost only. Production lifecycle awaits roadmap points 13–14.',
+            'prod': 'Usage: ./bin/prod up|down|restart|status|logs\nHost only. Explicit production Compose context; down preserves volumes. Deploy/migrations remain separate.',
             'passthrough': 'Usage: invoke artisan, composer, pnpm, seed, logs or prod wrapper.',
         }[name])
     elif name == 'prod':
-        raise ValueError('Production Compose is not implemented yet (RM-2026-001 points 13–14); no action performed.')
+        run([str(ROOT / 'bin/production'), *args])
     elif name == 'logs':
         if inside():
             raise ValueError('Run ./bin/logs in a host terminal outside the devcontainer.')

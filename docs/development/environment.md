@@ -89,6 +89,7 @@ Use frozen installs in controlled/production builds.
 ## Frontend toolchain
 
 Baseline:
+
 - Vue 3,
 - TypeScript,
 - Tailwind CSS,
@@ -106,10 +107,12 @@ Quality gate target: zero unexpected lint warnings.
 ESLint is a quality/lint tool, not the primary formatter.
 
 Formatting:
+
 - Pint for PHP,
 - Prettier for Vue/TS/JS/JSON/Markdown/CSS.
 
 Canonical commands:
+
 - `./bin/format`
 - `./bin/lint`
 - `./bin/typecheck`
@@ -169,6 +172,7 @@ Where safely possible, preconfigure Database Client for the development PostgreS
 Laravel Boost is a required development dependency.
 
 Purposes:
+
 - Laravel MCP tools,
 - project inspection,
 - version-aware Laravel documentation search.
@@ -190,6 +194,7 @@ See `docs/ai/laravel-boost.md`.
 Profile usage and tuning guidance lives in `docs/development/resources.md`.
 
 Support:
+
 - `low`
 - `standard`
 - `high`
@@ -237,6 +242,7 @@ Persistent local model cache should survive devcontainer rebuilds and must not b
 Devcontainer setup scripts are idempotent.
 
 Rebuild/reopen must not:
+
 - destroy the development database,
 - run `migrate:fresh`,
 - overwrite local secrets/config,
@@ -262,6 +268,7 @@ GPU support is an optional host capability.
 If the application requires a PHP extension/runtime capability in development, production receives an equivalent compatible capability.
 
 Dev-only tooling such as:
+
 - Xdebug,
 - Qdrant/RAG,
 - embedding service,
@@ -280,6 +287,7 @@ Inbound mail handling is not part of the baseline.
 ## Queue and scheduler
 
 Provide:
+
 - a separate queue worker process/container capability,
 - a separate scheduler process/container capability.
 
@@ -332,7 +340,7 @@ The devcontainer's post-create command is `./bin/dev setup`, executed inside the
 
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
-The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses the same HTTP configuration. `compose.production.yaml` is an incomplete paired runtime foundation; points 13–14 complete the stack, isolation verification and production operations. It must not be treated as a deployment procedure yet.
+The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses a separate production configuration with restrictive browser headers and readiness checks. `compose.production.yaml` defines all five production services; point 14 completes deployment, isolation verification and production operations. It must not be treated as an installer/deployment procedure yet.
 
 ## PostgreSQL initialization
 
@@ -342,14 +350,13 @@ PostgreSQL 18.6 persists data under the named volume mounted at `/var/lib/postgr
 
 Initialization scripts run only for an empty volume. Changing local passwords does not rewrite an existing database. Reconcile credentials/roles deliberately; do not delete a volume to repair ordinary configuration. Rebuild/reopen preserves databases. Production uses its own Compose project, volume and `.env.prod.database`; production operations remain pending points 13–14.
 
-
 ## Frontend foundation
 
 Post-create `./bin/dev setup` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 
-The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Remaining production-stack verification is still owned by points 13–14.
+The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Production container behavior and host build checks are documented in `docs/production/architecture.md` and `docs/tooling/commands.md`; full operational self-test remains point 14.
 
 Point 5 browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. Browser binaries/system dependencies were provisioned for this acceptance run; reproducible test-image/browser provisioning is completed in point 7.
 

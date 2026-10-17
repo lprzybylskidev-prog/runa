@@ -12,3 +12,17 @@ public/build
 # Exclude host storage; the production image creates an empty writable skeleton.
 storage
 bootstrap/cache/*.php
+
+# Runtime COPY inputs are explicit. Keep development-only material out of context.
+.agents
+.devcontainer
+.githooks
+.playwright
+docs
+tests
+tools
+bin
+docker/embeddings
+docker/qdrant
+docker/mailpit
+compose.yaml
