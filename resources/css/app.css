@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme inline {
   --color-canvas: var(--runa-canvas);
@@ -21,7 +21,7 @@
   --runa-control: #7b8c82;
   --runa-accent: #23664e;
 }
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
   color-scheme: dark;
   --runa-canvas: #131d19;
   --runa-surface: #1b2922;
@@ -31,7 +31,20 @@
   --runa-control: #708b79;
   --runa-accent: #88c7a7;
 }
-body { margin: 0; }
-:focus-visible { outline: 3px solid var(--runa-accent); outline-offset: 4px; }
-html { font-family: var(--font-sans); }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
+body {
+  margin: 0;
+}
+:focus-visible {
+  outline: 3px solid var(--runa-accent);
+  outline-offset: 4px;
+}
+html {
+  font-family: var(--font-sans);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

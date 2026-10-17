@@ -21,6 +21,9 @@ Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not
 | Tailwind CSS / Vite adapter | 4.3.3 | https://registry.npmjs.org/@tailwindcss/vite/4.3.3 |
 | Vite | 8.3.4 | https://registry.npmjs.org/vite/8.3.4 |
 | Vue Vite adapter | 6.0.10 | https://registry.npmjs.org/@vitejs/plugin-vue/6.0.10 |
+| ESLint recommended JS adapter | 10.0.1 | https://registry.npmjs.org/@eslint/js/10.0.1 |
+| Vue ESLint parser | 10.3.0 | https://registry.npmjs.org/vue-eslint-parser/10.3.0 |
+| Vitest Playwright provider | 5.0.5 | https://registry.npmjs.org/@vitest/browser-playwright/5.0.5 |
 | ESLint | 10.13.0 | https://registry.npmjs.org/eslint/10.13.0 |
 | TypeScript ESLint | 8.71.2 | https://registry.npmjs.org/typescript-eslint/8.71.2 |
 | Vue ESLint | 10.11.1 | https://registry.npmjs.org/eslint-plugin-vue/10.11.1 |
@@ -47,3 +50,5 @@ Package registry metadata identifies MIT licenses for the selected Composer tool
 PHP, Laravel and JavaScript tooling have published security histories; current versions alone do not prove absence of vulnerabilities. Installation must run Composer/pnpm audits against the actual lockfiles, and final image/filesystem checks must use Trivy. Findings block affected implementation until resolved or handled according to the security policy. This document records compatibility research, not a clean security scan of an unbuilt environment.
 
 The embedding model/runtime remains unselected; evaluate the model at point 9. The user approved vendored Polish Laravel validation data from Laravel-Lang/lang 15.37.4 at commit `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`, with no Composer localization dependency; see `localization.md`. Codex CLI version/configuration is resolved from official OpenAI documentation at point 8.
+
+Point 7 installed the selected formatting/analysis/test packages. The matching Vitest browser provider, ESLint recommended-JS config and Vue parser are MIT-licensed integration components with compatible peer ranges, verified against their exact npm version metadata on 2026-10-17. The provider requires matching Vitest 5.0.5; its Playwright peer resolves to the existing 1.64.1. No additional application runtime dependency was added. `pnpm-workspace.yaml` records only the deliberately reviewed exact ESLint release age exception emitted by pnpm during this installation; it does not permit unbounded version exceptions. Future dependency changes require deliberate roadmap review.

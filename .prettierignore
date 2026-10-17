@@ -1,0 +1,12 @@
+vendor/
+node_modules/
+.runtime/
+artifacts/
+coverage/
+public/build/
+storage/
+bootstrap/cache/
+lang/
+composer.lock
+pnpm-lock.yaml
+.devcontainer/compose.resources.yaml

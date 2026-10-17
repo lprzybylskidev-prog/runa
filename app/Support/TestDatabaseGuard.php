@@ -26,7 +26,7 @@ final class TestDatabaseGuard
             throw new RuntimeException('Destructive database operations require the isolated PostgreSQL testing environment, host, role and database.');
         }
         $actual = $this->database->connection('pgsql')->selectOne('SELECT current_database() AS name, session_user AS username');
-        if ($actual === null || $actual->name !== $settings['database'] || $actual->username !== 'runa_test') {
+        if (! $actual instanceof \stdClass || $actual->name !== $settings['database'] || $actual->username !== 'runa_test') {
             throw new RuntimeException('Actual test database identity does not match the guarded configuration.');
         }
     }

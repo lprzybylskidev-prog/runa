@@ -654,7 +654,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Verify container DNS/ports/mounts/permissions using resolved Compose config.
   - Verified: separate empty checkout/project startup, authenticated DB and Mailpit readiness, real queued email delivery, actual scheduled pulse and instance-aware health rejection tests, full container recreation with database/storage/mail/config persistence, cached setup fast path, profile caps/DNS/loopback ports/non-root mounts, matching PHP build/UID definitions and standalone sibling build. Production service isolation, TLS SMTP validation and scheduler CLI/image storage hygiene pass; complete production deployment remains points 13–14. No new migrations.
 
-- [ ] 7. **Configure formatting, lint, static analysis, and automated tests**
+- [x] 7. **Configure formatting, lint, static analysis, and automated tests**
   - Prerequisites: Points 4–6.
   - Pint, Prettier, ESLint, `vue-tsc`, Larastan/PHPStan.
   - Pest or PHPUnit according to compatibility decision.
@@ -663,6 +663,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Parallel-safe backend test foundation.
   - Implement `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`.
   - Add small meaningful environment/application smoke tests.
+  - Verified: pinned Pint/Prettier/ESLint/vue-tsc and Larastan/PHPStan `max`; Pest 5 / Laravel plugin compatibility; 11 backend tests (29 assertions) serially and on four isolated PostgreSQL/storage workers; 8 Vitest/Vue Test Utils tests in Chromium; 3 critical E2E projects (Chromium, Firefox, mobile Chromium) through isolated testing Nginx/PHP-FPM. Checkout-wide suite lock rejection, development health, production frontend build, locale snapshot integrity, Composer/pnpm audits and resolved testing-profile isolation pass. Browsers are baked only into the development stage. No new migrations or runtime dependencies.
 
 - [ ] 8. **Configure Xdebug, VS Code, Codex CLI, and Laravel Boost**
   - Prerequisites: Points 3 and 7; user/editor action if required for actual MCP discovery.

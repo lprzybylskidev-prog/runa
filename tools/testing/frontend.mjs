@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium, firefox } from '@playwright/test'
 
-const base = 'http://nginx:8080'
+const base = 'http://nginx-test:8080'
 const artifacts = 'artifacts/playwright/foundation'
 await mkdir(artifacts, { recursive: true })
 const browser = await chromium.launch()

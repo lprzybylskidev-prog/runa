@@ -16,5 +16,10 @@
     "types": ["vite/client"],
     "skipLibCheck": true
   },
-  "include": ["resources/**/*.ts", "resources/**/*.vue"]
+  "include": [
+    "resources/**/*.ts",
+    "resources/**/*.vue",
+    "tests/frontend/**/*.ts",
+    "tests/e2e/**/*.ts"
+  ]
 }

@@ -7,7 +7,13 @@
         "php": "^8.4",
         "laravel/framework": "13.37.0"
     },
-    "require-dev": {},
+    "require-dev": {
+        "larastan/larastan": "3.13.0",
+        "laravel/pint": "1.32.1",
+        "pestphp/pest": "5.3.2",
+        "pestphp/pest-plugin-laravel": "5.0.1",
+        "phpstan/phpstan": "2.3.1"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
@@ -35,7 +41,9 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
-        "allow-plugins": {}
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true

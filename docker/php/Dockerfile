@@ -26,7 +26,7 @@ USER runa
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 CMD ["runa-fpm-health"]
 CMD ["php-fpm", "-F"]
 
-FROM runtime AS development
+FROM runtime AS development-toolchain
 USER root
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
@@ -45,7 +45,15 @@ ENV COMPOSER_HOME=/home/runa/.config/composer
 USER runa
 RUN pnpm --version
 
-FROM development AS php-dependencies
+FROM development-toolchain AS development
+USER root
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+RUN npx --yes playwright@1.64.1 install --with-deps chromium firefox \
+    && chmod -R a+rX /opt/playwright \
+    && rm -rf /var/lib/apt/lists/* /root/.npm
+USER runa
+
+FROM development-toolchain AS php-dependencies
 WORKDIR /tmp/runa-build
 COPY --chown=runa:runa composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
@@ -55,7 +63,7 @@ RUN composer dump-autoload --no-dev --no-scripts --optimize
 FROM node AS frontend-build
 WORKDIR /build
 RUN npm install --global corepack@0.36.0 && corepack enable && corepack install --global pnpm@12.14.0
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY resources/ resources/
 COPY vite.config.mjs tsconfig.json ./

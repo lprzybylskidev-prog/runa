@@ -362,3 +362,30 @@ entries:
     url: https://github.com/tailwindlabs/tailwindcss
     last_reviewed: 2026-10-17
     review_every_days: 90
+
+  - id: eslint-js
+    type: framework_tooling
+    name: eslint-js
+    version: 10.0.1
+    url: https://github.com/eslint/eslint
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vue-eslint-parser
+    type: framework_tooling
+    name: vue-eslint-parser
+    version: 10.3.0
+    url: https://github.com/vuejs/vue-eslint-parser
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90
+
+  - id: vitest-browser-playwright
+    type: framework_tooling
+    name: vitest-browser-playwright
+    version: 5.0.5
+    url: https://github.com/vitest-dev/vitest
+    source: docs/development/toolchain.md
+    last_reviewed: 2026-10-17
+    review_every_days: 90

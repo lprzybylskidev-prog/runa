@@ -1,11 +1,16 @@
 <?php
 
+use App\Support\ConfigurationValidator;
+use App\Support\RuntimeHeartbeat;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Filesystem\Filesystem;
+
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 $root = sys_get_temp_dir().'/runa-health-'.bin2hex(random_bytes(6));
 $app->useStoragePath($root);
-$heartbeat = $app->make(App\Support\RuntimeHeartbeat::class);
+$heartbeat = $app->make(RuntimeHeartbeat::class);
 try {
     if ($heartbeat->isFresh('queue', 120)) {
         throw new RuntimeException('Missing heartbeat was accepted.');
@@ -22,7 +27,7 @@ try {
             throw new RuntimeException('Invalid heartbeat was accepted.');
         }
     }
-    $validator = $app->make(App\Support\ConfigurationValidator::class);
+    $validator = $app->make(ConfigurationValidator::class);
     config(['mail.mailers.smtp.port' => 70000]);
     if (! in_array('mail.mailers.smtp.port must be a valid TCP port.', $validator->errors(), true)) {
         throw new RuntimeException('Invalid SMTP port was accepted.');
@@ -42,5 +47,5 @@ try {
     }
     fwrite(STDOUT, "PASS: missing/stale/foreign/future heartbeats and invalid SMTP configuration are rejected.\n");
 } finally {
-    $app->make(Illuminate\Filesystem\Filesystem::class)->deleteDirectory($root);
+    $app->make(Filesystem::class)->deleteDirectory($root);
 }

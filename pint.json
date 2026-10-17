@@ -1,0 +1,11 @@
+{
+  "preset": "laravel",
+  "exclude": [
+    "lang",
+    "vendor",
+    "storage",
+    ".runtime",
+    "node_modules",
+    "public/build"
+  ]
+}
