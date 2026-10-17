@@ -1,5 +1,5 @@
 # Form Patterns
 
-Record real shared field, label, validation, section, spacing and action components as they appear; there are no canonical form paths yet.
+The implemented controlled wrapper is `resources/js/components/AppForm.vue`, used by the preference form in `resources/js/App.vue`. It disables native validation/navigation and guards duplicate submission through `busy`. Select controls use `AppSelect.vue` with visible labels, native keyboard semantics and caller-side enum validation.
 
-Use project controls rather than native replacements where a suitable control exists. Keep controlled validation, labels/error associations, immediate known-error feedback, blocked invalid/duplicate submission, busy state and preserved input after backend errors consistent. Review frontend/backend simple-rule consistency. Record reusable corrections and canonical source examples in the same task. The validation authority and accessibility requirements live in `docs/architecture/frontend.md`.
+There are no business fields, field-error components or business submit flows yet. Add their canonical paths only when implemented. Known invalid values must be rejected immediately by the owning frontend feature, with accessible field errors; backend validation remains authoritative. Preserve recoverable input after 409/422/server failures and provide a deliberate recovery path for conflicts.

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+umask 0027
+# Preserve durable files; initialize only missing runtime directories.
+mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
+    storage/framework/sessions storage/framework/views storage/framework/health storage/logs bootstrap/cache
+php artisan runa:config:validate
+# Caches are per-container and must never bake operator secrets into an image.
+php artisan config:cache --no-interaction
+exec docker-php-entrypoint "$@"

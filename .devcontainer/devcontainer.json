@@ -1,0 +1,52 @@
+{
+  "name": "Runa",
+  "dockerComposeFile": ["../compose.yaml", "compose.resources.yaml"],
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "runa",
+  "updateRemoteUserUID": false,
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "initializeCommand": ["./bin/dev", "prepare"],
+  "postCreateCommand": "./bin/dev setup --if-needed",
+  "forwardPorts": [5173],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "MehediDracula.php-namespace-resolver",
+        "Vue.volar",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "cweijan.vscode-database-client2",
+        "xdebug.php-debug",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "[php]": {
+          "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+        },
+        "[vue]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "eslint.validate": ["javascript", "typescript", "vue"]
+      }
+    }
+  }
+}

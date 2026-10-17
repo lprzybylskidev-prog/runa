@@ -59,6 +59,7 @@ Roadmap IDs are independent from version numbers.
 `CHANGELOG.md` is generated and maintained by the agent from roadmap facts.
 
 Keep it concise:
+
 - version,
 - date,
 - category,
@@ -86,6 +87,7 @@ The GitHub Release may be richer than `CHANGELOG.md`, but both must derive from 
 ## Finalization sequence
 
 Near roadmap completion:
+
 1. complete implementation,
 2. run the full applicable local gate,
 3. resolve failures using inserted fix points and rerun,
@@ -110,3 +112,11 @@ If release metadata changes invalidate a checked condition, rerun the relevant l
 A user decision is required to change major version from 0 to 1.
 
 Before 1.0, follow `docs/release/1.0-readiness.md`.
+
+## Read-only metadata validation
+
+`./bin/doctor release` validates the pre-gate active state and prints the expected next version. It does not edit files, tag, push or publish. The only open checklist item at that stage must be final verification.
+
+Run it again after updating VERSION/CHANGELOG and moving the roadmap to closed. A closed roadmap needs its completion checklist, `closed_at` date and `## Final report` naming its ID and version; the newest changelog entry identifies the same roadmap. Any existing release tag must be annotated and identify HEAD. The roadmap branch additionally checks the version increment against main; after merge the same metadata check is part of main sanity.
+
+For `release_type: release`, explicitly record the user-approved `target_version: X.Y.Z` in frontmatter. Feature/fix/maintenance compute their normal increment and never infer a major bump. Isolated contracts run via `python3 tools/testing/release.py` and the final quality gate. These checks do not prove remote GitHub publication or replace full quality/security evidence.

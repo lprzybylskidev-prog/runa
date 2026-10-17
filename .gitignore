@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.*.example
+/.runtime/
+/.devcontainer/compose.resources.yaml
+/vendor/
+/node_modules/
+/public/build/
+/artifacts/playwright/
+/storage/*.key
+/bootstrap/cache/*.php
+/coverage/
+
+# Python tooling bytecode is generated locally.
+__pycache__/
+*.pyc

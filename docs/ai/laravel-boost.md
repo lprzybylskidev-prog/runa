@@ -52,3 +52,7 @@ When Laravel API/version behavior is uncertain, use Boost version-aware document
 Project-specific Runa rules still override generic Boost recommendations.
 
 During the first environment bootstrap, Boost cannot be used before Laravel/Boost exists. For that setup only, verify installation/version requirements with current official documentation, then prove agent-visible MCP access as soon as configured. Later framework work uses the installed Boost tools. Do not claim unavailable tools were called.
+
+## Installed configuration
+
+RM-2026-001 uses Boost 2.10.3 with MCP-only setup (`boost:install --mcp --no-interaction`). No generated guidelines or skills are enabled in `boost.json`. The project Codex MCP entry calls `./bin/boost-mcp`, which selects container PHP or host Docker transport. Setup, debugger/editor configuration and the remaining real-session acceptance procedure are documented in `docs/development/editor-and-agents.md`.

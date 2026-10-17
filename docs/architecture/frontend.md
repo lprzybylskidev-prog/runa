@@ -17,6 +17,7 @@ No global state library is installed by default.
 ## Language
 
 User-facing UI:
+
 - Polish is the default language.
 - English is the secondary language.
 
@@ -24,11 +25,12 @@ The mandatory administration panel is English-only and is not translated to Poli
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
-Polish Laravel validation/localization resources are required from the start for user-facing messages. Technical backend output, machine codes and admin messages remain English. The exact external localization package/provider must be researched and explicitly approved before installation; do not treat this requirement as approval of an unnamed package.
+Polish Laravel validation/localization resources are required from the start for user-facing messages. Technical backend output, machine codes and admin messages remain English. The approved implementation uses pinned vendored translation data with Laravel’s native loader; no `laravel-lang/lang` or `laravel-lang/common` dependency is permitted. Provenance, MIT attribution and deliberate update instructions are in `docs/development/localization.md`.
 
 ## Responsive and themes
 
 Design every user-facing feature for:
+
 - desktop,
 - tablet,
 - mobile.
@@ -44,6 +46,7 @@ Breakpoints follow content needs rather than a catalog of device models.
 The SPA uses one thin HTTP client/wrapper.
 
 It owns transport concerns such as:
+
 - base URL,
 - CSRF/cookie behavior,
 - standard headers,
@@ -61,6 +64,7 @@ Frontend validation is UX-authoritative for conditions the client already knows.
 Backend validation/integrity is always authoritative for security and final correctness.
 
 Where useful, expose simple shared validation metadata:
+
 - required,
 - min/max,
 - length,
@@ -78,6 +82,7 @@ Where simple validation metadata is shared from backend to frontend, include a c
 ## Shared UX states
 
 Provide consistent patterns for:
+
 - loading,
 - empty state,
 - network error,
@@ -116,6 +121,7 @@ Accessibility is part of normal component review.
 ## Content robustness
 
 Test:
+
 - long text,
 - missing/empty content,
 - Polish/English translation expansion.
@@ -129,6 +135,7 @@ Complex components have explicit state ownership.
 Rendering/computed logic must not contain non-obvious side effects.
 
 Relevant controls define complete states:
+
 - normal,
 - hover,
 - focus,
@@ -138,6 +145,7 @@ Relevant controls define complete states:
 - busy.
 
 Use clear action hierarchy:
+
 - primary,
 - secondary,
 - destructive.
@@ -151,6 +159,7 @@ Protect destructive actions proportionally to consequence, using confirmation, u
 ## Design system
 
 Use pragmatic design tokens for repeated:
+
 - colors,
 - spacing,
 - radii,
@@ -181,11 +190,13 @@ Media should use known dimensions/aspect ratios and lazy loading where sensible 
 Code appearance is not frontend acceptance.
 
 For frontend changes, inspect the rendered UI at representative sizes:
+
 - desktop around 1440x900,
 - tablet around 1024x768,
 - mobile around 390x844.
 
 Check:
+
 - relevant light/dark states,
 - PL/EN where user-facing,
 - console errors/warnings,
@@ -199,7 +210,7 @@ Rendered behavior is the acceptance truth.
 
 Before creating a page or form, inspect two analogous existing pages/forms when available and search existing shared controls/layouts. If fewer exist, inspect what is available and establish the first pattern deliberately. Never invent examples that do not exist.
 
-Reuse suitable project controls instead of native replacements, including date inputs, selects, labels, errors and actions. The normal list hierarchy is breadcrumbs, page header, filters, statistics, then main content; follow the established analogous page rather than redesigning it.
+Reuse suitable project controls instead of native replacements, including date inputs, selects, labels, errors and actions. The agreed content hierarchy is breadcrumbs, optional statistics, optional filters, then main content; follow the established analogous page rather than redesigning it.
 
 The maintained catalogue lives in `.agents/skills/frontend/references/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
 

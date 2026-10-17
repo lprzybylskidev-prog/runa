@@ -4,11 +4,11 @@ Runa is a Laravel-based business application designed to evolve under an explici
 
 ## Current state
 
-This package represents the pre-implementation project specification. Runtime implementation starts with `RM-2026-001-development-environment`.
+`RM-2026-001-development-environment` is active. The initial foundation includes a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, a responsive Vue SPA with Polish/English and light/dark/system preferences, Mailpit, a database queue worker and scheduler.
 
 Initial version: `0.0.0`.
 
-RM-2026-001 remains a draft until the user explicitly declares it ready for activation. Intended commands/runtime files in the documentation are requirements, not installed tools.
+The roadmap checklist records implementation progress. Remaining quality, knowledge, development-service and production-operation requirements are not yet delivered; this is not a completed release. Run `./bin/dev --help` for currently implemented lifecycle commands.
 
 The first feature roadmap is expected to produce `0.1.0` when it is fully verified, closed, merged, tagged, and released.
 
@@ -25,7 +25,7 @@ The first feature roadmap is expected to produce `0.1.0` when it is fully verifi
 - Laravel Boost for version-aware Laravel MCP tooling
 - Codex CLI inside the development container
 
-Exact supported and pinned versions are resolved during `RM-2026-001` from current official sources and compatibility constraints.
+Selected versions and compatibility research are in `docs/development/toolchain.md`. Localization provenance and safe snapshot updates are in `docs/development/localization.md`.
 
 ## Engineering model
 

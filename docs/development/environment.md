@@ -89,6 +89,7 @@ Use frozen installs in controlled/production builds.
 ## Frontend toolchain
 
 Baseline:
+
 - Vue 3,
 - TypeScript,
 - Tailwind CSS,
@@ -106,10 +107,12 @@ Quality gate target: zero unexpected lint warnings.
 ESLint is a quality/lint tool, not the primary formatter.
 
 Formatting:
+
 - Pint for PHP,
 - Prettier for Vue/TS/JS/JSON/Markdown/CSS.
 
 Canonical commands:
+
 - `./bin/format`
 - `./bin/lint`
 - `./bin/typecheck`
@@ -169,6 +172,7 @@ Where safely possible, preconfigure Database Client for the development PostgreS
 Laravel Boost is a required development dependency.
 
 Purposes:
+
 - Laravel MCP tools,
 - project inspection,
 - version-aware Laravel documentation search.
@@ -190,6 +194,7 @@ See `docs/ai/laravel-boost.md`.
 Profile usage and tuning guidance lives in `docs/development/resources.md`.
 
 Support:
+
 - `low`
 - `standard`
 - `high`
@@ -237,6 +242,7 @@ Persistent local model cache should survive devcontainer rebuilds and must not b
 Devcontainer setup scripts are idempotent.
 
 Rebuild/reopen must not:
+
 - destroy the development database,
 - run `migrate:fresh`,
 - overwrite local secrets/config,
@@ -262,6 +268,7 @@ GPU support is an optional host capability.
 If the application requires a PHP extension/runtime capability in development, production receives an equivalent compatible capability.
 
 Dev-only tooling such as:
+
 - Xdebug,
 - Qdrant/RAG,
 - embedding service,
@@ -280,6 +287,7 @@ Inbound mail handling is not part of the baseline.
 ## Queue and scheduler
 
 Provide:
+
 - a separate queue worker process/container capability,
 - a separate scheduler process/container capability.
 
@@ -306,3 +314,84 @@ Host Compose owns container lifecycle/build/production simulation. Host wrappers
 Qdrant and the local embeddings service start automatically with the devcontainer. On first setup, build a missing knowledge index; on subsequent opens check health/freshness and use incremental indexing when needed. Required services perform lightweight readiness checks and doctor supplies deeper self-tests.
 
 Select `high` locally for the initial project owner's environment; the portable repository default remains `standard`. Document profile selection, effective whole-stack limits and tuning for other hardware.
+
+## Base container commands
+
+The initial container uses `docker/php/Dockerfile` with a shared `runtime` stage and a `development` stage. Runtime PHP extensions are compiled once in the shared stage; Composer, Node, Corepack/pnpm, Git and Python are added only to development. The non-root `runa` user uses the host UID/GID recorded during `./bin/dev prepare`. PHP-FPM serves port 9000 on the internal Compose network, with a FastCGI ping health check and no published host port.
+
+Host Python 3 and Docker Compose are required for the host wrapper and VS Code initialize command. Run:
+
+```sh
+./bin/dev prepare
+./bin/dev build
+./bin/dev up
+./bin/dev shell
+```
+
+`./bin/dev config` prints resolved Compose configuration; `./bin/dev down` stops/removes this project's containers while preserving named volumes. There is no destructive volume-reset shortcut. At the base-toolchain stage, only app/FPM exists; application, Nginx and sibling services are completed by the following roadmap points.
+
+The devcontainer initializes the resource override before Compose starts and attaches as `runa`. It sets the versioned hooks path after creation; hook scripts become available in their implementation point. Opening or rebuilding does not delete application data. See [toolchain selections](toolchain.md) and [resource profiles](resources.md).
+
+## Laravel foundation
+
+The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
+
+The devcontainer's post-create command is `./bin/dev setup`, executed inside the container. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Database setup and frontend installation are completed by their roadmap points.
+
+Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
+
+The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses a separate production configuration with restrictive browser headers and readiness checks. `compose.production.yaml` defines all five production services; point 14 completes deployment, isolation verification and production operations. It must not be treated as an installer/deployment procedure yet.
+
+## PostgreSQL initialization
+
+`./bin/dev prepare` creates missing local `.env`, `.env.testing` and `.env.dev.database` files without printing credentials. `.env.dev.database.example` documents the infrastructure-only secrets; PostgreSQL consumes that file, while Laravel reads its own connection credentials from `.env`. Normal preparation refuses conflicting application/initialization passwords rather than silently changing an existing role. Post-create setup copies a missing test key from the generated local application key and runs ordinary migrations, never `migrate:fresh`.
+
+PostgreSQL 18.6 persists data under the named volume mounted at `/var/lib/postgresql`. Its TCP health check authenticates as the application role and executes `SELECT 1`, avoiding premature readiness while the entrypoint's temporary Unix-socket-only initialization server runs. The application depends on this health check. PostgreSQL has no published host port; VS Code's future database client uses service DNS within the devcontainer.
+
+Initialization scripts run only for an empty volume. Changing local passwords does not rewrite an existing database. Reconcile credentials/roles deliberately; do not delete a volume to repair ordinary configuration. Rebuild/reopen preserves databases. Production uses its own Compose project, volume and `.env.prod.database`; production operations remain pending points 13–14.
+
+## Frontend foundation
+
+Post-create `./bin/dev setup` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
+
+For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
+
+The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Production container behavior and host build checks are documented in `docs/production/architecture.md` and `docs/tooling/commands.md`; full operational self-test remains point 14.
+
+Point 5 browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. Browser binaries/system dependencies were provisioned for this acceptance run; reproducible test-image/browser provisioning is completed in point 7.
+
+## Complete runtime services and startup order
+
+Point 6 adds Mailpit, queue and scheduler to app, PostgreSQL and Nginx. Qdrant/embeddings remain point 9. `./bin/dev build` builds the app toolchain and the non-root Mailpit image. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
+
+Startup graph: PostgreSQL authenticates successfully -> app/PHP-FPM becomes available -> the one-shot `setup` service prepares the application -> Nginx, worker and scheduler start. All PHP services carry the same build definition and UID/GID overrides, so cold startup does not rely on the attached VS Code container retaining the base image tag. Setup uses the same `./bin/dev setup --if-needed` path as the devcontainer post-create hook. Its ignored `.runtime/dev/setup.sha256` covers lockfiles, local app environment, setup script, configuration, migrations and frontend sources. If those inputs and generated dependency/frontend outputs are unchanged, it performs only configuration validation, normal migration readiness and hooks-path setup; dependency installation/build are skipped. A failed setup blocks dependent services. Never mark a failed/partial setup complete, and never run destructive migrations on reopen.
+
+The setup container exits successfully and has no runtime healthcheck. It is expected to show `Exited (0)`, while long-running services become healthy. Ordinary `./bin/dev up`/devcontainer reopening can rerun the lightweight setup check. Explicit `./bin/dev setup` forces the full idempotent path. Missing application key/env/dependencies on a fresh checkout are prepared before HTTP/background services start. A separate empty checkout with its own project/volumes was tested through this graph.
+
+Workers run `queue:work database --sleep=3 --tries=3 --timeout=60 --memory=192 --max-time=3600`; Docker restarts them after normal recycling or failure. The 60-second worker timeout is below the 90-second database retry interval; the 75-second stop grace permits current work to finish. Scheduler runs Laravel's `schedule:work` directly, without host cron. Both validate configuration before starting. They use the shared app source/storage and non-root identity. After changing already-loaded worker/scheduler PHP code, restart those services deliberately; bind mounts do not reload a long-running PHP process.
+
+### Runtime health
+
+Worker health combines a heartbeat from Laravel's idle/successful-job events with a real read of `shared.jobs`. Scheduler health requires successful execution of the scheduled `runa:runtime:pulse` command each minute, also with a database readiness check. Probes never refresh their own heartbeat or repair state. Records are replaced atomically under ignored `storage/framework/health`, contain only instance identity/time, and reject stale, future or foreign-container timestamps. Queue freshness is 120 seconds to accommodate a 60-second job; scheduler freshness is 150 seconds. Scheduler's startup grace allows the first minute boundary. These are liveness/readiness signals, not evidence that every business job succeeded; inspect failed jobs separately.
+
+```sh
+php artisan runa:runtime:health queue
+php artisan runa:runtime:health scheduler
+php artisan schedule:list
+php tools/testing/runtime.php
+python3 tools/testing/services.py
+```
+
+Run health commands in the corresponding container because instance IDs differ. The development-only services smoke enqueues a real Laravel email, waits for worker delivery to Mailpit and leaves an identifiable test message. It refuses production, alternate SMTP hosts and synchronous queue configuration.
+
+### Mail and persistence
+
+Mailpit UI is published only at `http://localhost:8025`. SMTP stays internal at `mailpit:1025`; app traffic stays at `http://localhost:8080`. PostgreSQL, workers and scheduler publish no ports. Mailpit accepts only localhost/loopback/service Host headers, stores up to 500 messages in its named volume, runs with the host-matched non-root UID/GID and uses its upstream `readyz` healthcheck. It has no outbound relay configuration.
+
+Laravel's SMTP configuration lives in `config/mail.php` and all app env examples. Development uses Mailpit; testing uses the array mailer. Credentials are optional as a pair, but invalid types/ports/schemes/sender values fail validation. Production requires actual outbound SMTP, TLS and the database queue; it rejects Mailpit/localhost/template-host settings and the array mailer. Never log credentials or mail payloads.
+
+PostgreSQL data, Mailpit captures and application storage survive container recreation/rebuild. Named-volume owners are prepared by the images; no root ownership repair or destructive bootstrap is required on an ordinary reopen. Container logs have local rotation (10 MB, 3 files). Profile-specific service budgets are documented in `resources.md`.
+
+## Knowledge services (point 9)
+
+The development stack now also starts Qdrant and CPU embeddings automatically; the generated host override adds CUDA embeddings when selected. Setup waits for vector-store/CPU readiness, initializes a missing index, and reports staleness without automatically re-embedding existing changed documents. Model cache and vector data persist in named volumes. All knowledge services remain development-only and expose no host ports. Hardware selection, resource limits, pinned images/model and actual acceptance evidence are documented in [knowledge.md](knowledge.md); retrieval/doctor/evaluation are point 10.

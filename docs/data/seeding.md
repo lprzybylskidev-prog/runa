@@ -7,6 +7,7 @@ Runa has three seed categories with distinct intent.
 Production seeders contain mandatory system/reference data.
 
 They may run in:
+
 - production,
 - development,
 - testing.
@@ -32,6 +33,7 @@ Development seeders run only in development/testing.
 They create a persistent, incremental demo/development corpus.
 
 Every new feature/module should extend this corpus with a small set covering important:
+
 - cases,
 - types,
 - states,
@@ -83,6 +85,7 @@ Run them manually through the project seed command.
 One seeder owns one semantic responsibility, not necessarily one table.
 
 Example:
+
 - a future permission-system seeder may create permissions, roles, and assignments if those records form one system responsibility.
 
 Do not create generic `InitialDataSeeder` dumping grounds.
@@ -100,6 +103,7 @@ Use named factory states for important domain states.
 Seeders declare explicit dependencies, such as `dependsOn`.
 
 The runner uses hybrid discovery:
+
 - fixed namespaces/registration contract/attribute/metadata,
 - deterministic ordering,
 - topological dependency sort,
@@ -123,6 +127,7 @@ Canonical interface:
 Expected behavior:
 
 `php artisan migrate:fresh --seed`
+
 - production environment: production seeders only,
 - development/testing: production + development seeders.
 
@@ -139,3 +144,13 @@ Deployment order includes:
 Production seeder failure is a deployment failure.
 
 Production mode rejects explicit development seeding as well as excluding it from the default graph. Category dispatch for `migrate:fresh --seed` does not authorize a destructive production reset; normal deployment uses safe migrations followed by production seeders.
+
+## Implemented foundation
+
+`DatabaseSeeder` delegates Laravel's normal `db:seed`/`migrate:fresh --seed` entrypoint to the same validated graph as `./bin/seed`. The existing destructive test-database guard still governs reset commands; seeding does not weaken it. The initial graph is deliberately empty: technical queue tables need no reference rows, and there are no business entities or demo accounts yet.
+
+Extend `App\Support\Seeding\ManagedSeeder`, implement `category()` and `seed(SeedContext)`, and declare `dependsOn()` as class names. Discovery combines immediate PHP files under `database/seeders/Production`, `Development`, `Occasional` with explicit `config/seeding.php` registrations. Registration supports classes outside those fixed directories; dependencies must themselves be registered/discovered. Names are sorted deterministically, then topologically ordered. The entire graph is checked for missing dependencies, cycles and category violations before any seed is executed. Production may depend only on production; development cannot depend on occasional scenarios. The occasional command accepts a unique short name or full registered class name and executes only its dependency closure. Production rejects any closure containing development seeders.
+
+Development options live under `seeding.development.<ClassBasename>`: boolean `random` (default false), integer `seed` (default 1), and a `counts` map of independent nonnegative integer group sizes. `SeedContext` supplies an independent native PHP random generator and validated `count(group, default)`; it never changes global PRNG state. Production ignores development options. The first real demo seeder must add its own typed config/env tuning and dev/test template documentation; there are no unused fake tuning variables in this foundation. Sort source dictionaries/relationship candidates before sampling. If Faker is needed later, follow dependency policy and seed it independently rather than using uncontrolled global state.
+
+Production seeders must still enforce idempotent upserts and preserve user-managed values; the framework does not infer ownership or suppress reruns. Each future populated production seeder needs a meaningful idempotence test. `./bin/doctor seeding` covers graph ordering, categories, missing/cyclic dependencies, direct development rejection, Laravel/CLI dispatch, independent determinism and the empty repeatable baseline.

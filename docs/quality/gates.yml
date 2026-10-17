@@ -75,6 +75,12 @@ base:
     command: ./bin/quality-check debug-residue
     severity: hard_fail
 
+  - id: quality-runner-contract
+    depends_on: [repository-state]
+    description: Validate graph selection, failure propagation, parallel exclusion, background locking and interruption.
+    command: python3 tools/testing/quality.py
+    severity: hard_fail
+
   - id: maintenance-consistency
     depends_on: [repository-state]
     description: Validate maintenance backlog, deprecations, external registry, TODO links, and command documentation consistency.
@@ -102,6 +108,7 @@ impact_areas:
 
     - id: frontend-tests
       depends_on: [configuration]
+      exclusive_group: testing-state
       command: ./bin/test frontend
       severity: hard_fail
 
@@ -138,25 +145,34 @@ impact_areas:
       severity: hard_fail
 
   production:
+    - id: production-operation-contracts
+      depends_on: [configuration]
+      command: python3 tools/testing/operations.py
+      severity: hard_fail
+
     - id: production-build
+      execution_context: host
       depends_on: [production-compose]
       exclusive_group: production-simulation
       command: ./bin/production build
       severity: hard_fail
 
     - id: production-compose
+      execution_context: host
       depends_on: [configuration]
       exclusive_group: production-simulation
       command: ./bin/production validate
       severity: hard_fail
 
     - id: production-health
+      execution_context: host
       depends_on: [production-build]
       exclusive_group: production-simulation
       command: ./bin/production self-test
       severity: hard_fail
 
     - id: production-ai-isolation
+      execution_context: host
       depends_on: [production-health]
       exclusive_group: production-simulation
       command: ./bin/production verify-ai-isolation
@@ -185,7 +201,14 @@ impact_areas:
       severity: hard_fail
 
   security:
+    - id: security-review-contracts
+      depends_on: [configuration]
+      command: python3 tools/testing/security.py
+      severity: hard_fail
+
     - id: repository-container-scan
+      execution_context: host
+      exclusive_group: production-simulation
       depends_on: [configuration]
       depends_on_if_selected: [production-build]
       command: ./bin/security trivy
@@ -209,8 +232,14 @@ impact_areas:
       severity: hard_fail
 
 final:
-  - id: version-changelog-roadmap
+  - id: release-metadata-contract
     depends_on: []
+    description: Verify isolated release versioning and metadata rejection contracts.
+    command: python3 tools/testing/release.py
+    severity: hard_fail
+
+  - id: version-changelog-roadmap
+    depends_on: [release-metadata-contract]
     description: Validate VERSION, CHANGELOG, roadmap state, release type, and final report facts.
     command: ./bin/doctor release
     severity: hard_fail

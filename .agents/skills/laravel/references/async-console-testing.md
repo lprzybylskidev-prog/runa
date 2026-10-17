@@ -39,3 +39,7 @@ Use single-server scheduling only when the deployment topology and task semantic
 For future HTTP integrations, framework tests fake outgoing HTTP and prevent accidental real network calls. The integration module still owns adapter/provider design; this is test safety, not a premature module architecture.
 
 Use Laravel cache and filesystem abstractions where infrastructure changes should remain transparent to application behavior. Detailed cache/storage lifecycle stays with its owning feature/module.
+
+## Project seeding
+
+Use the shared `ManagedSeeder` / `SeedGraph` foundation and `docs/data/seeding.md` for reference/demo/manual scenarios. Validate dependencies before execution and retain the direct development-environment guard. Keep scenario options in Laravel config and use each `SeedContext`'s independent generator; never seed global randomness or invent demo entities merely to populate the framework.

@@ -21,6 +21,7 @@ Project-specific rules override upstream skills and generic best practices.
 No application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
 
 If no roadmap is active and the user requests implementation:
+
 - stay in discussion/specification mode,
 - do not edit application/runtime configuration,
 - help prepare a draft roadmap,
@@ -35,6 +36,7 @@ Read `docs/workflows/roadmaps.md` before roadmap lifecycle work.
 ## Roadmap execution
 
 Before each roadmap point:
+
 1. Read the active roadmap and current point.
 2. Refresh only relevant prior decisions/dependencies.
 3. Query the local knowledge system first when available.
@@ -44,6 +46,7 @@ Before each roadmap point:
 Do not load the whole repository or all skills by default.
 
 A point is complete only when:
+
 - its implementation is complete,
 - local dependencies are satisfied,
 - proportionate lightweight checks pass,
@@ -58,6 +61,7 @@ If implementation uncovers a significant unknown that changes behavior, architec
 The final point is full verification and release finalization.
 
 If verification finds work:
+
 - keep the roadmap active,
 - insert a fix point immediately before final verification,
 - implement and verify the fix point,
@@ -90,6 +94,7 @@ Read `docs/workflows/git.md`.
 Do not add GitHub Actions or another CI pipeline unless the user explicitly changes this project constitution.
 
 Runa uses:
+
 - versioned local Git hooks,
 - `./bin/quality`,
 - explicit local verification,
@@ -102,6 +107,7 @@ Do not "helpfully" create CI because a generic skill recommends it.
 Every new Composer or pnpm dependency requires explicit user approval unless it is already explicitly mandated by the accepted Runa specification.
 
 Before recommending a dependency, check:
+
 - project activity,
 - license,
 - security history,
@@ -181,6 +187,7 @@ Load the frontend, Vue, and Tailwind skills as appropriate.
 Security decisions happen server-side. Frontend hiding/route guards are UX only.
 
 Never:
+
 - commit secrets,
 - log secrets/sensitive payloads,
 - concatenate untrusted values into SQL or shell commands,
@@ -191,11 +198,16 @@ Use Gitleaks, Trivy, Composer audit, and pnpm audit as defined by project toolin
 
 Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
+## Temporary Docker resources
+
+After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data, rollback volumes, Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
+
 ## Production isolation
 
 AI/RAG tooling is development-only.
 
 Production must not contain or start:
+
 - Qdrant,
 - embedding services,
 - project knowledge/RAG runtime,
@@ -211,6 +223,7 @@ Use local RAG before broad file loading when the knowledge stack is available.
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 
 Skills use progressive disclosure:
+
 - read the relevant `SKILL.md`,
 - load only needed references,
 - do not load all skill references routinely.
@@ -226,11 +239,13 @@ Read `docs/ai/skills-policy.md` and `docs/ai/knowledge-system.md`.
 Update durable docs/skills when implementation establishes or changes a reusable project rule.
 
 Do not append blindly:
+
 - update or replace obsolete rules,
 - remove duplication,
 - preserve the intended source of truth.
 
 Do not persist:
+
 - task noise,
 - speculation,
 - abandoned ideas,
@@ -243,6 +258,7 @@ Constitution-level changes require user discussion: roadmap workflow, branch/mer
 Repository and technical language: English only.
 
 Naming:
+
 - PHP classes: PascalCase
 - PHP methods/variables: camelCase
 - config keys: snake_case
