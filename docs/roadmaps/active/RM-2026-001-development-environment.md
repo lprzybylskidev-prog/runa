@@ -1,10 +1,10 @@
 ---
 id: RM-2026-001
 title: Initial development and production environment
-status: draft
+status: active
 branch: roadmap/RM-2026-001-development-environment
 created_at: 2026-10-17
-activated_at: null
+activated_at: 2026-10-17
 closed_at: null
 release_type: feature
 impact_areas:
