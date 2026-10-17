@@ -59,5 +59,5 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppBackdrop
 
 - Source: `resources/js/components/AppBackdrop.vue`.
-- Shared decorative CSS backdrop: quiet corner glows and a masked 88px technical grid at 4.5% opacity. Page-background rings/arcs are removed. No raster texture, animation or external assets.
+- Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at 4.5% opacity. Page-background rings/arcs are removed. No raster texture, animation or external assets.
 - Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: AuthLayout. Follow the current background direction in `docs/design/visual-direction.md`.
