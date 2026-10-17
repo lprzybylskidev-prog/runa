@@ -8,12 +8,16 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tools/project'))
+from runtime import app_command
 args = sys.argv[1:]
+if args == ['--help']:
+    print('Usage: ./bin/xdebug on|off|status\nDevelopment-only CLI/FPM debug mode; off by default.')
+    sys.exit(0)
 if args not in (['on'], ['off'], ['status']):
     sys.exit('Usage: ./bin/xdebug on|off|status')
 if not Path('/.dockerenv').exists():
-    sys.exit(subprocess.call(['docker', 'compose', '--project-directory', str(ROOT),
-                             'exec', '-T', 'app', './bin/xdebug', *args]))
+    sys.exit(subprocess.call(app_command(['./bin/xdebug', *args]), cwd=ROOT))
 config = Path('/usr/local/etc/php/conf.d/zz-runa-xdebug.ini')
 if not config.exists():
     sys.exit('Xdebug is available only in the development image. Rebuild the devcontainer.')

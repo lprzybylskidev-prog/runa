@@ -176,7 +176,8 @@ def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/dev profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/dev prepare|build|up|down|config|shell\n'
+              '       ./bin/dev prepare|build|up|down|config|shell|status|doctor\n'
+              '       ./bin/dev restart|logs [service] (host only)\n'
               '       ./bin/dev embeddings auto|cpu|cuda (host only)\n'
               '       ./bin/dev setup [--if-needed] (inside the devcontainer)\n'
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
@@ -214,6 +215,7 @@ def main():
         if args not in ([], ['--if-needed']) or not Path('/.dockerenv').exists():
             raise ValueError('Run ./bin/dev setup [--if-needed] inside the devcontainer.')
         environment_files()
+        subprocess.run(['python3', 'tools/project/install-scanners.py'], cwd=ROOT, check=True)
         env = ROOT / '.env'
         marker = ROOT / '.runtime/dev/setup.sha256'
         required = ['vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html']
@@ -242,6 +244,19 @@ def main():
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(setup_fingerprint() + '\n')
         return 0
+    if command == 'doctor':
+        if args:
+            raise ValueError('Usage: ./bin/dev doctor')
+        return subprocess.run([str(ROOT / 'bin/doctor'), 'development'], cwd=ROOT).returncode
+    if command in ('restart', 'logs', 'status'):
+        if Path('/.dockerenv').exists():
+            raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
+        services = ('app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu', 'setup')
+        if len(args) > 1 or (args and (args[0] not in services or command == 'status')):
+            raise ValueError('Provide at most one known service for restart/logs; status takes no arguments.')
+        action = {'status': ['ps', '--all'], 'restart': ['restart'], 'logs': ['logs', '--tail', '100']}[command]
+        return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(LOCAL),
+                               '-f', str(ROOT / 'compose.yaml'), '-f', str(OVERRIDE), *action, *args], cwd=ROOT).returncode
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
     resolve_embeddings(values)

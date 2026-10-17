@@ -52,6 +52,7 @@ Runa is intended to be developed heavily with coding agents while remaining repr
 ### Scope
 
 Included:
+
 - development environment,
 - initial clean Laravel/Vue application shell,
 - project tooling,
@@ -86,6 +87,7 @@ Canonical repository:
 `https://github.com/lprzybylskidev-prog/runa`
 
 Git identity:
+
 - `Łukasz Przybylski`
 - `lprzybylskidev@gmail.com`
 
@@ -104,6 +106,7 @@ No GitHub Actions/CI files may be added.
 Dependencies explicitly mandated by the accepted Runa specification count as already approved for this roadmap, subject to current compatibility/security review.
 
 Examples include the required framework/tooling families:
+
 - Laravel,
 - Laravel Boost,
 - Vue 3,
@@ -128,6 +131,7 @@ Do not add convenience packages such as class-merging helpers, UI frameworks, st
 ### Version/toolchain resolution
 
 Before implementation depends on version-specific behavior:
+
 - inspect current official supported versions,
 - choose mutually compatible versions,
 - pin exact runtime/tool versions,
@@ -160,6 +164,7 @@ Named routes are required.
 ### Configuration
 
 Create/maintain:
+
 - appropriate development environment example,
 - testing environment example,
 - production environment example,
@@ -176,10 +181,12 @@ Implement deterministic configuration validation/doctor checks for required, emp
 PostgreSQL only.
 
 Development includes:
+
 - normal Runa database,
 - isolated `runa_test` database.
 
 Implement the schema conventions in `docs/architecture/database.md`, including:
+
 - no Runa tables in `public`,
 - `shared` for Laravel technical/global tables,
 - explicit schemas,
@@ -214,10 +221,10 @@ Disable native form validation behavior where controlled custom UX requires it.
 
 Research performed on 2026-10-17 before point 5. The user subsequently approved the pinned translation-data snapshot and explicitly prohibited adding the lang/common packages. Implementation and update procedure: `docs/development/localization.md`.
 
-| Candidate | Activity and compatibility | Dependency footprint over the current 73-package Laravel lock |
-|---|---|---|
-| `laravel-lang/lang` 15.37.4 | Released 2026-10-09; PHP ^8.2; its required publisher 16.8.0 explicitly supports Laravel 13. Composer resolved successfully with PHP 8.4/Laravel 13.37. | 86 packages total, 13 additional packages. Includes publisher/locales/config support. |
-| `laravel-lang/common` 6.8.0 | Released 2026-03-17; resolves with the selected stack and pulls the same lang/publisher family. | 98 packages total, 25 additional packages. Adds actions, attributes, HTTP statuses, model/route/starter-kit/MoonShine translation integrations beyond this foundation's needs. |
+| Candidate                                                 | Activity and compatibility                                                                                                                                                                                                                                                                   | Dependency footprint over the current 73-package Laravel lock                                                                                                                                                          |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `laravel-lang/lang` 15.37.4                               | Released 2026-10-09; PHP ^8.2; its required publisher 16.8.0 explicitly supports Laravel 13. Composer resolved successfully with PHP 8.4/Laravel 13.37.                                                                                                                                      | 86 packages total, 13 additional packages. Includes publisher/locales/config support.                                                                                                                                  |
+| `laravel-lang/common` 6.8.0                               | Released 2026-03-17; resolves with the selected stack and pulls the same lang/publisher family.                                                                                                                                                                                              | 98 packages total, 25 additional packages. Adds actions, attributes, HTTP statuses, model/route/starter-kit/MoonShine translation integrations beyond this foundation's needs.                                         |
 | Pinned translation-data snapshot from `Laravel-Lang/lang` | Uses the same reviewed 15.37.4 source revision with Laravel's native translation loader. Copy only required PL framework translation data, preserve attribution and verify keys/placeholders against installed Laravel's English catalog. Approved for the required validation catalog only. | No additional Composer/pnpm packages. The five upstream Polish source files total 83,853 bytes before selecting/converting the required catalog. No publisher runtime. Updates become explicit repository maintenance. |
 
 Both packages and the translation source are MIT-licensed. The upstream license is copyright Laravel Lang Team 2013–2026 and requires preservation of its notice. Source revision for lang 15.37.4: `a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7`.
@@ -229,6 +236,7 @@ The focused lang package provides framework translation catalogs plus publicatio
 Approved decision: use a pinned translation-data snapshot with MIT attribution, exact provenance, key/placeholder checks and deliberate review through diffs. The update tool must never overwrite local corrections. No Composer localization packages are permitted.
 
 Primary research sources:
+
 - https://repo.packagist.org/p2/laravel-lang/lang.json
 - https://repo.packagist.org/p2/laravel-lang/common.json
 - https://repo.packagist.org/p2/laravel-lang/publisher.json
@@ -239,6 +247,7 @@ Primary research sources:
 ### Formatting/lint/static analysis
 
 Implement:
+
 - Pint for PHP,
 - Prettier for Vue/TS/JS/JSON/Markdown/CSS,
 - ESLint with type-aware strict TypeScript rules and appropriate Vue rules,
@@ -246,6 +255,7 @@ Implement:
 - Larastan/PHPStan at the highest analysis level supported by the installed stack; never lower it to accommodate code errors.
 
 Canonical wrappers:
+
 - `./bin/format`
 - `./bin/lint`
 - `./bin/typecheck`
@@ -256,16 +266,19 @@ Unexpected warnings should not be normalized as success.
 ### Testing
 
 Backend:
+
 - Pest if cleanly supported, otherwise PHPUnit,
 - Feature tests primary,
 - isolated `runa_test`,
 - parallel-safe test foundation.
 
 Frontend:
+
 - Vitest,
 - Vue Test Utils.
 
 Browser:
+
 - Playwright,
 - Chromium + Firefox installed,
 - Chromium primary.
@@ -277,6 +290,7 @@ Create minimal meaningful environment smoke/contract tests rather than fake busi
 ### Development Compose/devcontainer
 
 Sibling-container topology managed by host Docker Compose:
+
 - app/devcontainer,
 - Nginx,
 - PostgreSQL,
@@ -317,6 +331,7 @@ Baseline development and production runtime capability as applicable:
 Do not install GD/Imagick until a real feature needs one.
 
 Xdebug:
+
 - development-only,
 - off by default,
 - `./bin/xdebug on|off|status`,
@@ -325,6 +340,7 @@ Xdebug:
 ### VS Code
 
 Automatically install/configure through devcontainer customizations:
+
 - Intelephense,
 - PHP Namespace Resolver,
 - Vue Official,
@@ -345,6 +361,7 @@ Preconfigure Database Client for dev PostgreSQL if safely possible without secre
 ### Resource profiles
 
 Implement:
+
 - low,
 - standard,
 - high,
@@ -384,10 +401,12 @@ Follow `docs/ai/laravel-boost.md` for the canonical setup-safety procedure: prot
 Implement the requirements from `docs/ai/knowledge-system.md`.
 
 Services:
+
 - Qdrant,
 - local embeddings with CUDA/CPU fallback.
 
 Implement:
+
 - provider abstraction/capabilities,
 - structural/document-aware chunking,
 - metadata,
@@ -419,6 +438,7 @@ Configure `core.hooksPath .githooks`.
 No Husky.
 
 `pre-commit` remains fast:
+
 - staged Gitleaks,
 - format changed files,
 - quick lint changed files,
@@ -426,6 +446,7 @@ No Husky.
 - repository/basic secret/large-binary sanity.
 
 `commit-msg`:
+
 - Conventional Commits,
 - roadmap ID scope when active.
 
@@ -471,6 +492,7 @@ TODO/FIXME/HACK must be removed or linked to a real maintenance item/future road
 ### Security tooling
 
 Implement/use:
+
 - Gitleaks,
 - Trivy,
 - `composer audit`,
@@ -487,6 +509,7 @@ Implement the production/development/occasional model from `docs/data/seeding.md
 This roadmap only needs technical/reference seed infrastructure and small demo foundation where required for environment/browser acceptance. Do not invent business data models.
 
 Implement:
+
 - semantic seed responsibility,
 - explicit dependency graph/topological sorting/cycle detection,
 - deterministic defaults,
@@ -497,6 +520,7 @@ Implement:
 ### Production containers
 
 Baseline sibling services:
+
 - app/PHP-FPM,
 - Nginx,
 - PostgreSQL,
@@ -520,6 +544,7 @@ Implement minimal safe health endpoint and operator/deep doctor separation.
 ### Production isolation
 
 Enforce all five layers:
+
 1. no AI services in production Compose,
 2. production env disables knowledge CLI,
 3. production image excludes AI/dev material where not required,
@@ -541,6 +566,7 @@ Record previous deploy version/commit/image identity.
 ### Backup
 
 Implement:
+
 - `./bin/backup create`
 - `./bin/backup verify`
 - `./bin/backup restore`
@@ -566,6 +592,7 @@ The value is one-way false -> true.
 ### Release/version tooling
 
 Implement/validate:
+
 - `VERSION`,
 - generated `CHANGELOG.md`,
 - roadmap-driven version computation,
@@ -707,7 +734,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Added eight fixed golden queries, concise source/section excerpts, diagnostic ranks/scores/hash/model metadata, and doctor checks for model/schema/freshness/missing/orphan states, corpus statistics and end-to-end retrieval. Stale search/eval fail with explicit indexing instructions; original-source grounding was verified against production isolation policy.
   - Verified: 11 offline ingestion contracts, three real-service retrieval contracts in disposable collections (filters/exact identifiers/diversity/stale/branch/missing/mixed-model/rebuild), CPU/CUDA live ingestion acceptance and 8/8 golden queries at top five. Warm per-query retrieval was approximately 10–50 ms on the current corpus; doctor passed with zero missing/orphan/invalid-metadata chunks. Updated knowledge command/operator and RAG skill guidance.
 
-- [ ] 11. **Implement seeding, Git hooks, maintenance validation, and project command contracts**
+- [x] 11. **Implement seeding, Git hooks, maintenance validation, and project command contracts**
   - Prerequisites: Points 7–10.
   - Production/development/occasional seeder graph and wrappers.
   - `.githooks/` plus `core.hooksPath`.
@@ -718,6 +745,10 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - English `--help` and meaningful exit codes for durable commands.
   - Implement lifecycle/passthrough wrappers (`dev`, `prod`, `artisan`, `composer`, `pnpm`, `logs`) and global/focused doctor; keep host-only Docker operations explicit without Docker-socket access. Production operations are completed with their later implementation points.
   - Update `docs/tooling/commands.md` to exact implemented surface.
+  - Completed (2026-10-17): shared validated seeder graph with fixed category discovery/explicit registration, deterministic topological ordering, missing/cycle/category checks, independent native random contexts, Laravel DatabaseSeeder dispatch and seed CLI. Empty initial graph creates no artificial domain/demo records; production rejects development seeders directly and through dependencies.
+  - Installed versioned pre-commit/commit-msg hooks and pinned checksum-verified Gitleaks 8.30.1. Checks inspect staged blobs, preserve partial staging, format only safe fully staged files, run quick lint/syntax checks and block stale knowledge without automatic indexing. Installed-hook rejection fixtures use a disposable repository and create no commits.
+  - Added safe application passthrough/lifecycle/log wrappers, global/focused doctor, package-to-maintenance-version mappings and maintenance/deprecation/comment consistency checks. Production lifecycle/release diagnostics explicitly fail as pending until their later implementation; host-only Docker commands remain outside the devcontainer.
+  - Verified: 16 backend tests/55 assertions in four workers, maximum-level static analysis, installed-hook contracts, three wrapper-context/argument tests, three maintenance rejection tests, configuration/Boost/help/docs checks and live development diagnostics. Host forwarding is simulated without Docker access; full host lifecycle acceptance remains point 15. No Composer/pnpm dependencies, business tables or CI were added.
 
 - [ ] 12. **Implement the local quality runner**
   - Prerequisites: Point 11; production-dependent blocks become runnable after points 13–14.

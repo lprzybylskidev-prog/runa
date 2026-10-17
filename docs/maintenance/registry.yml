@@ -80,6 +80,7 @@ entries:
       - rag
 
   - id: laravel-framework
+    package: 'laravel/framework'
     type: framework
     name: Laravel
     version: 13.37.0
@@ -165,6 +166,7 @@ entries:
     review_every_days: 30
 
   - id: vue
+    package: 'vue'
     type: framework_tooling
     name: vue
     version: 3.5.44
@@ -173,6 +175,7 @@ entries:
     review_every_days: 90
 
   - id: typescript
+    package: 'typescript'
     type: framework_tooling
     name: typescript
     version: 6.0.3
@@ -181,6 +184,7 @@ entries:
     review_every_days: 90
 
   - id: tailwindcss
+    package: 'tailwindcss'
     type: framework_tooling
     name: tailwindcss
     version: 4.3.3
@@ -189,6 +193,7 @@ entries:
     review_every_days: 90
 
   - id: vite
+    package: 'vite'
     type: framework_tooling
     name: vite
     version: 8.3.4
@@ -197,6 +202,7 @@ entries:
     review_every_days: 90
 
   - id: eslint
+    package: 'eslint'
     type: framework_tooling
     name: eslint
     version: 10.13.0
@@ -205,6 +211,7 @@ entries:
     review_every_days: 90
 
   - id: typescript-eslint
+    package: 'typescript-eslint'
     type: framework_tooling
     name: typescript-eslint
     version: 8.71.2
@@ -213,6 +220,7 @@ entries:
     review_every_days: 90
 
   - id: eslint-plugin-vue
+    package: 'eslint-plugin-vue'
     type: framework_tooling
     name: eslint-plugin-vue
     version: 10.11.1
@@ -221,6 +229,7 @@ entries:
     review_every_days: 90
 
   - id: prettier
+    package: 'prettier'
     type: framework_tooling
     name: prettier
     version: 3.9.10
@@ -229,6 +238,7 @@ entries:
     review_every_days: 90
 
   - id: vue-tsc
+    package: 'vue-tsc'
     type: framework_tooling
     name: vue-tsc
     version: 3.3.13
@@ -237,6 +247,7 @@ entries:
     review_every_days: 90
 
   - id: pint
+    package: 'laravel/pint'
     type: framework_tooling
     name: pint
     version: 1.32.1
@@ -245,6 +256,7 @@ entries:
     review_every_days: 90
 
   - id: larastan
+    package: 'larastan/larastan'
     type: framework_tooling
     name: larastan
     version: 3.13.0
@@ -253,6 +265,7 @@ entries:
     review_every_days: 90
 
   - id: phpstan
+    package: 'phpstan/phpstan'
     type: framework_tooling
     name: phpstan
     version: 2.3.1
@@ -261,6 +274,7 @@ entries:
     review_every_days: 90
 
   - id: pest
+    package: 'pestphp/pest'
     type: framework_tooling
     name: pest
     version: 5.3.2
@@ -269,6 +283,7 @@ entries:
     review_every_days: 90
 
   - id: pest-laravel-plugin
+    package: 'pestphp/pest-plugin-laravel'
     type: framework_tooling
     name: pest-laravel-plugin
     version: 5.0.1
@@ -277,6 +292,7 @@ entries:
     review_every_days: 90
 
   - id: vitest
+    package: 'vitest'
     type: framework_tooling
     name: vitest
     version: 5.0.5
@@ -285,6 +301,7 @@ entries:
     review_every_days: 90
 
   - id: vue-test-utils
+    package: '@vue/test-utils'
     type: framework_tooling
     name: vue-test-utils
     version: 2.5.1
@@ -293,6 +310,7 @@ entries:
     review_every_days: 90
 
   - id: playwright
+    package: '@playwright/test'
     type: framework_tooling
     name: playwright
     version: 1.64.1
@@ -301,6 +319,7 @@ entries:
     review_every_days: 90
 
   - id: laravel-boost-package
+    package: 'laravel/boost'
     type: framework_tooling
     name: laravel-boost-package
     version: 2.10.3
@@ -348,6 +367,7 @@ entries:
       - lang/pl/validation.php
 
   - id: vite-vue-adapter
+    package: '@vitejs/plugin-vue'
     type: framework_tooling
     name: Vite Vue integration
     version: 6.0.10
@@ -356,6 +376,7 @@ entries:
     review_every_days: 90
 
   - id: tailwind-vite-adapter
+    package: '@tailwindcss/vite'
     type: framework_tooling
     name: Tailwind Vite integration
     version: 4.3.3
@@ -364,6 +385,7 @@ entries:
     review_every_days: 90
 
   - id: eslint-js
+    package: '@eslint/js'
     type: framework_tooling
     name: eslint-js
     version: 10.0.1
@@ -373,6 +395,7 @@ entries:
     review_every_days: 90
 
   - id: vue-eslint-parser
+    package: 'vue-eslint-parser'
     type: framework_tooling
     name: vue-eslint-parser
     version: 10.3.0
@@ -382,6 +405,7 @@ entries:
     review_every_days: 90
 
   - id: vitest-browser-playwright
+    package: '@vitest/browser-playwright'
     type: framework_tooling
     name: vitest-browser-playwright
     version: 5.0.5
