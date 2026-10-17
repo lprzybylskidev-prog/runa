@@ -24,7 +24,7 @@ def compose():
     mode = values.get('RUNA_PRODUCTION_MODE', 'real')
     if mode not in ('real', 'simulation'):
         raise ValueError('RUNA_PRODUCTION_MODE must be real or simulation.')
-    project = 'runa-prod-simulation' if mode == 'simulation' else 'runa-prod'
+    project = 'runa-prod-icu-simulation' if mode == 'simulation' else 'runa-prod'
     return ['docker', 'compose', '--project-name', project, '--project-directory', str(ROOT), '--env-file', str(path), '-f', str(ROOT / 'compose.production.yaml')]
 
 

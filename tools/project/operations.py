@@ -204,7 +204,7 @@ def health(release=None, sparse=False):
 
 def isolation(release=None, sparse=False):
     config = json.loads(dc(['config', '--format', 'json'], release, capture_output=True, text=True).stdout)
-    if set(config['services']) != set(production.SERVICES) or set(config.get('volumes', {})) != {'postgres-data', 'application-storage'}:
+    if set(config['services']) != set(production.SERVICES) or set(config.get('volumes', {})) != {'postgres-icu-data', 'application-storage'}:
         raise ValueError('Unexpected production services or volumes.')
     for name, service in config['services'].items():
         if service.get('privileged') or any('docker.sock' in str(mount) for mount in service.get('volumes', [])):
@@ -265,6 +265,8 @@ def deploy(target, simulation):
         raise ValueError('The simulation flag must match RUNA_PRODUCTION_MODE in the private Compose settings.')
     if not simulation:
         assert_sparse(ROOT)
+    if previous and 'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873' not in previous.get('images', {}):
+        raise ValueError('Previous deployment uses a different database baseline. Use a fresh dedicated installer simulation checkout; do not adopt the old cluster.')
     if previous and previous['simulation'] != simulation:
         raise ValueError('Cannot switch between real and simulation deployment contexts.')
     if not previous:
@@ -453,7 +455,7 @@ def restore(name, confirmed):
     if manifest['deployment']['sha'] != current['sha'] or manifest['deployment']['simulation'] != current['simulation']:
         raise ValueError('Restore requires the same application SHA and real/simulation context as the backup.')
     verify_backup(name)
-    project = 'runa-prod-simulation' if current['simulation'] else 'runa-prod'
+    project = 'runa-prod-icu-simulation' if current['simulation'] else 'runa-prod'
     target = project + '/runa/application-storage'
     print('Destructive restore target: ' + target + '; backup: ' + name)
     if not confirmed and input('Type the full target to confirm: ') != target:
@@ -501,6 +503,9 @@ def install(target, simulation):
         raise ValueError('Require Docker Engine >=26 and Compose >=2.35.')
     print('Configure host HTTPS reverse proxy separately. Secrets are generated locally; SMTP password input is hidden.')
     values = read_env(ROOT / '.env.prod.example')
+    http_port = input('Loopback HTTP port [8081]: ').strip() or '8081'
+    if not http_port.isascii() or not http_port.isdigit() or not 1024 <= int(http_port) <= 65535:
+        raise ValueError('HTTP port must be 1024–65535.')
     values['APP_URL'] = input('HTTPS application URL: ').strip()
     values['MAIL_HOST'] = input('SMTP host: ').strip()
     values['MAIL_FROM_ADDRESS'] = input('Sender email: ').strip()
@@ -512,7 +517,7 @@ def install(target, simulation):
     database = {'POSTGRES_PASSWORD': secrets.token_urlsafe(36), 'APP_DB_PASSWORD': values['DB_PASSWORD']}
     resolve(target)
     for name, mapping in (('.env.prod', values), ('.env.prod.database', database), ('.env.prod.backup', backup),
-                          ('.env.prod.compose', {'RUNA_IMAGE_TAG': target, 'RUNA_HTTP_PORT': '8081', 'RUNA_PRODUCTION_MODE': 'simulation' if simulation else 'real'})):
+                          ('.env.prod.compose', {'RUNA_IMAGE_TAG': target, 'RUNA_HTTP_PORT': http_port, 'RUNA_PRODUCTION_MODE': 'simulation' if simulation else 'real'})):
         with open(ROOT / name, 'x', opener=lambda p, flags: os.open(p, flags, 0o600)) as stream:
             for key, value in mapping.items():
                 if any(char in value for char in '\r\n\x00'):

@@ -90,7 +90,7 @@ print('parent:' + sys.stdin.read())
             root = Path(folder)
             state = root / 'state'
             sha = 'a' * 40
-            previous = {'sha': 'b' * 40, 'path': '/previous', 'database_tree': 'same' if compatible else 'different', 'simulation': True}
+            previous = {'sha': 'b' * 40, 'path': '/previous', 'database_tree': 'same' if compatible else 'different', 'simulation': True, 'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
             config = root / '.env.prod.compose'
             config.write_text('RUNA_IMAGE_TAG=' + previous['sha'] + '\nRUNA_PRODUCTION_MODE=simulation\n')
             calls = []
@@ -143,7 +143,7 @@ print('parent:' + sys.stdin.read())
             for name, text in (('.env.prod', 'APP_KEY=x\n'), ('.env.prod.database', 'POSTGRES_PASSWORD=y\n'), ('.env.prod.compose', 'RUNA_IMAGE_TAG=' + 'b' * 40 + '\nRUNA_PRODUCTION_MODE=simulation\n')):
                 (root / name).write_text(text)
             command = ops.command(release)
-            self.assertEqual(command[command.index('--project-name') + 1], 'runa-prod-simulation')
+            self.assertEqual(command[command.index('--project-name') + 1], 'runa-prod-icu-simulation')
             self.assertIn('RUNA_IMAGE_TAG=' + sha, (release / '.env.prod.compose').read_text())
             self.assertEqual((release / '.env.prod').stat().st_mode & 0o777, 0o600)
 

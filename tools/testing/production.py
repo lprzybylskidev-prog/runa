@@ -34,7 +34,7 @@ class ProductionContracts(unittest.TestCase):
         public = services['nginx']['volumes'][0]
         self.assertTrue(public['read_only'])
         self.assertEqual(public['volume']['subpath'], 'app/public')
-        self.assertEqual(set(data['volumes']), {'application-storage', 'postgres-data'})
+        self.assertEqual(set(data['volumes']), {'application-storage', 'postgres-icu-data'})
         for service in services.values():
             for mount in service.get('tmpfs', []):
                 self.assertTrue(mount.startswith('/'), 'tmpfs options must stay inside one quoted mount string')

@@ -36,11 +36,18 @@ def trivy():
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     reports.chmod(0o700)
     failures = []
-    def scan_command(arguments, label):
+    def scan_command(arguments, label, report_path=None):
         print('Scanning: ' + label, flush=True)
         try:
             run(arguments)
         except subprocess.CalledProcessError as error:
+            if error.returncode == 1 and report_path is not None:
+                import gosu_disposition
+                try:
+                    if gosu_disposition.apply(label, report_path):
+                        return
+                except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as disposition_error:
+                    print('Disposition rejected; finding remains blocking: ' + type(disposition_error).__name__, flush=True)
             failures.append(label + ' (exit ' + str(error.returncode) + ')')
             print('FAIL: ' + failures[-1] + '; continuing to collect remaining reports.', flush=True)
     def report(name):
@@ -80,7 +87,8 @@ def trivy():
                 scan = ['docker', 'run', '--rm', '-v', str(archive) + ':/image.tar:ro',
                         '-v', 'runa-trivy-cache:/root/.cache/trivy', '-v', str(reports) + ':/reports', 'aquasec/trivy:0.76.0']
                 target = '/image.tar'
-            scan_command(scan + ['image', '--format', 'json', '--output', report('image-' + hashlib.sha256(image.encode()).hexdigest()[:12] + '.json'), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'], image)
+            report_name = 'image-' + hashlib.sha256(image.encode()).hexdigest()[:12] + '.json'
+            scan_command(scan + ['image', '--format', 'json', '--output', report(report_name), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'], image, reports / report_name)
         finally:
             archive.unlink(missing_ok=True)
     try:
