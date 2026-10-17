@@ -39,6 +39,8 @@ class ProductionContracts(unittest.TestCase):
             for mount in service.get('tmpfs', []):
                 self.assertTrue(mount.startswith('/'), 'tmpfs options must stay inside one quoted mount string')
         self.assertEqual(len(services['nginx']['tmpfs']), 1)
+        nginx_config = (ROOT / 'docker/nginx/production.conf').read_text()
+        self.assertIn('location = / { rewrite ^ /index.php last; }', nginx_config)
         production_stage = (ROOT / 'docker/php/Dockerfile').read_text().split('FROM runtime AS production\n')[1].split('FROM nginx:')[0]
         self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
         self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
