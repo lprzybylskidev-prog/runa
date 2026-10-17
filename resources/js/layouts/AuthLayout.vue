@@ -31,10 +31,12 @@ const coverVisible = ref(false);
 let pendingPreference: 'language' | 'theme' | undefined;
 let trigger: globalThis.HTMLElement | undefined;
 let frame = 0;
+let revealTimer: ReturnType<typeof window.setTimeout> | undefined;
 let disposed = false;
 onScopeDispose(() => {
   disposed = true;
   window.cancelAnimationFrame(frame);
+  window.clearTimeout(revealTimer);
 });
 function changePreference(preference: 'language' | 'theme', event: Event) {
   if (changingPreference.value) return;
@@ -56,7 +58,9 @@ async function applyPreference() {
   if (disposed) return;
   frame = window.requestAnimationFrame(() => {
     frame = window.requestAnimationFrame(() => {
-      coverVisible.value = false;
+      revealTimer = window.setTimeout(() => {
+        coverVisible.value = false;
+      }, 500);
     });
   });
 }
