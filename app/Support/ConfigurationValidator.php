@@ -32,6 +32,9 @@ final class ConfigurationValidator
         if ($this->config->get('database.default') !== 'pgsql') {
             $errors[] = 'database.default must be pgsql.';
         }
+        if (! in_array($this->config->get('queue.default'), ['database', 'sync'], true)) {
+            $errors[] = 'queue.default must be database or sync.';
+        }
         $port = $this->config->get('database.connections.pgsql.port');
         if (filter_var($port, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]) === false) {
             $errors[] = 'database.connections.pgsql.port must be an integer between 1 and 65535.';

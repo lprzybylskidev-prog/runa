@@ -596,7 +596,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Keep repository prose/code English-only.
   - Verified: locked dependency installation/audit, PHP syntax, named minimal API route via Nginx/PHP-FPM, safe request IDs, configuration rejection cases, idempotent setup/key preservation and a built production PHP foundation without Composer/Node/compiler/Git/AI material.
 
-- [ ] 4. **Configure PostgreSQL and testing database foundation**
+- [x] 4. **Configure PostgreSQL and testing database foundation**
   - Prerequisites: Point 3.
   - Add PostgreSQL sibling service and meaningful health check, with the corresponding production definition.
   - Create normal development DB plus isolated `runa_test`.
@@ -604,6 +604,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Place Laravel technical DB objects consistently. Remove unused generated auth/user/session structures or defer them to their owning module; do not invent an auth module to retain starter tables. Verify bigint identity in real DDL.
   - Add destructive-test environment/database guards.
   - Verify migrations/bootstrap work from a clean state without creating fake business tables.
+  - Verified: development/test/temporary parallel database migrations, bigint ALWAYS identity in real DDL, empty public schemas, non-superuser role separation, destructive-command regression checks, authenticated TCP health and idempotent credential/setup behavior. Full parallel runner/storage isolation follows in point 7.
 
 - [ ] 5. **Build the Vue, TypeScript, Tailwind, localization, and HTTP foundation**
   - Prerequisites: Points 3–4; exact external localization package approval before installing it.

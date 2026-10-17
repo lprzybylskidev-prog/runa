@@ -58,6 +58,7 @@ COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspac
 COPY --chown=runa:runa app/ /workspace/app/
 COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
 COPY --chown=runa:runa config/ /workspace/config/
+COPY --chown=runa:runa database/ /workspace/database/
 COPY --chown=runa:runa routes/ /workspace/routes/
 COPY --chown=runa:runa public/ /workspace/public/
 COPY --chown=runa:runa storage/ /workspace/storage/

@@ -178,3 +178,18 @@ Browser tests use a separately configured testing application endpoint through N
 Use `.playwright/scratch/` for temporary browser scripts and `tools/scratch/` for other diagnostic scripts. Neither source directory is gitignored. Keep scripts until no longer needed within the current work, then remove them or promote them to durable tests before closure; generated artifacts remain ignored.
 
 During ordinary roadmap points, run only proportionate focused checks or visual diagnostics needed for the change. Full suites, static analysis and scanner pipelines belong to final verification. Test code and safe parallel design are still implemented with the feature.
+
+## Implemented PostgreSQL safety foundation
+
+`TestDatabaseGuard` requires environment `testing`, default connection/driver `pgsql`, host `postgres`, role `runa_test` and database `runa_test`, `runa_test_<positive integer>` or Laravel's `runa_test_test_<positive integer>`. It also queries the actual database name and session role before allowing a destructive operation. The supported host is declared in project config rather than inferred from the same connection being checked.
+
+Guarded subclasses of Laravel's `db:wipe`, `migrate:fresh`, `migrate:refresh`, `migrate:reset` and `migrate:rollback` validate before execution, including an explicit `--database` option. Console-event listeners are insufficient: the installed framework intentionally skips forwarding those events during testing. The command subclasses cover both direct CLI use and nested framework calls. Normal safe `migrate` remains available in development; these destructive commands are intentionally restricted to isolated test databases. Production rollback does not automatically reverse database migrations.
+
+Run inside the devcontainer:
+
+```sh
+python3 tools/testing/database-guards.py
+APP_ENV=testing php artisan runa:test-db:guard
+```
+
+The regression script deliberately resets only the guarded test database after verifying unsafe environment/host/role/name/connection rejection. It is not a replacement for the Pest/parallel suite configured in roadmap point 7. A separate test-role-owned parallel database was provisioned, migrated and removed successfully during initial verification.

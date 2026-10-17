@@ -58,6 +58,30 @@ def persist(values):
     OVERRIDE.write_text(json.dumps({'services': {'app': service}}, indent=2) + '\n')
 
 
+def environment_files():
+    template = ROOT / '.env.dev.example'
+    if not template.exists():
+        return
+    env = ROOT / '.env'
+    if not env.exists():
+        env.write_text(template.read_text().replace('DB_PASSWORD=\n', 'DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n'))
+        env.chmod(0o600)
+    application = dict(line.split('=', 1) for line in env.read_text().splitlines() if '=' in line and not line.startswith('#'))
+    infrastructure = ROOT / '.env.dev.database'
+    if not infrastructure.exists():
+        infrastructure.write_text('POSTGRES_PASSWORD=' + secrets.token_urlsafe(32) + '\nAPP_DB_PASSWORD=' + application['DB_PASSWORD'] + '\nTEST_DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n')
+        infrastructure.chmod(0o600)
+    settings = dict(line.split('=', 1) for line in infrastructure.read_text().splitlines() if '=' in line and not line.startswith('#'))
+    if not all(settings.get(key) for key in ('POSTGRES_PASSWORD', 'APP_DB_PASSWORD', 'TEST_DB_PASSWORD')):
+        raise ValueError('Development database credentials must be non-empty.')
+    if settings['APP_DB_PASSWORD'] != application['DB_PASSWORD']:
+        raise ValueError('Application and database initialization credentials differ. Reconcile local files and existing database roles explicitly.')
+    testing = ROOT / '.env.testing'
+    if not testing.exists():
+        testing.write_text((ROOT / '.env.test.example').read_text().replace('DB_PASSWORD=\n', 'DB_PASSWORD=' + settings['TEST_DB_PASSWORD'] + '\n').replace('APP_KEY=\n', 'APP_KEY=' + application.get('APP_KEY', '') + '\n'))
+        testing.chmod(0o600)
+
+
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
@@ -89,21 +113,24 @@ def main():
     if command == 'setup':
         if args or not Path('/.dockerenv').exists():
             raise ValueError('Run ./bin/dev setup inside the devcontainer, without arguments.')
+        environment_files()
         env = ROOT / '.env'
-        if not env.exists():
-            env.write_text((ROOT / '.env.dev.example').read_text().replace(
-                'DB_PASSWORD=\n', 'DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n'))
-            env.chmod(0o600)
         subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
         if any(line == 'APP_KEY=' for line in env.read_text().splitlines()):
             subprocess.run(['php', 'artisan', 'key:generate', '--force'], cwd=ROOT, check=True)
+        testing = ROOT / '.env.testing'
+        if 'APP_KEY=\n' in testing.read_text():
+            key = next(line for line in env.read_text().splitlines() if line.startswith('APP_KEY='))
+            testing.write_text(testing.read_text().replace('APP_KEY=\n', key + '\n'))
         subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
+        subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
         subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
         return 0
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
     persist(values)
     if command == 'prepare':
+        environment_files()
         print('Development profile prepared; persistent data preserved.')
         return 0
     if Path('/.dockerenv').exists():

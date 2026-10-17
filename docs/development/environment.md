@@ -333,3 +333,11 @@ The devcontainer's post-create command is `./bin/dev setup`, executed inside the
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
 The initial production build target copies an allowlist of runtime files and locked production dependencies into the shared PHP runtime. Its Nginx image uses the same HTTP configuration. `compose.production.yaml` is an incomplete paired runtime foundation; points 13–14 complete the stack, isolation verification and production operations. It must not be treated as a deployment procedure yet.
+
+## PostgreSQL initialization
+
+`./bin/dev prepare` creates missing local `.env`, `.env.testing` and `.env.dev.database` files without printing credentials. `.env.dev.database.example` documents the infrastructure-only secrets; PostgreSQL consumes that file, while Laravel reads its own connection credentials from `.env`. Normal preparation refuses conflicting application/initialization passwords rather than silently changing an existing role. Post-create setup copies a missing test key from the generated local application key and runs ordinary migrations, never `migrate:fresh`.
+
+PostgreSQL 18.6 persists data under the named volume mounted at `/var/lib/postgresql`. Its TCP health check authenticates as the application role and executes `SELECT 1`, avoiding premature readiness while the entrypoint's temporary Unix-socket-only initialization server runs. The application depends on this health check. PostgreSQL has no published host port; VS Code's future database client uses service DNS within the devcontainer.
+
+Initialization scripts run only for an empty volume. Changing local passwords does not rewrite an existing database. Reconcile credentials/roles deliberately; do not delete a volume to repair ordinary configuration. Rebuild/reopen preserves databases. Production uses its own Compose project, volume and `.env.prod.database`; production operations remain pending points 13–14.
