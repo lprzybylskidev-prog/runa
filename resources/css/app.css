@@ -193,57 +193,6 @@ input:-webkit-autofill {
   isolation: isolate;
   background: var(--runa-background);
 }
-.auth-page::before,
-.auth-page::after {
-  content: '';
-  position: fixed;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 50%;
-}
-.auth-page::before {
-  width: min(85vw, 1000px);
-  aspect-ratio: 1;
-  top: -40%;
-  left: -20%;
-  background: radial-gradient(
-    circle,
-    color-mix(
-        in srgb,
-        var(--runa-circle-violet) calc(var(--runa-circle-violet-opacity) * 100%),
-        transparent
-      )
-      20%,
-    transparent 72%
-  );
-  border: clamp(35px, 7vw, 110px) solid
-    color-mix(
-      in srgb,
-      var(--runa-circle-rose) calc(var(--runa-circle-rose-opacity) * 100%),
-      transparent
-    );
-}
-.auth-page::after {
-  width: min(75vw, 850px);
-  aspect-ratio: 1;
-  right: -20%;
-  bottom: -35%;
-  background: radial-gradient(
-    circle,
-    color-mix(
-      in srgb,
-      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 100%),
-      transparent
-    ),
-    transparent 75%
-  );
-  border: clamp(30px, 6vw, 95px) solid
-    color-mix(
-      in srgb,
-      var(--runa-circle-cyan) calc(var(--runa-circle-cyan-opacity) * 100%),
-      transparent
-    );
-}
 .skip-link {
   position: fixed;
   top: 1rem;

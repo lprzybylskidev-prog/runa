@@ -55,3 +55,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Source: `resources/js/components/AppLoadingOverlay.vue`.
 - Teleported opaque full-screen loading cover, centered circular spinner and accessible status label. Props: `active`, `label`; emits `covered` after enter and `revealed` after leave.
 - Shared 180ms opacity transitions and 700ms spinner cycle, disabled for reduced motion. Caller owns pending operation, inert/busy state and focus restoration; AuthLayout provides the canonical language/theme flow.
+
+## AppBackdrop
+
+- Source: `resources/js/components/AppBackdrop.vue`.
+- Shared decorative CSS backdrop: existing cropped corner rings plus broad low-opacity violet/cyan/rose washes and a masked 88px technical grid at 4.5% opacity. No raster texture, animation, new palette or external assets.
+- Decorative, fixed, pointer-transparent, clipped within its own viewport; place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: AuthLayout.

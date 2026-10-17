@@ -2,6 +2,7 @@
 import { computed, nextTick, onScopeDispose, ref } from 'vue';
 import AppIcon from '../components/AppIcon.vue';
 import AppButton from '../components/AppButton.vue';
+import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
 import AppTooltip from '../components/AppTooltip.vue';
@@ -72,6 +73,7 @@ async function finishPreferenceChange() {
     :inert="changingPreference"
     :aria-busy="changingPreference"
   >
+    <AppBackdrop />
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header
       class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"
