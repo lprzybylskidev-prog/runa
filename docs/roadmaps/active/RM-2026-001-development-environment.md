@@ -665,7 +665,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Add small meaningful environment/application smoke tests.
   - Verified: pinned Pint/Prettier/ESLint/vue-tsc and Larastan/PHPStan `max`; Pest 5 / Laravel plugin compatibility; 11 backend tests (29 assertions) serially and on four isolated PostgreSQL/storage workers; 8 Vitest/Vue Test Utils tests in Chromium; 3 critical E2E projects (Chromium, Firefox, mobile Chromium) through isolated testing Nginx/PHP-FPM. Checkout-wide suite lock rejection, development health, production frontend build, locale snapshot integrity, Composer/pnpm audits and resolved testing-profile isolation pass. Browsers are baked only into the development stage. No new migrations or runtime dependencies.
 
-- [ ] 8. **Configure Xdebug, VS Code, Codex CLI, and Laravel Boost**
+- [x] 8. **Configure Xdebug, VS Code, Codex CLI, and Laravel Boost**
   - Prerequisites: Points 3 and 7; user/editor action if required for actual MCP discovery.
   - Xdebug dev-only/off by default with wrapper and VS Code config.
   - Configure automatic installation of required VS Code extensions except the manual Codex/OpenAI extension; verify format-on-save and debug configuration.
@@ -679,7 +679,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Implementation status (2026-10-17): Xdebug 3.5.3, VS Code customizations/debug configuration, Codex CLI 0.163.0, Boost 2.10.3 and host/container MCP launcher are implemented. Setup registers the container MCP through the official Codex CLI and remains idempotent. Runa instruction/skill checksums remained identical; MCP-only installation generated no skills or guidelines, and the unrelated Copilot MCP file was removed.
   - Verified: development image build; Codex version and MCP registration inside/ outside the container; default-off/on/off Xdebug; actual PHP-FPM HTTP trigger, DBGp source breakpoint, resume and HTTP 200; Composer and isolated Codex npm audits; PHPStan highest level; 11 backend tests/29 assertions; canonical formatting checks. Transport-only MCP checks returned Laravel 13.37.0 application information and Laravel 13.x documentation.
   - Real-session Boost acceptance passed (2026-10-17): after reopening inside the devcontainer, the actual Codex agent invoked Boost `application-info` and `search-docs` successfully. Inspection returned PHP 8.4, Laravel 13.37.0, PostgreSQL and Boost 2.10.3; the documentation search returned `laravel/framework@13.x` health-route guidance, matching the installed framework. No setup regeneration or runtime configuration change was needed.
-  - Acceptance pending: confirm editor format-on-save and the VS Code debugger UI. Point 8 remains unchecked until these manual editor checks are confirmed. Setup and acceptance instructions: `docs/development/editor-and-agents.md`.
+  - Manual editor acceptance passed (2026-10-17): the user confirmed format-on-save and the VS Code breakpoint/resume HTTP debugging flow inside the devcontainer. Xdebug was returned to `mode=off` and its status verified afterward. Point 8 is complete. Setup and acceptance instructions: `docs/development/editor-and-agents.md`.
 
 - [ ] 9. **Build Qdrant, embeddings, and knowledge ingestion**
   - Prerequisites: Points 2 and 6.

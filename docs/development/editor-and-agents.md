@@ -47,6 +47,6 @@ The setup uses the official `php artisan boost:install --mcp --no-interaction` f
 
 After rebuilding/reopening, start a new Codex session and have the agent invoke Boost `application-info` and `search-docs`. Verify Laravel 13.37.0 and installed package versions. A subprocess MCP smoke test is only transport evidence.
 
-Real-session acceptance passed on 2026-10-17 inside the devcontainer: the actual Codex agent successfully invoked both tools. Application inspection returned PHP 8.4, Laravel 13.37.0, PostgreSQL and Boost 2.10.3; documentation search returned health-route guidance for `laravel/framework@13.x`. Point 8 still requires manual confirmation of format-on-save and the VS Code debugger UI.
+Real-session acceptance passed on 2026-10-17 inside the devcontainer: the actual Codex agent successfully invoked both tools. Application inspection returned PHP 8.4, Laravel 13.37.0, PostgreSQL and Boost 2.10.3; documentation search returned health-route guidance for `laravel/framework@13.x`. The user also confirmed format-on-save and the VS Code breakpoint/resume HTTP debugging flow inside the devcontainer on the same date. Xdebug was returned to `mode=off` after acceptance. Point 8 acceptance is complete.
 
 Official setup references: [Codex CLI](https://developers.openai.com/codex/cli), [Codex MCP](https://developers.openai.com/codex/mcp), and [Laravel Boost](https://laravel.com/docs/13.x/boost).
