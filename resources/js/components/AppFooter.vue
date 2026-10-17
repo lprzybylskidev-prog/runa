@@ -9,7 +9,11 @@ defineProps<{ versionLabel: string }>();
   >
     <span>© {{ new Date().getFullYear() }} Łukasz Przybylski</span>
     <div class="flex flex-wrap items-center gap-5">
-      <a class="footer-link" href="https://github.com/lprzybylskidev-prog/runa"
+      <a
+        class="footer-link"
+        href="https://github.com/lprzybylskidev-prog/runa"
+        target="_blank"
+        rel="noopener noreferrer"
         >GitHub</a
       >
       <span>{{ versionLabel }} {{ version.trim() }}</span>
