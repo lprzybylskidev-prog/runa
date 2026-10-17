@@ -50,7 +50,7 @@ A point is complete only when:
 - its implementation is complete,
 - local dependencies are satisfied,
 - proportionate lightweight checks pass,
-- relevant durable documentation is updated,
+- affected current-state documentation is synchronized in the same point (including removal of obsolete delivery claims),
 - the change is committed,
 - the roadmap checklist is updated.
 
@@ -58,7 +58,7 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization.
+The final point is full verification and release finalization, including the current-state documentation review in `docs/workflows/roadmaps.md` and closure synchronization in `docs/workflows/releases.md`.
 
 If verification finds work:
 
@@ -236,7 +236,7 @@ Read `docs/ai/skills-policy.md` and `docs/ai/knowledge-system.md`.
 
 ## Documentation maintenance
 
-Update durable docs/skills when implementation establishes or changes a reusable project rule.
+Documentation updates are part of implementation: synchronize affected current-state claims when behavior, tooling, availability or project state changes. Update durable docs/skills when implementation establishes or changes a reusable project rule. Preserve historical evidence; follow `docs/README.md` and the roadmap review procedure.
 
 Do not append blindly:
 

@@ -118,9 +118,9 @@ Durable application files live in explicit persistent volumes, outside the image
 
 ## Background and mail runtime foundation
 
-Point 6 pairs development worker/scheduler definitions with production services using the same built PHP runtime image, separate processes, validated configuration, graceful shutdown and instance-aware health signals. All three PHP services share application storage; SMTP settings come from the production env file. There is no Mailpit service in production. Production SMTP must use TLS and an actual configured relay/provider host; no provider package is required for standard SMTP.
+The runtime pairs development worker/scheduler definitions with production services using the same built PHP runtime image, separate processes, validated configuration, graceful shutdown and instance-aware health signals. All three PHP services share application storage; SMTP settings come from the production env file. There is no Mailpit service in production. Production SMTP must use TLS and an actual configured relay/provider host; no provider package is required for standard SMTP.
 
-The production deployment point owns migrations before worker/scheduler startup, process replacement after code updates, and the complete operational self-test. Production containers do not run the development setup job. Compose definitions at this stage are a runtime foundation, not a finished installer/deployment procedure.
+The implemented deployment workflow runs migrations before worker/scheduler startup, replaces processes after code updates, and performs the operational self-test. Production containers do not run the development setup job. Follow docs/production/deployment.md for installer and deployment procedures.
 
 Production retains root `composer.json` as application namespace metadata required by Laravel command discovery, without installing the Composer binary. Build inputs exclude local storage, runtime heartbeats and generated bootstrap caches. The image creates empty non-root-owned writable storage directories; application data enters only through the dedicated persistent volume. This avoids baking development captures/uploads or stale development package manifests into a release.
 
@@ -132,7 +132,7 @@ Every service has bounded JSON-file log rotation (10 MB × 3), a memory/CPU limi
 
 The PHP production dependency stage uses the dedicated production runtime and Composer alone; it does not depend on the development toolchain/Codex stage. Runtime copies are allowlisted, `.dockerignore` excludes secret/local/generated/development inputs, and both production images consume the same locked frontend build. Runtime does not contain Composer, Node, pnpm, Python, Git, Xdebug, Boost, test runners or knowledge tooling. Development build targets retain their existing tooling; no runtime/toolchain versions changed.
 
-The production entrypoint initializes missing storage directories without deleting data, validates runtime configuration, creates a per-container configuration cache, and execs the selected process. No migration or seeding runs implicitly at startup. Migrations and production seeding must finish before queue/scheduler startup; deployment automation remains point 14. Storage/cache contents are never supplied from the developer checkout or embedded in images. Recreate containers after environment changes; a simple restart does not reload Compose environment definitions.
+The production entrypoint initializes missing storage directories without deleting data, validates runtime configuration, creates a per-container configuration cache, and execs the selected process. No migration or seeding runs implicitly at startup. Migrations and production seeding must finish before queue/scheduler startup; deployment automation is described in docs/production/deployment.md. Storage/cache contents are never supplied from the developer checkout or embedded in images. Recreate containers after environment changes; a simple restart does not reload Compose environment definitions.
 
 Health layers:
 
@@ -141,11 +141,17 @@ Health layers:
 - Named `GET /api/ready` verifies a read against the required `shared.jobs` table, returning only `status: ok` or HTTP 503 with `status: unavailable` and no database details. It disables response caching. Nginx's production healthcheck uses this path, so a listening process before migrations is not a ready application.
 - Queue/scheduler use instance-aware heartbeat plus database checks. Deep diagnostics remain operator commands; public readiness does not run seeding, SMTP delivery, scanners or repair operations.
 
-`python3 tools/testing/production.py` checks topology and production command safety without Docker access. Actual build/image/stack checks require the host's Docker daemon; source tests do not prove container startup. Point 14 supplies deployment/self-test/isolation automation and point 15 verifies the complete fresh-host lifecycle.
+`python3 tools/testing/production.py` checks topology and production command safety without Docker access. Actual build/image/stack checks require the host's Docker daemon; source tests do not prove container startup. Deployment/self-test/isolation automation and baseline host lifecycle acceptance are recorded in closed RM-2026-001, including the explicit manual editor verification boundary.
 
 Production requires Docker Engine 26 or newer for volume subpath mounts, plus Docker Compose 2.35 or newer. The Nginx container cannot access private application storage through its public-file mount. Volume subpaths must already exist; application health is the startup dependency after the PHP entrypoint initializes storage.
 
-## Approved PHP Alpine preparation; acceptance pending
+## Current production runtime and historical transition evidence
+
+The production PHP runtime uses the pinned Alpine PHP image below; PostgreSQL uses the approved Alpine/ICU baseline pinned in compose.production.yaml. Full baseline production simulation/security acceptance is recorded in closed RM-2026-001 and docs/security/RM-2026-001-final-review.md. No real deployment has been recorded in docs/project/state.yml.
+
+The following paragraphs preserve the earlier PHP candidate evaluation and its dated acceptance. Statements about pending PostgreSQL decisions and incomplete combined gates describe that earlier evaluation stage, before the later PostgreSQL transition and final gate; they are not the current delivery status.
+
+### Historical PHP candidate evaluation
 
 The production-only PHP runtime now uses official `php:8.4.26-fpm-alpine3.24` at index digest `sha256:78cd8de9970a9cd6ff4d98860a94eb5bf37dd2d5776b4785562dbfad01c29d5a`. Development retains the existing Debian/browser toolchain. The production dependency stage installs Composer/unzip on Alpine; neither enters the final image. Required PDO PostgreSQL, mbstring, intl/full ICU data, bcmath, OPcache, pcntl, ZIP, cURL and XML capabilities remain mandatory. UID/GID, FPM configuration, read-only mounts, startup validation, storage layout and health/worker/scheduler behavior keep their established contracts.
 

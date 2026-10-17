@@ -32,7 +32,9 @@ If documents conflict, use the authority hierarchy defined in `AGENTS.md`:
 
 - English only.
 - Update existing material instead of blindly appending.
-- Remove obsolete statements when a durable rule changes.
+- Remove obsolete statements when a durable rule or delivered capability changes, in the same implementation point.
+- Distinguish current guidance from dated evidence, release history, closed roadmaps and explicit proposals. Historical versions or measurements remain valid in their historical context.
+- The mandatory current-state review and its evidence belong to `workflows/roadmaps.md`; release-transition synchronization belongs to `workflows/releases.md`.
 - Do not preserve task chatter, temporary debugging notes, speculation, or abandoned designs.
 - Keep implementation details close to the document that owns them.
 - Do not create a new document merely to avoid editing the correct existing document.

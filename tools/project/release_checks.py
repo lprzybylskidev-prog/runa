@@ -74,6 +74,8 @@ def validate(root):
         tags = git(root, 'tag', '--list', 'v' + target)
         if tags:
             raise ValueError('Computed release tag already exists; never overwrite it.')
+        from docs_checks import validate as validate_docs
+        validate_docs(root)
         print(f'PASS: active release metadata; {data["release_type"]} {base} -> {target}; final item remains open.')
         return target
     if not entries or entries[0] != current:
@@ -103,11 +105,20 @@ def validate(root):
         base = git(root, 'show', 'main:VERSION')
         if current != expected(base, data['release_type'], data.get('target_version')):
             raise ValueError('Final version does not match roadmap release_type.')
+    from docs_checks import validate as validate_docs
+    validate_docs(root)
     if git(root, 'tag', '--list', 'v' + current):
         if git(root, 'cat-file', '-t', 'refs/tags/v' + current) != 'tag':
             raise ValueError('Release tag must be annotated.')
         tagged = git(root, 'rev-parse', 'v' + current + '^{commit}')
         if tagged != git(root, 'rev-parse', 'HEAD'):
-            raise ValueError('Existing release tag does not identify HEAD.')
+            ancestor = subprocess.run(['git', 'merge-base', '--is-ancestor', tagged, 'HEAD'], cwd=root).returncode == 0
+            # Compare full trees, including release metadata, without rename detection.
+            # Only draft Markdown may follow a release on main; never excuse runtime drift.
+            changed = git(root, 'diff', '--no-renames', '--name-only', '-z', tagged, 'HEAD').split('\0')
+            if branch != 'main' or not ancestor or any(
+                name and not re.fullmatch(r'docs/roadmaps/draft/[^/]+\.md', name) for name in changed
+            ):
+                raise ValueError('Existing release tag does not identify HEAD or a main-only draft-planning baseline.')
     print(f'PASS: closed release metadata {identifier} / {current}; publication is checked separately.')
     return current

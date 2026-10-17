@@ -8,7 +8,7 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
-This file defines the implemented and planned command surface. RM-2026-001 provides development lifecycle/profile/setup, passthrough wrappers, seeders, doctor, hooks, knowledge, local quality, security, production lifecycle/deploy/backup/state tools and frontend/backend checks. Production operational tooling requires host acceptance before point 14 is complete. Release metadata validation remains the final roadmap point; an available command is not evidence that its host/runtime gates passed.
+This file documents the implemented command surface: development lifecycle/profile/setup, passthrough wrappers, seeders, doctor, hooks, knowledge, local quality, security, production lifecycle/deploy/backup/state tools and frontend/backend checks. RM-2026-001 records their baseline acceptance evidence. Commands still require their documented environment and operational prerequisites; simulation acceptance does not prove real production deployment.
 
 ## Development
 
@@ -107,13 +107,13 @@ Project provides:
 
 `./bin/doctor` and `./bin/doctor <area>`
 
-Implemented areas: `repository`, `config`, `maintenance`, `hooks`, `frontend`, `database-migrations`, `database`, `seeding`, `boost`, `tooling`, `docs`, `cleanliness`, `development`, `production`, `release`. The read-only `release` check computes the expected version from main and the active roadmap, permits only the final verification item to remain open, and rejects premature version/tag drift. After closure metadata edits it verifies VERSION/changelog/closed-roadmap/checklist/report agreement, release-type arithmetic and any existing annotated tag identity; remote publication is verified separately. `frontend` uses the real browser diagnostic script and requires the testing Nginx service. `database-migrations` resets only the guarded isolated test database; `database` and `seeding` run the relevant backend contracts. `cleanliness` rejects unreviewed scratch and untracked/unstaged files; staged reviewed changes are allowed.
+Implemented areas: `repository`, `config`, `maintenance`, `hooks`, `frontend`, `database-migrations`, `database`, `seeding`, `boost`, `tooling`, `docs`, `cleanliness`, `development`, `production`, `release`. `docs` checks public command documentation and the bounded README state contract in docs/workflows/releases.md; it does not interpret arbitrary prose. The read-only `release` check includes the same docs validation and computes the expected version from main and the active roadmap, permits only the final verification item to remain open, and rejects premature version/tag drift. After closure metadata edits it verifies VERSION/changelog/closed-roadmap/checklist/report agreement, release-type arithmetic and any existing annotated tag identity (with the documented main-only draft-planning exception); remote publication is verified separately. `frontend` uses the real browser diagnostic script and requires the testing Nginx service. `database-migrations` resets only the guarded isolated test database; `database` and `seeding` run the relevant backend contracts. `cleanliness` rejects unreviewed scratch and untracked/unstaged files; staged reviewed changes are allowed.
 
 Do not turn doctor into one giant opaque script. Subcommands should have clear responsibilities.
 
 ## Security
 
-Expected wrapper surface:
+Implemented wrapper surface:
 
 - `./bin/security dependencies`
 - `./bin/security secrets`
@@ -129,7 +129,7 @@ Underlying tools include:
 
 ## Production
 
-Expected helper surface:
+Implemented helper surface:
 
 - `./bin/production build`
 - `./bin/production validate`
@@ -194,7 +194,7 @@ These forward arguments safely into the intended running application container. 
 
 `./bin/install-prod` is the guided production installer described in `docs/production/deployment.md`; run it from the production host. No separate developer installer is required.
 
-Quality supports `./bin/quality final --background` and `./bin/quality roadmap --background`. `./bin/quality-check debug-residue` performs the focused source check used by the gate definition. The runner and all referenced subcommands must be implemented before final verification; intended commands in this planning package are not claims that executable files already exist.
+Quality supports `./bin/quality final --background` and `./bin/quality roadmap --background`. `./bin/quality-check debug-residue` performs the focused source check used by the gate definition. The runner and referenced subcommands are implemented; each roadmap must run its selected checks before closure.
 
 Host-only Docker lifecycle/build commands must say which terminal to use. App/knowledge commands work from host and devcontainer without granting the workspace Docker-socket privileges.
 
@@ -206,7 +206,7 @@ Gate-specific doctor areas include `repository`, `config`, `maintenance`, `hooks
 
 If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `./bin/knowledge index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
 
-`./bin/doctor hooks` invokes installed scripts against a temporary Git repository with safe synthetic fixtures; it never creates fixture commits. Maintenance validator regressions: `python3 tools/testing/maintenance.py`. Host/devcontainer argument forwarding contracts: `python3 tools/testing/wrappers.py`; these simulate the host context without granting Docker access. Actual host lifecycle acceptance remains point 15.
+`./bin/doctor hooks` invokes installed scripts against a temporary Git repository with safe synthetic fixtures; it never creates fixture commits. Maintenance validator regressions: `python3 tools/testing/maintenance.py`. Host/devcontainer argument forwarding contracts: `python3 tools/testing/wrappers.py`; these simulate the host context without granting Docker access. Baseline host lifecycle acceptance and its manual editor verification boundary are recorded in closed RM-2026-001.
 
 `./bin/boost-mcp` starts the development-only Boost stdio MCP server; `--help` exits without starting a server. `bin/check`, `bin/passthrough` and `./bin/operations` are internal shared launchers for the public symlink commands. All public commands provide English `--help`; failures return nonzero. `./bin/logs [service]` is host-only and prints the last 100 development service log lines. Production logs use `./bin/prod logs [service]`; logs must never contain secrets.
 
@@ -218,9 +218,9 @@ Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by d
 
 `validate` executes quiet Compose validation without printing expanded secrets. `build` requires a clean checkout matching the exact selected tag and builds PHP/Nginx from locked dependencies and then inspects those exact selected images: non-root users, required PHP extensions, no development dependencies/tools, SPA assets and Nginx config syntax. Image checks override the normal application entrypoint and require no application secrets or database. Compose still needs the runtime env files to exist; copied example files suffice for build-only checks. No production service is started by `build`.
 
-Lifecycle `up` starts existing images and waits for health; it is not an installer and requires prior migrations/seeding and valid runtime secrets/SMTP configuration. `down` preserves all volumes. `restart`/`logs` accept at most one of the five production services; logs show the last 100 lines. Self-test/isolation, actual-image Trivy scanning, deployment, rollback and backup are implemented in point 14 and still require host execution evidence. Image build alone cannot establish full production acceptance.
+Lifecycle `up` starts existing images and waits for health; it is not an installer and requires prior migrations/seeding and valid runtime secrets/SMTP configuration. `down` preserves all volumes. `restart`/`logs` accept at most one of the five production services; logs show the last 100 lines. Self-test/isolation, actual-image Trivy scanning, deployment, rollback and backup have baseline host simulation evidence in closed RM-2026-001. Revalidate changed operational surfaces under the applicable roadmap gates. Image build alone cannot establish full production acceptance.
 
-## Production operations and security (point 14)
+## Production operations and security
 
 - `./bin/install-prod <vX.Y.Z|full-SHA> [--simulation]`: guided host install; refuses existing configuration, generates private secrets and prepares sparse checkouts.
 - `./bin/deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.

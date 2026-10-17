@@ -32,7 +32,7 @@ class RetrievalContracts(unittest.TestCase):
         for name, text in {
             'AGENTS.md': '# Rules\n\nPostgreSQL uses schemas and bigint identity keys.\n',
             'docs/ai/knowledge-system.md': '# Knowledge\n## Production prohibition\nQdrant and embeddings are development-only. Never deploy knowledge services.\n',
-            'docs/roadmaps/closed/example.md': '---\nid: RM-2026-099\nstatus: closed\n---\n# History\n## Specification\nLegacy frobnicator_739 configuration.\n',
+            'docs/roadmaps/closed/RM-2026-099-example.md': '---\nid: RM-2026-099\nstatus: closed\n---\n# History\n## Specification\nLegacy frobnicator_739 configuration.\n',
         }.items():
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)

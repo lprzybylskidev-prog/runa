@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.1.1] - 2026-10-18
+
+Fix release — RM-2026-002.
+
+- Reconcile current-state documentation with the delivered foundation and preserve historical acceptance evidence.
+- Make documentation synchronization part of implementation and require a recorded current-state review during roadmap finalization.
+- Validate README version, active roadmap and production-deployment status through existing docs/release gates, with regression coverage and a narrow draft-planning exception for published release tags.
+- Classify knowledge roadmap metadata from actual lifecycle files and frontmatter; correct historical roadmap search filters and refresh the development index.
+
+No application behavior, database schema, runtime configuration or dependencies changed. No real production deployment occurred.
+
 ## [0.1.0] - 2026-10-18
 
 Feature release — RM-2026-001.
