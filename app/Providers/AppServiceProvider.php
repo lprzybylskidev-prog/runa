@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Database\IdentityMigrationRepository;
 use App\Support\ConfigurationValidator;
+use App\Support\RuntimeHeartbeat;
+use Illuminate\Queue\Events\WorkerIdle;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Support\ServiceProvider;
@@ -28,8 +32,10 @@ final class AppServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot(ConfigurationValidator $validator): void
+    public function boot(ConfigurationValidator $validator, RuntimeHeartbeat $heartbeat): void
     {
+        Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
+        Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));
         if (! $this->app->runningInConsole() && ($errors = $validator->errors()) !== []) {
             throw new RuntimeException('Invalid application configuration: '.implode(' ', $errors));
         }

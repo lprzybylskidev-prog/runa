@@ -6,6 +6,9 @@ vendor
 node_modules
 artifacts
 coverage
-storage/logs
 
 public/build
+
+# Exclude host storage; the production image creates an empty writable skeleton.
+storage
+bootstrap/cache/*.php

@@ -43,3 +43,17 @@ Use `./bin/dev profile` to report effective local settings, `./bin/dev profile h
 Custom starts from the current values and changes only supplied resource keys. Invalid input fails without replacing the local settings. No shell expressions are evaluated. Profile values and the host UID/GID are persisted in `.env.dev.local` (mode 0600). `./bin/dev prepare` idempotently generates the ignored `.devcontainer/compose.resources.yaml` used by VS Code and the host wrapper. It does not start containers, remove volumes or migrate databases.
 
 Apply changed limits with `./bin/dev up` in a host terminal, or Rebuild/Reopen in Container. The CLI and VS Code use the same generated override. Docker commands must run on the host; the devcontainer has no Docker socket. The global doctor will report these settings when its roadmap point implements it.
+
+## Sibling service budgets
+
+The generated override also applies bounded sibling allocations. These are initial verified configuration budgets, not benchmarks of future business workloads:
+
+| Service | CPU low / standard / high | Memory low / standard / high |
+|---|---|---|
+| PostgreSQL | 0.5 / 1 / 2 | 256M / 512M / 1G |
+| Queue worker | 1 / 1 / 1 | 256M / 512M / 512M |
+| Scheduler | 0.25 / 0.25 / 0.25 | 128M / 128M / 128M |
+| Nginx | 0.25 / 0.25 / 0.25 | 64M / 64M / 64M |
+| Mailpit | 0.25 / 0.25 / 0.25 | 128M / 128M / 128M |
+
+The one-shot setup service uses the selected app budget because dependency installation and frontend compilation run there. Custom retains standard sibling budgets and accepts the documented app/test-worker overrides. Limits are ceilings rather than reservations; do not interpret their sum as guaranteed dedicated CPUs. Production budgets are configured separately in the production-finalization points, not inherited from these development presets.

@@ -112,3 +112,11 @@ See `.agents/skills/docker/` and `.agents/skills/security/`.
 ## Storage
 
 Durable application files live in explicit persistent volumes, outside the image layer, separately from temporary/cache data. Maintain compatible path semantics in dev and production. Public storage links/static serving are prepared idempotently when needed; private file-module policy is deferred. Database and durable storage are backed up separately with coordinated restore metadata.
+
+## Background and mail runtime foundation
+
+Point 6 pairs development worker/scheduler definitions with production services using the same built PHP runtime image, separate processes, validated configuration, graceful shutdown and instance-aware health signals. All three PHP services share application storage; SMTP settings come from the production env file. There is no Mailpit service in production. Production SMTP must use TLS and an actual configured relay/provider host; no provider package is required for standard SMTP.
+
+The production deployment point owns migrations before worker/scheduler startup, process replacement after code updates, and the complete operational self-test. Production containers do not run the development setup job. Compose definitions at this stage are a runtime foundation, not a finished installer/deployment procedure.
+
+Production retains root `composer.json` as application namespace metadata required by Laravel command discovery, without installing the Composer binary. Build inputs exclude local storage, runtime heartbeats and generated bootstrap caches. The image creates empty non-root-owned writable storage directories; application data enters only through the dedicated persistent volume. This avoids baking development captures/uploads or stale development package manifests into a release.

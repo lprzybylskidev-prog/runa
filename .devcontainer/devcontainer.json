@@ -14,7 +14,7 @@
     "./bin/dev",
     "prepare"
   ],
-  "postCreateCommand": "./bin/dev setup",
+  "postCreateCommand": "./bin/dev setup --if-needed",
   "forwardPorts": [
     5173
   ]

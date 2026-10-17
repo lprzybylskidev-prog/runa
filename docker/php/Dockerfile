@@ -63,6 +63,8 @@ RUN pnpm run build
 
 FROM runtime AS production
 ENV APP_ENV=production
+# Laravel command discovery reads the application namespace from this metadata.
+COPY --chown=runa:runa composer.json /workspace/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
 COPY --chown=runa:runa app/ /workspace/app/
 COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
@@ -72,7 +74,8 @@ COPY --chown=runa:runa routes/ /workspace/routes/
 COPY --chown=runa:runa lang/ /workspace/lang/
 COPY --chown=runa:runa public/index.php /workspace/public/index.php
 COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
-COPY --chown=runa:runa storage/ /workspace/storage/
+RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
+    storage/framework/sessions storage/framework/views storage/framework/health storage/logs
 COPY --chown=runa:runa artisan /workspace/artisan
 
 FROM nginx:1.31.7-alpine AS production-nginx

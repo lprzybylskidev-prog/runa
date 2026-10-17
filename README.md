@@ -4,7 +4,7 @@ Runa is a Laravel-based business application designed to evolve under an explici
 
 ## Current state
 
-`RM-2026-001-development-environment` is active. The initial foundation includes a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, and a responsive Vue SPA with Polish/English and light/dark/system preferences.
+`RM-2026-001-development-environment` is active. The initial foundation includes a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, a responsive Vue SPA with Polish/English and light/dark/system preferences, Mailpit, a database queue worker and scheduler.
 
 Initial version: `0.0.0`.
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Host-side development lifecycle and resource profiles."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -55,7 +56,21 @@ def persist(values):
     service = {'cpus': float(values['DEV_CPU_LIMIT']), 'mem_limit': values['DEV_MEMORY_LIMIT'],
                'build': {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}},
                'environment': {key: values[key] for key in ('TEST_WORKERS', 'PLAYWRIGHT_WORKERS')}}
-    OVERRIDE.write_text(json.dumps({'services': {'app': service}}, indent=2) + '\n')
+    tier = values['DEV_PROFILE'] if values['DEV_PROFILE'] in PRESETS else 'standard'
+    database_memory = {'low': '256M', 'standard': '512M', 'high': '1G'}[tier]
+    worker_memory = '256M' if tier == 'low' else '512M'
+    siblings = {
+        'postgres': {'cpus': {'low': .5, 'standard': 1, 'high': 2}[tier], 'mem_limit': database_memory},
+        'queue': {'cpus': 1, 'mem_limit': worker_memory},
+        'scheduler': {'cpus': .25, 'mem_limit': '128M'},
+        'nginx': {'cpus': .25, 'mem_limit': '64M'},
+        'mailpit': {'cpus': .25, 'mem_limit': '128M',
+                    'build': {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}}},
+        'setup': {'cpus': float(values['DEV_CPU_LIMIT']), 'mem_limit': values['DEV_MEMORY_LIMIT']},
+    }
+    for role in ('setup', 'queue', 'scheduler'):
+        siblings[role]['build'] = {'args': {key: values[key] for key in ('RUNA_UID', 'RUNA_GID')}}
+    OVERRIDE.write_text(json.dumps({'services': {'app': service, **siblings}}, indent=2) + '\n')
 
 
 def environment_files():
@@ -82,11 +97,23 @@ def environment_files():
         testing.chmod(0o600)
 
 
+def setup_fingerprint():
+    paths = [ROOT / p for p in ('composer.lock', 'pnpm-lock.yaml', 'vite.config.mjs', 'tsconfig.json', '.env', 'bin/dev')]
+    for directory in ('config', 'database/migrations', 'resources'):
+        paths.extend(p for p in (ROOT / directory).rglob('*') if p.is_file())
+    digest = hashlib.sha256()
+    for path in sorted(paths):
+        digest.update(str(path.relative_to(ROOT)).encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/dev profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/dev prepare|setup|build|up|down|config|shell\n'
+              '       ./bin/dev prepare|build|up|down|config|shell\n'
+              '       ./bin/dev setup [--if-needed] (inside the devcontainer)\n'
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
               'down preserves volumes; destructive volume deletion is not supported.')
         return 0
@@ -111,10 +138,18 @@ def main():
         print('\n'.join(f'{key}={values[key]}' for key in ('DEV_PROFILE', *KEYS)))
         return 0
     if command == 'setup':
-        if args or not Path('/.dockerenv').exists():
-            raise ValueError('Run ./bin/dev setup inside the devcontainer, without arguments.')
+        if args not in ([], ['--if-needed']) or not Path('/.dockerenv').exists():
+            raise ValueError('Run ./bin/dev setup [--if-needed] inside the devcontainer.')
         environment_files()
         env = ROOT / '.env'
+        marker = ROOT / '.runtime/dev/setup.sha256'
+        required = ['vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html']
+        if args == ['--if-needed'] and marker.exists() and marker.read_text().strip() == setup_fingerprint() and all((ROOT / p).exists() for p in required):
+            subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
+            subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
+            subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
+            print('Development setup is current; dependency installation and frontend build skipped.')
+            return 0
         subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
         if any(line == 'APP_KEY=' for line in env.read_text().splitlines()):
             subprocess.run(['php', 'artisan', 'key:generate', '--force'], cwd=ROOT, check=True)
@@ -127,6 +162,8 @@ def main():
         subprocess.run(['pnpm', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
         subprocess.run(['pnpm', 'run', 'build'], cwd=ROOT, check=True)
         subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(setup_fingerprint() + '\n')
         return 0
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
@@ -137,7 +174,7 @@ def main():
         return 0
     if Path('/.dockerenv').exists():
         raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
-    commands = {'build': ['build', 'app'], 'up': ['up', '-d', '--wait'],
+    commands = {'build': ['build', 'app', 'mailpit'], 'up': ['up', '-d', '--wait'],
                 'down': ['down'], 'config': ['config'], 'shell': ['exec', 'app', 'bash']}
     if command not in commands:
         raise ValueError('Unknown command. See ./bin/dev --help.')

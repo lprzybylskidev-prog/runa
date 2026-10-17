@@ -577,6 +577,7 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
 
 ### Decisions
 
+- 2026-10-17 — Development startup uses an idempotent one-shot setup dependency with a fingerprint-based fast path before HTTP/background services; runtime health uses instance-bound heartbeats plus database readiness. Development captures SMTP in persistent Mailpit; production uses configurable TLS SMTP without Mailpit.
 - 2026-10-17 — Toolchain pins and compatibility assessment are recorded in `docs/development/toolchain.md`; TypeScript 6.0.3 is selected to satisfy the supported typescript-eslint range.
 
 - 2026-10-17 — Runa uses local quality/hook enforcement; no CI/GitHub Actions baseline.
@@ -644,13 +645,14 @@ This roadmap is `feature`. From initial `0.0.0`, normal version semantics produc
   - Add real component/page/form/table catalogue entries only for implemented reusable patterns; do not fabricate business screens.
   - Verified: 137 native Polish validation messages and interpolation, offline provenance/license/key checks and review-only candidate generation; strict Vue/TS build, frozen installation and dependency audits; rendered PL/EN and light/dark/system at desktop/tablet/mobile, 200% text, keyboard skip, storage denial, failure/retry and Firefox smoke; Vite proxy/HMR page; locked PHP/Nginx production frontend builds and runtime-data isolation. Browser provisioning becomes reproducible in point 7.
 
-- [ ] 6. **Complete the development Compose services**
+- [x] 6. **Complete the development Compose services**
   - Prerequisites: Points 2–5.
   - Add/finish Nginx, Mailpit, queue worker, scheduler sibling services and production runtime counterparts (outbound SMTP, no Mailpit).
   - Add meaningful health checks and correct dependency readiness behavior.
   - Ensure persistent dev data survives rebuild/reopen.
   - Ensure normal reopen does not run destructive bootstrap.
   - Verify container DNS/ports/mounts/permissions using resolved Compose config.
+  - Verified: separate empty checkout/project startup, authenticated DB and Mailpit readiness, real queued email delivery, actual scheduled pulse and instance-aware health rejection tests, full container recreation with database/storage/mail/config persistence, cached setup fast path, profile caps/DNS/loopback ports/non-root mounts, matching PHP build/UID definitions and standalone sibling build. Production service isolation, TLS SMTP validation and scheduler CLI/image storage hygiene pass; complete production deployment remains points 13–14. No new migrations.
 
 - [ ] 7. **Configure formatting, lint, static analysis, and automated tests**
   - Prerequisites: Points 4–6.

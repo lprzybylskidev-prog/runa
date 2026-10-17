@@ -352,3 +352,35 @@ For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forward
 The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Remaining production-stack verification is still owned by points 13–14.
 
 Point 5 browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. Browser binaries/system dependencies were provisioned for this acceptance run; reproducible test-image/browser provisioning is completed in point 7.
+
+## Complete runtime services and startup order
+
+Point 6 adds Mailpit, queue and scheduler to app, PostgreSQL and Nginx. Qdrant/embeddings remain point 9. `./bin/dev build` builds the app toolchain and the non-root Mailpit image. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
+
+Startup graph: PostgreSQL authenticates successfully -> app/PHP-FPM becomes available -> the one-shot `setup` service prepares the application -> Nginx, worker and scheduler start. All PHP services carry the same build definition and UID/GID overrides, so cold startup does not rely on the attached VS Code container retaining the base image tag. Setup uses the same `./bin/dev setup --if-needed` path as the devcontainer post-create hook. Its ignored `.runtime/dev/setup.sha256` covers lockfiles, local app environment, setup script, configuration, migrations and frontend sources. If those inputs and generated dependency/frontend outputs are unchanged, it performs only configuration validation, normal migration readiness and hooks-path setup; dependency installation/build are skipped. A failed setup blocks dependent services. Never mark a failed/partial setup complete, and never run destructive migrations on reopen.
+
+The setup container exits successfully and has no runtime healthcheck. It is expected to show `Exited (0)`, while long-running services become healthy. Ordinary `./bin/dev up`/devcontainer reopening can rerun the lightweight setup check. Explicit `./bin/dev setup` forces the full idempotent path. Missing application key/env/dependencies on a fresh checkout are prepared before HTTP/background services start. A separate empty checkout with its own project/volumes was tested through this graph.
+
+Workers run `queue:work database --sleep=3 --tries=3 --timeout=60 --memory=192 --max-time=3600`; Docker restarts them after normal recycling or failure. The 60-second worker timeout is below the 90-second database retry interval; the 75-second stop grace permits current work to finish. Scheduler runs Laravel's `schedule:work` directly, without host cron. Both validate configuration before starting. They use the shared app source/storage and non-root identity. After changing already-loaded worker/scheduler PHP code, restart those services deliberately; bind mounts do not reload a long-running PHP process.
+
+### Runtime health
+
+Worker health combines a heartbeat from Laravel's idle/successful-job events with a real read of `shared.jobs`. Scheduler health requires successful execution of the scheduled `runa:runtime:pulse` command each minute, also with a database readiness check. Probes never refresh their own heartbeat or repair state. Records are replaced atomically under ignored `storage/framework/health`, contain only instance identity/time, and reject stale, future or foreign-container timestamps. Queue freshness is 120 seconds to accommodate a 60-second job; scheduler freshness is 150 seconds. Scheduler's startup grace allows the first minute boundary. These are liveness/readiness signals, not evidence that every business job succeeded; inspect failed jobs separately.
+
+```sh
+php artisan runa:runtime:health queue
+php artisan runa:runtime:health scheduler
+php artisan schedule:list
+php tools/testing/runtime.php
+python3 tools/testing/services.py
+```
+
+Run health commands in the corresponding container because instance IDs differ. The development-only services smoke enqueues a real Laravel email, waits for worker delivery to Mailpit and leaves an identifiable test message. It refuses production, alternate SMTP hosts and synchronous queue configuration.
+
+### Mail and persistence
+
+Mailpit UI is published only at `http://localhost:8025`. SMTP stays internal at `mailpit:1025`; app traffic stays at `http://localhost:8080`. PostgreSQL, workers and scheduler publish no ports. Mailpit accepts only localhost/loopback/service Host headers, stores up to 500 messages in its named volume, runs with the host-matched non-root UID/GID and uses its upstream `readyz` healthcheck. It has no outbound relay configuration.
+
+Laravel's SMTP configuration lives in `config/mail.php` and all app env examples. Development uses Mailpit; testing uses the array mailer. Credentials are optional as a pair, but invalid types/ports/schemes/sender values fail validation. Production requires actual outbound SMTP, TLS and the database queue; it rejects Mailpit/localhost/template-host settings and the array mailer. Never log credentials or mail payloads.
+
+PostgreSQL data, Mailpit captures and application storage survive container recreation/rebuild. Named-volume owners are prepared by the images; no root ownership repair or destructive bootstrap is required on an ordinary reopen. Container logs have local rotation (10 MB, 3 files). Profile-specific service budgets are documented in `resources.md`.

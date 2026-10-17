@@ -7,7 +7,7 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
-This file defines the intended command surface. RM-2026-001 implements the initial commands. Currently `bin/dev` provides profile/prepare/setup/build/up/down/config/shell; other wrappers below remain roadmap requirements until their implementation points.
+This file defines the intended command surface. RM-2026-001 implements the initial commands. Currently `bin/dev` provides profile/prepare/setup/build/up/down/config/shell; `setup --if-needed` supports the Compose initialization service and skips unchanged dependency/frontend work; other wrappers below remain roadmap requirements until their implementation points.
 
 ## Development
 
@@ -30,6 +30,10 @@ Validate development stack, services, health checks, runtime/tooling, and local 
 ### Frontend and localization checks currently available
 
 Inside the devcontainer: `pnpm run typecheck`, `pnpm run build`, `pnpm run dev` (HMR port 5173 at `/build/`), `python3 tools/localization/snapshot.py check`, `php tools/testing/localization.php`. `./bin/dev setup` now includes locked frontend installation/build. Snapshot review/update commands are documented in `docs/development/localization.md` and never overwrite local catalogs.
+
+### Runtime services currently available
+
+Inside the corresponding worker/scheduler container, `php artisan runa:runtime:health queue|scheduler` verifies its own heartbeat and database access. `php artisan schedule:list` shows the technical pulse. `php tools/testing/runtime.php` checks heartbeat/SMTP rejection; development-only `python3 tools/testing/services.py` exercises database queue -> SMTP -> Mailpit. Mailpit UI is at `http://localhost:8025`. See `docs/development/environment.md` for startup order and persistence.
 
 ## Formatting/lint/type/static analysis
 

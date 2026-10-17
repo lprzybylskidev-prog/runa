@@ -24,7 +24,7 @@ final class ConfigurationValidator
         if (! in_array($this->config->get('app.env'), ['local', 'testing', 'production'], true)) {
             $errors[] = 'app.env must be local, testing or production.';
         }
-        foreach (['app.debug', 'runa.knowledge_enabled'] as $key) {
+        foreach (['app.debug', 'runa.knowledge_enabled', 'mail.mailers.smtp.require_tls'] as $key) {
             if (! is_bool($this->config->get($key))) {
                 $errors[] = $key.' must be boolean.';
             }
@@ -38,6 +38,34 @@ final class ConfigurationValidator
         $port = $this->config->get('database.connections.pgsql.port');
         if (filter_var($port, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]) === false) {
             $errors[] = 'database.connections.pgsql.port must be an integer between 1 and 65535.';
+        }
+        $mailer = $this->config->get('mail.default');
+        if (! in_array($mailer, ['smtp', 'array'], true)) {
+            $errors[] = 'mail.default must be smtp or array.';
+        }
+        if ($mailer === 'smtp') {
+            $host = $this->config->get('mail.mailers.smtp.host');
+            if (! is_string($host) || trim($host) === '' || preg_match('/[\s\/]/', $host)) {
+                $errors[] = 'mail.mailers.smtp.host must be a non-empty hostname.';
+            }
+            if (filter_var($this->config->get('mail.mailers.smtp.port'), FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1, 'max_range' => 65535]]) === false) {
+                $errors[] = 'mail.mailers.smtp.port must be a valid TCP port.';
+            }
+            if (! in_array($this->config->get('mail.mailers.smtp.scheme'), ['smtp', 'smtps'], true)) {
+                $errors[] = 'mail.mailers.smtp.scheme must be smtp or smtps.';
+            }
+            $username = $this->config->get('mail.mailers.smtp.username');
+            $password = $this->config->get('mail.mailers.smtp.password');
+            if (($username !== null && ! is_string($username)) || ($password !== null && ! is_string($password))) {
+                $errors[] = 'SMTP credentials must be strings or null.';
+            }
+            if ((! in_array($username, [null, ''], true)) !== (! in_array($password, [null, ''], true))) {
+                $errors[] = 'SMTP username and password must be configured together.';
+            }
+        }
+        if (filter_var($this->config->get('mail.from.address'), FILTER_VALIDATE_EMAIL) === false) {
+            $errors[] = 'mail.from.address must be a valid email address.';
         }
         $url = $this->config->get('app.url');
         if (! is_string($url) || filter_var($url, FILTER_VALIDATE_URL) === false
@@ -58,6 +86,15 @@ final class ConfigurationValidator
             $errors[] = 'database.connections.pgsql.sslmode is invalid.';
         }
         if ($this->config->get('app.env') === 'production') {
+            if ($this->config->get('mail.mailers.smtp.require_tls') !== true) {
+                $errors[] = 'Production SMTP requires TLS.';
+            }
+            if ($mailer !== 'smtp' || in_array($this->config->get('mail.mailers.smtp.host'), ['mailpit', 'localhost', '127.0.0.1', 'smtp.example.com'], true)) {
+                $errors[] = 'Production requires a configured outbound SMTP host, not Mailpit or localhost.';
+            }
+            if ($this->config->get('queue.default') !== 'database') {
+                $errors[] = 'Production requires the database queue driver.';
+            }
             if ($this->config->get('app.debug') !== false || $this->config->get('runa.knowledge_enabled') !== false) {
                 $errors[] = 'Production requires debug and knowledge tooling to be disabled.';
             }

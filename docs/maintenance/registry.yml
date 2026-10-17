@@ -156,12 +156,13 @@ entries:
     review_every_days: 90
 
   - id: mailpit
-    type: framework_tooling
+    type: security_runtime
     name: mailpit
     version: 1.31.6
-    source: docs/development/toolchain.md
+    source: docker/mailpit/Dockerfile
+    url: https://github.com/axllent/mailpit
     last_reviewed: 2026-10-17
-    review_every_days: 90
+    review_every_days: 30
 
   - id: vue
     type: framework_tooling
