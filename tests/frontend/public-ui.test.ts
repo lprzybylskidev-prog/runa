@@ -24,7 +24,7 @@ it('uses public controls without a layout, router, registry or global installati
   expect(button.emitted('click')).toHaveLength(1);
   expect(form.attributes('novalidate')).toBeDefined();
   expect(select.get('select').element.value).toBe('all');
-  expect(document.querySelector('.auth-page')).toBeNull();
+  expect(document.querySelector('.minimal-page')).toBeNull();
 });
 
 // Compile the same type facade consumed by independent applications.

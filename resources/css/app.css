@@ -212,7 +212,7 @@ input:-webkit-autofill {
   -webkit-text-fill-color: var(--runa-text);
   caret-color: var(--runa-text);
 }
-.auth-page {
+.minimal-page {
   position: relative;
   isolation: isolate;
   background: var(--runa-background);
@@ -255,7 +255,7 @@ input:-webkit-autofill {
   margin-left: -0.65rem;
   color: var(--runa-accent-text);
 }
-.auth-panel {
+.minimal-panel {
   border: 1px solid var(--runa-border);
   border-radius: 4px;
   background: var(--runa-surface);

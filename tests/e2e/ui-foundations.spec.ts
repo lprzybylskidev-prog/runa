@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-
 for (const [device, width, height] of [
   ['desktop', 1440, 900],
   ['tablet', 1024, 768],
@@ -44,6 +43,9 @@ for (const [device, width, height] of [
             ? 'Aplikacja w przygotowaniu.'
             : 'Application in development.',
         );
+        await expect(page.getByRole('contentinfo')).toContainText(
+          /Runa v\d+\.\d+\.\d+ \| Powered by Runa v\d+\.\d+\.\d+/,
+        );
         await page.evaluate(() => document.fonts.ready);
         expect(
           await page.evaluate(
@@ -82,7 +84,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
           changed = performance.now();
           opacity = cover ? getComputedStyle(cover).opacity : 'absent';
           inertAtChange =
-            document.querySelector('.auth-page')?.hasAttribute('inert') ??
+            document.querySelector('.minimal-page')?.hasAttribute('inert') ??
             false;
         }
         if (
@@ -158,7 +160,7 @@ test('review catalog controls work and unknown pages remain real HTTP errors', a
   await expect(page.locator('output')).toHaveText('1');
   await page.getByRole('combobox').selectOption('layouts');
   await expect(page.getByRole('main')).toContainText(
-    'Preview follows in its roadmap point.',
+    'Układ minimalny / Minimal layout',
   );
   expect((await request.get('/__review/not-found')).status()).toBe(404);
 });

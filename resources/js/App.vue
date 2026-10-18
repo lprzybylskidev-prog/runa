@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import AuthLayout from './layouts/AuthLayout.vue';
+import { MinimalLayout } from '@/runa/ui';
+import AppBrandIllustration from './components/AppBrandIllustration.vue';
 </script>
 
 <template>
-  <AuthLayout>
+  <MinimalLayout>
     <template #default="{ t }">
       <h1
         class="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl xl:text-6xl"
@@ -16,5 +17,6 @@ import AuthLayout from './layouts/AuthLayout.vue';
         {{ t('description') }}
       </p>
     </template>
-  </AuthLayout>
+    <template #illustration><AppBrandIllustration /></template>
+  </MinimalLayout>
 </template>

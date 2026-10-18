@@ -97,7 +97,7 @@ Do not copy dashboard content, cards, charts or their appearance from this refer
 
 ### Footer
 
-Current `AppFooter` still shows current-year copyright, the Runa repository link and the actual root VERSION. RM-2026-004 supersedes that default: minimal/application layouts, including `/`, must show `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`, with an email equivalent. Application and platform versions are independent identity fields; bundled defaults use the actual root VERSION. Each element and the whole footer can be configured/hidden. Keep the footer in document flow, naturally near the viewport bottom on short pages. This is planned for points 2–4; point 1 does not alter the rendered footer.
+Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Rendered owner acceptance is pending. Application/email integration remains planned for points 3–4.
 
 ### Remaining scope
 
@@ -168,7 +168,7 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 ## Implementation scope discussion
 
-The accepted `/` welcome page consumes `AuthLayout` and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the explicit dual-version footer is the only approved root visual change in this roadmap.
+The accepted `/` welcome page consumes `MinimalLayout` directly and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the explicit dual-version footer is the only approved root visual change in this roadmap.
 
 RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. Temporary review infrastructure is removed only after final visual acceptance, in point 19.
 
@@ -191,7 +191,7 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- Rendered validation of the planned configurable dual-version footer in RM-2026-004.
+- Rendered validation of the implemented configurable dual-version footer (owner acceptance pending) in RM-2026-004.
 - Further component-specific theme validation as new views are implemented.
 - Future auth/app view implementation scope; the current root preview is accepted.
 
@@ -205,13 +205,13 @@ Root preview refinement: remove the visible application-connection/status block 
 
 Root artwork placement: the decorative illustration fills the entire right half of the outer panel, flush with its top, right and bottom edges, following the split-panel composition clarified using REF-002. Padding belongs only to the text section; the illustration is not an inset card. On narrow screens it becomes a full-width lower section. This specific root layout refinement does not add auth behavior.
 
-## Reusable auth layout
+## Reusable minimal layout
 
-User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused by the preserved root welcome page and potentially by later auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. RM-2026-004 preserves the root and generalizes this layout behind a compatible facade; retain its assets and interactions. Authentication behavior and actual forms remain outside this change.
+The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. The root composes the preserved `AppBrandIllustration` on the right; narrow screens stack it below the content. Screens can omit illustration. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
 
 ## Component reuse
 
-User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and AuthLayout owns the split-page structure. Reuse and extend these instead of rebuilding controls for each page.
+User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and MinimalLayout owns the optional split-page structure. Reuse and extend these instead of rebuilding controls for each page.
 
 ## Preference change screen
 

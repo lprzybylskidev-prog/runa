@@ -220,6 +220,34 @@ Disable native form validation for controlled application forms and show errors 
 
 Import individual existing primitives from `@/runa/ui` (Vite, Vitest and TypeScript share the alias). The facade exports Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo without importing a layout, router, registry or global installation. Include the application's `resources/css/app.css` for theme tokens/fonts/styles. The underlying App-prefixed components remain the single implementations.
 
-Public identity, navigation, preference-storage, selection/export/provider and print types live behind the same facade. They define integration contracts only: no identity provider, route resolver, generalized storage adapter or export engines are delivered yet. Existing `runa.locale`/`runa.theme` behavior remains unchanged. Application versions are independent of platform versions; URL-derived route context is separate from persisted navigation appearance.
+Public identity, navigation, preference-storage, selection/export/provider and print types live behind the same facade. They define integration contracts only: the identity provider is implemented; route resolver, generalized storage adapter and export engines are not delivered yet. Existing `runa.locale`/`runa.theme` behavior remains unchanged. Application versions are independent of platform versions; URL-derived route context is separate from persisted navigation appearance.
 
-The temporary `resources/review/` entry is built separately with `./bin/pnpm exec vite build --config vite.review.config.mjs` into ignored `public/ui-review/`. In `local`/`testing`, named route `review.ui` serves `/__review/ui`; a missing build returns 404. Other environments do not register it, and its controller rejects stale review routes outside local/testing. No environment flag enables production review. The main production entry/import graph and Docker build output copies exclude this separate entry/output. `http://localhost:8080/__review/ui` uses the normal development Nginx endpoint. Category controls currently demonstrate existing controls only; upcoming layouts/errors remain pending. `/__review/not-found` is a real 404, presently unbranded. There is no catch-all success route. Remove temporary infrastructure at roadmap point 19 after explicit final visual acceptance.
+The temporary `resources/review/` entry is built separately with `./bin/pnpm exec vite build --config vite.review.config.mjs` into ignored `public/ui-review/`. In `local`/`testing`, named route `review.ui` serves `/__review/ui`; a missing build returns 404. Other environments do not register it, and its controller rejects stale review routes outside local/testing. No environment flag enables production review. The main production entry/import graph and Docker build output copies exclude this separate entry/output. `http://localhost:8080/__review/ui` uses the normal development Nginx endpoint. Category controls currently demonstrate existing controls only; the minimal layout preview is available at `/__review/ui?preview=minimal`; application/email layouts and errors remain pending. `/__review/not-found` is a real 404, presently unbranded. There is no catch-all success route. Remove temporary infrastructure at roadmap point 19 after explicit final visual acceptance.
+
+## Minimal layout and branding
+
+`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The root uses MinimalLayout directly; AuthLayout was removed by owner request. Named header/content/illustration/actions/footer slots and a translator-compatible default slot allow one-column or split compositions. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
+
+```vue
+<script setup lang="ts">
+import { IdentityProvider, MinimalLayout } from '@/runa/ui';
+</script>
+<template>
+  <IdentityProvider
+    :identity="{
+      applicationId: 'atlas',
+      applicationName: 'Atlas',
+      applicationVersion: '2.4.1',
+    }"
+  >
+    <MinimalLayout :footer="{ copyright: false, repository: false }">
+      <template #default="{ t }"
+        ><h1>{{ t('title') }}</h1></template
+      >
+      <template #actions><a href="/">Home</a></template>
+    </MinimalLayout>
+  </IdentityProvider>
+</template>
+```
+
+The example supplies an application version only; platformVersion defaults to actual root VERSION. Configure versions independently. Without a provider bundled Runa identity works out of the box. Provider overrides are reactive, subtree-scoped and normalized; image assets use an absolute same-origin path or credential-free HTTPS URL. Invalid/missing/failed logos fall back to the supplied mark plus application name. External logo hosts must also be permitted by the deployment CSP. FooterOptions independently hides the whole footer or its application/platform/copyright/repository elements, and customizes copyright/link text and URL. The footer stays in document flow; long content cannot slide beneath it. These point-2 changes await owner visual acceptance before point 3.

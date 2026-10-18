@@ -1,22 +1,53 @@
 <script setup lang="ts">
-import version from '../../../VERSION?raw';
-defineProps<{ versionLabel: string }>();
+import { safeBrandUrl, useIdentity } from '../runa/ui/identity';
+import type { FooterOptions } from '../runa/ui/identity';
+defineProps<{ options?: FooterOptions | undefined }>();
+const identity = useIdentity();
 </script>
 
 <template>
   <footer
+    v-if="options?.visible !== false"
     class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-muted sm:px-10"
   >
-    <span>© {{ new Date().getFullYear() }} Łukasz Przybylski</span>
-    <div class="flex flex-wrap items-center gap-5">
+    <span v-if="options?.copyright !== false">{{
+      options?.copyrightText ??
+      `© ${new Date().getFullYear()} Łukasz Przybylski`
+    }}</span>
+    <div class="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
       <a
+        v-if="
+          options?.repository !== false &&
+          safeBrandUrl(
+            options?.repositoryUrl ??
+              'https://github.com/lprzybylskidev-prog/runa',
+          )
+        "
         class="footer-link"
-        href="https://github.com/lprzybylskidev-prog/runa"
+        :href="
+          options?.repositoryUrl ??
+          'https://github.com/lprzybylskidev-prog/runa'
+        "
         target="_blank"
         rel="noopener noreferrer"
-        >GitHub</a
+        >{{ options?.repositoryLabel ?? 'GitHub' }}</a
       >
-      <span>{{ versionLabel }} {{ version.trim() }}</span>
+      <span class="break-words">
+        <span v-if="options?.application !== false"
+          >{{ identity.applicationName }} v{{
+            identity.applicationVersion
+          }}</span
+        >
+        <span
+          v-if="options?.application !== false && options?.platform !== false"
+          aria-hidden="true"
+        >
+          |
+        </span>
+        <span v-if="options?.platform !== false"
+          >Powered by Runa v{{ identity.platformVersion }}</span
+        >
+      </span>
     </div>
   </footer>
 </template>

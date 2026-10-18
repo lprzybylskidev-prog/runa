@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Button, Form, Select } from '@/runa/ui';
-import AuthLayout from '../js/layouts/AuthLayout.vue';
+import {
+  Button,
+  Form,
+  Select,
+  MinimalLayout,
+  IdentityProvider,
+} from '@/runa/ui';
+import AppBrandIllustration from '../js/components/AppBrandIllustration.vue';
 
+const preview = new window.URLSearchParams(window.location.search).get(
+  'preview',
+);
+const longContent = ref(false);
+const showIllustration = ref(false);
+const showFooter = ref(true);
 const category = ref('controls');
 const activations = ref(0);
 const categories = [
@@ -13,11 +25,70 @@ const categories = [
 </script>
 
 <template>
-  <AuthLayout>
+  <IdentityProvider
+    v-if="preview === 'minimal'"
+    :identity="{
+      applicationId: 'review',
+      applicationName: 'Atlas',
+      applicationVersion: '2.4.1',
+    }"
+  >
+    <MinimalLayout :footer="{ visible: showFooter }">
+      <template #default="{ t }">
+        <h1 class="text-2xl font-semibold">
+          {{ t('language') === 'Język' ? 'Układ minimalny' : 'Minimal layout' }}
+        </h1>
+        <p class="mt-4 text-sm text-muted">
+          {{
+            t('language') === 'Język'
+              ? 'Niezależna aplikacja Atlas. Wersja platformy pochodzi z pliku VERSION.'
+              : 'Independent Atlas application. Platform version comes from VERSION.'
+          }}
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <Button @click="longContent = !longContent">{{
+            t('language') === 'Język'
+              ? 'Krótka / długa treść'
+              : 'Short / long content'
+          }}</Button>
+          <Button @click="showIllustration = !showIllustration">{{
+            t('language') === 'Język' ? 'Ilustracja' : 'Illustration'
+          }}</Button>
+          <Button @click="showFooter = !showFooter">{{
+            t('language') === 'Język' ? 'Stopka' : 'Footer'
+          }}</Button>
+        </div>
+        <div v-if="longContent" class="mt-6 space-y-6">
+          <p v-for="n in 24" :key="n" class="text-sm text-muted">
+            {{ n }} ·
+            {{
+              t('language') === 'Język'
+                ? 'Treść dokumentu pozostaje w normalnym przepływie strony. Stopka znajduje się za całą treścią.'
+                : 'Document content stays in normal page flow. The footer follows all content.'
+            }}
+          </p>
+        </div>
+      </template>
+      <template v-if="showIllustration" #illustration
+        ><div
+          class="flex w-full items-center justify-center bg-surface p-10 text-muted"
+          aria-hidden="true"
+        >
+          ATLAS
+        </div></template
+      >
+      <template #actions="{ t }"
+        ><a href="/__review/ui" class="text-sm underline">{{
+          t('language') === 'Język' ? 'Powrót do przeglądu' : 'Back to review'
+        }}</a></template
+      >
+    </MinimalLayout>
+  </IdentityProvider>
+  <MinimalLayout v-else>
     <template #default>
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 1 · Szkielet katalogu / Catalog skeleton
+        RM-2026-004 · 2 · Układ minimalny / Minimal layout
       </p>
       <div class="mt-6">
         <Select
@@ -34,6 +105,12 @@ const categories = [
             <output class="ml-4">{{ activations }}</output>
           </Form>
         </template>
+        <a
+          v-else-if="category === 'layouts'"
+          href="/__review/ui?preview=minimal"
+          class="text-sm underline"
+          >Układ minimalny / Minimal layout</a
+        >
         <p v-else class="text-sm text-muted">
           Podgląd zostanie dodany w odpowiednim punkcie roadmapy. / Preview
           follows in its roadmap point.
@@ -44,5 +121,6 @@ const categories = [
         <a href="/__review/not-found">404</a>
       </nav>
     </template>
-  </AuthLayout>
+    <template #illustration><AppBrandIllustration /></template>
+  </MinimalLayout>
 </template>

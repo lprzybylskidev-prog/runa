@@ -43,11 +43,23 @@ const consumer = await bundle({
 });
 const consumerModules = consumer
   .filter((chunk) => chunk.type === 'chunk')
-  .flatMap((chunk) => Object.keys(chunk.modules));
+  .flatMap((chunk) =>
+    Object.entries(chunk.modules)
+      .filter(([, module]) => module.renderedLength > 0)
+      .map(([id]) => id),
+  );
 assert(consumerModules.some((id) => id.endsWith('/AppButton.vue')));
 assert(
   !consumerModules.some((id) =>
     /\/layouts\/|\/review\/|\/App\.vue|\/main\.ts|\/composables\//.test(id),
+  ),
+);
+// Rolldown lists parsed, fully tree-shaken modules too. Check emitted code as well.
+assert(
+  !consumer.some(
+    (chunk) =>
+      chunk.type === 'chunk' &&
+      /minimal-page|applyingPreferences|localStorage/.test(chunk.code),
   ),
 );
 const dockerfile = await readFile('docker/php/Dockerfile', 'utf8');

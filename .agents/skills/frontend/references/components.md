@@ -1,6 +1,6 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. Identity/navigation/preferences/export types are integration contracts, not implemented providers or engines.
+Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation/preferences/export types remain integration contracts without implemented providers or engines.
 
 ## AppSelect
 
@@ -27,7 +27,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## Root preference buttons
 
-- Source: `resources/js/layouts/AuthLayout.vue`.
+- Source: `resources/js/layouts/MinimalLayout.vue`.
 - Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names describe current/next values; short application tooltips identify the action. Both controls use AppButton. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip
@@ -42,25 +42,36 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Shared native button with slot content and scoped appearance: borders, 4px radii, hover/active/focus/disabled states and subtle transitions respecting reduced motion.
 - Props: `type` (defaults to safe `button`), `compact` (44px square), `disabled`. Native attributes, ARIA labels and click listeners inherit onto the button.
 - Use this component for actions rather than styling native buttons independently in each view. Extend it only for demonstrated new variants; do not introduce speculative component APIs.
-- Canonical use: language/theme controls in AuthLayout. Icon-only uses require an accessible name; tooltip remains a separate component.
+- Canonical use: language/theme controls in MinimalLayout. Icon-only uses require an accessible name; tooltip remains a separate component.
 
 ## AppFooter
 
 - Source: `resources/js/components/AppFooter.vue`.
-- Shared responsive footer: current-year copyright for Łukasz Przybylski, Runa GitHub repository link and actual build version imported from root `VERSION`.
-- Props: translated `versionLabel`; do not hardcode a future release version. Canonical use: AuthLayout. RM-2026-004 point 2 plans a configurable dual-version footer for every web layout including `/`; current behavior remains unchanged until that point.
+- Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; both bundled versions default to actual root VERSION.
+- `options: FooterOptions` independently controls visible/application/platform/copyright/repository; optional copyrightText/repositoryUrl/repositoryLabel customize content. URL validation rejects unsafe links. Copyright and GitHub remain default supplemental elements. Removed obsolete versionLabel prop.
+- Layout footer slots can replace the footer; layout footer.visible hides the entire region. Canonical use: MinimalLayout.
+
+## IdentityProvider
+
+- Source: `resources/js/components/AppIdentityProvider.vue`; public `IdentityProvider`, `useIdentity`, `defaultIdentity`, `resolveIdentity` from `@/runa/ui`.
+- Reactive partial ApplicationIdentity overrides scope to descendants, with safe bundled defaults and independent application/platform versions. No global setup or shell dependency. Nested providers are independent scopes with bundled defaults, not implicit merges with their parents.
+- Logo accepts same-origin absolute asset paths or credential-free HTTPS URLs. Missing/invalid URLs use the supplied Runa mark and application name; blank accessible names fall back to the application name. Failed image loading restores the mark; changed sources retry.
+
+## AppBrandIllustration
+
+- Source: `resources/js/components/AppBrandIllustration.vue`. Extracted unchanged root CSS illustration; decorative RunaLogo/grid/orbits. Compose through MinimalLayout's optional illustration slot, not a separate auth layout.
 
 ## AppLoadingOverlay
 
 - Source: `resources/js/components/AppLoadingOverlay.vue`.
 - Teleported opaque full-screen loading cover, centered circular spinner and accessible status label. Props: `active`, `label`; emits `covered` after enter and `revealed` after leave.
-- Shared 340ms smooth opacity transitions and 700ms spinner cycle, disabled for reduced motion. Cover colors are captured at activation so theme updates do not abruptly recolor the visible overlay. The fully covered class must not override leave-transition opacity. Caller owns pending operation, inert/busy state and focus restoration; AuthLayout provides the canonical language/theme flow.
+- Shared 340ms smooth opacity transitions and 700ms spinner cycle, disabled for reduced motion. Cover colors are captured at activation so theme updates do not abruptly recolor the visible overlay. The fully covered class must not override leave-transition opacity. Caller owns pending operation, inert/busy state and focus restoration; MinimalLayout provides the canonical language/theme flow.
 
 ## AppBackdrop
 
 - Source: `resources/js/components/AppBackdrop.vue`.
 - Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture, animation or external assets.
-- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: AuthLayout. Follow the current background direction in `docs/design/visual-direction.md`.
+- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/design/visual-direction.md`.
 
 ## RunaLogo
 
