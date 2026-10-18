@@ -339,7 +339,9 @@ onScopeDispose(() => {
             :aria-controls="drawerId"
             @click="mobile ? openDrawer() : (collapsed = !collapsed)"
           >
-            ☰
+            <span class="shell-toggle-icon" aria-hidden="true"
+              ><span /><span /><span
+            /></span>
           </button>
           <a v-if="!sidebar" href="/" class="shell-brand"
             ><span class="brand-mark"><RunaLogo /></span

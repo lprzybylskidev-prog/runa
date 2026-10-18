@@ -740,6 +740,11 @@ input:-webkit-autofill {
   font-size: 12px;
 }
 .shell-sidebar-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
   align-self: center;
   min-width: 44px;
   height: 44px;
@@ -929,10 +934,36 @@ input:-webkit-autofill {
 .shell-brand .brand-mark {
   flex-shrink: 0;
 }
-.shell-sidebar-toggle {
-  display: grid;
-  place-items: center;
-  font-size: 20px;
+.shell-toggle-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 18px;
+  height: 14px;
+}
+.shell-toggle-icon > span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+}
+.shell-sidebar-toggle:hover,
+.shell-sidebar-toggle:focus-visible {
+  background: var(--runa-primary-subtle);
+  border-color: var(--runa-primary-solid);
+  color: var(--runa-primary-text);
+}
+.shell-avatar:hover,
+.shell-avatar:focus-visible {
+  background: var(--runa-primary-solid);
+  border-color: var(--runa-primary-solid);
+  color: var(--runa-primary-foreground);
+}
+.shell-sidebar-toggle:active,
+.shell-avatar:active {
+  background: var(--runa-primary-hover);
+  border-color: var(--runa-primary-hover);
+  color: var(--runa-primary-foreground);
 }
 
 .shell-top-dropdown {
