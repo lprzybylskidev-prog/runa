@@ -330,3 +330,48 @@ test('both navigation scrollbars use theme violet and long-menu fixtures can be 
     page.getByRole('link', { name: 'Obszar testowy 01', exact: true }),
   ).toHaveCount(0);
 });
+
+test('compact top navigation keeps its scrollbar at the header bottom and owns wheel scrolling', async ({
+  page,
+}) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/__review/application/projects');
+    const header = page.locator('.shell-header');
+    const nav = page.locator('.shell-top-nav');
+    const headerBox = (await header.boundingBox())!;
+    const navBox = (await nav.boundingBox())!;
+    expect(headerBox.height).toBe(64);
+    expect(navBox.y + navBox.height).toBeCloseTo(
+      headerBox.y + headerBox.height - 1,
+      0,
+    );
+    await nav.hover();
+    const before = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 250);
+    await expect
+      .poll(() => nav.evaluate((element) => element.scrollLeft))
+      .toBeGreaterThan(0);
+    expect(await page.evaluate(() => scrollY)).toBe(before);
+    await nav.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
+    await page.mouse.wheel(0, 250);
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => scrollY)).toBe(before);
+    await page.mouse.wheel(0, -200);
+    await expect
+      .poll(() =>
+        nav.evaluate(
+          (element) =>
+            element.scrollLeft < element.scrollWidth - element.clientWidth,
+        ),
+      )
+      .toBe(true);
+    expect(await page.evaluate(() => scrollY)).toBe(before);
+    await page.screenshot({
+      path: `artifacts/playwright/ui-foundations/top-navigation-compact-${width}.png`,
+      fullPage: true,
+    });
+  }
+});

@@ -189,6 +189,25 @@ function keydown(event: globalThis.KeyboardEvent) {
     }
   }
 }
+function scrollTopNavigation(event: globalThis.WheelEvent) {
+  if (event.ctrlKey || !(event.currentTarget instanceof window.HTMLElement))
+    return;
+  const navigation = event.currentTarget;
+  if (navigation.scrollWidth <= navigation.clientWidth) return;
+  const delta =
+    Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : event.deltaY;
+  if (!delta) return;
+  event.preventDefault();
+  const unit =
+    event.deltaMode === 1
+      ? 16
+      : event.deltaMode === 2
+        ? navigation.clientWidth
+        : 1;
+  navigation.scrollLeft += delta * unit;
+}
 function pointerdown(event: globalThis.PointerEvent) {
   if (
     event.target instanceof window.Node &&
@@ -342,7 +361,12 @@ onScopeDispose(() => {
           <a v-if="!sidebar" href="/" class="shell-brand"
             ><RunaLogo /><span>{{ identity.applicationName }}</span></a
           >
-          <nav v-if="topbar" class="shell-top-nav" :aria-label="t('areas')">
+          <nav
+            v-if="topbar"
+            class="shell-top-nav"
+            :aria-label="t('areas')"
+            @wheel="scrollTopNavigation"
+          >
             <AppNavigation
               :entries="topNavigation"
               :current="current"
