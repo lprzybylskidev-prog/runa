@@ -9,7 +9,6 @@ import {
   watch,
 } from 'vue';
 import AppButton from '../components/AppButton.vue';
-import AppAvatar from '../components/AppAvatar.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
@@ -383,12 +382,7 @@ onScopeDispose(() => {
               :aria-controls="profileId"
               @click="profile = !profile"
             >
-              <AppAvatar
-                :name="userName"
-                :initials="userInitials"
-                shape="circle"
-                decorative
-              />
+              {{ userInitials }}
             </AppButton>
             <Transition name="shell-popover">
               <div

@@ -44,19 +44,11 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
 - Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
 
-## AppButtonGroup and AppDropdownButton
+## AppButtonGroup
 
-- Sources: `resources/js/components/AppButtonGroup.vue`, `AppDropdownButton.vue`; public `ButtonGroup`, `DropdownButton`.
-- Group requires `label`, groups slotted buttons semantically and visually; selection/pressed state belongs to the caller. Tab visits each button.
-- Dropdown takes `label`, readonly `ButtonAction[]` (`id`, `label`, optional `disabled`), button variant/tone/size/disabled/busy and optional `split`. Emits `select(id)` and, only for split primary activation, `click(MouseEvent)`.
-- Disclosure contains ordinary action buttons, not ARIA menu items: Tab is native, ArrowUp/Down/Home/End navigate enabled actions; Escape/selection restores trigger focus. Outside pointer/focus leave and viewport resize dismiss; the popup shifts horizontally to remain within the viewport. Empty content can use `empty` slot. Scoped inline popup requires an unclipped parent; general floating positioning/layer composition belongs to point 9/10.
-- Existing application navigation/profile content is a route disclosure/custom slot, not a homogeneous action list; retain those shell-specific contracts.
-
-## AppAvatar
-
-- Source: `resources/js/components/AppAvatar.vue`; public `Avatar`. Required `name`, optional `initials`, `src`, `size` sm/md/lg (32/42/56px), `shape` square/circle, `decorative` for an already named parent.
-- Accepts same-origin absolute paths or HTTPS image sources. Image failure falls back to explicit initials, then first letters of up to two name parts, then `?`; changed src retries. Nondecorative output has image semantics and an accessible name. No profile action or account service is built in.
-- ApplicationLayout profile trigger composes Button and decorative Avatar while retaining existing menu behavior.
+- Source: `resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
+- Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
+- Action-list/split buttons and reusable avatars were removed at the owner's request; build these only when an actual application need appears. ApplicationLayout retains its unique initials profile control.
 
 ## AppFooter
 

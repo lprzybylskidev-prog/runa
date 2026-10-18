@@ -653,11 +653,6 @@ input:-webkit-autofill {
 .shell-avatar-button {
   border-radius: 50%;
 }
-.shell-avatar-button .app-avatar {
-  border: 0;
-  background: transparent;
-  color: inherit;
-}
 .shell-profile {
   position: relative;
 }

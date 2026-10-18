@@ -185,6 +185,11 @@ withDefaults(
   background: transparent;
   border-color: transparent;
 }
+.app-button[data-variant='soft']:hover:not(:disabled) {
+  background: var(--button-solid);
+  color: var(--button-foreground);
+  border-color: var(--button-solid);
+}
 .app-button[data-variant='outline']:hover:not(:disabled),
 .app-button[data-variant='ghost']:hover:not(:disabled) {
   background: var(--button-subtle);

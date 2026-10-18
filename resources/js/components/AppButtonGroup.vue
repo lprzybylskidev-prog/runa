@@ -7,17 +7,24 @@ defineProps<{ label: string }>();
 <style scoped>
 .button-group {
   display: inline-flex;
-  flex-wrap: wrap;
-  gap: 1px;
+  max-width: 100%;
 }
 .button-group :deep(.app-button) {
   border-radius: 0;
+  position: relative;
+  border-color: var(--runa-control-border);
+}
+.button-group :deep(.app-button + .app-button) {
+  margin-left: -1px;
 }
 .button-group :deep(.app-button:first-child) {
   border-radius: 4px 0 0 4px;
 }
 .button-group :deep(.app-button:last-child) {
   border-radius: 0 4px 4px 0;
+}
+.button-group :deep(.app-button:only-child) {
+  border-radius: 4px;
 }
 .button-group :deep(.app-button:focus-visible) {
   position: relative;

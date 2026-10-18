@@ -13,7 +13,7 @@ const category = ref('controls');
 const categories = [
   {
     value: 'controls',
-    label: 'Przyciski, ikony i awatary / Buttons, icons and avatars',
+    label: 'Przyciski / Buttons',
   },
   { value: 'layouts', label: 'Układy / Layouts' },
   { value: 'data', label: 'Dane i eksport / Data and export' },
