@@ -117,6 +117,8 @@ Temporary development-only named routes under a reserved review prefix provide m
 
 Every point refreshes relevant sources/knowledge/skills, synchronizes affected current docs/catalog entries, runs proportionate checks and creates a scoped Conventional Commit. Dependencies below are sequential unless stated otherwise.
 
+Owner clarification (2026-10-18): build layouts first, then deliver individual shared Runa components. In every component point, inspect all already-delivered layouts for matching provisional elements or reusable compositions and replace applicable uses with the finalized component in that same point. Do not postpone applicable integration to a final cleanup point or require another user request. Recheck affected layouts, existing interactions and responsive/theme/localization states; include the integrated result in that point's visual review and synchronize component/page references. If no layout use applies, record that disposition briefly in the point record. Preserve accepted layout composition unless the owner requests a change.
+
 - [x] 1. Refresh audit, root regression baseline and public contracts.
   - Inspect the audited files; capture `/` at 1440×900, 1024×768 and 390×844 in both themes/PL/EN, preference timing and reduced motion. Define export/identity/navigation/preferences types and inventory exact reuse/extension decisions. Reconcile planned design documentation as specified above, and set up temporary review routing/catalog skeleton without changing `/`. Check production exclusion and import-boundary smoke tests. No new dependency is preapproved.
 - [x] 2. Minimal layout and configurable branding/footer.

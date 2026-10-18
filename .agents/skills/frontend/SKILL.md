@@ -12,7 +12,7 @@ Load only relevant references:
 - `references/accessibility-responsive.md`
 - `references/ux-design-performance.md`
 
-Before editing UI, inspect analogous existing pages/forms and search the shared component catalogue. Reuse the established structure and controls. After changing a reusable component/pattern, update its catalogue entry in the same task.
+Before editing UI, inspect analogous existing pages/forms and search the shared component catalogue. Reuse the established structure and controls. After changing a reusable component/pattern, inspect existing layouts for applicable uses and replace matching provisional elements with the finalized shared component in the same task. Recheck affected layout behavior and rendering; update its catalogue entry and page references in that task.
 
 For discovery and maintenance load:
 
