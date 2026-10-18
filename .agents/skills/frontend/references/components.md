@@ -22,7 +22,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppIcon
 
 - Source: `resources/js/components/AppIcon.vue`.
-- Typed subset of four Tabler outline icons; decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
+- Typed subset of four Tabler outline icons with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
 - Local source assets, licenses and revision/hash provenance: `docs/design/assets.md`.
 
 ## Root preference buttons
@@ -38,11 +38,25 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppButton
 
-- Source: `resources/js/components/AppButton.vue`.
-- Shared native button with slot content and scoped appearance: borders, 4px radii, hover/active/focus/disabled states and subtle transitions respecting reduced motion.
-- Props: `type` (defaults to safe `button`), `compact` (44px square), `disabled`. Native attributes, ARIA labels and click listeners inherit onto the button.
-- Use this component for actions rather than styling native buttons independently in each view. Extend it only for demonstrated new variants; do not introduce speculative component APIs.
-- Canonical use: shared language/theme controls in both web layouts. Icon-only uses require an accessible name; tooltip remains a separate component.
+- Source: `resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
+- `variant`: neutral (compatible default), solid, outline, soft, ghost. `tone`: primary, secondary, success, danger, warning, info, accent. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
+- `busy` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
+- Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
+- Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
+
+## AppButtonGroup and AppDropdownButton
+
+- Sources: `resources/js/components/AppButtonGroup.vue`, `AppDropdownButton.vue`; public `ButtonGroup`, `DropdownButton`.
+- Group requires `label`, groups slotted buttons semantically and visually; selection/pressed state belongs to the caller. Tab visits each button.
+- Dropdown takes `label`, readonly `ButtonAction[]` (`id`, `label`, optional `disabled`), button variant/tone/size/disabled/busy and optional `split`. Emits `select(id)` and, only for split primary activation, `click(MouseEvent)`.
+- Disclosure contains ordinary action buttons, not ARIA menu items: Tab is native, ArrowUp/Down/Home/End navigate enabled actions; Escape/selection restores trigger focus. Outside pointer/focus leave and viewport resize dismiss; the popup shifts horizontally to remain within the viewport. Empty content can use `empty` slot. Scoped inline popup requires an unclipped parent; general floating positioning/layer composition belongs to point 9/10.
+- Existing application navigation/profile content is a route disclosure/custom slot, not a homogeneous action list; retain those shell-specific contracts.
+
+## AppAvatar
+
+- Source: `resources/js/components/AppAvatar.vue`; public `Avatar`. Required `name`, optional `initials`, `src`, `size` sm/md/lg (32/42/56px), `shape` square/circle, `decorative` for an already named parent.
+- Accepts same-origin absolute paths or HTTPS image sources. Image failure falls back to explicit initials, then first letters of up to two name parts, then `?`; changed src retries. Nondecorative output has image semantics and an accessible name. No profile action or account service is built in.
+- ApplicationLayout profile trigger composes Button and decorative Avatar while retaining existing menu behavior.
 
 ## AppFooter
 

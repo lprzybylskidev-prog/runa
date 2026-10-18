@@ -650,18 +650,13 @@ input:-webkit-autofill {
   gap: 12px;
   margin-left: auto;
 }
-.shell-avatar {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
+.shell-avatar-button {
   border-radius: 50%;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--runa-primary-subtle);
-  color: var(--runa-primary-text);
-  border: 1px solid var(--runa-control-border);
-  cursor: pointer;
+}
+.shell-avatar-button .app-avatar {
+  border: 0;
+  background: transparent;
+  color: inherit;
 }
 .shell-profile {
   position: relative;
@@ -685,17 +680,7 @@ input:-webkit-autofill {
   font-size: 12px;
 }
 .shell-sidebar-toggle {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 44px;
-  padding: 0;
   align-self: center;
-  min-width: 44px;
-  height: 44px;
-  border: 1px solid var(--runa-control-border);
-  border-radius: 4px;
-  cursor: pointer;
 }
 .shell-workspace {
   scroll-margin-top: 80px;
@@ -898,14 +883,14 @@ input:-webkit-autofill {
   border-color: var(--runa-primary-solid);
   color: var(--runa-primary-text);
 }
-.shell-avatar:hover,
-.shell-avatar:focus-visible {
+.shell-avatar-button:hover,
+.shell-avatar-button:focus-visible {
   background: var(--runa-primary-solid);
   border-color: var(--runa-primary-solid);
   color: var(--runa-primary-foreground);
 }
 .shell-sidebar-toggle:active,
-.shell-avatar:active {
+.shell-avatar-button:active {
   background: var(--runa-primary-hover);
   border-color: var(--runa-primary-hover);
   color: var(--runa-primary-foreground);

@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import type { IconName } from '../runa/ui/icons';
-defineProps<{ name: IconName }>();
+withDefaults(
+  defineProps<{ name: IconName; size?: number | string; color?: string }>(),
+  { size: 24, color: 'currentColor' },
+);
 </script>
 <template>
   <svg
     aria-hidden="true"
     focusable="false"
-    width="24"
-    height="24"
+    :width="size"
+    :height="size"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
+    :stroke="color"
     stroke-width="1.6"
     stroke-linecap="round"
     stroke-linejoin="round"

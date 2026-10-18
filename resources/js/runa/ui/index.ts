@@ -28,3 +28,7 @@ export type {
 } from '../../lib/preferenceStore';
 export { usePreference } from '../../composables/usePreference';
 export type { IconName } from './icons';
+export { default as Avatar } from '../../components/AppAvatar.vue';
+export { default as ButtonGroup } from '../../components/AppButtonGroup.vue';
+export { default as DropdownButton } from '../../components/AppDropdownButton.vue';
+export type * from './controls';

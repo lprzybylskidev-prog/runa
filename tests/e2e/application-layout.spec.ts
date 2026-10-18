@@ -132,6 +132,13 @@ test('sidebar collapse/groups persist, header stays visible and sidebar scroll i
   await expect(page.locator('.application-page')).toHaveClass(
     /sidebar-collapsed/,
   );
+  await expect
+    .poll(() =>
+      page
+        .locator('.shell-sidebar')
+        .evaluate((element) => element.getBoundingClientRect().width),
+    )
+    .toBe(88);
   await modules.getByRole('link', { name: 'Przegląd', exact: true }).hover();
   const tooltip = page.getByRole('tooltip').filter({ hasText: 'Przegląd' });
   await expect(tooltip).toBeVisible();
@@ -508,7 +515,9 @@ test('shell motion respects reduced motion and survives interrupted disclosures'
       .locator('.shell-sidebar')
       .evaluate((element) => getComputedStyle(element).transitionDuration),
   ).toBe('0s');
-  const avatar = page.locator('.shell-avatar');
+  const avatar = page.getByRole('button', {
+    name: /^(Menu użytkownika|User menu):/,
+  });
   await avatar.click();
   await expect(page.locator('.shell-profile-panel')).toBeVisible();
   expect(

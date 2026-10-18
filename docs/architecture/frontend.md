@@ -317,3 +317,9 @@ Local/testing samples under `/__review/errors/{403,404,419,429,500,503}` preserv
 ## Browser favicon
 
 The shared browser icon is the committed `public/favicon.ico`, derived from the actual MinimalLayout brand tile, with 16/32/48px frames. The HTML entry heads (`resources/index.html` and `resources/review/index.html`) declare it once for both MinimalLayout and ApplicationLayout, including their review routes. Native/static emergency error documents reference the same `/favicon.ico`; both production images copy it independently of the frontend bundle and PHP availability. Provenance and regeneration are documented in [design assets](../design/assets.md#browser-favicon). No layout/component contract changes are required.
+
+## Shared action controls
+
+Public `@/runa/ui` imports now include Button, ButtonGroup, DropdownButton, Icon and Avatar, with exported ControlSize/ControlTone/ButtonVariant/ButtonAction types. Controls remain shell-independent. Button preserves its original neutral/md appearance and compact compatibility; explicit variants use shared semantic tokens. Busy state blocks native activation. Action dropdowns use accessible disclosure buttons, keyboard navigation and focus return. Avatar supports safe image sources and automatic initials/error fallback. ApplicationLayout consumes the shared button/avatar while preserving shell-specific navigation/profile composition. See the component catalogue for full contracts.
+
+The temporary `/__review/ui` controls category grows with each visual roadmap point; later component groups remain unimplemented until their own point. The review entry remains development/testing only and retires in point 21.

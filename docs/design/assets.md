@@ -22,7 +22,7 @@ Only selected assets are included. Both sources and their licenses were inspecte
 
 The font license has line endings normalized to LF; hashes describe the committed asset bytes.
 
-Current Tabler subset: layers-intersect, sun, moon and device-desktop.
+Current Tabler subset: layers-intersect, sun, moon and device-desktop. Point 8 rechecked these local original SVGs and their preserved MIT attribution/hash records; no new upstream geometry or package is added. Icon now accepts explicit size/color while remaining decorative.
 
 | Asset                                  | SHA256                                                             |
 | -------------------------------------- | ------------------------------------------------------------------ |

@@ -1,12 +1,7 @@
 <script setup lang="ts">
+import ReviewControls from './ReviewControls.vue';
 import { ref } from 'vue';
-import {
-  Button,
-  Form,
-  Select,
-  MinimalLayout,
-  IdentityProvider,
-} from '@/runa/ui';
+import { Button, Select, MinimalLayout, IdentityProvider } from '@/runa/ui';
 
 const preview = new window.URLSearchParams(window.location.search).get(
   'preview',
@@ -15,9 +10,11 @@ const longContent = ref(false);
 const showIllustration = ref(true);
 const showFooter = ref(true);
 const category = ref('controls');
-const activations = ref(0);
 const categories = [
-  { value: 'controls', label: 'Przyciski i formularze / Buttons and forms' },
+  {
+    value: 'controls',
+    label: 'Przyciski, ikony i awatary / Buttons, icons and avatars',
+  },
   { value: 'layouts', label: 'Układy / Layouts' },
   { value: 'data', label: 'Dane i eksport / Data and export' },
 ];
@@ -78,11 +75,12 @@ const categories = [
       >
     </MinimalLayout>
   </IdentityProvider>
-  <MinimalLayout v-else>
-    <template #default>
+  <MinimalLayout v-else :illustration="false">
+    <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 2 · Układ minimalny / Minimal layout
+        RM-2026-004 · 8 · Przyciski, ikony i awatary / Buttons, icons and
+        avatars
       </p>
       <div class="mt-6">
         <Select
@@ -91,13 +89,9 @@ const categories = [
           :options="categories"
         />
       </div>
-      <section class="mt-6" aria-live="polite" aria-atomic="true">
+      <section class="mt-6">
         <template v-if="category === 'controls'">
-          <h2 class="text-lg">Istniejące elementy / Existing controls</h2>
-          <Form class="mt-4" @submit="activations++">
-            <Button type="submit">Test</Button>
-            <output class="ml-4">{{ activations }}</output>
-          </Form>
+          <ReviewControls :english="t('language') !== 'Język'" />
         </template>
         <a
           v-else-if="category === 'layouts'"

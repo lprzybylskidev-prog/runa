@@ -8,6 +8,8 @@ import {
   useId,
   watch,
 } from 'vue';
+import AppButton from '../components/AppButton.vue';
+import AppAvatar from '../components/AppAvatar.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
@@ -98,10 +100,10 @@ const expanded = usePreference(
 );
 const drawer = ref(false);
 const sidebarElement = ref<globalThis.HTMLElement>();
-const drawerTrigger = ref<globalThis.HTMLButtonElement>();
+const drawerTrigger = ref<InstanceType<typeof AppButton>>();
 const profile = ref(false);
 const profileElement = ref<globalThis.HTMLElement>();
-const profileTrigger = ref<globalThis.HTMLButtonElement>();
+const profileTrigger = ref<InstanceType<typeof AppButton>>();
 const mobile = ref(window.matchMedia('(max-width: 63.999rem)').matches);
 const drawerId = useId();
 const contentId = useId();
@@ -128,7 +130,7 @@ function toggleGroup(key: string) {
 async function closeDrawer(restore = true) {
   drawer.value = false;
   await nextTick();
-  if (restore) drawerTrigger.value?.focus({ preventScroll: true });
+  if (restore) drawerTrigger.value?.$el.focus({ preventScroll: true });
 }
 async function openDrawer() {
   drawer.value = true;
@@ -162,7 +164,7 @@ function keydown(event: globalThis.KeyboardEvent) {
     }
     if (profile.value) {
       profile.value = false;
-      profileTrigger.value?.focus();
+      profileTrigger.value?.$el.focus();
     }
   }
   if (event.key === 'Tab' && drawer.value && mobile.value) {
@@ -290,15 +292,15 @@ onScopeDispose(() => {
             }}<span class="text-primary" aria-hidden="true">.</span></span
           >
         </a>
-        <button
+        <AppButton
           v-if="mobile"
-          type="button"
+          icon-only
           class="shell-group-toggle"
           :aria-label="t('closeNavigation')"
           @click="closeDrawer()"
         >
           ×
-        </button>
+        </AppButton>
       </div>
       <div class="shell-sidebar-scroll">
         <p v-if="!sidebarCollapsed" class="shell-eyebrow">
@@ -325,10 +327,10 @@ onScopeDispose(() => {
     <div class="shell-body" :inert="drawer && mobile">
       <header class="shell-header" :class="{ 'shell-header-minimal': !topbar }">
         <div class="shell-header-start">
-          <button
+          <AppButton
             v-if="sidebar"
             ref="drawerTrigger"
-            type="button"
+            icon-only
             class="shell-sidebar-toggle"
             :aria-label="
               mobile
@@ -344,7 +346,7 @@ onScopeDispose(() => {
             <span class="shell-toggle-icon" aria-hidden="true"
               ><span /><span /><span
             /></span>
-          </button>
+          </AppButton>
           <a v-if="!sidebar" href="/" class="shell-brand"
             ><span class="brand-mark"><RunaLogo /></span
             ><span>{{ identity.applicationName }}</span></a
@@ -372,17 +374,22 @@ onScopeDispose(() => {
             @change="changePreference"
           />
           <div v-if="topbar" ref="profileElement" class="shell-profile">
-            <button
+            <AppButton
               ref="profileTrigger"
-              type="button"
-              class="shell-avatar"
+              icon-only
+              class="shell-avatar-button"
               :aria-label="`${t('userMenu')}: ${userName}`"
               :aria-expanded="profile"
               :aria-controls="profileId"
               @click="profile = !profile"
             >
-              {{ userInitials }}
-            </button>
+              <AppAvatar
+                :name="userName"
+                :initials="userInitials"
+                shape="circle"
+                decorative
+              />
+            </AppButton>
             <Transition name="shell-popover">
               <div
                 v-if="profile"

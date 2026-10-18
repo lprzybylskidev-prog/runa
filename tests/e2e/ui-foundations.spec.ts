@@ -168,8 +168,11 @@ test('review catalog controls work and unknown pages remain real HTTP errors', a
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Przegląd UI / UI review',
   );
-  await page.getByRole('button', { name: 'Test', exact: true }).click();
-  await expect(page.locator('output')).toHaveText('1');
+  await page
+    .getByRole('button', { name: 'primary', exact: true })
+    .first()
+    .click();
+  await expect(page.locator('output').first()).toHaveText('Kliknięcia: 1');
   await page.getByRole('combobox').selectOption('layouts');
   await expect(page.getByRole('main')).toContainText(
     'Układ minimalny / Minimal layout',
