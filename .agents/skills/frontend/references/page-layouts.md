@@ -24,7 +24,7 @@ Use `usePageResolver` with exact paths and matching named server entries; never 
 
 ## Temporary UI review skeleton
 
-`resources/review/ReviewCatalog.vue` is a separate, development/testing-only entry at named route `review.ui` (`/__review/ui`). It reuses MinimalLayout and public Button/Form/Select imports and exposes category selection plus a controlled action. Categories awaiting implementation say so; ApplicationLayout has its separate synthetic review entry; email has the native preview at `/__review/email`. Build via `vite.review.config.mjs`, never the production entry. This temporary pattern is retired in RM-2026-004 point 19; do not make application tests depend on it after retirement.
+`resources/review/ReviewCatalog.vue` is a separate, development/testing-only entry at named route `review.ui` (`/__review/ui`). It reuses MinimalLayout and public Button/Form/Select imports and exposes category selection plus a controlled action. Categories awaiting implementation say so; ApplicationLayout has its separate synthetic review entry; email has the native preview at `/__review/email`. Build via `vite.review.config.mjs`, never the production entry. This temporary pattern is retired in RM-2026-004 point 21; do not make application tests depend on it after retirement.
 
 Minimal review: `/__review/ui?preview=minimal` scopes Atlas identity, independent application version and actual platform VERSION. Controls exercise short/long content, optional illustration and footer visibility. All web previews retain PL/EN and light/dark preference controls. This is temporary review content, not a shipping application.
 

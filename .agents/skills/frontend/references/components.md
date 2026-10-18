@@ -34,7 +34,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 - Source: `resources/js/components/AppTooltip.vue`.
 - Application-styled tooltip on pointer hover or keyboard focus, dismissible with Escape. Shared 140ms ease-out opacity enter/leave transition; disabled for reduced-motion preferences. Pointer can enter the tooltip; it stays visible until pointer leave, focus leave or dismissal.
-- Props: `text`, optional placement (bottom default/right for collapsed sidebar); right placement teleports to the viewport to escape sidebar scroll clipping and hides on scroll. Existing hover-dismissal defect remains deferred to point 7. Scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
+- Props: `text`, optional placement (bottom default/right for collapsed sidebar); right placement teleports to the viewport to escape sidebar scroll clipping and hides on scroll. Existing hover-dismissal defect remains deferred to point 9. Scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
 
 ## AppButton
 
