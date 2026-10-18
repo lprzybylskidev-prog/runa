@@ -93,6 +93,8 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - The sidebar toggle uses an 18×14px geometric three-bar mark centered in a fixed 44px square, avoiding font-baseline glyph shifts. Header toggle and initials avatar expose visible hover/focus/pressed states through the semantic primary palette in both themes.
 - Existing AppPreferenceControls and useDisplayPreferences are shared shell composition, preserving root timing/focus. Do not create another copy when later finalizing buttons/feedback; update both consumers. AppNavigation/profile/drawer composition is finalized with the owning later component points, not a competing exported dropdown/modal system.
 
+- Shell motion: desktop sidebar width/workspace offset and phone drawer slide use 180ms ease-out; inline groups expand with a 160ms grid/opacity transition; top and initials cards fade with 4px travel over 140ms. Closing panels become inert immediately; reduced-motion disables transitions. Repeated toggles can reverse ongoing transitions.
+
 ## AppTopNavigation
 
 - Source: `resources/js/components/AppTopNavigation.vue`; internal application-shell navigation, not a generic dropdown component. Distinct from the sidebar's recursive AppNavigation.

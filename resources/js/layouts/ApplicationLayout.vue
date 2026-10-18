@@ -253,14 +253,16 @@ onScopeDispose(() => {
   >
     <AppBackdrop />
     <a :href="`#${contentId}`" class="skip-link">{{ t('skip') }}</a>
-    <button
-      v-if="drawer && sidebar"
-      class="shell-drawer-backdrop"
-      type="button"
-      tabindex="-1"
-      :aria-label="t('closeNavigation')"
-      @click="closeDrawer()"
-    />
+    <Transition name="shell-backdrop">
+      <button
+        v-if="drawer && sidebar"
+        class="shell-drawer-backdrop"
+        type="button"
+        tabindex="-1"
+        :aria-label="t('closeNavigation')"
+        @click="closeDrawer()"
+      />
+    </Transition>
     <aside
       v-if="sidebar"
       :id="drawerId"
@@ -381,14 +383,21 @@ onScopeDispose(() => {
             >
               {{ userInitials }}
             </button>
-            <div v-if="profile" :id="profileId" class="shell-profile-panel">
-              <slot name="user-menu" :t="t"
-                ><p class="font-semibold">{{ userName }}</p>
-                <p class="mt-2 text-xs text-muted">
-                  {{ t('accountUnavailable') }}
-                </p></slot
+            <Transition name="shell-popover">
+              <div
+                v-if="profile"
+                :id="profileId"
+                class="shell-profile-panel"
+                :inert="!profile"
               >
-            </div>
+                <slot name="user-menu" :t="t"
+                  ><p class="font-semibold">{{ userName }}</p>
+                  <p class="mt-2 text-xs text-muted">
+                    {{ t('accountUnavailable') }}
+                  </p></slot
+                >
+              </div>
+            </Transition>
           </div>
         </div>
       </header>

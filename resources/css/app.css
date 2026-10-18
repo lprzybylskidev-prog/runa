@@ -465,7 +465,7 @@ input:-webkit-autofill {
   }
 }
 
-/* Application shell: navigation alone is fixed; the workspace uses document scrolling. */
+/* Application shell: fixed sidebar, sticky header and document-scrolling workspace. */
 .application-page {
   --shell-sidebar-width: 264px;
   position: relative;
@@ -493,10 +493,12 @@ input:-webkit-autofill {
   background: var(--runa-surface);
   border-right: 1px solid var(--runa-border);
   transform: translateX(-100%);
+  transition:
+    transform 180ms ease-out,
+    width 180ms ease-out;
 }
 .shell-sidebar.drawer-open {
   transform: translateX(0);
-  width: min(320px, 88vw);
 }
 .shell-brand-row {
   display: flex;
@@ -991,4 +993,61 @@ input:-webkit-autofill {
   .shell-top-dropdown {
     display: none !important;
   }
+}
+
+/* Shell disclosure motion: short travel, no bounce, immediate semantic state. */
+.shell-body {
+  transition: margin-left 180ms ease-out;
+}
+@media (max-width: 63.999rem) {
+  .shell-sidebar {
+    width: min(320px, 88vw);
+  }
+}
+.shell-brand {
+  white-space: nowrap;
+}
+.shell-expansion {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.shell-expansion-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.shell-expand-enter-active,
+.shell-expand-leave-active {
+  transition:
+    grid-template-rows 160ms ease-out,
+    opacity 160ms ease-out;
+}
+.shell-expand-enter-from,
+.shell-expand-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.shell-popover-enter-active,
+.shell-popover-leave-active {
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out;
+}
+.shell-popover-enter-from,
+.shell-popover-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.shell-popover-leave-active {
+  pointer-events: none;
+}
+.shell-backdrop-enter-active,
+.shell-backdrop-leave-active {
+  transition: opacity 180ms ease-out;
+}
+.shell-backdrop-enter-from,
+.shell-backdrop-leave-to {
+  opacity: 0;
+}
+.shell-disclosure-chevron {
+  transition: transform 160ms ease-out;
 }

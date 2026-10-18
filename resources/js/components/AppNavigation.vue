@@ -114,21 +114,27 @@ function active(entry: NavigationEntry): boolean {
           </template>
         </AppTooltip>
       </div>
-      <div
-        v-if="entry.children"
-        v-show="!collapsed && expanded.includes(entry.key)"
-        :id="`${id}-${entry.key}`"
-      >
-        <AppNavigation
-          :entries="entry.children"
-          :current="current"
-          :expanded="expanded"
-          :context="context"
-          :depth="depth + 1"
-          @navigate="(href, event) => emit('navigate', href, event)"
-          @toggle="(key) => emit('toggle', key)"
-        />
-      </div>
+      <Transition name="shell-expand">
+        <div
+          v-if="entry.children"
+          v-show="!collapsed && expanded.includes(entry.key)"
+          :id="`${id}-${entry.key}`"
+          class="shell-expansion"
+          :inert="collapsed || !expanded.includes(entry.key)"
+        >
+          <div class="shell-expansion-inner">
+            <AppNavigation
+              :entries="entry.children"
+              :current="current"
+              :expanded="expanded"
+              :context="context"
+              :depth="depth + 1"
+              @navigate="(href, event) => emit('navigate', href, event)"
+              @toggle="(key) => emit('toggle', key)"
+            />
+          </div>
+        </div>
+      </Transition>
     </li>
   </ul>
 </template>

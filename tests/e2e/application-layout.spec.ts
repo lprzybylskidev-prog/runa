@@ -474,3 +474,49 @@ test('sidebar groups are whole-row disclosures, brand aligns with the sticky hea
   );
   await expect(group).toHaveAttribute('aria-expanded', 'true');
 });
+
+test('shell motion respects reduced motion and survives interrupted disclosures', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/__review/application/overview');
+  const group = page.locator('.shell-sidebar-disclosure').first();
+  // Interrupt both directions before the 160ms expansion has finished.
+  await group.evaluate((element: HTMLButtonElement) => element.click());
+  await page.waitForTimeout(50);
+  await group.evaluate((element: HTMLButtonElement) => element.click());
+  await page.waitForTimeout(30);
+  await group.evaluate((element: HTMLButtonElement) => element.click());
+  await expect(group).toHaveAttribute('aria-expanded', 'true');
+  const expansion = page.locator('.shell-expansion').first();
+  await expect(expansion).not.toHaveClass(/shell-expand-/);
+  expect((await expansion.boundingBox())!.height).toBeGreaterThan(44);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await group.click();
+  await expect(expansion).toBeHidden();
+  const toggle = page.locator('.shell-sidebar-toggle');
+  await toggle.click();
+  await expect
+    .poll(() =>
+      page
+        .locator('.shell-sidebar')
+        .evaluate((element) => element.getBoundingClientRect().width),
+    )
+    .toBe(88);
+  expect(
+    await page
+      .locator('.shell-sidebar')
+      .evaluate((element) => getComputedStyle(element).transitionDuration),
+  ).toBe('0s');
+  const avatar = page.locator('.shell-avatar');
+  await avatar.click();
+  await expect(page.locator('.shell-profile-panel')).toBeVisible();
+  expect(
+    await page
+      .locator('.shell-profile-panel')
+      .evaluate((element) => getComputedStyle(element).transitionDuration),
+  ).toBe('0s');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.shell-profile-panel')).toHaveCount(0);
+  await expect(avatar).toBeFocused();
+});

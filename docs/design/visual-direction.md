@@ -174,6 +174,8 @@ RM-2026-004 plans minimal, application and email layouts, branded HTTP errors an
 
 ## Motion and transitions
 
+Application-shell motion implemented in RM-2026-004 point 3 (visual acceptance pending): sidebar width/workspace offset and mobile slide/backdrop use 180ms ease-out; inline navigation groups and chevrons use 160ms; top-navigation and initials dropdown cards fade with 4px vertical travel over 140ms. Reduced-motion removes these transitions. State, focus and dismissal update immediately; closing dropdown contents become inert during their exit.
+
 User direction (2026-10-17): consider motion from the start of component design rather than adding it as a final polish pass. Runa is a business application: transitions should be subtle, purposeful and unobtrusive.
 
 Visual state changes should generally transition smoothly rather than jump abruptly. For example, hover changes to background, text, border or shadow should feel continuous. Apply the same principle where appropriate to focus/selected states, dropdowns and sidebar changes, without animating every element or adding decorative motion by default. Feedback must remain immediate; transitions must not delay actions or obscure state.

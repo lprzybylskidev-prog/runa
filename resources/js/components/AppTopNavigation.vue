@@ -189,28 +189,31 @@ onScopeDispose(() => {
     </li>
   </ul>
   <Teleport to="body">
-    <div
-      v-if="opened"
-      :id="`${id}-panel`"
-      ref="panel"
-      class="shell-top-dropdown"
-      :style="position"
-      role="region"
-      :aria-label="opened.label"
-    >
-      <AppNavigation
-        context="dropdown"
-        :entries="opened.children ?? []"
-        :current="current"
-        :expanded="expanded"
-        @navigate="navigate"
-        @toggle="
-          (key) =>
-            (expanded = expanded.includes(key)
-              ? expanded.filter((value) => value !== key)
-              : [...expanded, key])
-        "
-      />
-    </div>
+    <Transition name="shell-popover">
+      <div
+        v-if="opened"
+        :id="`${id}-panel`"
+        ref="panel"
+        class="shell-top-dropdown"
+        :style="position"
+        :inert="!openKey"
+        role="region"
+        :aria-label="opened.label"
+      >
+        <AppNavigation
+          context="dropdown"
+          :entries="opened.children ?? []"
+          :current="current"
+          :expanded="expanded"
+          @navigate="navigate"
+          @toggle="
+            (key) =>
+              (expanded = expanded.includes(key)
+                ? expanded.filter((value) => value !== key)
+                : [...expanded, key])
+          "
+        />
+      </div>
+    </Transition>
   </Teleport>
 </template>
