@@ -101,7 +101,10 @@ function active(entry: NavigationEntry): boolean {
             </a>
             <span
               v-else
-              class="shell-nav-link is-disabled"
+              :class="[
+                'shell-nav-link is-disabled',
+                { 'is-collapsed': collapsed },
+              ]"
               aria-disabled="true"
               :aria-label="entry.label"
             >

@@ -176,6 +176,40 @@ function keydown(event: globalThis.KeyboardEvent) {
     }
   }
 }
+const topNavElement = ref<globalThis.HTMLElement>();
+const topOverflow = ref({ left: false, right: false });
+let topNavObserver: globalThis.ResizeObserver | undefined;
+function updateTopOverflow() {
+  const element = topNavElement.value;
+  topOverflow.value = {
+    left: !!element && element.scrollLeft > 1,
+    right:
+      !!element &&
+      element.scrollWidth - element.clientWidth - element.scrollLeft > 1,
+  };
+}
+watch(
+  topNavElement,
+  (element) => {
+    topNavObserver?.disconnect();
+    if (element) {
+      topNavObserver = new globalThis.ResizeObserver(updateTopOverflow);
+      topNavObserver.observe(element);
+      if (element.firstElementChild)
+        topNavObserver.observe(element.firstElementChild);
+    }
+    updateTopOverflow();
+  },
+  { flush: 'post' },
+);
+watch(
+  () => props.topNavigation,
+  async () => {
+    await nextTick();
+    updateTopOverflow();
+  },
+);
+onScopeDispose(() => topNavObserver?.disconnect());
 function scrollTopNavigation(event: globalThis.WheelEvent) {
   if (event.ctrlKey || !(event.currentTarget instanceof window.HTMLElement))
     return;
@@ -299,11 +333,17 @@ onScopeDispose(() => {
             @toggle="toggleGroup"
           />
         </nav>
-        <slot name="sidebar-bottom" :t="t" :collapsed="sidebarCollapsed" />
+        <slot
+          v-if="!sidebarCollapsed"
+          name="sidebar-bottom"
+          :t="t"
+          :collapsed="sidebarCollapsed"
+        />
       </div>
       <div class="shell-sidebar-bottom">
-        <span v-if="!sidebarCollapsed" class="shell-platform"
-          >RUNA / {{ identity.platformVersion }}</span
+        <span class="shell-platform"
+          ><template v-if="!sidebarCollapsed">RUNA / </template
+          >{{ identity.platformVersion }}</span
         >
       </div>
     </aside>
@@ -315,6 +355,7 @@ onScopeDispose(() => {
             ref="drawerTrigger"
             icon-only
             class="shell-sidebar-toggle"
+            size="sm"
             :aria-label="
               mobile
                 ? t('openNavigation')
@@ -334,18 +375,28 @@ onScopeDispose(() => {
             ><span class="brand-mark"><RunaLogo /></span
             ><span>{{ identity.applicationName }}</span></a
           >
-          <nav
+          <div
             v-if="topbar"
-            class="shell-top-nav"
-            :aria-label="t('areas')"
-            @wheel="scrollTopNavigation"
+            class="shell-top-nav-frame"
+            :class="{
+              'has-overflow-left': topOverflow.left,
+              'has-overflow-right': topOverflow.right,
+            }"
           >
-            <AppTopNavigation
-              :entries="topNavigation"
-              :current="current"
-              @navigate="navigate"
-            />
-          </nav>
+            <nav
+              ref="topNavElement"
+              class="shell-top-nav"
+              :aria-label="t('areas')"
+              @scroll="updateTopOverflow"
+              @wheel="scrollTopNavigation"
+            >
+              <AppTopNavigation
+                :entries="topNavigation"
+                :current="current"
+                @navigate="navigate"
+              />
+            </nav>
+          </div>
         </div>
         <div class="shell-header-controls" data-print-hide>
           <AppPreferenceControls

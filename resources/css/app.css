@@ -547,6 +547,8 @@ input:-webkit-autofill {
 }
 .shell-nav-link.is-collapsed {
   justify-content: center;
+  border-left-width: 1px;
+  border-right: 1px solid transparent;
 }
 .shell-nav-nested {
   margin: 4px 0 8px 18px;
@@ -578,7 +580,8 @@ input:-webkit-autofill {
   padding-inline: 22px;
 }
 .sidebar-collapsed .shell-sidebar-bottom {
-  padding-inline: 16px;
+  align-items: center;
+  padding-inline: 8px;
 }
 .sidebar-collapsed .shell-sidebar .shell-group-toggle {
   width: 24px;
@@ -1008,4 +1011,51 @@ button.app-button.shell-avatar-button {
 .runa-feedback[data-tone='danger'] {
   --feedback-text: var(--runa-danger-text);
   --feedback-subtle: var(--runa-danger-subtle);
+}
+
+/* Dedicated shell overflow cues; the content component library stays independent. */
+.has-sidebar .shell-header {
+  padding-left: 8px;
+}
+.shell-top-nav-frame {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.shell-top-nav-frame > .shell-top-nav {
+  flex: 1 1 0;
+}
+.shell-top-nav-frame::before,
+.shell-top-nav-frame::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 12px;
+  width: 8px;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease-out;
+}
+.shell-top-nav-frame::before {
+  left: 0;
+  border-left: 2px dotted var(--runa-primary-text);
+  background: linear-gradient(to right, var(--runa-surface), transparent);
+}
+.shell-top-nav-frame::after {
+  right: 0;
+  border-right: 2px dotted var(--runa-primary-text);
+  background: linear-gradient(to left, var(--runa-surface), transparent);
+}
+.shell-top-nav-frame.has-overflow-left::before,
+.shell-top-nav-frame.has-overflow-right::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-top-nav-frame::before,
+  .shell-top-nav-frame::after {
+    transition: none;
+  }
 }
