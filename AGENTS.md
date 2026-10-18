@@ -224,7 +224,7 @@ Production build/deploy verifies this isolation.
 
 ## Knowledge and skills
 
-Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application runtime must remain independent of optional AI tooling; startup decoupling is tracked in RM-2026-003 point 2. Strict final AI gates remain required.
+Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/development/knowledge.md`. Strict final AI gates remain required.
 
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 

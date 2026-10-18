@@ -38,8 +38,6 @@ services:
     command: [./bin/dev, setup, --if-needed]
     depends_on:
       app: { condition: service_healthy }
-      qdrant: { condition: service_healthy }
-      embeddings: { condition: service_healthy }
     volumes:
       - .:/workspace
       - composer-cache:/home/runa/.cache/composer
@@ -47,6 +45,13 @@ services:
     restart: 'no'
     cpus: 4
     mem_limit: 4G
+  knowledge-init:
+    <<: *development
+    command: [./bin/dev, knowledge-init]
+    healthcheck: { disable: true }
+    restart: on-failure
+    cpus: 1
+    mem_limit: 512M
   app-test:
     <<: *development
     profiles: [testing]

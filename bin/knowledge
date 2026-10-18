@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / 'tools/knowledge'))
 
 def main():
     parser = argparse.ArgumentParser(description='Development-only knowledge indexing and hybrid retrieval.')
-    parser.add_argument('command', choices=['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval'])
+    parser.add_argument('command', choices=['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'])
     parser.add_argument('--device', choices=['auto', 'cpu'], default=None, help='Prefer CUDA when reachable, or force CPU for fallback acceptance.')
     parser.add_argument('query', nargs='?')
     parser.add_argument('--top-k', type=int, default=5)
@@ -72,6 +72,18 @@ def main():
                 retriever, json.loads((ROOT / 'tools/knowledge/golden.json').read_text()))
             print(json.dumps(result, indent=2))
             return 0 if result['passed'] else 1
+        if args.command == 'initialize':
+            from store import Store
+            store = Store(config)
+            # The shared CLI lock serializes existence checks and first writes.
+            # An empty collection without a manifest can follow interrupted first setup.
+            if not store.exists() or (not store.manifest() and not store.all_points()):
+                return index(ROOT, config, device)
+            result = status(ROOT, config, store)
+            print(json.dumps(result, indent=2))
+            if result['stale']:
+                print('Existing knowledge index requires attention; run ./bin/knowledge index explicitly.')
+            return 0
         if args.command == 'index':
             return index(ROOT, config, device)
         result = status(ROOT, config)
