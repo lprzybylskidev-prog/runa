@@ -22,7 +22,7 @@ it('renders independently with optional regions and a translator-compatible defa
   expect(layout.find('.runa-art .art-core').exists()).toBe(true);
   expect(layout.get('main').text()).toContain('Actions');
   expect(layout.get('footer').text()).toContain(
-    `Runa v${defaultIdentity.applicationVersion} | Powered by Runa v${defaultIdentity.platformVersion}`,
+    `Runa v${defaultIdentity.applicationVersion} | Oparte na Runa v${defaultIdentity.platformVersion}`,
   );
 });
 
@@ -57,7 +57,7 @@ it('scopes reactive identity overrides and keeps independent application/platfor
   });
   expect(host.get('.brand').attributes('aria-label')).toBe('Atlas');
   expect(host.get('footer').text()).toContain(
-    `Atlas v2.4.1 | Powered by Runa v${defaultIdentity.platformVersion}`,
+    `Atlas v2.4.1 | Oparte na Runa v${defaultIdentity.platformVersion}`,
   );
   await host.setProps({
     identity: {

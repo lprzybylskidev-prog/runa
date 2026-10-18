@@ -47,6 +47,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppFooter
 
 - Source: `resources/js/components/AppFooter.vue`.
+- `poweredByLabel` defaults to English `Powered by` for standalone use. MinimalLayout passes the current translation (`Oparte na` in Polish), reusing its existing locale state.
 - Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; both bundled versions default to actual root VERSION.
 - `options: FooterOptions` independently controls visible/application/platform/copyright/repository; optional copyrightText/repositoryUrl/repositoryLabel customize content. URL validation rejects unsafe links. Copyright and GitHub remain default supplemental elements. Removed obsolete versionLabel prop.
 - Layout footer slots can replace the footer; layout footer.visible hides the entire region. Canonical use: MinimalLayout.
@@ -59,7 +60,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppBrandIllustration
 
-- Source: `resources/js/components/AppBrandIllustration.vue`. Extracted unchanged root CSS illustration; decorative RunaLogo/grid/orbits. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
+- Source: `resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
 
 ## AppLoadingOverlay
 

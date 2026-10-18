@@ -168,7 +168,7 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 ## Implementation scope discussion
 
-The accepted `/` welcome page consumes `MinimalLayout` directly and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the explicit dual-version footer is the only approved root visual change in this roadmap.
+The accepted `/` welcome page consumes `MinimalLayout` directly and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the dual-version footer and the owner-requested compact illustration above content on narrow screens are approved root changes in this roadmap.
 
 RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. Temporary review infrastructure is removed only after final visual acceptance, in point 19.
 
@@ -207,7 +207,7 @@ Root artwork placement: the decorative illustration fills the entire right half 
 
 ## Reusable minimal layout
 
-The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. Following the owner's visual feedback, MinimalLayout itself includes the preserved `AppBrandIllustration` on the right by default; narrow screens stack it below content. Consumers, including `/`, supply only the left-side content. Screens can explicitly hide the illustration with `illustration: false` or override its slot. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
+The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. Following the owner's visual feedback, MinimalLayout itself includes the preserved `AppBrandIllustration` on the right by default; narrow screens place a compact 240px illustration above content. Consumers, including `/`, supply only the left-side content. Screens can explicitly hide the illustration with `illustration: false` or override its slot. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
 
 ## Component reuse
 
@@ -230,3 +230,5 @@ The logo illustration’s orbital outlines also carry small static glowing point
 ## Light-theme visibility refinement
 
 User accepts the current dark direction; keep dark values unchanged. Light mode uses a more legible technical grid (9% versus dark 4.5%) and stronger constellation line opacity (48% versus dark 20%, before group opacity). The illustration uses the main surface base in light mode, gently darkened with 20% of the border token after user review, with deeper violet and cyan/blue gradient layers and a much quieter divider. Light artwork uses primary violet at 34% and an accent-cyan/cool-blue mix at 29% at the radial centers, fading outward; dark keeps its original gradient sources and 18%/16% intensities. Keep this modest tint local to the artwork; preserve the accepted page background and dark theme. These are contextual decoration tokens, not a replacement semantic palette.
+
+Point-2 owner feedback (2026-10-18): on narrow screens the illustration precedes content and is reduced from 420px to 240px, with proportional artwork scaling; desktop keeps its original right-side composition. The footer translates “Powered by” as “Oparte na” in Polish. Keep the small RUNA artwork signature fixed to the platform, independent of business application identity. Visual acceptance remains pending after these corrections.

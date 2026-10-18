@@ -171,21 +171,24 @@ async function finishPreferenceChange() {
           ]"
         >
           <div
-            class="min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16"
+            class="order-2 min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16 lg:order-1"
           >
             <slot name="content" :t="t"><slot :t="t" /></slot>
             <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
               <slot name="actions" :t="t" />
             </div>
           </div>
-          <div v-if="props.illustration" class="flex min-w-0">
+          <div
+            v-if="props.illustration"
+            class="order-1 flex min-w-0 lg:order-2"
+          >
             <slot name="illustration" :t="t"><AppBrandIllustration /></slot>
           </div>
         </div>
       </div>
     </main>
     <slot v-if="props.footer?.visible !== false" name="footer" :t="t"
-      ><AppFooter :options="props.footer"
+      ><AppFooter :options="props.footer" :powered-by-label="t('poweredBy')"
     /></slot>
   </div>
   <AppLoadingOverlay

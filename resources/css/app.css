@@ -267,12 +267,12 @@ input:-webkit-autofill {
     );
 }
 .runa-art {
-  min-height: 420px;
+  min-height: 240px;
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-top: 1px solid var(--runa-art-divider);
-  border-radius: 0 0 3px 3px;
+  border-bottom: 1px solid var(--runa-art-divider);
+  border-radius: 3px 3px 0 0;
   background:
     radial-gradient(
       ellipse at 35% 40%,
@@ -293,6 +293,11 @@ input:-webkit-autofill {
       transparent 70%
     ),
     var(--runa-art-surface);
+}
+.art-composition {
+  position: absolute;
+  inset: 0;
+  transform: scale(0.72);
 }
 .art-grid {
   position: absolute;
@@ -412,9 +417,13 @@ input:-webkit-autofill {
 }
 
 @media (min-width: 64rem) {
+  .art-composition {
+    transform: none;
+  }
   .runa-art {
+    min-height: 420px;
     height: 100%;
-    border-top: 0;
+    border-bottom: 0;
     border-left: 1px solid var(--runa-art-divider);
     border-radius: 0 3px 3px 0;
   }

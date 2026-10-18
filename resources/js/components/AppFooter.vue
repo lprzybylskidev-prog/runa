@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { safeBrandUrl, useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
-defineProps<{ options?: FooterOptions | undefined }>();
+withDefaults(
+  defineProps<{
+    options?: FooterOptions | undefined;
+    poweredByLabel?: string;
+  }>(),
+  { options: undefined, poweredByLabel: 'Powered by' },
+);
 const identity = useIdentity();
 </script>
 
@@ -44,8 +50,8 @@ const identity = useIdentity();
         >
           |
         </span>
-        <span v-if="options?.platform !== false"
-          >Powered by Runa v{{ identity.platformVersion }}</span
+        <span v-if="options?.platform !== false">
+          {{ poweredByLabel }} Runa v{{ identity.platformVersion }}</span
         >
       </span>
     </div>

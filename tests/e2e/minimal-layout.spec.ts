@@ -37,8 +37,20 @@ for (const [device, width, height] of [
           locale === 'pl' ? 'Układ minimalny' : 'Minimal layout',
         );
         await expect(page.getByRole('contentinfo')).toContainText(
-          /Atlas v2\.4\.1 \| Powered by Runa v\d+\.\d+\.\d+/,
+          /Atlas v2\.4\.1 \| (?:Powered by|Oparte na) Runa v\d+\.\d+\.\d+/,
         );
+        await expect(page.getByRole('contentinfo')).toContainText(
+          locale === 'pl' ? 'Oparte na Runa' : 'Powered by Runa',
+        );
+        await expect(page.locator('.art-coordinate')).toHaveText('RUNA');
+        if (width < 1024) {
+          const art = await page.locator('.runa-art').boundingBox();
+          const content = await page
+            .getByRole('heading', { level: 1 })
+            .boundingBox();
+          expect(art!.height).toBe(240);
+          expect(art!.y + art!.height).toBeLessThanOrEqual(content!.y);
+        }
         await page.evaluate(() => document.fonts.ready);
         expect(
           await page.evaluate(
