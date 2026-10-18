@@ -282,6 +282,8 @@ Both layouts share AppPreferenceControls/useDisplayPreferences, preserving the o
 
 Shell controls use a 36px sidebar toggle inset 24px from the header left edge. Top-navigation overflow has decorative dotted edge indicators, shown only in directions containing hidden content; scroll, viewport/sidebar resizing and navigation-content changes refresh them. Indicators fade over 160ms, with reduced-motion support, and do not intercept input. The collapsed sidebar centers disabled icons identically to enabled entries, omits the supplementary sidebar-bottom slot and retains the platform version without the RUNA prefix in its footer.
 
+Collapsed sidebar content follows a no-reserved-space rule: remove headings, labels, nested navigation subtrees and supplementary sections from layout, including their margins/gaps/padding. The icon list starts 8px below the brand row and uses the ordinary icon-row spacing; expanded-only 28px section padding does not carry over. Nested expansion state is preserved for reopening, but its containers and transition wrappers are unmounted while collapsed. The brand icon and the explicitly retained version footer remain.
+
 Shared print rules hide navigation, backdrop, footers and `[data-print-hide]`, remove sidebar offset and format content. Views can explicitly override these selectors with their own print stylesheet (matching specificity and `!important` for hidden regions). The review entry is separate from the production graph; its controls exercise optional regions, width and long-content behavior. Point 3 was visually accepted by the owner on 2026-10-18.
 
 ## Native email layout

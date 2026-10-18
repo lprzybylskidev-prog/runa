@@ -574,7 +574,7 @@ input:-webkit-autofill {
   color: var(--runa-primary-text);
 }
 .sidebar-collapsed .shell-sidebar-scroll {
-  padding-inline: 14px;
+  padding: 8px 14px;
 }
 .sidebar-collapsed .shell-brand-row {
   padding-inline: 22px;

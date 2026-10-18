@@ -65,7 +65,7 @@ function active(entry: NavigationEntry): boolean {
               :aria-label="collapsed ? entry.label : undefined"
               :aria-describedby="collapsed ? descriptionId : undefined"
               :aria-expanded="!collapsed && expanded.includes(entry.key)"
-              :aria-controls="`${id}-${entry.key}`"
+              :aria-controls="collapsed ? undefined : `${id}-${entry.key}`"
               @click="emit('toggle', entry.key)"
             >
               <AppIcon
@@ -117,27 +117,29 @@ function active(entry: NavigationEntry): boolean {
           </template>
         </AppTooltip>
       </div>
-      <Transition name="shell-expand">
-        <div
-          v-if="entry.children"
-          v-show="!collapsed && expanded.includes(entry.key)"
-          :id="`${id}-${entry.key}`"
-          class="shell-expansion"
-          :inert="collapsed || !expanded.includes(entry.key)"
-        >
-          <div class="shell-expansion-inner">
-            <AppNavigation
-              :entries="entry.children"
-              :current="current"
-              :expanded="expanded"
-              :context="context"
-              :depth="depth + 1"
-              @navigate="(href, event) => emit('navigate', href, event)"
-              @toggle="(key) => emit('toggle', key)"
-            />
+      <template v-if="!collapsed">
+        <Transition name="shell-expand">
+          <div
+            v-if="entry.children"
+            v-show="expanded.includes(entry.key)"
+            :id="`${id}-${entry.key}`"
+            class="shell-expansion"
+            :inert="!expanded.includes(entry.key)"
+          >
+            <div class="shell-expansion-inner">
+              <AppNavigation
+                :entries="entry.children"
+                :current="current"
+                :expanded="expanded"
+                :context="context"
+                :depth="depth + 1"
+                @navigate="(href, event) => emit('navigate', href, event)"
+                @toggle="(key) => emit('toggle', key)"
+              />
+            </div>
           </div>
-        </div>
-      </Transition>
+        </Transition>
+      </template>
     </li>
   </ul>
 </template>
