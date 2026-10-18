@@ -9,6 +9,7 @@ import {
   watch,
 } from 'vue';
 import AppButton from '../components/AppButton.vue';
+import AppPopover from '../components/AppPopover.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
@@ -100,13 +101,9 @@ const expanded = usePreference(
 const drawer = ref(false);
 const sidebarElement = ref<globalThis.HTMLElement>();
 const drawerTrigger = ref<InstanceType<typeof AppButton>>();
-const profile = ref(false);
-const profileElement = ref<globalThis.HTMLElement>();
-const profileTrigger = ref<InstanceType<typeof AppButton>>();
 const mobile = ref(window.matchMedia('(max-width: 63.999rem)').matches);
 const drawerId = useId();
 const contentId = useId();
-const profileId = useId();
 const logoFailed = ref(false);
 watch(
   () => identity.value.logo?.src,
@@ -161,10 +158,6 @@ function keydown(event: globalThis.KeyboardEvent) {
       event.preventDefault();
       void closeDrawer();
     }
-    if (profile.value) {
-      profile.value = false;
-      profileTrigger.value?.$el.focus();
-    }
   }
   if (event.key === 'Tab' && drawer.value && mobile.value) {
     const focusable = Array.from(
@@ -202,13 +195,6 @@ function scrollTopNavigation(event: globalThis.WheelEvent) {
         : 1;
   navigation.scrollLeft += delta * unit;
 }
-function pointerdown(event: globalThis.PointerEvent) {
-  if (
-    event.target instanceof window.Node &&
-    !profileElement.value?.contains(event.target)
-  )
-    profile.value = false;
-}
 let previousOverflow = '';
 watch(drawer, (open) => {
   if (open) {
@@ -224,7 +210,6 @@ watch(
 );
 onMounted(() => {
   document.addEventListener('keydown', keydown);
-  document.addEventListener('pointerdown', pointerdown);
 });
 const media = window.matchMedia('(max-width: 63.999rem)');
 function resize() {
@@ -234,7 +219,6 @@ function resize() {
 media.addEventListener('change', resize);
 onScopeDispose(() => {
   document.removeEventListener('keydown', keydown);
-  document.removeEventListener('pointerdown', pointerdown);
   media.removeEventListener('change', resize);
   if (drawer.value) document.body.style.overflow = previousOverflow;
 });
@@ -372,34 +356,32 @@ onScopeDispose(() => {
             :t="t"
             @change="changePreference"
           />
-          <div v-if="topbar" ref="profileElement" class="shell-profile">
-            <AppButton
-              ref="profileTrigger"
-              icon-only
-              class="shell-avatar-button"
-              :aria-label="`${t('userMenu')}: ${userName}`"
-              :aria-expanded="profile"
-              :aria-controls="profileId"
-              @click="profile = !profile"
-            >
-              {{ userInitials }}
-            </AppButton>
-            <Transition name="shell-popover">
-              <div
-                v-if="profile"
-                :id="profileId"
-                class="shell-profile-panel"
-                :inert="!profile"
+          <AppPopover
+            v-if="topbar"
+            :label="`${t('userMenu')}: ${userName}`"
+            align="end"
+          >
+            <template #trigger="{ toggle, open, panelId }">
+              <AppButton
+                icon-only
+                class="shell-avatar-button"
+                :aria-label="`${t('userMenu')}: ${userName}`"
+                :aria-expanded="open"
+                :aria-controls="panelId"
+                aria-haspopup="dialog"
+                @click="toggle"
+                >{{ userInitials }}</AppButton
               >
-                <slot name="user-menu" :t="t"
-                  ><p class="font-semibold">{{ userName }}</p>
-                  <p class="mt-2 text-xs text-muted">
-                    {{ t('accountUnavailable') }}
-                  </p></slot
-                >
-              </div>
-            </Transition>
-          </div>
+            </template>
+            <div class="shell-profile-panel">
+              <slot name="user-menu" :t="t"
+                ><p class="font-semibold">{{ userName }}</p>
+                <p class="mt-2 text-xs text-muted">
+                  {{ t('accountUnavailable') }}
+                </p></slot
+              >
+            </div>
+          </AppPopover>
         </div>
       </header>
       <main :id="contentId" tabindex="-1" class="shell-workspace">

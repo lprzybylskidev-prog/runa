@@ -653,27 +653,6 @@ input:-webkit-autofill {
 .shell-avatar-button {
   border-radius: 50%;
 }
-.shell-profile {
-  position: relative;
-}
-.shell-profile-panel {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  z-index: 20;
-  width: min(280px, 85vw);
-  padding: 20px;
-  background: var(--runa-surface-raised);
-  border: 1px solid var(--runa-control-border);
-  border-radius: 4px;
-  box-shadow: 0 8px 24px
-    color-mix(
-      in srgb,
-      var(--runa-shadow) var(--runa-shadow-opacity),
-      transparent
-    );
-  font-size: 12px;
-}
 .shell-sidebar-toggle {
   align-self: center;
 }
@@ -1007,4 +986,26 @@ input:-webkit-autofill {
   .shell-sidebar {
     background-image: none;
   }
+}
+
+/* Shared feedback roles: all component geometry stays local. */
+.runa-feedback {
+  --feedback-text: var(--runa-secondary-text);
+  --feedback-subtle: var(--runa-secondary-subtle);
+}
+.runa-feedback[data-tone='success'] {
+  --feedback-text: var(--runa-success-text);
+  --feedback-subtle: var(--runa-success-subtle);
+}
+.runa-feedback[data-tone='info'] {
+  --feedback-text: var(--runa-info-text);
+  --feedback-subtle: var(--runa-info-subtle);
+}
+.runa-feedback[data-tone='warning'] {
+  --feedback-text: var(--runa-warning-text);
+  --feedback-subtle: var(--runa-warning-subtle);
+}
+.runa-feedback[data-tone='danger'] {
+  --feedback-text: var(--runa-danger-text);
+  --feedback-subtle: var(--runa-danger-subtle);
 }

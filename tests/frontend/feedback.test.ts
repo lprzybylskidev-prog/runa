@@ -1,0 +1,264 @@
+/* eslint-disable vue/one-component-per-file -- Independent mounted harnesses exercise feedback integration. */
+import { afterEach, expect, it, vi } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
+import { defineComponent, h, nextTick } from 'vue';
+import {
+  Alert,
+  Badge,
+  Status,
+  Tooltip,
+  Popover,
+  ToastViewport,
+  useToasts,
+} from '../../resources/js/runa/ui';
+import AppToast from '../../resources/js/components/AppToast.vue';
+enableAutoUnmount(afterEach);
+afterEach(() => vi.useRealTimers());
+const settle = async () => {
+  await nextTick();
+  await nextTick();
+  await nextTick();
+};
+type Trigger = { toggle: () => void; open: boolean; panelId: string };
+function trigger({ toggle, open, panelId }: Trigger) {
+  return h(
+    'button',
+    { onClick: toggle, 'aria-expanded': open, 'aria-controls': panelId },
+    'Details',
+  );
+}
+it('uses alert/status semantics without making static badges live regions', async () => {
+  const alert = mount(Alert, {
+    props: { tone: 'danger', title: 'Unable to save', dismissible: true },
+    slots: { default: 'Retry without losing data' },
+  });
+  expect(alert.attributes('role')).toBe('alert');
+  expect(alert.text()).toContain('Retry without losing data');
+  await alert.get('button').trigger('click');
+  expect(alert.emitted('close')).toHaveLength(1);
+  await alert.setProps({ tone: 'success' });
+  expect(alert.attributes('role')).toBe('status');
+  await alert.setProps({ announce: false });
+  expect(alert.attributes('role')).toBeUndefined();
+  expect(mount(Badge).attributes('role')).toBeUndefined();
+  expect(mount(Status, { props: { announce: true } }).attributes('role')).toBe(
+    'status',
+  );
+});
+it('dismisses rapid tooltip hover, permits pointer entry into content and honors Escape', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Description' },
+    slots: { default: '<button>Action</button>' },
+  });
+  await wrapper.get('.app-tooltip').trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  await wrapper.get('.app-tooltip').trigger('pointerleave');
+  document
+    .querySelector('[role="tooltip"]')!
+    .dispatchEvent(new PointerEvent('pointerenter'));
+  await vi.advanceTimersByTimeAsync(100);
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  for (let n = 0; n < 4; n++) {
+    await wrapper.get('.app-tooltip').trigger('pointerenter');
+    await wrapper.get('.app-tooltip').trigger('pointerleave');
+  }
+  await vi.advanceTimersByTimeAsync(100);
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+});
+it('hides clicked preference tooltips even when the trigger retains pointer focus', async () => {
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Theme' },
+    slots: { default: '<button>Theme</button>' },
+  });
+  await wrapper.get('.app-tooltip').trigger('pointerenter');
+  await settle();
+  await wrapper.get('button').trigger('click');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+});
+it('opens a named popover, focuses its action and restores trigger focus on Escape', async () => {
+  const wrapper = mount(Popover, {
+    attachTo: document.body,
+    props: { label: 'Information' },
+    slots: { trigger, default: () => h('button', 'Inside') },
+  });
+  await wrapper.get('button').trigger('click');
+  await settle();
+  const panel = document.querySelector<HTMLElement>('[role="dialog"]')!;
+  expect(panel.getAttribute('aria-label')).toBe('Information');
+  expect(document.activeElement?.textContent).toBe('Inside');
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(document.activeElement).toBe(wrapper.get('button').element);
+  await wrapper.get('button').trigger('click');
+  await settle();
+  document.body.dispatchEvent(
+    new PointerEvent('pointerdown', { bubbles: true }),
+  );
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
+it('closes only the top nested popover on Escape', async () => {
+  const wrapper = mount(Popover, {
+    attachTo: document.body,
+    props: { label: 'Outer' },
+    slots: {
+      trigger,
+      default: () =>
+        h(
+          Popover,
+          { label: 'Inner' },
+          { trigger, default: () => h('button', 'Inner action') },
+        ),
+    },
+  });
+  await wrapper.get('button').trigger('click');
+  await settle();
+  (
+    document.querySelector('[aria-label="Outer"] button') as HTMLButtonElement
+  ).click();
+  await settle();
+  expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(2);
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+  expect(document.querySelector('[aria-label="Outer"]')).not.toBeNull();
+});
+it('pauses toast time on hover and focus, then resumes only the remaining time', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(AppToast, {
+    attachTo: document.body,
+    attrs: { style: 'pointer-events: none' },
+    props: {
+      message: { id: 'one', title: 'Saved', tone: 'success', duration: 1000 },
+      closeLabel: 'Close',
+    },
+  });
+  await vi.advanceTimersByTimeAsync(400);
+  await wrapper.trigger('pointerenter');
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(wrapper.emitted('close')).toBeUndefined();
+  await wrapper.get('button').trigger('focusin');
+  await wrapper.trigger('pointerleave');
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(wrapper.emitted('close')).toBeUndefined();
+  await wrapper
+    .get('button')
+    .trigger('focusout', { relatedTarget: document.body });
+  await vi.advanceTimersByTimeAsync(599);
+  expect(wrapper.emitted('close')).toBeUndefined();
+  await vi.advanceTimersByTimeAsync(2);
+  expect(wrapper.emitted('close')).toEqual([['one']]);
+});
+it('keeps errors persistent and restores the invoking control when closing a focused toast', async () => {
+  vi.useFakeTimers();
+  const Harness = defineComponent({
+    setup() {
+      const { messages, show, dismiss } = useToasts();
+      return () =>
+        h('div', [
+          h(
+            'button',
+            { onClick: () => show({ title: 'Failure', tone: 'danger' }) },
+            'Notify',
+          ),
+          h(ToastViewport, { messages: messages.value, onDismiss: dismiss }),
+        ]);
+    },
+  });
+  const wrapper = mount(Harness, { attachTo: document.body });
+  const triggerButton = wrapper.get('button');
+  (triggerButton.element as HTMLButtonElement).focus();
+  await triggerButton.trigger('click');
+  await settle();
+  expect(
+    document.querySelector('.toast-viewport')?.getAttribute('aria-live'),
+  ).toBe('polite');
+  await vi.advanceTimersByTimeAsync(10000);
+  await settle();
+  const close = document.querySelector<HTMLButtonElement>('.app-toast button')!;
+  expect(close).not.toBeNull();
+  close.focus();
+  close.click();
+  await settle();
+  expect(document.querySelector('.app-toast')).toBeNull();
+  expect(document.activeElement).toBe(triggerButton.element);
+});
+it('keeps a keyboard-focused tooltip until focus leaves, then releases it', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    attrs: {
+      style: 'position: fixed; right: 8px; bottom: 8px; pointer-events: none',
+    },
+    props: { text: 'Keyboard help' },
+    slots: { default: () => h('button', 'Help') },
+  });
+  const button = wrapper.get('button').element as HTMLButtonElement;
+  button.focus();
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  await wrapper.get('.app-tooltip').trigger('pointerenter');
+  await wrapper.get('.app-tooltip').trigger('pointerleave');
+  await vi.advanceTimersByTimeAsync(100);
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  button.blur();
+  await vi.advanceTimersByTimeAsync(100);
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+});
+it('returns through normal trigger order on Tab and Shift+Tab instead of trapping focus', async () => {
+  const Harness = defineComponent({
+    setup: () => () =>
+      h('div', [
+        h(
+          Popover,
+          { label: 'Tab test' },
+          { trigger, default: () => h('button', 'Inside') },
+        ),
+        h('button', { id: 'after-popover' }, 'After'),
+      ]),
+  });
+  const wrapper = mount(Harness, { attachTo: document.body });
+  await wrapper.get('button').trigger('click');
+  await settle();
+  document.activeElement!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(document.activeElement).toBe(wrapper.get('#after-popover').element);
+  await wrapper.get('button').trigger('click');
+  await settle();
+  document.activeElement!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await settle();
+  expect(document.activeElement).toBe(wrapper.get('button').element);
+});

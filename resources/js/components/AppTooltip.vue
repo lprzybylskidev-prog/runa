@@ -1,90 +1,110 @@
 <script setup lang="ts">
-import { onMounted, onScopeDispose, ref, useId } from 'vue';
+import { onScopeDispose, ref, useId } from 'vue';
+import { useFloatingLayer } from '../composables/useFloatingLayer';
 const props = withDefaults(
   defineProps<{ text: string; placement?: 'bottom' | 'right' }>(),
   { placement: 'bottom' },
 );
 const anchor = ref<globalThis.HTMLElement>();
-const position = ref({ left: '0px', top: '0px' });
-function show() {
-  if (props.placement === 'right' && anchor.value) {
-    const bounds = anchor.value.getBoundingClientRect();
-    position.value = {
-      left: `${Math.min(bounds.right + 8, window.innerWidth - 210)}px`,
-      top: `${Math.max(8, Math.min(bounds.top, window.innerHeight - 100))}px`,
-    };
-  }
-  visible.value = true;
-}
-function hideOnScroll() {
-  if (props.placement === 'right') visible.value = false;
-}
-const descriptionId = useId();
+const panel = ref<globalThis.HTMLElement>();
 const visible = ref(false);
-function dismiss(event: { key: string }) {
-  if (event.key === 'Escape') visible.value = false;
+const descriptionId = useId();
+let overAnchor = false;
+let overPanel = false;
+let dismissed = false;
+let timer: ReturnType<typeof globalThis.setTimeout> | undefined;
+function keyboardFocus() {
+  const active = document.activeElement;
+  return (
+    !!active &&
+    !!anchor.value?.contains(active) &&
+    active.matches(':focus-visible')
+  );
 }
-onMounted(() => {
-  document.addEventListener('keydown', dismiss);
-  document.addEventListener('scroll', hideOnScroll, true);
+function update() {
+  globalThis.clearTimeout(timer);
+  visible.value = !dismissed && (overAnchor || overPanel || keyboardFocus());
+  if (!overAnchor && !overPanel && !keyboardFocus()) dismissed = false;
+}
+function leave() {
+  timer = globalThis.setTimeout(update, 80);
+}
+function dismiss() {
+  overAnchor = false;
+  overPanel = false;
+  dismissed = true;
+  visible.value = false;
+}
+function enter() {
+  overAnchor = true;
+  dismissed = false;
+  update();
+}
+function click() {
+  dismiss();
+  overAnchor = false;
+  overPanel = false;
+}
+const { position, ready } = useFloatingLayer({
+  open: visible,
+  anchor,
+  panel,
+  placement: () => props.placement,
+  align: () => 'end',
+  dismiss,
+  hideOnScroll: true,
 });
-onScopeDispose(() => {
-  document.removeEventListener('keydown', dismiss);
-  document.removeEventListener('scroll', hideOnScroll, true);
-});
+onScopeDispose(() => globalThis.clearTimeout(timer));
 </script>
-
 <template>
   <span
     ref="anchor"
     class="app-tooltip"
-    @pointerenter="show"
-    @pointerleave="visible = false"
-    @focusin="show"
-    @focusout="visible = false"
+    @pointerenter="enter"
+    @pointerleave="
+      overAnchor = false;
+      leave();
+    "
+    @focusin="update"
+    @focusout="leave"
+    @click="click"
   >
-    <slot :description-id="descriptionId" />
-    <Teleport to="body" :disabled="placement !== 'right'">
+    <slot :description-id="visible ? descriptionId : undefined" />
+    <Teleport to="body">
       <Transition name="tooltip-fade">
         <span
-          v-show="visible && text"
+          v-if="visible && text"
           :id="descriptionId"
+          ref="panel"
           role="tooltip"
-          :class="[
-            'tooltip-content',
-            { 'tooltip-right': placement === 'right' },
-          ]"
-          :style="placement === 'right' ? position : undefined"
-          ><span>{{ text }}</span></span
+          class="tooltip-content"
+          :class="{ 'tooltip-ready': ready }"
+          :style="position"
+          @pointerenter="
+            overPanel = true;
+            update();
+          "
+          @pointerleave="
+            overPanel = false;
+            leave();
+          "
+          >{{ text }}</span
         >
       </Transition>
     </Teleport>
   </span>
 </template>
-
 <style scoped>
 .app-tooltip {
-  position: relative;
   display: inline-flex;
 }
 .tooltip-content {
-  position: absolute;
-  z-index: 20;
-  top: 100%;
-  right: 0;
-  padding-top: 8px;
-  width: max-content;
-  max-width: min(280px, 75vw);
-}
-.tooltip-content.tooltip-right {
   position: fixed;
-  right: auto;
-  padding-top: 0;
-  z-index: 40;
-  max-width: 200px;
-}
-.tooltip-content > span {
-  display: block;
+  z-index: 50;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
   padding: 8px 12px;
   background: var(--runa-surface-raised);
   color: var(--runa-text);
@@ -98,8 +118,11 @@ onScopeDispose(() => {
       var(--runa-shadow) var(--runa-shadow-opacity),
       transparent
     );
+  visibility: hidden;
 }
-
+.tooltip-ready {
+  visibility: visible;
+}
 .tooltip-fade-enter-active,
 .tooltip-fade-leave-active {
   transition: opacity 140ms ease-out;

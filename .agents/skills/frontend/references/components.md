@@ -32,9 +32,29 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppTooltip
 
-- Source: `resources/js/components/AppTooltip.vue`.
-- Application-styled tooltip on pointer hover or keyboard focus, dismissible with Escape. Shared 140ms ease-out opacity enter/leave transition; disabled for reduced-motion preferences. Pointer can enter the tooltip; it stays visible until pointer leave, focus leave or dismissal.
-- Props: `text`, optional placement (bottom default/right for collapsed sidebar); right placement teleports to the viewport to escape sidebar scroll clipping and hides on scroll. Existing hover-dismissal defect remains deferred to point 9. Scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
+- Source: `resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
+- Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session.
+- Uses shared `useFloatingLayer` for measured viewport-clamped fixed positioning, resize/content observation, top-layer Escape/outside dismissal and teardown. Both placements teleport outside scroll clipping; no runtime DOM access during static error rendering.
+- Tooltip is descriptive only; use Popover for interactive content. Opacity transition is 140ms with reduced-motion support. Keep an accessible name on icon-only triggers.
+
+## AppAlert, AppBadge and AppStatus
+
+- Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: success/info/warning/danger; badge/status also support neutral. All use shared theme role tokens.
+- Alert accepts optional title, content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
+- Badge is static inline labeling/counts, size sm/md, no live role. Status pairs a decorative dot with required caller-provided readable slot content; announce opt-in enables role status.
+
+## AppPopover
+
+- Source: `resources/js/components/AppPopover.vue`; public `Popover`. Required label names its nonmodal dialog; optional align start/end. Trigger slot receives toggle/open/panelId; default slot receives close. Caller owns the trigger label, aria-expanded/controls and aria-haspopup=dialog.
+- Focus moves to the first control (or panel); Escape closes the top layer and returns to its trigger. Outside pointer dismisses without stealing focus. Tab leaves the nonmodal panel through normal neighboring trigger order; Shift+Tab from the first control returns to the trigger. Shared viewport positioning flips/clamps, reacts to scroll/resize/content and escapes clipping. Nested popovers dismiss one level per Escape.
+- ApplicationLayout's unique initials profile control now uses Popover for its existing user-menu slot; navigation remains specialized because its route/availability/scroll/Tab contracts differ. No generic action-list or split buttons are reintroduced.
+
+## ToastViewport and useToasts
+
+- Sources: `AppToastViewport.vue`, internal `AppToast.vue`, `composables/useToasts.ts`; public `ToastViewport`, `useToasts`, ToastMessage/FeedbackTone types.
+- Local setup-scoped queue: `const { messages, show, dismiss } = useToasts()`. Pass messages to ToastViewport and bind dismiss. show accepts title, optional description/tone/duration and returns its ID. Default duration is 5000ms, danger defaults to persistent (0); invalid/nonfinite durations are persistent. This is transient feedback, not a notification center.
+- Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
+- Keep actionable/important errors inline as well as in transient feedback; the host feature owns that error state. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.
 
 ## AppButton
 
@@ -106,4 +126,4 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 - Source: `resources/js/components/AppTopNavigation.vue`; internal application-shell navigation, not a generic dropdown component. Distinct from the sidebar's recursive AppNavigation.
 - Horizontal group labels are disclosure buttons. Their dropdown card is teleported to body outside the scroll container, positioned under the trigger/header and clamped to the viewport. Header stays 64px when open; sidebar groups retain inline expansion. The panel reuses AppNavigation for its child links.
-- Escape, outside click, route change, document scroll and resize dismiss it; nav scrolling updates its anchor position; focus returns on Escape. Tab boundaries connect the popup back to normal navigation order. Final generic floating layers remain the owning later component points.
+- Escape, outside click, route change, document scroll and resize dismiss it; nav scrolling updates its anchor position; focus returns on Escape. Tab boundaries connect the popup back to normal navigation order. General tooltip/popover floating behavior is implemented in point 9; route navigation retains its specialized anchoring and keyboard contract.
