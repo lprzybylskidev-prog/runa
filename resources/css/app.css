@@ -1015,7 +1015,7 @@ button.app-button.shell-avatar-button {
 
 /* Dedicated shell overflow cues; the content component library stays independent. */
 .has-sidebar .shell-header {
-  padding-left: 8px;
+  padding-left: 24px;
 }
 .shell-top-nav-frame {
   position: relative;
@@ -1041,13 +1041,17 @@ button.app-button.shell-avatar-button {
 }
 .shell-top-nav-frame::before {
   left: 0;
-  border-left: 2px dotted var(--runa-primary-text);
-  background: linear-gradient(to right, var(--runa-surface), transparent);
+  background:
+    radial-gradient(circle, var(--runa-primary-text) 1px, transparent 1.2px)
+      left center / 2px 8px repeat-y,
+    linear-gradient(to right, var(--runa-surface), transparent);
 }
 .shell-top-nav-frame::after {
   right: 0;
-  border-right: 2px dotted var(--runa-primary-text);
-  background: linear-gradient(to left, var(--runa-surface), transparent);
+  background:
+    radial-gradient(circle, var(--runa-primary-text) 1px, transparent 1.2px)
+      right center / 2px 8px repeat-y,
+    linear-gradient(to left, var(--runa-surface), transparent);
 }
 .shell-top-nav-frame.has-overflow-left::before,
 .shell-top-nav-frame.has-overflow-right::after {
