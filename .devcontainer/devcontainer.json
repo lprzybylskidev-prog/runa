@@ -6,7 +6,7 @@
   "remoteUser": "runa",
   "updateRemoteUserUID": false,
   "overrideCommand": false,
-  "shutdownAction": "stopCompose",
+  "shutdownAction": "none",
   "initializeCommand": ["./bin/dev", "prepare"],
   "postCreateCommand": "./bin/dev setup --if-needed",
   "forwardPorts": [5173],

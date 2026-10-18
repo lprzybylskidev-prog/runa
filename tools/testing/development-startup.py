@@ -54,6 +54,27 @@ class StartupContracts(unittest.TestCase):
         self.assertIn('knowledge-init', optional)
         self.assertEqual(diagnostics[-1], 'knowledge-status')
 
+    def test_selective_build_and_recreate_do_not_touch_siblings(self):
+        for action, service in (('build', 'mailpit'), ('recreate', 'qdrant')):
+            with self.host_context(), patch.object(dev, 'load', return_value={'EMBEDDINGS_CUDA': '0'}), patch.object(dev, 'resolve_embeddings'), patch.object(dev, 'persist'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run, patch.object(dev.sys, 'argv', ['dev', action, service]), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(dev.main(), 0)
+            command = run.call_args.args[0]
+            self.assertEqual(command[-1], service)
+            self.assertNotIn('app', command)
+            if action == 'recreate':
+                self.assertIn('--no-deps', command)
+                self.assertIn('--force-recreate', command)
+                self.assertNotIn('--wait', command)
+
+    def test_invalid_selective_scope_never_mutates_profile_or_calls_docker(self):
+        for args in (['recreate'], ['recreate', 'nginx;false'], ['build', 'postgres'], ['build', 'mailpit', 'mailpit'], ['build', 'embeddings-gpu']):
+            with self.host_context(), patch.object(dev, 'load', return_value={'EMBEDDINGS_CUDA': '0'}), patch.object(dev, 'resolve_embeddings') as resolve, patch.object(dev, 'persist') as persist, patch.object(dev.subprocess, 'run') as run, patch.object(dev.sys, 'argv', ['dev', *args]):
+                with self.assertRaises(ValueError):
+                    dev.main()
+                run.assert_not_called()
+                persist.assert_not_called()
+                resolve.assert_not_called()
+
     def test_application_failure_is_not_swallowed(self):
         with self.host_context(), patch.object(dev, 'load', return_value={'EMBEDDINGS_CUDA': '0'}), patch.object(dev, 'resolve_embeddings'), patch.object(dev, 'persist'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=7)) as run, patch.object(dev.sys, 'argv', ['dev', 'up']):
             self.assertEqual(dev.main(), 7)

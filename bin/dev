@@ -82,7 +82,7 @@ def persist(values):
     if values['EMBEDDINGS_CUDA'] == '1':
         config = json.loads((ROOT / 'tools/knowledge/config.json').read_text())
         siblings['embeddings-gpu'] = {
-            'image': 'runa-embeddings-cuda:rm-2026-001',
+            'image': 'runa-embeddings-cuda:dev',
             'build': {'context': '.', 'dockerfile': 'docker/embeddings/cuda.Dockerfile', 'args': {
                 'RUNA_UID': values['RUNA_UID'], 'RUNA_GID': values['RUNA_GID']}},
             'command': ['--model-id', config['model_id'], '--revision', config['model_revision'],
@@ -209,7 +209,8 @@ def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/dev profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/dev prepare|build|up|down|config|shell|status|doctor\n'
+              '       ./bin/dev prepare|up|down|config|shell|status|doctor\n'
+              '       ./bin/dev build [service ...] | recreate service [service ...] (host only)\n'
               '       ./bin/dev restart|logs [service] (host only)\n'
               '       ./bin/dev embeddings auto|cpu|cuda (host only)\n'
               '       ./bin/dev setup [--if-needed] (inside the devcontainer)\n'
@@ -273,6 +274,25 @@ def main():
         action = {'status': ['ps', '--all'], 'restart': ['restart'], 'logs': ['logs', '--tail', '100']}[command]
         return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(LOCAL),
                                '-f', str(ROOT / 'compose.yaml'), '-f', str(OVERRIDE), *action, *args], cwd=ROOT).returncode
+    if command in ('build', 'recreate'):
+        if Path('/.dockerenv').exists():
+            raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
+        buildable = ('app', 'setup', 'queue', 'scheduler', 'knowledge-init', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu')
+        known = (*buildable, 'nginx', 'postgres')
+        if command == 'recreate' and not args:
+            raise ValueError('Recreate requires explicit service names; review dependencies before using --no-deps.')
+        if len(args) != len(set(args)) or any(name not in (buildable if command == 'build' else known) for name in args):
+            raise ValueError('Provide unique known services; build requires services with a local build definition.')
+        if 'embeddings-gpu' in args and values['EMBEDDINGS_CUDA'] != '1':
+            raise ValueError('CUDA service is not configured; select supported CUDA hardware first.')
+        resolve_embeddings(values)
+        persist(values)
+        selected = args or ['app', 'mailpit', 'qdrant', 'embeddings', *(['embeddings-gpu'] if values['EMBEDDINGS_CUDA'] == '1' else [])]
+        action = ['build'] if command == 'build' else ['up', '-d', '--no-deps', '--force-recreate']
+        if command == 'recreate':
+            print('Recreating only selected services; prerequisites must already be ready. Check health after recreation.')
+        return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(LOCAL),
+                               '-f', str(ROOT / 'compose.yaml'), '-f', str(OVERRIDE), *action, *selected], cwd=ROOT).returncode
     if args:
         raise ValueError('Unexpected arguments. See ./bin/dev --help.')
     resolve_embeddings(values)
@@ -283,7 +303,7 @@ def main():
         return 0
     if Path('/.dockerenv').exists():
         raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
-    commands = {'build': ['build', 'app', 'mailpit', 'qdrant', 'embeddings', *(['embeddings-gpu'] if values['EMBEDDINGS_CUDA'] == '1' else [])], 'up': ['up', '-d', '--wait', 'postgres', 'app', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit'],
+    commands = {'up': ['up', '-d', '--wait', 'postgres', 'app', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit'],
                 'down': ['down'], 'config': ['config'], 'shell': ['exec', 'app', 'bash']}
     if command not in commands:
         raise ValueError('Unknown command. See ./bin/dev --help.')

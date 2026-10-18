@@ -33,6 +33,10 @@ Host-only application startup waits for PostgreSQL, app, successful setup, Nginx
 
 Inside the development container: `knowledge-init` is the independent Compose initialization job, retrying through its restart policy; `knowledge-status` reports bounded optional service/freshness availability without failing application diagnostics. Neither is part of application setup/post-create.
 
+### `./bin/dev build` / `./bin/dev recreate`
+
+Host-only: `build [service ...]` builds selected local service images; no arguments builds all configured development images. Building does not recreate running containers. `recreate service [service ...]` requires explicit known services and runs selective `up -d --no-deps --force-recreate`; review prerequisite readiness and check health afterward. It starts no sibling dependencies and does not wait for health. App recreation can disconnect an attached editor; plan the host transition first. `restart [service]` retains image/configuration, with no service restarting the whole stack. `down` is explicitly whole-project and preserves volumes.
+
 ### `./bin/dev doctor`
 
 Alias for `./bin/doctor development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `./bin/knowledge doctor` and `./bin/knowledge eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.

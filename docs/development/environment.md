@@ -368,7 +368,7 @@ Browser verification uses `tools/testing/frontend.mjs` with project Playwright, 
 
 ## Complete runtime services and startup order
 
-The stack includes Mailpit, queue and scheduler alongside app, PostgreSQL, Nginx and development-only Qdrant/embeddings. `./bin/dev build` builds the app toolchain and the non-root Mailpit image. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
+The stack includes Mailpit, queue and scheduler alongside app, PostgreSQL, Nginx and development-only Qdrant/embeddings. `./bin/dev build` builds the app toolchain, non-root Mailpit, Qdrant and configured CPU/CUDA embedding images. Pass service names for selective builds; build alone never recreates app. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
 
 Startup graph: PostgreSQL authenticates successfully -> app/PHP-FPM becomes available -> the one-shot `setup` service prepares the application -> Nginx, worker and scheduler start. All PHP services carry the same build definition and UID/GID overrides, so cold startup does not rely on the attached VS Code container retaining the base image tag. Setup uses the same `./bin/dev setup --if-needed` path as the devcontainer post-create hook, serialized by a shared checkout file lock so concurrent invocations do not race dependency installation or migrations. Its ignored `.runtime/dev/setup.sha256` covers lockfiles, local app environment, setup script, configuration, migrations and frontend sources. If those inputs and generated dependency/frontend outputs are unchanged, it performs only configuration validation, normal migration readiness and hooks-path setup; dependency installation/build are skipped. A failed setup blocks dependent services. Never mark a failed/partial setup complete, and never run destructive migrations on reopen.
 
@@ -405,3 +405,9 @@ PostgreSQL data, Mailpit captures and application storage survive container recr
 ## Knowledge services
 
 The development stack now also starts Qdrant and CPU embeddings automatically; the generated host override adds CUDA embeddings when selected. Setup waits for vector-store/CPU readiness, initializes a missing index, and reports staleness without automatically re-embedding existing changed documents. Model cache and vector data persist in named volumes. All knowledge services remain development-only and expose no host ports. Hardware selection, resource limits, pinned images/model and actual acceptance evidence are documented in [knowledge.md](knowledge.md); retrieval, doctor and evaluation commands are implemented and documented there.
+
+## Image identity and rebuilds
+
+Local working images use `runa-development:dev`, `runa-mailpit:dev`, `runa-qdrant:dev`, `runa-embeddings-cpu:dev` and optional `runa-embeddings-cuda:dev`. These are mutable development tags. Production `runa-production`/`runa-nginx` keep exact release or full-commit identities.
+
+Shared development/test and production-build Nginx runtime inputs use tag plus registry-verified digest: `nginx:1.31.7-alpine@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d` (verified 2026-10-18). Existing PostgreSQL, production PHP, Qdrant/Ubuntu and embedding digests remain unchanged. Development PHP, Node, Composer and Mailpit retain reviewed version tags and their accepted rebuild variability. Digest updates require deliberate maintenance, actual-image scans and runtime checks; pins do not automatically receive security fixes. This is targeted runtime reproducibility, not a guarantee that all builds are identical.

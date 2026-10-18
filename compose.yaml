@@ -3,7 +3,7 @@ x-logging: &logging
   driver: json-file
   options: { max-size: 10m, max-file: '3' }
 x-development: &development
-  image: runa-development:rm-2026-001
+  image: runa-development:dev
   pull_policy: never
   build:
     context: .
@@ -70,7 +70,7 @@ services:
     cpus: 1
     mem_limit: 512M
   nginx-test:
-    image: nginx:1.31.7-alpine
+    image: nginx:1.31.7-alpine@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d
     profiles: [testing]
     user: nginx
     entrypoint: [nginx, -g, 'daemon off;']
@@ -92,7 +92,7 @@ services:
       timeout: 3s
       retries: 5
   qdrant:
-    image: runa-qdrant:rm-2026-001
+    image: runa-qdrant:dev
     build:
       context: .
       dockerfile: docker/qdrant/Dockerfile
@@ -112,7 +112,7 @@ services:
     cpus: 1
     mem_limit: 512M
   embeddings:
-    image: runa-embeddings-cpu:rm-2026-001
+    image: runa-embeddings-cpu:dev
     build:
       context: .
       dockerfile: docker/embeddings/Dockerfile
@@ -174,7 +174,7 @@ services:
       retries: 10
       start_period: 10s
   mailpit:
-    image: runa-mailpit:rm-2026-001
+    image: runa-mailpit:dev
     build:
       context: .
       dockerfile: docker/mailpit/Dockerfile
@@ -235,7 +235,7 @@ services:
       retries: 3
       start_period: 90s
   nginx:
-    image: nginx:1.31.7-alpine
+    image: nginx:1.31.7-alpine@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d
     user: nginx
     entrypoint: [nginx, -g, 'daemon off;']
     depends_on:
