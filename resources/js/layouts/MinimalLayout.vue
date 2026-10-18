@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
+import AppBrandIllustration from '../components/AppBrandIllustration.vue';
 import AppIcon from '../components/AppIcon.vue';
 import RunaLogo from '../components/RunaLogo.vue';
 import AppButton from '../components/AppButton.vue';
@@ -11,7 +12,10 @@ import { useLocale } from '../composables/useLocale';
 import { useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
 import { useTheme } from '../composables/useTheme';
-const props = defineProps<{ footer?: FooterOptions | undefined }>();
+const props = withDefaults(
+  defineProps<{ footer?: FooterOptions | undefined; illustration?: boolean }>(),
+  { illustration: true, footer: undefined },
+);
 const identity = useIdentity();
 const logoFailed = ref(false);
 watch(
@@ -163,7 +167,7 @@ async function finishPreferenceChange() {
         <div
           :class="[
             'grid',
-            { 'lg:grid-cols-2 lg:items-stretch': $slots.illustration },
+            { 'lg:grid-cols-2 lg:items-stretch': props.illustration },
           ]"
         >
           <div
@@ -174,8 +178,8 @@ async function finishPreferenceChange() {
               <slot name="actions" :t="t" />
             </div>
           </div>
-          <div v-if="$slots.illustration" class="flex min-w-0">
-            <slot name="illustration" :t="t" />
+          <div v-if="props.illustration" class="flex min-w-0">
+            <slot name="illustration" :t="t"><AppBrandIllustration /></slot>
           </div>
         </div>
       </div>

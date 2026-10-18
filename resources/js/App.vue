@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { MinimalLayout } from '@/runa/ui';
-import AppBrandIllustration from './components/AppBrandIllustration.vue';
 </script>
 
 <template>
@@ -17,6 +16,5 @@ import AppBrandIllustration from './components/AppBrandIllustration.vue';
         {{ t('description') }}
       </p>
     </template>
-    <template #illustration><AppBrandIllustration /></template>
   </MinimalLayout>
 </template>

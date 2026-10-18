@@ -59,7 +59,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppBrandIllustration
 
-- Source: `resources/js/components/AppBrandIllustration.vue`. Extracted unchanged root CSS illustration; decorative RunaLogo/grid/orbits. Compose through MinimalLayout's optional illustration slot, not a separate auth layout.
+- Source: `resources/js/components/AppBrandIllustration.vue`. Extracted unchanged root CSS illustration; decorative RunaLogo/grid/orbits. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
 
 ## AppLoadingOverlay
 

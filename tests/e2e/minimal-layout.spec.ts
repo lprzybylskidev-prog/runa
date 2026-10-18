@@ -48,7 +48,10 @@ for (const [device, width, height] of [
         const short = await page.getByRole('contentinfo').boundingBox();
         expect(short).not.toBeNull();
         expect(short!.y + short!.height).toBeGreaterThanOrEqual(height - 1);
-        expect(short!.y + short!.height).toBeLessThanOrEqual(height + 1);
+        expect(short!.y + short!.height).toBeLessThanOrEqual(
+          (await page.evaluate(() => document.documentElement.scrollHeight)) +
+            1,
+        );
         await page.screenshot({
           path: `artifacts/playwright/ui-foundations/minimal-${device}-${locale}-${theme}.png`,
           fullPage: true,
@@ -59,7 +62,14 @@ for (const [device, width, height] of [
             exact: true,
           })
           .click();
-        await expect(page.getByText('ATLAS', { exact: true })).toBeVisible();
+        await expect(page.locator('.runa-art')).toHaveCount(0);
+        await page
+          .getByRole('button', {
+            name: locale === 'pl' ? 'Ilustracja' : 'Illustration',
+            exact: true,
+          })
+          .click();
+        await expect(page.locator('.runa-art')).toBeVisible();
         await page.screenshot({
           path: `artifacts/playwright/ui-foundations/minimal-illustration-${device}-${locale}-${theme}.png`,
           fullPage: true,

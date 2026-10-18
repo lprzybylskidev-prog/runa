@@ -226,7 +226,7 @@ The temporary `resources/review/` entry is built separately with `./bin/pnpm exe
 
 ## Minimal layout and branding
 
-`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The root uses MinimalLayout directly; AuthLayout was removed by owner request. Named header/content/illustration/actions/footer slots and a translator-compatible default slot allow one-column or split compositions. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
+`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The root uses MinimalLayout directly; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
 
 ```vue
 <script setup lang="ts">

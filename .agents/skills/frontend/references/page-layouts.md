@@ -4,13 +4,13 @@
 
 Canonical source: `resources/js/layouts/MinimalLayout.vue`, public import `MinimalLayout` from `@/runa/ui`. AuthLayout was removed at the owner's request during RM-2026-004 point 2.
 
-Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. Without illustration the panel is one column; with it the panel splits at `lg`, stacking on narrow screens. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
+Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. The supplied Runa illustration is built in and visible by default; content occupies the left panel, the illustration the right at `lg`, stacking on narrow screens. Set `illustration: false` explicitly for one column, or override the illustration slot. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
 
 The layout owns locale/theme composables once. Consumers use scoped `t`, preserving existing browser keys, cover timing, inert content and focus restoration. Identity overrides are scoped with `IdentityProvider`; no global installation is required. Custom headers replace the default brand and preferences together.
 
 ## Preserved root welcome view
 
-`resources/js/App.vue` consumes MinimalLayout directly with the existing heading/description and the optional `AppBrandIllustration.vue` slot. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. No authentication behavior exists. The original root was accepted on 2026-10-18; the point-2 extraction/footer awaits separate owner visual acceptance.
+`resources/js/App.vue` consumes MinimalLayout directly with only the existing heading/description as content. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. No authentication behavior exists. The original root was accepted on 2026-10-18; the point-2 extraction/footer awaits separate owner visual acceptance.
 
 ## Future application/admin pages
 

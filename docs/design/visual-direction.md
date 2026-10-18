@@ -207,7 +207,7 @@ Root artwork placement: the decorative illustration fills the entire right half 
 
 ## Reusable minimal layout
 
-The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. The root composes the preserved `AppBrandIllustration` on the right; narrow screens stack it below the content. Screens can omit illustration. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
+The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. Following the owner's visual feedback, MinimalLayout itself includes the preserved `AppBrandIllustration` on the right by default; narrow screens stack it below content. Consumers, including `/`, supply only the left-side content. Screens can explicitly hide the illustration with `illustration: false` or override its slot. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
 
 ## Component reuse
 

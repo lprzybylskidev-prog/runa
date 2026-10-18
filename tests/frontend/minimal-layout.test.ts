@@ -18,7 +18,8 @@ it('renders independently with optional regions and a translator-compatible defa
   expect(layout.get('main h1').text()).toBe('Runa');
   expect(layout.get('main').attributes('tabindex')).toBe('-1');
   expect(layout.get('.skip-link').attributes('href')).toBe('#main');
-  expect(layout.find('.lg\\:grid-cols-2').exists()).toBe(false);
+  expect(layout.find('.lg\\:grid-cols-2').exists()).toBe(true);
+  expect(layout.find('.runa-art .art-core').exists()).toBe(true);
   expect(layout.get('main').text()).toContain('Actions');
   expect(layout.get('footer').text()).toContain(
     `Runa v${defaultIdentity.applicationVersion} | Powered by Runa v${defaultIdentity.platformVersion}`,
@@ -148,4 +149,14 @@ it('configures each footer element, links and complete visibility', async () => 
     slots: { footer: '<footer>Override</footer>' },
   });
   expect(layout.find('footer').exists()).toBe(false);
+});
+
+it('allows explicitly hiding the built-in illustration', () => {
+  const layout = mount(MinimalLayout, {
+    props: { illustration: false },
+    slots: { default: 'Content' },
+  });
+  expect(layout.find('.runa-art').exists()).toBe(false);
+  expect(layout.find('.lg\\:grid-cols-2').exists()).toBe(false);
+  expect(layout.get('main').text()).toBe('Content');
 });

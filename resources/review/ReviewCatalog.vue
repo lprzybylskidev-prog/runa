@@ -7,13 +7,12 @@ import {
   MinimalLayout,
   IdentityProvider,
 } from '@/runa/ui';
-import AppBrandIllustration from '../js/components/AppBrandIllustration.vue';
 
 const preview = new window.URLSearchParams(window.location.search).get(
   'preview',
 );
 const longContent = ref(false);
-const showIllustration = ref(false);
+const showIllustration = ref(true);
 const showFooter = ref(true);
 const category = ref('controls');
 const activations = ref(0);
@@ -33,7 +32,10 @@ const categories = [
       applicationVersion: '2.4.1',
     }"
   >
-    <MinimalLayout :footer="{ visible: showFooter }">
+    <MinimalLayout
+      :footer="{ visible: showFooter }"
+      :illustration="showIllustration"
+    >
       <template #default="{ t }">
         <h1 class="text-2xl font-semibold">
           {{ t('language') === 'Język' ? 'Układ minimalny' : 'Minimal layout' }}
@@ -69,14 +71,6 @@ const categories = [
           </p>
         </div>
       </template>
-      <template v-if="showIllustration" #illustration
-        ><div
-          class="flex w-full items-center justify-center bg-surface p-10 text-muted"
-          aria-hidden="true"
-        >
-          ATLAS
-        </div></template
-      >
       <template #actions="{ t }"
         ><a href="/__review/ui" class="text-sm underline">{{
           t('language') === 'Język' ? 'Powrót do przeglądu' : 'Back to review'
@@ -121,6 +115,5 @@ const categories = [
         <a href="/__review/not-found">404</a>
       </nav>
     </template>
-    <template #illustration><AppBrandIllustration /></template>
   </MinimalLayout>
 </template>
