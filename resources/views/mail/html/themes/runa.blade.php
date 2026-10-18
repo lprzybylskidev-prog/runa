@@ -3,8 +3,9 @@ body { background-color: {{ config('branding.colors.background') }}; color: {{ c
 .wrapper { background-color: {{ config('branding.colors.background') }}; width: 100%; }
 .content { width: 100%; }
 .header { padding: 32px 20px 24px; text-align: center; }
-.logo { display: block; margin: 0 auto 12px; border: 0; }
-.brand-name { font-size: 20px; font-weight: bold; margin: 0; text-align: center; }
+.logo { display: block; border: 0; }
+.brand-name { font-size: 20px; font-weight: bold; letter-spacing: -0.5px; color: {{ config('branding.colors.text') }}; }
+.brand-dot { color: {{ config('branding.colors.accent-text') }}; }
 .body { padding: 0 12px; }
 .inner-body { width: 600px; max-width: 600px; background-color: {{ config('branding.colors.surface-raised') }}; border: 1px solid {{ config('branding.colors.border') }}; border-top: 4px solid {{ config('branding.colors.primary-solid') }}; border-radius: 4px; }
 .content-cell { padding: 32px; overflow-wrap: anywhere; word-break: break-word; }

@@ -47,7 +47,7 @@ for (const locale of ['pl', 'en']) {
     }
     await page.goto(`/__review/email?locale=${locale}&long=1&images=blocked`);
     await expect(page.getByRole('heading', { level: 2 })).toHaveCount(12);
-    await expect(page.locator('.brand-name')).toHaveText('Runa');
+    await expect(page.locator('.brand-name')).toHaveText('runa.');
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

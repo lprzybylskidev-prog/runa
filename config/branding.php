@@ -24,7 +24,7 @@ return [
     'application_version' => $version,
     'platform_version' => $version,
     // A trusted local PNG/JPEG path for CID, or a credential-free public HTTPS URL.
-    'mail_logo_path' => resource_path('images/runa-logo.png'),
+    'mail_logo_path' => resource_path('images/runa-mail-logo.png'),
     'mail_logo_url' => null,
     'mail_logo_alt' => null,
     'mail_footer' => ['visible' => true, 'application' => true, 'platform' => true],
