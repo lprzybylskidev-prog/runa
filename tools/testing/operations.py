@@ -17,6 +17,28 @@ import operations as ops
 
 
 class OperationContracts(unittest.TestCase):
+    def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self):
+        events = []
+        with patch.object(ops, 'http_maintenance', side_effect=lambda enabled, release: events.append(('marker', enabled))), patch.object(ops, 'dc', side_effect=lambda args, release: events.append(('compose', args))):
+            ops.pause_http('/release')
+        self.assertEqual(events[0], ('marker', True))
+        self.assertEqual(events[1][1], ['up', '-d', '--no-build', '--no-deps', 'nginx'])
+        self.assertEqual(events[2][1], ['stop', 'queue', 'scheduler', 'app'])
+
+    def test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure(self):
+        events = []
+        def dc(args, release):
+            events.append(('compose', args))
+            if args == ['up', '-d', '--wait', '--no-build', '--no-deps', 'nginx']:
+                raise ValueError('nginx health failed')
+        with patch.object(ops, 'http_maintenance', side_effect=lambda enabled, release: events.append(('marker', enabled))), patch.object(ops, 'dc', side_effect=dc):
+            with self.assertRaisesRegex(ValueError, 'nginx health failed'):
+                ops.resume_http('/release', recreate=True)
+        self.assertIn('--wait', events[0][1])
+        self.assertNotIn('nginx', events[0][1])
+        self.assertEqual(events[2], ('marker', False))
+        self.assertEqual(events[-1], ('marker', True))
+
     def test_compose_cannot_consume_remaining_parent_script_input(self):
         code = """import sys
 sys.path.insert(0, 'tools/project')
@@ -204,7 +226,7 @@ print('parent:' + sys.stdin.read())
         with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'STATE', Path(folder) / 'state'), patch.object(ops, 'read_state', return_value={'current': current}), patch.object(ops, 'health'), patch.object(ops, 'backup_root', return_value=(Path(folder), 7)), patch.object(ops, 'dc') as dc, patch.object(ops, 'pg', side_effect=ValueError('dump failed')):
             with self.assertRaisesRegex(ValueError, 'dump failed'):
                 ops.create_backup()
-            self.assertEqual(dc.call_args_list[-1].args[0], ['up', '-d', '--wait', '--no-build'])
+            self.assertEqual(dc.call_args_list[-1].args[0], ['up', '-d', '--wait', '--no-build', '--no-deps', 'nginx'])
             self.assertTrue(all(path.name.endswith('.partial') for path in Path(folder).iterdir() if path.name != 'state'))
 
 

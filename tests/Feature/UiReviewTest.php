@@ -18,6 +18,9 @@ it('registers review entry points only in local and testing environments', funct
         expect($router->getRoutes()->getByName('spa'))->not->toBeNull();
         expect($router->getRoutes()->getByName('review.ui') !== null)->toBe($available);
         expect($router->getRoutes()->getByName('review.email') !== null)->toBe($available);
+        foreach ([403, 404, 419, 429, 500, 503, 'emergency'] as $status) {
+            expect($router->getRoutes()->getByName('review.errors.'.$status) !== null)->toBe($available);
+        }
         foreach (['overview', 'projects', 'activity', 'archive', 'team'] as $page) {
             expect($router->getRoutes()->getByName('review.application.'.$page) !== null)->toBe($available);
         }
@@ -33,6 +36,8 @@ it('rejects even a stale cached review route in production', function () {
     $this->app->instance('env', 'production');
 
     $this->get('/__review/email')->assertNotFound();
+    $this->get('/__review/errors/403')->assertNotFound();
+    $this->get('/__review/errors/emergency')->assertNotFound();
     $this->get('/__review/ui')->assertNotFound();
     $this->get('/__review/application/overview')->assertNotFound();
 });

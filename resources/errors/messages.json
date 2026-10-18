@@ -1,0 +1,60 @@
+{
+  "pl": {
+    "home": "Strona główna",
+    "retry": "Spróbuj ponownie",
+    "language": "Język",
+    "powered": "Oparte na Runa",
+    "statuses": {
+      "403": ["Brak dostępu", "Nie masz uprawnień do wyświetlenia tej strony."],
+      "404": [
+        "Nie znaleziono strony",
+        "Ta strona nie istnieje lub została przeniesiona. Sprawdź adres albo wróć na stronę główną."
+      ],
+      "419": [
+        "Sesja formularza wygasła",
+        "Odśwież stronę i ponownie wykonaj operację."
+      ],
+      "429": [
+        "Zbyt wiele żądań",
+        "Poczekaj chwilę przed ponowieniem operacji."
+      ],
+      "500": [
+        "Wystąpił błąd serwera",
+        "Nie udało się wykonać operacji. Spróbuj ponownie za chwilę."
+      ],
+      "503": [
+        "Przerwa techniczna",
+        "Aplikacja jest chwilowo niedostępna. Spróbuj ponownie za chwilę."
+      ]
+    }
+  },
+  "en": {
+    "home": "Home page",
+    "retry": "Try again",
+    "language": "Language",
+    "powered": "Powered by Runa",
+    "statuses": {
+      "403": ["Access denied", "You do not have permission to view this page."],
+      "404": [
+        "Page not found",
+        "This page does not exist or has moved. Check the address or return to the home page."
+      ],
+      "419": [
+        "Form session expired",
+        "Refresh the page and try the operation again."
+      ],
+      "429": [
+        "Too many requests",
+        "Wait a moment before trying the operation again."
+      ],
+      "500": [
+        "Server error",
+        "The operation could not be completed. Please try again shortly."
+      ],
+      "503": [
+        "Service unavailable",
+        "The application is temporarily unavailable. Please try again shortly."
+      ]
+    }
+  }
+}

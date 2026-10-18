@@ -26,3 +26,5 @@ docker/embeddings
 docker/qdrant
 docker/mailpit
 compose.yaml
+
+public/runa-error

@@ -119,6 +119,13 @@ const categories = [
         <a href="/__review/email?format=text">TXT</a>
         <a href="/__review/email?format=eml">EML</a>
         <a href="/__review/not-found">404</a>
+        <a
+          v-for="status in [403, 419, 429, 500, 503]"
+          :key="status"
+          :href="`/__review/errors/${status}`"
+          >{{ status }}</a
+        >
+        <a href="/__review/errors/emergency">Awaryjne 503 / Emergency 503</a>
       </nav>
     </template>
   </MinimalLayout>

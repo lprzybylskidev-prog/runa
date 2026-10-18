@@ -42,3 +42,7 @@ SHA256: `5bd3b20c783ddf15917b5f1d576028e3dca0dd22d0447ea606cb36d39af837f5`.
 Native email uses `resources/images/runa-mail-logo.png`: a 126×126 (3× density) browser snapshot of the actual light-theme MinimalLayout brand tile, displayed at 42×42 beside the text `runa.` and its accent dot. This preserves the supplied mark, violet color, border, gradient and 4px corners in email engines without CSS mask support. The original PNG remains unchanged. Regenerate in the development container with `./bin/pnpm exec node tools/assets/render-mail-logo.mjs` after building the root entry; the script captures the existing Vue component from nginx-test, without tracing or redrawing it. SHA256: `5426a2abe4a7a375cb5fec3298d41f4e5d11c0c56c15f34b792e167b8ea98989`. CID/public HTTPS delivery and visible text preserve blocked-image readability.
 
 The user supplied this as Runa's project logo; no third-party source or license was supplied. Do not replace it with a generated approximation.
+
+## Standalone HTTP error assets
+
+`resources/errors/build.php` copies the unchanged original logo and IBM Plex Mono Regular/SemiBold WOFF2 files, with their existing font license, into ignored `public/runa-error/`. Provenance/hashes remain those recorded above. Error pages use the same CSS alpha-mask crop and 42px tile as the web shell, so no error-specific logo bitmap is introduced. The generated bundle is produced separately for development and production; it does not depend on Vite filenames or remote fonts.

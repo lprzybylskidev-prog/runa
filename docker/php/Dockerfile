@@ -97,6 +97,14 @@ RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY --chown=runa:runa app/ app/
 COPY --chown=runa:runa database/ database/
 RUN composer dump-autoload --no-dev --no-scripts --optimize
+COPY --chown=runa:runa config/branding.php config/branding.php
+COPY --chown=runa:runa resources/errors/ resources/errors/
+COPY --chown=runa:runa resources/views/errors/ resources/views/errors/
+COPY --chown=runa:runa resources/css/ resources/css/
+COPY --chown=runa:runa resources/fonts/ resources/fonts/
+COPY --chown=runa:runa resources/images/runa-logo.png resources/images/runa-logo.png
+COPY --chown=runa:runa VERSION ./
+RUN php resources/errors/build.php
 
 FROM node AS frontend-build
 WORKDIR /build
@@ -122,6 +130,8 @@ COPY --chown=runa:runa config/ /workspace/config/
 COPY --chown=runa:runa database/ /workspace/database/
 COPY --chown=runa:runa resources/css/light-palette.css /workspace/resources/css/light-palette.css
 COPY --chown=runa:runa resources/views/ /workspace/resources/views/
+COPY --chown=runa:runa resources/errors/messages.json /workspace/resources/errors/messages.json
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --chown=runa:runa resources/images/runa-mail-logo.png /workspace/resources/images/runa-mail-logo.png
 COPY --chown=runa:runa VERSION /workspace/VERSION
 COPY --chown=runa:runa routes/ /workspace/routes/
@@ -129,11 +139,13 @@ COPY --chown=runa:runa lang/ /workspace/lang/
 COPY --chown=runa:runa public/index.php /workspace/public/index.php
 COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
 RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
-    storage/framework/sessions storage/framework/views storage/framework/health storage/logs
+    storage/framework/sessions storage/framework/views storage/framework/health storage/framework/maintenance storage/logs
 COPY --chown=runa:runa artisan /workspace/artisan
 
 FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf
+COPY docker/nginx/security-headers.conf /etc/nginx/runa-security-headers.conf
+COPY --from=php-dependencies /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --from=frontend-build /build/public/build/ /workspace/public/build/
 USER nginx
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

@@ -65,5 +65,5 @@ assert(
 const dockerfile = await readFile('docker/php/Dockerfile', 'utf8');
 assert(!dockerfile.includes('/build/public/ui-review/'));
 console.info(
-  'PASS: production graph excludes review; public consumer bundles controls without layouts, routes or preference initialization; Docker copies only public/build.',
+  'PASS: production graph excludes review; public consumer bundles controls without layouts, routes or preference initialization; Docker excludes the separate review build.',
 );

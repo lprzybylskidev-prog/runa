@@ -45,6 +45,19 @@ class ProductionContracts(unittest.TestCase):
         self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
         self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
 
+    def test_emergency_scope_excludes_php_errors_and_sensitive_storage(self):
+        config = (ROOT / 'docker/nginx/production.conf').read_text()
+        self.assertIn('fastcgi_intercept_errors off;', config)
+        self.assertIn('error_page 502 503 504 =503 $runa_error_document;', config)
+        self.assertIn('location ^~ /runa-error/pages/ {\n            internal;', config)
+        mounts = yaml(ROOT / 'compose.production.yaml')['services']['nginx']['volumes']
+        maintenance = next(mount for mount in mounts if mount['target'] == '/run/runa-maintenance')
+        self.assertTrue(maintenance['read_only'])
+        self.assertEqual(maintenance['volume']['subpath'], 'framework/maintenance')
+        image_source = (ROOT / 'docker/php/Dockerfile').read_text()
+        self.assertIn('RUN php resources/errors/build.php', image_source)
+        self.assertEqual(image_source.count('/tmp/runa-build/public/runa-error/ /workspace/public/runa-error/'), 2)
+
     def test_native_mail_runtime_inputs_are_shipped_without_review_fixtures(self):
         stage = (ROOT / 'docker/php/Dockerfile').read_text().split('FROM production-runtime AS production\n')[1].split('FROM nginx:')[0]
         for source in ('resources/views/', 'resources/images/runa-mail-logo.png', 'resources/css/light-palette.css', 'VERSION'):

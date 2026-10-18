@@ -121,6 +121,11 @@ services:
         target: /workspace/storage/app/public
         read_only: true
         volume: { subpath: app/public }
+      - type: volume
+        source: application-storage
+        target: /run/runa-maintenance
+        read_only: true
+        volume: { subpath: framework/maintenance }
     read_only: true
     tmpfs: ['/tmp:rw,nosuid,nodev,size=32m,mode=1777']
     cap_drop: [ALL]
