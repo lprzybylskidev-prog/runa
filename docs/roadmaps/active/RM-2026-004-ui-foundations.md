@@ -71,6 +71,8 @@ Inspect `docs/design/visual-direction.md`, `color-palette.md`, `color-palette-pr
 
 - 2026-10-18 — Owner accepted the corrected point-5 error views and explicitly requested closure plus immediate favicon work. Insert favicon as point 6. Preserve the unavailable host-only Nginx verification as separate mandatory point 7; subsequent points shift by two. This changes task sequencing, not the required verification/release gates.
 
+- 2026-10-19 — Owner explicitly clarified the reuse boundary: ApplicationLayout top navigation and sidebar are dedicated to those locations and must not become universal UI components. Points 8 onward build shell-independent primitives for application content. Do not derive generic controls by generalizing those menus, export their internal menu compositions as universal controls, or force generic content components into them for reuse alone. Suitable low-level Button/Tooltip/floating behavior can be composed without changing the dedicated navigation contract. This qualifies the layout-integration rule: inspect for applicable reuse, not mandatory replacement of specialized shell menus.
+
 ### Requirement authority and audit corrections
 
 The original conversation was read in full (messages 35–271), then checked again against the corrected drafts. Explicit USER requirements and later corrections take precedence over ASSISTANT summaries. An ASSISTANT saying “agreed” without a recorded USER answer is not proof of approval. Requirements also explicitly present in the owner-supplied roadmap prompt remain in scope; ordinary accessibility/testing choices follow repository rules and USER 239. Specific paths, route resolver and adapter mechanics below are planning choices, not quoted owner decisions.

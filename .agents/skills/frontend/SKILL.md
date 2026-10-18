@@ -12,6 +12,8 @@ Load only relevant references:
 - `references/accessibility-responsive.md`
 - `references/ux-design-performance.md`
 
+ApplicationLayout top navigation and sidebar are dedicated shell components, not universal UI primitives. Keep their menu items, disclosures, dropdowns and navigation behavior internal to those locations. Build universal components for application content independently; do not extract shell menus into the public UI API or force them to use generic content controls merely to demonstrate reuse. Shared low-level primitives may still be composed when they fit without changing the dedicated menu contract.
+
 Before editing UI, inspect analogous existing pages/forms and search the shared component catalogue. Reuse the established structure and controls. After changing a reusable component/pattern, inspect existing layouts for applicable uses and replace matching provisional elements with the finalized shared component in the same task. Recheck affected layout behavior and rendering; update its catalogue entry and page references in that task.
 
 For discovery and maintenance load:
