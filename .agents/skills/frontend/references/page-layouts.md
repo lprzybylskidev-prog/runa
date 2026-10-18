@@ -1,5 +1,7 @@
 # Page Patterns
 
+Bundled MinimalLayout and ApplicationLayout pages share `/favicon.ico`, declared once in the root/review HTML entry heads. Native/static errors declare the same icon in their PHP document wrapper. Keep document metadata at the HTML entry level rather than duplicating head mutations in layout components. External consumers supply their own document head and icon asset; importing a layout does not mutate their favicon.
+
 ## Minimal layout
 
 Canonical source: `resources/js/layouts/MinimalLayout.vue`, public import `MinimalLayout` from `@/runa/ui`. AuthLayout was removed at the owner's request during RM-2026-004 point 2.
