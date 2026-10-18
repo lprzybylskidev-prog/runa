@@ -1,0 +1,186 @@
+---
+id: RM-2026-003
+title: Development infrastructure improvements
+status: active
+branch: roadmap/RM-2026-003-development-infrastructure-improvements
+created_at: 2026-10-18
+activated_at: 2026-10-18
+closed_at: null
+release_type: maintenance
+impact_areas:
+  - development
+  - ai_environment
+  - database
+  - production
+  - tooling
+  - documentation
+  - security
+---
+
+# RM-2026-003 — Development infrastructure improvements
+
+## Overview
+
+### What
+
+Remove confirmed development infrastructure friction and deliver maintenance release 0.1.2 under the existing release workflow. The user approved this roadmap for activation on 2026-10-18. Implementation proceeds on its roadmap branch under the scoped operation and verification rules below.
+
+### Why
+
+Application startup currently depends on optional development knowledge services. Host execution and context transfer need a durable procedure. Pre-production database autonomy and obsolete resources need explicit, scoped treatment after the Alpine/ICU transition.
+
+### Scope
+
+Decouple application and knowledge initialization; retain automatic AI startup; document Linux-only support, database reset authority and host/container handoff; remove verified obsolete PostgreSQL resources; stabilize selective lifecycle operations; simplify development image tags; assess image pinning and resource documentation. Synchronize documentation in each owning point.
+
+### Out of scope
+
+Application features, infrastructure redesign, CI, new Composer/pnpm dependencies, Docker socket mounts, host application-toolchain installation, platform workarounds, vendor/node_modules named volumes, speculative resource tuning, a new handoff subsystem or skill, real production deployment, and changes to closed roadmaps or published releases.
+
+## Specification
+
+### Audit baseline and evidence limits
+
+Audited main at `9ee16255e6a511fe0464db2aaae05c9f977ba1d6`, initially clean. VERSION is 0.1.1; only RM-2026-001 and RM-2026-002 exist as actual roadmaps, both closed. RM-2026-003 is available; fenced examples and test fixtures do not reserve IDs. No active roadmap exists. The local knowledge search succeeded and authoritative sources were opened. Docker CLI is unavailable in this devcontainer; no current Docker inventory, failure injection, build or volume deletion was performed. Historical switch evidence is evidence of the earlier switch, not a fresh host inspection. Remote freshness/publication was not independently audited.
+
+RM-2026-002 already added mandatory semantic documentation review, checked README state, release-transition checks and correct roadmap retrieval identity. Preserve these improvements; use their existing validators rather than inventing another metadata system. Do not treat historical candidate reports as current failures or rewrite closed roadmaps.
+
+### Findings and proposed disposition
+
+| Topic / authoritative sources                                                            | Verified current finding                                                                                                                                                                                                                                          | Proposed disposition                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RAG startup: compose.yaml, bin/dev `knowledge_setup()`                                   | Confirmed: setup requires healthy Qdrant and embeddings; Nginx/queue/scheduler require successful setup. Both setup paths call knowledge initialization, which can fail setup. Missing model delays embedding readiness.                                          | Separate application setup from optional knowledge initialization; preserve strict application prerequisites and automatic AI startup.                                                                                                                  |
+| Startup command / diagnostics: bin/dev, tools/project/checks.py                          | Confirmed: `up` waits for the whole project with `--wait`; development doctor directly runs knowledge doctor. Removing depends_on alone is insufficient.                                                                                                          | Wait for application readiness independently and report degraded AI separately; preserve explicit strict knowledge checks. Verify VS Code startup separately from the host wrapper.                                                                     |
+| Database policy: docs/project/state.yml, docs/architecture/database.md, PostgreSQL skill | State is false. Editing committed pre-production migrations is already allowed. Broad reset authority and its relationship to protected-resource wording in AGENTS are incomplete.                                                                                | Clarify development-first autonomy for identified Runa dev/test resources, including fresh migrations and necessary volume rebuilds; preserve ordinary reopen data and real-deployment safeguards.                                                      |
+| Production evidence: tools/project/operations.py, docs/production/deployment.md          | Existing real install writes first-deploy.json and deployment.json; simulations are distinguished. Database docs already require reconciling contradictory real-deploy evidence.                                                                                  | Reuse existing evidence; actual real-deployment evidence overrides stale false metadata. No new protection subsystem.                                                                                                                                   |
+| Old PostgreSQL: compose.yaml, docs/production/postgresql-alpine-assessment.md            | Confirmed unused declaration `postgres-data`; postgres mounts `postgres-icu-data`. Dated evidence names runa-dev_postgres-data as rollback and runa-dev_postgres-icu-data as active. Current host references/content are unverified.                              | Inspect exact ownership and all container references before removal; preserve active ICU volume. Replace obsolete current instructions while preserving dated evidence. User explicitly permits deletion of the verified unused old development volume. |
+| Platforms: environment/resource/editor/production docs                                   | Production host procedure already specifies Linux. A clear project-wide native-Linux-only development contract is missing.                                                                                                                                        | Record native Linux with Docker Engine/Compose, distribution independent. Preserve workspace bind mount and existing container tooling.                                                                                                                 |
+| Resources: bin/dev, docs/development/resources.md, production Compose/docs               | Existing presets and bounded service budgets are implemented; no measured defect was established. Production host software prerequisites exist; capacity guidance needs clearer distinction from limits.                                                          | Keep numerical limits; document starting budgets versus host requirements, measurement-based tuning and administrator responsibility. Do not invent workload capacity guarantees.                                                                       |
+| CI: AGENTS.md, docs/quality/gates.yml                                                    | Local hooks/gates/security/release checks already implement the accepted no-CI policy.                                                                                                                                                                            | Preserve; no implementation needed merely to restate it.                                                                                                                                                                                                |
+| Image names: compose.yaml, bin/dev GPU override                                          | Confirmed development, Mailpit, Qdrant and CPU/CUDA embedding images use rm-2026-001 tags.                                                                                                                                                                        | Use stable local `:dev` tags; regenerate overrides and verify references/build paths.                                                                                                                                                                   |
+| Production identity: compose.production.yaml, tools/project/production.py, operations.py | Already requires vX.Y.Z or full commit identity; immutable-image reuse is enforced by existing operations.                                                                                                                                                        | Preserve production/release naming and identity checks.                                                                                                                                                                                                 |
+| Base pins: docker/*/Dockerfile, both Compose files                                       | PostgreSQL, production PHP, Qdrant/Ubuntu and CPU/CUDA embeddings use digests; Nginx, development PHP, Node, Composer and Mailpit use version tags. Mixed strategy confirmed; this alone is not proof of a vulnerability.                                         | Target Nginx runtime digest consistency; retain existing pins and document deliberate version-only development/build inputs. No wholesale upgrades or new digest tooling.                                                                               |
+| Lifecycle: bin/dev, .devcontainer/devcontainer.json, Docker skill                        | Selective restart/logs already exist; restart without service affects all services; build covers all development images; down is explicitly whole-project. shutdownAction is stopCompose. No evidence that every single-service operation currently invokes down. | Preserve explicit whole-stack commands, provide/document selective recreation/build where needed, and avoid app recreation for sibling-only changes. Evaluate shutdownAction below.                                                                     |
+| Host/context transfer: editor docs, Docker skill, roadmap workflow                       | Host/container execution boundary and host quality delegation exist. No complete durable Reopen Locally/return handoff format exists.                                                                                                                             | Extend existing workflow/docs and skill; roadmap owns task state.                                                                                                                                                                                       |
+| Quality and 0.1.1 improvements                                                           | Documentation/release contracts and strict knowledge gates already exist. Optional runtime availability must not silently weaken release acceptance.                                                                                                              | Preserve strict ai_environment doctor/evals after recovery and all selected final hard gates.                                                                                                                                                           |
+
+### Application and knowledge lifecycle
+
+1. PostgreSQL -> app/FPM -> application-only setup -> Nginx/queue/scheduler remains the required chain. Application migration/configuration/dependency/build failures remain blocking.
+2. Qdrant and CPU embeddings (plus existing optional CUDA selection) remain normal automatic development services in this project. Knowledge initialization runs independently after its own readiness; no application service or devcontainer post-create success waits for AI readiness, model download or indexing.
+3. Prefer a separate one-shot knowledge initialization service using the existing development image and knowledge CLI. Make initialization idempotent and serialize competing indexers using existing locks. A missing index initializes automatically when ready; existing stale indexes retain explicit incremental-index semantics. Do not write an application setup success marker for failed application work.
+4. Define bounded AI probes and visible degraded diagnostics. Do not require the global Compose `--wait` result to certify application success. Keep actual service health states visible; do not falsify unhealthy AI as healthy. Verify supported Compose behavior and cold VS Code startup before selecting exact flags/topology.
+5. A slow/missing first model must not block application readiness. After AI recovery, ensure automatic initialization is retriggered by normal startup/recovery flow with bounded retries or an equivalent simple recovery mechanism; a one-shot blocked/failed forever is insufficient. Explicit `./bin/knowledge index` remains the documented recovery command.
+6. Codex checks availability/freshness once for context: on unavailable service, timeout, indexing lock or stale result, report the reason and use focused rg/source reads; do not repeatedly block application work or bootstrap RAG just to navigate. Recheck after service recovery or at the next relevant point. Preserve source authority and secret exclusions.
+7. Development application diagnostics report application health independently, with AI degradation explicit. Dedicated knowledge diagnostics and final ai_environment gates remain strict. No optional-runtime exception to final verification.
+
+### Database and resource authority
+
+While production.ever_deployed is false and no contradictory actual real-deploy evidence exists, an active roadmap may edit/clean migrations, rebuild technical tables, run migrate:fresh, recreate identified test databases and rebuild necessary identified nonproduction Runa PostgreSQL volumes without repeated permission for hypothetical production data. This is deliberate task work, never automatic destructive reopen behavior. Inspect target context and show exact deletion scope; preserve unrelated projects, backups, active resources outside the intended reset, knowledge/model caches and durable data. If ownership or irreplaceable data is uncertain, stop that operation and explain evidence. After any actual production deployment retain additive migration/data safeguards; reconcile stale metadata first.
+
+For old-volume retirement inspect volume labels/name, current active mount and running AND stopped container references. Historical candidate: runa-dev_postgres-data; protected active candidate: runa-dev_postgres-icu-data. Do not infer safety from names alone. If safely unused/rebuildable, show the exact removal list and remove only that verified old volume; no global prune. If already absent, record that fact and remove only stale configuration/docs. Dated switch evidence remains historical, with current retirement guidance clearly distinguished.
+
+### Accepted Linux, lifecycle, image and resource decisions
+
+- Native Linux is the supported development platform; production uses a supported Linux Docker host. No distribution lock-in or Windows/macOS/Desktop accommodations. Preserve `.:/workspace`.
+- Keep low/standard/high/custom and current numerical limits. Document host prerequisites separately from configured ceilings and observed test requirements; tune only from evidence.
+- Prefer `shutdownAction: none` for host/container transitions: closing/reopening the editor leaves services running, consumes resources until explicitly stopped and requires deliberate `./bin/dev down` when desired. The specification defines stopCompose as stopping Compose services on window shutdown; actual installed VS Code transition behavior requires manual observation. Approving this draft accepts the proposed direction, conditional on that verification; do not claim a GUI test ran here.
+- Single-service operations use selective restart or recreation/build with explicit project/files and dependencies considered. Record app ID/start time before/after sibling work. Rebuilding an image and recreating the active app are separate actions; an app-image/config change may legitimately require a controlled session transition.
+- Local images: runa-development:dev, runa-mailpit:dev, runa-qdrant:dev, runa-embeddings-cpu:dev, runa-embeddings-cuda:dev. These are mutable local working images, not immutable release artifacts. Production runa-production and runa-nginx retain exact vX.Y.Z/full-SHA tags. Upstream bases retain upstream identity.
+- Update Compose, generated override logic, tests and current docs together. Build/re-tag only verified compatible images; changing the dev tag may require one planned app recreation. Remove historical tags only after no container or release needs them; no broad image/cache removal.
+- Recommend tag+digest for Nginx shared development/test/production runtime inputs, using verified registry identity at implementation time. This closes a specific production-runtime reproducibility gap. Retain version tags for remaining development/build-only inputs with their accepted rebuild variability; no universal reproducibility claim. Digest updates remain deliberate maintenance with actual-image scans and tests; pinned digests do not automatically receive security fixes.
+
+### Host execution and durable handoff procedure
+
+Small host task: inside the devcontainer prepare roughly 2–3 simple commands, state the host repository directory, exact order, effects and expected output; pause dependent work until the user returns output or reliable confirmation. Review it before continuing. Prefer existing wrappers, never assume /workspace is the host checkout path.
+
+Large host task: before recommending **Dev Containers: Reopen Folder Locally**, update the active roadmap with the handoff below and make the file durable on disk; commit coherent work when applicable without falsely completing the point. New host session reads AGENTS, active roadmap and handoff, verifies branch/worktree and actual services, then continues. Use host Docker/Python/Git and project containers for PHP/Composer/pnpm/PostgreSQL/testing. Do not install the app toolchain on the host. If containers stopped during transition, use existing project startup procedures and verify health.
+
+The roadmap workflow owns one compact `Execution handoff` section; the template gains a matching optional section. Do not copy policy into each roadmap or create a state database. The audit baseline above is historical; execution evidence is recorded below.
+
+Required handoff fields:
+
+- Roadmap ID, point, branch/commit and worktree state; time and direction of transition.
+- Reason for host work; completed implementation/checks and evidence paths; remaining tasks.
+- Expected environment, host checkout path (verify, never hard-code private paths), Compose project/files, required tools/services and current observed identities/state.
+- Exact startup commands/procedures, relevant files and source links; safe targets and protected resources; no secrets.
+- Verification commands, host-work completion criteria and remaining gates.
+- Return readiness, host operations/results/issues, resource cleanup/preservation and current service/configuration state.
+
+Starting host procedure: verify repository with `pwd`, `git status --short` and `git branch --show-current`; read the active roadmap/handoff; run `./bin/dev status` and inspect exact relevant identities before mutation. If the override is absent, follow `./bin/dev prepare`; if app is down, follow documented `./bin/dev up` after inspecting current state. Existing wrappers delegate application work, e.g. `./bin/composer --version` and `./bin/pnpm --version`; direct Compose exec must use the same explicit files/project settings as bin/dev. Confirm command availability in the implementation point before documenting new examples.
+
+Before return, update the same handoff with results, remaining tasks and whether **Dev Containers: Reopen in Container** is safe. New container session verifies current services/repo and resumes without repeating completed work. Keep the point open until its implementation, docs, checks, commit and checklist obligations are all met. Do not automate VS Code window switching.
+
+### Documentation ownership
+
+| Owner                                                                                 | Update in its owning implementation point                                                                                                                                                                |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AGENTS.md                                                                             | Concise Linux scope, optional RAG/application distinction, preproduction reset authority, targeted cleanup and host-mode/handoff rule; links to detailed sources. Preserve constitution and local gates. |
+| Existing Docker skill references                                                      | Selective lifecycle, exact resource identification, host execution procedure and links to roadmap handoff; update provenance only if new upstream material is adopted. No new skill.                     |
+| PostgreSQL skill + docs/architecture/database.md                                      | Development-first reset scope versus actual production evidence; retain ordinary reopen safety and postproduction immutability.                                                                          |
+| docs/development/editor-and-agents.md + environment.md                                | Container/host transitions, shutdown behavior, Linux prerequisites and container toolchain access; environment owns topology/startup.                                                                    |
+| docs/workflows/roadmaps.md + roadmap-template.md                                      | Handoff fields, transition lifecycle and resumption responsibilities, preserving 0.1.1 final-review rules.                                                                                               |
+| docs/ai/knowledge-system.md + development/knowledge.md + relevant RAG skill reference | Independent initialization/recovery, availability/freshness fallback, application versus strict AI diagnostics.                                                                                          |
+| docs/development/resources.md + production architecture/deployment docs               | Starting budgets, hardware/software prerequisites, measurement-based tuning and operator responsibility; no numerical changes without evidence.                                                          |
+| docs/tooling/commands.md, quality docs, README as affected                            | Accurate command behavior, strict quality scope, platform/support summary; preserve checked current-state block.                                                                                         |
+| PostgreSQL assessment/current instructions                                            | Record retirement disposition without erasing dated switch evidence or modifying closed history.                                                                                                         |
+| VERSION/CHANGELOG/README/release metadata                                             | Only at finalization after full gate, following existing limited metadata-edit allowance.                                                                                                                |
+
+### Regression and acceptance matrix
+
+| Scenario                                                | Required observable result                                                                                                                                               |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Clean normal development startup                        | AI services auto-start; application setup completes; HTTP/queue/scheduler ready; missing knowledge index initializes automatically.                                      |
+| Qdrant unavailable                                      | Application starts and works; bounded AI diagnostics show degradation; Codex can use source search.                                                                      |
+| CPU embeddings unavailable                              | Same application result; CPU fallback is not mistaken for recovery when CPU itself is down.                                                                              |
+| Missing model and unavailable download                  | Test with isolated disposable model cache; application readiness independent of model fetch; existing model cache untouched.                                             |
+| Recovery after AI failure and another environment start | AI healthy, independent initializer runs/retries successfully, doctor/search succeed; application does not need recreation.                                              |
+| Repeated startup/concurrent setup                       | Idempotent application setup and knowledge locking; no duplicate corrupt indexing or false app completion.                                                               |
+| Actual application setup failure                        | Still blocks dependent application services; optional AI handling cannot swallow this failure.                                                                           |
+| App diagnostics / strict knowledge checks               | App may pass with explicit AI degradation; dedicated AI checks fail while down and final gate passes only after recovery.                                                |
+| Single-service change                                   | Before/after app ID/start time unchanged when no app change is necessary; intended sibling configuration/health correct.                                                 |
+| PostgreSQL retirement                                   | Exact active ICU mount preserved; migrations, guards and database locale/constraint checks pass; verified old volume absent or already absent.                           |
+| Image naming/pinning                                    | Resolved Compose and regenerated overrides correct, CPU and configured CUDA references covered, required builds/startup and production identity/isolation scans pass.    |
+| Host/container round trip                               | Handoff supports independent resumption, host wrappers use containers without PHP/Node installed on host, editor shutdown/return observed manually and results recorded. |
+
+Use focused existing Python contract tests for changed command/startup behavior plus real host integration checks; mocks alone do not establish Compose/VS Code behavior. Run failure injection and cold-cache tests in isolated project contexts/volumes with explicit names, avoiding active dev database/model-cache resets. GUI transitions receive a manual acceptance record, not an unreliable automation harness. Full final verification uses existing local hooks, ./bin/quality, security scanners, AI gates and applicable production tests. No unsupported-platform tests or CI.
+
+### Risks and Docker operations
+
+Host work includes selective builds/recreation, isolated startup/fault tests, exact old-volume inspection/removal, image scans and production simulations. Main risks are whole-project --wait still blocking on optional AI, unbounded model download, one-shot recovery gaps, concurrent setup/indexing, editor-triggered stack shutdown, stale generated tags, and targeting the wrong project/volume. Tests must resolve these before completion. Preserve ordinary development/test data, active ICU volume, model/Qdrant caches, backups, evidence and other projects except explicit scoped resets required by the accepted point. Show exact task-created disposable containers/networks/image tags/volumes before cleanup after their final use; never global prune or remove shared build cache. Report removed and preserved resources.
+
+### External reference review
+
+Reviewed official sources on 2026-10-18 for semantics, without importing new dependencies or upstream skill text:
+
+- [Compose startup dependencies](https://docs.docker.com/compose/how-tos/startup-order/) — healthy/completed dependency conditions explain the confirmed startup graph.
+- [Dev Container metadata specification](https://github.com/devcontainers/spec/blob/main/docs/specs/devcontainerjson-reference.md) — shutdownAction and runServices semantics; installed VS Code behavior remains a manual check.
+- [Docker base-image pinning](https://docs.docker.com/build/building/best-practices/#pin-base-image-versions) — mutable tags versus digest identity and deliberate security updates. Generic CI recommendations do not override Runa's policy.
+
+### Decisions
+
+- 2026-10-18 — User requests a draft for maintenance release 0.1.2 and explicitly prohibits activation/implementation before approval.
+- 2026-10-18 — User establishes native-Linux-only scope, retains bind mounts/resource presets/local quality model/no Docker socket, and requests development-first database authority before any real production deployment.
+- 2026-10-18 — User authorizes deletion of the exactly identified unused old Runa development PostgreSQL volume after inspection; this draft schedules execution after activation, not during planning.
+- 2026-10-18 — Independent knowledge initialization, :dev local tags, targeted Nginx digest pinning and shutdownAction none are proposals pending draft approval and stated host verification.
+
+- 2026-10-18 — User explicitly approves the roadmap for activation and execution of point 1. The proposed directions above are accepted, subject to their stated host/manual verification conditions.
+
+## Implementation plan
+
+- [ ] 1. Establish durable host execution, handoff and Linux workflow.
+  - Prerequisites: explicit approval and standard roadmap activation from current main; inspect repo/tool/environment state.
+  - Deliver concise AGENTS rule, Docker procedure, editor transitions and roadmap handoff/template. Record preproduction autonomy and targeted cleanup scope in canonical database guidance and relevant skills. Preserve existing no-CI/release rules. Use focused documentation checks; commit and update checklist.
+- [ ] 2. Decouple application startup and diagnostics from knowledge availability.
+  - Prerequisites: point 1; prepare execution handoff before substantial host tests.
+  - Separate application setup/knowledge initialization; address host --wait and actual devcontainer startup, bounded failures/recovery and diagnostics. Synchronize knowledge/environment/tooling guidance. Add focused regression contracts and run isolated real-host failure/cold-cache/recovery matrix, then restore healthy AI and run strict knowledge checks. Commit results and checklist.
+- [ ] 3. Retire verified obsolete PostgreSQL configuration and volume.
+  - Prerequisites: point 1; coordinate with point 2 host session and verify current targets afresh.
+  - Inspect ownership/mounts/all references and real-deploy evidence; show exact scope. Remove unused declaration/current references and the verified unused old development volume under existing user authorization; preserve active ICU database and dated history. Verify active database health/locale/migrations/guards; record removal/preservation and commit checklist.
+- [ ] 4. Stabilize selective lifecycle, image names and targeted base pinning.
+  - Prerequisites: points 1–3.
+  - Verify installed VS Code behavior, implement the accepted shutdown policy and selective operations, replace roadmap tags including generated CUDA override, verify Nginx digest before pinning. Preserve release identities and current resource limits. Synchronize build/lifecycle/resource docs, run command contracts/resolved-config/build/runtime/security checks and manual host/container round trip; record targeted recreation needs and commit checklist. If an assessment yields no change, record rationale instead of inventing work.
+- [ ] 5. Full verification, release finalization, merge, and final report.
+  - Prerequisites: all implementation points complete, committed, docs synchronized, AI recovered and required host work/handoff complete.
+  - Review affected current-state docs against implementation under docs/workflows/roadmaps.md, including README, commands, environment/resources, database/production, AGENTS/skills and release-transition facts. Record reviewed sources/dispositions. Run full applicable local final gate on the Docker host under the existing background-run contract; stop the turn after starting it and obtain completion evidence later. Failed gates require inserted fix points and a full rerun; significant premise changes return to discussion.
+  - After PASS finalize 0.1.2 metadata from maintenance version arithmetic, refresh knowledge, run focused docs/release validation, close roadmap on branch, merge with a merge commit, sanity-check main, annotate v0.1.2, push/publish GitHub Release and delete roadmap branch. Preserve closed history. Complete scoped task-resource cleanup after last use and report release/gates/handoff outcomes and removed/preserved resources. Never mark simulation as real production deployment.
