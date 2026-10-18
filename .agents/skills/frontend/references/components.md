@@ -1,6 +1,6 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components.
+Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. Identity/navigation/preferences/export types are integration contracts, not implemented providers or engines.
 
 ## AppSelect
 
@@ -48,7 +48,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 - Source: `resources/js/components/AppFooter.vue`.
 - Shared responsive footer: current-year copyright for Łukasz Przybylski, Runa GitHub repository link and actual build version imported from root `VERSION`.
-- Props: translated `versionLabel`; do not hardcode a future release version. Canonical use: AuthLayout.
+- Props: translated `versionLabel`; do not hardcode a future release version. Canonical use: AuthLayout. RM-2026-004 point 2 plans a configurable dual-version footer for every web layout including `/`; current behavior remains unchanged until that point.
 
 ## AppLoadingOverlay
 

@@ -14,3 +14,4 @@
 # Python tooling bytecode is generated locally.
 __pycache__/
 *.pyc
+/public/ui-review/

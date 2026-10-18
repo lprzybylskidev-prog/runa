@@ -1,6 +1,6 @@
 # Runa Visual Direction
 
-Status: final root view and implemented visual direction explicitly accepted by the user on 2026-10-18; roadmap point 16 is complete. Future auth behavior and app/admin template implementation remain outside this scope.
+Status: root view and implemented visual direction accepted on 2026-10-18 under closed RM-2026-001, point 16. [Active RM-2026-004](../roadmaps/active/RM-2026-004-ui-foundations.md) now plans reusable UI/layouts. Planned requirements below describe the target, not delivered components; visual implementation has separate owner acceptance gates. Authentication and business/admin behavior remain deferred.
 
 Roadmap: [RM-2026-001, point 16](../roadmaps/closed/RM-2026-001-development-environment.md).
 
@@ -26,7 +26,7 @@ Original author/source URL: not supplied.
 
 - Use the image's dark-mode color direction: dark graphite/navy surfaces with purple, cool blue and turquoise accents. These are qualitative observations, not approved exact color tokens.
 - Make gradients more restrained than in the reference, appropriate for a business application. Gradients are welcome when subtle; the strong saturation and transitions shown are not the target intensity.
-- Use a gray background with large circular shapes and gentle gradients, including shapes cropped by the viewport edges. Implement this decorative background in CSS rather than as a raster background image.
+- The original circular-background proposal is superseded by the accepted grid, diffuse corner gradients and static constellations in “Background depth refinement” below. Reuse that CSS/SVG backdrop; do not restore page rings or circles.
 
 ### Explicit rejection
 
@@ -49,7 +49,7 @@ Original author/source URL: not supplied.
 ### Selected direction
 
 - Apply this reference only to authentication view layout: a single panel with content and a decorative section. The later approved reusable layout places content/forms on the left and the illustration on the right, matching the refined root preview.
-- Behind the entire authentication panel, use the gray circular CSS background selected from REF-001, adapted to the active theme.
+- Behind the panel, reuse the accepted CSS grid/gradient/constellation backdrop described below, adapted to the active theme.
 - Inside the decorative section, use an attractive background with a CSS-created decorative illustration. Abstract shapes similar to this reference are acceptable; the exact composition remains open.
 - Integrate the illustration with Runa's agreed palette and restrained gradients.
 
@@ -71,7 +71,7 @@ Original author/source URL: not supplied.
 
 Use the same shell design and navigation behavior for the user application and admin panel. Existing language conventions remain: Polish by default for the user application, English for admin.
 
-Use the background selected from REF-001 for both shells: a gray base with large circular shapes and restrained gradients, rendered in CSS and adapted to the active light/dark theme. REF-003 does not replace that background direction.
+Reuse the accepted grid, diffuse corner gradients and static constellations for both shells. The original REF-001 page circles are superseded; REF-003 does not select a different backdrop.
 
 - The sidebar contains module links. Every sidebar link has a Tabler icon.
 - At the top of the sidebar, display the Runa logo and application name. Use the user-supplied Runa mark through the shared RunaLogo component.
@@ -83,21 +83,25 @@ Use the background selected from REF-001 for both shells: a gray base with large
 
 ### Page structure
 
-Always place breadcrumbs at the top of the page content. Below them, preserve this order while omitting optional sections that the page does not have:
+Planned under RM-2026-004, superseding the earlier breadcrumbs-first order:
 
-1. Page statistics, when applicable.
-2. Filters, when applicable.
-3. The page's main content, such as a table, charts or forms.
+1. Heading, description and page actions.
+2. Breadcrumbs.
+3. Optional statistics, with a required user switch between global and filtered modes.
+4. Optional toolbar (including filters where relevant).
+5. Mandatory main content, with an optional supplementary panel.
+
+The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top navigation above the workspace and the toolbar scroll normally. Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors are planned for point 3, not implemented by this documentation update.
 
 Do not copy dashboard content, cards, charts or their appearance from this reference. Its palette and typography are not selected; apply the separately agreed Runa visual direction.
 
 ### Footer
 
-Include a footer at the bottom of the shell with copyright information, a link to the user's GitHub and the application version. Additional footer content may be agreed later. Current shared footer uses “© {current year} Łukasz Przybylski”, the Runa repository at https://github.com/lprzybylskidev-prog/runa and the version read from root VERSION at build time.
+Current `AppFooter` still shows current-year copyright, the Runa repository link and the actual root VERSION. RM-2026-004 supersedes that default: minimal/application layouts, including `/`, must show `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`, with an email equivalent. Application and platform versions are independent identity fields; bundled defaults use the actual root VERSION. Each element and the whole footer can be configured/hidden. Keep the footer in document flow, naturally near the viewport bottom on short pages. This is planned for points 2–4; point 1 does not alter the rendered footer.
 
 ### Remaining scope
 
-Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Mobile navigation, top-link overflow and sidebar state persistence remain to be agreed. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
+Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Phone drawer behavior, top-link overflow and sidebar persistence are planned under RM-2026-004 and require rendered acceptance. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
 
 ## Icons
 
@@ -164,9 +168,9 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 ## Implementation scope discussion
 
-Agreed first implementation scope (2026-10-17): as the last stage of roadmap point 16, redesign the existing root `/` dashboard to demonstrate the agreed general visual language. The root remains a temporary welcome view rather than functional authentication or an app/admin shell. Following subsequent user review, its split panel is now extracted as the reusable AuthLayout; do not apply REF-003's app/admin navigation template. Apply the approved palette, IBM Plex Mono, Tabler Icons, restrained CSS background/gradients, component styling, transitions, responsive and accessible behavior where relevant to the existing page.
+The accepted `/` welcome page consumes `AuthLayout` and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the explicit dual-version footer is the only approved root visual change in this roadmap.
 
-The dashboard is temporary and expected to be removed soon. Keep the work proportionate, preserve its existing useful behavior and avoid adding business functionality or app/admin layouts. The user subsequently authorized extracting the current view as the reusable auth layout, without implementing authentication. Review the rendered result with the user and refine the visual decisions if needed. Technical verification alone does not complete point 16: explicit user acceptance of the generated view is required before closure.
+RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. Temporary review infrastructure is removed only after final visual acceptance, in point 19.
 
 ## Motion and transitions
 
@@ -187,7 +191,7 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- Future additions to the accepted shared footer, when needed.
+- Rendered validation of the planned configurable dual-version footer in RM-2026-004.
 - Further component-specific theme validation as new views are implemented.
 - Future auth/app view implementation scope; the current root preview is accepted.
 
@@ -203,7 +207,7 @@ Root artwork placement: the decorative illustration fills the entire right half 
 
 ## Reusable auth layout
 
-User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused immediately by the temporary root page and later by auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. Root removal must not remove the shared layout or its assets. Authentication behavior and actual forms remain outside this change.
+User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused by the preserved root welcome page and potentially by later auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. RM-2026-004 preserves the root and generalizes this layout behind a compatible facade; retain its assets and interactions. Authentication behavior and actual forms remain outside this change.
 
 ## Component reuse
 
