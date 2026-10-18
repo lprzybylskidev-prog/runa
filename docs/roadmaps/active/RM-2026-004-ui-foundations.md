@@ -287,6 +287,8 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 
 - Owner accepted the favicon and explicitly requested both finished web templates. Confirmed that MinimalLayout and ApplicationLayout already inherit the same favicon from their shared root/review HTML heads; no duplicate component-level head mutation is needed. Chromium and Firefox verified one icon declaration and HTTP 200 ICO delivery on `/__review/ui?preview=minimal` and `/__review/application/overview`. Updated the frontend architecture and canonical page patterns to make this shared integration explicit.
 
+- On 2026-10-18, after restarting the editor, the owner confirmed that Ctrl+F5 refreshed the cached browser favicon and both templates display it correctly. The owner explicitly requested closure of point 6; its completed checklist state is confirmed. No application change was needed.
+
 ## Execution handoff
 
 - **2026-10-18; devcontainer → native-host terminal verification.** Roadmap `RM-2026-004`, host verification point 7 (favicon point 6 comes first), branch `roadmap/RM-2026-004-ui-foundations`, initial implementation `02bbb5a`, followed by the shared-MinimalLayout correction commit. Implementation/docs/checks are committed on this branch; verify HEAD/clean worktree before running. Points 1–6 are accepted; point 7 host verification remains open. Do not start point 8 or merge/release before point 7 passes.
