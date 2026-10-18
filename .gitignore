@@ -16,3 +16,4 @@ __pycache__/
 *.pyc
 /public/ui-review/
 /public/runa-error/
+/resources/views/errors/generated/

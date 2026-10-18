@@ -7,11 +7,17 @@ import RunaLogo from '../components/RunaLogo.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
+import type { Locale } from '../locales/messages';
+import type { Theme } from '../composables/useTheme';
 import { useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
 const props = withDefaults(
-  defineProps<{ footer?: FooterOptions | undefined; illustration?: boolean }>(),
-  { illustration: true, footer: undefined },
+  defineProps<{
+    footer?: FooterOptions | undefined;
+    illustration?: boolean;
+    staticPreferences?: { locale: Locale; theme: Theme } | undefined;
+  }>(),
+  { illustration: true, footer: undefined, staticPreferences: undefined },
 );
 const identity = useIdentity();
 const logoFailed = ref(false);
@@ -32,7 +38,7 @@ const {
   changePreference,
   applyPreference,
   finishPreferenceChange,
-} = useDisplayPreferences();
+} = useDisplayPreferences(props.staticPreferences);
 </script>
 
 <template>
@@ -71,6 +77,7 @@ const {
           <span v-else class="break-words">{{ identity.applicationName }}</span>
         </a>
         <AppPreferenceControls
+          :navigation="props.staticPreferences !== undefined"
           :locale="locale"
           :theme="theme"
           :theme-label="themeLabel"
@@ -114,6 +121,7 @@ const {
     /></slot>
   </div>
   <AppLoadingOverlay
+    v-if="!props.staticPreferences"
     :active="coverVisible"
     :label="t('applyingPreferences')"
     @covered="applyPreference"

@@ -87,17 +87,19 @@ def main():
             else:
                 raise AssertionError('Nginx did not start without PHP.')
             check(status == 503 and b'Przerwa techniczna' in body, 'Nginx starts and serves branded PL 503 without PHP or database')
+            check(b'minimal-page' in body and b'runa-art' in body and b'<script' not in body, 'outage serves the actual MinimalLayout without JavaScript')
             check(headers['Retry-After'] == '120' and 'no-store' in headers['Cache-Control'], 'fallback preserves retry and no-store headers')
             check("style-src 'self'" in headers['Content-Security-Policy'] and "'unsafe-inline'" not in headers['Content-Security-Policy'], 'fallback retains restrictive CSP')
-            status, headers, body = fetch('/?lang=en')
+            status, headers, body = fetch('/?lang=en&theme=dark')
             check(status == 503 and b'Service unavailable' in body, 'EN emergency localization')
+            check(b'data-theme="dark"' in body, 'emergency theme selection')
             status, headers, body = fetch('/api/ready')
             check(status == 503 and headers.get_content_type() == 'application/json' and json.loads(body)['code'] == 'service_unavailable', 'API outage is JSON with status 503')
             status, headers, body = fetch('/missing', {'Accept': 'application/problem+json'})
             check(status == 503 and headers.get_content_type() == 'application/json', 'negotiated JSON outage')
-            check(fetch('/runa-error/pages/503-pl.html')[0] == 404, 'emergency HTML is internal')
+            check(fetch('/runa-error/pages/503-pl-system.html')[0] == 404, 'emergency HTML is internal')
             check(fetch('/runa-error/pages/503.json')[0] == 404, 'emergency JSON is internal')
-            for asset in ('styles.css', 'light-palette.css', 'dark-palette.css', 'logo.png', 'regular.woff2', 'semibold.woff2'):
+            for asset in ('styles.css', 'runa-logo.png', 'IBMPlexMono-Regular.woff2', 'IBMPlexMono-SemiBold.woff2'):
                 check(fetch('/runa-error/' + asset)[0] == 200, 'independent static asset ' + asset)
             check(fetch('/', method='HEAD')[0] == 503, 'HEAD preserves 503')
             run(['docker', 'run', '-d', '--name', backend, '--network', network, '--network-alias', 'app',

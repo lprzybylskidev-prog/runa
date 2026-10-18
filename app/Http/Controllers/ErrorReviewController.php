@@ -10,7 +10,7 @@ final class ErrorReviewController extends Controller
 {
     public function __invoke(int $status): never
     {
-        abort_unless(app()->environment('local', 'testing') && isset(HttpErrorPage::CODES[$status]), 404);
+        abort_unless(app()->environment('local', 'testing') && in_array($status, HttpErrorPage::STATUSES, true), 404);
         abort($status, 'Private review exception details.', in_array($status, [429, 503], true) ? ['Retry-After' => '120'] : []);
     }
 
@@ -18,7 +18,9 @@ final class ErrorReviewController extends Controller
     {
         abort_unless(app()->environment('local', 'testing'), 404);
         $locale = $request->query('lang') === 'en' ? 'en' : 'pl';
-        $path = public_path('runa-error/pages/503-'.$locale.'.html');
+        $theme = $request->query('theme');
+        $theme = in_array($theme, ['light', 'dark'], true) ? $theme : 'system';
+        $path = public_path('runa-error/pages/503-'.$locale.'-'.$theme.'.html');
         abort_unless(is_file($path), 404);
 
         $content = file_get_contents($path);

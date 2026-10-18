@@ -25,7 +25,7 @@ SPARSE = ['/app/', '/bootstrap/', '/config/', '/database/', '/lang/', '/public/'
           '/tools/testing/production-runtime.php', '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
           '/artisan', '/composer.json', '/composer.lock', '/package.json', '/pnpm-lock.yaml',
-          '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/VERSION',
+          '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/vite.errors.config.mjs', '/VERSION',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
           '/.env.prod.database.example', '/.env.prod.compose.example', '/.env.prod.backup.example']
 

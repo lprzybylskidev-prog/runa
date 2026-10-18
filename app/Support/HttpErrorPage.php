@@ -6,8 +6,7 @@ use Illuminate\Http\Request;
 
 final class HttpErrorPage
 {
-    public const CODES = [403 => 'FORBIDDEN', 404 => 'NOT_FOUND', 419 => 'PAGE_EXPIRED',
-        429 => 'TOO_MANY_REQUESTS', 500 => 'INTERNAL_SERVER_ERROR', 503 => 'SERVICE_UNAVAILABLE'];
+    public const STATUSES = [403, 404, 419, 429, 500, 503];
 
     /** @return array<string, mixed> */
     public function forRequest(int $status, Request $request): array
@@ -28,7 +27,7 @@ final class HttpErrorPage
     /** @return array<string, mixed> */
     public function data(int $status, string $locale, string $theme, string $name, string $version, string $platformVersion, string $requestId = ''): array
     {
-        if (! isset(self::CODES[$status]) || ! in_array($locale, ['pl', 'en'], true)) {
+        if (! in_array($status, self::STATUSES, true) || ! in_array($locale, ['pl', 'en'], true) || ! in_array($theme, ['system', 'light', 'dark'], true)) {
             throw new \InvalidArgumentException('Unsupported HTTP error page.');
         }
         $source = file_get_contents(dirname(__DIR__, 2).'/resources/errors/messages.json');
@@ -41,6 +40,6 @@ final class HttpErrorPage
         }
 
         return compact('status', 'locale', 'theme', 'name', 'version', 'platformVersion', 'requestId')
-            + ['copy' => $messages[$locale], 'errorCode' => self::CODES[$status]];
+            + ['copy' => $messages[$locale]];
     }
 }

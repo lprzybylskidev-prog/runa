@@ -28,3 +28,5 @@ docker/mailpit
 compose.yaml
 
 public/runa-error
+
+resources/views/errors/generated

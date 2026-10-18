@@ -2,8 +2,6 @@
   "pl": {
     "home": "Strona główna",
     "retry": "Spróbuj ponownie",
-    "language": "Język",
-    "powered": "Oparte na Runa",
     "statuses": {
       "403": ["Brak dostępu", "Nie masz uprawnień do wyświetlenia tej strony."],
       "404": [
@@ -31,8 +29,6 @@
   "en": {
     "home": "Home page",
     "retry": "Try again",
-    "language": "Language",
-    "powered": "Powered by Runa",
     "statuses": {
       "403": ["Access denied", "You do not have permission to view this page."],
       "404": [
@@ -56,5 +52,13 @@
         "The application is temporarily unavailable. Please try again shortly."
       ]
     }
+  },
+  "codes": {
+    "403": "FORBIDDEN",
+    "404": "NOT_FOUND",
+    "419": "PAGE_EXPIRED",
+    "429": "TOO_MANY_REQUESTS",
+    "500": "INTERNAL_SERVER_ERROR",
+    "503": "SERVICE_UNAVAILABLE"
   }
 }

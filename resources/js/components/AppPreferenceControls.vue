@@ -5,6 +5,7 @@ import AppTooltip from './AppTooltip.vue';
 import type { Locale, MessageKey } from '../locales/messages';
 import type { Theme } from '../composables/useTheme';
 defineProps<{
+  navigation?: boolean;
   locale: Locale;
   theme: Theme;
   themeLabel: string;
@@ -17,25 +18,28 @@ const emit = defineEmits<{
 </script>
 <template>
   <div :aria-label="t('preferences')" class="flex gap-2" role="group">
-    <AppTooltip :text="t('changeLanguage')">
-      <template #default="{ descriptionId }">
+    <template v-if="navigation">
+      <form method="get">
+        <input type="hidden" name="theme" :value="theme" />
         <AppButton
+          type="submit"
           compact
+          name="lang"
+          :value="locale === 'pl' ? 'en' : 'pl'"
           :aria-label="languageLabel"
-          :aria-describedby="descriptionId"
-          @click="emit('change', 'language', $event)"
+          >{{ locale.toUpperCase() }}</AppButton
         >
-          {{ locale.toUpperCase() }}
-        </AppButton>
-      </template>
-    </AppTooltip>
-    <AppTooltip :text="t('changeTheme')">
-      <template #default="{ descriptionId }">
+      </form>
+      <form method="get">
+        <input type="hidden" name="lang" :value="locale" />
         <AppButton
+          type="submit"
           compact
+          name="theme"
+          :value="
+            theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'
+          "
           :aria-label="themeLabel"
-          :aria-describedby="descriptionId"
-          @click="emit('change', 'theme', $event)"
         >
           <AppIcon
             :name="
@@ -47,7 +51,41 @@ const emit = defineEmits<{
             "
           />
         </AppButton>
-      </template>
-    </AppTooltip>
+      </form>
+    </template>
+    <template v-else>
+      <AppTooltip :text="t('changeLanguage')">
+        <template #default="{ descriptionId }">
+          <AppButton
+            compact
+            :aria-label="languageLabel"
+            :aria-describedby="descriptionId"
+            @click="emit('change', 'language', $event)"
+          >
+            {{ locale.toUpperCase() }}
+          </AppButton>
+        </template>
+      </AppTooltip>
+      <AppTooltip :text="t('changeTheme')">
+        <template #default="{ descriptionId }">
+          <AppButton
+            compact
+            :aria-label="themeLabel"
+            :aria-describedby="descriptionId"
+            @click="emit('change', 'theme', $event)"
+          >
+            <AppIcon
+              :name="
+                theme === 'system'
+                  ? 'device-desktop'
+                  : theme === 'light'
+                    ? 'sun'
+                    : 'moon'
+              "
+            />
+          </AppButton>
+        </template>
+      </AppTooltip>
+    </template>
   </div>
 </template>

@@ -53,7 +53,7 @@ it('serves a complete standalone emergency preview with status 503', function ()
     $public = storage_path('error-preview-fixture');
     $this->app->usePublicPath($public);
     File::ensureDirectoryExists($public.'/runa-error/pages');
-    file_put_contents($public.'/runa-error/pages/503-pl.html', '<!doctype html><h1>Standalone emergency fixture</h1>');
+    file_put_contents($public.'/runa-error/pages/503-pl-system.html', '<!doctype html><h1>Standalone emergency fixture</h1>');
     try {
         $this->get('/__review/errors/emergency')->assertStatus(503)
             ->assertSee('Standalone emergency fixture')->assertHeader('Retry-After', '120')

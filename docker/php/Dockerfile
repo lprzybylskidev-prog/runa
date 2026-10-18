@@ -100,11 +100,8 @@ RUN composer dump-autoload --no-dev --no-scripts --optimize
 COPY --chown=runa:runa config/branding.php config/branding.php
 COPY --chown=runa:runa resources/errors/ resources/errors/
 COPY --chown=runa:runa resources/views/errors/ resources/views/errors/
-COPY --chown=runa:runa resources/css/ resources/css/
-COPY --chown=runa:runa resources/fonts/ resources/fonts/
-COPY --chown=runa:runa resources/images/runa-logo.png resources/images/runa-logo.png
+COPY --chown=runa:runa resources/css/light-palette.css resources/css/light-palette.css
 COPY --chown=runa:runa VERSION ./
-RUN php resources/errors/build.php
 
 FROM node AS frontend-build
 WORKDIR /build
@@ -112,8 +109,13 @@ RUN npm install --global corepack@0.36.0 && corepack enable && corepack install 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY resources/ resources/
-COPY vite.config.mjs tsconfig.json VERSION ./
+COPY vite.config.mjs vite.errors.config.mjs tsconfig.json VERSION ./
 RUN pnpm run build
+
+FROM php-dependencies AS error-pages-build
+COPY --chown=runa:runa --from=frontend-build /build/resources/views/errors/generated/ resources/views/errors/generated/
+COPY --chown=runa:runa --from=frontend-build /build/public/runa-error/ public/runa-error/
+RUN php resources/errors/build.php
 
 FROM production-runtime AS production
 COPY --from=production-runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
@@ -130,8 +132,9 @@ COPY --chown=runa:runa config/ /workspace/config/
 COPY --chown=runa:runa database/ /workspace/database/
 COPY --chown=runa:runa resources/css/light-palette.css /workspace/resources/css/light-palette.css
 COPY --chown=runa:runa resources/views/ /workspace/resources/views/
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/resources/views/errors/generated/ /workspace/resources/views/errors/generated/
 COPY --chown=runa:runa resources/errors/messages.json /workspace/resources/errors/messages.json
-COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --chown=runa:runa resources/images/runa-mail-logo.png /workspace/resources/images/runa-mail-logo.png
 COPY --chown=runa:runa VERSION /workspace/VERSION
 COPY --chown=runa:runa routes/ /workspace/routes/
@@ -145,7 +148,7 @@ COPY --chown=runa:runa artisan /workspace/artisan
 FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf
 COPY docker/nginx/security-headers.conf /etc/nginx/runa-security-headers.conf
-COPY --from=php-dependencies /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
+COPY --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --from=frontend-build /build/public/build/ /workspace/public/build/
 USER nginx
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

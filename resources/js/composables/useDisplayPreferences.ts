@@ -1,10 +1,23 @@
 import { computed, nextTick, onScopeDispose, ref } from 'vue';
 import { useLocale } from './useLocale';
 import { useTheme } from './useTheme';
+import type { Theme } from './useTheme';
+import { messages } from '../locales/messages';
+import type { Locale, MessageKey } from '../locales/messages';
 
-export function useDisplayPreferences() {
-  const { locale, t } = useLocale();
-  const { theme } = useTheme();
+export function useDisplayPreferences(staticPreferences?: {
+  locale: Locale;
+  theme: Theme;
+}) {
+  const { locale, t } = staticPreferences
+    ? {
+        locale: ref(staticPreferences.locale),
+        t: (key: MessageKey) => messages[staticPreferences.locale][key],
+      }
+    : useLocale();
+  const { theme } = staticPreferences
+    ? { theme: ref(staticPreferences.theme) }
+    : useTheme();
   const nextTheme = computed(() =>
     theme.value === 'system'
       ? 'light'
@@ -29,8 +42,10 @@ export function useDisplayPreferences() {
   let disposed = false;
   onScopeDispose(() => {
     disposed = true;
-    window.cancelAnimationFrame(frame);
-    window.clearTimeout(revealTimer);
+    if (typeof window !== 'undefined') {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(revealTimer);
+    }
   });
   function changePreference(preference: 'language' | 'theme', event: Event) {
     if (changingPreference.value) return;

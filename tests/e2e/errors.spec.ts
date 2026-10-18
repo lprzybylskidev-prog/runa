@@ -40,6 +40,23 @@ for (const status of [404, 503]) {
             ),
           ).toBe(true);
           expect(await page.locator('script').count()).toBe(0);
+          await expect(page.locator('.minimal-page')).toHaveCount(1);
+          await expect(page.locator('.minimal-panel .runa-art')).toHaveCount(1);
+          await expect(
+            page.locator('.app-backdrop .app-constellation'),
+          ).toHaveCount(3);
+          await expect(page.locator('.error-card')).toHaveCount(0);
+          const artwork = await page.locator('.runa-art').boundingBox();
+          const heading = await page
+            .getByRole('heading', { level: 1 })
+            .boundingBox();
+          if (width < 1024) {
+            expect(artwork!.height).toBe(240);
+            expect(artwork!.y).toBeLessThan(heading!.y);
+          } else {
+            expect(artwork!.x).toBeGreaterThan(heading!.x);
+          }
+
           await page.screenshot({
             path: `artifacts/playwright/ui-foundations/error-${status}-${device}-${locale}-${theme}.png`,
             fullPage: true,
@@ -71,11 +88,11 @@ for (const status of [403, 404, 419, 429, 500, 503]) {
     });
     expect(json.status()).toBe(status);
     expect(json.headers()['content-type']).toContain('application/json');
-    await page.getByRole('link', { name: 'EN', exact: true }).click();
+    await page.getByRole('button', { name: /^Język:/ }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(
-      page.getByRole('link', { name: 'Home page', exact: true }),
-    ).toHaveAttribute('href', '/');
+      page.getByRole('button', { name: 'Home page', exact: true }),
+    ).toBeVisible();
   });
 }
 
@@ -92,4 +109,19 @@ test('errors: standalone emergency document uses independent assets', async ({
     path: 'artifacts/playwright/ui-foundations/error-emergency.png',
     fullPage: true,
   });
+});
+
+test('errors: shared minimal preference controls navigate without JavaScript', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto('/__review/not-found?lang=pl&theme=light');
+  await page.getByRole('button', { name: /^Język:/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: /^Theme:/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await context.close();
 });

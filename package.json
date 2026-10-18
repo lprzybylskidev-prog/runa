@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build && pnpm run build:errors",
+    "build:errors": "vite build --config vite.errors.config.mjs && node .runtime/error-renderer/render.mjs",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
