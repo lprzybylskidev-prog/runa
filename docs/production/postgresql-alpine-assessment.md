@@ -1,5 +1,15 @@
 # PostgreSQL Alpine locale and first-deployment assessment
 
+## Current disposition — 2026-10-18
+
+Development/test and first-install production configuration use the accepted PostgreSQL Alpine/UTF8/ICU/pl-PL baseline. RM-2026-003 point 3 retired the unused Bookworm rollback volume `runa-dev_postgres-data` after fresh ownership/all-container-reference inspection and a read-only content fingerprint matching the recorded switch evidence. The unused `postgres-data` Compose declaration was removed. Active `runa-dev_postgres-icu-data`, its databases and all unrelated resources were preserved; no development database or data-volume reset was performed. Point verification reset only guarded `runa_test` through the existing database-guard checks. Local deployment records are simulations and `production.ever_deployed` remains false.
+
+The selective switch is already delivered; do not rerun its one-time script against the current cluster or treat its retired rollback volume as available. Current initialization/reset authority is [database.md](../architecture/database.md); current production procedures are [deployment.md](deployment.md).
+
+## Historical assessment and switch record — 2026-10-17
+
+The following dated sections preserve the original proposal, read-only baseline, permissions and switch evidence. Their pending-work statements, preservation requirements and commands describe that historical stage, not current operational instructions or a current rollback resource.
+
 Assessment date: 2026-10-17. Status: proposal awaiting user agreement and disposable candidate execution. Official candidate: `postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873`. Runtime Compose, entrypoint, gosu, existing volumes and database initialization settings are unchanged.
 
 ## Observed current state
