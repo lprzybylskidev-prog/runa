@@ -392,6 +392,8 @@ Run health commands in the corresponding container because instance IDs differ. 
 
 ### Mail and persistence
 
+Mailpit uses `docker/mailpit/Dockerfile.dockerignore` to include only its data-directory placeholder in the build context; the root production exclusions remain independent.
+
 Mailpit UI is published only at `http://localhost:8025`. SMTP stays internal at `mailpit:1025`; app traffic stays at `http://localhost:8080`. PostgreSQL, workers and scheduler publish no ports. Mailpit accepts only localhost/loopback/service Host headers, stores up to 500 messages in its named volume, runs with the host-matched non-root UID/GID and uses its upstream `readyz` healthcheck. It has no outbound relay configuration.
 
 Laravel's SMTP configuration lives in `config/mail.php` and all app env examples. Development uses Mailpit; testing uses the array mailer. Credentials are optional as a pair, but invalid types/ports/schemes/sender values fail validation. Production requires actual outbound SMTP, TLS and the database queue; it rejects Mailpit/localhost/template-host settings and the array mailer. Never log credentials or mail payloads.

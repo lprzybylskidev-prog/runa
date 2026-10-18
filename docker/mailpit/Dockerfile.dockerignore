@@ -1,0 +1,5 @@
+# Mailpit needs only its non-root data-directory placeholder.
+**
+!docker/
+!docker/mailpit/
+!docker/mailpit/.gitkeep
