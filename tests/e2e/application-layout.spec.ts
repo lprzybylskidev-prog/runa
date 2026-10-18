@@ -110,7 +110,7 @@ test('known URLs reconstruct module/area on direct load, history and refresh', a
   );
 });
 
-test('sidebar collapse/groups persist, top and toolbar scroll, sidebar scroll is independent', async ({
+test('sidebar collapse/groups persist, header stays visible and sidebar scroll is independent', async ({
   page,
 }, info) => {
   test.skip(
@@ -158,7 +158,8 @@ test('sidebar collapse/groups persist, top and toolbar scroll, sidebar scroll is
   await page.getByRole('button', { name: 'Długa treść', exact: true }).click();
   await page.evaluate(() => scrollTo(0, 650));
   expect((await page.locator('.shell-sidebar').boundingBox())!.y).toBe(0);
-  expect((await page.locator('.shell-header').boundingBox())!.y).toBeLessThan(
+  expect((await page.locator('.shell-header').boundingBox())!.y).toBe(0);
+  expect((await page.locator('.shell-toolbar').boundingBox())!.y).toBeLessThan(
     0,
   );
   expect(
@@ -429,4 +430,47 @@ test('top dropdown floats outside the scrolling nav without changing header size
     await page.evaluate(() => scrollTo(0, 150));
     await expect(panel).toHaveCount(0);
   }
+});
+
+test('sidebar groups are whole-row disclosures, brand aligns with the sticky header and collapse control precedes navigation', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/__review/application/overview');
+  const group = page
+    .getByRole('navigation', { name: 'Moduły', exact: true })
+    .getByRole('button', { name: 'Projekty', exact: true });
+  const original = page.url();
+  await group.click();
+  await expect(group).toHaveAttribute('aria-expanded', 'true');
+  expect(page.url()).toBe(original);
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Moduły', exact: true })
+      .getByRole('link', { name: 'Aktywność', exact: true }),
+  ).toBeVisible();
+  expect((await page.locator('.shell-brand-row').boundingBox())!.height).toBe(
+    64,
+  );
+  expect(
+    (await page.locator('.shell-sidebar .brand-mark').boundingBox())!.width,
+  ).toBe(42);
+  const toggle = page.getByRole('button', { name: 'Zwiń menu', exact: true });
+  expect(
+    await toggle.evaluate(
+      (element) => !!element.closest('.shell-header-start'),
+    ),
+  ).toBe(true);
+  expect((await toggle.boundingBox())!.x).toBeLessThan(
+    (await page.locator('.shell-top-nav').boundingBox())!.x,
+  );
+  await toggle.click();
+  await expect(page.locator('.application-page')).toHaveClass(
+    /sidebar-collapsed/,
+  );
+  await group.click();
+  await expect(page.locator('.application-page')).not.toHaveClass(
+    /sidebar-collapsed/,
+  );
+  await expect(group).toHaveAttribute('aria-expanded', 'true');
 });

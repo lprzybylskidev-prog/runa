@@ -9,7 +9,6 @@ import {
   watch,
 } from 'vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
-import AppButton from '../components/AppButton.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
 import AppTopNavigation from '../components/AppTopNavigation.vue';
@@ -116,7 +115,12 @@ watch(
 );
 const sidebarCollapsed = computed(() => collapsed.value && !mobile.value);
 function toggleGroup(key: string) {
-  if (sidebarCollapsed.value) collapsed.value = false;
+  if (sidebarCollapsed.value) {
+    collapsed.value = false;
+    if (!expanded.value.includes(key))
+      expanded.value = [...expanded.value, key];
+    return;
+  }
   expanded.value = expanded.value.includes(key)
     ? expanded.value.filter((value) => value !== key)
     : [...expanded.value, key];
@@ -269,14 +273,16 @@ onScopeDispose(() => {
     >
       <div class="shell-brand-row">
         <a href="/" class="shell-brand" :aria-label="identity.applicationName">
-          <img
-            v-if="identity.logo && !logoFailed"
-            :src="identity.logo.src"
-            :alt="identity.logo.accessibleName"
-            class="h-7 max-w-24 object-contain"
-            @error="logoFailed = true"
-          />
-          <RunaLogo v-else />
+          <span class="brand-mark">
+            <img
+              v-if="identity.logo && !logoFailed"
+              :src="identity.logo.src"
+              :alt="identity.logo.accessibleName"
+              class="max-h-7 max-w-7 object-contain"
+              @error="logoFailed = true"
+            />
+            <RunaLogo v-else />
+          </span>
           <span v-if="!sidebarCollapsed"
             >{{ identity.applicationName
             }}<span class="text-primary" aria-hidden="true">.</span></span
@@ -309,19 +315,6 @@ onScopeDispose(() => {
         <slot name="sidebar-bottom" :t="t" :collapsed="sidebarCollapsed" />
       </div>
       <div class="shell-sidebar-bottom">
-        <AppButton
-          v-if="!mobile"
-          :aria-label="
-            sidebarCollapsed ? t('expandNavigation') : t('collapseNavigation')
-          "
-          :aria-expanded="!sidebarCollapsed"
-          @click="collapsed = !collapsed"
-        >
-          <span aria-hidden="true">{{ sidebarCollapsed ? '»' : '«' }}</span
-          ><span v-if="!sidebarCollapsed" class="ml-3">{{
-            t('collapseNavigation')
-          }}</span>
-        </AppButton>
         <span v-if="!sidebarCollapsed" class="shell-platform"
           >RUNA / {{ identity.platformVersion }}</span
         >
@@ -331,19 +324,26 @@ onScopeDispose(() => {
       <header class="shell-header" :class="{ 'shell-header-minimal': !topbar }">
         <div class="shell-header-start">
           <button
-            v-if="sidebar && mobile"
+            v-if="sidebar"
             ref="drawerTrigger"
             type="button"
-            class="shell-mobile-trigger"
-            :aria-label="t('openNavigation')"
-            :aria-expanded="drawer"
+            class="shell-sidebar-toggle"
+            :aria-label="
+              mobile
+                ? t('openNavigation')
+                : sidebarCollapsed
+                  ? t('expandNavigation')
+                  : t('collapseNavigation')
+            "
+            :aria-expanded="mobile ? drawer : !sidebarCollapsed"
             :aria-controls="drawerId"
-            @click="openDrawer"
+            @click="mobile ? openDrawer() : (collapsed = !collapsed)"
           >
             ☰
           </button>
           <a v-if="!sidebar" href="/" class="shell-brand"
-            ><RunaLogo /><span>{{ identity.applicationName }}</span></a
+            ><span class="brand-mark"><RunaLogo /></span
+            ><span>{{ identity.applicationName }}</span></a
           >
           <nav
             v-if="topbar"

@@ -52,8 +52,35 @@ function active(entry: NavigationEntry): boolean {
           :placement="collapsed ? 'right' : 'bottom'"
         >
           <template #default="{ descriptionId }">
+            <button
+              v-if="
+                navigable(entry) &&
+                entry.children?.some((child) => child.availability !== 'hidden')
+              "
+              type="button"
+              :class="[
+                'shell-nav-link shell-sidebar-disclosure',
+                { 'is-active': active(entry), 'is-collapsed': collapsed },
+              ]"
+              :aria-label="collapsed ? entry.label : undefined"
+              :aria-describedby="collapsed ? descriptionId : undefined"
+              :aria-expanded="!collapsed && expanded.includes(entry.key)"
+              :aria-controls="`${id}-${entry.key}`"
+              @click="emit('toggle', entry.key)"
+            >
+              <AppIcon
+                v-if="context === 'sidebar'"
+                :name="entry.icon ?? 'layers-intersect'"
+              />
+              <span v-if="!collapsed">{{ entry.label }}</span>
+              <span
+                v-if="!collapsed"
+                class="shell-disclosure-chevron"
+                aria-hidden="true"
+              />
+            </button>
             <a
-              v-if="navigable(entry)"
+              v-else-if="navigable(entry)"
               :href="entry.href"
               :aria-label="collapsed ? entry.label : undefined"
               :aria-describedby="collapsed ? descriptionId : undefined"
@@ -86,22 +113,6 @@ function active(entry: NavigationEntry): boolean {
             </span>
           </template>
         </AppTooltip>
-        <button
-          v-if="
-            entry.children?.some((child) => child.availability !== 'hidden') &&
-            navigable(entry)
-          "
-          type="button"
-          class="shell-group-toggle"
-          :aria-label="entry.label"
-          :aria-expanded="!collapsed && expanded.includes(entry.key)"
-          :aria-controls="`${id}-${entry.key}`"
-          @click="emit('toggle', entry.key)"
-        >
-          <span aria-hidden="true">{{
-            !collapsed && expanded.includes(entry.key) ? '−' : '+'
-          }}</span>
-        </button>
       </div>
       <div
         v-if="entry.children"

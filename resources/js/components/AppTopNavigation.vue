@@ -171,7 +171,7 @@ onScopeDispose(() => {
         @click="toggle(entry, $event)"
       >
         {{ entry.label }}
-        <span aria-hidden="true" class="shell-top-chevron">⌄</span>
+        <span aria-hidden="true" class="shell-disclosure-chevron" />
       </button>
       <a
         v-else-if="navigable(entry)"

@@ -89,7 +89,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## ApplicationLayout and AppNavigation
 
 - Sources: `resources/js/layouts/ApplicationLayout.vue`, internal recursive `resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/architecture/frontend.md` and page-layouts.md.
-- AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, nested disclosure groups and collapsed labels. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
+- AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, whole-row disclosure buttons for groups and collapsed labels. Group labels do not navigate; leaf entries remain links. A centered CSS chevron lives inside the disclosure control, matching top-navigation convention. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
 - Existing AppPreferenceControls and useDisplayPreferences are shared shell composition, preserving root timing/focus. Do not create another copy when later finalizing buttons/feedback; update both consumers. AppNavigation/profile/drawer composition is finalized with the owning later component points, not a competing exported dropdown/modal system.
 
 ## AppTopNavigation
