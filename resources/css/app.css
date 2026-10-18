@@ -429,6 +429,42 @@ input:-webkit-autofill {
   }
 }
 
+/* Shared themed scrollbars retain native wheel, touch and keyboard scrolling. */
+:root {
+  scrollbar-color: var(--runa-primary-solid) var(--runa-surface-muted);
+  scrollbar-width: thin;
+}
+* {
+  scrollbar-color: var(--runa-primary-solid) var(--runa-surface-muted);
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--runa-surface-muted);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--runa-primary-solid);
+  border: 2px solid var(--runa-surface-muted);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--runa-primary-hover);
+}
+*::-webkit-scrollbar-corner {
+  background: var(--runa-surface-muted);
+}
+@media (forced-colors: active) {
+  :root,
+  * {
+    scrollbar-color: auto;
+    scrollbar-width: auto;
+  }
+}
+
 /* Application shell: navigation alone is fixed; the workspace uses document scrolling. */
 .application-page {
   --shell-sidebar-width: 264px;

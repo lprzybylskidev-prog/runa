@@ -180,7 +180,7 @@ test('mobile drawer traps focus, closes with Escape/outside and restores trigger
   ).toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(
-    dialog.getByRole('link', { name: 'Zespół', exact: true }),
+    dialog.getByRole('link', { name: 'Obszar testowy 16', exact: true }),
   ).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(
@@ -283,4 +283,50 @@ test('top navigation remains reachable through horizontal overflow on a narrow s
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+test('both navigation scrollbars use theme violet and long-menu fixtures can be toggled', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/__review/application/projects');
+  const sidebar = page.locator('.shell-sidebar-scroll');
+  const top = page.locator('.shell-top-nav');
+  expect(
+    await sidebar.evaluate(
+      (element) => element.scrollHeight > element.clientHeight,
+    ),
+  ).toBe(true);
+  expect(
+    await top.evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(true);
+  // Headless Firefox resolves even an isolated inline `thin` declaration to `none`.
+  // Compare against this browser's native resolution rather than assuming the host's widget metrics.
+  const nativeThin = await page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.style.scrollbarWidth = 'thin';
+    document.body.append(probe);
+    const width = getComputedStyle(probe).scrollbarWidth;
+    probe.remove();
+    return width;
+  });
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((theme) => {
+      document.documentElement.dataset.theme = theme;
+    }, theme);
+    for (const locator of [sidebar, top]) {
+      const styles = await locator.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { color: style.scrollbarColor, width: style.scrollbarWidth };
+      });
+      expect(styles.width).toBe(nativeThin);
+      expect(styles.color).toContain(
+        theme === 'light' ? '134, 80, 186' : '183, 132, 223',
+      );
+    }
+  }
+  await page.getByRole('button', { name: 'Długie menu', exact: true }).click();
+  await expect(
+    page.getByRole('link', { name: 'Obszar testowy 01', exact: true }),
+  ).toHaveCount(0);
 });

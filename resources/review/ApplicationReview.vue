@@ -71,10 +71,23 @@ function entry(key: keyof typeof labels.value): NavigationEntry {
     availability: 'available',
   };
 }
+const longNavigation = ref(true);
+const extraEntries = computed<NavigationEntry[]>(() =>
+  longNavigation.value
+    ? Array.from({ length: 16 }, (_, index) => ({
+        ...entry(index % 2 === 0 ? 'projects' : 'team'),
+        key: `scroll-example-${index}`,
+        routeKey: `scroll-example-${index}`,
+        moduleKey: `scroll-example-${index}`,
+        label: `${text('Obszar testowy', 'Test area')} ${String(index + 1).padStart(2, '0')}`,
+      }))
+    : [],
+);
 const navigation = computed<NavigationEntry[]>(() => [
   entry('overview'),
   { ...entry('projects'), children: [entry('activity'), entry('archive')] },
   entry('team'),
+  ...extraEntries.value,
   {
     key: 'reports',
     routeKey: 'reports',
@@ -96,8 +109,12 @@ const topNavigation = computed<NavigationEntry[]>(() =>
           label: text('Więcej', 'More'),
           children: [entry('archive')],
         },
+        ...extraEntries.value,
       ]
-    : [entry(current.value?.moduleKey === 'team' ? 'team' : 'overview')],
+    : [
+        entry(current.value?.moduleKey === 'team' ? 'team' : 'overview'),
+        ...extraEntries.value,
+      ],
 );
 const title = computed(() =>
   current.value
@@ -293,6 +310,11 @@ function setWidth(value: string) {
             }}
           </p>
           <div class="review-option-buttons">
+            <Button
+              :aria-pressed="longNavigation"
+              @click="longNavigation = !longNavigation"
+              >{{ text('Długie menu', 'Long menus') }}</Button
+            >
             <Button :aria-pressed="sidebar" @click="sidebar = !sidebar">{{
               text('Menu boczne', 'Sidebar')
             }}</Button>
