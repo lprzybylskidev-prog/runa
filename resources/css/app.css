@@ -1051,3 +1051,37 @@ input:-webkit-autofill {
 .shell-disclosure-chevron {
   transition: transform 160ms ease-out;
 }
+
+/* Quiet technical texture shared by the two application navigation surfaces. */
+.shell-header,
+.shell-sidebar {
+  background-image:
+    linear-gradient(
+      color-mix(
+          in srgb,
+          var(--runa-text-secondary)
+            calc(var(--runa-backdrop-grid-opacity) * 100%),
+          transparent
+        )
+        1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(
+          in srgb,
+          var(--runa-text-secondary)
+            calc(var(--runa-backdrop-grid-opacity) * 100%),
+          transparent
+        )
+        1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+}
+@media (forced-colors: active) {
+  .shell-header,
+  .shell-sidebar {
+    background-image: none;
+  }
+}
