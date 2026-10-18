@@ -650,7 +650,7 @@ input:-webkit-autofill {
   gap: 12px;
   margin-left: auto;
 }
-.shell-avatar-button {
+button.app-button.shell-avatar-button {
   border-radius: 50%;
 }
 .shell-sidebar-toggle {

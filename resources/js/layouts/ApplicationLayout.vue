@@ -349,6 +349,7 @@ onScopeDispose(() => {
         </div>
         <div class="shell-header-controls" data-print-hide>
           <AppPreferenceControls
+            size="sm"
             :locale="locale"
             :theme="theme"
             :theme-label="themeLabel"

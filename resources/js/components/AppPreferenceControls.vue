@@ -3,15 +3,20 @@ import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
 import AppTooltip from './AppTooltip.vue';
 import type { Locale, MessageKey } from '../locales/messages';
+import type { ControlSize } from '../runa/ui/controls';
 import type { Theme } from '../composables/useTheme';
-defineProps<{
-  navigation?: boolean;
-  locale: Locale;
-  theme: Theme;
-  themeLabel: string;
-  languageLabel: string;
-  t: (key: MessageKey) => string;
-}>();
+withDefaults(
+  defineProps<{
+    size?: ControlSize;
+    navigation?: boolean;
+    locale: Locale;
+    theme: Theme;
+    themeLabel: string;
+    languageLabel: string;
+    t: (key: MessageKey) => string;
+  }>(),
+  { size: 'md' },
+);
 const emit = defineEmits<{
   change: [preference: 'language' | 'theme', event: Event];
 }>();
@@ -22,6 +27,7 @@ const emit = defineEmits<{
       <form method="get">
         <input type="hidden" name="theme" :value="theme" />
         <AppButton
+          :size="size"
           type="submit"
           compact
           name="lang"
@@ -33,6 +39,7 @@ const emit = defineEmits<{
       <form method="get">
         <input type="hidden" name="lang" :value="locale" />
         <AppButton
+          :size="size"
           type="submit"
           compact
           name="theme"
@@ -42,6 +49,7 @@ const emit = defineEmits<{
           :aria-label="themeLabel"
         >
           <AppIcon
+            :size="size === 'sm' ? 18 : 24"
             :name="
               theme === 'system'
                 ? 'device-desktop'
@@ -57,6 +65,7 @@ const emit = defineEmits<{
       <AppTooltip :text="t('changeLanguage')">
         <template #default="{ descriptionId }">
           <AppButton
+            :size="size"
             compact
             :aria-label="languageLabel"
             :aria-describedby="descriptionId"
@@ -69,12 +78,14 @@ const emit = defineEmits<{
       <AppTooltip :text="t('changeTheme')">
         <template #default="{ descriptionId }">
           <AppButton
+            :size="size"
             compact
             :aria-label="themeLabel"
             :aria-describedby="descriptionId"
             @click="emit('change', 'theme', $event)"
           >
             <AppIcon
+              :size="size === 'sm' ? 18 : 24"
               :name="
                 theme === 'system'
                   ? 'device-desktop'
