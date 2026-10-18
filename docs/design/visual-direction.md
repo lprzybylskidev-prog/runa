@@ -97,11 +97,11 @@ Do not copy dashboard content, cards, charts or their appearance from this refer
 
 ### Footer
 
-Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application integration is implemented in point 3 and awaits visual acceptance; email integration remains planned for point 4.
+Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application integration was accepted in point 3 on 2026-10-18; email integration is implemented in point 4 and awaits owner visual acceptance.
 
 ### Remaining scope
 
-Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Phone drawer behavior, top-link overflow and sidebar persistence are implemented under RM-2026-004 point 3 and await rendered acceptance. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
+Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Phone drawer behavior, top-link overflow and sidebar persistence were implemented and accepted under RM-2026-004 point 3 on 2026-10-18. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
 
 ## Icons
 

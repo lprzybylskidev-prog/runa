@@ -115,6 +115,9 @@ const categories = [
         <a href="/__review/application/overview"
           >Układ aplikacyjny / Application layout</a
         >
+        <a href="/__review/email">E-mail</a>
+        <a href="/__review/email?format=text">TXT</a>
+        <a href="/__review/email?format=eml">EML</a>
         <a href="/__review/not-found">404</a>
       </nav>
     </template>

@@ -39,4 +39,6 @@ User-supplied original: `resources/images/runa-logo.png`, 1254 × 1254 RGBA PNG 
 
 SHA256: `5bd3b20c783ddf15917b5f1d576028e3dca0dd22d0447ea606cb36d39af837f5`.
 
+Native email uses the same original PNG as an inline CID part (or a configured public HTTPS logo), with explicit dimensions and a separate visible application name for blocked-image readability. No derivative bitmap was added.
+
 The user supplied this as Runa's project logo; no third-party source or license was supplied. Do not replace it with a generated approximation.

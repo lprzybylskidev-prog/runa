@@ -45,6 +45,14 @@ class ProductionContracts(unittest.TestCase):
         self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
         self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
 
+    def test_native_mail_runtime_inputs_are_shipped_without_review_fixtures(self):
+        stage = (ROOT / 'docker/php/Dockerfile').read_text().split('FROM production-runtime AS production\n')[1].split('FROM nginx:')[0]
+        for source in ('resources/views/', 'resources/images/runa-logo.png', 'resources/css/light-palette.css', 'VERSION'):
+            self.assertTrue((ROOT / source).exists())
+            self.assertIn('COPY --chown=runa:runa ' + source + ' /workspace/' + source, stage)
+        self.assertNotIn('resources/review', stage)
+        self.assertNotIn('COPY --chown=runa:runa resources/ /workspace/resources/', stage)
+
     def test_shared_nginx_runtime_digest_stays_consistent(self):
         development = yaml(ROOT / 'compose.yaml')['services']
         image = development['nginx']['image']
