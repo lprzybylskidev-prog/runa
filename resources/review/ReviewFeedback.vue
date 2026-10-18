@@ -12,16 +12,24 @@ import {
 } from '@/runa/ui';
 import type { FeedbackTone, BadgeTone } from '@/runa/ui';
 defineProps<{ english: boolean }>();
-const tones: FeedbackTone[] = ['success', 'info', 'warning', 'danger'];
-const badgeTones: BadgeTone[] = ['neutral', ...tones];
+const tones: FeedbackTone[] = [
+  'neutral',
+  'success',
+  'info',
+  'warning',
+  'danger',
+];
+const badgeTones: BadgeTone[] = tones;
 const titles = {
   pl: {
+    neutral: 'Komunikat',
     success: 'Zapisano zmiany',
     info: 'Informacja',
     warning: 'Sprawdź dane',
     danger: 'Nie zapisano zmian',
   },
   en: {
+    neutral: 'Message',
     success: 'Changes saved',
     info: 'Information',
     warning: 'Check the data',
@@ -143,8 +151,8 @@ function notify(tone: FeedbackTone, english: boolean) {
         <Button
           v-for="tone in tones"
           :key="tone"
-          :tone="tone"
-          variant="outline"
+          :tone="tone === 'neutral' ? 'secondary' : tone"
+          :variant="tone === 'neutral' ? 'neutral' : 'outline'"
           @click="notify(tone, english)"
           >{{ titles[english ? 'en' : 'pl'][tone] }}</Button
         >

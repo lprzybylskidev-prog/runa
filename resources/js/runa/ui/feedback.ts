@@ -1,5 +1,6 @@
-export type FeedbackTone = 'success' | 'info' | 'warning' | 'danger';
-export type BadgeTone = FeedbackTone | 'neutral';
+export type FeedbackTone =
+  'neutral' | 'success' | 'info' | 'warning' | 'danger';
+export type BadgeTone = FeedbackTone;
 export interface ToastMessage {
   id: string;
   title: string;

@@ -39,7 +39,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppAlert, AppBadge and AppStatus
 
-- Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: success/info/warning/danger; badge/status also support neutral. All use shared theme role tokens.
+- Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: neutral/success/info/warning/danger for alerts, toasts, badges and statuses. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, with no status tint. All use shared theme role tokens.
 - Alert accepts optional title, content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
 - Badge is static inline labeling/counts, size sm/md, no live role. Status pairs a decorative dot with required caller-provided readable slot content; announce opt-in enables role status.
 

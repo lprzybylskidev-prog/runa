@@ -18,7 +18,13 @@ withDefaults(
   },
 );
 defineEmits<{ close: [] }>();
-const symbols = { success: '✓', info: 'i', warning: '!', danger: '!' };
+const symbols = {
+  neutral: 'i',
+  success: '✓',
+  info: 'i',
+  warning: '!',
+  danger: '!',
+};
 </script>
 <template>
   <div
@@ -39,8 +45,8 @@ const symbols = { success: '✓', info: 'i', warning: '!', danger: '!' };
       v-if="dismissible"
       icon-only
       size="sm"
-      variant="ghost"
-      :tone="tone"
+      :variant="tone === 'neutral' ? 'neutral' : 'ghost'"
+      :tone="tone === 'neutral' ? 'secondary' : tone"
       :aria-label="closeLabel"
       @click="$emit('close')"
       >×</AppButton
@@ -60,6 +66,12 @@ const symbols = { success: '✓', info: 'i', warning: '!', danger: '!' };
   color: var(--feedback-text);
   font-size: 12px;
   line-height: 1.7;
+}
+.app-alert[data-tone='neutral'] {
+  --feedback-text: var(--runa-text-secondary);
+  --feedback-subtle: var(--runa-surface-raised);
+  border-color: var(--runa-control-border);
+  border-left-width: 1px;
 }
 .alert-symbol {
   display: inline-flex;
