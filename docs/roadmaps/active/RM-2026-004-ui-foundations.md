@@ -21,7 +21,7 @@ impact_areas:
 
 ### Goal and release
 
-Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Outstanding real production-Nginx host verification is explicitly separated into point 7; it remains a required gate before further component work and release.
+Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Real production-Nginx host verification passed in point 7 on 2026-10-18; subsequent component work remains unstarted.
 
 Planned release: **0.2.0**, from audited `VERSION` **0.1.2**. This is a feature roadmap under `docs/workflows/releases.md`, not a stable API/1.0 declaration. Pre-1.0 API additions and documented evolution justify a minor release; no major bump is authorized. Recompute from actual main at activation if an intervening release occurs and synchronize the two successor drafts.
 
@@ -133,7 +133,7 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Requires accepted 4. Implement six server-rendered statuses, localized safe output, retry headers, no-JS/DB-failure behavior and static production fallback. Extend exact production image copies/Nginx/maintenance integration and tests. Preserve API JSON and `/`. **Visual gate: actual 404 plus 403/419/429/500/503 samples.**
 - [x] 6. Runa favicon from the existing logo.
   - Requires accepted 5; explicitly requested by the owner on 2026-10-18. Derive a compact browser icon from the actual MinimalLayout brand tile and supplied Runa logo, preserving the original asset. Serve it from the root, review and native/emergency error documents, including production without PHP. No new dependency or separate logo design. Verify rendered sizes and asset delivery. **Visual gate: browser tab and native-size icon preview.**
-- [ ] 7. Real production-Nginx emergency fallback verification.
+- [x] 7. Real production-Nginx emergency fallback verification.
   - Requires accepted 6. Carries the unexecuted host-only verification from point 5; its UI acceptance and implementation closure are not evidence of a real Nginx PASS. Run the scoped host test from the handoff, inspect the report, resolve failures and verify task-resource cleanup. Keep this point open without actual passing evidence; do not merge/release or start component work before it passes.
 - [ ] 8. Buttons, icons and avatars.
   - Requires 7. Extend current controls with variants/sizes/busy/disabled, icon-only labels, groups and dropdown buttons; review icon provenance and avatar fallback. Component/event/keyboard tests. **Visual gate: category variants/states.**
@@ -278,7 +278,7 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 
 ## Point 6 execution record
 
-Status: **complete and visually accepted by the owner on 2026-10-18**. Implementation commit: `2ef52f0`; acceptance and explicit layout integration verification are recorded in the following documentation commit. Point 7 host verification has not started.
+Status: **complete and visually accepted by the owner on 2026-10-18**. Implementation commit: `2ef52f0`; acceptance and explicit layout integration verification are recorded in the following documentation commit. Point 7 host verification subsequently passed as recorded below.
 
 - Owner requested a favicon based on the Runa logo immediately after accepting point 5. Refreshed the current local knowledge (99 documents/1064 chunks), frontend guidance and original logo/design sources. Use the actual MinimalLayout brand tile and original mark; no replacement logo, dependency or unrelated UI changes.
 - Added a single committed root favicon.ico with 16/32/48px PNG frames. The development-only regeneration script snapshots the actual light-theme brand tile using existing Playwright and packages the ICO without another image dependency. The supplied source logo is unchanged. Root, temporary review and thin native/static error documents reference the same icon; both production images explicitly copy it so emergency Nginx delivery does not depend on PHP.
@@ -290,6 +290,8 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 - On 2026-10-18, after restarting the editor, the owner confirmed that Ctrl+F5 refreshed the cached browser favicon and both templates display it correctly. The owner explicitly requested closure of point 6; its completed checklist state is confirmed. No application change was needed.
 
 ## Execution handoff
+
+**Current state:** host verification is complete with PASS and verified cleanup; see Host completion results below. The original transition instructions are retained as execution evidence and do not require another run. Point 8 remains unstarted.
 
 - **2026-10-18; devcontainer → native-host terminal verification.** Roadmap `RM-2026-004`, host verification point 7 (favicon point 6 comes first), branch `roadmap/RM-2026-004-ui-foundations`, initial implementation `02bbb5a`, followed by the shared-MinimalLayout correction commit. Implementation/docs/checks are committed on this branch; verify HEAD/clean worktree before running. Points 1–6 are accepted; point 7 host verification remains open. Do not start point 8 or merge/release before point 7 passes.
 - Reason: this devcontainer deliberately has no Docker executable/socket. All application/toolchain/browser checks above are complete; actual production Nginx image/config execution requires host Docker. Host checkout previously verified: `/home/lprzybylski/Documents/php/runa`; `/workspace` is its devcontainer mount, not a host path. Use the native host terminal, keeping the current development stack running; no editor/container shutdown is required.
@@ -328,6 +330,17 @@ python3 -m json.tool artifacts/playwright/ui-foundations/error-fallback-host.jso
 ```
 
 The host agent reviews all checks and cleanup, records actual removed/preserved resources here, refreshes the knowledge index through the existing app container, and commits point 7 completion only on PASS. On failure, retain the open point and inspect the actual error/report before changing anything. No full development-stack rebuild, shutdown or database reset is part of this handoff. Return to the devcontainer when services and cleanup permit; point 8 remains unstarted.
+
+### Host completion results (2026-10-18)
+
+Point 7 is **complete**. Host checkout and branch matched the handoff, with a clean starting worktree at `9985532`. Development/test services were healthy; knowledge was current (99 documents/1072 chunks), and the focused retrieval confirmed this handoff.
+
+- Corrected two failures exposed by actual host execution: the test now explicitly selects `docker/php/Dockerfile`; the English Accept-Language map regex is quoted because its semicolon otherwise terminates the Nginx directive. No behavior/architecture premise changed.
+- The complete rerun passed all 28 checks, including real production image build/configuration, PHP absence/recovery without Nginx restart, maintenance enable/clear, stopped upstream, PL/EN, theme, favicon/static assets, restrictive CSP, internal-only documents, JSON negotiation and preserved upstream statuses/body/Retry-After.
+- Evidence: `artifacts/playwright/ui-foundations/error-fallback-host.json` is PASS with no cleanup errors. Its `source_sha` is the starting HEAD `9985532`; the run includes the two uncommitted fixes delivered in this point. Its tested Nginx configuration SHA-256 is `067859abe6ee6344963ab1dee12b2a69ecd48acebb7370031052a4f9991808e6`.
+- After exact ownership/ID inspection and the printed removal list, the successful invocation removed `runa-rm004-errors-748ac8a0ce-fastcgi`, `runa-rm004-errors-748ac8a0ce-nginx`, `runa-rm004-errors-748ac8a0ce-network` and image tag `runa-rm004-errors-nginx:748ac8a0ce`. The earlier failed configuration run removed image tag `runa-rm004-errors-nginx:d3192f1654`; the first failed build created no scoped resources. Temporary host marker directories were removed. Independent post-run inspection confirmed no resources for these three invocation tokens remain.
+- Development/test services and databases, all durable volumes, Qdrant/model caches, backups, verification reports and shared builder caches were preserved. No deployment or production-ever-deployed state change occurred. The existing app remained running; return via **Dev Containers: Reopen in Container** is safe after normal branch/service verification.
+- Proportionate follow-up checks: offline production contracts, canonical formatting, documentation checks and diff hygiene passed. Knowledge was refreshed incrementally before the completion commit. Full managed deployment/release verification remains the final roadmap gate. Point 8 remains unstarted.
 
 ## Validation, risks and completion criteria
 

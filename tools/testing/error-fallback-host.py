@@ -57,7 +57,7 @@ def main():
         try:
             # A disposable tag, never an immutable release tag. Build uses locked production stages.
             build_started = True
-            run(['docker', 'build', '--target', 'production-nginx', '--label', 'runa.task=RM-2026-004-point5', '--label', 'runa.test.run=' + token, '-t', image, '.'])
+            run(['docker', 'build', '-f', 'docker/php/Dockerfile', '--target', 'production-nginx', '--label', 'runa.task=RM-2026-004-point5', '--label', 'runa.test.run=' + token, '-t', image, '.'])
             run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--entrypoint', 'nginx', image, '-t'])
             check(True, 'production Nginx configuration is valid')
             run(['docker', 'network', 'create', '--label', 'runa.task=RM-2026-004-point5', '--label', 'runa.test.run=' + token, network])
