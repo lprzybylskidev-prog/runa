@@ -299,6 +299,36 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 - Expected final output: `PASS: real production Nginx emergency fallback`; report: `artifacts/playwright/ui-foundations/error-fallback-host.json` with PASS, checks and cleanup results. Return that output/report for review. A failed/missing/RUNNING report is not a PASS. Resolve any actual Nginx/build/cleanup failure in point 7 and rerun its host verification. Host test does not verify a full real managed deployment; final release gates still cover installer/deployment/isolation.
 - Remaining after host PASS: review evidence, update this handoff with actual resource cleanup/preservation and mark point 7 complete in a committed checklist update. Points 5 and 6 visual acceptance is already recorded. Existing container use may continue during/after this isolated host test; if VS Code was reopened locally, verify service/worktree state before **Dev Containers: Reopen in Container**. No active development service requires recreation for these local PHP/static previews.
 
+### Owner-approved host continuation (2026-10-18)
+
+The owner explicitly chose to execute point 7 outside the devcontainer. No host test has run in this session; keep point 7 open until its report and cleanup are reviewed. Use **Dev Containers: Reopen Folder Locally**, then resume the same branch and read this handoff. Closing/reopening VS Code leaves the development stack running (`shutdownAction: none`).
+
+Run in the previously verified host checkout (confirm the path still exists):
+
+```bash
+cd /home/lprzybylski/Documents/php/runa
+pwd
+git status --short
+git branch --show-current
+./bin/dev status
+```
+
+Review before proceeding: expected branch `roadmap/RM-2026-004-ui-foundations`, clean worktree, existing development app running. If the location, branch, worktree or services differ, inspect and resolve deliberately before running the test; do not reset files or recreate services blindly.
+
+Then run the isolated test:
+
+```bash
+python3 tools/testing/error-fallback-host.py
+```
+
+Expected final line: `PASS: real production Nginx emergency fallback`. The script prints scoped cleanup and writes the report described above. Inspect it after the process finishes:
+
+```bash
+python3 -m json.tool artifacts/playwright/ui-foundations/error-fallback-host.json
+```
+
+The host agent reviews all checks and cleanup, records actual removed/preserved resources here, refreshes the knowledge index through the existing app container, and commits point 7 completion only on PASS. On failure, retain the open point and inspect the actual error/report before changing anything. No full development-stack rebuild, shutdown or database reset is part of this handoff. Return to the devcontainer when services and cleanup permit; point 8 remains unstarted.
+
 ## Validation, risks and completion criteria
 
 Use existing `./bin/test frontend`, `./bin/test e2e --critical`, backend Pest, `./bin/typecheck`, `./bin/pnpm run build`, production self-test/isolation and relevant offline production contracts. No mandatory CI. Tests must exercise behavior (focus, MIME, status, races, storage, selection membership), not just mirror component markup. Include production preview-absence and no-JS/error tests.
