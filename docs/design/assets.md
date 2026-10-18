@@ -43,6 +43,14 @@ Native email uses `resources/images/runa-mail-logo.png`: a 126×126 (3× density
 
 The user supplied this as Runa's project logo; no third-party source or license was supplied. Do not replace it with a generated approximation.
 
+## Browser favicon
+
+`public/favicon.ico` contains lossless 16×16, 32×32 and 48×48 PNG frames captured from the actual light-theme MinimalLayout brand tile. It preserves the original RunaLogo mask, violet mark, pale gradient, border and corners; no traced/replacement logo or dependency is introduced. The same light tile stays readable on light and dark browser chrome.
+
+Regenerate after building the root entry with `./bin/pnpm exec node tools/assets/render-favicon.mjs` against nginx-test. The script snapshots the existing tile and packages the frames in one ICO; the original logo bytes remain unchanged. SHA256: `d0535275ccad19fa824afd11fd084eefee4a2be18299edac00bc16c86aa0e41c`.
+
+Root/review documents and native/static emergency error documents reference `/favicon.ico`. Production PHP and Nginx images both explicitly copy the committed asset; Nginx serves it while PHP is unavailable. This is a browser icon only, without a web-app manifest or installation icons. Owner visual acceptance is pending in RM-2026-004 point 6.
+
 ## Standalone HTTP error assets
 
 The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `resources/views/errors/generated/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.

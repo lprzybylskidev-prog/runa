@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= $status ?> · <?= htmlspecialchars($copy['statuses'][(string) $status][0], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></title>
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="stylesheet" href="/runa-error/styles.css">
 </head>
 <body>

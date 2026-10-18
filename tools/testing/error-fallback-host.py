@@ -93,6 +93,7 @@ def main():
             status, headers, body = fetch('/?lang=en&theme=dark')
             check(status == 503 and b'Service unavailable' in body, 'EN emergency localization')
             check(b'data-theme="dark"' in body, 'emergency theme selection')
+            check(b'/favicon.ico' in body and fetch('/favicon.ico')[0] == 200, 'favicon remains available without PHP')
             status, headers, body = fetch('/api/ready')
             check(status == 503 and headers.get_content_type() == 'application/json' and json.loads(body)['code'] == 'service_unavailable', 'API outage is JSON with status 503')
             status, headers, body = fetch('/missing', {'Accept': 'application/problem+json'})

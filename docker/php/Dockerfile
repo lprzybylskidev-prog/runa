@@ -139,7 +139,7 @@ COPY --chown=runa:runa resources/images/runa-mail-logo.png /workspace/resources/
 COPY --chown=runa:runa VERSION /workspace/VERSION
 COPY --chown=runa:runa routes/ /workspace/routes/
 COPY --chown=runa:runa lang/ /workspace/lang/
-COPY --chown=runa:runa public/index.php /workspace/public/index.php
+COPY --chown=runa:runa public/index.php public/favicon.ico /workspace/public/
 COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
 RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
     storage/framework/sessions storage/framework/views storage/framework/health storage/framework/maintenance storage/logs
@@ -147,6 +147,7 @@ COPY --chown=runa:runa artisan /workspace/artisan
 
 FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf
+COPY public/favicon.ico /workspace/public/favicon.ico
 COPY docker/nginx/security-headers.conf /etc/nginx/runa-security-headers.conf
 COPY --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --from=frontend-build /build/public/build/ /workspace/public/build/

@@ -278,9 +278,12 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 
 ## Point 6 execution record
 
-Status: **authorized; implementation in progress, owner visual acceptance pending**.
+Status: **implemented and locally verified; owner visual acceptance pending**. Point 6 remains open; point 7 host verification has not started.
 
-- Owner requested a favicon based on the Runa logo immediately after accepting point 5. Use the actual MinimalLayout brand tile and original mark; no replacement logo, dependency or unrelated UI changes.
+- Owner requested a favicon based on the Runa logo immediately after accepting point 5. Refreshed the current local knowledge (99 documents/1064 chunks), frontend guidance and original logo/design sources. Use the actual MinimalLayout brand tile and original mark; no replacement logo, dependency or unrelated UI changes.
+- Added a single committed root favicon.ico with 16/32/48px PNG frames. The development-only regeneration script snapshots the actual light-theme brand tile using existing Playwright and packages the ICO without another image dependency. The supplied source logo is unchanged. Root, temporary review and thin native/static error documents reference the same icon; both production images explicitly copy it so emergency Nginx delivery does not depend on PHP.
+- Native-size preview evidence: `artifacts/playwright/ui-foundations/favicon-preview.png`, inspected on light/dark backgrounds. Reachable browser-tab previews: `http://localhost:8080/`, `/__review/not-found` and `/__review/errors/emergency`; direct asset `/favicon.ico`. No additional review route or duplicate PNG/PWA assets were introduced.
+- Strict TS/main/shared-error/review builds and PHP static finalization passed. Chromium and Firefox verified favicon links and exact asset delivery on root/review/native 404/emergency previews, and decoded the ICO; 16/32/48 PNG frame dimensions were checked. Five offline production contracts, ESLint, formatting and docs/diff checks passed. Production-Nginx host verification remains unexecuted in point 7, whose test now also checks favicon availability during outage. No Docker resource was created or removed; existing services/data/caches/backups/reports were preserved.
 
 ## Execution handoff
 
