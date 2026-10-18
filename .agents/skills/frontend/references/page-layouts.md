@@ -10,7 +10,7 @@ The layout owns locale/theme composables once. Consumers use scoped `t`, preserv
 
 ## Preserved root welcome view
 
-`resources/js/App.vue` consumes MinimalLayout directly with only the existing heading/description as content. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. No authentication behavior exists. The original root was accepted on 2026-10-18; the point-2 extraction/footer awaits separate owner visual acceptance.
+`resources/js/App.vue` consumes MinimalLayout directly with only the existing heading/description as content. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. No authentication behavior exists. The original root was accepted on 2026-10-18; the point-2 layout/footer and subsequent mobile corrections were accepted on 2026-10-18.
 
 ## Future application/admin pages
 

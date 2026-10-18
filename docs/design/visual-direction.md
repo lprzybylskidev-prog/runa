@@ -97,7 +97,7 @@ Do not copy dashboard content, cards, charts or their appearance from this refer
 
 ### Footer
 
-Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Rendered owner acceptance is pending. Application/email integration remains planned for points 3–4.
+Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application/email integration remains planned for points 3–4.
 
 ### Remaining scope
 
@@ -191,7 +191,7 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- Rendered validation of the implemented configurable dual-version footer (owner acceptance pending) in RM-2026-004.
+- Rendered validation of the implemented configurable dual-version footer (point 2 accepted on 2026-10-18) in RM-2026-004.
 - Further component-specific theme validation as new views are implemented.
 - Future auth/app view implementation scope; the current root preview is accepted.
 
@@ -231,4 +231,4 @@ The logo illustration’s orbital outlines also carry small static glowing point
 
 User accepts the current dark direction; keep dark values unchanged. Light mode uses a more legible technical grid (9% versus dark 4.5%) and stronger constellation line opacity (48% versus dark 20%, before group opacity). The illustration uses the main surface base in light mode, gently darkened with 20% of the border token after user review, with deeper violet and cyan/blue gradient layers and a much quieter divider. Light artwork uses primary violet at 34% and an accent-cyan/cool-blue mix at 29% at the radial centers, fading outward; dark keeps its original gradient sources and 18%/16% intensities. Keep this modest tint local to the artwork; preserve the accepted page background and dark theme. These are contextual decoration tokens, not a replacement semantic palette.
 
-Point-2 owner feedback (2026-10-18): on narrow screens the illustration precedes content and is reduced from 420px to 240px, with proportional artwork scaling; desktop keeps its original right-side composition. The footer translates “Powered by” as “Oparte na” in Polish. Keep the small RUNA artwork signature fixed to the platform, independent of business application identity. Visual acceptance remains pending after these corrections.
+Point-2 owner feedback (2026-10-18): on narrow screens the illustration precedes content and is reduced from 420px to 240px, with proportional artwork scaling; desktop keeps its original right-side composition. The footer translates “Powered by” as “Oparte na” in Polish. Keep the small RUNA artwork signature fixed to the platform, independent of business application identity. The owner accepted these corrections on 2026-10-18; the intermittent preference-tooltip dismissal defect is deferred to point 7 and integration of finalized shared Runa controls.
