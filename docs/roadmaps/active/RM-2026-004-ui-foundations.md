@@ -1,10 +1,10 @@
 ---
 id: RM-2026-004
 title: UI foundations, layouts and reusable components
-status: draft
+status: active
 branch: roadmap/RM-2026-004-ui-foundations
 created_at: 2026-10-18
-activated_at: null
+activated_at: 2026-10-18
 closed_at: null
 release_type: feature
 impact_areas:
@@ -21,11 +21,11 @@ impact_areas:
 
 ### Goal and release
 
-Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). This is a planning-only draft; activation requires the owner's explicit declaration.
+Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; implementation is limited to the requested point 1 in this session.
 
 Planned release: **0.2.0**, from audited `VERSION` **0.1.2**. This is a feature roadmap under `docs/workflows/releases.md`, not a stable API/1.0 declaration. Pre-1.0 API additions and documented evolution justify a minor release; no major bump is authorized. Recompute from actual main at activation if an intervening release occurs and synchronize the two successor drafts.
 
-Execution order: this roadmap → [RM-2026-005](RM-2026-005-platform-installation-updates.md) → [RM-2026-006](RM-2026-006-module-framework.md). Neither successor may start implementation before its predecessor is closed, merged and released. No successor infrastructure is a prerequisite of this UI release.
+Execution order: this roadmap → [RM-2026-005](../draft/RM-2026-005-platform-installation-updates.md) → [RM-2026-006](../draft/RM-2026-006-module-framework.md). Neither successor may start implementation before its predecessor is closed, merged and released. No successor infrastructure is a prerequisite of this UI release.
 
 ### Scope and exclusions
 
@@ -56,6 +56,8 @@ Inspect `docs/design/visual-direction.md`, `color-palette.md`, `color-palette-pr
 ## Specification
 
 ### Decisions
+
+- 2026-10-18 — Owner explicitly declared this roadmap ready for activation and requested point 1. Activation base: main `4ed4b3f`, two planning commits ahead of origin/main with no incoming commits; clean worktree, no other active roadmap, VERSION remains 0.1.2 and planned release remains 0.2.0.
 
 - 2026-10-18 — Preserve IBM Plex Mono, semantic palette, approximately 4px ordinary corners, moderate density, supplied logo and licensed local Tabler subset. Extend icons from reviewed pinned upstream assets with attribution/hash updates, without assuming approval for a package.
 - 2026-10-18 — The latest accepted backdrop uses grid, diffuse corner gradients and constellations; older circle/ring instructions in the same design document are superseded. Preserve the current accepted implementation.
