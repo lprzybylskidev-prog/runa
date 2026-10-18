@@ -179,6 +179,11 @@ impact_areas:
       severity: hard_fail
 
   development:
+    - id: development-startup-contract
+      depends_on: [repository-state]
+      command: python3 tools/testing/development-startup.py
+      severity: hard_fail
+
     - id: development-stack
       depends_on: [configuration]
       command: ./bin/dev doctor

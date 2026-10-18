@@ -2,6 +2,18 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.1.2] - 2026-10-18
+
+Maintenance release — RM-2026-003.
+
+- Support durable native-Linux host/devcontainer handoffs and explicit selective build/recreation commands.
+- Decouple application startup and diagnostics from optional knowledge services, with independent retrying first-index initialization and bounded degradation reporting.
+- Keep development services running across editor transitions, use stable `:dev` image tags and pin the approved same-version official Nginx slim runtime consistently.
+- Retire the verified unused Bookworm PostgreSQL volume, preserve active ICU data and clarify scoped preproduction operations and resource sizing.
+- Synchronize current development guidance and complete host fault/recovery, editor, production simulation and security verification; remove disposable test resources.
+
+No application schema, dependencies or numerical resource presets changed. Development data, knowledge/model caches, backups and verification reports were preserved. No real production deployment occurred.
+
 ## [0.1.1] - 2026-10-18
 
 Fix release — RM-2026-002.

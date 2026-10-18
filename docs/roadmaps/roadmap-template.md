@@ -38,3 +38,14 @@ impact_areas:
   - Prerequisites: completed earlier points only.
   - Completion: outcome and proportionate lightweight verification.
 - [ ] N. Full verification, release finalization, merge, and final report.
+
+## Execution handoff (optional)
+
+Use only for a substantial host/container transition; follow `docs/workflows/roadmaps.md`.
+
+- Context: roadmap/point, branch/base commit, worktree state, timestamp/direction.
+- Purpose/progress: reason, completed work/checks, evidence paths, remaining tasks.
+- Environment: verified host checkout or unknown, Compose project/files, tools/services, observed identities/state.
+- Procedure: exact startup commands/source links, intended targets, protected resources (no secrets).
+- Acceptance: verification commands, host completion criteria, remaining gates.
+- Return: results/issues, cleanup/preservation, current service/configuration state, safe-to-return status.

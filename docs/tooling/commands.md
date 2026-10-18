@@ -25,9 +25,21 @@ Profiles:
 
 Doctor output includes effective resource values.
 
+### `./bin/dev up`
+
+Host-only application startup waits for PostgreSQL, app, successful setup, Nginx, queue, scheduler and Mailpit. It then starts Qdrant, configured embeddings and `knowledge-init` automatically without waiting for AI health/indexing. Application failures return nonzero; optional AI failures report degradation. Repair optional services and repeat startup, or run `./bin/knowledge index` for an existing stale index.
+
+### `./bin/dev knowledge-init` / `./bin/dev knowledge-status`
+
+Inside the development container: `knowledge-init` is the independent Compose initialization job, retrying through its restart policy; `knowledge-status` reports bounded optional service/freshness availability without failing application diagnostics. Neither is part of application setup/post-create.
+
+### `./bin/dev build` / `./bin/dev recreate`
+
+Host-only: `build [service ...]` builds selected local service images; no arguments builds all configured development images. Building does not recreate running containers. `recreate service [service ...]` requires explicit known services and runs selective `up -d --no-deps --force-recreate`; review prerequisite readiness and check health afterward. It starts no sibling dependencies and does not wait for health. App recreation can disconnect an attached editor; plan the host transition first. `restart [service]` retains image/configuration, with no service restarting the whole stack. `down` is explicitly whole-project and preserves volumes.
+
 ### `./bin/dev doctor`
 
-Alias for `./bin/doctor development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness, knowledge model/retrieval health and effective resource values. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
+Alias for `./bin/doctor development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `./bin/knowledge doctor` and `./bin/knowledge eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
 
 ### Frontend and localization checks currently available
 
@@ -79,11 +91,12 @@ Implemented now; the initial graph is empty because no business/reference/demo e
 
 ## Knowledge/RAG
 
-All seven knowledge commands are implemented. Search supports `--top-k 1..50`, `--explain`, `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`; quote multiword queries. `--device cpu` forces CPU. Search/eval require a fresh index; doctor reports failures and rebuild explicitly resets the development collection. `python3 tools/testing/knowledge.py` runs offline ingestion contracts, `python3 tools/testing/knowledge-live.py` checks CPU/CUDA ingestion, and `python3 tools/testing/knowledge-retrieval.py` checks real hybrid retrieval in an isolated collection. `./bin/dev embeddings auto|cpu|cuda` selects host GPU policy; apply it with build/up. See `docs/development/knowledge.md`.
+Knowledge commands include automatic first-index initialization and explicit maintenance/retrieval operations. Search supports `--top-k 1..50`, `--explain`, `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`; quote multiword queries. `--device cpu` forces CPU. Search/eval require a fresh index; doctor reports failures and rebuild explicitly resets the development collection. `python3 tools/testing/knowledge.py` runs offline ingestion contracts, `python3 tools/testing/knowledge-live.py` checks CPU/CUDA ingestion, and `python3 tools/testing/knowledge-retrieval.py` checks real hybrid retrieval in an isolated collection. `./bin/dev embeddings auto|cpu|cuda` selects host GPU policy; apply it with build/up. See `docs/development/knowledge.md`.
 
 - `./bin/knowledge search <query>`
 - `./bin/knowledge search <query> --explain`
 - `./bin/knowledge index`
+- `./bin/knowledge initialize` — initializes only missing/empty collections under the shared lock; existing stale indexes require explicit indexing.
 - `./bin/knowledge status`
 - `./bin/knowledge rebuild`
 - `./bin/knowledge stale`
@@ -241,7 +254,7 @@ Trivy collects the repository and every distinct selected runtime-image report e
 
 `python3 tools/testing/postgres-alpine.py` is a host-only disposable official PostgreSQL candidate probe. It uses no existing volume, published port or custom entrypoint/gosu; it tests the proposed ICU Polish baseline and removes its uniquely named tmpfs container. It does not adopt that candidate into runtime Compose. See `docs/production/postgresql-alpine-assessment.md`.
 
-`python3 tools/testing/switch-postgres-icu.py` performs the explicitly authorized host-only selective development database switch onto a new named volume; it preserves the running app/devcontainer and old rollback volume, records identities/hashes, validates locale/test guards and restores background workers. It refuses reused targets/partial state. See `docs/production/postgresql-alpine-assessment.md`; no cleanup is performed.
+`python3 tools/testing/switch-postgres-icu.py` is the retained one-time host helper for the already delivered selective ICU switch. It records identities/hashes, validates locale/test guards and refuses reused targets/partial state, including the current existing ICU volume. Do not rerun it on the current cluster. The old rollback volume was separately retired by RM-2026-003; the helper performs no cleanup. See `docs/production/postgresql-alpine-assessment.md` for current disposition and dated evidence.
 
 Approved PostgreSQL ICU production simulations now use `runa-prod-icu-simulation`, distinct from prior Bookworm simulations. `python3 tools/testing/docker-test-inventory.py` emits a read-only resource inventory without environment values for final cleanup review. No cleanup is performed. The security runner retains raw Trivy reports and applies only `docs/security/postgres-gosu-not-affected.json` after exact artifact/binary/CVE/evidence/expiry validation; disposition evidence is separate and any drift remains blocking.
 

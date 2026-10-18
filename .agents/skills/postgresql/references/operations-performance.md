@@ -22,9 +22,9 @@
 20. Runa's default business edit concurrency remains optimistic.
 21. Do not introduce hard edit locks merely because two users might open the same record.
 22. Once `production.ever_deployed` is true, committed migrations that may have run in production are immutable; use the canonical policy in `docs/architecture/database.md`.
-23. Before first production deployment, clean/edit committed migrations as needed to keep the initial schema coherent.
+23. Before first production deployment, clean/edit committed migrations as needed to keep the initial schema coherent. Necessary identified Runa dev/test resets and volume rebuilds are authorized within an active roadmap under `docs/architecture/database.md`; inspect actual context, show exact scope, preserve unrelated/durable data and retain test guards. Never reset automatically on reopen.
 24. If an uncommitted migration is wrong, fix it instead of adding a compensating migration.
-25. If a production-local marker says deployed while repository state says false, stop and reconcile before migration work.
+25. Actual real-deployment evidence overrides stale false metadata; simulation does not. Stop and reconcile contradictory evidence before migration/reset work, using the canonical database policy.
 26. Runa does not use database RLS as the baseline authorization layer.
 27. Runa does not use business-logic triggers.
 28. Runa does not use stored procedures/functions/views.

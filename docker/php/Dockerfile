@@ -128,8 +128,7 @@ RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data
     storage/framework/sessions storage/framework/views storage/framework/health storage/logs
 COPY --chown=runa:runa artisan /workspace/artisan
 
-FROM nginx:1.31.7-alpine AS production-nginx
-RUN apk add --no-cache --upgrade libexpat=2.9.0-r0
+FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf
 COPY --from=frontend-build /build/public/build/ /workspace/public/build/
 USER nginx

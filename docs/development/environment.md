@@ -1,5 +1,11 @@
 # Development Environment
 
+## Supported host and execution boundary
+
+Development supports native Linux with Docker Engine, the Docker Compose plugin, Python 3 and Git, without a distribution lock-in. Windows, macOS and Docker Desktop accommodations are outside the supported workflow. Keep the workspace bind mount `.:/workspace`; private host paths belong only in ignored local configuration.
+
+The host owns Docker lifecycle operations. PHP, Composer, Node/pnpm, PostgreSQL and application tests run in project containers through existing wrappers; no host application toolchain is required. Follow [editor-and-agents.md](editor-and-agents.md#moving-work-between-container-and-host) for small host tasks and durable roadmap handoffs. Current editor shutdown behavior is documented there. Resource profiles and configured limits are described in [resources.md](resources.md).
+
 ## Goal
 
 A future developer should be able to:
@@ -311,7 +317,7 @@ VS Code extensions listed above are installed automatically through devcontainer
 
 Host Compose owns container lifecycle/build/production simulation. Host wrappers dispatch application commands into the running container; inside the devcontainer, application and knowledge commands run directly against sibling services. Do not mount the Docker socket or introduce Docker-in-Docker to make host-only commands work from the workspace container. Document which terminal each command requires.
 
-Qdrant and the local embeddings service start automatically with the devcontainer. On first setup, build a missing knowledge index; on subsequent opens check health/freshness and use incremental indexing when needed. Required services perform lightweight readiness checks and doctor supplies deeper self-tests.
+Qdrant and the local embeddings service start automatically with the devcontainer. Independent `knowledge-init` initializes a missing index and retries service failures without delaying application setup or post-create. Existing stale indexes require explicit incremental indexing. Application doctor reports bounded AI degradation separately; dedicated knowledge doctor/evals remain strict.
 
 Select `high` locally for the initial project owner's environment; the portable repository default remains `standard`. Document profile selection, effective whole-stack limits and tuning for other hardware.
 
@@ -328,15 +334,15 @@ Host Python 3 and Docker Compose are required for the host wrapper and VS Code i
 ./bin/dev shell
 ```
 
-`./bin/dev config` prints resolved Compose configuration; `./bin/dev down` stops/removes this project's containers while preserving named volumes. There is no destructive volume-reset shortcut. At the base-toolchain stage, only app/FPM exists; application, Nginx and sibling services are completed by the following roadmap points.
+`./bin/dev config` prints resolved Compose configuration; `./bin/dev down` stops/removes this project's containers while preserving named volumes. There is no destructive volume-reset shortcut. The delivered stack includes app/PHP-FPM, PostgreSQL, Nginx, Mailpit, queue, scheduler and independent optional knowledge services.
 
-The devcontainer initializes the resource override before Compose starts and attaches as `runa`. It sets the versioned hooks path after creation; hook scripts become available in their implementation point. Opening or rebuilding does not delete application data. See [toolchain selections](toolchain.md) and [resource profiles](resources.md).
+The devcontainer initializes the resource override before Compose starts and attaches as `runa`. Application setup configures the implemented versioned Git hooks. Opening or rebuilding does not delete application data. See [toolchain selections](toolchain.md) and [resource profiles](resources.md).
 
 ## Laravel foundation
 
 The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
 
-The devcontainer's post-create command is `./bin/dev setup`, executed inside the container. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment, applies ordinary migrations and installs/builds the locked frontend as described below.
+The devcontainer's post-create command is `./bin/dev setup --if-needed`, executed inside the container. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment, applies ordinary migrations and installs/builds the locked frontend as described below.
 
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
@@ -352,7 +358,7 @@ Initialization scripts run only for an empty volume. Changing local passwords do
 
 ## Frontend foundation
 
-Post-create `./bin/dev setup` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
+When setup inputs or generated outputs require it, post-create `./bin/dev setup --if-needed` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 
@@ -362,9 +368,11 @@ Browser verification uses `tools/testing/frontend.mjs` with project Playwright, 
 
 ## Complete runtime services and startup order
 
-The stack includes Mailpit, queue and scheduler alongside app, PostgreSQL, Nginx and development-only Qdrant/embeddings. `./bin/dev build` builds the app toolchain and the non-root Mailpit image. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
+The stack includes Mailpit, queue and scheduler alongside app, PostgreSQL, Nginx and development-only Qdrant/embeddings. `./bin/dev build` builds the app toolchain, non-root Mailpit, Qdrant and configured CPU/CUDA embedding images. Pass service names for selective builds; build alone never recreates app. Compose owns every service on the host; there is no Docker socket, Docker-in-Docker or privileged container.
 
-Startup graph: PostgreSQL authenticates successfully -> app/PHP-FPM becomes available -> the one-shot `setup` service prepares the application -> Nginx, worker and scheduler start. All PHP services carry the same build definition and UID/GID overrides, so cold startup does not rely on the attached VS Code container retaining the base image tag. Setup uses the same `./bin/dev setup --if-needed` path as the devcontainer post-create hook. Its ignored `.runtime/dev/setup.sha256` covers lockfiles, local app environment, setup script, configuration, migrations and frontend sources. If those inputs and generated dependency/frontend outputs are unchanged, it performs only configuration validation, normal migration readiness and hooks-path setup; dependency installation/build are skipped. A failed setup blocks dependent services. Never mark a failed/partial setup complete, and never run destructive migrations on reopen.
+Startup graph: PostgreSQL authenticates successfully -> app/PHP-FPM becomes available -> the one-shot `setup` service prepares the application -> Nginx, worker and scheduler start. All PHP services carry the same build definition and UID/GID overrides, so cold startup does not rely on the attached VS Code container retaining the base image tag. Setup uses the same `./bin/dev setup --if-needed` path as the devcontainer post-create hook, serialized by a shared checkout file lock so concurrent invocations do not race dependency installation or migrations. Its ignored `.runtime/dev/setup.sha256` covers lockfiles, local app environment, setup script, configuration, migrations and frontend sources. If those inputs and generated dependency/frontend outputs are unchanged, it validates configuration, applies normal migrations, configures hooks and registers Boost, with the scanner prerequisite checked before the fast path; dependency installation/build are skipped. A failed setup blocks dependent services. Never mark a failed/partial setup complete, and never run destructive migrations on reopen.
+
+Qdrant, CPU/CUDA embeddings and `knowledge-init` are independent automatic development services. Neither application setup nor devcontainer post-create waits for AI readiness. `./bin/dev up` waits only for PostgreSQL, app, setup, Nginx, queue, scheduler and Mailpit, then starts the AI siblings without a health wait and reports bounded optional availability/freshness. The independent initializer retries failed readiness/indexing and initializes only a missing index; existing stale sources require explicit indexing. See [knowledge.md](knowledge.md) for recovery and strict checks.
 
 The setup container exits successfully and has no runtime healthcheck. It is expected to show `Exited (0)`, while long-running services become healthy. Ordinary `./bin/dev up`/devcontainer reopening can rerun the lightweight setup check. Explicit `./bin/dev setup` forces the full idempotent path. Missing application key/env/dependencies on a fresh checkout are prepared before HTTP/background services start. A separate empty checkout with its own project/volumes was tested through this graph.
 
@@ -386,6 +394,8 @@ Run health commands in the corresponding container because instance IDs differ. 
 
 ### Mail and persistence
 
+Mailpit uses `docker/mailpit/Dockerfile.dockerignore` to include only its data-directory placeholder in the build context; the root production exclusions remain independent.
+
 Mailpit UI is published only at `http://localhost:8025`. SMTP stays internal at `mailpit:1025`; app traffic stays at `http://localhost:8080`. PostgreSQL, workers and scheduler publish no ports. Mailpit accepts only localhost/loopback/service Host headers, stores up to 500 messages in its named volume, runs with the host-matched non-root UID/GID and uses its upstream `readyz` healthcheck. It has no outbound relay configuration.
 
 Laravel's SMTP configuration lives in `config/mail.php` and all app env examples. Development uses Mailpit; testing uses the array mailer. Credentials are optional as a pair, but invalid types/ports/schemes/sender values fail validation. Production requires actual outbound SMTP, TLS and the database queue; it rejects Mailpit/localhost/template-host settings and the array mailer. Never log credentials or mail payloads.
@@ -395,3 +405,9 @@ PostgreSQL data, Mailpit captures and application storage survive container recr
 ## Knowledge services
 
 The development stack now also starts Qdrant and CPU embeddings automatically; the generated host override adds CUDA embeddings when selected. Setup waits for vector-store/CPU readiness, initializes a missing index, and reports staleness without automatically re-embedding existing changed documents. Model cache and vector data persist in named volumes. All knowledge services remain development-only and expose no host ports. Hardware selection, resource limits, pinned images/model and actual acceptance evidence are documented in [knowledge.md](knowledge.md); retrieval, doctor and evaluation commands are implemented and documented there.
+
+## Image identity and rebuilds
+
+Local working images use `runa-development:dev`, `runa-mailpit:dev`, `runa-qdrant:dev`, `runa-embeddings-cpu:dev` and optional `runa-embeddings-cuda:dev`. These are mutable development tags. Production `runa-production`/`runa-nginx` keep exact release or full-commit identities.
+
+Shared development/test and production-build Nginx runtime inputs use tag plus registry-verified digest: `nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005` (verified 2026-10-18). The official slim variant retains the same Nginx version and the core/FastCGI behavior used by Runa, omitting optional dynamic modules that the project does not load. It replaces the full development/test variant after its blocking Expat vulnerability; the production target no longer needs its prior explicit libexpat upgrade/install workaround. No suppression is added. Existing PostgreSQL, production PHP, Qdrant/Ubuntu and embedding digests remain unchanged. Development PHP, Node, Composer and Mailpit retain reviewed version tags and their accepted rebuild variability. Digest updates require deliberate maintenance, actual-image scans and runtime checks; pins do not automatically receive security fixes. This is targeted runtime reproducibility, not a guarantee that all builds are identical.

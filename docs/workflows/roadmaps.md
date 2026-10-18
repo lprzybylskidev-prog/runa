@@ -299,3 +299,18 @@ During the final gate, the current roadmap remains active and its final checklis
 Final gate evidence records branch, commit, selected impact areas and results. Final release-only edits permitted by `docs/workflows/releases.md` receive focused validation; substantive changes invalidate the prior result. Do not interpret a stale PASS as proof for changed runtime code.
 
 Do not wait or poll after launching a background gate. Ask the user to return the status/log output when ready; an interrupted run is never a PASS.
+
+## Execution handoff
+
+The active roadmap owns one optional `Execution handoff` section for substantial host/container transitions. Persist it on disk before recommending **Dev Containers: Reopen Folder Locally**; commit coherent work when applicable without marking an unfinished point complete. The matching template is in `docs/roadmaps/roadmap-template.md`. Do not create a separate state store or copy this policy into every roadmap.
+
+Record:
+
+- Roadmap ID/current point, branch/base commit, worktree state, timestamp and transition direction.
+- Reason, completed implementation/checks, evidence paths and remaining tasks.
+- Expected environment, verified host checkout path (or explicitly unknown), Compose project/files, required tools/services and observed resource identities/state.
+- Exact startup procedure/commands, relevant source links, intended targets and protected resources; no secrets.
+- Verification commands, host completion criteria and remaining gates.
+- Results/issues, removed/preserved resources, current service/configuration state and readiness to return.
+
+The receiving session reads AGENTS, the active roadmap and handoff; verifies repository path, branch/worktree and actual relevant services before mutation. Host execution uses Docker/Python/Git and project containers for the application toolchain. Follow `docs/development/editor-and-agents.md` for startup/recovery. Before returning, update the same handoff with results and whether **Dev Containers: Reopen in Container** is safe. The container session verifies current state and resumes without repeating completed work. Do not automate editor window switching. Point completion still requires implementation, docs, checks, commit and checklist synchronization.

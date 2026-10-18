@@ -3,7 +3,7 @@ x-logging: &logging
   driver: json-file
   options: { max-size: 10m, max-file: '3' }
 x-development: &development
-  image: runa-development:rm-2026-001
+  image: runa-development:dev
   pull_policy: never
   build:
     context: .
@@ -38,8 +38,6 @@ services:
     command: [./bin/dev, setup, --if-needed]
     depends_on:
       app: { condition: service_healthy }
-      qdrant: { condition: service_healthy }
-      embeddings: { condition: service_healthy }
     volumes:
       - .:/workspace
       - composer-cache:/home/runa/.cache/composer
@@ -47,6 +45,13 @@ services:
     restart: 'no'
     cpus: 4
     mem_limit: 4G
+  knowledge-init:
+    <<: *development
+    command: [./bin/dev, knowledge-init]
+    healthcheck: { disable: true }
+    restart: on-failure
+    cpus: 1
+    mem_limit: 512M
   app-test:
     <<: *development
     profiles: [testing]
@@ -65,7 +70,7 @@ services:
     cpus: 1
     mem_limit: 512M
   nginx-test:
-    image: nginx:1.31.7-alpine
+    image: nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005
     profiles: [testing]
     user: nginx
     entrypoint: [nginx, -g, 'daemon off;']
@@ -87,7 +92,7 @@ services:
       timeout: 3s
       retries: 5
   qdrant:
-    image: runa-qdrant:rm-2026-001
+    image: runa-qdrant:dev
     build:
       context: .
       dockerfile: docker/qdrant/Dockerfile
@@ -107,7 +112,7 @@ services:
     cpus: 1
     mem_limit: 512M
   embeddings:
-    image: runa-embeddings-cpu:rm-2026-001
+    image: runa-embeddings-cpu:dev
     build:
       context: .
       dockerfile: docker/embeddings/Dockerfile
@@ -169,7 +174,7 @@ services:
       retries: 10
       start_period: 10s
   mailpit:
-    image: runa-mailpit:rm-2026-001
+    image: runa-mailpit:dev
     build:
       context: .
       dockerfile: docker/mailpit/Dockerfile
@@ -230,7 +235,7 @@ services:
       retries: 3
       start_period: 90s
   nginx:
-    image: nginx:1.31.7-alpine
+    image: nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005
     user: nginx
     entrypoint: [nginx, -g, 'daemon off;']
     depends_on:
@@ -254,7 +259,6 @@ services:
       retries: 5
 volumes:
   composer-cache:
-  postgres-data:
   postgres-icu-data:
   mailpit-data:
   qdrant-data:

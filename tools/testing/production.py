@@ -45,6 +45,13 @@ class ProductionContracts(unittest.TestCase):
         self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
         self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
 
+    def test_shared_nginx_runtime_digest_stays_consistent(self):
+        development = yaml(ROOT / 'compose.yaml')['services']
+        image = development['nginx']['image']
+        self.assertRegex(image, r'^nginx:[^@]+@sha256:[a-f0-9]{64}$')
+        self.assertEqual(development['nginx-test']['image'], image)
+        self.assertIn('FROM ' + image + ' AS production-nginx', (ROOT / 'docker/php/Dockerfile').read_text())
+
     def test_context_and_argument_validation(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(production, 'ROOT', Path(folder)), patch.object(production, 'inside', return_value=False), patch.object(production, 'run') as run, patch.dict(production.os.environ, {'RUNA_IMAGE_TAG': 'latest', 'RUNA_HTTP_PORT': '80', 'COMPOSE_PROJECT_NAME': 'runa-dev'}), contextlib.redirect_stdout(io.StringIO()):
             config = Path(folder) / '.env.prod.compose'

@@ -27,10 +27,7 @@ def host_stack_health():
     result = run(compose() + ['ps', '--all', '--format', 'json'], capture_output=True, text=True).stdout.strip()
     rows = json.loads(result) if result.startswith('[') else [json.loads(line) for line in result.splitlines() if line]
     services = {row['Service']: row for row in rows}
-    required = ['app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings']
-    local = ROOT / '.env.dev.local'
-    if local.exists() and 'EMBEDDINGS_CUDA=1' in local.read_text().splitlines():
-        required.append('embeddings-gpu')
+    required = ['app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit']
     for service in required:
         row = services.get(service, {})
         if row.get('State') != 'running' or row.get('Health') != 'healthy':
