@@ -239,4 +239,4 @@ Scrollbars are part of the shared visual language, including horizontal top navi
 
 The top header stays compact at 64px on desktop and phones; its scrollbar sits at the navigation/header bottom edge rather than inside a padded header. Wheel input over overflowing top navigation moves the menu horizontally and does not chain to document scrolling at its ends; Ctrl+wheel retains native zoom. The header remains visible during document scrolling (latest owner decision, superseding the original nonsticky-top premise).
 
-Application navigation texture (RM-2026-004 point 3): the top header and sidebar use a quiet static 44px square grid over the opaque surface. Lines reuse secondary-text color at the existing theme-specific backdrop-grid opacity (9% light, 4.5% dark). Forced-colors removes the decorative grid.
+Application navigation texture (RM-2026-004 point 3): the top header and sidebar use a quiet static 44px square grid over the opaque surface. Lines reuse secondary-text color at 30% of the theme-specific backdrop-grid opacity (2.7% light, 1.35% dark), reduced after owner review. Forced-colors removes the decorative grid.

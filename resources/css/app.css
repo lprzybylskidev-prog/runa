@@ -1060,7 +1060,7 @@ input:-webkit-autofill {
       color-mix(
           in srgb,
           var(--runa-text-secondary)
-            calc(var(--runa-backdrop-grid-opacity) * 100%),
+            calc(var(--runa-backdrop-grid-opacity) * 30%),
           transparent
         )
         1px,
@@ -1071,7 +1071,7 @@ input:-webkit-autofill {
       color-mix(
           in srgb,
           var(--runa-text-secondary)
-            calc(var(--runa-backdrop-grid-opacity) * 100%),
+            calc(var(--runa-backdrop-grid-opacity) * 30%),
           transparent
         )
         1px,
