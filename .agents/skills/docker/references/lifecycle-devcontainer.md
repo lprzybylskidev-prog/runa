@@ -59,3 +59,9 @@
 35. If architecture/platform becomes relevant, declare it explicitly.
 36. Do not introduce Docker Bake before build complexity justifies it.
 37. Use one canonical build path so developer/deploy/test do not use three divergent undocumented flag sets.
+
+## Host transitions and selective work
+
+Use native Linux Docker Engine/Compose and preserve `.:/workspace`; never infer a private host checkout from `/workspace`. Keep the application toolchain in project containers. Small host tasks need ordered commands, effects/expected output and reviewed user results. Before substantial host work, persist the active roadmap's `Execution handoff` under `docs/workflows/roadmaps.md`; follow `docs/development/editor-and-agents.md` for transition, startup and return checks. Do not automate VS Code switching or claim unobserved GUI acceptance.
+
+Inspect actual project/container state after editor transitions; current shutdown behavior is recorded in the editor guide. Prefer selective restart for process changes; restart does not apply a new image/configuration. Review dependencies for selective recreation/build and use the wrapper's explicit Compose project/files. Capture app ID/start time before and after sibling-only work. Whole-project down/build and attached-app recreation require deliberate scope/session handling. Do not reset persistent data to repair ordinary reopen.

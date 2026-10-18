@@ -168,7 +168,7 @@ Reviewed official sources on 2026-10-18 for semantics, without importing new dep
 
 ## Implementation plan
 
-- [ ] 1. Establish durable host execution, handoff and Linux workflow.
+- [x] 1. Establish durable host execution, handoff and Linux workflow.
   - Prerequisites: explicit approval and standard roadmap activation from current main; inspect repo/tool/environment state.
   - Deliver concise AGENTS rule, Docker procedure, editor transitions and roadmap handoff/template. Record preproduction autonomy and targeted cleanup scope in canonical database guidance and relevant skills. Preserve existing no-CI/release rules. Use focused documentation checks; commit and update checklist.
 - [ ] 2. Decouple application startup and diagnostics from knowledge availability.
@@ -184,3 +184,12 @@ Reviewed official sources on 2026-10-18 for semantics, without importing new dep
   - Prerequisites: all implementation points complete, committed, docs synchronized, AI recovered and required host work/handoff complete.
   - Review affected current-state docs against implementation under docs/workflows/roadmaps.md, including README, commands, environment/resources, database/production, AGENTS/skills and release-transition facts. Record reviewed sources/dispositions. Run full applicable local final gate on the Docker host under the existing background-run contract; stop the turn after starting it and obtain completion evidence later. Failed gates require inserted fix points and a full rerun; significant premise changes return to discussion.
   - After PASS finalize 0.1.2 metadata from maintenance version arithmetic, refresh knowledge, run focused docs/release validation, close roadmap on branch, merge with a merge commit, sanity-check main, annotate v0.1.2, push/publish GitHub Release and delete roadmap branch. Preserve closed history. Complete scoped task-resource cleanup after last use and report release/gates/handoff outcomes and removed/preserved resources. Never mark simulation as real production deployment.
+
+## Point 1 execution evidence
+
+- Activated on 2026-10-18 after explicit user approval. Remote fetch succeeded; main and origin/main had zero divergence. Activation commit: `b1b253d`. Work started from main with only the untracked approved draft.
+- Delivered native-Linux support and container toolchain boundary, small host task/result review, durable roadmap handoff/template, editor transition/recovery and selective lifecycle guidance. Canonical database policy and Docker/PostgreSQL references now define scoped preproduction reset authority, real-deployment evidence precedence and protected resources. README active-roadmap state synchronized.
+- Reviewed AGENTS, roadmap/Git/docs workflows, database architecture, editor/environment guides, Docker lifecycle/security and PostgreSQL operations references against current wrappers, project state and devcontainer metadata. No application/runtime configuration changes. Existing startup coupling remains for point 2; stopCompose remains for point 4. No GUI/host integration acceptance claimed.
+- Environment: devcontainer at `/workspace`; Docker CLI unavailable; host checkout/resource identities not observed. Knowledge search available. Composer 2.10.3 and pnpm 12.14.0 wrapper version checks passed inside the container; host delegation was inspected in source, not executed on a host.
+- Verification: focused repository/docs diagnostics, Markdown formatting, diff whitespace and commit-hook checks; knowledge refreshed incrementally before commit. No Docker resources created or removed; existing databases, rollback volumes and knowledge/model caches preserved.
+- Next: point 2, including an execution handoff before substantial host integration work. No host transition is requested in point 1.

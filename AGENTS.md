@@ -159,6 +159,8 @@ PostgreSQL only.
 - Optimistic concurrency is the default for business edit forms.
 - After production has ever been deployed, never edit a committed migration that may have run there. See `docs/project/state.yml` and the database migration policy.
 
+Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
+
 Load `.agents/skills/postgresql/SKILL.md` and `docs/architecture/database.md`.
 
 ## Frontend invariants
@@ -198,9 +200,13 @@ Use Gitleaks, Trivy, Composer audit, and pnpm audit as defined by project toolin
 
 Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
+## Host execution
+
+Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/development/editor-and-agents.md` and `docs/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
+
 ## Temporary Docker resources
 
-After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data, rollback volumes, Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
+After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
 
 ## Production isolation
 
@@ -218,7 +224,7 @@ Production build/deploy verifies this isolation.
 
 ## Knowledge and skills
 
-Use local RAG before broad file loading when the knowledge stack is available.
+Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application runtime must remain independent of optional AI tooling; startup decoupling is tracked in RM-2026-003 point 2. Strict final AI gates remain required.
 
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 

@@ -1,5 +1,11 @@
 # Development Environment
 
+## Supported host and execution boundary
+
+Development supports native Linux with Docker Engine, the Docker Compose plugin, Python 3 and Git, without a distribution lock-in. Windows, macOS and Docker Desktop accommodations are outside the supported workflow. Keep the workspace bind mount `.:/workspace`; private host paths belong only in ignored local configuration.
+
+The host owns Docker lifecycle operations. PHP, Composer, Node/pnpm, PostgreSQL and application tests run in project containers through existing wrappers; no host application toolchain is required. Follow [editor-and-agents.md](editor-and-agents.md#moving-work-between-container-and-host) for small host tasks and durable roadmap handoffs. Current editor shutdown behavior and pending changes are documented there. Resource profiles and configured limits are described in [resources.md](resources.md).
+
 ## Goal
 
 A future developer should be able to:

@@ -32,14 +32,17 @@ Cross-schema foreign keys are allowed where the relation is real.
 ## Identifiers
 
 Internal primary key:
+
 - PostgreSQL bigint identity.
 
 Durable domain/module entities exposed outside the backend also have:
+
 - `public_id` UUIDv7,
 - unique,
 - non-null.
 
 Use `public_id` in:
+
 - routes,
 - API contracts,
 - frontend state,
@@ -49,6 +52,7 @@ Use `public_id` in:
 Use bigint IDs for internal foreign keys.
 
 Do not add `public_id` mechanically to:
+
 - technical tables,
 - pivot tables,
 - cache tables,
@@ -58,6 +62,7 @@ Do not add `public_id` mechanically to:
 ## Foreign keys
 
 Every foreign key uses:
+
 - `ON DELETE RESTRICT`
 - `ON UPDATE RESTRICT`
 
@@ -68,6 +73,7 @@ A foreign key does not automatically imply an index in PostgreSQL. Add indexes f
 ## Business rows
 
 Business entities normally have:
+
 - `created_at`,
 - `updated_at`,
 - `deleted_at` for soft deletion.
@@ -91,6 +97,7 @@ Prefer PostgreSQL `text` instead of arbitrary `varchar(255)` unless a real busin
 Use boolean for boolean values.
 
 For exact decimal values:
+
 - use integer smallest units when the domain fits,
 - otherwise use PostgreSQL `numeric`,
 - never use binary floating point for money or other exact financial values.
@@ -98,6 +105,7 @@ For exact decimal values:
 Avoid quoted/case-sensitive identifiers.
 
 Avoid PostgreSQL ENUM as the default. Prefer:
+
 - PHP native enum when useful,
 - `varchar`/`text`,
 - optional CHECK for a stable set,
@@ -106,6 +114,7 @@ Avoid PostgreSQL ENUM as the default. Prefer:
 ## Integrity
 
 Use the database for simple durable invariants:
+
 - NOT NULL,
 - CHECK,
 - UNIQUE,
@@ -124,6 +133,7 @@ For active soft-deleted rows, prefer partial uniqueness when the rule is "unique
 Do not encode business logic in stored procedures/functions/views/triggers.
 
 Runa does not use:
+
 - database views,
 - stored procedures,
 - stored functions.
@@ -145,6 +155,7 @@ Business edit forms use optimistic concurrency by default.
 Detect stale data and reject/resolve the conflict explicitly. Do not silently overwrite a newer edit.
 
 The concrete token may be:
+
 - a dedicated version number,
 - `updated_at`,
 - another explicit concurrency token.
@@ -172,24 +183,38 @@ Retry only known transient deadlock/serialization conditions, and only when the 
 The repository tracks whether production has ever been deployed in `docs/project/state.yml`.
 
 Before first production deployment:
+
 - committed migrations may be edited/cleaned while the database model is still pre-production,
 - prefer one migration per database object/table where practical,
 - define logical PostgreSQL column order in the original migration rather than adding meaningless MySQL-style `after()` concepts.
 
 After `production.ever_deployed` becomes true:
+
 - never edit a committed migration that may have run in production,
 - all production schema changes use new migrations,
 - if a migration is still uncommitted, edit it rather than adding a fix migration.
 
-If a production-local marker says deployment happened but the versioned repository state still says false, stop migration work and reconcile the state.
+Actual real-deployment evidence overrides stale `production.ever_deployed: false` metadata. Check the existing production-local `first-deploy.json` and `deployment.json` evidence described in `docs/production/deployment.md` where applicable; simulation evidence does not establish a real deployment. If actual deployment contradicts repository state, stop migration/reset work and reconcile the state before proceeding.
+
+### Preproduction development and test resets
+
+While `production.ever_deployed` is false and no contradictory real-deployment evidence exists, an active roadmap authorizes necessary migration cleanup, technical-table rebuilds, `migrate:fresh`, recreation of identified Runa test databases and rebuilds of identified nonproduction Runa PostgreSQL volumes. Do not request repeated permission solely for hypothetical production data. Existing test database guards remain mandatory; this policy does not bypass them.
+
+Before destructive work, verify the actual connection/database/role or Compose project, volume labels, mount identities and references from both running and stopped containers. Show the exact deletion/reset scope and explain why its contents are rebuildable and the reset is necessary. A familiar volume name or old assessment alone is insufficient evidence. If ownership or irreplaceable data is uncertain, stop that operation and clarify.
+
+Preserve resources outside the intended reset, unrelated projects, backups, verification evidence, Qdrant/model caches and durable data. Active development data and rollback volumes are protected unless they are the explicitly identified target of an accepted reset or retirement. Never globally prune. Record removed and preserved resources in the roadmap and final report.
+
+This is deliberate roadmap work, never automatic startup/reopen behavior. Ordinary reopen uses safe migrations and preserves existing data and credentials. After any actual production deployment, use additive migrations and production data safeguards. See `docs/development/environment.md` for normal initialization and `docs/production/deployment.md` for production evidence and operations.
 
 Large-table migrations require an explicit risk assessment:
+
 - lock duration,
 - table rewrites,
 - backfill cost,
 - production traffic impact.
 
 For risky live changes, use expand/contract only when needed:
+
 1. add compatible new shape,
 2. deploy code that understands transition state,
 3. backfill safely,
@@ -215,6 +240,7 @@ Do not write a fake reversible `down()` when data loss or irreversible transform
 Do not install PostgreSQL extensions preemptively.
 
 Examples that may be justified later:
+
 - `pg_trgm`,
 - `btree_gist`,
 - `citext`,
@@ -239,6 +265,7 @@ Do not respond to connection exhaustion by blindly increasing `max_connections`.
 ## Deliberate non-features
 
 The database baseline does not include:
+
 - Row Level Security as a second authorization system,
 - partitioning before a proven need,
 - replication/sharding architecture,
