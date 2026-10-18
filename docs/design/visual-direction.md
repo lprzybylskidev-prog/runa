@@ -97,7 +97,7 @@ Do not copy dashboard content, cards, charts or their appearance from this refer
 
 ### Footer
 
-Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application integration was accepted in point 3 on 2026-10-18; email integration is implemented in point 4 and awaits owner visual acceptance.
+Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application integration was accepted in point 3 on 2026-10-18; email integration was visually accepted in point 4 on 2026-10-18 after aligning the brand tile and wordmark with MinimalLayout.
 
 ### Remaining scope
 
