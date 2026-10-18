@@ -17,6 +17,9 @@ it('registers review entry points only in local and testing environments', funct
 
         expect($router->getRoutes()->getByName('spa'))->not->toBeNull();
         expect($router->getRoutes()->getByName('review.ui') !== null)->toBe($available);
+        foreach (['overview', 'projects', 'activity', 'archive', 'team'] as $page) {
+            expect($router->getRoutes()->getByName('review.application.'.$page) !== null)->toBe($available);
+        }
     } finally {
         Route::swap($originalRouter);
         $this->app->instance('env', $originalEnvironment);
@@ -29,6 +32,7 @@ it('rejects even a stale cached review route in production', function () {
     $this->app->instance('env', 'production');
 
     $this->get('/__review/ui')->assertNotFound();
+    $this->get('/__review/application/overview')->assertNotFound();
 });
 
 it('serves a separate review document without changing the root entry', function () {
@@ -44,6 +48,10 @@ it('serves a separate review document without changing the root entry', function
             ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
             ->assertHeader('Cache-Control', 'no-store, private');
         expect($review->baseResponse->getFile()->getPathname())->toBe($public.'/ui-review/index.html');
+        foreach (['overview', 'projects', 'activity', 'archive', 'team'] as $page) {
+            $this->get('/__review/application/'.$page)->assertOk();
+        }
+        $this->get('/__review/application/unknown')->assertNotFound();
         $root = $this->get('/')->assertOk();
         expect($root->baseResponse->getFile()->getPathname())->toBe($public.'/build/index.html');
         $this->get('/__review/not-found')->assertNotFound();

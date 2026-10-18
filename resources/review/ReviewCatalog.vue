@@ -112,6 +112,9 @@ const categories = [
       </section>
       <nav class="mt-6 flex flex-wrap gap-4 text-sm" aria-label="Review links">
         <a href="/">/</a>
+        <a href="/__review/application/overview"
+          >Układ aplikacyjny / Application layout</a
+        >
         <a href="/__review/not-found">404</a>
       </nav>
     </template>

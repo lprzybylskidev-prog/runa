@@ -1,5 +1,17 @@
 export const messages = {
   pl: {
+    modules: 'Moduły',
+    areas: 'Obszary modułu',
+    workspace: 'Przestrzeń robocza',
+    openNavigation: 'Otwórz nawigację',
+    closeNavigation: 'Zamknij nawigację',
+    expandNavigation: 'Rozwiń menu',
+    collapseNavigation: 'Zwiń menu',
+    userMenu: 'Menu użytkownika',
+    accountUnavailable: 'Opcje konta są obecnie niedostępne.',
+    statistics: 'Statystyki',
+    supplementary: 'Informacje dodatkowe',
+
     skip: 'Przejdź do treści',
     preferences: 'Ustawienia wyświetlania',
     applyingPreferences: 'Zmienianie ustawień…',
@@ -17,6 +29,18 @@ export const messages = {
     description: 'Aplikacja w przygotowaniu.',
   },
   en: {
+    modules: 'Modules',
+    areas: 'Module areas',
+    workspace: 'Workspace',
+    openNavigation: 'Open navigation',
+    closeNavigation: 'Close navigation',
+    expandNavigation: 'Expand menu',
+    collapseNavigation: 'Collapse menu',
+    userMenu: 'User menu',
+    accountUnavailable: 'Account options are currently unavailable.',
+    statistics: 'Statistics',
+    supplementary: 'Additional information',
+
     skip: 'Skip to content',
     preferences: 'Display preferences',
     applyingPreferences: 'Applying preferences…',

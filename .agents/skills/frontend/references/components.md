@@ -1,6 +1,6 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation/preferences/export types remain integration contracts without implemented providers or engines.
+Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; export types remain contracts without implemented engines.
 
 ## AppSelect
 
@@ -27,14 +27,14 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## Root preference buttons
 
-- Source: `resources/js/layouts/MinimalLayout.vue`.
+- Sources: `resources/js/components/AppPreferenceControls.vue`, `resources/js/composables/useDisplayPreferences.ts`, consumed by both web layouts.
 - Exactly two 44px buttons: language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names describe current/next values; short application tooltips identify the action. Both controls use AppButton. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip
 
 - Source: `resources/js/components/AppTooltip.vue`.
 - Application-styled tooltip on pointer hover or keyboard focus, dismissible with Escape. Shared 140ms ease-out opacity enter/leave transition; disabled for reduced-motion preferences. Pointer can enter the tooltip; it stays visible until pointer leave, focus leave or dismissal.
-- Props: `text`; scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
+- Props: `text`, optional placement (bottom default/right for collapsed sidebar); right placement teleports to the viewport to escape sidebar scroll clipping and hides on scroll. Existing hover-dismissal defect remains deferred to point 7. Scoped slot supplies `descriptionId` for the owning control's `aria-describedby`. Keep an accessible name on the control.
 
 ## AppButton
 
@@ -42,7 +42,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Shared native button with slot content and scoped appearance: borders, 4px radii, hover/active/focus/disabled states and subtle transitions respecting reduced motion.
 - Props: `type` (defaults to safe `button`), `compact` (44px square), `disabled`. Native attributes, ARIA labels and click listeners inherit onto the button.
 - Use this component for actions rather than styling native buttons independently in each view. Extend it only for demonstrated new variants; do not introduce speculative component APIs.
-- Canonical use: language/theme controls in MinimalLayout. Icon-only uses require an accessible name; tooltip remains a separate component.
+- Canonical use: shared language/theme controls in both web layouts. Icon-only uses require an accessible name; tooltip remains a separate component.
 
 ## AppFooter
 
@@ -85,3 +85,9 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Source: `resources/js/components/AppConstellation.vue`.
 - Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. No motion, randomness, image asset or dependency.
 - Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.
+
+## ApplicationLayout and AppNavigation
+
+- Sources: `resources/js/layouts/ApplicationLayout.vue`, internal recursive `resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/architecture/frontend.md` and page-layouts.md.
+- AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, nested disclosure groups and collapsed labels. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
+- Existing AppPreferenceControls and useDisplayPreferences are shared shell composition, preserving root timing/focus. Do not create another copy when later finalizing buttons/feedback; update both consumers. AppNavigation/profile/drawer composition is finalized with the owning later component points, not a competing exported dropdown/modal system.

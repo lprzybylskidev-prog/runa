@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
+import { useDisplayPreferences } from '../composables/useDisplayPreferences';
+import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import AppBrandIllustration from '../components/AppBrandIllustration.vue';
-import AppIcon from '../components/AppIcon.vue';
 import RunaLogo from '../components/RunaLogo.vue';
-import AppButton from '../components/AppButton.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
-import AppTooltip from '../components/AppTooltip.vue';
-import { useLocale } from '../composables/useLocale';
 import { useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
-import { useTheme } from '../composables/useTheme';
 const props = withDefaults(
   defineProps<{ footer?: FooterOptions | undefined; illustration?: boolean }>(),
   { illustration: true, footer: undefined },
@@ -24,67 +21,18 @@ watch(
     logoFailed.value = false;
   },
 );
-const { locale, t } = useLocale();
-const { theme } = useTheme();
-const nextTheme = computed(() =>
-  theme.value === 'system'
-    ? 'light'
-    : theme.value === 'light'
-      ? 'dark'
-      : 'system',
-);
-const themeLabel = computed(
-  () =>
-    `${t('theme')}: ${t(theme.value)}. ${t('switchTo')}: ${t(nextTheme.value)}`,
-);
-const languageLabel = computed(
-  () =>
-    `${t('language')}: ${locale.value === 'pl' ? 'Polski' : 'English'}. ${t('switchTo')}: ${locale.value === 'pl' ? 'English' : 'Polski'}`,
-);
-const changingPreference = ref(false);
-const coverVisible = ref(false);
-let pendingPreference: 'language' | 'theme' | undefined;
-let trigger: globalThis.HTMLElement | undefined;
-let frame = 0;
-let revealTimer: ReturnType<typeof window.setTimeout> | undefined;
-let disposed = false;
-onScopeDispose(() => {
-  disposed = true;
-  window.cancelAnimationFrame(frame);
-  window.clearTimeout(revealTimer);
-});
-function changePreference(preference: 'language' | 'theme', event: Event) {
-  if (changingPreference.value) return;
-  trigger =
-    event.currentTarget instanceof window.HTMLElement
-      ? event.currentTarget
-      : undefined;
-  pendingPreference = preference;
-  changingPreference.value = true;
-  coverVisible.value = true;
-}
-async function applyPreference() {
-  if (pendingPreference === 'language')
-    locale.value = locale.value === 'pl' ? 'en' : 'pl';
-  else if (pendingPreference === 'theme') theme.value = nextTheme.value;
-  pendingPreference = undefined;
-  await nextTick();
-  // Keep the opaque cover through a paint of the newly selected theme/locale.
-  if (disposed) return;
-  frame = window.requestAnimationFrame(() => {
-    frame = window.requestAnimationFrame(() => {
-      revealTimer = window.setTimeout(() => {
-        coverVisible.value = false;
-      }, 500);
-    });
-  });
-}
-async function finishPreferenceChange() {
-  changingPreference.value = false;
-  await nextTick();
-  trigger?.focus({ preventScroll: true });
-  trigger = undefined;
-}
+const {
+  locale,
+  t,
+  theme,
+  themeLabel,
+  languageLabel,
+  changingPreference,
+  coverVisible,
+  changePreference,
+  applyPreference,
+  finishPreferenceChange,
+} = useDisplayPreferences();
 </script>
 
 <template>
@@ -122,40 +70,14 @@ async function finishPreferenceChange() {
           >
           <span v-else class="break-words">{{ identity.applicationName }}</span>
         </a>
-        <div :aria-label="t('preferences')" class="flex gap-2" role="group">
-          <AppTooltip :text="t('changeLanguage')">
-            <template #default="{ descriptionId }">
-              <AppButton
-                compact
-                :aria-label="languageLabel"
-                :aria-describedby="descriptionId"
-                @click="changePreference('language', $event)"
-              >
-                {{ locale.toUpperCase() }}
-              </AppButton>
-            </template>
-          </AppTooltip>
-          <AppTooltip :text="t('changeTheme')">
-            <template #default="{ descriptionId }">
-              <AppButton
-                compact
-                :aria-label="themeLabel"
-                :aria-describedby="descriptionId"
-                @click="changePreference('theme', $event)"
-              >
-                <AppIcon
-                  :name="
-                    theme === 'system'
-                      ? 'device-desktop'
-                      : theme === 'light'
-                        ? 'sun'
-                        : 'moon'
-                  "
-                />
-              </AppButton>
-            </template>
-          </AppTooltip>
-        </div>
+        <AppPreferenceControls
+          :locale="locale"
+          :theme="theme"
+          :theme-label="themeLabel"
+          :language-label="languageLabel"
+          :t="t"
+          @change="changePreference"
+        />
       </slot>
     </header>
     <main

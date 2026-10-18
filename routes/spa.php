@@ -8,6 +8,11 @@ Route::get('/', SpaController::class)->name('spa');
 
 // Temporary visual review infrastructure; no configuration flag can enable it in production.
 if (app()->environment('local', 'testing')) {
+    foreach (['overview', 'projects', 'activity', 'archive', 'team'] as $page) {
+        Route::get('/__review/application/'.$page, UiReviewController::class)
+            ->name('review.application.'.$page);
+    }
+
     Route::get('/__review/ui', UiReviewController::class)
         ->name('review.ui');
 }

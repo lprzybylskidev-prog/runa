@@ -41,7 +41,7 @@ The source has a 90-day review cadence in the maintenance registry. Review is de
 
 ## Frontend preferences and transport
 
-`resources/js/locales/messages.ts` defines matching typed PL/EN keys. `useLocale` owns the root user locale, updates the document language and persists a preference when browser storage allows it. `useTheme` supports light, dark and system preferences and cleans up the system-theme listener. Storage denial falls back to session-only preferences. The application owns each composable once; these are not hidden global stores.
+`resources/js/locales/messages.ts` defines matching typed PL/EN keys. `useLocale` owns the root user locale, updates the document language and persists a preference when browser storage allows it. `useTheme` supports light, dark and system preferences and cleans up the system-theme listener. Storage denial falls back to session-only preferences. Each mounted web layout owns these composables once through useDisplayPreferences; AppPreferenceControls renders the shared controls. The versioned preference store migrates existing locale/theme keys and continues writing them for compatibility, while navigation settings use application-scoped JSON envelopes. Storage failure retains in-memory values for the store lifetime. These composables are not a hidden global state library.
 
 `resources/js/lib/http.ts` is the only fetch boundary. It prefixes relative resource paths with `/api`, requests JSON, uses same-origin credentials, forwards an existing framework XSRF cookie on writes, carries abort signals and exposes HTTP failures without global notifications. Response bodies remain `unknown` until the caller validates the known contract. It does not invent authentication/session endpoints.
 

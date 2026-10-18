@@ -14,3 +14,17 @@ export type * from './identity';
 export type * from './navigation';
 export type * from './preferences';
 export type * from './exports';
+
+export { default as ApplicationLayout } from '../../layouts/ApplicationLayout.vue';
+export { createPageResolver, usePageResolver } from '../../lib/pageResolver';
+export {
+  createPreferenceStore,
+  defaultPreferenceStore,
+  preferenceKey,
+} from '../../lib/preferenceStore';
+export type {
+  PreferenceStore,
+  PreferenceDefinition,
+} from '../../lib/preferenceStore';
+export { usePreference } from '../../composables/usePreference';
+export type { IconName } from './icons';

@@ -1,3 +1,5 @@
+import type { IconName } from './icons';
+
 /** Availability controls presentation; the server still authorizes every request. */
 export interface NavigationEntry {
   readonly key: string;
@@ -5,7 +7,7 @@ export interface NavigationEntry {
   readonly moduleKey: string;
   readonly areaKey?: string;
   readonly label: string;
-  readonly icon?: string;
+  readonly icon?: IconName;
   readonly href: string;
   readonly availability: 'available' | 'disabled' | 'hidden';
   readonly children?: readonly NavigationEntry[];

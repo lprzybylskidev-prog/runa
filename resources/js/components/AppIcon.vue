@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineProps<{ name: 'layers-intersect' | 'sun' | 'moon' | 'device-desktop' }>();
+import type { IconName } from '../runa/ui/icons';
+defineProps<{ name: IconName }>();
 </script>
 <template>
   <svg
