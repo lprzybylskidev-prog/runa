@@ -12,6 +12,7 @@ import AppBackdrop from '../components/AppBackdrop.vue';
 import AppButton from '../components/AppButton.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
+import AppTopNavigation from '../components/AppTopNavigation.vue';
 import AppNavigation from '../components/AppNavigation.vue';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import RunaLogo from '../components/RunaLogo.vue';
@@ -96,7 +97,6 @@ const expanded = usePreference(
   },
   props.preferenceStore,
 );
-const topExpanded = ref<string[]>([]);
 const drawer = ref(false);
 const sidebarElement = ref<globalThis.HTMLElement>();
 const drawerTrigger = ref<globalThis.HTMLButtonElement>();
@@ -120,9 +120,6 @@ function toggleGroup(key: string) {
   expanded.value = expanded.value.includes(key)
     ? expanded.value.filter((value) => value !== key)
     : [...expanded.value, key];
-}
-function toggleTop(key: string) {
-  topExpanded.value = topExpanded.value.includes(key) ? [] : [key];
 }
 async function closeDrawer(restore = true) {
   drawer.value = false;
@@ -148,7 +145,6 @@ function navigate(href: string, event: globalThis.MouseEvent) {
   emit('navigate', href, event);
   if (event.defaultPrevented) {
     void closeDrawer(false);
-    topExpanded.value = [];
     void nextTick(() =>
       document.getElementById(contentId)?.focus({ preventScroll: true }),
     );
@@ -164,13 +160,6 @@ function keydown(event: globalThis.KeyboardEvent) {
       profile.value = false;
       profileTrigger.value?.focus();
     }
-    if (topExpanded.value.length && event.target instanceof window.Element) {
-      event.target
-        .closest('.shell-top-nav .shell-nav-group')
-        ?.querySelector<globalThis.HTMLElement>('.shell-group-toggle')
-        ?.focus();
-    }
-    topExpanded.value = [];
   }
   if (event.key === 'Tab' && drawer.value && mobile.value) {
     const focusable = Array.from(
@@ -214,11 +203,6 @@ function pointerdown(event: globalThis.PointerEvent) {
     !profileElement.value?.contains(event.target)
   )
     profile.value = false;
-  if (
-    event.target instanceof window.Element &&
-    !event.target.closest('.shell-top-nav')
-  )
-    topExpanded.value = [];
 }
 let previousOverflow = '';
 watch(drawer, (open) => {
@@ -367,13 +351,10 @@ onScopeDispose(() => {
             :aria-label="t('areas')"
             @wheel="scrollTopNavigation"
           >
-            <AppNavigation
+            <AppTopNavigation
               :entries="topNavigation"
               :current="current"
-              :expanded="topExpanded"
-              horizontal
               @navigate="navigate"
-              @toggle="toggleTop"
             />
           </nav>
         </div>

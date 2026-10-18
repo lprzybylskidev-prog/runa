@@ -9,10 +9,10 @@ const props = withDefaults(
     current?: RouteContext | undefined;
     expanded: readonly string[];
     collapsed?: boolean;
-    horizontal?: boolean;
+    context?: 'sidebar' | 'dropdown';
     depth?: number;
   }>(),
-  { current: undefined, collapsed: false, horizontal: false, depth: 0 },
+  { current: undefined, collapsed: false, context: 'sidebar', depth: 0 },
 );
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
@@ -34,18 +34,13 @@ function active(entry: NavigationEntry): boolean {
   return (
     entry.routeKey === props.current?.routeKey ||
     (props.depth === 0 &&
-      !props.horizontal &&
+      props.context === 'sidebar' &&
       entry.moduleKey === props.current?.moduleKey)
   );
 }
 </script>
 <template>
-  <ul
-    :class="[
-      'shell-nav-list',
-      { 'shell-nav-horizontal': horizontal, 'shell-nav-nested': depth > 0 },
-    ]"
-  >
+  <ul :class="['shell-nav-list', { 'shell-nav-nested': depth > 0 }]">
     <li
       v-for="entry in visible"
       :key="entry.key"
@@ -72,7 +67,7 @@ function active(entry: NavigationEntry): boolean {
               @click="emit('navigate', entry.href, $event)"
             >
               <AppIcon
-                v-if="!horizontal"
+                v-if="context === 'sidebar'"
                 :name="entry.icon ?? 'layers-intersect'"
               />
               <span v-if="!collapsed">{{ entry.label }}</span>
@@ -84,7 +79,7 @@ function active(entry: NavigationEntry): boolean {
               :aria-label="entry.label"
             >
               <AppIcon
-                v-if="!horizontal"
+                v-if="context === 'sidebar'"
                 :name="entry.icon ?? 'layers-intersect'"
               />
               <span v-if="!collapsed">{{ entry.label }}</span>
@@ -117,7 +112,7 @@ function active(entry: NavigationEntry): boolean {
           :entries="entry.children"
           :current="current"
           :expanded="expanded"
-          :horizontal="horizontal"
+          :context="context"
           :depth="depth + 1"
           @navigate="(href, event) => emit('navigate', href, event)"
           @toggle="(key) => emit('toggle', key)"

@@ -91,11 +91,17 @@ test('known URLs reconstruct module/area on direct load, history and refresh', a
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projekty');
   await top.getByRole('button', { name: 'Więcej' }).click();
-  await top.getByRole('link', { name: 'Archiwum', exact: true }).focus();
+  await page
+    .getByRole('region', { name: 'Więcej', exact: true })
+    .getByRole('link', { name: 'Archiwum', exact: true })
+    .focus();
   await page.keyboard.press('Escape');
   await expect(top.getByRole('button', { name: 'Więcej' })).toBeFocused();
   await page.keyboard.press('Enter');
-  await top.getByRole('link', { name: 'Archiwum', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Więcej', exact: true })
+    .getByRole('link', { name: 'Archiwum', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/archive$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Archiwum');
@@ -276,7 +282,10 @@ test('top navigation remains reachable through horizontal overflow on a narrow s
   ).toBe(true);
   await nav.getByRole('button', { name: 'Więcej' }).focus();
   await page.keyboard.press('Enter');
-  await nav.getByRole('link', { name: 'Archiwum', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Więcej', exact: true })
+    .getByRole('link', { name: 'Archiwum', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/archive$/);
   expect(
     await page.evaluate(
@@ -373,5 +382,51 @@ test('compact top navigation keeps its scrollbar at the header bottom and owns w
       path: `artifacts/playwright/ui-foundations/top-navigation-compact-${width}.png`,
       fullPage: true,
     });
+  }
+});
+
+test('top dropdown floats outside the scrolling nav without changing header size', async ({
+  page,
+}) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/__review/application/projects');
+    const nav = page.locator('.shell-top-nav');
+    const trigger = nav.getByRole('button', { name: 'Więcej' });
+    await trigger.click();
+    const panel = page.getByRole('region', { name: 'Więcej', exact: true });
+    await expect(panel).toBeVisible();
+    const card = (await panel.boundingBox())!;
+    const header = (await page.locator('.shell-header').boundingBox())!;
+    expect(header.height).toBe(64);
+    expect(card.y).toBeGreaterThanOrEqual(header.y + header.height);
+    expect(card.x).toBeGreaterThanOrEqual(8);
+    expect(card.x + card.width).toBeLessThanOrEqual(width - 8);
+    expect(
+      await panel.evaluate(
+        (element) => element.closest('.shell-top-nav') === null,
+      ),
+    ).toBe(true);
+    await expect(
+      panel.getByRole('link', { name: 'Archiwum', exact: true }),
+    ).toBeFocused();
+    await page.screenshot({
+      path: `artifacts/playwright/ui-foundations/top-dropdown-${width}.png`,
+    });
+    await page.keyboard.press('Shift+Tab');
+    await expect(trigger).toBeFocused();
+    await expect(panel).toHaveCount(0);
+    await trigger.click();
+    await page.keyboard.press('Tab');
+    await expect(panel).toHaveCount(0);
+    await expect(
+      nav.getByRole('link', { name: 'Obszar testowy 01', exact: true }),
+    ).toBeFocused();
+    await trigger.click();
+    await page.getByRole('heading', { level: 1 }).click();
+    await expect(panel).toHaveCount(0);
+    await trigger.click();
+    await page.evaluate(() => scrollTo(0, 150));
+    await expect(panel).toHaveCount(0);
   }
 });

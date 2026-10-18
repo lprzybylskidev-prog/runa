@@ -692,14 +692,7 @@ input:-webkit-autofill {
 .shell-nav-horizontal .shell-nav-link.is-active {
   border-bottom-color: var(--runa-primary-solid);
 }
-.shell-nav-horizontal .shell-nav-nested {
-  flex-direction: column;
-  margin: 4px 0 0;
-  padding-left: 0;
-  border-left: 0;
-  border-radius: 4px;
-  background: var(--runa-surface-raised);
-}
+
 .shell-header-controls {
   display: flex;
   align-items: center;
@@ -901,5 +894,40 @@ input:-webkit-autofill {
   h2,
   h3 {
     break-after: avoid;
+  }
+}
+
+.shell-top-trigger {
+  cursor: pointer;
+}
+.shell-top-chevron {
+  margin-left: 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+.shell-top-dropdown {
+  position: fixed;
+  z-index: 40;
+  width: min(248px, calc(100vw - 16px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  background: var(--runa-surface-raised);
+  border: 1px solid var(--runa-control-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px
+    color-mix(
+      in srgb,
+      var(--runa-shadow) var(--runa-shadow-opacity),
+      transparent
+    );
+}
+.shell-top-dropdown .shell-nav-link {
+  border-left: 0;
+  font-size: 12px;
+}
+@media print {
+  .shell-top-dropdown {
+    display: none !important;
   }
 }
