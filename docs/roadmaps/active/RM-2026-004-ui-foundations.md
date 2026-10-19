@@ -21,7 +21,7 @@ impact_areas:
 
 ### Goal and release
 
-Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Real production-Nginx host verification passed in point 7 on 2026-10-18; point 8 is accepted after owner-requested scope reduction; point 9, including neutral feedback, and point 10, including the inverse neutral surface hierarchy, are complete and visually accepted on 2026-10-19. Point 11 is complete and visually accepted on 2026-10-19. Points 12–14 are complete and visually accepted on 2026-10-19. Point 15 is implemented and awaiting visual acceptance.
+Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Real production-Nginx host verification passed in point 7 on 2026-10-18; point 8 is accepted after owner-requested scope reduction; point 9, including neutral feedback, and point 10, including the inverse neutral surface hierarchy, are complete and visually accepted on 2026-10-19. Point 11 is complete and visually accepted on 2026-10-19. Points 12–14 are complete and visually accepted on 2026-10-19. Point 15 is complete and visually accepted on 2026-10-19.
 
 Planned release: **0.2.0**, from audited `VERSION` **0.1.2**. This is a feature roadmap under `docs/workflows/releases.md`, not a stable API/1.0 declaration. Pre-1.0 API additions and documented evolution justify a minor release; no major bump is authorized. Recompute from actual main at activation if an intervening release occurs and synchronize the two successor drafts.
 
@@ -151,8 +151,8 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Requires accepted 12. Date/time/datetime/range with application-owned date/time/color pickers, checkbox/radio/switch, file/multiple file, color/hidden/tags; localize values/display and test DST/date-only/null boundaries, keyboard and autofill. **Visual gate accepted by the owner on 2026-10-19, including custom pickers, file dropzones and the frameless color trigger.**
 - [x] 14. Composable selection controls.
   - Requires accepted 13. Extend AppSelect with multiselect/searchable and local/remote providers; incremental large-data handling, clear/loading/error/empty states and cancellation races. Test stale responses and keyboard/touch selection. **Visual gate accepted by the owner on 2026-10-19, including unified chevrons and themed option panels in every mode.**
-- [ ] 15. Masks, dependent fields, dirty guards and wizards.
-  - Requires accepted 14. Raw/formatted masking, cursor/paste/delete/IME tests, cascading dependency graph and multistep navigation/validation/preservation. Test cancel/retry, descendant invalidation and leaving a dirty form. **Visual gate: advanced forms.**
+- [x] 15. Masks, dependent fields, dirty guards and wizards.
+  - Requires accepted 14. Raw/formatted masking, cursor/paste/delete/IME tests, cascading dependency graph and multistep navigation/validation/preservation. Test cancel/retry, descendant invalidation and leaving a dirty form. **Visual gate accepted by the owner on 2026-10-19, including separate wizard and test-control Cards.**
 - [ ] 16. Dialog interactions.
   - Requires accepted 15. Alert/confirm/custom modals with shared layer ownership, stacking, focus return and busy/error behavior. Test keyboard traps, nested layers and mobile scrolling. **Visual gate: dialogs.**
 - [ ] 17. Table foundation and client/server providers.
@@ -529,7 +529,7 @@ Point 14 closure: the owner explicitly accepted selection controls and all corre
 
 ## Point 15 execution record
 
-Status: **implemented; awaiting explicit owner visual acceptance**. The owner accepted point 14 and authorized this point on 2026-10-19. Point 16 remains unstarted.
+Status: **complete and visually accepted by the owner on 2026-10-19**. The owner accepted point 14 and authorized this point on 2026-10-19. Point 16 remains unstarted.
 
 - Added public MaskedInput over TextInput/FormField, positional mask tokens and pure raw/display formatting/parsing. Raw/null values, formatted text and mask completeness are separate from feature validation. Native UTF-16 caret ranges, paste, forward/backward/selected deletion, escaped literal prefixes, Unicode letters, readonly and IME composition are covered. No masking dependency or numerical rounding engine was added.
 - Added useDependentFields with stable keyed local/remote definitions, unknown-parent/duplicate/cycle rejection, synchronous multilevel descendant invalidation, AbortSignal and generation guards. Loading/error/ready/options, retry and cancel are explicit. This is for bounded option domains, not replacement of the paged SelectionProvider contract.
@@ -543,3 +543,5 @@ Status: **implemented; awaiting explicit owner visual acceptance**. The owner ac
 
 - 2026-10-19 — Owner requested a Card containing only the wizard and another Card for test controls. Separated the wizard/form/normal feedback from simulation toggles, dirty status, restore/leave actions and guard-confirmation/navigation fixtures. Shared component behavior is unchanged; updated the page-pattern reference. Visual acceptance remains pending.
 - Verification: strict TypeScript, focused lint/formatting, review build and docs/diff checks pass. Four rendered light/dark desktop/mobile checks verify separated cards, wizard error focus and test-control stay/preserved-value behavior. Screenshots: artifacts/playwright/point15/cards-*.png. No Docker resources created or removed.
+
+Point 15 closure: the owner explicitly accepted advanced forms and the review-card correction on 2026-10-19 and authorized immediate point 16 work. Delivery commits: 6f37bb1 and e38ece0. Earlier pending-acceptance notes describe pre-acceptance evidence.
