@@ -1144,3 +1144,120 @@ button.app-button.shell-avatar-button {
     transition: none;
   }
 }
+
+/* Native boolean semantics with application-owned control paint. */
+.runa-choice-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--runa-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.runa-choice-row:has(input:focus-visible) {
+  border-color: var(--runa-focus-ring);
+  background: var(--runa-surface-hover);
+}
+.runa-choice-row:has(input:disabled) {
+  color: var(--runa-disabled-text);
+  cursor: not-allowed;
+}
+.runa-choice-input {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1px solid var(--runa-control-border);
+  border-radius: 3px;
+  background: var(--runa-input-background);
+  color: var(--runa-primary-foreground);
+  outline: none;
+}
+.runa-choice-input:checked,
+.runa-choice-input:indeterminate {
+  background: var(--runa-primary-solid);
+  border-color: var(--runa-primary-solid);
+}
+.runa-choice-input[type='radio'] {
+  border-radius: 50%;
+}
+.runa-choice-input:checked::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 9px;
+  top: 2px;
+  left: 5px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.runa-choice-input:indeterminate::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 3px;
+  width: 10px;
+  height: 2px;
+  background: currentColor;
+}
+.runa-choice-input[type='radio']:checked::after {
+  width: 8px;
+  height: 8px;
+  top: 4px;
+  left: 4px;
+  border: 0;
+  border-radius: 50%;
+  background: currentColor;
+  transform: none;
+}
+.runa-choice-input.runa-switch-input {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+}
+.runa-switch-input::after,
+.runa-switch-input:checked::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 2px;
+  left: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--runa-text-secondary);
+  transform: none;
+  transition: translate 160ms ease-out;
+}
+.runa-switch-input:checked::after {
+  background: var(--runa-primary-foreground);
+  translate: 16px 0;
+}
+.runa-choice-input:disabled {
+  background: var(--runa-disabled-background);
+  border-color: var(--runa-disabled-text);
+  color: var(--runa-disabled-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .runa-switch-input::after {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .runa-choice-input {
+    appearance: auto;
+  }
+  .runa-choice-input::after {
+    content: none;
+  }
+  .runa-choice-row:has(input:focus-visible) {
+    outline: 2px solid Highlight;
+  }
+}

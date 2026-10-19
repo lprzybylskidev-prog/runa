@@ -1,6 +1,6 @@
 <template>
   <section
-    class="rounded border border-line bg-[var(--runa-container-body-background)] text-sm"
+    class="min-w-0 rounded border border-line bg-[var(--runa-container-body-background)] text-sm"
   >
     <header
       v-if="$slots.header || $slots.actions"

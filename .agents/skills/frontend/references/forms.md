@@ -59,3 +59,13 @@ async function save() {
 ```
 
 Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:autofill) documents UA-important background/text rules. The shared field paints its theme surface with an inset shadow and sets text-fill/caret colors while retaining the internal focus indicator; it does not attempt to replace browser-owned suggestion UI.
+
+## Additional field values and incomplete drafts
+
+DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput requires an IANA timeZone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
+
+Temporal inputs preserve native partial segment editing independently of committed values. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. DateRangeInput combines endpoint and order validity. Supply localized invalidMessage/zoneLabel and linked helper text. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
+
+FileInput stores File objects in separate shallowRef state, outside useForm's finite-JSON snapshots. Its issues event exposes count/size/type failures without truncating selection. Reset/removal is controlled through the model; clearing the native picker after selection allows choosing the same file again. Names/MIME/accept are untrusted UX hints: backend upload authorization, type/content/size validation and storage remain feature-owned. No file reads, previews, object URLs or uploads occur in the primitive.
+
+Checkbox supports an indeterminate null value; Switch uses boolean. RadioGroup uses explicit string option identities and native arrow navigation. Color is six-digit hexadecimal without alpha. Tags are plain trimmed strings, with caller-owned limits and localization; there is no remote suggestion provider. HiddenInput does not protect its value from modification.

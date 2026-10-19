@@ -33,7 +33,16 @@ const describedBy = computed(
 </script>
 <template>
   <div class="min-w-0 space-y-2">
-    <label :for="controlId" class="block text-xs font-semibold text-muted"
+    <slot
+      v-if="$slots.label"
+      :id="controlId"
+      name="label"
+      :required="required"
+    />
+    <label
+      v-else
+      :for="controlId"
+      class="block text-xs font-semibold text-muted"
       >{{ label
       }}<span v-if="required" aria-hidden="true" class="ml-1">*</span></label
     ><slot
