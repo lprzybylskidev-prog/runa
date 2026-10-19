@@ -1,16 +1,17 @@
 <script setup lang="ts">
+import { useFeedbackTone } from '../composables/useFeedbackTone';
 import AppButton from './AppButton.vue';
 import type { FeedbackTone } from '../runa/ui/feedback';
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    tone?: FeedbackTone;
+    tone?: FeedbackTone | undefined;
     title?: string;
     dismissible?: boolean;
     closeLabel?: string;
     announce?: boolean;
   }>(),
   {
-    tone: 'info',
+    tone: undefined,
     title: '',
     dismissible: false,
     closeLabel: 'Close',
@@ -25,6 +26,7 @@ const symbols = {
   warning: '!',
   danger: '!',
 };
+const tone = useFeedbackTone(() => props.tone, 'info');
 </script>
 <template>
   <div

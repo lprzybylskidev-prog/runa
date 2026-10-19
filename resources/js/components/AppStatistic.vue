@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import { useFeedbackTone } from '../composables/useFeedbackTone';
 import AppIcon from './AppIcon.vue';
 import type { IconName } from '../runa/ui/icons';
 import type { FeedbackTone } from '../runa/ui/feedback';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     label: string;
     value: string | number;
     description?: string;
     icon?: IconName | undefined;
     trend?: string;
-    tone?: FeedbackTone;
+    tone?: FeedbackTone | undefined;
   }>(),
-  { tone: 'neutral', description: '', icon: undefined, trend: '' },
+  { tone: undefined, description: '', icon: undefined, trend: '' },
 );
+const tone = useFeedbackTone(() => props.tone);
 </script>
 <template>
   <div class="runa-feedback app-statistic" :data-tone="tone">

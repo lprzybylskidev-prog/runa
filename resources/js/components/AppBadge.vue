@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { useFeedbackTone } from '../composables/useFeedbackTone';
 import type { BadgeTone } from '../runa/ui/feedback';
-withDefaults(defineProps<{ tone?: BadgeTone; size?: 'sm' | 'md' }>(), {
-  tone: 'neutral',
-  size: 'md',
-});
+const props = withDefaults(
+  defineProps<{ tone?: BadgeTone | undefined; size?: 'sm' | 'md' }>(),
+  {
+    tone: undefined,
+    size: 'md',
+  },
+);
+const tone = useFeedbackTone(() => props.tone);
 </script>
 <template>
   <span class="runa-feedback app-badge" :data-tone="tone" :data-size="size"

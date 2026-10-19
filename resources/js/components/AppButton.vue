@@ -1,31 +1,43 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useInheritedFeedbackTone } from '../composables/useFeedbackTone';
 import AppSpinner from './AppSpinner.vue';
 import type {
   ControlTone,
   ControlSize,
   ButtonVariant,
 } from '../runa/ui/controls';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset';
     compact?: boolean;
     disabled?: boolean;
     busy?: boolean;
     size?: ControlSize;
-    variant?: ButtonVariant;
-    tone?: ControlTone;
+    variant?: ButtonVariant | undefined;
+    tone?: ControlTone | undefined;
     iconOnly?: boolean;
   }>(),
   {
+    tone: undefined,
+    variant: undefined,
     type: 'button',
     compact: false,
     disabled: false,
     busy: false,
     size: 'md',
-    variant: 'neutral',
-    tone: 'primary',
     iconOnly: false,
   },
+);
+const contextTone = useInheritedFeedbackTone();
+const tone = computed(
+  () =>
+    props.tone ??
+    (contextTone.value === 'neutral' ? 'primary' : contextTone.value),
+);
+const variant = computed(
+  () =>
+    props.variant ?? (contextTone.value === 'neutral' ? 'neutral' : 'outline'),
 );
 </script>
 

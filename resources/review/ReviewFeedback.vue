@@ -83,7 +83,12 @@ function notify(tone: FeedbackTone, english: boolean) {
           english
             ? 'A short message with the next step. Meaning is conveyed by text and symbol as well as color.'
             : 'Krótki komunikat z następnym krokiem. Znaczenie przekazuje tekst i symbol, nie tylko kolor.'
-        }}</Alert
+        }}<template #actions
+          ><Button size="sm" @click="retry++"
+            >{{ english ? 'Try again' : 'Spróbuj ponownie' }} ·
+            {{ retry }}</Button
+          ></template
+        ></Alert
       >
       <Alert
         v-if="!dismissed"

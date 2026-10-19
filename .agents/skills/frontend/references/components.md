@@ -186,3 +186,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 ### Table
 
 `Table` (`resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and explicit row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
+
+### Nested semantic colors
+
+Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for descendants. An omitted child tone inherits the closest context; explicit tones override it and establish a new context. Buttons in a colored context default to that tone and the outline variant; explicit variants/tones remain authoritative. A neutral context restores neutral feedback and neutral button defaults. Standalone defaults are unchanged. This applies through wrapper components and slots without shell dependencies; use component props rather than descendant CSS overrides. Ordinary form input validation and dedicated shell navigation retain their own contracts.

@@ -4,6 +4,10 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick } from 'vue';
 import {
   Alert,
+  Button,
+  Progress,
+  Statistic,
+  AsyncContent,
   Badge,
   Status,
   Tooltip,
@@ -261,4 +265,65 @@ it('returns through normal trigger order on Tab and Shift+Tab instead of trappin
   );
   await settle();
   expect(document.activeElement).toBe(wrapper.get('button').element);
+});
+
+it('inherits semantic tones through nested slots and updates them reactively', async () => {
+  const wrapper = mount(Alert, {
+    props: { tone: 'danger' },
+    slots: {
+      default: () => [
+        h(Badge, {}, () => 'Badge'),
+        h(Status, {}, () => 'Status'),
+        h(Progress, { value: 50, label: 'Progress' }),
+        h(Statistic, { label: 'Count', value: 5 }),
+      ],
+      actions: () => h(Button, {}, () => 'Retry'),
+    },
+  });
+  for (const selector of [
+    '.app-badge',
+    '.app-status',
+    '.app-progress',
+    '.app-statistic',
+    'button',
+  ])
+    expect(wrapper.get(selector).attributes('data-tone')).toBe('danger');
+  expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
+  await wrapper.setProps({ tone: 'success' });
+  expect(wrapper.get('button').attributes('data-tone')).toBe('success');
+  await wrapper.setProps({ tone: 'neutral' });
+  expect(wrapper.get('button').attributes('data-variant')).toBe('neutral');
+});
+it('respects nearest explicit tones, explicit button variants and standalone defaults', () => {
+  const wrapper = mount(Alert, {
+    props: { tone: 'danger' },
+    slots: {
+      default: () =>
+        h(
+          Alert,
+          { tone: 'warning' },
+          {
+            actions: () => [
+              h(Button, {}, () => 'Inherited'),
+              h(Button, { tone: 'info', variant: 'outline' }, () => 'Explicit'),
+            ],
+          },
+        ),
+    },
+  });
+  const buttons = wrapper.findAll('button');
+  expect(buttons[0]!.attributes('data-tone')).toBe('warning');
+  expect(buttons[1]!.attributes('data-tone')).toBe('info');
+  expect(buttons[1]!.attributes('data-variant')).toBe('outline');
+  const button = mount(Button);
+  expect(button.attributes('data-tone')).toBe('primary');
+  expect(button.attributes('data-variant')).toBe('neutral');
+  expect(mount(Badge).attributes('data-tone')).toBe('neutral');
+});
+it('renders a matching retry action in every AsyncContent error', () => {
+  const wrapper = mount(AsyncContent, {
+    props: { state: 'error', retryLabel: 'Retry' },
+  });
+  expect(wrapper.get('button').attributes('data-tone')).toBe('danger');
+  expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
 });

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFeedbackTone } from '../composables/useFeedbackTone';
 import { computed } from 'vue';
 import type { FeedbackTone } from '../runa/ui/feedback';
 const props = withDefaults(
@@ -7,9 +8,9 @@ const props = withDefaults(
     value?: number | null;
     max?: number;
     valueText?: string;
-    tone?: FeedbackTone;
+    tone?: FeedbackTone | undefined;
   }>(),
-  { max: 100, tone: 'neutral', value: null, valueText: '' },
+  { tone: undefined, max: 100, value: null, valueText: '' },
 );
 const limit = computed(() =>
   Number.isFinite(props.max) && props.max > 0 ? props.max : 100,
@@ -22,6 +23,7 @@ const amount = computed(() =>
 const ratio = computed(() =>
   amount.value === undefined ? 0 : amount.value / limit.value,
 );
+const tone = useFeedbackTone(() => props.tone);
 </script>
 <template>
   <div class="runa-feedback app-progress" :data-tone="tone">
