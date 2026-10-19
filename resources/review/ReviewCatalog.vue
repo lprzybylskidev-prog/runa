@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReviewContainers from './ReviewContainers.vue';
 import ReviewFeedback from './ReviewFeedback.vue';
 import ReviewControls from './ReviewControls.vue';
 import { ref } from 'vue';
@@ -12,9 +13,12 @@ const showIllustration = ref(true);
 const showFooter = ref(true);
 const category = ref(
   new window.URLSearchParams(window.location.search).get('category') ===
-    'feedback'
-    ? 'feedback'
-    : 'controls',
+    'containers'
+    ? 'containers'
+    : new window.URLSearchParams(window.location.search).get('category') ===
+        'feedback'
+      ? 'feedback'
+      : 'controls',
 );
 const categories = [
   {
@@ -22,6 +26,10 @@ const categories = [
     label: 'Przyciski / Buttons',
   },
   { value: 'feedback', label: 'Komunikaty i podpowiedzi / Feedback' },
+  {
+    value: 'containers',
+    label: 'Kontenery i nawigacja / Containers and navigation',
+  },
   { value: 'layouts', label: 'Układy / Layouts' },
   { value: 'data', label: 'Dane i eksport / Data and export' },
 ];
@@ -86,7 +94,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–9 · Komponenty / Components
+        RM-2026-004 · 8–10 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select
@@ -99,6 +107,10 @@ const categories = [
         <template v-if="category === 'controls'">
           <ReviewControls :english="t('language') !== 'Język'" />
         </template>
+        <ReviewContainers
+          v-else-if="category === 'containers'"
+          :english="t('language') !== 'Język'"
+        />
         <ReviewFeedback
           v-else-if="category === 'feedback'"
           :english="t('language') !== 'Język'"

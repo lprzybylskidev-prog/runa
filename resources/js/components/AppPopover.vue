@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { ref, useId, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
 const props = withDefaults(
-  defineProps<{ label: string; align?: 'start' | 'end' }>(),
-  { align: 'start' },
+  defineProps<{
+    label: string;
+    align?: 'start' | 'end';
+    modelValue?: boolean | undefined;
+  }>(),
+  { align: 'start', modelValue: undefined },
 );
-const open = ref(false);
+const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
+const localOpen = ref(false);
+const open = computed({
+  get: () => props.modelValue ?? localOpen.value,
+  set: (value: boolean) => {
+    localOpen.value = value;
+    emit('update:modelValue', value);
+  },
+});
 const anchor = ref<globalThis.HTMLElement>();
 const panel = ref<globalThis.HTMLElement>();
 const panelId = useId();

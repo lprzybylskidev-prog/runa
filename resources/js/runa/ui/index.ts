@@ -37,3 +37,12 @@ export { default as Popover } from '../../components/AppPopover.vue';
 export { default as ToastViewport } from '../../components/AppToastViewport.vue';
 export { useToasts } from '../../composables/useToasts';
 export type * from './feedback';
+
+export type * from './containers';
+export { default as Card } from '../../components/AppCard.vue';
+export { default as Divider } from '../../components/AppDivider.vue';
+export { default as Accordion } from '../../components/AppAccordion.vue';
+export { default as Tabs } from '../../components/AppTabs.vue';
+export { default as Breadcrumbs } from '../../components/AppBreadcrumbs.vue';
+export { default as Pagination } from '../../components/AppPagination.vue';
+export { default as Dropdown } from '../../components/AppDropdown.vue';

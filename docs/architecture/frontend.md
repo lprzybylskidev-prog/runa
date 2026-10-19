@@ -337,3 +337,21 @@ The temporary `/__review/ui` controls category grows with each visual roadmap po
 Public `@/runa/ui` exports Alert, Badge, Status, Tooltip, Popover, ToastViewport and setup-scoped useToasts. Feedback uses neutral/success/info/warning/danger roles. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, without a status tint. Readable labels and alert symbols supplement color. Static badges/statuses do not announce automatically; Alert provides live semantics unless explicitly disabled. ToastViewport supplies one polite region, explicit close controls and top-right responsive placement. Its local queue defaults to 5-second notifications and persistent errors, pauses remaining time on hover/focus and restores the invoking control when a focused toast is dismissed. Features retain important errors inline; no notification history or server service is added.
 
 Tooltip and Popover share internal useFloatingLayer for viewport-clamped measured placement, scroll/resize/content updates, top-layer Escape/outside dismissal and cleanup. Tooltip separates pointer and keyboard focus, dismisses on click/scroll and bridges the gap into its content without stale hover. Popover is a named nonmodal dialog with focus entry/return and Tab exit. ApplicationLayout reuses Popover for its existing user-menu slot while preserving its unique initials button; AppPreferenceControls supplies finalized Tooltip to both layouts. Specialized navigation anchoring/route semantics remain internal to AppTopNavigation. All controls remain shell-independent; the temporary feedback catalog remains excluded from production.
+
+### Content containers and navigation primitives
+
+The public `@/runa/ui` facade exports Card (header/actions/body/footer slots), Divider, controlled Accordion, Tabs, Dropdown, Breadcrumbs and Pagination. These components work without a shell or router. Tabs use stable typed IDs, named content slots, automatic arrow/Home/End activation and preserved hidden panels. Dropdown composes the existing floating Popover as an arbitrary-content nonmodal disclosure; no action-list/split-button API is added. Breadcrumbs exposes optional native-event interception for the page resolver. Pagination emits bounded page requests and never fetches data. Callers supply localized accessible names and own selection/loading/query changes. The component catalogue documents exact props, fallback behavior and events; specialized shell navigation remains internal.
+
+```vue
+<Tabs v-model="section" :items="sections" label="Sekcje">
+  <template #overview>...</template>
+  <template #details>...</template>
+</Tabs>
+<Pagination
+  v-model="page"
+  :pages="pageCount"
+  label="Strony"
+  previous-label="Poprzednia strona"
+  next-label="Następna strona"
+/>
+```

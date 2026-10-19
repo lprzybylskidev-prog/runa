@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import {
   ApplicationLayout,
+  Breadcrumbs,
   Button,
   IdentityProvider,
   Select,
@@ -201,18 +202,14 @@ function setWidth(value: string) {
         ></template
       >
       <template #breadcrumbs
-        ><nav
-          :aria-label="text('Ścieżka nawigacji', 'Breadcrumbs')"
-          class="flex flex-wrap items-center gap-2"
-        >
-          <a
-            href="/__review/application/overview"
-            class="underline"
-            @click="navigate('/__review/application/overview', $event)"
-            >Atlas</a
-          ><span aria-hidden="true">/</span><span>{{ title }}</span>
-        </nav></template
-      >
+        ><Breadcrumbs
+          :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
+          :items="[
+            { label: 'Atlas', href: '/__review/application/overview' },
+            { label: title },
+          ]"
+          @navigate="navigate"
+      /></template>
       <template v-if="statistics" #statistics>
         <div class="review-summary">
           <div>
