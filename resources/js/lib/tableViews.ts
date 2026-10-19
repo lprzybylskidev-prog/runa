@@ -51,7 +51,7 @@ export function normalizeTableSnapshot<Row>(
   fallback: TableQuery,
 ): TableViewSnapshot {
   const raw = object(value) ? value : {};
-  const query = object(raw.query) ? raw.query : {};
+  const query = object(raw.query) ? raw.query : { ...fallback };
   const sort =
     object(query.sort) &&
     typeof query.sort.key === 'string' &&
@@ -74,6 +74,7 @@ export function normalizeTableSnapshot<Row>(
     ),
     query: normalizeTableQuery(
       {
+        ...(typeof query.search === 'string' ? { search: query.search } : {}),
         page: 1,
         perPage:
           typeof query.perPage === 'number' ? query.perPage : fallback.perPage,

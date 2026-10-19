@@ -60,18 +60,21 @@ test('personalizes columns and manages a persisted default view', async ({
     .first()
     .click();
   let dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('slider')).toHaveCount(0);
   await dialog.getByRole('checkbox', { name: 'City', exact: true }).uncheck();
   await dialog
     .getByRole('button', { name: 'Move up: Documents', exact: true })
     .click();
-  await dialog.getByLabel('Width: Name', { exact: true }).fill('240');
-  const slider = dialog.getByRole('slider', {
-    name: 'Resize: Name',
-    exact: true,
-  });
-  await slider.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(slider).toHaveValue('241');
+  await expect(dialog.getByLabel('Width: Name', { exact: true })).toHaveValue(
+    /^\d+$/,
+  );
+  await dialog.getByLabel('Width: Name', { exact: true }).fill('');
+  await dialog
+    .getByLabel('Width: Name', { exact: true })
+    .pressSequentially('240');
+  await expect(dialog.getByLabel('Width: Name', { exact: true })).toHaveValue(
+    '240',
+  );
   await dialog
     .locator('[draggable=true]')
     .nth(2)
@@ -90,8 +93,8 @@ test('personalizes columns and manages a persisted default view', async ({
   await expect(page.locator('table').first().locator('th')).toHaveCount(4);
   await page.reload();
   await expect(
-    page.getByRole('button', { name: 'Saved view', exact: true }).first(),
-  ).toContainText('Compact');
+    page.getByRole('button', { name: 'Available views', exact: true }).first(),
+  ).toContainText('Default view');
   await expect(
     page.locator('table').first().locator('thead'),
   ).not.toContainText('City');
@@ -123,5 +126,43 @@ test('personalizes columns and manages a persisted default view', async ({
     .click();
   await expect(page.locator('table').first().locator('thead')).toContainText(
     'City',
+  );
+});
+
+test('uses compact controls, searches across columns and lists the default first', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('runa.locale', 'en');
+  });
+  await page.goto('/__review/ui?category=data');
+  await expect(page.locator('table')).toHaveCount(2);
+  const views = page
+    .getByRole('button', { name: 'Available views', exact: true })
+    .first();
+  expect(await views.evaluate((e) => e.getBoundingClientRect().height)).toBe(
+    36,
+  );
+  const search = page
+    .getByRole('textbox', { name: 'Search', exact: true })
+    .first();
+  expect(await search.evaluate((e) => e.getBoundingClientRect().height)).toBe(
+    36,
+  );
+  await views.click();
+  await expect(page.getByRole('option').first()).toContainText('Default view');
+  await page.keyboard.press('Escape');
+  await search.fill('Gdańsk');
+  await expect(page.locator('table').first().locator('tbody')).toContainText(
+    'Gdańsk',
+  );
+  await expect(
+    page.locator('table').first().locator('tbody'),
+  ).not.toContainText('Warszawa');
+  await search.fill('not-present-at-all');
+  await expect(page.getByText('No results', { exact: true })).toBeVisible();
+  await search.fill('Orion 3');
+  await expect(page.locator('table').first().locator('tbody')).toContainText(
+    'Orion 3',
   );
 });

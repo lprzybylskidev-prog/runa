@@ -7,6 +7,8 @@ const props = withDefaults(
   defineProps<{
     modelValue: string | null;
     label: string;
+    size?: 'sm' | 'md';
+    hideLabel?: boolean;
     id?: string;
     type?: TextInputType;
     helper?: string;
@@ -18,6 +20,8 @@ const props = withDefaults(
     nullable?: boolean;
   }>(),
   {
+    size: 'md',
+    hideLabel: false,
     id: '',
     type: 'text',
     helper: '',
@@ -62,12 +66,17 @@ function descriptions(own: string | undefined) {
   <AppFormField
     :id="id"
     :label="label"
+    :hide-label="hideLabel"
     :helper="helper"
     :warning="warning"
     :error="error"
     :required="required"
     ><template #default="{ id: controlId, describedBy, invalid }">
-      <div class="app-input-row" :class="{ 'has-suffix': $slots.suffix }">
+      <div
+        :data-size="size"
+        class="app-input-row"
+        :class="{ 'has-suffix': $slots.suffix }"
+      >
         <textarea
           v-if="type === 'textarea'"
           v-bind="attrs"
@@ -78,6 +87,7 @@ function descriptions(own: string | undefined) {
           :required="required"
           :aria-invalid="invalid || undefined"
           :aria-describedby="descriptions(describedBy)"
+          :data-size="size"
           class="runa-field-control app-input app-textarea"
           @input="update"
           @compositionend="update"
@@ -92,6 +102,7 @@ function descriptions(own: string | undefined) {
           :required="required"
           :aria-invalid="invalid || undefined"
           :aria-describedby="descriptions(describedBy)"
+          :data-size="size"
           class="runa-field-control app-input"
           @input="update"
           @compositionend="update"
@@ -121,6 +132,10 @@ function descriptions(own: string | undefined) {
   background: var(--runa-surface-muted);
   color: var(--runa-text-secondary);
   font-size: 12px;
+}
+.app-input-row[data-size='sm'] .app-input-suffix {
+  padding: 0 8px;
+  font-size: 11px;
 }
 .app-input-row:has(> .app-input[aria-invalid='true']) > .app-input-suffix {
   border-color: var(--runa-danger-solid);

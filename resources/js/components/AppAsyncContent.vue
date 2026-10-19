@@ -3,10 +3,12 @@ import AppSpinner from './AppSpinner.vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
 import AppEmptyState from './AppEmptyState.vue';
+import type { ControlSize } from '../runa/ui/controls';
 import type { AsyncContentState } from '../runa/ui/loading';
 withDefaults(
   defineProps<{
     state: AsyncContentState;
+    actionSize?: ControlSize;
     loadingLabel?: string;
     errorTitle?: string;
     errorMessage?: string;
@@ -15,6 +17,7 @@ withDefaults(
     retryLabel?: string;
   }>(),
   {
+    actionSize: 'md',
     errorMessage: '',
     emptyDescription: '',
     retryLabel: '',
@@ -41,7 +44,7 @@ const emit = defineEmits<{ retry: [] }>();
         ><AppAlert tone="danger" :title="errorTitle"
           >{{ errorMessage
           }}<template v-if="retryLabel" #actions
-            ><AppButton @click="emit('retry')">{{
+            ><AppButton :size="actionSize" @click="emit('retry')">{{
               retryLabel
             }}</AppButton></template
           ></AppAlert

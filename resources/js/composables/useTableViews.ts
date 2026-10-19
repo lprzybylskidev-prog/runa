@@ -231,6 +231,9 @@ export function useTableViews<Row>(options: {
     });
     apply(state.value.current);
   }
+  function selectDefault() {
+    select(state.value.defaultId);
+  }
   function resetColumns() {
     setColumns(options.columns().map((c) => ({ key: c.key, visible: true })));
   }
@@ -250,6 +253,7 @@ export function useTableViews<Row>(options: {
     reorder,
     create,
     select,
+    selectDefault,
     update,
     rename,
     remove,

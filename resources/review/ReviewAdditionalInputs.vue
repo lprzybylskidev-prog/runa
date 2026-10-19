@@ -164,6 +164,7 @@ const fileLabels = computed(() => ({
           "
           @validity="rangeValid = $event"
         /><Select
+          size="sm"
           :model-value="disambiguation"
           :label="
             text(

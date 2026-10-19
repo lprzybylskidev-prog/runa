@@ -188,3 +188,18 @@ it('handles denied storage in memory and resets/reorders without losing saved vi
   c.reset();
   expect(c.state.value.activeId).toBeNull();
 });
+it('retains global search in saved snapshots and resolves the default option', () => {
+  const storage = adapter();
+  const { controller: c, query } = setup(storage);
+  query.value = { ...initial(), search: 'City' };
+  c.create('Search');
+  const id = c.state.value.activeId!;
+  c.setDefault(id);
+  c.reset();
+  expect(query.value.search).toBeUndefined();
+  c.selectDefault();
+  expect(query.value.search).toBe('City');
+  c.setDefault(null);
+  c.selectDefault();
+  expect(query.value.search).toBeUndefined();
+});

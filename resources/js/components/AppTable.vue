@@ -1,6 +1,8 @@
 <script setup lang="ts" generic="Row">
-import { computed, toRef, useSlots } from 'vue';
+import { computed, toRef, useSlots, ref, watch, nextTick } from 'vue';
 import AppButton from './AppButton.vue';
+import AppTextInput from './AppTextInput.vue';
+import AppSelect from './AppSelect.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppPagination from './AppPagination.vue';
 import AppAsyncContent from './AppAsyncContent.vue';
@@ -21,6 +23,8 @@ const props = withDefaults(
     selected?: readonly string[];
     selectable?: boolean;
     english?: boolean;
+    searchable?: boolean;
+    pageSizes?: readonly number[];
   }>(),
   {
     columnState: undefined,
@@ -29,11 +33,14 @@ const props = withDefaults(
     selected: () => [],
     selectable: false,
     english: false,
+    searchable: true,
+    pageSizes: () => [5, 10, 20, 50],
   },
 );
 const emit = defineEmits<{
   'update:query': [value: TableQuery];
   'update:selected': [value: string[]];
+  'column-widths': [value: Record<string, number>];
 }>();
 const slots = useSlots();
 const text = (pl: string, en: string) => (props.english ? en : pl);
@@ -52,6 +59,38 @@ const { page, state, loading, reload } = useTable(
   source,
   () => props.columns,
   toRef(props, 'query'),
+);
+const tableElement = ref<globalThis.HTMLTableElement>();
+let previousWidths = '';
+function measureColumns() {
+  if (!tableElement.value) return;
+  const widths = Object.fromEntries(
+    [
+      ...tableElement.value.querySelectorAll<globalThis.HTMLElement>(
+        'th[data-column-key]',
+      ),
+    ].map((cell) => [
+      cell.dataset.columnKey!,
+      Math.round(cell.getBoundingClientRect().width),
+    ]),
+  );
+  const signature = JSON.stringify(widths);
+  if (signature !== previousWidths) {
+    previousWidths = signature;
+    emit('column-widths', widths);
+  }
+}
+watch(tableElement, (table, _previous, cleanup) => {
+  if (!table) return;
+  const observer = new globalThis.ResizeObserver(measureColumns);
+  observer.observe(table);
+  cleanup(() => observer.disconnect());
+  void nextTick(measureColumns);
+});
+const pageOptions = computed(() =>
+  [...new Set([...props.pageSizes, props.query.perPage])]
+    .filter((n) => Number.isInteger(n) && n > 0 && n <= 100)
+    .map((n) => ({ value: String(n), label: String(n) })),
 );
 const pages = computed(() =>
   page.value?.counts === 'exact' && page.value.matching !== null
@@ -72,6 +111,9 @@ const visibleColumns = computed(() =>
       return column ? [{ ...column, width: state.width }] : [];
     }),
 );
+watch(visibleColumns, () => {
+  void nextTick(measureColumns);
+});
 const hasWidths = computed(() =>
   visibleColumns.value.some((c) => c.width !== undefined),
 );
@@ -107,23 +149,47 @@ function changePage(value: number) {
 </script>
 <template>
   <div class="min-w-0 rounded border border-line bg-surface text-sm">
-    <div
-      v-if="$slots.filters"
-      class="border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"
-    >
+    <div class="border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3">
       <slot
         name="filters"
         :query="query"
         :update="
           (value: TableQuery) => emit('update:query', { ...value, page: 1 })
         "
-      />
+      >
+        <div class="flex flex-wrap items-end gap-3">
+          <AppTextInput
+            v-if="searchable"
+            size="sm"
+            :model-value="query.search ?? ''"
+            :label="text('Wyszukaj', 'Search')"
+            @update:model-value="
+              emit('update:query', { ...query, page: 1, search: $event ?? '' })
+            "
+          />
+          <AppSelect
+            size="sm"
+            :locale="english ? 'en' : 'pl'"
+            :model-value="String(query.perPage)"
+            :label="text('Na stronie', 'Page size')"
+            :options="pageOptions"
+            @update:model-value="
+              emit('update:query', {
+                ...query,
+                page: 1,
+                perPage: Number($event),
+              })
+            "
+          />
+        </div>
+      </slot>
     </div>
     <div v-if="$slots.bulk" class="p-4">
       <slot name="bulk" :selected="selected" />
     </div>
     <div v-if="state !== 'success'" class="p-4">
       <AppAsyncContent
+        action-size="sm"
         :state="state"
         :loading-label="text('Ładowanie danych', 'Loading data')"
         :error-title="
@@ -141,7 +207,11 @@ function changePage(value: number) {
       tabindex="0"
       class="relative overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
     >
-      <table class="w-full border-collapse text-left" :style="tableStyle">
+      <table
+        ref="tableElement"
+        class="w-full border-collapse text-left"
+        :style="tableStyle"
+      >
         <colgroup>
           <col v-if="selectable" :style="{ width: '48px' }" />
           <col
@@ -173,6 +243,7 @@ function changePage(value: number) {
               v-for="column in visibleColumns"
               :key="column.key"
               scope="col"
+              :data-column-key="column.key"
               class="px-4 py-1 align-middle whitespace-nowrap"
               :aria-sort="
                 query.sort?.key === column.key

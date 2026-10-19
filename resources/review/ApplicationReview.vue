@@ -224,6 +224,7 @@ function setWidth(value: string) {
       /></template>
       <template v-if="toolbar" #toolbar
         ><Select
+          size="sm"
           :model-value="density"
           :label="text('Widok', 'View')"
           :options="[
@@ -326,6 +327,7 @@ function setWidth(value: string) {
               >{{ text('Długa treść', 'Long content') }}</Button
             >
             <Select
+              size="sm"
               :model-value="width"
               :label="text('Szerokość obszaru', 'Workspace width')"
               :options="[

@@ -1,4 +1,5 @@
 export interface TableQuery {
+  search?: string;
   page: number;
   perPage: number;
   sort: { key: string; direction: 'asc' | 'desc' } | null;
@@ -11,6 +12,7 @@ export interface TableColumn<Row> {
   compare?: (a: Row, b: Row) => number;
   filter?: (row: Row, value: string) => boolean;
   sortable?: boolean;
+  searchable?: boolean;
 }
 export interface TablePage<Row> {
   rows: readonly Row[];

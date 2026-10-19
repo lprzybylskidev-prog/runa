@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Select, Checkbox, Card, type SelectionProvider } from '@/runa/ui';
+const smallChoice = ref('a');
 const props = defineProps<{ english: boolean }>();
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const single = ref('');
@@ -123,5 +124,17 @@ const provider: SelectionProvider = async ({
         <p class="text-xs text-muted">{{ remote.join(', ') || '—' }}</p>
       </div>
     </Card>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <Select
+        v-model="smallChoice"
+        size="sm"
+        :options="[
+          { value: 'a', label: 'Alpha' },
+          { value: 'b', label: 'Beta' },
+        ]"
+        :locale="english ? 'en' : 'pl'"
+        :label="english ? 'Small select (sm)' : 'Mały select (sm)'"
+      />
+    </div>
   </div>
 </template>

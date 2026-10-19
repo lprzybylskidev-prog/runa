@@ -3,13 +3,21 @@ import { computed, useId } from 'vue';
 const props = withDefaults(
   defineProps<{
     label: string;
+    hideLabel?: boolean;
     id?: string;
     helper?: string;
     warning?: string;
     error?: string | readonly string[];
     required?: boolean;
   }>(),
-  { id: '', helper: '', warning: '', error: '', required: false },
+  {
+    hideLabel: false,
+    id: '',
+    helper: '',
+    warning: '',
+    error: '',
+    required: false,
+  },
 );
 const generated = useId();
 const controlId = computed(() => props.id || generated);
@@ -32,7 +40,7 @@ const describedBy = computed(
 );
 </script>
 <template>
-  <div class="min-w-0 space-y-2">
+  <div class="min-w-0" :class="hideLabel ? '' : 'space-y-2'">
     <slot
       v-if="$slots.label"
       :id="controlId"
@@ -42,7 +50,7 @@ const describedBy = computed(
     <label
       v-else
       :for="controlId"
-      class="block text-xs font-semibold text-muted"
+      :class="hideLabel ? 'sr-only' : 'block text-xs font-semibold text-muted'"
       >{{ label
       }}<span v-if="required" aria-hidden="true" class="ml-1">*</span></label
     ><slot

@@ -87,6 +87,7 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
       >
       <div class="space-y-5">
         <Select
+          size="sm"
           :model-value="size"
           :label="text('Rozmiar', 'Size')"
           :locale="english ? 'en' : 'pl'"
@@ -100,6 +101,7 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
           @update:model-value="changeSize"
         />
         <Select
+          size="sm"
           :model-value="outside ? 'both' : 'button'"
           :label="text('Zamykanie myszą', 'Pointer dismissal')"
           :locale="english ? 'en' : 'pl'"

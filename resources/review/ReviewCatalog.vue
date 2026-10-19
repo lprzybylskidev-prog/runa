@@ -126,6 +126,7 @@ const categories = [
       <div class="mt-6">
         <Select
           v-model="category"
+          size="sm"
           label="Kategoria / Category"
           :options="categories"
         />

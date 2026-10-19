@@ -187,3 +187,23 @@ it('uses the themed panel for simple selections and never opens readonly fields'
   await key('Enter');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['c']);
 });
+it('matches small select trigger, options and action sizes while keeping md default', async () => {
+  const w = mount(Select, {
+    attachTo: document.body,
+    props: {
+      size: 'sm',
+      label: 'Compact',
+      modelValue: 'a',
+      options,
+      clearable: true,
+    },
+  });
+  const trigger = w.get('.selection-trigger');
+  expect(trigger.attributes('data-size')).toBe('sm');
+  await trigger.trigger('click');
+  expect(panel().dataset.size).toBe('sm');
+  expect(panel().querySelector('button')?.dataset.size).toBe('sm');
+  await key('Escape');
+  await w.setProps({ size: 'md' });
+  expect(trigger.attributes('data-size')).toBe('md');
+});

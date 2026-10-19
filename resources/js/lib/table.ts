@@ -13,6 +13,7 @@ export function normalizeTableQuery(
   maxPerPage = 100,
 ): TableQuery {
   return {
+    ...(query.search?.trim() ? { search: query.search.trim() } : {}),
     page: Number.isFinite(query.page) ? Math.max(1, Math.floor(query.page)) : 1,
     perPage: Number.isFinite(query.perPage)
       ? Math.max(
@@ -51,10 +52,22 @@ export function clientTablePage<Row>(
     capabilities.filter,
     capabilities.maxPerPage,
   );
-  const matching = rows.filter((row) =>
-    Object.entries(state.filters).every(([key, value]) =>
-      columns.find((c) => c.key === key)?.filter?.(row, value),
-    ),
+  const terms =
+    state.search?.toLocaleLowerCase().split(/\s+/).filter(Boolean) ?? [];
+  const matching = rows.filter(
+    (row) =>
+      terms.every((term) =>
+        columns.some(
+          (c) =>
+            c.searchable !== false &&
+            String(c.value(row) ?? '')
+              .toLocaleLowerCase()
+              .includes(term),
+        ),
+      ) &&
+      Object.entries(state.filters).every(([key, value]) =>
+        columns.find((c) => c.key === key)?.filter?.(row, value),
+      ),
   );
   const column = columns.find((c) => c.key === state.sort?.key);
   if (column && state.sort) {
@@ -88,6 +101,7 @@ export function createApiTableProvider<Row>(options: {
   sort: readonly string[];
   filter: readonly string[];
   maxPerPage: number;
+  searchable?: boolean;
   decode: (payload: unknown) => TablePage<Row>;
 }): TableProvider<Row> {
   return async (query, signal) => {
@@ -101,6 +115,8 @@ export function createApiTableProvider<Row>(options: {
       page: state.page,
       per_page: state.perPage,
     };
+    if (state.search && options.searchable !== false)
+      params['filter[search]'] = state.search;
     if (state.sort)
       params.sort = `${state.sort.direction === 'desc' ? '-' : ''}${state.sort.key}`;
     for (const [key, value] of Object.entries(state.filters))

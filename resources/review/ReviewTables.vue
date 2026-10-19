@@ -6,8 +6,6 @@ import {
   useTableViews,
   Card,
   Button,
-  TextInput,
-  Select,
   Checkbox,
   clientTablePage,
   type TableColumn,
@@ -34,8 +32,6 @@ const columns = computed<TableColumn<RecordRow>[]>(() => [
     label: text('Nazwa', 'Name'),
     value: (row) => row.name,
     sortable: true,
-    filter: (row, value) =>
-      row.name.toLowerCase().includes(value.toLowerCase()),
   },
   {
     key: 'city',
@@ -71,6 +67,8 @@ const serverViews = useTableViews({
   columns: () => columns.value,
   query: serverQuery,
 });
+const localWidths = ref<Record<string, number>>({}),
+  serverWidths = ref<Record<string, number>>({});
 const fail = ref(false),
   unknown = ref(false),
   result = ref('');
@@ -128,6 +126,7 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
           :controller="mode === 'client' ? localViews : serverViews"
           :columns="columns"
           :english="english"
+          :measured-widths="mode === 'client' ? localWidths : serverWidths"
         />
       </div>
       <Table
@@ -141,9 +140,13 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
         :row-key="(row) => row.public_id"
         :query="mode === 'client' ? localQuery : serverQuery"
         :selected="mode === 'client' ? selected : serverSelected"
+        :page-sizes="[5, 10, 20]"
         selectable
         :caption="text('Projekty', 'Projects')"
         :english="english"
+        @column-widths="
+          mode === 'client' ? (localWidths = $event) : (serverWidths = $event)
+        "
         @update:query="
           mode === 'client' ? (localQuery = $event) : (serverQuery = $event)
         "
@@ -151,25 +154,6 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
           mode === 'client' ? (selected = $event) : (serverSelected = $event)
         "
       >
-        <template #filters="{ query, update }"
-          ><div class="flex flex-wrap items-end gap-4">
-            <TextInput
-              :model-value="query.filters.name ?? ''"
-              :label="text('Nazwa projektu', 'Project name')"
-              @update:model-value="
-                update({ ...query, filters: { name: $event ?? '' } })
-              "
-            /><Select
-              :model-value="String(query.perPage)"
-              :label="text('Na stronie', 'Page size')"
-              :options="
-                [5, 10, 20].map((n) => ({ value: String(n), label: String(n) }))
-              "
-              @update:model-value="
-                update({ ...query, perPage: Number($event) })
-              "
-            /></div
-        ></template>
         <template #actions="{ row }"
           ><Button size="sm" variant="ghost" @click="result = row.name">{{
             text('Otwórz', 'Open')

@@ -14,6 +14,8 @@ import {
 } from '@/runa/ui';
 import type { FieldErrors, NumericKind, TextInputType } from '@/runa/ui';
 import { ApiError } from '../js/lib/http';
+const smallText = ref<string | null>('');
+const smallNumber = ref<string | null>('12');
 const props = defineProps<{ english: boolean }>();
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const locale = computed(() =>
@@ -389,5 +391,20 @@ const statuses = computed(() => [
           "
         /></div
     ></Card>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <TextInput
+        size="sm"
+        :model-value="smallText"
+        :label="text('Małe pole (sm)', 'Small input (sm)')"
+        @update:model-value="smallText = $event"
+      />
+      <NumberInput
+        v-model="smallNumber"
+        size="sm"
+        kind="integer"
+        :locale="english ? 'en' : 'pl'"
+        :label="text('Mała liczba (sm)', 'Small number (sm)')"
+      />
+    </div>
   </div>
 </template>

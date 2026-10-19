@@ -8,6 +8,7 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(
   defineProps<{
     label: string;
+    size?: 'sm' | 'md';
     modelValue: Multiple extends true ? string[] : string;
     multiple?: Multiple | undefined;
     options?: readonly SelectOption[];
@@ -27,6 +28,7 @@ const props = withDefaults(
     debounce?: number;
   }>(),
   {
+    size: 'md',
     multiple: undefined,
     provider: undefined,
     options: () => [],
@@ -292,6 +294,7 @@ onScopeDispose(cancel);
           :id="controlId"
           v-bind="$attrs"
           type="button"
+          :data-size="size"
           class="runa-field-control selection-trigger min-w-0 flex-1 text-left"
           :disabled="disabled"
           :aria-readonly="readonly || undefined"
@@ -310,6 +313,7 @@ onScopeDispose(cancel);
         </button>
         <AppButton
           v-if="clearable && values.length"
+          :size="size"
           :disabled="disabled || readonly"
           :aria-label="text('Wyczyść wybór', 'Clear selection')"
           @click="update([])"
@@ -324,6 +328,7 @@ onScopeDispose(cancel);
           role="dialog"
           :aria-label="label"
           tabindex="-1"
+          :data-size="size"
           class="selection-panel"
           :class="{ 'selection-ready': ready }"
           :style="position"
@@ -333,6 +338,7 @@ onScopeDispose(cancel);
             v-if="searchable || provider"
             ref="search"
             v-model="query"
+            :data-size="size"
             class="runa-field-control mb-2"
             :aria-label="text('Szukaj: ', 'Search: ') + label"
             role="combobox"
@@ -388,21 +394,26 @@ onScopeDispose(cancel);
             }}
           </p>
           <div class="flex flex-wrap gap-2">
-            <AppButton v-if="failed" @click="load(retryAppend)">{{
+            <AppButton v-if="failed" :size="size" @click="load(retryAppend)">{{
               text('Ponów', 'Retry')
             }}</AppButton>
             <AppButton
               v-if="!provider && offset > 0"
+              :size="size"
               @click="
                 offset = Math.max(0, offset - limit);
                 active = -1;
               "
               >{{ text('Poprzednie', 'Previous') }}</AppButton
             >
-            <AppButton v-if="canMore" :disabled="loading" @click="more">{{
-              text('Kolejne wyniki', 'More results')
-            }}</AppButton>
-            <AppButton @click="close(true)">{{
+            <AppButton
+              v-if="canMore"
+              :size="size"
+              :disabled="loading"
+              @click="more"
+              >{{ text('Kolejne wyniki', 'More results') }}</AppButton
+            >
+            <AppButton :size="size" @click="close(true)">{{
               text('Gotowe', 'Done')
             }}</AppButton>
           </div>
@@ -419,7 +430,7 @@ onScopeDispose(cancel);
   content: '';
   position: absolute;
   right: 16px;
-  top: 20px;
+  top: 50%;
   width: 7px;
   height: 7px;
   border-right: 1.5px solid currentColor;
@@ -466,5 +477,20 @@ onScopeDispose(cancel);
 .selection-option[aria-disabled='true'] {
   color: var(--runa-disabled-text);
   cursor: default;
+}
+
+.selection-panel[data-size='sm'] {
+  padding: 8px;
+}
+.selection-panel[data-size='sm'] .selection-option {
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.selection-trigger[data-size='sm'] {
+  padding-right: 32px;
+}
+.selection-trigger[data-size='sm']::after {
+  right: 12px;
 }
 </style>

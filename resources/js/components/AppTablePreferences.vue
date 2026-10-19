@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppTextInput from './AppTextInput.vue';
+import AppNumberInput from './AppNumberInput.vue';
 import AppSelect from './AppSelect.vue';
 import AppDialog from './AppDialog.vue';
 import AppAlert from './AppAlert.vue';
@@ -13,8 +14,9 @@ const props = withDefaults(
     controller: TableViewsController;
     columns: readonly TableColumn<Row>[];
     english?: boolean;
+    measuredWidths?: Readonly<Record<string, number>>;
   }>(),
-  { english: false },
+  { english: false, measuredWidths: () => ({}) },
 );
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const open = ref(false),
@@ -27,9 +29,13 @@ const state = computed(() => props.controller.state.value);
 const selected = computed(() =>
   state.value.views.find((v) => v.id === state.value.activeId),
 );
-watch(selected, (value) => {
-  name.value = value?.name ?? '';
-});
+watch(
+  [() => selected.value?.id, () => selected.value?.name],
+  ([, value]) => {
+    name.value = value ?? '';
+  },
+  { immediate: true },
+);
 function act(action: () => void, success: string) {
   error.value = '';
   message.value = '';
@@ -59,7 +65,7 @@ function width(key: string, value: string | null) {
   const number = value === null || value.trim() === '' ? null : Number(value);
   if (
     number !== null &&
-    (!Number.isFinite(number) || number < 80 || number > 800)
+    (!Number.isInteger(number) || number < 80 || number > 800)
   ) {
     widthErrors.value[key] = text('Podaj 80–800 px.', 'Enter 80–800 px.');
     return;
@@ -74,6 +80,19 @@ function width(key: string, value: string | null) {
     }),
   );
 }
+function editWidth(key: string, value: string | null) {
+  if (value === null || value.trim() === '') {
+    widthErrors.value[key] = text('Podaj 80–800 px.', 'Enter 80–800 px.');
+    return;
+  }
+  width(key, value);
+}
+const invalidWidths = computed(() =>
+  Object.values(widthErrors.value).some(Boolean),
+);
+watch(open, () => {
+  widthErrors.value = {};
+});
 function drop(key: string) {
   if (dragged.value) props.controller.reorder(dragged.value, key);
   dragged.value = null;
@@ -82,17 +101,25 @@ function drop(key: string) {
 <template>
   <div class="flex flex-wrap items-end gap-2">
     <AppSelect
-      :model-value="state.activeId ?? '__custom__'"
-      :label="text('Zapisany widok', 'Saved view')"
+      size="sm"
+      :locale="english ? 'en' : 'pl'"
+      :model-value="
+        state.activeId === state.defaultId || state.activeId === null
+          ? '__default__'
+          : state.activeId
+      "
+      :label="text('Dostępne widoki', 'Available views')"
       :options="[
-        { value: '__custom__', label: text('Widok własny', 'Custom view') },
+        { value: '__default__', label: text('Widok domyślny', 'Default view') },
         ...state.views.map((v) => ({
           value: v.id,
           label: `${v.name}${v.id === state.defaultId ? ' ★' : ''}`,
         })),
       ]"
       @update:model-value="
-        controller.select($event === '__custom__' ? null : $event)
+        $event === '__default__'
+          ? controller.selectDefault()
+          : controller.select($event)
       "
     />
     <AppButton size="sm" @click="open = true">{{
@@ -116,8 +143,8 @@ function drop(key: string) {
           <p class="text-xs text-muted">
             {{
               text(
-                'Przeciągnij uchwyt lub użyj strzałek. Szerokość: 80–800 px; puste pole oznacza automatyczną.',
-                'Drag the handle or use arrow buttons. Width: 80–800 px; leave empty for automatic.',
+                'Zmień kolejność uchwytem lub strzałkami. Szerokość w pikselach; ↺ przywraca automatyczną.',
+                'Reorder with the handle or arrow buttons. Width is in pixels; ↺ restores automatic sizing.',
               )
             }}
           </p>
@@ -125,7 +152,7 @@ function drop(key: string) {
             <li
               v-for="(column, index) in state.current.columns"
               :key="column.key"
-              class="flex flex-wrap items-center gap-2 rounded border border-line px-2 py-2"
+              class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded border border-line px-2 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
               @dragover.prevent
               @drop.prevent="drop(column.key)"
             >
@@ -152,7 +179,7 @@ function drop(key: string) {
                 "
                 @update:model-value="visibility(column.key, $event)"
               />
-              <div class="ml-auto flex items-center gap-1">
+              <div class="flex items-center gap-1">
                 <AppButton
                   size="sm"
                   :disabled="index === 0"
@@ -168,34 +195,46 @@ function drop(key: string) {
                   >↓</AppButton
                 >
               </div>
-              <input
-                type="range"
-                min="80"
-                max="800"
-                step="1"
-                :value="column.width ?? 160"
-                :aria-label="`${text('Zmień szerokość', 'Resize')}: ${columns.find((c) => c.key === column.key)?.label}`"
-                class="h-8 w-28 accent-[var(--runa-primary-solid)]"
-                @input="
-                  width(column.key, ($event.target as HTMLInputElement).value)
-                "
-              />
-              <div class="w-28">
-                <AppTextInput
-                  :model-value="
-                    column.width === undefined ? '' : String(column.width)
-                  "
-                  :error="widthErrors[column.key] ?? ''"
-                  inputmode="numeric"
-                  :label="`${text('Szerokość', 'Width')}: ${columns.find((c) => c.key === column.key)?.label}`"
-                  @update:model-value="width(column.key, $event)"
-                />
+              <div
+                class="col-span-3 flex items-start justify-end gap-2 sm:col-span-1"
+              >
+                <div class="w-24 shrink-0">
+                  <AppNumberInput
+                    size="sm"
+                    hide-label
+                    kind="integer"
+                    unit="px"
+                    :locale="english ? 'en' : 'pl'"
+                    :invalid-message="
+                      text('Podaj 80–800 px.', 'Enter 80–800 px.')
+                    "
+                    :model-value="
+                      String(column.width ?? measuredWidths[column.key] ?? 160)
+                    "
+                    :error="widthErrors[column.key] ?? ''"
+                    :label="`${text('Szerokość', 'Width')}: ${columns.find((c) => c.key === column.key)?.label}`"
+                    @update:model-value="editWidth(column.key, $event)"
+                  />
+                </div>
+                <AppButton
+                  size="sm"
+                  icon-only
+                  :disabled="column.width === undefined"
+                  :aria-label="`${text('Automatyczna szerokość', 'Automatic width')}: ${columns.find((c) => c.key === column.key)?.label}`"
+                  @click="width(column.key, null)"
+                  >↺</AppButton
+                >
               </div>
             </li>
           </ul>
-          <AppButton size="sm" @click="controller.resetColumns()">{{
-            text('Przywróć kolumny', 'Reset columns')
-          }}</AppButton>
+          <AppButton
+            size="sm"
+            @click="
+              controller.resetColumns();
+              widthErrors = {};
+            "
+            >{{ text('Przywróć kolumny', 'Reset columns') }}</AppButton
+          >
         </section>
         <section class="space-y-3 border-t border-line pt-4">
           <h3 class="font-semibold">
@@ -204,19 +243,21 @@ function drop(key: string) {
           <p class="text-xs text-muted">
             {{
               text(
-                'Widok zapisuje filtry, sortowanie, rozmiar strony i układ kolumn. Widok domyślny otwiera się po ponownym wejściu.',
-                'Views save filters, sorting, page size and columns. The default view opens on your next visit.',
+                'Widok zapisuje wyszukiwanie, filtry, sortowanie, rozmiar strony i układ kolumn. Widok domyślny otwiera się po ponownym wejściu.',
+                'Views save search, filters, sorting, page size and columns. The default view opens on your next visit.',
               )
             }}
           </p>
           <AppTextInput
             v-model="name"
+            size="sm"
             :label="text('Nazwa widoku', 'View name')"
             :maxlength="80"
           />
           <div class="flex flex-wrap gap-2">
             <AppButton
               size="sm"
+              :disabled="invalidWidths"
               @click="
                 act(
                   () => controller.create(name ?? ''),
@@ -227,7 +268,7 @@ function drop(key: string) {
             >
             <AppButton
               size="sm"
-              :disabled="!selected"
+              :disabled="!selected || invalidWidths"
               @click="
                 act(
                   controller.update,

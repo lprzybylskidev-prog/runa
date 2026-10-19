@@ -8,6 +8,8 @@ const props = withDefaults(
   defineProps<{
     modelValue: string | null;
     label: string;
+    size?: 'sm' | 'md';
+    hideLabel?: boolean;
     kind?: NumericKind;
     locale?: 'pl' | 'en';
     scale?: number | undefined;
@@ -18,6 +20,8 @@ const props = withDefaults(
     readonly?: boolean;
   }>(),
   {
+    size: 'md',
+    hideLabel: false,
     kind: 'decimal',
     locale: 'pl',
     scale: undefined,
@@ -94,6 +98,8 @@ function blur(event: globalThis.FocusEvent) {
       :aria-describedby="descriptions"
       :model-value="draft"
       :label="label"
+      :size="size"
+      :hide-label="hideLabel"
       :disabled="disabled"
       :readonly="readonly"
       :error="messages"

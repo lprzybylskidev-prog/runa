@@ -209,3 +209,59 @@ it('applies column presentation without fetching or losing hidden-column sorting
   expect(wrapper.props('query').sort?.key).toBe('name');
   wrapper.unmount();
 });
+it('searches all declared values, including hidden columns, before pagination', () => {
+  const fields: TableColumn<Row>[] = [
+    ...columns,
+    {
+      key: 'city',
+      label: 'City',
+      value: (r) => (r.public_id === 'a' ? 'Warszawa' : 'Gdańsk'),
+    },
+  ];
+  expect(
+    clientTablePage(rows, fields, { ...query(), search: 'warszawa' }).rows[0]
+      ?.public_id,
+  ).toBe('a');
+  expect(
+    clientTablePage(rows, fields, { ...query(), search: 'Beta 12' }).matching,
+  ).toBe(1);
+  expect(
+    clientTablePage(rows, fields, { ...query(), search: 'Gdańsk Beta' })
+      .matching,
+  ).toBe(0);
+});
+it('passes global search as an encoded backend filter and allows disabling it', async () => {
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockImplementation(
+      async () =>
+        new Response('{}', { headers: { 'Content-Type': 'application/json' } }),
+    );
+  const options = {
+    path: '/projects',
+    sort: [],
+    filter: [],
+    maxPerPage: 20,
+    decode: () => clientTablePage(rows, columns, query()),
+  };
+  await createApiTableProvider(options)(
+    { ...query(), search: 'Warszawa & 12' },
+    new AbortController().signal,
+  );
+  expect(
+    new URL(
+      String(fetch.mock.calls[0]?.[0]),
+      window.location.origin,
+    ).searchParams.get('filter[search]'),
+  ).toBe('Warszawa & 12');
+  await createApiTableProvider({ ...options, searchable: false })(
+    { ...query(), search: 'hidden' },
+    new AbortController().signal,
+  );
+  expect(
+    new URL(
+      String(fetch.mock.calls[1]?.[0]),
+      window.location.origin,
+    ).searchParams.has('filter[search]'),
+  ).toBe(false);
+});
