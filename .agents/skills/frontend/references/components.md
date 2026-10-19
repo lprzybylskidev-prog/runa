@@ -1,6 +1,6 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; export types remain contracts without implemented engines.
+Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
 
 ## AppSelect
 
@@ -32,7 +32,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 ## AppTooltip
 
 - Source: `resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
-- Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session.
+- Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
 - Uses shared `useFloatingLayer` for measured viewport-clamped fixed positioning, resize/content observation, top-layer Escape/outside dismissal and teardown. Both placements teleport outside scroll clipping; no runtime DOM access during static error rendering.
 - Tooltip is descriptive only; use Popover for interactive content. Opacity transition is 140ms with reduced-motion support. Keep an accessible name on icon-only triggers.
 
@@ -202,3 +202,7 @@ Select, TextInput and NumberInput accept size=sm (36px) and size=md (44px, uncha
 ### TableActions and OperationPanel
 
 TableActions composes sm icon export/print actions, a scope/orientation settings Popover and contextual bulk controls with the reusable OperationPanel and useOperation controller. Real bounded browser adapters and an optional API export provider are exported through @/runa/ui; no shell or backend jobs are installed. OperationPanel supports progress, permission errors, partial counts, retry/cancel and download. Table's toolbar slot exposes feedbackTarget; pass it to TableActions to keep operation feedback in the full-width outlet below aligned controls. See [tables.md](tables.md) for contracts, bounds, server authorization/idempotency and notices. Both existing layouts were inspected: neither has provisional export/bulk controls to replace; the temporary table catalog demonstrates both client and simulated server integrations.
+
+## Independent consumer verification
+
+`tests/frontend/fixtures/StandaloneConsumer.vue` composes public form/field/selection, Tabs, ConfirmDialog, Table and TableActions APIs with caller-owned state and bounded synthetic data. Its entry imports the shared CSS and initializes only the document locale/theme; it imports no shell, resolver, registry or preference initialization. `tools/testing/ui-boundaries.mjs` verifies emitted modules/code, permitting ordinary control composables while rejecting shell/router/preferences. The temporary independent review HTML/build is separate from the catalog graph and excluded from production; preserve the fixture and boundary test when retiring previews.

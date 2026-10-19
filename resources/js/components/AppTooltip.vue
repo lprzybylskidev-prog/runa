@@ -27,9 +27,11 @@ function update() {
   if (!overAnchor && !overPanel && !keyboardFocus()) dismissed = false;
 }
 function leave() {
+  globalThis.clearTimeout(timer);
   timer = globalThis.setTimeout(update, 80);
 }
 function dismiss() {
+  globalThis.clearTimeout(timer);
   overAnchor = false;
   overPanel = false;
   dismissed = true;

@@ -277,8 +277,8 @@ function setWidth(value: string) {
               {{ n }} ·
               {{
                 text(
-                  'Dłuższa treść robocza. Nawigacja boczna pozostaje na miejscu, a górna nawigacja i pasek narzędzi przewijają się razem z dokumentem.',
-                  'Long workspace content. The sidebar stays in place while top navigation and toolbar scroll with the document.',
+                  'Dłuższa treść robocza. Nawigacja boczna pozostaje na miejscu, górna nawigacja pozostaje widoczna, a pasek narzędzi przewija się razem z dokumentem.',
+                  'Long workspace content. The sidebar stays in place top navigation stays visible and the toolbar scrolls with the document.',
                 )
               }}
             </p>

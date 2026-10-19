@@ -49,9 +49,15 @@ const consumerModules = consumer
       .map(([id]) => id),
   );
 assert(consumerModules.some((id) => id.endsWith('/AppButton.vue')));
+assert(consumerModules.some((id) => id.endsWith('/AppTable.vue')));
+assert(consumerModules.some((id) => id.endsWith('/AppConfirmDialog.vue')));
+// Generic control composables (feedback, fields, tables, layers) are allowed.
+// Shell/router/preference initialization remains forbidden.
 assert(
   !consumerModules.some((id) =>
-    /\/layouts\/|\/review\/|\/App\.vue|\/main\.ts|\/composables\//.test(id),
+    /\/layouts\/|\/review\/|\/App\.vue|\/main\.ts|\/composables\/(?:useLocale|useTheme|usePreference|usePageResolver)/.test(
+      id,
+    ),
   ),
 );
 // Rolldown lists parsed, fully tree-shaken modules too. Check emitted code as well.

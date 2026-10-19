@@ -121,7 +121,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–19 · Komponenty / Components
+        RM-2026-004 · 8–20 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select
@@ -184,6 +184,11 @@ const categories = [
       </section>
       <nav class="mt-6 flex flex-wrap gap-4 text-sm" aria-label="Review links">
         <a href="/">/</a>
+        <a
+          href="/ui-review/standalone/standalone.html"
+          class="text-sm underline"
+          >Bez layoutu / Without a layout</a
+        >
         <a href="/__review/application/overview"
           >Układ aplikacyjny / Application layout</a
         >
