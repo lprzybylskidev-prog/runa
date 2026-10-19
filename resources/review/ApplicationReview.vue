@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import ReviewWorkspaceStatistics from './ReviewWorkspaceStatistics.vue';
 import {
   ApplicationLayout,
   Breadcrumbs,
@@ -210,29 +211,17 @@ function setWidth(value: string) {
           ]"
           @navigate="navigate"
       /></template>
-      <template v-if="statistics" #statistics>
-        <div class="review-summary">
-          <div>
-            <p>{{ text('Otwarte tematy', 'Open topics') }}</p>
-            <strong>12</strong
-            ><span>{{ text('w tej przestrzeni', 'in this workspace') }}</span>
-          </div>
-          <div>
-            <p>{{ text('W trakcie', 'In progress') }}</p>
-            <strong>04</strong
-            ><span>{{
-              text('na bieżącym etapie', 'in the current stage')
-            }}</span>
-          </div>
-          <div>
-            <p>{{ text('Członkowie zespołu', 'Team members') }}</p>
-            <strong>08</strong
-            ><span>{{
-              text('we wspólnym obszarze', 'in the shared area')
-            }}</span>
-          </div>
-        </div>
-      </template>
+      <template v-if="statistics" #statistics
+        ><ReviewWorkspaceStatistics
+          :key="current?.routeKey ?? 'overview'"
+          :english="locale === 'en'"
+          :density="density"
+          :scope="{
+            applicationId: 'atlas-review',
+            moduleKey: current?.moduleKey ?? 'workspace',
+            viewKey: current?.routeKey ?? 'overview',
+          }"
+      /></template>
       <template v-if="toolbar" #toolbar
         ><Select
           :model-value="density"

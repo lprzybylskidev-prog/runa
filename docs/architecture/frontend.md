@@ -210,7 +210,7 @@ Rendered behavior is the acceptance truth.
 
 Before creating a page or form, inspect two analogous existing pages/forms when available and search existing shared controls/layouts. If fewer exist, inspect what is available and establish the first pattern deliberately. Never invent examples that do not exist.
 
-Reuse suitable project controls instead of native replacements, including date inputs, selects, labels, errors and actions. The ApplicationLayout workspace hierarchy is heading/description/actions, breadcrumbs, optional statistics, optional toolbar, then mandatory content, with an optional supplementary panel. The sidebar stays viewport-fixed and scrolls independently; the top header remains visible while the toolbar scrolls normally. These shell features are implemented in RM-2026-004 point 3 and await visual acceptance; business modules remain deferred.
+Reuse suitable project controls instead of native replacements, including date inputs, selects, labels, errors and actions. The ApplicationLayout workspace hierarchy is heading/description/actions, breadcrumbs, optional statistics, optional toolbar, then mandatory content, with an optional supplementary panel. The sidebar stays viewport-fixed and scrolls independently; the top header remains visible while the toolbar scrolls normally. These shell features were implemented and visually accepted in RM-2026-004 point 3; business modules remain deferred.
 
 The maintained catalogue lives in `.agents/skills/frontend/references/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
 
@@ -274,7 +274,7 @@ Every descriptor must have an exact same-origin path and corresponding named ser
 
 ApplicationLayout props: `navigation`, optional `topNavigation`, `current`, `title`/`description`, independent `sidebar`/`topbar` (both true), `width` (contained/fluid), `footer`, optional `preferenceStore`, `userName` and `userInitials`. Navigation entries use stable keys, route/module/area identity, label, optional typed Tabler icon, absolute same-origin href, availability and children. Missing sidebar icons use the existing Tabler layers icon. Hidden entries are omitted; disabled/invalid-link entries cannot navigate. Availability is presentation only; every backend operation still requires server authorization.
 
-Workspace order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar, then content and optional supplementary panel. Slots: heading, actions, breadcrumbs, statistics, toolbar, content (falls back to default), supplementary, sidebar-bottom, user-menu and footer; slots expose `t`, sidebar-bottom also exposes `collapsed`. Slots provide composition, not finished KPI/table/dialog components. The initials disclosure contains only an unavailable-account explanation by default, with no fake authentication operations. `topbar: false` hides module-area navigation and avatar, retaining utility controls and the phone sidebar trigger. The left sidebar never relocates; desktop collapse/group expansion are stored, while active selection always comes from `current`. A single optional supplementary region stacks below content on narrow screens. Footer configuration and identity are shared with MinimalLayout.
+Workspace order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar, then content and optional supplementary panel. Slots: heading, actions, breadcrumbs, statistics, toolbar, content (falls back to default), supplementary, sidebar-bottom, user-menu and footer; slots expose `t`, sidebar-bottom also exposes `collapsed`. Slots provide composition; public Statistics/Statistic now supply optional KPI content, while table/dialog families remain deferred. The initials disclosure contains only an unavailable-account explanation by default, with no fake authentication operations. `topbar: false` hides module-area navigation and avatar, retaining utility controls and the phone sidebar trigger. The left sidebar never relocates; desktop collapse/group expansion are stored, while active selection always comes from `current`. A single optional supplementary region stacks below content on narrow screens. Footer configuration and identity are shared with MinimalLayout.
 
 Below 64rem the sidebar is an inert offscreen panel until opened. Its drawer traps Tab/Shift+Tab, closes on Escape/backdrop and restores focus; successful navigation closes it and focuses main. Body scrolling is locked only while the drawer is open, and listeners/body style are cleaned up on unmount or resize. At desktop size the sidebar is viewport-fixed with its own scrollable navigation region. The top header is sticky and remains visible during page scrolling; the toolbar scrolls normally. The owner's later point-3 feedback supersedes the original nonsticky-header premise. The sidebar brand row and top header both use 64px height; the Runa mark uses the same 42px square as MinimalLayout. The collapse/expand or phone-drawer control precedes top navigation. Sidebar groups are whole-row disclosure buttons, with their chevron inside the control rather than beside a navigable parent label. The top header uses a compact 64px row, with the navigation scrollbar flush to its bottom edge. Top navigation overflows horizontally without widening the document. Its internal AppTopNavigation renders group triggers and teleports each open dropdown card outside the scrolling nav into body. Cards are viewport-clamped below the trigger/header, overlay workspace content and never change header height; sidebar groups continue expanding inline. Escape returns focus, Tab/Shift+Tab reconnect to the trigger/next navigation item, and outside clicks, navigation, document scroll and resize dismiss the card; horizontal nav scrolling updates its anchor position. While it overflows, wheel events over navigation move it horizontally and do not scroll the document, including at either end; horizontal trackpad deltas and line/page wheel modes are supported, while Ctrl+wheel keeps native zoom behavior. Collapsed link tooltips use a narrow right-placement extension of the existing tooltip; the hover-dismissal correction was delivered and accepted in point 9.
 
@@ -354,4 +354,33 @@ The public `@/runa/ui` facade exports Card (header/actions/body/footer slots), D
   previous-label="Poprzednia strona"
   next-label="Następna strona"
 />
+```
+
+### Loading, asynchronous states and statistics
+
+Public Spinner is shared by busy Button and LoadingOverlay; decorative embedding avoids duplicate status announcements and preserves the accepted layout transition timing/colors. Skeleton provides bounded decorative text/block/circle placeholders. Progress supports determinate/indeterminate values, finite bounds, localized valueText and semantic tones. Reduced motion removes spinner, skeleton and indeterminate-progress animation. EmptyState composes readable title/description and optional caller actions.
+
+AsyncContent selects a controlled loading/error/empty/success slot, with Spinner/Alert/EmptyState defaults and an optional retry event. It never fetches, cancels requests or infers successful completion. Callers own request races, formatted errors and persistent form state (inactive slots unmount). Localize its default text through props; custom slots own their status announcements.
+
+Statistic supports label/value/icon/trend/visualization slots and neutral/semantic tones without domain calculations. Statistics always exposes the global/filtered switch and provides the selected mode to its content slot. A view supplies both datasets and keeps global values independent of filters. useStatisticsMode uses the existing validated, versioned preference store, scoped by application/module/view identity, with a per-view default and session fallback. Remount on view-identity changes. The application review now consumes these primitives in its statistics slot and keys persistence by route.
+
+```ts
+const mode = useStatisticsMode(
+  { applicationId: 'atlas', moduleKey: 'projects', viewKey: 'list' },
+  'filtered',
+);
+```
+
+```vue
+<Statistics
+  v-model="mode"
+  label="Statystyki"
+  global-label="Globalne"
+  filtered-label="Filtrowane"
+>
+  <template #default="{ mode: active }">
+    <Statistic label="Otwarte tematy"
+      :value="active === 'global' ? totals.open : filteredTotals.open" />
+  </template>
+</Statistics>
 ```

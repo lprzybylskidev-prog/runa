@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSpinner from './AppSpinner.vue';
 import type {
   ControlTone,
   ControlSize,
@@ -39,7 +40,13 @@ withDefaults(
     class="app-button"
     :class="{ 'app-button-compact': compact || iconOnly }"
   >
-    <span v-if="busy" class="button-spinner" aria-hidden="true" />
+    <AppSpinner
+      v-if="busy"
+      class="button-spinner"
+      label=""
+      size="sm"
+      decorative
+    />
     <slot v-if="!busy || !(compact || iconOnly)" />
   </button>
 </template>
@@ -197,26 +204,9 @@ withDefaults(
 .app-button:active:not(:disabled) {
   box-shadow: inset 0 0 0 2px currentColor;
 }
-.button-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: button-spin 800ms linear infinite;
-  flex-shrink: 0;
-}
-@keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .app-button {
     transition: none;
-  }
-  .button-spinner {
-    animation: none;
   }
 }
 </style>

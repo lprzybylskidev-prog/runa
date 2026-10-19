@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReviewLoading from './ReviewLoading.vue';
 import ReviewContainers from './ReviewContainers.vue';
 import ReviewFeedback from './ReviewFeedback.vue';
 import ReviewControls from './ReviewControls.vue';
@@ -11,14 +12,15 @@ const preview = new window.URLSearchParams(window.location.search).get(
 const longContent = ref(false);
 const showIllustration = ref(true);
 const showFooter = ref(true);
+const requestedCategory = new window.URLSearchParams(
+  window.location.search,
+).get('category');
 const category = ref(
-  new window.URLSearchParams(window.location.search).get('category') ===
-    'containers'
-    ? 'containers'
-    : new window.URLSearchParams(window.location.search).get('category') ===
-        'feedback'
-      ? 'feedback'
-      : 'controls',
+  ['controls', 'feedback', 'containers', 'loading', 'layouts', 'data'].includes(
+    requestedCategory ?? '',
+  )
+    ? requestedCategory!
+    : 'controls',
 );
 const categories = [
   {
@@ -29,6 +31,10 @@ const categories = [
   {
     value: 'containers',
     label: 'Kontenery i nawigacja / Containers and navigation',
+  },
+  {
+    value: 'loading',
+    label: 'Ładowanie i statystyki / Loading and statistics',
   },
   { value: 'layouts', label: 'Układy / Layouts' },
   { value: 'data', label: 'Dane i eksport / Data and export' },
@@ -94,7 +100,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–10 · Komponenty / Components
+        RM-2026-004 · 8–11 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select
@@ -107,6 +113,10 @@ const categories = [
         <template v-if="category === 'controls'">
           <ReviewControls :english="t('language') !== 'Język'" />
         </template>
+        <ReviewLoading
+          v-else-if="category === 'loading'"
+          :english="t('language') !== 'Język'"
+        />
         <ReviewContainers
           v-else-if="category === 'containers'"
           :english="t('language') !== 'Język'"
