@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import {
   Table,
+  TablePreferences,
+  useTableViews,
   Card,
   Button,
   TextInput,
@@ -59,6 +61,16 @@ const localQuery = ref(initial()),
   serverQuery = ref(initial());
 const selected = ref<string[]>([]),
   serverSelected = ref<string[]>([]);
+const localViews = useTableViews({
+  scope: { applicationId: 'review', moduleKey: 'ui', viewKey: 'client-table' },
+  columns: () => columns.value,
+  query: localQuery,
+});
+const serverViews = useTableViews({
+  scope: { applicationId: 'review', moduleKey: 'ui', viewKey: 'server-table' },
+  columns: () => columns.value,
+  query: serverQuery,
+});
 const fail = ref(false),
   unknown = ref(false),
   result = ref('');
@@ -111,7 +123,17 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
           :label="text('Nieznana liczba wyników', 'Unknown count')"
         />
       </div>
+      <div class="mb-4">
+        <TablePreferences
+          :controller="mode === 'client' ? localViews : serverViews"
+          :columns="columns"
+          :english="english"
+        />
+      </div>
       <Table
+        :column-state="
+          (mode === 'client' ? localViews : serverViews).columns.value
+        "
         :mode="mode"
         :rows="mode === 'client' ? rows : []"
         :provider="provider"

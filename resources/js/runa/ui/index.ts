@@ -114,3 +114,12 @@ export {
   normalizeTableQuery,
   createApiTableProvider,
 } from '../../lib/table';
+
+export { default as TablePreferences } from '../../components/AppTablePreferences.vue';
+export { useTableViews } from '../../composables/useTableViews';
+export type { TableViewsController } from '../../composables/useTableViews';
+export {
+  normalizeTableColumns,
+  normalizeTableSnapshot,
+  normalizeTableViews,
+} from '../../lib/tableViews';

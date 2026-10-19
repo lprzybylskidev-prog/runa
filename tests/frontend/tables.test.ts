@@ -181,3 +181,31 @@ it('recovers from provider failures and uses hasNext with uncertain counts', asy
   expect(wrapper.emitted('update:query')?.[0]?.[0]).toMatchObject({ page: 2 });
   wrapper.unmount();
 });
+it('applies column presentation without fetching or losing hidden-column sorting', async () => {
+  const provider = vi
+    .fn()
+    .mockResolvedValue(clientTablePage(rows, columns, query()));
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'server',
+      provider,
+      columns,
+      rowKey: (row) => row.public_id,
+      query: { ...query(), sort: { key: 'name', direction: 'asc' } },
+      caption: 'Projects',
+    },
+  });
+  await flushPromises();
+  await wrapper.setProps({
+    columnState: [
+      { key: 'count', visible: true, width: 220 },
+      { key: 'name', visible: false },
+    ],
+  });
+  expect(wrapper.findAll('thead th')).toHaveLength(1);
+  expect(wrapper.find('thead').text()).toContain('Count');
+  expect(wrapper.find('col').attributes('style')).toContain('220px');
+  expect(provider).toHaveBeenCalledTimes(1);
+  expect(wrapper.props('query').sort?.key).toBe('name');
+  wrapper.unmount();
+});

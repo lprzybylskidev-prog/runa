@@ -1,9 +1,11 @@
 <script setup lang="ts" generic="Row">
-import { computed, toRef } from 'vue';
+import { computed, toRef, useSlots } from 'vue';
 import AppButton from './AppButton.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppPagination from './AppPagination.vue';
 import AppAsyncContent from './AppAsyncContent.vue';
+import { normalizeTableColumns } from '../lib/tableViews';
+import type { TableColumnState } from '../runa/ui/tables';
 import { useTable } from '../composables/useTable';
 import type { TableColumn, TableProvider, TableQuery } from '../runa/ui/tables';
 const props = withDefaults(
@@ -12,6 +14,7 @@ const props = withDefaults(
     rows?: readonly Row[];
     provider?: TableProvider<Row> | undefined;
     columns: readonly TableColumn<Row>[];
+    columnState?: readonly TableColumnState[] | undefined;
     rowKey: (row: Row) => string;
     query: TableQuery;
     caption: string;
@@ -20,6 +23,7 @@ const props = withDefaults(
     english?: boolean;
   }>(),
   {
+    columnState: undefined,
     rows: () => [],
     provider: undefined,
     selected: () => [],
@@ -31,6 +35,7 @@ const emit = defineEmits<{
   'update:query': [value: TableQuery];
   'update:selected': [value: string[]];
 }>();
+const slots = useSlots();
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const source = () =>
   props.mode === 'client'
@@ -52,6 +57,31 @@ const pages = computed(() =>
   page.value?.counts === 'exact' && page.value.matching !== null
     ? Math.max(1, Math.ceil(page.value.matching / props.query.perPage))
     : null,
+);
+const presentation = computed(() =>
+  normalizeTableColumns(
+    props.columnState,
+    props.columns.map((c) => c.key),
+  ),
+);
+const visibleColumns = computed(() =>
+  presentation.value
+    .filter((c) => c.visible)
+    .flatMap((state) => {
+      const column = props.columns.find((c) => c.key === state.key);
+      return column ? [{ ...column, width: state.width }] : [];
+    }),
+);
+const hasWidths = computed(() =>
+  visibleColumns.value.some((c) => c.width !== undefined),
+);
+const tableStyle = computed(() =>
+  hasWidths.value
+    ? {
+        tableLayout: 'fixed' as const,
+        minWidth: `${visibleColumns.value.reduce((sum, c) => sum + (c.width ?? 160), (props.selectable ? 48 : 0) + (slots.actions ? 112 : 0))}px`,
+      }
+    : undefined,
 );
 function sort(key: string) {
   emit('update:query', {
@@ -111,7 +141,18 @@ function changePage(value: number) {
       tabindex="0"
       class="relative overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
     >
-      <table class="w-full border-collapse text-left">
+      <table class="w-full border-collapse text-left" :style="tableStyle">
+        <colgroup>
+          <col v-if="selectable" :style="{ width: '48px' }" />
+          <col
+            v-for="column in visibleColumns"
+            :key="column.key"
+            :style="
+              hasWidths ? { width: `${column.width ?? 160}px` } : undefined
+            "
+          />
+          <col v-if="$slots.actions" :style="{ width: '112px' }" />
+        </colgroup>
         <caption class="sr-only">
           {{
             caption
@@ -129,7 +170,7 @@ function changePage(value: number) {
               <span class="sr-only">{{ text('Wybór', 'Selection') }}</span>
             </th>
             <th
-              v-for="column in columns"
+              v-for="column in visibleColumns"
               :key="column.key"
               scope="col"
               class="px-4 py-1 align-middle whitespace-nowrap"
@@ -191,9 +232,9 @@ function changePage(value: number) {
               />
             </td>
             <td
-              v-for="column in columns"
+              v-for="column in visibleColumns"
               :key="column.key"
-              class="px-4 py-1 align-middle"
+              class="px-4 py-1 align-middle break-words"
             >
               <slot
                 :name="`cell-${column.key}`"

@@ -190,3 +190,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 ### Nested semantic colors
 
 Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for descendants. An omitted child tone inherits the closest context; explicit tones override it and establish a new context. Buttons in a colored context default to that tone and the outline variant; explicit variants/tones remain authoritative. A neutral context restores neutral feedback and neutral button defaults. Standalone defaults are unchanged. This applies through wrapper components and slots without shell dependencies; use component props rather than descendant CSS overrides. Ordinary form input validation and dedicated shell navigation retain their own contracts.
+
+### TablePreferences and useTableViews
+
+`resources/js/components/AppTablePreferences.vue` supplies the optional compact saved-view selector and shared Dialog for column visibility, drag/keyboard order, width slider/text and reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
