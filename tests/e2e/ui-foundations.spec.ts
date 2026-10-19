@@ -173,7 +173,11 @@ test('review catalog controls work and unknown pages remain real HTTP errors', a
     .first()
     .click();
   await expect(page.locator('output').first()).toHaveText('Kliknięcia: 1');
-  await page.getByRole('combobox').selectOption('layouts');
+  await page.getByRole('button', { name: 'Kategoria / Category' }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('option', { name: 'Układy / Layouts', exact: true })
+    .click();
   await expect(page.getByRole('main')).toContainText(
     'Układ minimalny / Minimal layout',
   );

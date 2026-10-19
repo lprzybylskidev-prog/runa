@@ -169,3 +169,21 @@ it('exposes provider failure, retries and keeps empty and loading states distinc
   expect(panel().textContent).toContain('Brak wyników');
   expect(w.emitted('update:modelValue')).toBeUndefined();
 });
+
+it('uses the themed panel for simple selections and never opens readonly fields', async () => {
+  const w = mount(Select, {
+    attachTo: document.body,
+    props: { label: 'City', modelValue: 'a', options, readonly: true },
+  });
+  expect(w.find('select').exists()).toBe(false);
+  await w.get('button').trigger('click');
+  await w.get('button').trigger('keydown', { key: 'ArrowDown' });
+  expect(w.get('button').attributes('aria-expanded')).toBe('false');
+  await w.setProps({ readonly: false });
+  await w.get('button').trigger('click');
+  expect(panel().querySelector('input')).toBeNull();
+  await key('ArrowDown');
+  await key('ArrowDown');
+  await key('Enter');
+  expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['c']);
+});

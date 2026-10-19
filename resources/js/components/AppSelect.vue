@@ -193,15 +193,6 @@ watch(
   () => [props.disabled, props.readonly, props.provider],
   () => close(),
 );
-function nativeChange(event: Event) {
-  const target = event.target;
-  if (!(target instanceof globalThis.HTMLSelectElement)) return;
-  if (props.readonly) {
-    target.value = typeof props.modelValue === 'string' ? props.modelValue : '';
-    return;
-  }
-  update(target.value ? [target.value] : []);
-}
 function update(next: string[]) {
   if (
     props.disabled ||
@@ -297,33 +288,7 @@ onScopeDispose(cancel);
   >
     <template #default="{ id: controlId, describedBy, invalid }">
       <div ref="anchor" class="selection-anchor flex min-w-0 gap-2">
-        <select
-          v-if="!searchable && !multiple && !provider"
-          :id="controlId"
-          v-bind="$attrs"
-          :value="modelValue"
-          :disabled="disabled"
-          :aria-readonly="readonly || undefined"
-          :aria-invalid="invalid || undefined"
-          :aria-required="required || undefined"
-          :aria-describedby="describedBy"
-          class="runa-field-control min-w-0 flex-1"
-          @change="nativeChange"
-        >
-          <option v-if="clearable || !modelValue" value="">
-            {{ text('Wybierz…', 'Choose…') }}
-          </option>
-          <option
-            v-for="option in options"
-            :key="option.value"
-            :value="option.value"
-            :disabled="option.disabled"
-          >
-            {{ option.label }}
-          </option>
-        </select>
         <button
-          v-else
           :id="controlId"
           v-bind="$attrs"
           type="button"
@@ -450,7 +415,6 @@ onScopeDispose(cancel);
 .selection-anchor {
   position: relative;
 }
-.selection-anchor:has(select)::after,
 .selection-trigger::after {
   content: '';
   position: absolute;
@@ -463,14 +427,8 @@ onScopeDispose(cancel);
   transform: translateY(-50%) rotate(45deg);
   pointer-events: none;
 }
-.selection-anchor:has(select):has(button)::after {
-  right: 80px;
-}
 .selection-trigger {
   position: relative;
-}
-.selection-anchor select,
-.selection-trigger {
   padding-right: 36px;
 }
 .selection-panel {

@@ -242,9 +242,11 @@ test('optional regions and navigations work independently; avatar dismisses', as
   await expect(page.locator('.shell-toolbar')).toHaveCount(0);
   await expect(page.locator('.shell-supplementary')).toHaveCount(0);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Szerokość obszaru' }).click();
   await page
-    .getByRole('combobox', { name: 'Szerokość obszaru' })
-    .selectOption('fluid');
+    .getByRole('dialog')
+    .getByRole('option', { name: 'Pełna', exact: true })
+    .click();
   await expect(page.locator('.application-page')).toHaveClass(
     /workspace-fluid/,
   );
