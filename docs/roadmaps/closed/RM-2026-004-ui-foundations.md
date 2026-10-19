@@ -1,11 +1,11 @@
 ---
 id: RM-2026-004
 title: UI foundations, layouts and reusable components
-status: active
+status: closed
 branch: roadmap/RM-2026-004-ui-foundations
 created_at: 2026-10-18
 activated_at: 2026-10-18
-closed_at: null
+closed_at: 2026-10-19
 release_type: feature
 impact_areas:
   - frontend
@@ -176,7 +176,7 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Replace obsolete AuthLayout and single-version footer assertions with current MinimalLayout and independent application/platform versions; verify the complete diagnostic and blocked final contracts, synchronize stale current-state frontend claims and select the already-required strict AI checks in the full plan.
 - [x] 26. Order repository scanning after generated frontend output.
   - Make the selected Trivy repository scan wait for frontend output generation/browser diagnostics and verify graph selection/failure propagation without suppressing scanned output or findings.
-- [ ] 27. Full verification, release finalization, merge and final report.
+- [x] 27. Full verification, release finalization, merge and final report.
   - Requires 1–26 complete, all visual acceptance recorded. Review current-state README, design/frontend/API/config/localization/testing/tooling/production docs and affected skills; record sources/findings/disposition. Run the full applicable local gate per `docs/quality/gates.yml` including production fallback/isolation and security. Insert fixes before this point and rerun the entire final gate on any substantive failure. Follow roadmaps/releases workflows for metadata, knowledge refresh, docs/release checks, closure/merge/main sanity, annotated tag/GitHub Release and branch deletion. Background gates end the agent turn without polling. Planned version 0.2.0 is finalized from actual VERSION; do not activate RM-005 automatically.
 
 ## Point 1 execution record
@@ -304,9 +304,9 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 
 ## Execution handoff
 
-**Current state (2026-10-19): final point 24 needs a native-host continuation.** Points 1–22 are complete and accepted; inserted correction point 23 is complete. Candidate implementation is d04cf6d; the handoff preparation commit follows it. No final gate has started; no final PASS/release/merge is claimed.
+**Final state (2026-10-19): RM-2026-004 is complete as release 0.2.0.** All implementation/visual acceptance and the complete final gate passed. Host cleanup is complete; protected data, caches, backups and reports remain preserved. The handoffs below are historical evidence, superseded by the Final report.
 
-### Current point-24 handoff — devcontainer to host
+### Historical point-24 handoff — devcontainer to host
 
 - Branch: `roadmap/RM-2026-004-ui-foundations`. Start from the clean handoff commit following d04cf6d, verify actual HEAD and status. Current container path is /workspace; the host checkout previously verified during point 7 was `/home/lprzybylski/Documents/php/runa` and must be reconfirmed, not assumed.
 - Reason: the selected final gate includes host-context production build/Compose/runtime/isolation and Trivy nodes. This container has neither Docker executable nor socket. Do not add a socket, bypass nodes, run a partial selection as final acceptance, or mark the final item complete. No full gate has been launched.
@@ -793,3 +793,15 @@ Status: complete with point-level verification and checklist synchronization; re
 
 - Point 26 completion: selected repository scan now depends on frontend-build and frontend-render-diagnostics when present (render diagnostics depend on browser tests), in addition to production-build. This also avoids racing browser report replacement. Ten quality contracts pass, including actual security/frontend/production selection combinations and proof that failed artifact preparation blocks scanning without starting its command. A real complete Trivy repository/exact-image/dependency rerun passes after output generation; no scanner exclusion or suppression was added. Quality documentation is synchronized. No runtime/application/dependency/schema change.
 - Third-gate frontend/render/strict AI successes remain diagnostic evidence, not a substitute for the new full gate at point 27. All task simulation resources are retained for that gate; no Docker resource was removed. Preserve all development/test data, existing backups, model/Qdrant caches, reports and other projects. Private backup retention must accommodate the next simulation backup without pruning history.
+
+## Final report
+
+RM-2026-004 delivers feature release 0.2.0: optional reusable Vue UI controls, forms, selection, feedback, dialogs, tables, preferences and real bounded browser exports; MinimalLayout/ApplicationLayout and branded mail; localized native errors, favicon and independent Nginx fallback. All required owner visual acceptances are recorded. Application previews are retired; permanent isolated scenario/public-consumer tests remain. No domain module, server export job, schema migration or real production deployment was introduced.
+
+Final verification passed on 0658695fb7277fd40629ae578066c4eb611a9041: all 32 selected nodes, including 57 backend tests (343 assertions), 137 frontend unit tests, 319 browser cases with 125 intentional project/matrix skips, real root render diagnostics, formatting/lint/strict TypeScript/PHPStan, hook/runner/release/docs contracts, production build/runtime/isolation, Gitleaks/Trivy/exact-image and dependency audits, content-bound source security review, strict knowledge doctor/evals and Boost validation. The existing narrowly assessed gosu not-affected disposition remains in force; no new suppression or severity downgrade was introduced. Full evidence: .runtime/quality; source review and archived earlier failed runs: .runtime/verification/rm004-final. Native browser-menu zoom and manual screen-reader certification are not claimed.
+
+Current-state review: README checked version/roadmap/deployment fields, docs/project/state.yml, roadmap/Git/release/quality workflows, frontend/API/configuration/localization/testing/tooling/production guidance and affected component/layout/motion references were compared with delivered source. Point 25 corrected obsolete tooltip/table delivery claims and restored already-required strict AI selection; point 26 corrected scanner ordering. Current docs distinguish optional public UI from deferred Auth/account persistence, browser exports from application-owned server authorization/jobs, retired previews from isolated nonshipping tests, and simulation from real deployment. Historical handoffs/pending notes remain dated evidence superseded by acceptance and this report. Release closure synchronizes VERSION, CHANGELOG, README and lifecycle metadata; no capability/runtime edits follow the full gate.
+
+After final use, inspected exact labels, all container/volume/image references and scoped identities, then removed five task-created runa-prod-icu-simulation containers, one network, two disposable volumes, eight exact-candidate image tags and four task release clones. Archived deployment evidence and restored original private operator image selection and backup retention. Development/test databases/services, all existing and newly created backups, Qdrant/model caches, verification reports, other projects and shared builder caches are preserved. Scoped inventory/results: .runtime/verification/rm004-final/cleanup-scope.json and cleanup-result.json. No global prune occurred.
+
+Release metadata is 0.2.0 with no active roadmap and production ever deployed false. Focused post-metadata docs/release checks, knowledge synchronization, merge/main sanity and publication follow the canonical release workflow; operational publication identity is recorded by the immutable annotated release tag/GitHub Release. No successor roadmap is activated.

@@ -2,6 +2,19 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.2.0] - 2026-10-19
+
+Feature release — RM-2026-004.
+
+- Deliver optional Vue UI controls, feedback, forms, selection, dialogs, tables and browser-local preferences through a typed public component library.
+- Provide reusable MinimalLayout/ApplicationLayout and branded HTML/text email layouts, with independent application/platform identity and versions.
+- Add localized native HTTP errors, favicon and PHP-independent Nginx emergency responses with preserved API/status/security contracts.
+- Support table personalization, cross-page selection, operation-provider contracts and bounded real CSV/XLSX/PDF/print exports using the approved pinned adapters.
+- Verify responsive PL/EN light/dark behavior, accessibility semantics, reduced motion, interrupted interactions and independent consumers; retire temporary application previews while retaining isolated tests.
+- Correct verification preparation, browser-specific diagnostic APIs and scan/build ordering; pass the complete local quality/security/production/AI gate.
+
+No business modules or server export jobs were added. No application schema change or real production deployment occurred. Disposable simulation resources were removed; development/test data, knowledge/model caches, backups and verification reports were preserved.
+
 ## [0.1.2] - 2026-10-18
 
 Maintenance release — RM-2026-003.
