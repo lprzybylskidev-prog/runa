@@ -24,6 +24,33 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_debug_check_allows_only_reviewed_output_statements(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'bin').mkdir()
+            shutil.copy(ROOT / 'bin/quality-check', root / 'bin/quality-check')
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            sources = {
+                'resources/views/errors/page.php': 'echo strtr($template, [',
+                'tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
+            }
+            for name, statement in sources.items():
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('<?php\n' + statement + '\n')
+            command = [sys.executable, str(root / 'bin/quality-check'), 'debug-residue']
+            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
+            for name, statement in sources.items():
+                for content in [statement + " dd('debug');", statement + "\necho 'debug';", "var_dump($value);"]:
+                    with self.subTest(name=name, content=content):
+                        (root / name).write_text('<?php\n' + content + '\n')
+                        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+                (root / name).write_text('<?php\n' + statement + '\n')
+            other = root / 'app/Other.php'
+            other.parent.mkdir()
+            other.write_text('<?php\n' + sources['resources/views/errors/page.php'] + '\n')
+            self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
     def test_actual_host_production_gates_share_the_operation_group(self):
         definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
         nodes = quality.select(definition, ['production', 'security'])

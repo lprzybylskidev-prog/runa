@@ -167,8 +167,10 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Requires accepted 20. Audit every delivered component and layout against accepted application-shell motion. Add subtle opening/closing, disclosure, content-state and list/control transitions where useful; preserve immediate state/focus, interrupted interaction, CSP and reduced-motion behavior. Keep dense data processing and static content immediate where movement harms clarity. Update frontend skill/design guidance and record a complete inventory. **Visual gate accepted by the owner on 2026-10-19; continuation authorizes point-22 preview retirement.**
 - [x] 22. Remove temporary visual review infrastructure.
   - Requires explicit final visual acceptance in 21. Delete preview/catalog routes/pages, fixture-only production registrations and demo navigation. Preserve library/layouts/docs/test fixtures and `/`. Prove preview URLs absent in production and no demo assets in shipped graph; tests use nonshipping harnesses. Publish durable import/extension/provider examples in existing frontend docs/catalog references.
-- [ ] 23. Full verification, release finalization, merge and final report.
-  - Requires 1–22 complete, all visual acceptance recorded. Review current-state README, design/frontend/API/config/localization/testing/tooling/production docs and affected skills; record sources/findings/disposition. Run the full applicable local gate per `docs/quality/gates.yml` including production fallback/isolation and security. Insert fixes before this point and rerun the entire final gate on any substantive failure. Follow roadmaps/releases workflows for metadata, knowledge refresh, docs/release checks, closure/merge/main sanity, annotated tag/GitHub Release and branch deletion. Background gates end the agent turn without polling. Planned version 0.2.0 is finalized from actual VERSION; do not activate RM-005 automatically.
+- [x] 23. Pre-verification maintenance and output-check corrections.
+  - Register both approved export dependencies and distinguish the two reviewed permanent HTML/JSON output statements from debug residue, retaining narrow regression coverage.
+- [ ] 24. Full verification, release finalization, merge and final report.
+  - Requires 1–23 complete, all visual acceptance recorded. Review current-state README, design/frontend/API/config/localization/testing/tooling/production docs and affected skills; record sources/findings/disposition. Run the full applicable local gate per `docs/quality/gates.yml` including production fallback/isolation and security. Insert fixes before this point and rerun the entire final gate on any substantive failure. Follow roadmaps/releases workflows for metadata, knowledge refresh, docs/release checks, closure/merge/main sanity, annotated tag/GitHub Release and branch deletion. Background gates end the agent turn without polling. Planned version 0.2.0 is finalized from actual VERSION; do not activate RM-005 automatically.
 
 ## Point 1 execution record
 
@@ -295,9 +297,9 @@ Status: **complete and visually accepted by the owner on 2026-10-18**. Implement
 
 ## Execution handoff
 
-**Current state (2026-10-19): point 23 needs a native-host continuation.** Points 1–22 are complete and accepted. Candidate implementation is d04cf6d; the handoff preparation commit follows it. No final gate has started; no final PASS/release/merge is claimed.
+**Current state (2026-10-19): final point 24 needs a native-host continuation.** Points 1–22 are complete and accepted; inserted correction point 23 is complete. Candidate implementation is d04cf6d; the handoff preparation commit follows it. No final gate has started; no final PASS/release/merge is claimed.
 
-### Current point-23 handoff — devcontainer to host
+### Current point-24 handoff — devcontainer to host
 
 - Branch: `roadmap/RM-2026-004-ui-foundations`. Start from the clean handoff commit following d04cf6d, verify actual HEAD and status. Current container path is /workspace; the host checkout previously verified during point 7 was `/home/lprzybylski/Documents/php/runa` and must be reconfirmed, not assumed.
 - Reason: the selected final gate includes host-context production build/Compose/runtime/isolation and Trivy nodes. This container has neither Docker executable nor socket. Do not add a socket, bypass nodes, run a partial selection as final acceptance, or mark the final item complete. No full gate has been launched.
@@ -748,3 +750,11 @@ Status: complete with point-level verification and checklist synchronization; re
 ### Owner reuse rule before final verification
 
 - 2026-10-19 — Owner explicitly requires first-use UI elements to be allowed locally, with extraction into the existing Runa component library at second use. Updated the frontend skill and component catalogue: search/reuse first, extract shared presentation/behavior into resources/js/components, migrate both consumers, expose the public facade and synchronize the catalogue in the same task. Page data/business behavior stays feature-owned; dedicated shell navigation keeps its accepted location-specific contract. Documentation-only change; no application implementation or final gate has started. The point-23 host handoff remains current, with this rule commit as the new candidate HEAD.
+
+### Point 23 inserted pre-verification corrections
+
+- 2026-10-19 — Container preflight found missing maintenance-registry entries for the approved pdfmake/write-excel-file packages and false positives from the debug-residue check on permanent native HTML and test-adapter JSON output. Inserted correction point 23 before final verification, now point 24. No full final gate has run; its future run must start from the new complete candidate.
+- Dependency audit reports no advisories; local knowledge doctor/eval and application configuration pass. These preflight results are not a full-gate PASS. Host handoff references to final point 23 above are superseded by final point 24; current correction work is container-local and needs no Docker changes.
+
+- Point 23 completion: registered the two already-approved exact versions with existing point-19 review provenance/license notices and a 90-day review cadence. Added path-and-exact-statement debug-check recognition for permanent HTML/JSON rendering; no whole-file or blanket echo exclusion. Regression contract rejects same-line extra debug, new output in either file and the same statement at a different path. Updated quality documentation.
+- Verification: maintenance and debug-residue doctors pass; 9 quality contracts and maintenance contracts pass, dependency audits report no known vulnerabilities, configuration and knowledge doctor/eval pass. No full gate has run. No dependencies were installed/updated and no application behavior, Docker service, database, secret or cache changed. Commit this coherent fix before host final point 24; its complete final gate must run from the beginning on the new candidate, and existing security attestation must be refreshed after actual review.

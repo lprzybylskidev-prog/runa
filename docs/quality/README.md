@@ -108,7 +108,7 @@ Final verification rejects accidental residue including common forms such as:
 - `debugger`,
 - temporary breakpoints/hacks,
 
-unless the occurrence is intentionally permanent and justified.
+unless the occurrence is intentionally permanent and justified. The debug checker recognizes only the exact reviewed native-error HTML rendering statement and browser-fixture JSON output statement at their specific paths. Other output/debug expressions in those files or identical text elsewhere still fail; isolated quality contracts verify this boundary.
 
 ## TODO/FIXME/HACK
 
