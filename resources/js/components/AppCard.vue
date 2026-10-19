@@ -4,7 +4,7 @@
   >
     <header
       v-if="$slots.header || $slots.actions"
-      class="flex flex-wrap items-center justify-between gap-3 rounded-t-[3px] border-b border-line bg-[var(--runa-primary-subtle)] text-primary px-5 py-4"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-t-[3px] border-b border-line bg-[var(--runa-container-header-background)] text-ink px-5 py-4"
     >
       <div class="font-semibold"><slot name="header" /></div>
       <slot name="actions" />
