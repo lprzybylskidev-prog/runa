@@ -5,7 +5,7 @@ Locally served, user-selected IBM Plex Mono and Tabler SVG assets; no runtime CD
 ## Sources
 
 - IBM Plex Mono: https://github.com/IBM/plex/tree/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-mono — complete WOFF2 Regular and SemiBold, OFL-1.1, license preserved in `resources/fonts/LICENSE.txt`.
-- Tabler Icons: https://github.com/tabler/tabler-icons/tree/a4ce1404bc6d24d3c365afe7b258d6bf6f48d62d — four outline SVGs, MIT, license preserved in `resources/icons/LICENSE`.
+- Tabler Icons: https://github.com/tabler/tabler-icons/tree/a4ce1404bc6d24d3c365afe7b258d6bf6f48d62d — nine outline SVGs, MIT, license preserved in `resources/icons/LICENSE`.
 
 Only selected assets are included. Both sources and their licenses were inspected. Updates are deliberate, with license/provenance and hashes refreshed; do not overwrite from a mutable branch.
 
@@ -22,7 +22,7 @@ Only selected assets are included. Both sources and their licenses were inspecte
 
 The font license has line endings normalized to LF; hashes describe the committed asset bytes.
 
-Current Tabler subset: layers-intersect, sun, moon and device-desktop. Point 8 rechecked these local original SVGs and their preserved MIT attribution/hash records; no new upstream geometry or package is added. Icon now accepts explicit size/color while remaining decorative.
+Original Tabler subset: layers-intersect, sun, moon and device-desktop; the current nine-icon subset also includes the table export icons below. Point 8 rechecked these local original SVGs and their preserved MIT attribution/hash records; no new upstream geometry or package is added. Icon now accepts explicit size/color while remaining decorative.
 
 | Asset                                  | SHA256                                                             |
 | -------------------------------------- | ------------------------------------------------------------------ |
@@ -54,3 +54,15 @@ Root/review documents and native/static emergency error documents reference `/fa
 ## Standalone HTTP error assets
 
 The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `resources/views/errors/generated/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.
+
+## Table export icons
+
+Point 19 adds file-type-csv, file-type-xls, file-type-pdf, printer and adjustments-horizontal from the same pinned Tabler revision above, under the existing MIT license. Original geometry is retained; AppIcon adapts the shared stroke and sizing.
+
+| Asset                                      | SHA256                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| resources/icons/file-type-csv.svg          | `66f74228aceb4473f3708f2e6c1ab26d771056834f3de6237e6060ac250e05b8` |
+| resources/icons/file-type-xls.svg          | `45e583beb8710d55d07a8e0de847b46664aa607d898738dd122c1441505a3c54` |
+| resources/icons/file-type-pdf.svg          | `36ef668b02762697eb2d3e360ec13580651908ded26c08facfe3b99fc96ccebf` |
+| resources/icons/printer.svg                | `6f530e94836068b346f241313a6040c1d55ff1b677d326dc6c1b3c5b42c5c1eb` |
+| resources/icons/adjustments-horizontal.svg | `51c876babc598cf69ad1146f0fb621919a975758df0cc7abf45052006358a353` |

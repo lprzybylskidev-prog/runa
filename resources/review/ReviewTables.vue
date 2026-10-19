@@ -246,14 +246,6 @@ const printAdapters = {
           :label="text('Nieznana liczba wyników', 'Unknown count')"
         />
       </div>
-      <div class="mb-4">
-        <TablePreferences
-          :controller="mode === 'client' ? localViews : serverViews"
-          :columns="columns"
-          :english="english"
-          :measured-widths="mode === 'client' ? localWidths : serverWidths"
-        />
-      </div>
       <Table
         :column-state="
           (mode === 'client' ? localViews : serverViews).columns.value
@@ -279,17 +271,28 @@ const printAdapters = {
           mode === 'client' ? (selected = $event) : (serverSelected = $event)
         "
       >
-        <template #bulk
-          ><TableActions
-            :provider="mode === 'client' ? localExport : serverExport"
-            :print-adapter="printAdapters[mode]"
-            :bulk-provider="bulkProvider"
-            :query="mode === 'client' ? localQuery : serverQuery"
-            :selection="mode === 'client' ? selected : serverSelected"
-            :columns="exportColumns(mode)"
-            :english="english"
-            filename="projekty"
-        /></template>
+        <template #toolbar="{ feedbackTarget }">
+          <div class="flex min-w-0 flex-wrap items-end gap-3">
+            <TablePreferences
+              :controller="mode === 'client' ? localViews : serverViews"
+              :columns="columns"
+              :english="english"
+              :measured-widths="mode === 'client' ? localWidths : serverWidths"
+            />
+
+            <TableActions
+              :feedback-target="feedbackTarget"
+              :provider="mode === 'client' ? localExport : serverExport"
+              :print-adapter="printAdapters[mode]"
+              :bulk-provider="bulkProvider"
+              :query="mode === 'client' ? localQuery : serverQuery"
+              :selection="mode === 'client' ? selected : serverSelected"
+              :columns="exportColumns(mode)"
+              :english="english"
+              filename="projekty"
+            />
+          </div>
+        </template>
         <template #actions="{ row }"
           ><Button size="sm" variant="ghost" @click="result = row.name">{{
             text('Otwórz', 'Open')

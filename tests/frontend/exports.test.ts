@@ -420,12 +420,14 @@ it('disables all-matching for uncertain counts and keeps explicit page selection
     },
   });
   await flushPromises();
+  await wrapper.setProps({ selection: { mode: 'explicit', publicIds: ['a'] } });
   expect(
     wrapper
       .findAll('button')
       .find((b) => b.text() === 'Select all matching')
       ?.attributes('disabled'),
   ).toBeDefined();
+  await wrapper.setProps({ selection: { mode: 'explicit', publicIds: [] } });
   await wrapper.find('thead input[type=checkbox]').setValue(true);
   expect(wrapper.emitted('update:selection')?.at(-1)).toEqual([
     { mode: 'explicit', publicIds: ['a'] },

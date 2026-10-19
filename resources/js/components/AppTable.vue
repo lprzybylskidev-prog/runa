@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="Row">
-import { computed, toRef, useSlots, ref, watch, nextTick } from 'vue';
+import { computed, toRef, useSlots, ref, watch, nextTick, useId } from 'vue';
 import AppButton from './AppButton.vue';
 import AppTextInput from './AppTextInput.vue';
 import AppSelect from './AppSelect.vue';
@@ -17,6 +17,7 @@ import { normalizeTableColumns } from '../lib/tableViews';
 import type { TableColumnState } from '../runa/ui/tables';
 import { useTable } from '../composables/useTable';
 import type { TableColumn, TableProvider, TableQuery } from '../runa/ui/tables';
+const feedbackId = `table-feedback-${useId()}`;
 const props = withDefaults(
   defineProps<{
     mode: 'client' | 'server';
@@ -190,7 +191,9 @@ function changePage(value: number) {
 </script>
 <template>
   <div class="min-w-0 rounded border border-line bg-surface text-sm">
-    <div class="border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3">
+    <div
+      class="flex flex-wrap items-end justify-between gap-3 border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"
+    >
       <slot
         name="filters"
         :query="query"
@@ -198,9 +201,10 @@ function changePage(value: number) {
           (value: TableQuery) => emit('update:query', { ...value, page: 1 })
         "
       >
-        <div class="flex flex-wrap items-end gap-3">
+        <div class="flex min-w-0 flex-wrap items-end gap-3">
           <AppTextInput
             v-if="searchable"
+            class="w-44 max-w-full"
             size="sm"
             :model-value="query.search ?? ''"
             :label="text('Wyszukaj', 'Search')"
@@ -224,28 +228,35 @@ function changePage(value: number) {
           />
         </div>
       </slot>
+      <slot name="toolbar" :feedback-target="`#${feedbackId}`" />
     </div>
     <div
-      v-if="selectable && selection !== undefined"
+      v-if="
+        selectable &&
+        selection !== undefined &&
+        (selectedCount > 0 || selectionNotice)
+      "
       class="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2 text-xs"
     >
-      <span role="status"
-        >{{ text('Wybrane', 'Selected') }}: {{ selectedCount }}</span
-      >
-      <AppButton
-        size="sm"
-        :disabled="loading || page?.counts !== 'exact' || !page?.matching"
-        @click="selectMatching"
-        >{{
-          text('Zaznacz wszystkie wyniki', 'Select all matching')
-        }}</AppButton
-      >
-      <AppButton
-        size="sm"
-        :disabled="!selectedCount"
-        @click="updateSelection({ mode: 'explicit', publicIds: [] })"
-        >{{ text('Wyczyść wybór', 'Clear selection') }}</AppButton
-      >
+      <template v-if="selectedCount > 0">
+        <span role="status"
+          >{{ text('Wybrane', 'Selected') }}: {{ selectedCount }}</span
+        >
+        <AppButton
+          size="sm"
+          :disabled="loading || page?.counts !== 'exact' || !page?.matching"
+          @click="selectMatching"
+          >{{
+            text('Zaznacz wszystkie wyniki', 'Select all matching')
+          }}</AppButton
+        >
+        <AppButton
+          size="sm"
+          :disabled="!selectedCount"
+          @click="updateSelection({ mode: 'explicit', publicIds: [] })"
+          >{{ text('Wyczyść wybór', 'Clear selection') }}</AppButton
+        >
+      </template>
       <span v-if="selectionNotice" role="status" class="text-muted">{{
         text(
           'Wybór wszystkich wyników wyczyszczono po zmianie zapytania.',
@@ -253,6 +264,7 @@ function changePage(value: number) {
         )
       }}</span>
     </div>
+    <div :id="feedbackId" class="border-b border-line px-4 py-3 empty:hidden" />
     <div v-if="$slots.bulk" class="p-4">
       <slot
         name="bulk"
