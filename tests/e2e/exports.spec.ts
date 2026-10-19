@@ -105,6 +105,7 @@ test('downloads real bounded files, selects across pages and recovers partial op
 });
 test('opens an isolated print document with the complete filtered result', async ({
   page,
+  browserName,
 }) => {
   await page.addInitScript(() => {
     localStorage.setItem('runa.locale', 'en');
@@ -150,12 +151,15 @@ test('opens an isolated print document with the complete filtered result', async
     path: 'artifacts/playwright/exports/print-uniform-lines.png',
     fullPage: true,
   });
-  const pdf = await printPage.pdf({
-    path: 'artifacts/playwright/exports/print-uniform-lines.pdf',
-    format: 'A4',
-    printBackground: true,
-  });
-  expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  // Playwright PDF generation is available only in headless Chromium.
+  if (browserName === 'chromium') {
+    const pdf = await printPage.pdf({
+      path: 'artifacts/playwright/exports/print-uniform-lines.pdf',
+      format: 'A4',
+      printBackground: true,
+    });
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  }
   await printPage.close();
 });
 

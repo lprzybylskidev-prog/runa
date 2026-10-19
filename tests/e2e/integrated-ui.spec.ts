@@ -33,6 +33,7 @@ for (const locale of ['pl', 'en'])
   for (const theme of ['light', 'dark']) {
     test(`integrated scenario semantics and 200% reflow ${locale} ${theme}`, async ({
       browser,
+      browserName,
     }) => {
       test.setTimeout(90000);
       const errors: string[] = [];
@@ -51,7 +52,10 @@ for (const locale of ['pl', 'en'])
           },
           { locale, theme },
         );
-        const cdp = await context.newCDPSession(page);
+        const cdp =
+          browserName === 'chromium'
+            ? await context.newCDPSession(page)
+            : undefined;
         for (const category of categories) {
           await page.goto(`/__fixtures/ui?category=${category}`);
           await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -97,25 +101,28 @@ for (const locale of ['pl', 'en'])
             return problems;
           });
           expect(issues, `${category} at ${scale * 100}%`).toEqual([]);
-          const tree = await cdp.send('Accessibility.getFullAXTree');
-          const unnamed = tree.nodes.filter(
-            (node) =>
-              !node.ignored &&
-              [
-                'button',
-                'textbox',
-                'checkbox',
-                'switch',
-                'radio',
-                'combobox',
-                'tab',
-              ].includes(node.role?.value ?? '') &&
-              !node.name?.value?.trim(),
-          );
-          expect(
-            unnamed.map((node) => node.role?.value),
-            `${category} accessible control names`,
-          ).toEqual([]);
+          // Chromium's full accessibility-tree protocol supplements the shared DOM checks.
+          if (cdp) {
+            const tree = await cdp.send('Accessibility.getFullAXTree');
+            const unnamed = tree.nodes.filter(
+              (node) =>
+                !node.ignored &&
+                [
+                  'button',
+                  'textbox',
+                  'checkbox',
+                  'switch',
+                  'radio',
+                  'combobox',
+                  'tab',
+                ].includes(node.role?.value ?? '') &&
+                !node.name?.value?.trim(),
+            );
+            expect(
+              unnamed.map((node) => node.role?.value),
+              `${category} accessible control names`,
+            ).toEqual([]);
+          }
           if (scale === 2)
             await page.screenshot({
               path: `artifacts/playwright/integrated/${category}-${locale}-${theme}-200.png`,
