@@ -149,8 +149,8 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Requires accepted 11. Sections, columns, collapse/actions, validation messages and text/numeric inventory. Explicit dirty/busy/value contracts, Laravel error mapping and decimal serialization tests. **Visual gate accepted by the owner on 2026-10-19, including normalized field chrome/autofill and inline units.**
 - [x] 13. Date/time, logical, file and additional inputs.
   - Requires accepted 12. Date/time/datetime/range with application-owned date/time/color pickers, checkbox/radio/switch, file/multiple file, color/hidden/tags; localize values/display and test DST/date-only/null boundaries, keyboard and autofill. **Visual gate accepted by the owner on 2026-10-19, including custom pickers, file dropzones and the frameless color trigger.**
-- [ ] 14. Composable selection controls.
-  - Requires accepted 13. Extend AppSelect with multiselect/searchable and local/remote providers; incremental large-data handling, clear/loading/error/empty states and cancellation races. Test stale responses and keyboard/touch selection. **Visual gate: selection catalog.**
+- [x] 14. Composable selection controls.
+  - Requires accepted 13. Extend AppSelect with multiselect/searchable and local/remote providers; incremental large-data handling, clear/loading/error/empty states and cancellation races. Test stale responses and keyboard/touch selection. **Visual gate accepted by the owner on 2026-10-19, including unified chevrons and themed option panels in every mode.**
 - [ ] 15. Masks, dependent fields, dirty guards and wizards.
   - Requires accepted 14. Raw/formatted masking, cursor/paste/delete/IME tests, cascading dependency graph and multistep navigation/validation/preservation. Test cancel/retry, descendant invalidation and leaving a dirty form. **Visual gate: advanced forms.**
 - [ ] 16. Dialog interactions.
@@ -507,7 +507,7 @@ Point 13 closure: the owner explicitly accepted the complete input catalog and i
 
 ## Point 14 execution record
 
-Status: **implemented; awaiting explicit owner visual acceptance**. The owner authorized point 14 on 2026-10-19; the point-13 instruction to stop is superseded for this point only. Point 15 remains unstarted.
+Status: **complete and visually accepted by the owner on 2026-10-19**. The owner authorized point 14 on 2026-10-19; the point-13 instruction to stop is superseded for this point only. Point 15 remains unstarted.
 
 - Extended the existing public Select, preserving its native single-selection mode for existing catalog/application toolbar consumers. Searchable/multiple/provider modes compose the shared floating layer and FormField labels/helper/warning/errors. Added stable string IDs, disabled options, explicit clear, readonly/disabled behavior, keyboard navigation, selected semantics and localized PL/EN loading/error/retry/empty states.
 - Added SelectionProvider/SelectionPage/SelectOption contracts. Providers own HTTP/authorization/cursor ordering; debounce, AbortSignal and generation checks prevent obsolete responses from replacing current results. Rendering is bounded to one page (40 by default, maximum 100); remote next-page requests replace the visible page. Initial off-page labels use selectedOptions; selected labels survive query/page changes without retaining every retrieved record. Local pages expose previous/next. No whole-dataset remote fetch, new dependency or global state installation.
@@ -524,3 +524,5 @@ Status: **implemented; awaiting explicit owner visual acceptance**. The owner au
 
 - 2026-10-19 — Owner rejected browser-owned option popups in the remaining simple selects. Removed the native-select branch: simple, searchable, multiple and remote selection now share the same themed floating dialog/listbox, CSS chevron and keyboard behavior. Readonly controls never open. This supersedes the earlier native-single preservation decision within point 14. Existing string props/events remain compatible; catalog and application toolbar consumers automatically use the finalized shared panel. Updated affected current architecture/component/page guidance and behavioral/browser tests. Visual acceptance remains pending.
 - Verification: all 85 frontend tests pass, including simple-panel/readonly regression. Strict TypeScript, lint/formatting, production/native-error/review builds and docs/diff checks pass. Development Chromium checks cover simple-panel open/selection dismissal, readonly, category navigation in both themes at 390/1130px and application width switching; screenshots: artifacts/playwright/point14/simple-*.png. The separate targeted E2E attempt could not reach nginx-test (ERR_NAME_NOT_RESOLVED), so it does not count as a passing isolated E2E gate. No Docker resources were created or removed; existing data/caches/reports remain preserved.
+
+Point 14 closure: the owner explicitly accepted selection controls and all corrections on 2026-10-19 and authorized immediate continuation to point 15. Delivery commits: 74c305a, 1b14b5a and 0aa4f33. Earlier pending-acceptance notes describe pre-acceptance checks.
