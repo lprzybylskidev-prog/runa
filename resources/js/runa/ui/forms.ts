@@ -39,6 +39,7 @@ export interface TemporalInputProps {
   required?: boolean;
 }
 export interface BooleanInputProps {
+  hideLabel?: boolean;
   modelValue: boolean | null;
   label: string;
   helper?: string;

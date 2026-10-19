@@ -105,3 +105,12 @@ export type * from './dialogs';
 export { default as Dialog } from '../../components/AppDialog.vue';
 export { default as AlertDialog } from '../../components/AppAlertDialog.vue';
 export { default as ConfirmDialog } from '../../components/AppConfirmDialog.vue';
+
+export type * from './tables';
+export { default as Table } from '../../components/AppTable.vue';
+export { useTable } from '../../composables/useTable';
+export {
+  clientTablePage,
+  normalizeTableQuery,
+  createApiTableProvider,
+} from '../../lib/table';

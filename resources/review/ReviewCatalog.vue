@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReviewTables from './ReviewTables.vue';
 import ReviewDialogs from './ReviewDialogs.vue';
 import ReviewAdvancedForms from './ReviewAdvancedForms.vue';
 import ReviewSelection from './ReviewSelection.vue';
@@ -120,7 +121,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–16 · Komponenty / Components
+        RM-2026-004 · 8–17 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select
@@ -133,6 +134,10 @@ const categories = [
         <template v-if="category === 'controls'">
           <ReviewControls :english="t('language') !== 'Język'" />
         </template>
+        <ReviewTables
+          v-else-if="category === 'data'"
+          :english="t('language') !== 'Język'"
+        />
         <ReviewDialogs
           v-else-if="category === 'dialogs'"
           :english="t('language') !== 'Język'"

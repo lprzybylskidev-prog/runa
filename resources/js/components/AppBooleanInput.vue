@@ -44,7 +44,7 @@ function change(event: Event) {
           :class="{ 'runa-switch-input': kind === 'switch' }"
           @click="readonly && $event.preventDefault()"
           @change="change"
-        /><span
+        /><span :class="hideLabel ? 'sr-only' : undefined"
           >{{ label }}<span v-if="required" aria-hidden="true"> *</span></span
         ></label
       ></template
