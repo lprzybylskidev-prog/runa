@@ -52,6 +52,31 @@ export function clientTablePage<Row>(
     capabilities.filter,
     capabilities.maxPerPage,
   );
+  const matching = clientTableRows(rows, columns, state);
+  return {
+    rows: matching.slice(
+      (state.page - 1) * state.perPage,
+      state.page * state.perPage,
+    ),
+    total: rows.length,
+    matching: matching.length,
+    counts: 'exact',
+    hasNext: state.page * state.perPage < matching.length,
+    capabilities,
+  };
+}
+
+/** Already-loaded browser-local rows only. This helper performs no transport. */
+export function clientTableRows<Row>(
+  rows: readonly Row[],
+  columns: readonly TableColumn<Row>[],
+  query: TableQuery,
+): Row[] {
+  const state = normalizeTableQuery(
+    query,
+    columns.filter((c) => c.sortable).map((c) => c.key),
+    columns.filter((c) => c.filter).map((c) => c.key),
+  );
   const terms =
     state.search?.toLocaleLowerCase().split(/\s+/).filter(Boolean) ?? [];
   const matching = rows.filter(
@@ -82,17 +107,7 @@ export function clientTablePage<Row>(
             )),
     );
   }
-  return {
-    rows: matching.slice(
-      (state.page - 1) * state.perPage,
-      state.page * state.perPage,
-    ),
-    total: rows.length,
-    matching: matching.length,
-    counts: 'exact',
-    hasNext: state.page * state.perPage < matching.length,
-    capabilities,
-  };
+  return matching;
 }
 
 /** Decoder validates data + meta; backend must independently enforce these allowlists and limits. */

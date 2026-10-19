@@ -1,0 +1,31 @@
+@page {
+  margin: 15mm;
+}
+body {
+  font-family: sans-serif;
+  color: #111;
+  background: #fff;
+  font-size: 10pt;
+}
+h1 {
+  font-size: 16pt;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+thead {
+  display: table-header-group;
+}
+tr {
+  break-inside: avoid;
+}
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #bbb;
+  padding: 6px;
+  overflow-wrap: anywhere;
+}

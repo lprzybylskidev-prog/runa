@@ -1272,3 +1272,13 @@ button.app-button.shell-avatar-button {
     outline: 2px solid Highlight;
   }
 }
+
+/* Native print document lives outside the visible application flow. */
+.runa-print-frame {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  border: 0;
+}

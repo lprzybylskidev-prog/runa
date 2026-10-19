@@ -14,7 +14,9 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "vue": "3.5.44"
+    "pdfmake": "0.3.12",
+    "vue": "3.5.44",
+    "write-excel-file": "4.1.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

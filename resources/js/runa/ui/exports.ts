@@ -24,6 +24,7 @@ export type ExportScope<Query> =
   | { readonly kind: 'selected'; readonly selection: RowSelection<Query> };
 
 export interface ExportCapabilities {
+  readonly execution?: 'client' | 'server';
   readonly formats: readonly ExportFormat[];
   readonly scopes: readonly ('all' | 'filtered' | 'selected')[];
   readonly cancellation: boolean;
@@ -35,6 +36,7 @@ export interface ExportRequest<Query> {
   readonly columnKeys: readonly string[];
   readonly filename: string;
   readonly orientation?: 'portrait' | 'landscape';
+  readonly operationKey?: string;
 }
 
 export interface ExportDownload {
@@ -52,7 +54,11 @@ export interface OperationFailure {
 export type OperationStatus =
   | { readonly state: 'queued' }
   | { readonly state: 'running'; readonly progress?: number }
-  | { readonly state: 'completed'; readonly download: ExportDownload }
+  | {
+      readonly state: 'completed';
+      readonly download?: ExportDownload;
+      readonly succeeded?: number;
+    }
   | { readonly state: 'failed'; readonly error: OperationFailure }
   | {
       readonly state: 'partial';
@@ -66,7 +72,7 @@ export type OperationStatus =
 export interface ExportOperation {
   readonly publicId: string;
   poll(signal: AbortSignal): Promise<OperationStatus>;
-  retry?: (signal: AbortSignal) => Promise<ExportResult>;
+  retry?: (signal: AbortSignal) => Promise<OperationResult>;
   cancel?: (signal: AbortSignal) => Promise<void>;
 }
 
@@ -83,7 +89,7 @@ export interface ExportProvider<Query> {
   ): Promise<ExportResult>;
 }
 
-/** Bounded browser-local data only; generation adapters are delivered in point 17. */
+/** Bounded browser-local data only; generation adapters are bounded and replaceable. */
 export interface ClientExportAdapter<Row> {
   readonly format: ExportFormat;
   readonly maxRows: number;
@@ -103,4 +109,20 @@ export interface ClientExportAdapter<Row> {
 /** Printing is a separate action, not an asynchronous file export format. */
 export interface PrintAdapter<Query> {
   print(scope: ExportScope<Query>, signal: AbortSignal): Promise<void>;
+}
+
+export type OperationResult =
+  ExportResult | { readonly kind: 'status'; readonly status: OperationStatus };
+export interface BulkRequest<Query> {
+  readonly action: string;
+  readonly selection: RowSelection<Query>;
+  readonly operationKey: string;
+}
+export interface BulkProvider<Query> {
+  readonly actions: readonly { key: string; label: string }[];
+  readonly cancellation: boolean;
+  start(
+    request: BulkRequest<Query>,
+    signal: AbortSignal,
+  ): Promise<OperationResult>;
 }

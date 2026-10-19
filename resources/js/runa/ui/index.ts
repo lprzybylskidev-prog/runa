@@ -123,3 +123,26 @@ export {
   normalizeTableSnapshot,
   normalizeTableViews,
 } from '../../lib/tableViews';
+
+export { default as TableActions } from '../../components/AppTableActions.vue';
+export { default as OperationPanel } from '../../components/AppOperationPanel.vue';
+export { useOperation } from '../../composables/useOperation';
+export type { OperationController } from '../../composables/useOperation';
+export {
+  createClientExportProvider,
+  clientExportRows,
+} from '../../lib/clientExports';
+export { createCsvAdapter, downloadExport } from '../../lib/exportFiles';
+export { createXlsxAdapter, createPdfAdapter } from '../../lib/binaryExports';
+export { createClientPrintAdapter } from '../../lib/printTable';
+export {
+  selectionCount,
+  selectionContains,
+  toggleSelection,
+  tableQueryIdentity,
+} from '../../lib/tableSelection';
+
+export {
+  createApiExportProvider,
+  decodeOperationStatus,
+} from '../../lib/serverExports';

@@ -2,6 +2,14 @@
 import { computed, ref } from 'vue';
 import {
   Table,
+  TableActions,
+  createClientExportProvider,
+  createClientPrintAdapter,
+  selectionCount,
+  type ExportColumn,
+  type ExportProvider,
+  type RowSelection,
+  type BulkProvider,
   TablePreferences,
   useTableViews,
   Card,
@@ -55,8 +63,14 @@ const initial = (): TableQuery => ({
 });
 const localQuery = ref(initial()),
   serverQuery = ref(initial());
-const selected = ref<string[]>([]),
-  serverSelected = ref<string[]>([]);
+const selected = ref<RowSelection<TableQuery>>({
+    mode: 'explicit',
+    publicIds: [],
+  }),
+  serverSelected = ref<RowSelection<TableQuery>>({
+    mode: 'explicit',
+    publicIds: [],
+  });
 const localViews = useTableViews({
   scope: { applicationId: 'review', moduleKey: 'ui', viewKey: 'client-table' },
   columns: () => columns.value,
@@ -90,6 +104,113 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
     ? { ...page, total: null, matching: null, counts: 'unknown' }
     : page;
 };
+
+const operationOutcome = ref(false);
+function exportColumns(mode: 'client' | 'server'): ExportColumn<RecordRow>[] {
+  return (mode === 'client' ? localViews : serverViews).columns.value
+    .filter((c) => c.visible)
+    .map((c) => {
+      const column = columns.value.find((item) => item.key === c.key)!;
+      return {
+        key: column.key,
+        label: column.label,
+        value: column.value,
+        ...(c.key === 'count' ? { format: 'number' as const } : {}),
+      };
+    });
+}
+const localExport = createClientExportProvider({
+  rows: () => rows,
+  columns: () => exportColumns('client'),
+  tableColumns: () => columns.value,
+  rowKey: (row) => row.public_id,
+});
+const fixtureExport = createClientExportProvider({
+  rows: () => rows,
+  columns: () => exportColumns('server'),
+  tableColumns: () => columns.value,
+  rowKey: (row) => row.public_id,
+});
+// This temporary simulator owns its synthetic dataset. Production uses API providers.
+const serverExport: ExportProvider<TableQuery> = {
+  capabilities: { ...fixtureExport.capabilities, execution: 'server' },
+  async start(request) {
+    let tick = 0,
+      cancelled = false,
+      partial = operationOutcome.value;
+    const operation = {
+      publicId: 'review-operation',
+      async poll(signal: globalThis.AbortSignal) {
+        signal.throwIfAborted();
+        if (cancelled) return { state: 'cancelled' as const };
+        if (++tick < 4)
+          return { state: 'running' as const, progress: tick * 25 };
+        if (partial)
+          return {
+            state: 'partial' as const,
+            succeeded: 2,
+            failed: 1,
+            error: { code: 'fixture_partial', message: '', retryable: true },
+          };
+        const result = await fixtureExport.start(request, signal);
+        if (result.kind !== 'download') throw new Error('Invalid fixture');
+        return { state: 'completed' as const, download: result.download };
+      },
+      async cancel() {
+        cancelled = true;
+      },
+      async retry() {
+        partial = false;
+        tick = 0;
+        return { kind: 'operation' as const, operation };
+      },
+    };
+    return { kind: 'operation', operation };
+  },
+};
+const bulkProvider: BulkProvider<TableQuery> = {
+  get actions() {
+    return [{ key: 'review', label: text('Test operacji', 'Test operation') }];
+  },
+  cancellation: true,
+  async start(request) {
+    let tick = 0,
+      cancelled = false;
+    const operation = {
+      publicId: 'review-bulk',
+      async poll() {
+        return cancelled
+          ? { state: 'cancelled' as const }
+          : ++tick < 4
+            ? { state: 'running' as const, progress: tick * 25 }
+            : {
+                state: 'completed' as const,
+                succeeded: selectionCount(request.selection),
+              };
+      },
+      async cancel() {
+        cancelled = true;
+      },
+    };
+    return { kind: 'operation', operation };
+  },
+};
+const printAdapters = {
+  client: createClientPrintAdapter({
+    rows: () => rows,
+    columns: () => exportColumns('client'),
+    tableColumns: () => columns.value,
+    rowKey: (row) => row.public_id,
+    title: () => text('Projekty', 'Projects'),
+  }),
+  server: createClientPrintAdapter({
+    rows: () => rows,
+    columns: () => exportColumns('server'),
+    tableColumns: () => columns.value,
+    rowKey: (row) => row.public_id,
+    title: () => text('Projekty — dane testowe', 'Projects — test data'),
+  }),
+};
 </script>
 <template>
   <div class="space-y-6">
@@ -113,6 +234,10 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
         }}
       </p>
       <div v-if="mode === 'server'" class="mb-4 flex flex-wrap gap-4">
+        <Checkbox
+          v-model="operationOutcome"
+          :label="text('Częściowy wynik eksportu', 'Partial export result')"
+        />
         <Checkbox
           v-model="fail"
           :label="text('Błąd pobierania', 'Request failure')"
@@ -139,7 +264,7 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
         :columns="columns"
         :row-key="(row) => row.public_id"
         :query="mode === 'client' ? localQuery : serverQuery"
-        :selected="mode === 'client' ? selected : serverSelected"
+        :selection="mode === 'client' ? selected : serverSelected"
         :page-sizes="[5, 10, 20]"
         selectable
         :caption="text('Projekty', 'Projects')"
@@ -150,10 +275,21 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
         @update:query="
           mode === 'client' ? (localQuery = $event) : (serverQuery = $event)
         "
-        @update:selected="
+        @update:selection="
           mode === 'client' ? (selected = $event) : (serverSelected = $event)
         "
       >
+        <template #bulk
+          ><TableActions
+            :provider="mode === 'client' ? localExport : serverExport"
+            :print-adapter="printAdapters[mode]"
+            :bulk-provider="bulkProvider"
+            :query="mode === 'client' ? localQuery : serverQuery"
+            :selection="mode === 'client' ? selected : serverSelected"
+            :columns="exportColumns(mode)"
+            :english="english"
+            filename="projekty"
+        /></template>
         <template #actions="{ row }"
           ><Button size="sm" variant="ghost" @click="result = row.name">{{
             text('Otwórz', 'Open')
@@ -163,7 +299,8 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
     </Card>
     <p role="status" class="text-sm text-muted">
       {{ text('Wybrane', 'Selected') }}:
-      {{ selected.length + serverSelected.length }} · {{ result }}
+      {{ selectionCount(selected) + selectionCount(serverSelected) }} ·
+      {{ result }}
     </p>
   </div>
 </template>

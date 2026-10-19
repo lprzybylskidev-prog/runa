@@ -177,3 +177,7 @@ For optimistic concurrency, multiple users may open the record. A stale write re
 ### Optional table-wide search
 
 The shared table provider transports its optional normalized search text as `filter[search]`, alongside ordinary allowlisted per-column filters, sort and pagination. Endpoints using this facility must explicitly validate/allow it and search only authorized fields/records before counting and paginating. Applications without a global search implementation disable it on both the frontend Table and API adapter. This contract does not create a backend search endpoint or fetch whole datasets.
+
+## Export and operation frontend contracts
+
+The optional UI facade provides typed explicit/all-matching selections, export scope/capabilities, BulkProvider and ExportOperation contracts plus createApiExportProvider over the shared HTTP wrapper. Applications own named API routes, authorization, request validation, query snapshots, idempotency, durable jobs/downloads, cancellation and partial retry semantics; no backend export/bulk endpoint is installed by UI foundations. Send selection metadata and exclusions, never fetch every server record/ID into the browser. Status/download/retry/cancel require the same server permission checks as start. See the [wire contract and limits](../../.agents/skills/frontend/references/tables.md#server-export-transport).

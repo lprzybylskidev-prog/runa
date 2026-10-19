@@ -6,6 +6,13 @@ import AppSelect from './AppSelect.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppPagination from './AppPagination.vue';
 import AppAsyncContent from './AppAsyncContent.vue';
+import type { RowSelection } from '../runa/ui/exports';
+import {
+  selectionContains,
+  selectionCount,
+  toggleSelection,
+  tableQueryIdentity,
+} from '../lib/tableSelection';
 import { normalizeTableColumns } from '../lib/tableViews';
 import type { TableColumnState } from '../runa/ui/tables';
 import { useTable } from '../composables/useTable';
@@ -21,6 +28,7 @@ const props = withDefaults(
     query: TableQuery;
     caption: string;
     selected?: readonly string[];
+    selection?: RowSelection<TableQuery> | undefined;
     selectable?: boolean;
     english?: boolean;
     searchable?: boolean;
@@ -30,6 +38,7 @@ const props = withDefaults(
     columnState: undefined,
     rows: () => [],
     provider: undefined,
+    selection: undefined,
     selected: () => [],
     selectable: false,
     english: false,
@@ -40,6 +49,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:query': [value: TableQuery];
   'update:selected': [value: string[]];
+  'update:selection': [value: RowSelection<TableQuery>];
   'column-widths': [value: Record<string, number>];
 }>();
 const slots = useSlots();
@@ -135,14 +145,45 @@ function sort(key: string) {
         : { key, direction: props.query.sort?.key === key ? 'desc' : 'asc' },
   });
 }
-function select(id: string, checked: boolean) {
-  emit(
-    'update:selected',
-    checked
-      ? [...new Set([...props.selected, id])]
-      : props.selected.filter((value) => value !== id),
-  );
+const effectiveSelection = computed<RowSelection<TableQuery>>(
+  () => props.selection ?? { mode: 'explicit', publicIds: props.selected },
+);
+const selectedCount = computed(() => selectionCount(effectiveSelection.value));
+const pageIds = computed(() => page.value?.rows.map(props.rowKey) ?? []);
+const pageChecked = computed(() => {
+  const count = pageIds.value.filter((id) =>
+    selectionContains(effectiveSelection.value, id),
+  ).length;
+  return count === 0 ? false : count === pageIds.value.length ? true : null;
+});
+const selectionNotice = ref(false);
+function updateSelection(value: RowSelection<TableQuery>) {
+  emit('update:selection', value);
+  if (value.mode === 'explicit') emit('update:selected', [...value.publicIds]);
 }
+function select(id: string, checked: boolean) {
+  selectionNotice.value = false;
+  updateSelection(toggleSelection(effectiveSelection.value, [id], checked));
+}
+function selectMatching() {
+  if (page.value?.counts !== 'exact' || page.value.matching === null) return;
+  selectionNotice.value = false;
+  updateSelection({
+    mode: 'all-matching',
+    query: JSON.parse(JSON.stringify({ ...props.query, page: 1 })),
+    matchingCount: page.value.matching,
+    excludedPublicIds: [],
+  });
+}
+watch(
+  () => tableQueryIdentity(props.query),
+  () => {
+    if (effectiveSelection.value.mode === 'all-matching') {
+      selectionNotice.value = true;
+      updateSelection({ mode: 'explicit', publicIds: [] });
+    }
+  },
+);
 function changePage(value: number) {
   emit('update:query', { ...props.query, page: value });
 }
@@ -184,8 +225,41 @@ function changePage(value: number) {
         </div>
       </slot>
     </div>
+    <div
+      v-if="selectable && selection !== undefined"
+      class="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2 text-xs"
+    >
+      <span role="status"
+        >{{ text('Wybrane', 'Selected') }}: {{ selectedCount }}</span
+      >
+      <AppButton
+        size="sm"
+        :disabled="loading || page?.counts !== 'exact' || !page?.matching"
+        @click="selectMatching"
+        >{{
+          text('Zaznacz wszystkie wyniki', 'Select all matching')
+        }}</AppButton
+      >
+      <AppButton
+        size="sm"
+        :disabled="!selectedCount"
+        @click="updateSelection({ mode: 'explicit', publicIds: [] })"
+        >{{ text('Wyczyść wybór', 'Clear selection') }}</AppButton
+      >
+      <span v-if="selectionNotice" role="status" class="text-muted">{{
+        text(
+          'Wybór wszystkich wyników wyczyszczono po zmianie zapytania.',
+          'All-matching selection cleared after the query changed.',
+        )
+      }}</span>
+    </div>
     <div v-if="$slots.bulk" class="p-4">
-      <slot name="bulk" :selected="selected" />
+      <slot
+        name="bulk"
+        :selected="selected"
+        :selection="effectiveSelection"
+        :count="selectedCount"
+      />
     </div>
     <div v-if="state !== 'success'" class="p-4">
       <AppAsyncContent
@@ -237,7 +311,17 @@ function changePage(value: number) {
               scope="col"
               class="w-12 px-3 py-1 align-middle"
             >
-              <span class="sr-only">{{ text('Wybór', 'Selection') }}</span>
+              <AppCheckbox
+                hide-label
+                compact
+                :model-value="pageChecked"
+                :label="text('Zaznacz stronę', 'Select page')"
+                @update:model-value="
+                  updateSelection(
+                    toggleSelection(effectiveSelection, pageIds, $event),
+                  )
+                "
+              />
             </th>
             <th
               v-for="column in visibleColumns"
@@ -288,7 +372,7 @@ function changePage(value: number) {
             :key="rowKey(row)"
             class="border-b border-line last:border-0 hover:bg-[var(--runa-surface-hover)]"
             :class="
-              selected.includes(rowKey(row))
+              selectionContains(effectiveSelection, rowKey(row))
                 ? 'bg-[var(--runa-primary-subtle)]'
                 : ''
             "
@@ -297,7 +381,9 @@ function changePage(value: number) {
               <AppCheckbox
                 hide-label
                 compact
-                :model-value="selected.includes(rowKey(row))"
+                :model-value="
+                  selectionContains(effectiveSelection, rowKey(row))
+                "
                 :label="`${text('Wybierz', 'Select')} ${rowKey(row)}`"
                 @update:model-value="select(rowKey(row), $event)"
               />

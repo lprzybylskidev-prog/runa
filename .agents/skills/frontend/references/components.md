@@ -185,7 +185,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 
 ### Table
 
-`Table` (`resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and explicit row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
+`Table` (`resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
 
 ### Nested semantic colors
 
@@ -198,3 +198,7 @@ Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statist
 ### Small field controls
 
 Select, TextInput and NumberInput accept size=sm (36px) and size=md (44px, unchanged default). Select sizes its trigger, popup options/search/actions consistently; TextInput sizes suffixes as well. TextInput hideLabel retains an associated visually hidden label for compact inline controls. NumberInput forwards its declared size to the text control. Use sm with sm Buttons in tables, toolbars and secondary view/test settings. Keep ordinary data-entry forms, touch-first MinimalLayout preferences and dialog primary actions at their established size. ReviewForms/ReviewSelection include standalone small examples; application-review toolbar and secondary review selectors use sm. Other specialized inputs retain their existing form sizes until a concrete compact use needs them.
+
+### TableActions and OperationPanel
+
+TableActions composes sm scope/orientation/export/print/bulk controls with the reusable OperationPanel and useOperation controller. Real bounded browser adapters and an optional API export provider are exported through @/runa/ui; no shell or backend jobs are installed. OperationPanel supports progress, permission errors, partial counts, retry/cancel and download. See [tables.md](tables.md) for contracts, bounds, server authorization/idempotency and notices. Both existing layouts were inspected: neither has provisional export/bulk controls to replace; the temporary table catalog demonstrates both client and simulated server integrations.
