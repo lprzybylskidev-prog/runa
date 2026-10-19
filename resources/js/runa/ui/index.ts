@@ -92,3 +92,11 @@ export { default as HiddenInput } from '../../components/AppHiddenInput.vue';
 export { default as TagsInput } from '../../components/AppTagsInput.vue';
 
 export type * from './selection';
+
+export type * from './advancedForms';
+export { formatMask, parseMaskedInput } from '../../lib/mask';
+export { default as MaskedInput } from '../../components/AppMaskedInput.vue';
+export { default as Wizard } from '../../components/AppWizard.vue';
+export { useDependentFields } from '../../composables/useDependentFields';
+export { useDirtyGuard } from '../../composables/useDirtyGuard';
+export { useWizard } from '../../composables/useWizard';

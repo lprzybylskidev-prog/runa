@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ReviewAdvancedForms from './ReviewAdvancedForms.vue';
 import ReviewSelection from './ReviewSelection.vue';
 import ReviewAdditionalInputs from './ReviewAdditionalInputs.vue';
 import ReviewForms from './ReviewForms.vue';
@@ -27,6 +28,7 @@ const category = ref(
     'forms',
     'additional',
     'selection',
+    'advanced',
     'layouts',
     'data',
   ].includes(requestedCategory ?? '')
@@ -48,6 +50,7 @@ const categories = [
     label: 'Ładowanie i statystyki / Loading and statistics',
   },
   { value: 'forms', label: 'Formularze i pola / Forms and fields' },
+  { value: 'advanced', label: 'Formularze zaawansowane / Advanced forms' },
   { value: 'selection', label: 'Wybór / Selection' },
   { value: 'additional', label: 'Dodatkowe pola / Additional inputs' },
   { value: 'layouts', label: 'Układy / Layouts' },
@@ -114,7 +117,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–14 · Komponenty / Components
+        RM-2026-004 · 8–15 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select
@@ -127,6 +130,10 @@ const categories = [
         <template v-if="category === 'controls'">
           <ReviewControls :english="t('language') !== 'Język'" />
         </template>
+        <ReviewAdvancedForms
+          v-else-if="category === 'advanced'"
+          :english="t('language') !== 'Język'"
+        />
         <ReviewSelection
           v-else-if="category === 'selection'"
           :english="t('language') !== 'Język'"

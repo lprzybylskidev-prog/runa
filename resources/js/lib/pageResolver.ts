@@ -34,15 +34,76 @@ export function createPageResolver(
   return { resolve };
 }
 
-export function usePageResolver(pages: readonly PageDescriptor[]) {
+export function usePageResolver(
+  pages: readonly PageDescriptor[],
+  options: { beforeLeave?: (href: string) => boolean | Promise<boolean> } = {},
+) {
   const resolver = createPageResolver(pages);
   const current = shallowRef(resolver.resolve(window.location.href));
   function refresh() {
     current.value = resolver.resolve(window.location.href);
   }
-  window.addEventListener('popstate', refresh);
-  onScopeDispose(() => window.removeEventListener('popstate', refresh));
-  function navigate(href: string, event?: MouseEvent): boolean {
+  const marker = '__runa_page_position';
+  let position = Number.isInteger(window.history.state?.[marker])
+    ? Number(window.history.state[marker])
+    : 0;
+  if (options.beforeLeave)
+    window.history.replaceState(
+      { ...window.history.state, [marker]: position },
+      '',
+      window.location.href,
+    );
+  let generation = 0;
+  let restoring = false;
+  let disposed = false;
+  async function permitted(href: string) {
+    try {
+      return Boolean(await options.beforeLeave?.(href));
+    } catch {
+      return false;
+    }
+  }
+  async function pop(event: globalThis.PopStateEvent) {
+    if (!options.beforeLeave) {
+      refresh();
+      return;
+    }
+    if (restoring) {
+      restoring = false;
+      refresh();
+      return;
+    }
+    const target = event.state?.[marker];
+    // Entries made outside this resolver require a document navigation adapter.
+    if (!Number.isInteger(target)) {
+      refresh();
+      return;
+    }
+    const request = ++generation;
+    const href = window.location.href;
+    if (await permitted(href)) {
+      if (!disposed && request === generation) {
+        position = target;
+        refresh();
+      }
+    } else if (!disposed && request === generation) {
+      const delta = position - target;
+      if (delta) {
+        restoring = true;
+        window.history.go(delta);
+      }
+    }
+  }
+  window.addEventListener('popstate', pop);
+  onScopeDispose(() => {
+    disposed = true;
+    generation++;
+    window.removeEventListener('popstate', pop);
+  });
+  function navigate(
+    href: string,
+    event?: MouseEvent,
+  ): boolean | Promise<boolean> {
     if (
       event &&
       (event.defaultPrevented ||
@@ -55,9 +116,20 @@ export function usePageResolver(pages: readonly PageDescriptor[]) {
       return false;
     if (!resolver.resolve(href)) return false;
     event?.preventDefault();
-    window.history.pushState(null, '', href);
-    refresh();
-    return true;
+    function commit() {
+      window.history.pushState(
+        options.beforeLeave ? { [marker]: ++position } : null,
+        '',
+        href,
+      );
+      refresh();
+      return true;
+    }
+    if (!options.beforeLeave) return commit();
+    const request = ++generation;
+    return permitted(href).then((allowed) =>
+      allowed && !disposed && request === generation ? commit() : false,
+    );
   }
   return { current, navigate, resolve: resolver.resolve };
 }
