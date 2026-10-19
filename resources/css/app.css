@@ -1160,6 +1160,10 @@ button.app-button.shell-avatar-button {
   font-size: 13px;
   cursor: pointer;
 }
+.runa-choice-row.runa-choice-compact {
+  min-height: 32px;
+  padding: 6px;
+}
 .runa-choice-row:has(input:focus-visible) {
   border-color: var(--runa-focus-ring);
   background: var(--runa-surface-hover);

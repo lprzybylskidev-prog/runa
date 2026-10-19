@@ -149,7 +149,7 @@ const provider: TableProvider<RecordRow> = async (query, signal) => {
             /></div
         ></template>
         <template #actions="{ row }"
-          ><Button variant="ghost" @click="result = row.name">{{
+          ><Button size="sm" variant="ghost" @click="result = row.name">{{
             text('Otwórz', 'Open')
           }}</Button></template
         >

@@ -24,7 +24,10 @@ function change(event: Event) {
     :error="error"
     :required="required"
     ><template #label /><template #default="{ id, describedBy, invalid }"
-      ><label class="runa-choice-row" :for="id"
+      ><label
+        class="runa-choice-row"
+        :class="{ 'runa-choice-compact': compact }"
+        :for="id"
         ><input
           :id="id"
           v-bind="$attrs"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { ControlSize } from '../runa/ui/controls';
 import AppButton from './AppButton.vue';
 const props = defineProps<{
   modelValue: number;
@@ -8,6 +9,7 @@ const props = defineProps<{
   previousLabel: string;
   nextLabel: string;
   disabled?: boolean;
+  size?: ControlSize;
 }>();
 const emit = defineEmits<{ 'update:modelValue': [value: number] }>();
 const count = computed(() =>
@@ -27,6 +29,7 @@ const visible = computed(() =>
 <template>
   <nav :aria-label="label" class="flex flex-wrap items-center gap-1">
     <AppButton
+      :size="size ?? 'md'"
       :disabled="disabled || page === 1"
       :aria-label="previousLabel"
       @click="emit('update:modelValue', page - 1)"
@@ -38,6 +41,7 @@ const visible = computed(() =>
         class="px-1 text-muted"
         >…</span
       ><AppButton
+        :size="size ?? 'md'"
         :disabled="disabled"
         :aria-label="`${label}: ${value}`"
         :aria-current="page === value ? 'page' : undefined"
@@ -46,6 +50,7 @@ const visible = computed(() =>
         >{{ value }}</AppButton
       ></template
     ><AppButton
+      :size="size ?? 'md'"
       :disabled="disabled || page === count"
       :aria-label="nextLabel"
       @click="emit('update:modelValue', page + 1)"

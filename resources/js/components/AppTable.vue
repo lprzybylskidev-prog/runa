@@ -79,7 +79,7 @@ function changePage(value: number) {
   <div class="min-w-0 rounded border border-line bg-surface text-sm">
     <div
       v-if="$slots.filters"
-      class="border-b border-line bg-[var(--runa-surface-raised)] p-4"
+      class="border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"
     >
       <slot
         name="filters"
@@ -121,14 +121,18 @@ function changePage(value: number) {
           class="border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
         >
           <tr>
-            <th v-if="selectable" scope="col" class="w-12 p-3">
+            <th
+              v-if="selectable"
+              scope="col"
+              class="w-12 px-3 py-1 align-middle"
+            >
               <span class="sr-only">{{ text('Wybór', 'Selection') }}</span>
             </th>
             <th
               v-for="column in columns"
               :key="column.key"
               scope="col"
-              class="px-4 py-3 whitespace-nowrap"
+              class="px-4 py-1 align-middle whitespace-nowrap"
               :aria-sort="
                 query.sort?.key === column.key
                   ? query.sort.direction === 'asc'
@@ -143,6 +147,8 @@ function changePage(value: number) {
                   page?.capabilities.sort.includes(column.key)
                 "
                 variant="ghost"
+                size="sm"
+                class="-ml-[13px]"
                 @click="sort(column.key)"
                 >{{ column.label }}
                 <span aria-hidden="true">{{
@@ -155,7 +161,11 @@ function changePage(value: number) {
               >
               <template v-else>{{ column.label }}</template>
             </th>
-            <th v-if="$slots.actions" scope="col" class="px-4 py-3">
+            <th
+              v-if="$slots.actions"
+              scope="col"
+              class="px-4 py-1 align-middle"
+            >
               <span class="sr-only">{{ text('Działania', 'Actions') }}</span>
             </th>
           </tr>
@@ -171,9 +181,10 @@ function changePage(value: number) {
                 : ''
             "
           >
-            <td v-if="selectable" class="p-3">
+            <td v-if="selectable" class="px-3 py-1 align-middle">
               <AppCheckbox
                 hide-label
+                compact
                 :model-value="selected.includes(rowKey(row))"
                 :label="`${text('Wybierz', 'Select')} ${rowKey(row)}`"
                 @update:model-value="select(rowKey(row), $event)"
@@ -182,7 +193,7 @@ function changePage(value: number) {
             <td
               v-for="column in columns"
               :key="column.key"
-              class="px-4 py-3 align-top"
+              class="px-4 py-1 align-middle"
             >
               <slot
                 :name="`cell-${column.key}`"
@@ -191,7 +202,7 @@ function changePage(value: number) {
                 >{{ column.value(row) ?? '—' }}</slot
               >
             </td>
-            <td v-if="$slots.actions" class="px-4 py-3">
+            <td v-if="$slots.actions" class="px-4 py-1 align-middle">
               <slot name="actions" :row="row" />
             </td>
           </tr>
@@ -199,7 +210,7 @@ function changePage(value: number) {
       </table>
     </div>
     <div
-      class="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-[var(--runa-surface-raised)] p-4"
+      class="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-[var(--runa-surface-raised)] px-4 py-3"
     >
       <span role="status" class="text-muted"
         >{{ text('Wyniki', 'Results') }}: {{ page?.matching ?? '—'
@@ -209,6 +220,7 @@ function changePage(value: number) {
       >
       <AppPagination
         v-if="pages !== null"
+        size="sm"
         :model-value="query.page"
         :pages="Math.max(pages, query.page)"
         :label="text('Strona', 'Page')"
@@ -219,11 +231,13 @@ function changePage(value: number) {
       />
       <div v-else class="flex items-center gap-2">
         <AppButton
+          size="sm"
           :disabled="loading || query.page <= 1"
           @click="changePage(query.page - 1)"
           >{{ text('Poprzednia', 'Previous') }}</AppButton
         ><span>{{ query.page }}</span
         ><AppButton
+          size="sm"
           :disabled="loading || !page?.hasNext"
           @click="changePage(query.page + 1)"
           >{{ text('Następna', 'Next') }}</AppButton
