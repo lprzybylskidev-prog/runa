@@ -24,6 +24,9 @@ function csrfToken(): string | null {
 export async function request(
   path: string,
   options: RequestInit = {},
+  query: Readonly<
+    Record<string, string | number | boolean | null | undefined>
+  > = {},
 ): Promise<unknown> {
   if (!path.startsWith('/') || path.startsWith('//') || /[\\?#]/.test(path)) {
     throw new Error('Use a relative API resource path.');
@@ -35,7 +38,13 @@ export async function request(
   const token = csrfToken();
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && token)
     headers.set('X-XSRF-TOKEN', token);
-  const response = await fetch(`/api${path}`, {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== null && value !== undefined)
+      params.append(key, String(value));
+  }
+  const suffix = params.size ? `?${params}` : '';
+  const response = await fetch(`/api${path}${suffix}`, {
     ...options,
     headers,
     credentials: 'same-origin',

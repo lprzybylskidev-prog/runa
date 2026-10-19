@@ -24,11 +24,57 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_debug_check_allows_only_reviewed_output_statements(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'bin').mkdir()
+            shutil.copy(ROOT / 'bin/quality-check', root / 'bin/quality-check')
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            sources = {
+                'resources/views/errors/page.php': 'echo strtr($template, [',
+                'tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
+            }
+            for name, statement in sources.items():
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('<?php\n' + statement + '\n')
+            command = [sys.executable, str(root / 'bin/quality-check'), 'debug-residue']
+            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
+            for name, statement in sources.items():
+                for content in [statement + " dd('debug');", statement + "\necho 'debug';", "var_dump($value);"]:
+                    with self.subTest(name=name, content=content):
+                        (root / name).write_text('<?php\n' + content + '\n')
+                        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+                (root / name).write_text('<?php\n' + statement + '\n')
+            other = root / 'app/Other.php'
+            other.parent.mkdir()
+            other.write_text('<?php\n' + sources['resources/views/errors/page.php'] + '\n')
+            self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
     def test_actual_host_production_gates_share_the_operation_group(self):
         definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
         nodes = quality.select(definition, ['production', 'security'])
         for key in ('production-compose', 'production-build', 'production-health', 'production-ai-isolation', 'repository-container-scan'):
             self.assertEqual(nodes[key]['exclusive_group'], 'production-simulation', key)
+
+    def test_repository_scan_waits_for_selected_artifact_builds(self):
+        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        for areas in (['security'], ['security', 'frontend'], ['security', 'production'], ['security', 'frontend', 'production']):
+            with self.subTest(areas=areas):
+                nodes = quality.select(definition, areas)
+                dependencies = nodes['repository-container-scan']['depends_on']
+                self.assertEqual('frontend-build' in dependencies, 'frontend' in areas)
+                self.assertEqual('frontend-render-diagnostics' in dependencies, 'frontend' in areas)
+                self.assertEqual('production-build' in dependencies, 'production' in areas)
+        with tempfile.TemporaryDirectory() as folder:
+            build = node('frontend-build', 'false')
+            scan = node('repository-container-scan', 'true')
+            scan['depends_on_if_selected'] = ['frontend-build']
+            selected = quality.select({'base': [build, scan], 'impact_areas': {}, 'final': []}, [])
+            state = {'status': 'running', 'steps': {key: dict(value, status='pending') for key, value in selected.items()}}
+            self.assertEqual(quality.execute(Path(folder), state), 1)
+            self.assertEqual(state['steps']['repository-container-scan']['status'], 'blocked')
+            self.assertFalse((Path(folder) / 'repository-container-scan.log').exists())
 
     def test_host_coordinator_delegates_only_application_steps(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=False), patch.object(quality, 'app_command', return_value=['true']) as delegate:

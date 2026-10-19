@@ -1,6 +1,6 @@
 # Runa Color Palette
 
-Status: approved by the user on 2026-10-17 as the starting palette for both themes. Dark mode retains its existing base; light mode is revised toward cool lavender/indigo surfaces. The temporary root view now uses these values; the user accepted the rendered root view on 2026-10-18.
+Status: approved by the user on 2026-10-17 as the starting palette for both themes. Dark mode retains its existing base; light mode is revised toward cool lavender/indigo surfaces. The preserved root welcome view uses these values; the user accepted the rendered root view on 2026-10-18.
 
 Related: [visual direction](visual-direction.md), [REF-001](references/REF-001-dark-palette.webp).
 
@@ -107,7 +107,7 @@ Selected/active navigation combines a subtle surface, selected text and a solid 
 
 Keep orchid-to-lavender and cyan-to-blue transitions. Render them as soft decorative washes, blending the endpoint colors over the theme surface at 24% opacity in light and 28% in dark, instead of full-strength neon fills. The preview shows these composited gradients. This changes gradient treatment, not the existing dark endpoint colors. Gradient foregrounds require their own contrast verification.
 
-Large cropped page circles use the background as their base: violet/rose/cyan opacities are 10%/8%/8% in light and 20%/14%/16% in dark. Use broad radial fades and soft edges rather than sharp color transitions. Preview includes a suggested backdrop composition, not final geometry.
+The `circle-*` names are historical palette source names, not instructions to draw circles. The accepted page backdrop uses broad diffuse corner fades, a technical grid and static constellations; rings/arcs/circles are superseded. Follow `visual-direction.md` and the actual AppBackdrop theme values. The SVG palette preview records color proposals rather than current backdrop geometry.
 
 Overlay source opacity: light 28%, dark 52%. Shadow source opacity: light 8%, dark 20%. Swatches show their resolved appearance over surface; actual overlays blend with content underneath. Shadows remain delicate.
 

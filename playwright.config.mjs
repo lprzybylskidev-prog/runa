@@ -7,7 +7,13 @@ export default defineConfig({
   workers: 1,
   forbidOnly: true,
   retries: 0,
-  use: { baseURL: 'http://nginx-test:8080', trace: 'retain-on-failure' },
+  webServer: {
+    command: 'node tools/testing/browser-harness.mjs',
+    url: 'http://127.0.0.1:4178/__fixtures/ready',
+    reuseExistingServer: false,
+    timeout: 120000,
+  },
+  use: { baseURL: 'http://127.0.0.1:4178', trace: 'retain-on-failure' },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },

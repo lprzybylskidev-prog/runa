@@ -108,7 +108,7 @@ Final verification rejects accidental residue including common forms such as:
 - `debugger`,
 - temporary breakpoints/hacks,
 
-unless the occurrence is intentionally permanent and justified.
+unless the occurrence is intentionally permanent and justified. The debug checker recognizes only the exact reviewed native-error HTML rendering statement and browser-fixture JSON output statement at their specific paths. Other output/debug expressions in those files or identical text elsewhere still fail; isolated quality contracts verify this boundary.
 
 ## TODO/FIXME/HACK
 
@@ -150,7 +150,7 @@ Before final verification, commit implementation/cleanup so the gate checks a co
 
 ## Runner implementation
 
-The runner executes at most four ready nodes concurrently, preserving definition order for scheduling. `exclusive_group` serializes all members; frontend unit tests also share the test wrapper's lock and therefore belong to `testing-state`. Dependencies are selected as a union, deduplicated by ID and validated for missing nodes, conflicts and cycles before execution. Optional dependencies apply only when both steps are selected. Final nodes wait for every selected base/impact node.
+The runner executes at most four ready nodes concurrently, preserving definition order for scheduling. `exclusive_group` serializes all members; frontend unit tests also share the test wrapper's lock and therefore belong to `testing-state`. Dependencies are selected as a union, deduplicated by ID and validated for missing nodes, conflicts and cycles before execution. Optional dependencies apply only when both steps are selected. The repository/container scan waits for selected production/frontend builds and frontend render diagnostics (which depend on browser tests): frontend builds replace generated native-error output, and browser tests replace prior report output. Scanning these writers concurrently can encounter disappearing files. Generated output remains scanned; no vulnerability or secret check is excluded. Final nodes wait for every selected base/impact node.
 
 Commands execute as argument arrays without a shell. Missing commands fail with exit code 127; failed dependencies block their descendants while unrelated checks continue. Nonzero warning steps remain visible in evidence and block their dependents; warnings require release-report justification. Missing or unimplemented commands fail closed; command existence alone does not prove acceptance.
 

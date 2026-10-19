@@ -215,7 +215,8 @@ impact_areas:
       execution_context: host
       exclusive_group: production-simulation
       depends_on: [configuration]
-      depends_on_if_selected: [production-build]
+      depends_on_if_selected:
+        [production-build, frontend-build, frontend-render-diagnostics]
       command: ./bin/security trivy
       severity: hard_fail
 

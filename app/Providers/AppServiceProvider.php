@@ -9,6 +9,7 @@ use App\Console\Commands\Database\GuardedRollbackCommand;
 use App\Console\Commands\Database\GuardedWipeCommand;
 use App\Database\IdentityMigrationRepository;
 use App\Support\ConfigurationValidator;
+use App\Support\MailBranding;
 use App\Support\RuntimeHeartbeat;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Console\Migrations\FreshCommand;
@@ -18,6 +19,7 @@ use Illuminate\Database\Console\Migrations\RollbackCommand;
 use Illuminate\Database\Console\WipeCommand;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\WorkerIdle;
 use Illuminate\Support\Facades\Event;
@@ -45,6 +47,9 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(ConfigurationValidator $validator, RuntimeHeartbeat $heartbeat): void
     {
+        $this->loadViewsFrom(resource_path('views/runa-mail'), 'runa-mail');
+
+        Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
         Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));
         if (! $this->app->runningInConsole() && ($errors = $validator->errors()) !== []) {

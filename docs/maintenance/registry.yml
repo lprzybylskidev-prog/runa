@@ -507,3 +507,23 @@ entries:
     review_every_days: 180
     used_by:
       - frontend
+
+  - id: pdfmake
+    package: pdfmake
+    type: library
+    name: pdfmake
+    url: https://github.com/bpampuch/pdfmake
+    version: 0.3.12
+    last_reviewed: 2026-10-19
+    review_every_days: 90
+    source: resources/licenses/export-dependencies.txt
+
+  - id: write-excel-file
+    package: write-excel-file
+    type: library
+    name: write-excel-file
+    url: https://github.com/catamphetamine/write-excel-file
+    version: 4.1.1
+    last_reviewed: 2026-10-19
+    review_every_days: 90
+    source: resources/licenses/export-dependencies.txt

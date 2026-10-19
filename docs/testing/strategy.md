@@ -245,3 +245,42 @@ docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compos
 ```
 
 This explicit host lifecycle keeps Docker sockets out of the devcontainer. E2E uses one worker because all browser projects share one testing endpoint. Each test gets a fresh browser context. Critical coverage checks independent API health, responsive overflow, compact PL/EN and system/light/dark controls, preference persistence, opaque loading-cover sequencing, focus restoration, tooltip dismissal and unexpected console/page errors. HTTP-client failure behavior remains covered by frontend unit contracts; the root intentionally has no connection/retry panel. Failure traces live in ignored `artifacts/playwright/results/`. `tools/testing/frontend.mjs` remains the broader visual diagnostic and also targets the isolated testing endpoint.
+
+## UI foundations and isolated browser tests
+
+Public UI imports are exercised by `tests/frontend/public-ui.test.ts` and compile-checked consumers. `tools/testing/ui-boundaries.mjs` bundles the real production entry and a public Table/ConfirmDialog consumer in memory: production must contain no retired review or test modules; components must not implicitly initialize layouts, routing or preferences. Docker context excludes tests/tools/.runtime and legacy public/ui-review output. `RetiredReviewTest` verifies that application routes have no previews/fixtures in local/testing/staging/production and former URLs return real 404s. No environment flag restores them.
+
+Before browser checks, build the application/native error renderer:
+
+```sh
+./bin/pnpm run build
+./bin/test e2e --critical
+```
+
+The normal E2E wrapper first finalizes static emergency documents with `php resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The normal test command uses isolated testing Nginx/PHP-FPM. Playwright owns `tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
+
+The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored artifacts/playwright; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against canonical VERSION.
+
+### Layouts, forms and interactions
+
+Frontend tests cover public primitive/identity contracts, independent reactive scopes, safe URLs/logo fallback, footer options, versioned preference migration/denial/quota/isolation/reset, exact-path resolution and optional workspace states. Browser application tests exercise direct URL/history/refresh, sidebar scroll/collapse/groups, tooltip positioning, sticky header and scrolling toolbar, mobile focus trapping/Escape/outside dismissal, top-navigation overflow, user popovers and denied storage. Synthetic modules remain test fixtures, not application routes.
+
+Form/unit scenarios cover controlled submission/validation, field/error associations, exact decimals, temporal/DST/date-only boundaries, file limits, masks/cursor/IME, dependent-field cancellation, dirty guards, Wizard validation/draft retention, layered dialogs and toast/tooltip ownership. Providers and features retain server authorization/integrity responsibility.
+
+### Mail and native errors
+
+MailLayoutTest sends real messages through Laravel’s array transport, checking standard Markdown/notification defaults, multipart/alternative, related CID branding, PL/EN, explicit/automatic text, independent versions, escaping, HTTPS/missing/unsafe image inputs, namespaced overrides and footer visibility. Test-only mail/browser templates live under tests/Fixtures; AppServiceProvider registers only the production runa-mail namespace. Browser email checks cover no-JavaScript responsive HTML, long/blocked images, real text/MIME attachments and a public action URL. Browser engines do not certify Outlook/Gmail/Apple Mail rendering.
+
+HttpErrorsTest registers synthetic failures inside the test process and covers six statuses in PL/EN, unknown paths, API/JSON negotiation, Retry-After/request IDs, identity escaping and database/build-asset failure without sensitive exception detail. Browser errors cover actual kernel statuses, no-JavaScript 404/503 responsive/theme matrices, shared MinimalLayout artwork, GET preference controls and generated standalone emergency output. These tests do not prove production Nginx fallback: retain the separate host `tools/testing/error-fallback-host.py` gate and production isolation checks. Favicon shape/dimensions and native asset contracts remain permanent.
+
+### Tables and exports
+
+Table/client/server/personalization tests cover counts, paging/filter/sort/search, stale/cancelled replies, encoded provider transport, stable selection, query snapshots, widths/order/visibility and saved/default views. Browser gestures use real mouse/native drag, waiting for transient width-error feedback to leave before measuring geometry; keyboard reorder remains covered. Export tests verify actual CSV/XLSX/PDF bytes, formulas/types, Unicode/pagination/orientation, explicit/all-matching/exclusions, bounded providers, cancellation/retry/partial progress/authorization feedback and isolated uniform print rules. Server jobs/permissions remain application-owned; no domain API or external service is added.
+
+### Integrated semantics and component motion
+
+The independent StandaloneConsumer fixture composes forms, selections, tabs, confirmation, tables and exports without a layout/router/preference bootstrap; browser flows run with storage blocked. Its build is independent of scenario shell chunks. In-memory boundary checks and production Docker exclusions remain required.
+
+Integrated checks cover all optional shell combinations, ten component scenarios (layouts have their own matrix), normal/200%-equivalent reflow, duplicate IDs, labels/errors/accessible names, minimum control targets, 62 theme-token contrast pairs, keyboard/calendar/boolean/modal behavior, print and console/network cleanliness. 200% reflow uses a separate 720×450 CSS-pixel context at DPR 2, equivalent to a 1440×900 desktop layout/text scale, not native browser-menu zoom.
+
+Component motion tests cover Select exits/interrupted reopening, immediate inert/aria-hidden and focus return, natural-height disclosures at three viewport widths under normal/reduced motion, stable file/tag removal focus and Wizard draft retention with live reduced-motion cancellation. Timing is checked through rendered interactions/DOM, not screenshots alone. The accepted complete component audit and maintenance rules are in `.agents/skills/frontend/references/motion.md`.

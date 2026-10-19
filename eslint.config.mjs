@@ -24,7 +24,7 @@ export default ts.config(
     },
   },
   {
-    files: ['resources/**/*.{ts,vue}', 'tests/frontend/**/*.ts'],
+    files: ['resources/**/*.{ts,vue}', 'tests/frontend/**/*.{ts,vue}'],
     languageOptions: {
       globals: Object.fromEntries(
         [

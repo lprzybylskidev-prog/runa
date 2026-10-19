@@ -27,7 +27,7 @@ impact_areas:
 
 Establish protected Runa/platform versus customer application boundaries, one Artisan command vocabulary, bootstrap installation and safe GitHub-based platform updates. Reuse the functioning development and production toolchain rather than replacing it with a parallel installer.
 
-Planning-only draft. Requires [RM-2026-004](RM-2026-004-ui-foundations.md) closed, merged and released before activation/implementation. Its successor [RM-2026-006](RM-2026-006-module-framework.md) cannot begin until this roadmap is closed, merged and released. Refresh predecessor paths after their lifecycle moves.
+Planning-only draft. Requires [RM-2026-004](../active/RM-2026-004-ui-foundations.md) closed, merged and released before activation/implementation. Its successor [RM-2026-006](RM-2026-006-module-framework.md) cannot begin until this roadmap is closed, merged and released. Refresh predecessor paths after their lifecycle moves.
 
 Planned **0.3.0**, based on 0.2.0 from RM-004. Although architectural cleanup is substantial, install/update/integrity/identity are new features: `release_type: feature` increments minor under existing release rules. The platform remains pre-1.0 and this does not authorize a major bump. Document compatibility changes instead of declaring stable 1.0. Rebase the planned arithmetic on actual VERSION at activation without rewriting historical releases.
 

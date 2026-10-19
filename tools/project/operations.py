@@ -19,13 +19,13 @@ import production
 from runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
-WRITERS = ['nginx', 'queue', 'scheduler', 'app']
+WRITERS = ['queue', 'scheduler', 'app']
 SPARSE = ['/app/', '/bootstrap/', '/config/', '/database/', '/lang/', '/public/', '/resources/', '/routes/',
           '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/docs/project/state.yml',
           '/tools/testing/production-runtime.php', '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
           '/artisan', '/composer.json', '/composer.lock', '/package.json', '/pnpm-lock.yaml',
-          '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/VERSION',
+          '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/vite.errors.config.mjs', '/VERSION',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
           '/.env.prod.database.example', '/.env.prod.compose.example', '/.env.prod.backup.example']
 
@@ -107,6 +107,38 @@ def active_release():
 
 def artisan(args, release=None, **kwargs):
     return dc(['run', '--rm', '--no-deps', '-T', 'app', 'php', 'artisan', *args, '--no-interaction'], release, **kwargs)
+
+
+def http_maintenance(enabled, release=None):
+    # Dedicated shared directory: Nginx never needs session/cache/private-upload access.
+    program = ('$directory = "/workspace/storage/framework/maintenance"; '
+               'if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) { throw new RuntimeException("Cannot create HTTP maintenance directory."); } '
+               '$path = $directory . "/enabled"; ')
+    if enabled:
+        program += 'if (file_put_contents($path, "maintenance\\n", LOCK_EX) === false) { throw new RuntimeException("Cannot enable HTTP maintenance."); }'
+    else:
+        program += 'if (is_file($path) && !unlink($path)) { throw new RuntimeException("Cannot disable HTTP maintenance."); }'
+    dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'php', 'app', '-r', program], release)
+
+
+def pause_http(release=None):
+    http_maintenance(True, release)
+    # Keep the static serving process alive even when app DNS/PHP is absent.
+    dc(['up', '-d', '--no-build', '--no-deps', 'nginx'], release)
+    dc(['stop', *WRITERS], release)
+
+
+def resume_http(release=None, recreate=False):
+    dc(['up', '-d', '--wait', '--no-build', *(['--force-recreate'] if recreate else []),
+        'postgres', 'app', 'queue', 'scheduler'], release)
+    # Restore may replace the public-upload directory: refresh Nginx's subpath mount.
+    dc(['up', '-d', '--no-build', '--no-deps', *(['--force-recreate'] if recreate else []), 'nginx'], release)
+    http_maintenance(False, release)
+    try:
+        dc(['up', '-d', '--wait', '--no-build', '--no-deps', 'nginx'], release)
+    except BaseException:
+        http_maintenance(True, release)
+        raise
 
 
 def validate(release=None):
@@ -289,11 +321,11 @@ def deploy(target, simulation):
         atomic(STATE / 'in-progress.json', {'target': sha, 'previous': previous, 'started_at': stamp(), 'phase': 'startup-and-migrations'})
         mutation_started = True
         dc(['up', '-d', '--wait', '--no-build', 'postgres'], release)
-        dc(['stop', *WRITERS], previous['path'] if previous else release)
+        pause_http(release)
         artisan(['migrate', '--force'], release)
         artisan(['runa:seed', 'production', '--force'], release)
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
-        dc(['up', '-d', '--wait', '--no-build', '--force-recreate'], release)
+        resume_http(release, recreate=True)
         health(release, sparse=True)
         identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
                     'database_tree': tree_hash(sha), 'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}
@@ -307,12 +339,14 @@ def deploy(target, simulation):
         if not mutation_started:
             (ROOT / '.env.prod.compose').write_text(old_config)
         elif previous and previous['database_tree'] == tree_hash(sha):
+            http_maintenance(True, release)
             set_tag(previous['sha'])
-            dc(['up', '-d', '--wait', '--no-build', '--force-recreate'], previous['path'])
+            resume_http(previous['path'], recreate=True)
             health(previous['path'], sparse=True)
             (STATE / 'in-progress.json').unlink()
             print('Deployment FAILED; safely returned to previous application ' + previous['sha'] + '. Database migrations were not reversed.')
         else:
+            http_maintenance(True, release)
             print('Deployment FAILED after migrations may have started. Services may be stopped or unhealthy; inspect in-progress.json. No schema reversal was attempted.')
         raise
 
@@ -333,9 +367,13 @@ def rollback():
         (ROOT / '.env.prod.compose').write_text(old)
         raise
     atomic(STATE / 'in-progress.json', {'phase': 'rollback', 'target': previous['sha'], 'started_at': stamp()})
-    dc(['stop', *WRITERS], current['path'])
-    dc(['up', '-d', '--wait', '--no-build', '--force-recreate'], previous['path'])
-    health(previous['path'], sparse=True)
+    pause_http(current['path'])
+    try:
+        resume_http(previous['path'], recreate=True)
+        health(previous['path'], sparse=True)
+    except BaseException:
+        http_maintenance(True, previous['path'])
+        raise
     atomic(STATE / 'deployment.json', {'current': previous, 'previous': current})
     (STATE / 'in-progress.json').unlink()
     print('PASS: application rollback ' + current['sha'] + ' -> ' + previous['sha'] + '; database unchanged.')
@@ -381,7 +419,7 @@ def create_backup(protect=None):
     partial.mkdir(mode=0o700)
     atomic(STATE / 'in-progress.json', {'phase': 'backup', 'backup': name, 'started_at': stamp()})
     try:
-        dc(['stop', *WRITERS], release)
+        pause_http(release)
         with (partial / 'database.dump').open('wb') as stream:
             pg(['pg_dump', '-U', 'postgres', '-d', 'runa', '--format=custom', '--no-owner', '--no-acl'], release, stdout=stream)
         with (partial / 'storage.tar.gz').open('wb') as stream:
@@ -391,7 +429,7 @@ def create_backup(protect=None):
         verify_backup_files(partial, release)
         partial.rename(root / name)
     finally:
-        dc(['up', '-d', '--wait', '--no-build'], release)
+        resume_http(release)
         (STATE / 'in-progress.json').unlink()
     # Only prune complete, validated, named backups in this dedicated directory.
     candidates = sorted(p for p in root.iterdir() if re.fullmatch(r'backup-\d{8}T\d{12}Z', p.name) and p.is_dir() and not p.is_symlink())
@@ -466,7 +504,7 @@ def restore(name, confirmed):
         raise ValueError('Restore source expired during retention; use a higher retention setting and retry.')
     release = current['path']
     atomic(STATE / 'in-progress.json', {'phase': 'restore', 'backup': name, 'started_at': stamp()})
-    dc(['stop', *WRITERS], release)
+    pause_http(release)
     # Recreate only the explicitly named application DB. No down() or global volume operation.
     pg(['dropdb', '-U', 'postgres', '--force', 'runa'], release)
     pg(['createdb', '-U', 'postgres', '-O', 'runa', '-T', 'template0', 'runa'], release)
@@ -476,8 +514,12 @@ def restore(name, confirmed):
     dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'sh', 'app', '-c', 'test ! -L /workspace/storage/app && find /workspace/storage/app -mindepth 1 -delete'], release)
     with (path / 'storage.tar.gz').open('rb') as stream:
         dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/storage', '--no-same-owner', '-xzf', '-'], release, stdin=stream)
-    dc(['up', '-d', '--wait', '--no-build', '--force-recreate'], release)
-    health(release, sparse=True)
+    try:
+        resume_http(release, recreate=True)
+        health(release, sparse=True)
+    except BaseException:
+        http_maintenance(True, release)
+        raise
     (STATE / 'in-progress.json').unlink()
     print('PASS: database/storage restored and application healthy.')
 

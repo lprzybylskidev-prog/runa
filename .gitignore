@@ -14,3 +14,6 @@
 # Python tooling bytecode is generated locally.
 __pycache__/
 *.pyc
+/public/ui-review/
+/public/runa-error/
+/resources/views/errors/generated/

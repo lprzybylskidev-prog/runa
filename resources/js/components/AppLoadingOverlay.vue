@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSpinner from './AppSpinner.vue';
 import { nextTick, ref, watch } from 'vue';
 import type { CSSProperties } from 'vue';
 const props = defineProps<{ active: boolean; label: string }>();
@@ -44,7 +45,12 @@ const emit = defineEmits<{ covered: []; revealed: [] }>();
         aria-live="polite"
         :aria-label="label"
       >
-        <span class="loading-spinner" aria-hidden="true" />
+        <AppSpinner
+          class="loading-spinner"
+          :label="label"
+          size="lg"
+          decorative
+        />
         <span class="sr-only">{{ label }}</span>
       </div>
     </Transition>
@@ -62,15 +68,6 @@ const emit = defineEmits<{ covered: []; revealed: [] }>();
   color: var(--runa-primary-text);
   cursor: progress;
 }
-.loading-spinner {
-  width: 44px;
-  height: 44px;
-  border: 2px solid var(--loading-spinner-border, var(--runa-border));
-  border-top-color: currentColor;
-  border-right-color: currentColor;
-  border-radius: 50%;
-  animation: loading-spin 700ms linear infinite;
-}
 .screen-cover-enter-active,
 .screen-cover-leave-active {
   transition: opacity 340ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -83,15 +80,7 @@ const emit = defineEmits<{ covered: []; revealed: [] }>();
   opacity: 1;
   transition: none;
 }
-@keyframes loading-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .loading-spinner {
-    animation: none;
-  }
   .screen-cover-enter-active,
   .screen-cover-leave-active {
     transition: none;

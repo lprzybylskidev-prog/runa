@@ -13,6 +13,7 @@ Named routes are always required.
 Do not add meaningless wrappers such as `success: true`.
 
 Preferred conventions:
+
 - create: `201` with the created resource,
 - update: consistently return the updated resource with `200` or use `204` when no body is intentionally returned,
 - delete/no-content operation: `204`,
@@ -38,6 +39,7 @@ Errors contain a stable English machine code.
 User-facing messages are localized by the user-facing application layer. Technical details and stack traces belong in logs, not production responses.
 
 Use standard HTTP status semantics, including:
+
 - 400 bad request,
 - 401 unauthenticated,
 - 403 forbidden,
@@ -69,6 +71,7 @@ Potentially growing lists are paginated.
 Use a stable project-owned pagination contract rather than exposing raw Laravel paginator JSON.
 
 Validate:
+
 - page,
 - per-page,
 - sort,
@@ -87,6 +90,7 @@ Use bulk endpoints only when bulk work is a natural user/business action.
 Validate all public IDs and preconditions.
 
 Define semantics explicitly:
+
 - all-or-nothing, or
 - partial success with per-item results.
 
@@ -123,6 +127,7 @@ The exact roles/permissions model is intentionally deferred to the future author
 Production is same-origin by default.
 
 If CORS is required:
+
 - origins are explicit,
 - configuration comes from environment/config,
 - local development origins are not permitted in production,
@@ -141,6 +146,7 @@ User/organization timezone is a future business setting, not a reason to store a
 API numeric values are raw machine values. Frontend performs locale display formatting.
 
 Money is never represented as binary floating point:
+
 - use smallest integer units by default, or
 - use exact decimal/numeric when the business domain needs fractional precision beyond that model.
 
@@ -167,3 +173,11 @@ Rate limits target abuse-prone operations and are configured through config/env.
 Use a request/correlation ID through application logs and related jobs where useful. Validate a client-provided ID or generate one; do not log untrusted unlimited values.
 
 For optimistic concurrency, multiple users may open the record. A stale write returns a stable conflict code (for example `resource_conflict`) and the frontend preserves the draft and offers recovery. Exact token/diff design belongs to the relevant feature roadmap.
+
+### Optional table-wide search
+
+The shared table provider transports its optional normalized search text as `filter[search]`, alongside ordinary allowlisted per-column filters, sort and pagination. Endpoints using this facility must explicitly validate/allow it and search only authorized fields/records before counting and paginating. Applications without a global search implementation disable it on both the frontend Table and API adapter. This contract does not create a backend search endpoint or fetch whole datasets.
+
+## Export and operation frontend contracts
+
+The optional UI facade provides typed explicit/all-matching selections, export scope/capabilities, BulkProvider and ExportOperation contracts plus createApiExportProvider over the shared HTTP wrapper. Applications own named API routes, authorization, request validation, query snapshots, idempotency, durable jobs/downloads, cancellation and partial retry semantics; no backend export/bulk endpoint is installed by UI foundations. Send selection metadata and exclusions, never fetch every server record/ID into the browser. Status/download/retry/cancel require the same server permission checks as start. See the [wire contract and limits](../../.agents/skills/frontend/references/tables.md#server-export-transport).

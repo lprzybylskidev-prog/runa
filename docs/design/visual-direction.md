@@ -1,6 +1,6 @@
 # Runa Visual Direction
 
-Status: final root view and implemented visual direction explicitly accepted by the user on 2026-10-18; roadmap point 16 is complete. Future auth behavior and app/admin template implementation remain outside this scope.
+Status: root view and implemented visual direction accepted on 2026-10-18 under closed RM-2026-001, point 16. [Active RM-2026-004](../roadmaps/active/RM-2026-004-ui-foundations.md) now plans reusable UI/layouts. Planned requirements below describe the target, not delivered components; visual implementation has separate owner acceptance gates. Authentication and business/admin behavior remain deferred.
 
 Roadmap: [RM-2026-001, point 16](../roadmaps/closed/RM-2026-001-development-environment.md).
 
@@ -26,7 +26,7 @@ Original author/source URL: not supplied.
 
 - Use the image's dark-mode color direction: dark graphite/navy surfaces with purple, cool blue and turquoise accents. These are qualitative observations, not approved exact color tokens.
 - Make gradients more restrained than in the reference, appropriate for a business application. Gradients are welcome when subtle; the strong saturation and transitions shown are not the target intensity.
-- Use a gray background with large circular shapes and gentle gradients, including shapes cropped by the viewport edges. Implement this decorative background in CSS rather than as a raster background image.
+- The original circular-background proposal is superseded by the accepted grid, diffuse corner gradients and static constellations in “Background depth refinement” below. Reuse that CSS/SVG backdrop; do not restore page rings or circles.
 
 ### Explicit rejection
 
@@ -49,7 +49,7 @@ Original author/source URL: not supplied.
 ### Selected direction
 
 - Apply this reference only to authentication view layout: a single panel with content and a decorative section. The later approved reusable layout places content/forms on the left and the illustration on the right, matching the refined root preview.
-- Behind the entire authentication panel, use the gray circular CSS background selected from REF-001, adapted to the active theme.
+- Behind the panel, reuse the accepted CSS grid/gradient/constellation backdrop described below, adapted to the active theme.
 - Inside the decorative section, use an attractive background with a CSS-created decorative illustration. Abstract shapes similar to this reference are acceptable; the exact composition remains open.
 - Integrate the illustration with Runa's agreed palette and restrained gradients.
 
@@ -71,33 +71,37 @@ Original author/source URL: not supplied.
 
 Use the same shell design and navigation behavior for the user application and admin panel. Existing language conventions remain: Polish by default for the user application, English for admin.
 
-Use the background selected from REF-001 for both shells: a gray base with large circular shapes and restrained gradients, rendered in CSS and adapted to the active light/dark theme. REF-003 does not replace that background direction.
+Reuse the accepted grid, diffuse corner gradients and static constellations for both shells. The original REF-001 page circles are superseded; REF-003 does not select a different backdrop.
 
 - The sidebar contains module links. Every sidebar link has a Tabler icon.
-- At the top of the sidebar, display the Runa logo and application name. Use the user-supplied Runa mark through the shared RunaLogo component.
-- Support expanded and collapsed sidebar states with an explicit toggle. Expanded: show link icons and labels, plus logo and application name. Collapsed: retain link icons and the logo, hiding link labels and the application name.
+- At the top of the sidebar, display the Runa logo and application name. Use the user-supplied Runa mark through the shared RunaLogo component inside the same 42px square as MinimalLayout. Sidebar brand row and top header share a 64px height.
+- Support expanded and collapsed sidebar states with an explicit toggle before the top navigation. Sidebar group rows are disclosure buttons, not links with separate adjacent toggles; center their chevrons inside the control. Expanded: show link icons and labels, plus logo and application name. Collapsed: retain link icons and the logo, hiding link labels and the application name.
 - Collapsed links reveal their labels through a reusable, application-styled tooltip component. Do not rely on native browser `title` tooltips. Tooltips must also work on keyboard focus, and icon-only controls retain accessible names.
-- The top navigation displays the current module's additional links on the left, when that module has any. The sidebar selects the module; top links navigate within it.
+- The top navigation displays the current module's additional links on the left, when that module has any. Sidebar leaf links select the module; sidebar groups expand inline. Top groups use full disclosure buttons with centered chevrons and open separate raised cards below the trigger, teleported outside the nav scroller and over workspace content. Cards stay within viewport bounds, preserve the header height, and support outside/Escape dismissal and keyboard focus return.
 - At the right of the top navigation, show a circular user-initials control that opens a dropdown. Notifications, profile navigation and logout are future dropdown content; their functionality is not implemented merely by recording this design.
 - Other top-bar content from the reference, including search and separate notification controls, is not selected.
 
 ### Page structure
 
-Always place breadcrumbs at the top of the page content. Below them, preserve this order while omitting optional sections that the page does not have:
+Planned under RM-2026-004, superseding the earlier breadcrumbs-first order:
 
-1. Page statistics, when applicable.
-2. Filters, when applicable.
-3. The page's main content, such as a table, charts or forms.
+1. Heading, description and page actions.
+2. Breadcrumbs.
+3. Optional statistics, with a required user switch between global and filtered modes.
+4. Optional toolbar (including filters where relevant).
+5. Mandatory main content, with an optional supplementary panel.
+
+The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top header above the workspace stays visible with sticky positioning while the toolbar scrolls normally (latest owner point-3 correction, superseding the original nonsticky-top decision). Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors were implemented and visually accepted in point 3. The synthetic application scenarios are retained only in isolated tests; real modules/admin/authentication remain deferred.
 
 Do not copy dashboard content, cards, charts or their appearance from this reference. Its palette and typography are not selected; apply the separately agreed Runa visual direction.
 
 ### Footer
 
-Include a footer at the bottom of the shell with copyright information, a link to the user's GitHub and the application version. Additional footer content may be agreed later. Current shared footer uses “© {current year} Łukasz Przybylski”, the Runa repository at https://github.com/lprzybylskidev-prog/runa and the version read from root VERSION at build time.
+Point 2 implements the configurable dual-version footer for MinimalLayout, including `/`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`. Application and platform versions are independent identity fields; bundled defaults use actual root VERSION. Copyright/repository remain supplemental defaults. Each element and the entire footer can be configured/hidden; text/links and a custom footer slot are supported. The footer remains in document flow, near the viewport bottom on short pages and after long content. Point-2 rendered owner acceptance was recorded on 2026-10-18. Application integration was accepted in point 3 on 2026-10-18; email integration was visually accepted in point 4 on 2026-10-18 after aligning the brand tile and wordmark with MinimalLayout.
 
 ### Remaining scope
 
-Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Mobile navigation, top-link overflow and sidebar state persistence remain to be agreed. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
+Record a reusable shell for both application contexts; this does not authorize implementing business modules, authentication, permissions, notifications or profile functionality. Phone drawer behavior, top-link overflow and sidebar persistence were implemented and accepted under RM-2026-004 point 3 on 2026-10-18. The circular initials control is specifically selected despite the rejection of strongly rounded general component corners in REF-001.
 
 ## Icons
 
@@ -138,6 +142,8 @@ User decision (2026-10-17): application forms do not use built-in HTML/browser v
 
 Style browser autofill states, including saved credentials filled by the browser or a password manager, to match Runa's input surfaces, text, borders and focus treatment in both themes. Avoid browser-default autofill highlights that clash with the design. Preserve autocomplete and password-manager functionality; do not disable them to work around styling. Verify actual autofilled fields during rendered acceptance where browser support permits.
 
+Owner correction (2026-10-19, RM-2026-004 point 12): normalize app-owned text/numeric/textarea/select chrome with appearance:none. Replace the detached outer input-focus ring with a theme-colored border/inset indicator inside the control boundary; keep keyboard focus visible and retain the system focus outline in forced-colors mode. Autofill paints the current field surface/text, including readonly/disabled variants, without disabling autocomplete. Native browser/password-manager suggestion popups remain browser-owned; styling the closed control does not replace those workflows.
+
 Related baseline: [Frontend architecture — forms and validation](../architecture/frontend.md).
 
 ## Responsive design approach
@@ -152,6 +158,8 @@ User accepted (2026-10-17): use a moderately compact interface, with comfortable
 
 Use approximately 4px corner radii as the starting scale for ordinary components, consistent standard input/button heights and a smaller variant for table controls. Exact dimensions may be chosen during approved design implementation and reviewed in rendered UI. Preserve the explicitly selected circular user-initials control.
 
+Date/time/color picker requirement reaffirmed by the owner on 2026-10-19 (RM-2026-004 point 13): provide Runa-owned picker content and interaction, not merely a styled field opening a default browser picker. Reuse the palette, surfaces, shared buttons and floating layers; retain keyboard, touch, manual entry, clear actions and focus recovery. Forced-colors may use system focus/paint where necessary for accessibility. Browser-managed saved-credential suggestions and operating-system file selection remain separate platform interactions.
+
 ## Navigation behavior
 
 User accepted (2026-10-17): remember the sidebar's expanded/collapsed preference. On phones, present navigation as an opened-on-demand panel and keep module links accessible without requiring precise taps on small icons. Derive tablet behavior from available space. Storage failure must not prevent navigation.
@@ -164,17 +172,19 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 ## Implementation scope discussion
 
-Agreed first implementation scope (2026-10-17): as the last stage of roadmap point 16, redesign the existing root `/` dashboard to demonstrate the agreed general visual language. The root remains a temporary welcome view rather than functional authentication or an app/admin shell. Following subsequent user review, its split panel is now extracted as the reusable AuthLayout; do not apply REF-003's app/admin navigation template. Apply the approved palette, IBM Plex Mono, Tabler Icons, restrained CSS background/gradients, component styling, transitions, responsive and accessible behavior where relevant to the existing page.
+The accepted `/` welcome page consumes `MinimalLayout` directly and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the dual-version footer and the owner-requested compact illustration above content on narrow screens are approved root changes in this roadmap.
 
-The dashboard is temporary and expected to be removed soon. Keep the work proportionate, preserve its existing useful behavior and avoid adding business functionality or app/admin layouts. The user subsequently authorized extracting the current view as the reusable auth layout, without implementing authentication. Review the rendered result with the user and refine the visual decisions if needed. Technical verification alone does not complete point 16: explicit user acceptance of the generated view is required before closure.
+RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. The owner accepted the catalog and motion; temporary application review infrastructure is retired in point 22, preserving isolated test fixtures.
 
 ## Motion and transitions
+
+Application-shell motion implemented in RM-2026-004 point 3 (visually accepted by the owner on 2026-10-18): sidebar width/workspace offset and mobile slide/backdrop use 180ms ease-out; inline navigation groups and chevrons use 160ms; top-navigation and initials dropdown cards fade with 4px vertical travel over 140ms. Reduced-motion removes these transitions. State, focus and dismissal update immediately; closing dropdown contents become inert during their exit.
 
 User direction (2026-10-17): consider motion from the start of component design rather than adding it as a final polish pass. Runa is a business application: transitions should be subtle, purposeful and unobtrusive.
 
 Visual state changes should generally transition smoothly rather than jump abruptly. For example, hover changes to background, text, border or shadow should feel continuous. Apply the same principle where appropriate to focus/selected states, dropdowns and sidebar changes, without animating every element or adding decorative motion by default. Feedback must remain immediate; transitions must not delay actions or obscure state.
 
-Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Exact durations, easing and component-specific transitions remain to be established and checked in rendered UI; the implemented shared control transitions (160ms), tooltip fades (140ms), cover fades (340ms) and additional 500ms cover hold are accepted with the final root view.
+Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Point 21 uses the shell reference for shared popup/content changes (140ms, 2–4px travel), disclosures/chevrons/control colors (160ms), and retains immediate focus/state updates. Component-by-component decisions are maintained in `.agents/skills/frontend/references/motion.md`; this extension was visually accepted by the owner on 2026-10-19. The implemented shared control transitions (160ms), tooltip fades (140ms), cover fades (340ms) and additional 500ms cover hold are accepted with the final root view.
 
 ## Open decisions
 
@@ -182,12 +192,12 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Rendered validation of the approved palette, including gradient intensity.
 - Layout and the placement/visibility of decorative background around application surfaces.
 - Typography scale/weights (IBM Plex Mono selected), exact spacing/sizing and component appearance; approximately 4px ordinary radii and moderate density are accepted starting points.
-- Motion timings, easing and component-specific transition behavior.
+- Future motion changes beyond the accepted point-21 component baseline.
 - Responsive treatment of the decoration and shell.
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.
 - Flash-message timeout, stacking and detailed presentation.
-- Future additions to the accepted shared footer, when needed.
+- Rendered validation of the implemented configurable dual-version footer (point 2 accepted on 2026-10-18) in RM-2026-004.
 - Further component-specific theme validation as new views are implemented.
 - Future auth/app view implementation scope; the current root preview is accepted.
 
@@ -201,13 +211,13 @@ Root preview refinement: remove the visible application-connection/status block 
 
 Root artwork placement: the decorative illustration fills the entire right half of the outer panel, flush with its top, right and bottom edges, following the split-panel composition clarified using REF-002. Padding belongs only to the text section; the illustration is not an inset card. On narrow screens it becomes a full-width lower section. This specific root layout refinement does not add auth behavior.
 
-## Reusable auth layout
+## Reusable minimal layout
 
-User decision (2026-10-17): preserve the current split-panel view as `resources/js/layouts/AuthLayout.vue`, reused immediately by the temporary root page and later by auth pages. It owns the backdrop, brand, compact preference controls, skip/main structure, illustration and footer. Its default slot supplies page/form content on the left and exposes the current translator as `t`; the CSS illustration fills the right half. This orientation supersedes the initial REF-002 left-decoration/right-form direction. Root removal must not remove the shared layout or its assets. Authentication behavior and actual forms remain outside this change.
+The split-panel root originally used AuthLayout (2026-10-17 decision). On 2026-10-18, during RM-2026-004 point 2, the owner explicitly requested its removal after MinimalLayout extraction. MinimalLayout now owns the backdrop, identity header, preferences, skip/main structure and footer. Named content/default, illustration and actions slots supply page composition. Following the owner's visual feedback, MinimalLayout itself includes the preserved `AppBrandIllustration` on the right by default; narrow screens place a compact 240px illustration above content. Consumers, including `/`, supply only the left-side content. Screens can explicitly hide the illustration with `illustration: false` or override its slot. This supersedes the compatibility facade requirement and preserves the original content-left orientation. Authentication behavior and forms remain out of scope.
 
 ## Component reuse
 
-User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and AuthLayout owns the split-page structure. Reuse and extend these instead of rebuilding controls for each page.
+User requirement: repeated UI elements, including buttons and their visual states, must be reusable components rather than one-off view implementations. AppButton owns shared button styling/states, AppTooltip owns tooltip styling/behavior, AppIcon owns icon rendering and MinimalLayout owns the optional split-page structure. Reuse and extend these instead of rebuilding controls for each page.
 
 ## Preference change screen
 
@@ -226,3 +236,19 @@ The logo illustration’s orbital outlines also carry small static glowing point
 ## Light-theme visibility refinement
 
 User accepts the current dark direction; keep dark values unchanged. Light mode uses a more legible technical grid (9% versus dark 4.5%) and stronger constellation line opacity (48% versus dark 20%, before group opacity). The illustration uses the main surface base in light mode, gently darkened with 20% of the border token after user review, with deeper violet and cyan/blue gradient layers and a much quieter divider. Light artwork uses primary violet at 34% and an accent-cyan/cool-blue mix at 29% at the radial centers, fading outward; dark keeps its original gradient sources and 18%/16% intensities. Keep this modest tint local to the artwork; preserve the accepted page background and dark theme. These are contextual decoration tokens, not a replacement semantic palette.
+
+Point-2 owner feedback (2026-10-18): on narrow screens the illustration precedes content and is reduced from 420px to 240px, with proportional artwork scaling; desktop keeps its original right-side composition. The footer translates “Powered by” as “Oparte na” in Polish. Keep the small RUNA artwork signature fixed to the platform, independent of business application identity. The owner accepted these corrections on 2026-10-18; point 9 subsequently corrects preference-tooltip dismissal and integrates the shared floating controls; that component phase has its own visual acceptance gate.
+
+Scrollbars are part of the shared visual language, including horizontal top navigation and vertical sidebar scrolling. Use thin violet thumbs and tinted surface tracks from the active theme, with matching WebKit fallback styling. Preserve native touch/wheel/keyboard scrolling and restore automatic system styling in forced-colors mode. The application review enables extra synthetic menu links by default, with a Long menus control; fixtures reuse existing review destinations and are removed with the review infrastructure.
+
+The top header stays compact at 64px on desktop and phones; its scrollbar sits at the navigation/header bottom edge rather than inside a padded header. Wheel input over overflowing top navigation moves the menu horizontally and does not chain to document scrolling at its ends; Ctrl+wheel retains native zoom. The header remains visible during document scrolling (latest owner decision, superseding the original nonsticky-top premise).
+
+Application navigation texture (RM-2026-004 point 3): the top header and sidebar use a quiet static 44px square grid over the opaque surface. Lines reuse secondary-text color at 30% of the theme-specific backdrop-grid opacity (2.7% light, 1.35% dark), reduced after owner review. Forced-colors removes the decorative grid.
+
+## Native HTTP errors
+
+MinimalLayout is the common template for the welcome dashboard, HTTP errors and future Auth views. The owner reaffirmed this in RM-2026-004 point 5: errors must not introduce an independent centered card or another background/header/footer composition. Error content occupies the existing layout's content slot; the default supplied illustration, desktop split/mobile stack, full backdrop/constellations, header preferences and footer remain part of MinimalLayout. Build-time pre-rendering of that actual Vue component supplies HTML for native Laravel errors and static emergency 503, preserving operation without runtime JavaScript/PHP/database as applicable. Technical codes remain English and UI copy supports PL/EN/light/dark. The owner visually accepted the corrected shared-MinimalLayout errors on 2026-10-18. Real production-Nginx host verification remains mandatory in roadmap point 7.
+
+## Application shell refinements
+
+The dedicated sidebar toggle uses sm (36px) and sits 24px from the header left edge. Dotted lines with a 2px dot every 8px at the top-menu edges indicate remaining horizontal content in each direction; fade their appearance over 160ms and disable that transition for reduced motion. A fully visible menu has no indicators. In the collapsed sidebar, enabled and disabled icons share the same center, supplementary sidebar-bottom content is omitted and the footer shows only the platform version. Hidden sidebar headings, labels, nested subtrees and supplementary sections reserve no space; use 8px collapsed vertical padding instead of expanded section spacing. Keep these behaviors specific to the application shell.

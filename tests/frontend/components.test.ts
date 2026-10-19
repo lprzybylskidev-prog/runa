@@ -31,6 +31,10 @@ it('labels a select and emits its selected value', async () => {
     },
   });
   expect(wrapper.get('label').text()).toContain('Language');
-  await wrapper.get('select').setValue('en');
+  await wrapper.get('button').trigger('click');
+  document
+    .querySelectorAll<globalThis.HTMLElement>('[role=option]')[1]!
+    .click();
+  await wrapper.vm.$nextTick();
   expect(wrapper.emitted('update:modelValue')).toEqual([['en']]);
 });

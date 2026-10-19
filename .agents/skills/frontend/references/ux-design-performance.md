@@ -18,7 +18,7 @@
 16. Add a token only when it reduces real drift/repetition.
 17. Design around the user task and information hierarchy, not component count.
 18. Do not default every screen to a grid of dashboard cards.
-19. Motion should communicate change/state rather than exist as decoration.
+19. Review purposeful motion for every changed component using `motion.md`; preserve immediate interactions and explicitly choose static behavior when movement adds no value.
 20. Do not rebuild the whole design system during an unrelated feature.
 21. Rendered UI is the acceptance truth; "the code looks correct" is insufficient.
 22. Reuse existing project components/page patterns before inventing new ones.
