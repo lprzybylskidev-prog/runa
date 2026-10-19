@@ -14,6 +14,8 @@ Load only relevant references:
 
 ApplicationLayout top navigation and sidebar are dedicated shell components, not universal UI primitives. Keep their menu items, disclosures, dropdowns and navigation behavior internal to those locations. Build universal components for application content independently; do not extract shell menus into the public UI API or force them to use generic content controls merely to demonstrate reuse. Shared low-level primitives may still be composed when they fit without changing the dedicated menu contract.
 
+A new UI element may remain local to its first page/use. When the same element is needed a second time, extract its shared presentation and behavior into a Runa component under `resources/js/components/`, alongside the existing App-prefixed components, and migrate both consumers in the same task. Search and reuse an existing component first; do not introduce a second copy. Expose the reusable public contract through `resources/js/runa/ui/index.ts` and update `references/components.md`. Keep page-specific data and business behavior in the owning feature. Dedicated shell menu components retain their location-specific contract; repeated content elements still follow this rule.
+
 Before editing UI, inspect analogous existing pages/forms and search the shared component catalogue. Reuse the established structure and controls. After changing a reusable component/pattern, inspect existing layouts for applicable uses and replace matching provisional elements with the finalized shared component in the same task. Recheck affected layout behavior and rendering; update its catalogue entry and page references in that task.
 
 For discovery and maintenance load:

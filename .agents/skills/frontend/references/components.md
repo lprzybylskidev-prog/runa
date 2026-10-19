@@ -1,6 +1,6 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
+Search this catalogue and the source before introducing a new control. First-use page-local elements are allowed; on second use, extract the common element into `resources/js/components/`, migrate both consumers, expose its reusable contract through `@/runa/ui` and document it here in the same task. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
 
 ## Motion composition
 
