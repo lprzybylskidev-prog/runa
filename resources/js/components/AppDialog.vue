@@ -86,7 +86,10 @@ defineExpose({ focus: layer.focus });
           class="dialog-panel"
           :class="`dialog-${size}`"
         >
-          <header class="dialog-header">
+          <header
+            class="dialog-header"
+            :class="{ 'dialog-header-title-only': !description }"
+          >
             <div class="min-w-0">
               <h2
                 :id="`${id}-title`"
@@ -183,6 +186,9 @@ defineExpose({ focus: layer.focus });
   background: var(--runa-surface-raised);
   border-bottom: 1px solid var(--runa-border);
   border-radius: 3px 3px 0 0;
+}
+.dialog-header-title-only {
+  align-items: center;
 }
 .dialog-content {
   min-height: 0;
