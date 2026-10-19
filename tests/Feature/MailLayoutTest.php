@@ -5,8 +5,10 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification as Notifications;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\Mime\Email;
+use Tests\Fixtures\BrowserMailDocument;
 
 beforeEach(function () {
     View::addNamespace('mail-fixture', base_path('tests/Fixtures/mail'));
@@ -113,10 +115,12 @@ it('configures independent footer elements and platform version', function () {
     expect($email->getTextBody())->toContain('Atlas v2.4.1')->not->toContain('Powered by Runa');
 });
 
-it('exposes local HTML text and MIME review fixtures without SMTP', function () {
-    $this->get('/__review/email?locale=pl')->assertOk()->assertSee('Raport jest gotowy')->assertSee('data:image/png;base64,', false);
-    $this->get('/__review/email?locale=en&long=1&images=blocked')->assertOk()->assertSee('Summary 12')->assertSee('/__review/missing-logo.png', false);
-    $this->get('/__review/email?locale=en&format=text')->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8')->assertSee('Powered by Runa');
-    $this->get('/__review/email?format=eml')->assertOk()->assertHeader('Content-Type', 'message/rfc822')->assertSee('multipart/alternative', false);
-    $this->getJson('/__review/email?locale=fr')->assertUnprocessable();
+it('renders isolated HTML text and MIME browser fixtures without SMTP', function () {
+    View::addNamespace('browser-mail', base_path('tests/Fixtures/browser-mail'));
+    Route::get('/test-mail-document', BrowserMailDocument::class)->name('test.mail.document');
+    $this->get('/test-mail-document?locale=pl')->assertOk()->assertSee('Raport jest gotowy')->assertSee('data:image/png;base64,', false);
+    $this->get('/test-mail-document?locale=en&long=1&images=blocked')->assertOk()->assertSee('Summary 12')->assertSee('/__fixtures/missing-logo.png', false);
+    $this->get('/test-mail-document?locale=en&format=text')->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8')->assertSee('Powered by Runa');
+    $this->get('/test-mail-document?format=eml')->assertOk()->assertHeader('Content-Type', 'message/rfc822')->assertSee('multipart/alternative', false);
+    $this->getJson('/test-mail-document?locale=fr')->assertUnprocessable();
 });

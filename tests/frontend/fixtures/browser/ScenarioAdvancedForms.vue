@@ -60,7 +60,7 @@ const { state, retry, cancel } = useDependentFields(
       dependsOn: ['country'],
       load: async ({ parents, signal }) => {
         await delay(signal);
-        if (fail.value) throw new Error('Review failure');
+        if (fail.value) throw new Error('Scenario failure');
         return parents.country === 'pl'
           ? [
               { value: 'warsaw', label: 'Warszawa' },
@@ -103,9 +103,9 @@ const route = usePageResolver(
     {
       routeKey: 'advanced-review',
       moduleKey: 'review',
-      href: '/__review/ui',
+      href: '/__fixtures/ui',
       title: 'Advanced forms',
-      serverRouteName: 'review.ui',
+      serverRouteName: 'test.ui',
     },
   ],
   { beforeLeave: guard.beforeLeave },
@@ -446,10 +446,10 @@ async function leave() {
           @confirm="respond(true)"
         />
         <a
-          href="/__review/ui?category=advanced#guarded"
+          href="/__fixtures/ui?category=advanced#guarded"
           class="text-xs underline"
           @click="
-            route.navigate('/__review/ui?category=advanced#guarded', $event)
+            route.navigate('/__fixtures/ui?category=advanced#guarded', $event)
           "
           >{{
             text(

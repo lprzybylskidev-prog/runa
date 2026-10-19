@@ -69,7 +69,7 @@ Run Vitest/Vue component tests.
 
 ### `./bin/test e2e --critical`
 
-Run the critical Playwright browser set.
+Run Playwright through an isolated loopback browser harness. Build assets first with `./bin/pnpm run build` and `php resources/errors/build.php`. Playwright owns harness startup/shutdown; root/API/native assets use isolated testing Nginx/PHP-FPM, while synthetic routes exist only in the test process. See `docs/testing/strategy.md`.
 
 ## Xdebug
 

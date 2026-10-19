@@ -160,26 +160,26 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
   });
 }
 
-test('review catalog controls work and unknown pages remain real HTTP errors', async ({
+test('isolated component controls work and unknown application pages remain HTTP errors', async ({
   page,
   request,
 }) => {
-  await page.goto('/__review/ui');
+  await page.goto('/__fixtures/ui');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Przegląd UI / UI review',
+    'Component test fixture',
   );
   await page
     .getByRole('button', { name: 'primary', exact: true })
     .first()
     .click();
   await expect(page.locator('output').first()).toHaveText('Kliknięcia: 1');
-  await page.getByRole('button', { name: 'Kategoria / Category' }).click();
-  await page
-    .getByRole('dialog')
-    .getByRole('option', { name: 'Układy / Layouts', exact: true })
-    .click();
-  await expect(page.getByRole('main')).toContainText(
-    'Układ minimalny / Minimal layout',
-  );
-  expect((await request.get('/__review/not-found')).status()).toBe(404);
+  for (const path of [
+    '/__fixtures/not-found',
+    '/__review/ui',
+    '/__review/email',
+    '/__review/application/overview',
+    '/ui-review/index.html',
+  ]) {
+    expect((await request.get(path)).status()).toBe(404);
+  }
 });

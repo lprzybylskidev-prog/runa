@@ -1,6 +1,6 @@
 # Component motion
 
-Use the accepted ApplicationLayout navigation as the reference: popup opacity with 4px travel over 140ms ease-out; disclosure/chevron/color changes over 160ms; shell geometry over 180ms. Existing root preference-cover timing (340ms and 500ms hold) stays unchanged. The owner requested this review in RM-2026-004 point 21; its rendered result awaits visual acceptance.
+Use the accepted ApplicationLayout navigation as the reference: popup opacity with 4px travel over 140ms ease-out; disclosure/chevron/color changes over 160ms; shell geometry over 180ms. Existing root preference-cover timing (340ms and 500ms hold) stays unchanged. The owner requested this review in RM-2026-004 point 21; its rendered result was accepted on 2026-10-19.
 
 For every component change, inspect opening **and closing**, selected/hover/focus/busy/error states, and existing consumers. Animate only useful changes. Prefer named opacity/translate/color properties; avoid blanket `transition: all`, delayed state updates, wholesale remounts, decorative entrance cascades and animated dense table sorting. Reuse shared component behavior rather than adding page-local copies.
 

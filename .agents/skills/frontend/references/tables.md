@@ -2,7 +2,7 @@
 
 Canonical implementation: `resources/js/components/AppTable.vue`, provider contracts in `resources/js/runa/ui/tables.ts`, processing/transport helpers in `resources/js/lib/table.ts`.
 
-Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/empty/error states. Planned RM-2026-004 order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar/filters, then mandatory content, with an optional supplementary panel. Statistics/Statistic now implement the global/filtered user switch, KPI slots and optional per-view mode persistence through useStatisticsMode; providers/calculations remain external. ApplicationReview demonstrates integration above its toolbar. Pagination and the table foundation are available; personalization and named saved views are available; cross-page selection, provider-owned bulk operations and exports are available. Preserve mobile access to data and actions, including horizontal scrolling or an intentional responsive presentation when needed. Respect the canonical API pagination/filter contract and finite page sizes. Update this reference when a reusable pattern changes.
+Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/empty/error states. Planned RM-2026-004 order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar/filters, then mandatory content, with an optional supplementary panel. Statistics/Statistic now implement the global/filtered user switch, KPI slots and optional per-view mode persistence through useStatisticsMode; providers/calculations remain external. the isolated ApplicationScenario test fixture demonstrates integration above its toolbar. Pagination and the table foundation are available; personalization and named saved views are available; cross-page selection, provider-owned bulk operations and exports are available. Preserve mobile access to data and actions, including horizontal scrolling or an intentional responsive presentation when needed. Respect the canonical API pagination/filter contract and finite page sizes. Update this reference when a reusable pattern changes.
 
 ## Table foundation
 
@@ -78,3 +78,24 @@ CSV is UTF-8 with BOM, semicolon/CRLF by default, full quoting and formula-prefi
 `createApiExportProvider({ path: '/exports', capabilities })` uses the single HTTP wrapper. No endpoint/job implementation is installed. Start POST carries the typed ExportRequest JSON and Idempotency-Key. Return either `{ kind: 'download', download: { filename, mime_type, url } }` or `{ kind: 'operation', operation: { public_id, status_path, cancel_path?, retry_path? } }`. Resource paths exclude `/api`, which the wrapper adds. Status GET returns queued/running (optional 0–100 progress), completed (optional download/succeeded), failed (error), partial (succeeded/failed/error/optional download) or cancelled. Errors contain code/retryable; counts are nonnegative safe integers. Cancel and retry POST to supplied paths; retry returns a fresh download/operation envelope. Backend cancellation responses must confirm cancellation. Downloads allow only same-origin HTTP(S) and known export MIME types. Unknown/invalid envelopes fail closed. Backend must validate all column/scope/filter/action keys, authorize both start and status/download/retry/cancel, enforce size/rate limits and idempotency, stream durable files and recheck selection staleness. Provider capabilities are presentation only.
 
 License notices are versioned in resources/licenses and emitted under build/licenses: export-dependencies.txt covers the complete pinned graph, Roboto-OFL.txt covers the actual OFL font, and dependencies.md is Vite's bundled-module report. Preserve these files when redistributing export-enabled bundles; regenerate/review notices during deliberate dependency changes. The owner approved the two exact direct versions and normal transitive graph in RM-2026-004 point 19.
+
+## Typed provider extension example
+
+A custom transport adapts to the public provider contract; it does not change Table or require a layout:
+
+```ts
+import type { TableProvider, TableQuery, TablePage } from '@/runa/ui';
+interface ProjectRow {
+  public_id: string;
+  name: string;
+}
+// Owned by the application: shared HTTP client + unknown-payload validation.
+declare function loadProjects(
+  query: TableQuery,
+  signal: AbortSignal,
+): Promise<TablePage<ProjectRow>>;
+const projectsProvider: TableProvider<ProjectRow> = (query, signal) =>
+  loadProjects(query, signal);
+```
+
+Pass `mode="server" :provider="projectsProvider"` and the same controlled query/columns/rowKey as client mode. For canonical Laravel API transport prefer `createApiTableProvider`, with allowlisted sort/filter keys and a decoder that rejects malformed unknown responses. The server independently authorizes every row, count, export and bulk operation. `tests/frontend/fixtures/browser/ScenarioTables.vue` retains deterministic client/server/operation fixtures; production applications supply their own endpoint and operation provider. Column presentation uses `cell-<key>` slots; exports require explicit authorized `ExportColumn` descriptors and the documented budgets.

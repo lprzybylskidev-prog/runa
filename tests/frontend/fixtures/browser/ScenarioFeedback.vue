@@ -48,7 +48,7 @@ const labels = {
     neutral: 'Draft',
     success: 'Ready',
     info: 'In progress',
-    warning: 'Review needed',
+    warning: 'Scenario needed',
     danger: 'Error',
   },
 };

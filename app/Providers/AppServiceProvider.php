@@ -48,9 +48,6 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(ConfigurationValidator $validator, RuntimeHeartbeat $heartbeat): void
     {
         $this->loadViewsFrom(resource_path('views/runa-mail'), 'runa-mail');
-        if ($this->app->environment('local', 'testing')) {
-            $this->loadViewsFrom(base_path('resources/review/mail'), 'review-mail');
-        }
 
         Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));

@@ -49,7 +49,7 @@ The user supplied this as Runa's project logo; no third-party source or license 
 
 Regenerate after building the root entry with `./bin/pnpm exec node tools/assets/render-favicon.mjs` against nginx-test. The script snapshots the existing tile and packages the frames in one ICO; the original logo bytes remain unchanged. SHA256: `d0535275ccad19fa824afd11fd084eefee4a2be18299edac00bc16c86aa0e41c`.
 
-Root/review documents and native/static emergency error documents reference `/favicon.ico`. Production PHP and Nginx images both explicitly copy the committed asset; Nginx serves it while PHP is unavailable. This is a browser icon only, without a web-app manifest or installation icons. The owner visually accepted the favicon on 2026-10-18 in RM-2026-004 point 6 and requested its use in both MinimalLayout and ApplicationLayout. Their shared HTML entries already declare the same icon.
+Application/test-fixture documents and native/static emergency error documents reference `/favicon.ico`. Production PHP and Nginx images both explicitly copy the committed asset; Nginx serves it while PHP is unavailable. This is a browser icon only, without a web-app manifest or installation icons. The owner visually accepted the favicon on 2026-10-18 in RM-2026-004 point 6 and requested its use in both MinimalLayout and ApplicationLayout. Their shared HTML entries already declare the same icon.
 
 ## Standalone HTTP error assets
 

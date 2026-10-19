@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import ReviewWorkspaceStatistics from './ReviewWorkspaceStatistics.vue';
+import ScenarioWorkspaceStatistics from './ScenarioWorkspaceStatistics.vue';
 import {
   ApplicationLayout,
   Breadcrumbs,
@@ -10,7 +10,7 @@ import {
   usePageResolver,
 } from '@/runa/ui';
 import type { Locale, NavigationEntry, PageDescriptor } from '@/runa/ui';
-import { readPreference } from '../js/lib/preferences';
+import { readPreference } from '@/lib/preferences';
 const locale = ref<Locale>(
   readPreference('runa.locale') === 'en' ? 'en' : 'pl',
 );
@@ -19,39 +19,39 @@ const pages: readonly PageDescriptor[] = [
   {
     routeKey: 'overview',
     moduleKey: 'overview',
-    href: '/__review/application/overview',
-    serverRouteName: 'review.application.overview',
+    href: '/__fixtures/application/overview',
+    serverRouteName: 'test.application.overview',
     title: 'Overview',
   },
   {
     routeKey: 'projects',
     moduleKey: 'projects',
     areaKey: 'list',
-    href: '/__review/application/projects',
-    serverRouteName: 'review.application.projects',
+    href: '/__fixtures/application/projects',
+    serverRouteName: 'test.application.projects',
     title: 'Projects',
   },
   {
     routeKey: 'activity',
     moduleKey: 'projects',
     areaKey: 'activity',
-    href: '/__review/application/activity',
-    serverRouteName: 'review.application.activity',
+    href: '/__fixtures/application/activity',
+    serverRouteName: 'test.application.activity',
     title: 'Activity',
   },
   {
     routeKey: 'archive',
     moduleKey: 'projects',
     areaKey: 'archive',
-    href: '/__review/application/archive',
-    serverRouteName: 'review.application.archive',
+    href: '/__fixtures/application/archive',
+    serverRouteName: 'test.application.archive',
     title: 'Archive',
   },
   {
     routeKey: 'team',
     moduleKey: 'team',
-    href: '/__review/application/team',
-    serverRouteName: 'review.application.team',
+    href: '/__fixtures/application/team',
+    serverRouteName: 'test.application.team',
     title: 'Team',
   },
 ];
@@ -94,7 +94,7 @@ const navigation = computed<NavigationEntry[]>(() => [
     key: 'reports',
     routeKey: 'reports',
     moduleKey: 'reports',
-    href: '/__review/not-found',
+    href: '/__fixtures/not-found',
     label: text('Raporty — wkrótce', 'Reports — soon'),
     icon: 'device-desktop',
     availability: 'disabled',
@@ -152,7 +152,7 @@ const rows = computed(() => [
     ),
   },
   {
-    name: text('Przegląd materiałów', 'Review materials'),
+    name: text('Przegląd materiałów', 'Scenario materials'),
     area: text('Dokumentacja', 'Documentation'),
     note: text(
       'Zebrane informacje w jednym miejscu',
@@ -197,7 +197,7 @@ function setWidth(value: string) {
       @locale-change="locale = $event"
     >
       <template #actions
-        ><a class="review-primary-link" href="/__review/ui"
+        ><a class="review-primary-link" href="/__fixtures/ui"
           >{{ text('Przegląd interfejsu', 'UI review') }}
           <span aria-hidden="true">↗</span></a
         ></template
@@ -206,13 +206,13 @@ function setWidth(value: string) {
         ><Breadcrumbs
           :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
           :items="[
-            { label: 'Atlas', href: '/__review/application/overview' },
+            { label: 'Atlas', href: '/__fixtures/application/overview' },
             { label: title },
           ]"
           @navigate="navigate"
       /></template>
       <template v-if="statistics" #statistics
-        ><ReviewWorkspaceStatistics
+        ><ScenarioWorkspaceStatistics
           :key="current?.routeKey ?? 'overview'"
           :english="locale === 'en'"
           :density="density"

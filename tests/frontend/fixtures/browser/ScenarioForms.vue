@@ -13,7 +13,7 @@ import {
   serializeDecimal,
 } from '@/runa/ui';
 import type { FieldErrors, NumericKind, TextInputType } from '@/runa/ui';
-import { ApiError } from '../js/lib/http';
+import { ApiError } from '@/lib/http';
 const smallText = ref<string | null>('');
 const smallNumber = ref<string | null>('12');
 const props = defineProps<{ english: boolean }>();

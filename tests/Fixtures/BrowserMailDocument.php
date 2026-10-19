@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Tests\Fixtures;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -8,11 +8,10 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mime\Email;
 
-final class EmailReviewController extends Controller
+final class BrowserMailDocument
 {
     public function __invoke(Request $request): Response
     {
-        abort_unless(app()->environment('local', 'testing'), 404);
         $request->validate([
             'locale' => ['sometimes', 'in:pl,en'],
             'format' => ['sometimes', 'in:html,text,eml'],
@@ -23,7 +22,7 @@ final class EmailReviewController extends Controller
         $format = $request->string('format', 'html')->toString();
         $images = $request->string('images', 'cid')->toString();
         $mail = (new Mailable)->subject($locale === 'pl' ? 'Raport jest gotowy' : 'Report is ready')
-            ->markdown('review-mail::sample', ['polish' => $locale === 'pl', 'long' => $request->string('long')->toString() === '1'])
+            ->markdown('browser-mail::sample', ['polish' => $locale === 'pl', 'long' => $request->string('long')->toString() === '1'])
             ->locale($locale)->to('preview@example.invalid');
         if ($images === 'public') {
             config(['branding.mail_logo_url' => 'https://example.invalid/runa-logo.png']);
@@ -58,7 +57,7 @@ final class EmailReviewController extends Controller
         }
         foreach ($email->getAttachments() as $part) {
             $src = $images === 'blocked'
-                ? '/__review/missing-logo.png'
+                ? '/__fixtures/missing-logo.png'
                 : 'data:'.$part->getContentType().';base64,'.base64_encode($part->getBody());
             $html = str_replace('cid:'.$part->getContentId(), $src, $html);
         }

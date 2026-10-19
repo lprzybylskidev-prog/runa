@@ -32,7 +32,7 @@ for (const [device, width, height] of [
           if (response.status() >= 400)
             errors.push(`${response.status()} ${response.url()}`);
         });
-        await page.goto('/__review/ui?preview=minimal');
+        await page.goto('/__fixtures/ui?preview=minimal');
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(
           locale === 'pl' ? 'Układ minimalny' : 'Minimal layout',
         );

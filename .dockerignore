@@ -30,3 +30,6 @@ compose.yaml
 public/runa-error
 
 resources/views/errors/generated
+
+# Retired pre-release preview output must never enter a production context.
+public/ui-review

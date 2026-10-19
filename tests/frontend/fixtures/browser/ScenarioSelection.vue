@@ -31,7 +31,7 @@ const provider: SelectionProvider = async ({
       { once: true },
     );
   });
-  if (fail.value) throw new Error('Review failure');
+  if (fail.value) throw new Error('Scenario failure');
   const start = Number(cursor ?? 0);
   const matches = Array.from({ length: 10000 }, (_, index) => ({
     value: String(index + 1),

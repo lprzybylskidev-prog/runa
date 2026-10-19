@@ -91,7 +91,7 @@ Planned under RM-2026-004, superseding the earlier breadcrumbs-first order:
 4. Optional toolbar (including filters where relevant).
 5. Mandatory main content, with an optional supplementary panel.
 
-The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top header above the workspace stays visible with sticky positioning while the toolbar scrolls normally (latest owner point-3 correction, superseding the original nonsticky-top decision). Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors were implemented and visually accepted in point 3. The synthetic application review is available at `/__review/application/overview`; real modules/admin/authentication remain deferred.
+The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top header above the workspace stays visible with sticky positioning while the toolbar scrolls normally (latest owner point-3 correction, superseding the original nonsticky-top decision). Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors were implemented and visually accepted in point 3. The synthetic application scenarios are retained only in isolated tests; real modules/admin/authentication remain deferred.
 
 Do not copy dashboard content, cards, charts or their appearance from this reference. Its palette and typography are not selected; apply the separately agreed Runa visual direction.
 
@@ -174,7 +174,7 @@ Flash messages appear at the top right, offer an explicit close control and disa
 
 The accepted `/` welcome page consumes `MinimalLayout` directly and remains the regression baseline. Preserve its purpose, body, geometry, illustration, backdrop and preference interactions in RM-2026-004. The earlier intention to remove the root soon is superseded; the dual-version footer and the owner-requested compact illustration above content on narrow screens are approved root changes in this roadmap.
 
-RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. Temporary review infrastructure is removed only after final visual acceptance of motion, in point 22.
+RM-2026-004 plans minimal, application and email layouts, branded HTTP errors and reusable primitives. This adds no authentication, permissions, admin behavior or business workflows. Point 1 establishes contracts, audit evidence and a temporary review/catalog skeleton. Actual layouts/components are delivered at subsequent points with their own visual gates; technical checks do not replace explicit owner acceptance. The owner accepted the catalog and motion; temporary application review infrastructure is retired in point 22, preserving isolated test fixtures.
 
 ## Motion and transitions
 
@@ -184,7 +184,7 @@ User direction (2026-10-17): consider motion from the start of component design 
 
 Visual state changes should generally transition smoothly rather than jump abruptly. For example, hover changes to background, text, border or shadow should feel continuous. Apply the same principle where appropriate to focus/selected states, dropdowns and sidebar changes, without animating every element or adding decorative motion by default. Feedback must remain immediate; transitions must not delay actions or obscure state.
 
-Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Point 21 uses the shell reference for shared popup/content changes (140ms, 2–4px travel), disclosures/chevrons/control colors (160ms), and retains immediate focus/state updates. Component-by-component decisions are maintained in `.agents/skills/frontend/references/motion.md`; this extension awaits owner visual acceptance. The implemented shared control transitions (160ms), tooltip fades (140ms), cover fades (340ms) and additional 500ms cover hold are accepted with the final root view.
+Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Transition only the properties that need it rather than applying a blanket transition to everything. Point 21 uses the shell reference for shared popup/content changes (140ms, 2–4px travel), disclosures/chevrons/control colors (160ms), and retains immediate focus/state updates. Component-by-component decisions are maintained in `.agents/skills/frontend/references/motion.md`; this extension was visually accepted by the owner on 2026-10-19. The implemented shared control transitions (160ms), tooltip fades (140ms), cover fades (340ms) and additional 500ms cover hold are accepted with the final root view.
 
 ## Open decisions
 
@@ -192,7 +192,7 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 - Rendered validation of the approved palette, including gradient intensity.
 - Layout and the placement/visibility of decorative background around application surfaces.
 - Typography scale/weights (IBM Plex Mono selected), exact spacing/sizing and component appearance; approximately 4px ordinary radii and moderate density are accepted starting points.
-- Visual acceptance of the point-21 component motion extension.
+- Future motion changes beyond the accepted point-21 component baseline.
 - Responsive treatment of the decoration and shell.
 - Authentication panel proportions, small-screen arrangement and exact CSS illustration.
 - Detailed tablet adaptation and top-navigation overflow; phone navigation panel and sidebar preference persistence are accepted.

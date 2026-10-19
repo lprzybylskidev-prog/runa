@@ -33,7 +33,7 @@ for (const [device, width, height] of [
           if (response.status() >= 400)
             errors.push(`${response.status()} ${response.url()}`);
         });
-        await page.goto('/__review/application/overview');
+        await page.goto('/__fixtures/application/overview');
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(
           locale === 'pl' ? 'Przegląd' : 'Overview',
         );
@@ -76,7 +76,7 @@ test('known URLs reconstruct module/area on direct load, history and refresh', a
   page,
   request,
 }) => {
-  await page.goto('/__review/application/activity');
+  await page.goto('/__fixtures/application/activity');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Aktywność');
   const top = page.getByRole('navigation', { name: 'Obszary modułu' });
   await expect(
@@ -105,7 +105,7 @@ test('known URLs reconstruct module/area on direct load, history and refresh', a
   await expect(page).toHaveURL(/\/archive$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Archiwum');
-  expect((await request.get('/__review/application/unknown')).status()).toBe(
+  expect((await request.get('/__fixtures/application/unknown')).status()).toBe(
     404,
   );
 });
@@ -118,7 +118,7 @@ test('sidebar collapse/groups persist, header stays visible and sidebar scroll i
     'Desktop sidebar interaction.',
   );
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   const modules = page.getByRole('navigation', { name: 'Moduły', exact: true });
   await modules.getByRole('button', { name: 'Projekty', exact: true }).click();
   await expect(
@@ -180,7 +180,7 @@ test('mobile drawer traps focus, closes with Escape/outside and restores trigger
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   const trigger = page.getByRole('button', { name: 'Otwórz nawigację' });
   await trigger.click();
   const dialog = page.getByRole('dialog', { name: 'Moduły' });
@@ -218,7 +218,7 @@ test('mobile drawer traps focus, closes with Escape/outside and restores trigger
 test('optional regions and navigations work independently; avatar dismisses', async ({
   page,
 }) => {
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   const avatar = page.getByRole('button', {
     name: 'Menu użytkownika: Anna Kowalska',
   });
@@ -270,7 +270,7 @@ test('denied browser storage does not block navigation or preferences', async ({
       },
     });
   });
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   await page.getByRole('button', { name: /^Język:/ }).click();
   await expect(page.getByRole('button', { name: /^Language:/ })).toBeFocused();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Overview');
@@ -285,7 +285,7 @@ test('top navigation remains reachable through horizontal overflow on a narrow s
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
-  await page.goto('/__review/application/activity');
+  await page.goto('/__fixtures/application/activity');
   const nav = page.locator('.shell-top-nav');
   expect(
     await nav.evaluate((element) => element.scrollWidth > element.clientWidth),
@@ -308,7 +308,7 @@ test('both navigation scrollbars use theme violet and long-menu fixtures can be 
   page,
 }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
-  await page.goto('/__review/application/projects');
+  await page.goto('/__fixtures/application/projects');
   const sidebar = page.locator('.shell-sidebar-scroll');
   const top = page.locator('.shell-top-nav');
   expect(
@@ -355,7 +355,7 @@ test('compact top navigation keeps its scrollbar at the header bottom and owns w
 }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto('/__review/application/projects');
+    await page.goto('/__fixtures/application/projects');
     const header = page.locator('.shell-header');
     const nav = page.locator('.shell-top-nav');
     const headerBox = (await header.boundingBox())!;
@@ -400,7 +400,7 @@ test('top dropdown floats outside the scrolling nav without changing header size
 }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto('/__review/application/projects');
+    await page.goto('/__fixtures/application/projects');
     const nav = page.locator('.shell-top-nav');
     const trigger = nav.getByRole('button', { name: 'Więcej' });
     await trigger.click();
@@ -445,7 +445,7 @@ test('sidebar groups are whole-row disclosures, brand aligns with the sticky hea
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   const group = page
     .getByRole('navigation', { name: 'Moduły', exact: true })
     .getByRole('button', { name: 'Projekty', exact: true });
@@ -488,7 +488,7 @@ test('shell motion respects reduced motion and survives interrupted disclosures'
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   const group = page.locator('.shell-sidebar-disclosure').first();
   // Interrupt both directions before the 160ms expansion has finished.
   await group.evaluate((element: HTMLButtonElement) => element.click());

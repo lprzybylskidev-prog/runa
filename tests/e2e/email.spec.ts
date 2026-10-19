@@ -18,7 +18,7 @@ for (const locale of ['pl', 'en']) {
       ['mobile', 390, 844],
     ] as const) {
       await page.setViewportSize({ width, height });
-      const response = await page.goto(`/__review/email?locale=${locale}`);
+      const response = await page.goto(`/__fixtures/email?locale=${locale}`);
       expect(response?.status()).toBe(200);
       await expect(page.locator('html')).toHaveAttribute('lang', locale);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -45,7 +45,7 @@ for (const locale of ['pl', 'en']) {
         fullPage: true,
       });
     }
-    await page.goto(`/__review/email?locale=${locale}&long=1&images=blocked`);
+    await page.goto(`/__fixtures/email?locale=${locale}&long=1&images=blocked`);
     await expect(page.getByRole('heading', { level: 2 })).toHaveCount(12);
     await expect(page.locator('.brand-name')).toHaveText('runa.');
     expect(
@@ -58,14 +58,14 @@ for (const locale of ['pl', 'en']) {
       fullPage: true,
     });
     const mime = await context.request.get(
-      `/__review/email?locale=${locale}&format=eml`,
+      `/__fixtures/email?locale=${locale}&format=eml`,
     );
     await testInfo.attach(`email-${locale}.eml`, {
       body: await mime.body(),
       contentType: 'message/rfc822',
     });
     const text = await context.request.get(
-      `/__review/email?locale=${locale}&format=text`,
+      `/__fixtures/email?locale=${locale}&format=text`,
     );
     await testInfo.attach(`email-${locale}.txt`, {
       body: await text.body(),
@@ -81,12 +81,12 @@ test('email: HTML and text are served without a review JavaScript build', async 
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/__review/email?locale=en');
+  await page.goto('/__fixtures/email?locale=en');
   await expect(
     page.getByRole('link', { name: 'Open report', exact: true }),
   ).toHaveAttribute('href', 'https://example.invalid/reports/sample');
   expect(await page.locator('script').count()).toBe(0);
-  const response = await request.get('/__review/email?locale=en&format=text');
+  const response = await request.get('/__fixtures/email?locale=en&format=text');
   expect(response.ok()).toBe(true);
   expect(await response.text()).toContain('Powered by Runa');
   expect(errors).toEqual([]);

@@ -21,7 +21,7 @@ for (const [device, width, height] of [
           },
           { locale, theme },
         );
-        await page.goto('/__review/ui?category=data');
+        await page.goto('/__fixtures/ui?category=data');
         await expect(page.locator('table')).toHaveCount(2);
         const local = page.locator('table').first();
         await expect(local.locator('tbody tr')).toHaveCount(5);
@@ -53,7 +53,7 @@ test('personalizes columns and manages a persisted default view', async ({
   await page.addInitScript(() => {
     localStorage.setItem('runa.locale', 'en');
   });
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await expect(page.locator('table')).toHaveCount(2);
   await page
     .getByRole('button', { name: 'Columns and views', exact: true })
@@ -153,7 +153,7 @@ test('uses compact controls, searches across columns and lists the default first
   await page.addInitScript(() => {
     localStorage.setItem('runa.locale', 'en');
   });
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await expect(page.locator('table')).toHaveCount(2);
   const views = page
     .getByRole('button', { name: 'Available views', exact: true })

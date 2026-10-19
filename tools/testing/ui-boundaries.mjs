@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { build } from 'vite';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +21,11 @@ const production = await bundle();
 const modules = production
   .filter((chunk) => chunk.type === 'chunk')
   .flatMap((chunk) => Object.keys(chunk.modules));
-assert(!modules.some((id) => id.includes('/resources/review/')));
+assert(
+  !modules.some((id) => /\/resources\/review\/|\/tests\/|\/tools\//.test(id)),
+);
+assert(!existsSync('resources/review'));
+assert(!existsSync('vite.review.config.mjs'));
 assert(
   !production.some(
     (chunk) =>
@@ -70,6 +75,9 @@ assert(
 );
 const dockerfile = await readFile('docker/php/Dockerfile', 'utf8');
 assert(!dockerfile.includes('/build/public/ui-review/'));
+const dockerignore = await readFile('.dockerignore', 'utf8');
+for (const path of ['tests', 'tools', '.runtime', 'public/ui-review'])
+  assert(dockerignore.split('\n').includes(path));
 console.info(
-  'PASS: production graph excludes review; public consumer bundles controls without layouts, routes or preference initialization; Docker excludes the separate review build.',
+  'PASS: production graph excludes retired review and test harnesses; public consumer bundles controls without layouts, routes or preference initialization; Docker excludes test sources/tools/output and legacy review assets.',
 );

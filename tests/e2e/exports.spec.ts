@@ -10,7 +10,7 @@ test('downloads real bounded files, selects across pages and recovers partial op
   await page.addInitScript(() => {
     localStorage.setItem('runa.locale', 'en');
   });
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await expect(page.locator('table')).toHaveCount(2);
   for (const format of ['CSV', 'XLSX', 'PDF']) {
     const pending = page.waitForEvent('download');
@@ -112,7 +112,7 @@ test('opens an isolated print document with the complete filtered result', async
       document.documentElement.dataset.printed = 'yes';
     };
   });
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await page
     .getByRole('button', { name: 'Print', exact: true })
     .first()
@@ -177,7 +177,7 @@ for (const [device, width, height] of [
           },
           { locale, theme },
         );
-        await page.goto('/__review/ui?category=data');
+        await page.goto('/__fixtures/ui?category=data');
         await page
           .getByRole('checkbox', {
             name:
@@ -214,7 +214,7 @@ test('keeps the toolbar compact and opens accessible export settings', async ({
   page,
 }) => {
   await page.addInitScript(() => localStorage.setItem('runa.locale', 'en'));
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await expect(
     page.getByRole('button', { name: 'Select all matching', exact: true }),
   ).toHaveCount(0);

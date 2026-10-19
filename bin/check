@@ -16,7 +16,7 @@ if '--help' in args:
         'lint': 'Usage: ./bin/lint\nCheck JavaScript, TypeScript and Vue without warnings.',
         'typecheck': 'Usage: ./bin/typecheck\nCheck strict application and test TypeScript.',
         'analyse': 'Usage: ./bin/analyse\nRun Larastan/PHPStan at the highest level.',
-        'test': 'Usage: ./bin/test [--parallel | frontend | e2e [--critical]] [runner options]\nBackend is the default. E2E uses the isolated testing Nginx/PHP-FPM endpoint.',
+        'test': 'Usage: ./bin/test [--parallel | frontend | e2e [--critical]] [runner options]\nBackend is the default. E2E starts an isolated loopback fixture harness and uses testing Nginx/PHP-FPM.',
     }[name])
     sys.exit(0)
 

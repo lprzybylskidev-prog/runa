@@ -10,7 +10,6 @@ const categories = [
   'selection',
   'advanced',
   'dialogs',
-  'layouts',
   'data',
 ];
 function recordProblems(page: import('@playwright/test').Page) {
@@ -32,7 +31,7 @@ function recordProblems(page: import('@playwright/test').Page) {
 }
 for (const locale of ['pl', 'en'])
   for (const theme of ['light', 'dark']) {
-    test(`integrated catalog semantics and 200% reflow ${locale} ${theme}`, async ({
+    test(`integrated scenario semantics and 200% reflow ${locale} ${theme}`, async ({
       browser,
     }) => {
       test.setTimeout(90000);
@@ -54,7 +53,7 @@ for (const locale of ['pl', 'en'])
         );
         const cdp = await context.newCDPSession(page);
         for (const category of categories) {
-          await page.goto(`/__review/ui?category=${category}`);
+          await page.goto(`/__fixtures/ui?category=${category}`);
           await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
           if (category === 'data')
             await expect(page.locator('table')).toHaveCount(2);
@@ -151,7 +150,7 @@ for (const [device, width, height] of [
           },
           { locale, theme },
         );
-        await page.goto('/__review/application/overview');
+        await page.goto('/__fixtures/application/overview');
         const names =
           locale === 'pl'
             ? [
@@ -223,7 +222,7 @@ for (const [device, width, height] of [
 
 for (const theme of ['light', 'dark']) {
   test(`semantic and control contrast ${theme}`, async ({ page }) => {
-    await page.goto(`/ui-review/standalone/standalone.html?theme=${theme}`);
+    await page.goto(`/__fixtures/standalone/standalone.html?theme=${theme}`);
     const failures = await page.evaluate(() => {
       const css = getComputedStyle(document.documentElement);
       function luminance(key: string) {
@@ -306,7 +305,7 @@ for (const locale of ['pl', 'en'])
           });
       });
       await page.goto(
-        `/ui-review/standalone/standalone.html?locale=${locale}&theme=${theme}`,
+        `/__fixtures/standalone/standalone.html?locale=${locale}&theme=${theme}`,
       );
       await page.screenshot({
         path: `artifacts/playwright/integrated/standalone-${locale}-${theme}.png`,
@@ -452,7 +451,7 @@ test('reduced motion keeps interactions usable and print removes shell controls'
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/__review/ui?category=data');
+  await page.goto('/__fixtures/ui?category=data');
   await page
     .getByRole('button', { name: 'Ustawienia eksportu', exact: true })
     .first()
@@ -469,7 +468,7 @@ test('reduced motion keeps interactions usable and print removes shell controls'
   expect(motion.transition).toBe('0s');
   expect(motion.animation).toBe('0s');
   await page.keyboard.press('Escape');
-  await page.goto('/__review/application/overview');
+  await page.goto('/__fixtures/application/overview');
   await page.emulateMedia({ media: 'print' });
   await expect(page.locator('.shell-header')).toBeHidden();
   await expect(page.locator('.shell-sidebar')).toBeHidden();
@@ -486,7 +485,7 @@ for (const locale of ['pl', 'en']) {
       (locale) => localStorage.setItem('runa.locale', locale),
       locale,
     );
-    await page.goto('/__review/ui?category=additional');
+    await page.goto('/__fixtures/ui?category=additional');
     const date = page.getByRole('textbox', {
       name: locale === 'pl' ? 'Data' : 'Date',
       exact: true,

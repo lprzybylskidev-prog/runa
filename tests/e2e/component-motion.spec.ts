@@ -9,7 +9,7 @@ for (const reduced of [false, true]) {
       await page.emulateMedia({
         reducedMotion: reduced ? 'reduce' : 'no-preference',
       });
-      await page.goto('/__review/ui?category=selection');
+      await page.goto('/__fixtures/ui?category=selection');
       const trigger = page.locator('button[aria-haspopup=dialog]').first();
       await trigger.click();
       const popup = page.locator('.selection-panel');
@@ -56,7 +56,7 @@ for (const reduced of [false, true]) {
       await page.keyboard.press('Escape');
       await expect(popup).toHaveCount(0);
 
-      await page.goto('/__review/ui?category=containers');
+      await page.goto('/__fixtures/ui?category=containers');
       const disclosure = page
         .locator('button[aria-expanded][aria-controls]')
         .filter({ hasText: /Informacje dodatkowe|Additional information/ });
@@ -84,7 +84,7 @@ for (const reduced of [false, true]) {
 test('tag and file exits preserve live controls and return focus', async ({
   page,
 }) => {
-  await page.goto('/__review/ui?category=additional');
+  await page.goto('/__fixtures/ui?category=additional');
   // Locate the actual public component by its remove buttons, independent of translated copy.
   const tag = page.getByRole('button', { name: /Usuń: Runa|Remove: Runa/ });
   await tag.click();
@@ -116,7 +116,7 @@ test('tag and file exits preserve live controls and return focus', async ({
 test('wizard content motion preserves drafts and stops for live reduced motion', async ({
   page,
 }) => {
-  await page.goto('/__review/ui?category=advanced');
+  await page.goto('/__fixtures/ui?category=advanced');
   const wizard = page.getByRole('region', {
     name: /Kroki formularza|Form steps/,
   });

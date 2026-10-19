@@ -27,7 +27,7 @@ for (const status of [404, 503]) {
               failed.push(response.url());
           });
           const path =
-            status === 404 ? '/__review/not-found' : '/__review/errors/503';
+            status === 404 ? '/__fixtures/not-found' : '/__fixtures/errors/503';
           const response = await page.goto(
             `${path}?lang=${locale}&theme=${theme}`,
           );
@@ -74,7 +74,7 @@ for (const status of [403, 404, 419, 429, 500, 503]) {
     page,
     request,
   }) => {
-    const response = await page.goto(`/__review/errors/${status}?lang=pl`);
+    const response = await page.goto(`/__fixtures/errors/${status}?lang=pl`);
     expect(response?.status()).toBe(status);
     await expect(page.locator('.error-code')).toContainText(`HTTP ${status}`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -83,7 +83,7 @@ for (const status of [403, 404, 419, 429, 500, 503]) {
     );
     if ([429, 503].includes(status))
       expect(response?.headers()['retry-after']).toBe('120');
-    const json = await request.get(`/__review/errors/${status}`, {
+    const json = await request.get(`/__fixtures/errors/${status}`, {
       headers: { Accept: 'application/json' },
     });
     expect(json.status()).toBe(status);
@@ -99,7 +99,7 @@ for (const status of [403, 404, 419, 429, 500, 503]) {
 test('errors: standalone emergency document uses independent assets', async ({
   page,
 }) => {
-  const response = await page.goto('/__review/errors/emergency?lang=pl');
+  const response = await page.goto('/__fixtures/errors/emergency?lang=pl');
   expect(response?.status()).toBe(503);
   expect(response?.headers()['retry-after']).toBe('120');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -116,7 +116,7 @@ test('errors: shared minimal preference controls navigate without JavaScript', a
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
-  await page.goto('/__review/not-found?lang=pl&theme=light');
+  await page.goto('/__fixtures/not-found?lang=pl&theme=light');
   await page.getByRole('button', { name: /^Język:/ }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
