@@ -180,7 +180,7 @@ select {
   color: var(--runa-text-muted);
   opacity: 1;
 }
-.runa-field-control:hover:not(:disabled):not([readonly]) {
+.runa-field-control:where(:hover:not(:disabled):not([readonly])) {
   border-color: var(--runa-secondary-solid);
 }
 .runa-field-control[aria-invalid='true'] {
