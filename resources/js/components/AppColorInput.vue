@@ -247,6 +247,8 @@ function update(value: string | null) {
 </template>
 <style scoped>
 .color-swatch.app-button {
+  border: 0;
+  background: transparent;
   padding: 4px;
   width: 36px;
   min-height: 36px;
