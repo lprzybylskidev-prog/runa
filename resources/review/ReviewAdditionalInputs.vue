@@ -194,8 +194,8 @@ const fileLabels = computed(() => ({
       <p class="mt-2 text-xs text-muted">
         {{
           text(
-            'Próby zmiany czasu: 29.03.2026 02:30 (brak godziny), 25.10.2026 02:30 (dwa wystąpienia). Okna wyboru daty i czasu są obsługiwane przez przeglądarkę.',
-            'Daylight-saving examples: 2026-03-29 02:30 (gap), 2026-10-25 02:30 (two occurrences). Date/time picker windows are provided by the browser.',
+            'Próby zmiany czasu: 29.03.2026 02:30 (brak godziny), 25.10.2026 02:30 (dwa wystąpienia).',
+            'Daylight-saving examples: 2026-03-29 02:30 (gap), 2026-10-25 02:30 (two occurrences).',
           )
         }}
       </p></Card
@@ -285,6 +285,7 @@ const fileLabels = computed(() => ({
       <div class="space-y-5">
         <ColorInput
           v-model="color"
+          :locale="locale"
           :label="text('Kolor wyróżnienia', 'Accent color')"
           :pick-label="text('Wybierz kolor', 'Choose color')"
           :invalid-message="

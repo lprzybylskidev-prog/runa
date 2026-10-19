@@ -158,6 +158,8 @@ User accepted (2026-10-17): use a moderately compact interface, with comfortable
 
 Use approximately 4px corner radii as the starting scale for ordinary components, consistent standard input/button heights and a smaller variant for table controls. Exact dimensions may be chosen during approved design implementation and reviewed in rendered UI. Preserve the explicitly selected circular user-initials control.
 
+Date/time/color picker requirement reaffirmed by the owner on 2026-10-19 (RM-2026-004 point 13): provide Runa-owned picker content and interaction, not merely a styled field opening a default browser picker. Reuse the palette, surfaces, shared buttons and floating layers; retain keyboard, touch, manual entry, clear actions and focus recovery. Forced-colors may use system focus/paint where necessary for accessibility. Browser-managed saved-credential suggestions and operating-system file selection remain separate platform interactions.
+
 ## Navigation behavior
 
 User accepted (2026-10-17): remember the sidebar's expanded/collapsed preference. On phones, present navigation as an opened-on-demand panel and keep module links accessible without requiring precise taps on small icons. Derive tablet behavior from available space. Storage failure must not prevent navigation.

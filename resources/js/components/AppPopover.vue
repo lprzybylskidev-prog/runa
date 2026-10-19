@@ -5,9 +5,11 @@ const props = withDefaults(
   defineProps<{
     label: string;
     align?: 'start' | 'end';
+    picker?: boolean;
+    initialFocus?: string;
     modelValue?: boolean | undefined;
   }>(),
-  { align: 'start', modelValue: undefined },
+  { align: 'start', modelValue: undefined, picker: false, initialFocus: '' },
 );
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 const localOpen = ref(false);
@@ -47,9 +49,15 @@ watch(
   (value) => {
     if (value && open.value)
       (
+        (props.initialFocus
+          ? panel.value?.querySelector<globalThis.HTMLElement>(
+              props.initialFocus,
+            )
+          : undefined) ??
         panel.value?.querySelector<globalThis.HTMLElement>(
-          'button:not(:disabled), a[href], input, select, textarea, [tabindex="0"]',
-        ) ?? panel.value
+          'button:not(:disabled):not([tabindex="-1"]), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
+        ) ??
+        panel.value
       )?.focus({ preventScroll: true });
   },
   { flush: 'post' },
@@ -58,7 +66,7 @@ function tab(event: globalThis.KeyboardEvent) {
   if (event.key !== 'Tab') return;
   const items = Array.from(
     panel.value?.querySelectorAll<globalThis.HTMLElement>(
-      'button:not(:disabled), a[href], input, select, textarea, [tabindex="0"]',
+      'button:not(:disabled):not([tabindex="-1"]), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
     ) ?? [],
   ).filter((item) => item.getClientRects().length);
   const active = document.activeElement;
@@ -69,7 +77,7 @@ function tab(event: globalThis.KeyboardEvent) {
     event.preventDefault();
     const all = Array.from(
       document.querySelectorAll<globalThis.HTMLElement>(
-        'button:not(:disabled), a[href], input, select, textarea, [tabindex="0"]',
+        'button:not(:disabled):not([tabindex="-1"]), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
       ),
     ).filter(
       (item) =>
@@ -100,7 +108,7 @@ function leaving(element: globalThis.Element) {
         :aria-label="label"
         tabindex="-1"
         class="app-popover-panel"
-        :class="{ 'popover-ready': ready }"
+        :class="{ 'popover-ready': ready, 'popover-picker': picker }"
         :style="position"
         @keydown="tab"
       >
@@ -132,6 +140,10 @@ function leaving(element: globalThis.Element) {
       transparent
     );
   visibility: hidden;
+}
+.popover-picker {
+  width: min(360px, calc(100vw - 16px));
+  padding: 12px;
 }
 .popover-ready {
   visibility: visible;

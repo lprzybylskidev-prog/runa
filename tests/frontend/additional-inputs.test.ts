@@ -77,13 +77,13 @@ it('converts explicit-zone wall times to UTC and rejects DST gaps/overlaps by de
   expect(isInstant('2026-10-19T09:30')).toBe(false);
   expect(isInstant('2026-02-31T09:30Z')).toBe(false);
 });
-it('preserves nullable native temporal values and exposes reset/focus for native partial editors', async () => {
+it('preserves nullable text temporal values and exposes reset/focus for incomplete drafts', async () => {
   const w = mount(DateInput, {
     attachTo: document.body,
-    props: { modelValue: '2026-10-19', label: 'Date' },
+    props: { modelValue: '2026-10-19', label: 'Date', locale: 'en' },
   });
   expect(w.get('input').element.value).toBe('2026-10-19');
-  expect(w.get('input').attributes('type')).toBe('date');
+  expect(w.get('input').attributes('type')).toBe('text');
   await w.get('input').setValue('2026-10-20');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['2026-10-20']);
   await w.get('input').setValue('');
@@ -117,6 +117,8 @@ it('blocks nonexistent/ambiguous local datetime commits and resolves them explic
   ]);
   await w.setProps({ modelValue: '2026-10-25T01:30:00.000Z' });
   expect(w.get('input').element.value).toBe('2026-10-25T02:30');
+  w.vm.reset();
+  expect(w.get('input').element.value).toBe('25.10.2026 02:30:00');
 });
 it('keeps date range endpoints controlled and reports reversed order', async () => {
   const w = mount(DateRangeInput, {
@@ -223,11 +225,16 @@ it('exposes selected files, rejects no data silently and lets the caller remove 
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual([[file]]);
 });
 it('preserves color drafts/null and updates the model through the swatch', async () => {
-  const w = mount(ColorInput, { props: { modelValue: null, label: 'Color' } });
+  const w = mount(ColorInput, {
+    props: { modelValue: null, label: 'Color' },
+    global: { stubs: { teleport: true } },
+  });
   await w.get('input[type="text"]').setValue('#BAD');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['#BAD']);
   expect(w.get('input[type="text"]').attributes('aria-invalid')).toBe('true');
-  await w.get('input[type="color"]').setValue('#b784df');
+  expect(w.find('input[type="color"]').exists()).toBe(false);
+  await w.get('button').trigger('click');
+  await w.get('button[aria-label="#b784df"]').trigger('click');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual(['#b784df']);
   expect(w.emitted('validity')?.at(-1)).toEqual([true]);
   await w.get('input[type="text"]').setValue('');
