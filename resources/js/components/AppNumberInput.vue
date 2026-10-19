@@ -100,7 +100,9 @@ function blur(event: globalThis.FocusEvent) {
       :inputmode="kind === 'integer' ? 'numeric' : 'decimal'"
       @update:model-value="update"
       @blur="blur"
-    />
-    <p v-if="unit" :id="unitId" class="mt-2 text-xs text-muted">{{ unit }}</p>
+      ><template v-if="unit" #suffix
+        ><span :id="unitId">{{ unit }}</span></template
+      ></AppTextInput
+    >
   </div>
 </template>

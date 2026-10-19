@@ -177,7 +177,7 @@ it('keeps incomplete numeric drafts visible and emits them instead of a stale va
   expect(w.get('input').element.value).toBe('0,10');
   expect(w.get('input').attributes('aria-invalid')).toBeUndefined();
   expect(w.get('input').attributes('aria-describedby')).toContain(
-    w.get('p').attributes('id'),
+    w.get('.app-input-suffix [id]').attributes('id'),
   );
   await w.get('input').setValue('');
   expect(w.emitted('update:modelValue')?.at(-1)).toEqual([null]);
