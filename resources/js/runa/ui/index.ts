@@ -100,3 +100,8 @@ export { default as Wizard } from '../../components/AppWizard.vue';
 export { useDependentFields } from '../../composables/useDependentFields';
 export { useDirtyGuard } from '../../composables/useDirtyGuard';
 export { useWizard } from '../../composables/useWizard';
+
+export type * from './dialogs';
+export { default as Dialog } from '../../components/AppDialog.vue';
+export { default as AlertDialog } from '../../components/AppAlertDialog.vue';
+export { default as ConfirmDialog } from '../../components/AppConfirmDialog.vue';

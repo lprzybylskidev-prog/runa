@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { lockDocumentScroll } from '../lib/scrollLock';
 import {
   computed,
   nextTick,
@@ -229,12 +230,10 @@ function scrollTopNavigation(event: globalThis.WheelEvent) {
         : 1;
   navigation.scrollLeft += delta * unit;
 }
-let previousOverflow = '';
+let unlockDrawerScroll: (() => void) | undefined;
 watch(drawer, (open) => {
-  if (open) {
-    previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-  } else document.body.style.overflow = previousOverflow;
+  unlockDrawerScroll?.();
+  unlockDrawerScroll = open ? lockDocumentScroll() : undefined;
 });
 watch(
   () => props.sidebar,
@@ -254,7 +253,7 @@ media.addEventListener('change', resize);
 onScopeDispose(() => {
   document.removeEventListener('keydown', keydown);
   media.removeEventListener('change', resize);
-  if (drawer.value) document.body.style.overflow = previousOverflow;
+  unlockDrawerScroll?.();
 });
 </script>
 <template>

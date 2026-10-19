@@ -148,7 +148,7 @@ function close(restore = false) {
   cancel();
   if (restore) anchor.value?.querySelector('button')?.focus();
 }
-const { position, ready } = useFloatingLayer({
+const { position, ready, teleportTarget } = useFloatingLayer({
   open,
   anchor,
   panel,
@@ -316,7 +316,7 @@ onScopeDispose(cancel);
           >×</AppButton
         >
       </div>
-      <Teleport to="body">
+      <Teleport :to="teleportTarget">
         <section
           v-if="open"
           :id="`${controlId}-panel`"

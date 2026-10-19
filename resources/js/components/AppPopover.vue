@@ -36,7 +36,7 @@ function toggle() {
   if (open.value) close();
   else open.value = true;
 }
-const { position, ready } = useFloatingLayer({
+const { position, ready, teleportTarget } = useFloatingLayer({
   open,
   anchor,
   panel,
@@ -98,7 +98,7 @@ function leaving(element: globalThis.Element) {
   <span ref="anchor" class="app-popover-anchor"
     ><slot name="trigger" :toggle="toggle" :open="open" :panel-id="panelId"
   /></span>
-  <Teleport to="body">
+  <Teleport :to="teleportTarget">
     <Transition name="popover-fade" @before-leave="leaving">
       <section
         v-if="open"

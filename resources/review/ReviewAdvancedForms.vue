@@ -2,6 +2,7 @@
 import { computed, nextTick, onScopeDispose, ref } from 'vue';
 import {
   Alert,
+  ConfirmDialog,
   Button,
   Card,
   Checkbox,
@@ -429,24 +430,21 @@ async function leave() {
             }}</Button
           >
         </div>
-        <Alert
-          v-if="leavePending"
-          tone="warning"
+        <ConfirmDialog
+          :model-value="leavePending"
           :title="
             text(
               'Opuścić formularz z niezapisanymi zmianami?',
               'Leave with unsaved changes?',
             )
           "
-          ><template #actions
-            ><Button @click="respond(false)">{{
-              text('Zostań', 'Stay')
-            }}</Button
-            ><Button @click="respond(true)">{{
-              text('Opuść', 'Leave')
-            }}</Button></template
-          ></Alert
-        >
+          :cancel-label="text('Zostań', 'Stay')"
+          :confirm-label="text('Opuść', 'Leave')"
+          :locale="locale"
+          confirm-tone="warning"
+          @update:model-value="!$event && respond(false)"
+          @confirm="respond(true)"
+        />
         <a
           href="/__review/ui?category=advanced#guarded"
           class="text-xs underline"

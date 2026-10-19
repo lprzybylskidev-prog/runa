@@ -45,7 +45,7 @@ function click() {
   overAnchor = false;
   overPanel = false;
 }
-const { position, ready } = useFloatingLayer({
+const { position, ready, teleportTarget } = useFloatingLayer({
   open: visible,
   anchor,
   panel,
@@ -70,7 +70,7 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
     @click="click"
   >
     <slot :description-id="visible ? descriptionId : undefined" />
-    <Teleport to="body">
+    <Teleport :to="teleportTarget">
       <Transition name="tooltip-fade">
         <span
           v-if="visible && text"

@@ -52,6 +52,7 @@
   --runa-circle-rose-opacity: 0.08;
   --runa-circle-cyan-opacity: 0.08;
   --runa-shadow-opacity: 8%;
+  --runa-overlay-opacity: 28%;
 }
 
 :root[data-theme='dark'] {
@@ -127,6 +128,7 @@
   --runa-circle-rose-opacity: 0.14;
   --runa-circle-cyan-opacity: 0.16;
   --runa-shadow-opacity: 20%;
+  --runa-overlay-opacity: 52%;
 }
 html {
   font-family: var(--font-sans);

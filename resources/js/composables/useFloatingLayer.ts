@@ -1,7 +1,14 @@
-import { nextTick, onScopeDispose, ref, watch, type Ref } from 'vue';
+import {
+  computed,
+  inject,
+  nextTick,
+  onScopeDispose,
+  ref,
+  watch,
+  type Ref,
+} from 'vue';
 
-// Only the most recently opened floating layer handles dismissal.
-const layers: symbol[] = [];
+import { addLayer, removeLayer, isTopLayer, modalPortal } from '../lib/layers';
 export function useFloatingLayer(options: {
   open: Ref<boolean>;
   anchor: Ref<globalThis.HTMLElement | undefined>;
@@ -12,10 +19,12 @@ export function useFloatingLayer(options: {
   hideOnScroll?: boolean;
 }) {
   const key = Symbol('floating-layer');
+  const portal = inject(modalPortal, undefined);
+  const teleportTarget = computed(() => portal?.value ?? 'body');
   const position = ref({ left: '8px', top: '8px' });
   const ready = ref(false);
   function top() {
-    return layers.at(-1) === key;
+    return isTopLayer(key);
   }
   function contains(target: globalThis.EventTarget | null) {
     return (
@@ -62,10 +71,11 @@ export function useFloatingLayer(options: {
     if (options.hideOnScroll) options.dismiss(false);
     else place();
   }
+  let generation = 0;
   let observer: globalThis.ResizeObserver | undefined;
   function detach() {
-    const index = layers.indexOf(key);
-    if (index !== -1) layers.splice(index, 1);
+    generation++;
+    removeLayer(key);
     document.removeEventListener('keydown', escape, true);
     document.removeEventListener('pointerdown', outside);
     document.removeEventListener('scroll', scroll, true);
@@ -79,18 +89,19 @@ export function useFloatingLayer(options: {
       ready.value = false;
       return;
     }
-    layers.push(key);
+    const request = ++generation;
+    addLayer(key);
     document.addEventListener('keydown', escape, true);
     document.addEventListener('pointerdown', outside);
     document.addEventListener('scroll', scroll, true);
     window.addEventListener('resize', place);
     await nextTick();
-    if (!options.open.value) return;
+    if (!options.open.value || request !== generation) return;
     place();
     observer = new ResizeObserver(place);
     if (options.panel.value) observer.observe(options.panel.value);
     if (options.anchor.value) observer.observe(options.anchor.value);
   });
   onScopeDispose(detach);
-  return { position, ready, place };
+  return { position, ready, place, teleportTarget };
 }
