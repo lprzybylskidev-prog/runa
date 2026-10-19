@@ -90,3 +90,5 @@ export { default as FileInput } from '../../components/AppFileInput.vue';
 export { default as ColorInput } from '../../components/AppColorInput.vue';
 export { default as HiddenInput } from '../../components/AppHiddenInput.vue';
 export { default as TagsInput } from '../../components/AppTagsInput.vue';
+
+export type * from './selection';

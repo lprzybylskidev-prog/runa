@@ -4,12 +4,11 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 ## AppSelect
 
-- Source: `resources/js/components/AppSelect.vue`.
-- Use for the current small, native selection controls. It preserves native keyboard behavior and wraps the select in a visible label.
-- Props: `label`, string `modelValue`, readonly `options` with string `value`/`label`.
-- Emits: `update:modelValue`; callers validate their narrower domain union.
-- Minimum 44px control height, 4px corners and subtle border transitions; shared runa-field-control input/focus/autofill treatment, a CSS chevron and appearance:none for the closed select. Native option keyboard/selection behavior is retained.
-- Available for genuine selection controls; root language/theme preferences now use explicit buttons.
+- Source: `resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.
+- Backward-compatible native single selection for small lists; searchable, multiple or provider modes use the shared floating layer with a labeled dialog/listbox. String values are stable IDs; multiple=true uses string[]. Disabled options cannot be chosen. FormField supplies label/helper/warning/errors and required semantics; disabled/readonly block edits, clearable is explicit.
+- Search is locale-aware for local options; provider queries debounce (250ms default), abort prior requests and ignore stale responses even if a provider ignores cancellation. Loading/error/retry/empty states remain distinct. Escape restores trigger focus, outside pointer dismisses, arrows/Home/End move over enabled options and Enter selects; IME composition is preserved. Multiple selection stays open until Done.
+- Rendering is bounded to one page (40 default, at most 100). Local pages offer previous/next; remote providers receive query/cursor/limit/AbortSignal and return options/nextCursor. Remote next replaces the visible page; the provider owns cursor semantics, transport, ordering and authorization, without whole-dataset fetching. No automatic request on selection changes.
+- selectedOptions supplies labels for initial/off-page values. Labels for selected remote options survive page/query changes; unknown IDs remain visible as IDs. Selection events expose option snapshots; IDs remain the model. Keep durable option labels in caller state when unmounting. locale defaults to pl; pass en for English presentation. Ordinary closed controls retain normalized field styling and native keyboard selection.
 
 ## AppForm
 
