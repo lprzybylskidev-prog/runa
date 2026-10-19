@@ -10,7 +10,7 @@ const props = withDefaults(
     busy: false,
     error: '',
     closeOnEscape: true,
-    closeOnOutside: false,
+    closeOnOutside: true,
     closable: true,
     initialFocus: '',
     locale: 'pl',

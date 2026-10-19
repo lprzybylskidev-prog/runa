@@ -561,3 +561,8 @@ Status: **implemented; awaiting explicit owner visual acceptance**. The owner ac
 
 - 2026-10-19 — Owner requested title/close-button alignment when no additional header content is present. Title-only dialog headers now align their contents centrally; headers containing a description keep top alignment. Both layouts contain no matching provisional dialogs. Component guidance is synchronized; visual acceptance remains pending.
 - Verification: strict TypeScript, focused lint/formatting, review build and docs/diff checks pass. Rendered light/dark checks confirm equal title/button vertical centers without a description and preserved top alignment with a description. Evidence: artifacts/playwright/point16/header-*.png. No Docker resources created or removed.
+
+### Point 16 pointer-dismissal modes
+
+- 2026-10-19 — Owner requested two configurable pointer-dismissal modes: close button alone or close button plus outside click. All three dialog variants now enable outside dismissal by default; closeOnOutside=false retains button-only pointer dismissal. The review uses an explicit two-choice selector. Escape remains separately configurable; busy and complete-backdrop-gesture rules still apply. This supersedes the earlier opt-in outside-dismissal default. Visual acceptance remains pending.
+- Verification: nine dialog tests, strict TypeScript, focused lint/formatting, review build and docs/diff checks pass. Rendered checks verify default outside closure with return focus and button-only mode ignoring outside clicks while closing through X. No Docker resources created or removed.

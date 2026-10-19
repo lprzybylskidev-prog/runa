@@ -18,7 +18,7 @@ const alertOpen = ref(false),
   customOpen = ref(false),
   nestedOpen = ref(false);
 const size = ref<DialogSize>('md');
-const outside = ref(false),
+const outside = ref(true),
   escape = ref(true),
   long = ref(false),
   fail = ref(false);
@@ -99,9 +99,24 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
           ]"
           @update:model-value="changeSize"
         />
-        <Checkbox
-          v-model="outside"
-          :label="text('Zamykaj kliknięciem tła', 'Close on backdrop click')"
+        <Select
+          :model-value="outside ? 'both' : 'button'"
+          :label="text('Zamykanie myszą', 'Pointer dismissal')"
+          :locale="english ? 'en' : 'pl'"
+          :options="[
+            {
+              value: 'button',
+              label: text('Tylko przycisk ×', 'Close button only'),
+            },
+            {
+              value: 'both',
+              label: text(
+                'Przycisk × i kliknięcie poza modalem',
+                'Close button and outside click',
+              ),
+            },
+          ]"
+          @update:model-value="outside = $event === 'both'"
         />
         <Checkbox
           v-model="escape"
@@ -224,6 +239,7 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
       <ConfirmDialog
         v-model="nestedOpen"
         :title="text('Zagnieżdżone potwierdzenie', 'Nested confirmation')"
+        :close-on-outside="outside"
         :locale="english ? 'en' : 'pl'"
         @confirm="nestedOpen = false"
         ><p>
