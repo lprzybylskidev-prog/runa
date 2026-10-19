@@ -31,7 +31,7 @@
 
 :root {
   color-scheme: light;
-  --runa-container-header-background: var(--runa-surface-muted);
+  --runa-container-body-background: var(--runa-surface-muted);
   --runa-backdrop-grid-opacity: 0.09;
   --runa-constellation-line-opacity: 0.48;
   --runa-art-divider: color-mix(in srgb, var(--runa-border) 35%, transparent);
@@ -56,7 +56,7 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --runa-container-header-background: var(--runa-surface);
+  --runa-container-body-background: var(--runa-surface);
   --runa-backdrop-grid-opacity: 0.045;
   --runa-constellation-line-opacity: 0.2;
   --runa-art-divider: var(--runa-border);
