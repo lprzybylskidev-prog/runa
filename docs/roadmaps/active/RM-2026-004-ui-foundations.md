@@ -21,7 +21,7 @@ impact_areas:
 
 ### Goal and release
 
-Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Real production-Nginx host verification passed in point 7 on 2026-10-18; point 8 is accepted after owner-requested scope reduction; point 9, including neutral feedback, and point 10, including the inverse neutral surface hierarchy, are complete and visually accepted on 2026-10-19. Point 11 is complete and visually accepted on 2026-10-19. Point 12 is implemented and awaits visual acceptance.
+Deliver optional, individually reusable Vue UI primitives, three layouts, branded HTTP errors and integration contracts for future applications/modules. Preserve the current `/` welcome dashboard's purpose, main content, appearance and preference interactions, except for the explicitly superseding dual-version footer requirement (USER 254). Activated by the owner on 2026-10-18; points 1–6 are complete and visually accepted on 2026-10-18. The owner requested and accepted favicon work in point 6. Real production-Nginx host verification passed in point 7 on 2026-10-18; point 8 is accepted after owner-requested scope reduction; point 9, including neutral feedback, and point 10, including the inverse neutral surface hierarchy, are complete and visually accepted on 2026-10-19. Point 11 is complete and visually accepted on 2026-10-19. Point 12 is complete and visually accepted on 2026-10-19.
 
 Planned release: **0.2.0**, from audited `VERSION` **0.1.2**. This is a feature roadmap under `docs/workflows/releases.md`, not a stable API/1.0 declaration. Pre-1.0 API additions and documented evolution justify a minor release; no major bump is authorized. Recompute from actual main at activation if an intervening release occurs and synchronize the two successor drafts.
 
@@ -145,8 +145,8 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Requires accepted 9. Cards/accordions/tabs/dividers/dropdowns/breadcrumbs/pagination with controlled state and keyboard behavior. Reuse in shell where appearance is preserved. **Visual gate accepted by the owner on 2026-10-19, including lighter neutral headers/footer above darker bodies.**
 - [x] 11. Loading, progress, async content and statistics.
   - Requires accepted 10. Reuse spinner/overlay; add skeleton/empty/progress/async slots. KPI label/value/icon/trend/semantic/custom-visualization slots and global/filtered mode toggle, per-view default/persistence. Calculations/providers stay external. Test all states and switching. **Visual gate accepted by the owner on 2026-10-19.**
-- [ ] 12. Form container, common field wrapper and text/numeric inputs.
-  - Requires accepted 11. Sections, columns, collapse/actions, validation messages and text/numeric inventory. Explicit dirty/busy/value contracts, Laravel error mapping and decimal serialization tests. **Visual gate: field states and responsive form.**
+- [x] 12. Form container, common field wrapper and text/numeric inputs.
+  - Requires accepted 11. Sections, columns, collapse/actions, validation messages and text/numeric inventory. Explicit dirty/busy/value contracts, Laravel error mapping and decimal serialization tests. **Visual gate accepted by the owner on 2026-10-19, including normalized field chrome/autofill and inline units.**
 - [ ] 13. Date/time, logical, file and additional inputs.
   - Requires accepted 12. Date/time/datetime/range, checkbox/radio/switch, file/multiple file, color/hidden/tags; localize values/display and test DST/date-only/null boundaries, keyboard and autofill. **Visual gate: input catalog.**
 - [ ] 14. Composable selection controls.
@@ -445,7 +445,7 @@ Point 11 closure: the owner explicitly accepted the loading/statistics catalog a
 
 ## Point 12 execution record
 
-Status: implemented on 2026-10-19; **owner visual acceptance pending**. Point 12 remains open; point 13 has not started.
+Status: **complete and visually accepted by the owner on 2026-10-19**, including field chrome/autofill and inline units. The owner explicitly requested point 13 next.
 
 - Extended existing Form with description/feedback/actions, responsive columns, valid/dirty metadata, busy fieldset disabling and error focus recovery. Added semantic FormSection with controlled collapse preserving values, FormField with stable labels/helper/warning/error relations, and TextInput covering text/textarea/password/email/url/tel, native autofill attributes, nullable/required/disabled/readonly/invalid states and IME-safe editing.
 - Added NumberInput for integer/decimal/currency/percentage with string/null values, exact PL/EN separator formatting and optional scale. No float conversion, rounding, grouping masks, exponents or percentage rescaling. Invalid partial drafts remain visible and in the model; serialization rejects them instead of submitting stale prior values. Units join accessible descriptions.
@@ -469,3 +469,5 @@ Status: implemented on 2026-10-19; **owner visual acceptance pending**. Point 12
 - Verification: ten form behavior tests, typecheck, focused lint/formatting, production/root/native-error/review builds, docs checks and diff hygiene pass. Twenty-four PL/EN light/dark desktop/tablet/mobile combinations across Chromium and Firefox verify attached unit alignment/height, accessible description linkage, no page overflow and native email/url versus tel typeMismatch behavior. Six additional light/dark error/focus/disabled cases verify suffix border/surface/text consistency. Evidence: `artifacts/playwright/point12-units/` (captures, results.json, states.json). No dependencies, migrations, runtime configuration or Docker resources changed; existing services/data/caches/reports remain preserved.
 
 Inline-unit follow-up: reduced the shared hover selector's specificity so hover cannot override error/focus borders. Six final light/dark unit-state checks with the pointer over the field pass after transitions settle; review/production/native-error builds and typecheck pass. This preserves matching input/suffix state colors during pointer interaction.
+
+Point 12 closure: the owner explicitly accepted the form/text/numeric delivery and its corrections on 2026-10-19 and authorized immediate continuation to point 13. Implementation/correction commits: 2f2cd64, a1e8909, c01421b, 864df97.
