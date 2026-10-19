@@ -8,7 +8,7 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Use for the current small, native selection controls. It preserves native keyboard behavior and wraps the select in a visible label.
 - Props: `label`, string `modelValue`, readonly `options` with string `value`/`label`.
 - Emits: `update:modelValue`; callers validate their narrower domain union.
-- Minimum 44px control height, 4px corners and subtle border transitions; shared palette input, border and focus tokens.
+- Minimum 44px control height, 4px corners and subtle border transitions; shared runa-field-control input/focus/autofill treatment, a CSS chevron and appearance:none for the closed select. Native option keyboard/selection behavior is retained.
 - Available for genuine selection controls; root language/theme preferences now use explicit buttons.
 
 ## AppForm

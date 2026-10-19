@@ -148,14 +148,93 @@ body {
 select {
   cursor: pointer;
 }
-input:autofill {
-  background-color: var(--runa-input-background);
-  color: var(--runa-text);
+/* Shared field chrome: keep autofill and focus inside the control boundary. */
+.runa-field-control {
+  --field-background: var(--runa-input-background);
+  --field-text: var(--runa-text);
+  --field-focus-shadow: inset 0 0 0 0 transparent;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  appearance: none;
+  outline: none;
+  border: 1px solid var(--runa-control-border);
+  border-radius: 4px;
+  background: var(--field-background);
+  color: var(--field-text);
+  caret-color: var(--field-text);
+  box-shadow: var(--field-focus-shadow);
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color 160ms ease-out,
+    background-color 160ms ease-out;
 }
-input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 1000px var(--runa-input-background) inset;
-  -webkit-text-fill-color: var(--runa-text);
-  caret-color: var(--runa-text);
+.runa-field-control::selection {
+  background: var(--runa-primary-subtle);
+  color: var(--runa-primary-text);
+}
+.runa-field-control::placeholder {
+  color: var(--runa-text-muted);
+  opacity: 1;
+}
+.runa-field-control:hover:not(:disabled):not([readonly]) {
+  border-color: var(--runa-secondary-solid);
+}
+.runa-field-control[aria-invalid='true'] {
+  border-color: var(--runa-danger-solid);
+}
+.runa-field-control:focus {
+  --field-focus-shadow: inset 0 0 0 1px var(--runa-focus-ring);
+  outline: none;
+  border-color: var(--runa-focus-ring);
+}
+.runa-field-control[readonly]:not(:disabled) {
+  --field-background: var(--runa-surface-muted);
+}
+.runa-field-control:disabled {
+  --field-background: var(--runa-disabled-background);
+  --field-text: var(--runa-disabled-text);
+  cursor: not-allowed;
+}
+.runa-field-control:autofill {
+  box-shadow:
+    var(--field-focus-shadow),
+    inset 0 0 0 1000px var(--field-background);
+  -webkit-text-fill-color: var(--field-text);
+  caret-color: var(--field-text);
+}
+.runa-field-control:-webkit-autofill {
+  box-shadow:
+    var(--field-focus-shadow),
+    inset 0 0 0 1000px var(--field-background);
+  -webkit-text-fill-color: var(--field-text);
+  caret-color: var(--field-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .runa-field-control {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .runa-field-control:autofill {
+    -webkit-text-fill-color: CanvasText;
+  }
+  .runa-field-control:-webkit-autofill {
+    -webkit-text-fill-color: CanvasText;
+  }
+  .runa-field-control:disabled:autofill {
+    -webkit-text-fill-color: GrayText;
+  }
+  .runa-field-control:disabled:-webkit-autofill {
+    -webkit-text-fill-color: GrayText;
+  }
+  .runa-field-control:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 .minimal-page {
   position: relative;

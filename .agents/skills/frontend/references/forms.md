@@ -1,6 +1,6 @@
 # Form Patterns
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. There are no business forms or backend write endpoints yet. Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. ApplicationReview's Select toolbar stays with its selection-control phase (point 14).
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. There are no business forms or backend write endpoints yet. Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. ApplicationReview's Select toolbar now shares the normalized field appearance; richer field/selection APIs remain in point 14.
 
 ## Container and field composition
 
@@ -8,7 +8,7 @@ Form always uses novalidate, prevents native navigation and blocks submission wh
 
 FormSection is a labeled fieldset with description, responsive columns and optional controlled collapsed state (update:collapsed). Collapsing hides but does not unmount inputs. FormField supplies a visible label, stable supplied/generated control ID, required marker and helper/warning/error descriptions; its slot receives id/describedBy/invalid for custom controls. It does not guess field semantics or business validation. Error messages may be a string or readonly list. Pass exact dot keys such as errors['contacts.0.email'] when binding nested backend errors.
 
-TextInput composes FormField with text/textarea/password/email/url/tel semantics. v-model is string|null; nullable opt-in emits null on empty, otherwise empty string. Native attributes/listeners (name, autocomplete, maxlength, rows, blur, etc.) are forwarded to the control; external aria-describedby is merged with field descriptions. Props include required/disabled/readonly/helper/warning/error. Preserve explicit autofill intent; no implicit password-reveal workflow. IME input waits for composition end, with no formatting/cursor rewrite. Readonly/disabled controls do not emit edits. Use controlled inline errors and the form's novalidate; browser validation bubbles do not drive UX.
+TextInput composes FormField with text/textarea/password/email/url/tel semantics. v-model is string|null; nullable opt-in emits null on empty, otherwise empty string. Native attributes/listeners (name, autocomplete, maxlength, rows, blur, etc.) are forwarded to the control; external aria-describedby is merged with field descriptions. Props include required/disabled/readonly/helper/warning/error. Preserve explicit autofill intent; no implicit password-reveal workflow. IME input waits for composition end, with no formatting/cursor rewrite. Readonly/disabled controls do not emit edits. Use controlled inline errors and the form's novalidate; browser validation bubbles do not drive UX. TextInput/NumberInput/textarea and the existing Select share .runa-field-control styling: appearance:none, no detached outer focus ring, a visible internal focus border, theme text selection and state-aware autofill paint. Preserve autocomplete/password managers; do not use delayed-color transition hacks or disable saved credentials. Forced-colors retains a system outline. Future field implementations should compose this shared field treatment where applicable.
 
 ## Exact numeric values
 
@@ -57,3 +57,5 @@ async function save() {
   <template #actions><Button type="submit" :busy="busy">Zapisz</Button></template>
 </Form>
 ```
+
+Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:autofill) documents UA-important background/text rules. The shared field paints its theme surface with an inset shadow and sets text-fill/caret colors while retaining the internal focus indicator; it does not attempt to replace browser-owned suggestion UI.

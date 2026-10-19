@@ -14,18 +14,43 @@ function update(event: Event) {
 <template>
   <label class="flex flex-col gap-1.5 text-xs font-medium text-muted">
     {{ label }}
-    <select
-      :value="modelValue"
-      class="min-h-11 rounded border border-control bg-input px-3 py-2 text-sm text-ink hover:border-primary"
-      @change="update"
-    >
-      <option
-        v-for="option in options"
-        :key="option.value"
-        :value="option.value"
+    <span class="app-select-wrap"
+      ><select
+        :value="modelValue"
+        class="runa-field-control app-select"
+        @change="update"
       >
-        {{ option.label }}
-      </option>
-    </select>
+        <option
+          v-for="option in options"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select></span
+    >
   </label>
 </template>
+
+<style scoped>
+.app-select-wrap {
+  position: relative;
+  display: block;
+}
+.app-select {
+  padding-right: 36px;
+  cursor: pointer;
+}
+.app-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+</style>

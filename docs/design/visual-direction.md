@@ -142,6 +142,8 @@ User decision (2026-10-17): application forms do not use built-in HTML/browser v
 
 Style browser autofill states, including saved credentials filled by the browser or a password manager, to match Runa's input surfaces, text, borders and focus treatment in both themes. Avoid browser-default autofill highlights that clash with the design. Preserve autocomplete and password-manager functionality; do not disable them to work around styling. Verify actual autofilled fields during rendered acceptance where browser support permits.
 
+Owner correction (2026-10-19, RM-2026-004 point 12): normalize app-owned text/numeric/textarea/select chrome with appearance:none. Replace the detached outer input-focus ring with a theme-colored border/inset indicator inside the control boundary; keep keyboard focus visible and retain the system focus outline in forced-colors mode. Autofill paints the current field surface/text, including readonly/disabled variants, without disabling autocomplete. Native browser/password-manager suggestion popups remain browser-owned; styling the closed control does not replace those workflows.
+
 Related baseline: [Frontend architecture — forms and validation](../architecture/frontend.md).
 
 ## Responsive design approach
