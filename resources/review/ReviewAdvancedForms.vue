@@ -308,25 +308,10 @@ async function leave() {
     <Card
       ><template #header
         ><h2>
-          {{ text('Kreator i ochrona zmian', 'Wizard and unsaved changes') }}
+          {{ text('Kreator', 'Wizard') }}
         </h2></template
       >
       <div class="space-y-5">
-        <Checkbox
-          v-model="guardEnabled"
-          :label="
-            text(
-              'Ostrzegaj o niezapisanych zmianach',
-              'Warn about unsaved changes',
-            )
-          "
-        />
-        <Checkbox
-          v-model="submitFail"
-          :label="
-            text('Symuluj błąd zakończenia', 'Simulate completion failure')
-          "
-        />
         <Form
           :dirty="dirty"
           :busy="wizard.busy.value"
@@ -393,6 +378,35 @@ async function leave() {
             >
           </Wizard>
         </Form>
+      </div>
+    </Card>
+    <Card>
+      <template #header
+        ><h2>
+          {{
+            text(
+              'Sterowanie testowe kreatora i ochrony zmian',
+              'Wizard and unsaved changes test controls',
+            )
+          }}
+        </h2></template
+      >
+      <div class="space-y-5">
+        <Checkbox
+          v-model="guardEnabled"
+          :label="
+            text(
+              'Ostrzegaj o niezapisanych zmianach',
+              'Warn about unsaved changes',
+            )
+          "
+        />
+        <Checkbox
+          v-model="submitFail"
+          :label="
+            text('Symuluj błąd zakończenia', 'Simulate completion failure')
+          "
+        />
         <p class="text-xs text-muted">
           {{ text('Niezapisane zmiany', 'Unsaved changes') }}: {{ dirty }}
         </p>
