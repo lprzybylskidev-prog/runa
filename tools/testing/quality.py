@@ -57,6 +57,25 @@ class QualityContracts(unittest.TestCase):
         for key in ('production-compose', 'production-build', 'production-health', 'production-ai-isolation', 'repository-container-scan'):
             self.assertEqual(nodes[key]['exclusive_group'], 'production-simulation', key)
 
+    def test_repository_scan_waits_for_selected_artifact_builds(self):
+        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        for areas in (['security'], ['security', 'frontend'], ['security', 'production'], ['security', 'frontend', 'production']):
+            with self.subTest(areas=areas):
+                nodes = quality.select(definition, areas)
+                dependencies = nodes['repository-container-scan']['depends_on']
+                self.assertEqual('frontend-build' in dependencies, 'frontend' in areas)
+                self.assertEqual('frontend-render-diagnostics' in dependencies, 'frontend' in areas)
+                self.assertEqual('production-build' in dependencies, 'production' in areas)
+        with tempfile.TemporaryDirectory() as folder:
+            build = node('frontend-build', 'false')
+            scan = node('repository-container-scan', 'true')
+            scan['depends_on_if_selected'] = ['frontend-build']
+            selected = quality.select({'base': [build, scan], 'impact_areas': {}, 'final': []}, [])
+            state = {'status': 'running', 'steps': {key: dict(value, status='pending') for key, value in selected.items()}}
+            self.assertEqual(quality.execute(Path(folder), state), 1)
+            self.assertEqual(state['steps']['repository-container-scan']['status'], 'blocked')
+            self.assertFalse((Path(folder) / 'repository-container-scan.log').exists())
+
     def test_host_coordinator_delegates_only_application_steps(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=False), patch.object(quality, 'app_command', return_value=['true']) as delegate:
             nodes = [node('app', 'application-check'), dict(node('host', 'true'), execution_context='host')]
