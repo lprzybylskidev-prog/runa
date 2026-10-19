@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { chromium, firefox, expect } from '@playwright/test';
 
 const base = 'http://nginx-test:8080';
+const version = (await readFile('VERSION', 'utf8')).trim();
 const artifacts = 'artifacts/playwright/foundation';
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch();
 const errors = [];
 async function settled(page) {
-  await expect(page.locator('.auth-page')).toHaveAttribute(
+  await expect(page.locator('.minimal-page')).toHaveAttribute(
     'aria-busy',
     'false',
   );
@@ -70,14 +71,16 @@ try {
         await expect(page.locator('html')).toHaveAttribute('data-theme', value);
         assert.equal(
           await page.evaluate(
-            () => document.documentElement.scrollWidth <= window.innerWidth,
+            () =>
+              globalThis.document.documentElement.scrollWidth <=
+              globalThis.window.innerWidth,
           ),
           true,
         );
-        await page.evaluate(() => document.fonts.ready);
+        await page.evaluate(() => globalThis.document.fonts.ready);
         assert.equal(
           await page.evaluate(() =>
-            document.fonts.check('16px "IBM Plex Mono"'),
+            globalThis.document.fonts.check('16px "IBM Plex Mono"'),
           ),
           true,
         );
@@ -100,11 +103,13 @@ try {
     );
   }
   await page.evaluate(() => {
-    document.documentElement.style.fontSize = '200%';
+    globalThis.document.documentElement.style.fontSize = '200%';
   });
   assert.equal(
     await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
+      () =>
+        globalThis.document.documentElement.scrollWidth <=
+        globalThis.window.innerWidth,
     ),
     true,
   );
@@ -116,7 +121,9 @@ try {
   await page.keyboard.press('Tab');
   await page.keyboard.press('Enter');
   await expect(page.locator('#main')).toBeFocused();
-  await expect(page.getByRole('contentinfo')).toContainText('Version');
+  const footer = page.getByRole('contentinfo');
+  await expect(footer).toContainText(`Runa v${version}`);
+  await expect(footer).toContainText(`Powered by Runa v${version}`);
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
     'target',
     '_blank',
@@ -126,11 +133,11 @@ try {
 
   const restricted = await browser.newContext({ reducedMotion: 'reduce' });
   await restricted.addInitScript(() => {
-    Storage.prototype.getItem = () => {
-      throw new DOMException('Blocked', 'SecurityError');
+    globalThis.Storage.prototype.getItem = () => {
+      throw new globalThis.DOMException('Blocked', 'SecurityError');
     };
-    Storage.prototype.setItem = () => {
-      throw new DOMException('Blocked', 'SecurityError');
+    globalThis.Storage.prototype.setItem = () => {
+      throw new globalThis.DOMException('Blocked', 'SecurityError');
     };
   });
   const restrictedPage = await restricted.newPage();

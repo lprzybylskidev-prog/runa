@@ -13,6 +13,7 @@ impact_areas:
   - production
   - security
   - documentation
+  - ai_environment
 ---
 
 # RM-2026-004 — UI foundations, layouts and reusable components
@@ -171,8 +172,10 @@ Owner clarification (2026-10-18): build layouts first, then deliver individual s
   - Register both approved export dependencies and distinguish the two reviewed permanent HTML/JSON output statements from debug residue, retaining narrow regression coverage.
 - [x] 24. Finalize native emergency documents before browser verification.
   - Repair the E2E preparation sequence after a clean frontend build; regenerate static PHP documents before the browser harness starts, bound Chromium-only protocol/PDF assertions to Chromium while retaining shared Firefox checks, verify the real suite and synchronize testing guidance.
-- [ ] 25. Full verification, release finalization, merge and final report.
-  - Requires 1–24 complete, all visual acceptance recorded. Review current-state README, design/frontend/API/config/localization/testing/tooling/production docs and affected skills; record sources/findings/disposition. Run the full applicable local gate per `docs/quality/gates.yml` including production fallback/isolation and security. Insert fixes before this point and rerun the entire final gate on any substantive failure. Follow roadmaps/releases workflows for metadata, knowledge refresh, docs/release checks, closure/merge/main sanity, annotated tag/GitHub Release and branch deletion. Background gates end the agent turn without polling. Planned version 0.2.0 is finalized from actual VERSION; do not activate RM-005 automatically.
+- [x] 25. Synchronize root rendering diagnostics with the accepted layout.
+  - Replace obsolete AuthLayout and single-version footer assertions with current MinimalLayout and independent application/platform versions; verify the complete diagnostic and blocked final contracts, synchronize stale current-state frontend claims and select the already-required strict AI checks in the full plan.
+- [ ] 26. Full verification, release finalization, merge and final report.
+  - Requires 1–25 complete, all visual acceptance recorded. Review current-state README, design/frontend/API/config/localization/testing/tooling/production docs and affected skills; record sources/findings/disposition. Run the full applicable local gate per `docs/quality/gates.yml` including production fallback/isolation and security. Insert fixes before this point and rerun the entire final gate on any substantive failure. Follow roadmaps/releases workflows for metadata, knowledge refresh, docs/release checks, closure/merge/main sanity, annotated tag/GitHub Release and branch deletion. Background gates end the agent turn without polling. Planned version 0.2.0 is finalized from actual VERSION; do not activate RM-005 automatically.
 
 ## Point 1 execution record
 
@@ -770,3 +773,13 @@ Status: complete with point-level verification and checklist synchronization; re
 
 - Point 24 completion: reproduced the missing static document immediately after a clean pnpm build; the corrected E2E wrapper regenerated it before the harness and passed native-error cases in Chromium/Firefox. The broader reproduction was intentionally stopped after exposing five Firefox-only test API failures, rather than claimed passed. After correction, all 10 focused print/integrated scenarios pass across Chromium and Firefox (PL/EN, light/dark, normal/200% reflow); Chromium retains real PDF/full AX-tree assertions. Strict TypeScript, changed-test zero-warning ESLint, 9 quality contracts in the application container, docs/maintenance/debug-residue and diff checks pass. Testing/tooling docs are synchronized. No application behavior, dependency, database schema, production policy or UI design changed. Full gate remains required at point 25.
 - Host state: actual source review and private evidence are under .runtime/verification/rm004-final; the bf7c051 production simulation passed readiness/isolation before the first gate. All task simulation resources remain necessary until the new full gate finishes. All existing backups are preserved; private simulation retention was temporarily raised from 7 to 9 before redeploy to prevent pruning seven older backups. Development/test databases, Qdrant/model caches, other projects and verification reports are preserved; nothing was removed.
+
+### Point 25 rendering diagnostic correction
+
+- 2026-10-19 — Second host final gate on b7751c1 passed all 319 browser tests (125 intentional skips), 137 frontend unit tests, backend/static/build/security/production gates. Root render diagnostics failed because tools/testing/frontend.mjs still referenced retired .auth-page; source inspection also found the obsolete single-version footer text assertion. Dependent final nodes were blocked. Preserved complete logs/state under .runtime/verification/rm004-final/failed-gate-2. No final PASS or release is claimed.
+- Inserted fix point 25 before final verification, now point 26. Update only diagnostic contracts to the accepted MinimalLayout and dual-version footer, preserving all viewport/theme/locale/font/keyboard/storage/reduced-motion/console/network assertions. Full final gate must rerun on the committed correction.
+
+- Bounded source review found two obsolete current frontend claims: the point-9 tooltip correction was still described as deferred, and delivered tables as pending. Correct these in the owning architecture doc. The roadmap/handoff already requires strict final AI gates, but ai_environment was absent from impact_areas; include it so the full plan actually runs knowledge doctor/evals and Boost validation instead of relying on preflight evidence. This restores agreed verification scope without changing quality policy.
+
+- Point 25 completion: full root rendering doctor passes against real testing Nginx, including PL/EN, light/dark/system, desktop/tablet/mobile, 200% text, skip focus, fonts, both footer versions, preference persistence/denied storage, reduced motion, console/network collection and Firefox smoke. Final changed-tool formatting/zero-warning ESLint and diff checks pass. Blocked final contract suites pass separately (7 release, 14 docs, 11 knowledge); strict knowledge doctor/eval and Boost validation pass. The selected full plan now includes knowledge-doctor, knowledge-evals and boost-mcp, as required by the existing handoff/specification. Current frontend/testing documentation is synchronized. No application UI/runtime/dependency/schema change.
+- Preserve all development/test database data, model/Qdrant caches, existing backups/reports and other projects. Task-created production simulation and candidate images remain only for the new complete gate; scoped cleanup follows their last checks. No Docker resources were removed in this correction. The final gate must restart on the committed candidate; point 26 remains open.
