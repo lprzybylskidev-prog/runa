@@ -1,6 +1,8 @@
 <script setup lang="ts" generic="Row">
 import { computed, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
+import AppIcon from './AppIcon.vue';
+import AppTooltip from './AppTooltip.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppTextInput from './AppTextInput.vue';
 import AppNumberInput from './AppNumberInput.vue';
@@ -122,9 +124,19 @@ function drop(key: string) {
           : controller.select($event)
       "
     />
-    <AppButton size="sm" @click="open = true">{{
-      text('Kolumny i widoki', 'Columns and views')
-    }}</AppButton>
+    <AppTooltip :text="text('Kolumny i widoki', 'Columns and views')">
+      <AppButton
+        size="sm"
+        icon-only
+        variant="ghost"
+        :aria-label="text('Kolumny i widoki', 'Columns and views')"
+        aria-haspopup="dialog"
+        :aria-expanded="open"
+        @click="open = true"
+      >
+        <AppIcon name="adjustments-horizontal" :size="20" />
+      </AppButton>
+    </AppTooltip>
     <span
       v-if="controller.dirty.value"
       role="status"

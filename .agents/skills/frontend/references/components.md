@@ -193,7 +193,7 @@ Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statist
 
 ### TablePreferences and useTableViews
 
-`resources/js/components/AppTablePreferences.vue` supplies the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
+`resources/js/components/AppTablePreferences.vue` supplies a sm icon-only ghost settings button with a localized accessible name/Tooltip, matching export settings, plus the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
 
 ### Small field controls
 
