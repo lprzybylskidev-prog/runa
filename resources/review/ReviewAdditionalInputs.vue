@@ -246,29 +246,33 @@ const fileLabels = computed(() => ({
       <div class="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2">
         <FileInput
           v-model="single"
+          :locale="locale"
           :label="text('Jeden dokument', 'Single document')"
           accept=".pdf"
           :max-bytes="1048576"
           v-bind="fileLabels"
+          :choose-label="text('Wybierz dokument', 'Choose document')"
           :helper="
             text(
-              'PDF, do 1 MB. Tylko wybór lokalny, bez wysyłania.',
-              'PDF, up to 1 MB. Local selection only, no upload.',
+              'Wybrany dokument zastępuje poprzedni. Pliki pozostają lokalne.',
+              'The selected document replaces the previous one. Files stay local.',
             )
           "
           @issues="singleIssues = $event.length"
         /><FileInput
           v-model="multiple"
+          :locale="locale"
           :label="text('Wiele załączników', 'Multiple attachments')"
           multiple
           :max-files="3"
           :max-bytes="2097152"
           accept="image/*,.pdf"
           v-bind="fileLabels"
+          :choose-label="text('Dodaj załączniki', 'Add attachments')"
           :helper="
             text(
-              'Do 3 plików, po 2 MB. Obrazy lub PDF.',
-              'Up to 3 files, 2 MB each. Images or PDF.',
+              'Możesz dodawać pliki partiami lub przeciągnąć je razem.',
+              'Add files in batches or drag and drop them together.',
             )
           "
           @issues="multipleIssues = $event.length"

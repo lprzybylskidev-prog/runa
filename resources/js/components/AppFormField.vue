@@ -67,7 +67,7 @@ const describedBy = computed(
     <ul
       v-if="messages.length"
       :id="`${controlId}-error`"
-      class="space-y-1 text-xs text-[var(--runa-danger-text)]"
+      class="space-y-1 text-xs text-[var(--runa-danger-text)] [overflow-wrap:anywhere]"
     >
       <li v-for="(message, index) in messages" :key="index">{{ message }}</li>
     </ul>
