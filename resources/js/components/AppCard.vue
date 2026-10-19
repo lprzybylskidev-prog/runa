@@ -4,13 +4,16 @@
   >
     <header
       v-if="$slots.header || $slots.actions"
-      class="flex flex-wrap items-center justify-between gap-3 border-b border-line p-5"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-t-[3px] border-b border-line bg-[var(--runa-primary-subtle)] text-primary px-5 py-4"
     >
-      <div><slot name="header" /></div>
+      <div class="font-semibold"><slot name="header" /></div>
       <slot name="actions" />
     </header>
     <div class="p-5"><slot /></div>
-    <footer v-if="$slots.footer" class="border-t border-line p-5 text-muted">
+    <footer
+      v-if="$slots.footer"
+      class="rounded-b-[3px] border-t border-line bg-surface px-5 py-3 text-xs text-muted"
+    >
       <slot name="footer" />
     </footer>
   </section>

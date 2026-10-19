@@ -14,7 +14,7 @@ const id = useId();
     <h3>
       <button
         type="button"
-        class="flex min-h-11 w-full items-center justify-between gap-3 rounded p-4 text-left transition-colors hover:bg-[var(--runa-surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--runa-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+        class="flex min-h-11 w-full items-center justify-between gap-3 rounded bg-[var(--runa-primary-subtle)] text-primary p-4 text-left font-semibold transition-colors hover:bg-[var(--runa-surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--runa-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="disabled"
         :aria-expanded="modelValue"
         :aria-controls="id"
