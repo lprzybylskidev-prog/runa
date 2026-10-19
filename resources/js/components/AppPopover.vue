@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, ref, useId, watch } from 'vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
 const props = withDefaults(
@@ -91,7 +92,7 @@ function tab(event: globalThis.KeyboardEvent) {
   }
 }
 function leaving(element: globalThis.Element) {
-  if (element instanceof globalThis.HTMLElement) element.inert = true;
+  deactivateMotionElement(element);
 }
 </script>
 <template>
@@ -99,7 +100,11 @@ function leaving(element: globalThis.Element) {
     ><slot name="trigger" :toggle="toggle" :open="open" :panel-id="panelId"
   /></span>
   <Teleport :to="teleportTarget">
-    <Transition name="popover-fade" @before-leave="leaving">
+    <Transition
+      name="popover-fade"
+      @before-enter="activateMotionElement"
+      @before-leave="leaving"
+    >
       <section
         v-if="open"
         :id="panelId"
@@ -171,5 +176,8 @@ function leaving(element: globalThis.Element) {
   .popover-fade-leave-active {
     transition: none;
   }
+}
+.app-popover-panel.popover-fade-leave-active {
+  visibility: visible;
 }
 </style>

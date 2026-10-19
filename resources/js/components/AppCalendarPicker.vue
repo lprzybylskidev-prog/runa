@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useContentMotion } from '../composables/useContentMotion';
 import { computed, nextTick, ref } from 'vue';
 import AppButton from './AppButton.vue';
 import { isDateOnly } from '../lib/temporal';
@@ -161,6 +162,7 @@ const fullLabel = (value: string) =>
     dateStyle: 'full',
     timeZone: 'UTC',
   }).format(dateOf(value));
+useContentMotion(root, () => `${mode.value}:${shown.value}`);
 </script>
 <template>
   <div ref="root" class="calendar-picker space-y-3">

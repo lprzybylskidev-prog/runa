@@ -142,4 +142,7 @@ onScopeDispose(() => globalThis.clearTimeout(timer));
     transition: none;
   }
 }
+.tooltip-content.tooltip-fade-leave-active {
+  visibility: visible;
+}
 </style>

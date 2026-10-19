@@ -113,7 +113,7 @@ it('preserves values when a controlled form section is collapsed', async () => {
   await w.get('button').trigger('click');
   expect(w.emitted('update:collapsed')).toEqual([[true]]);
   await w.setProps({ collapsed: true });
-  expect(w.get('input').element.closest('[hidden]')).not.toBeNull();
+  expect(w.get('input').element.closest('[inert]')).not.toBeNull();
   await w.setProps({ collapsed: false });
   expect(w.get('input').element.value).toBe('draft');
   const field = mount(FormField, {

@@ -171,7 +171,7 @@ Design pages around user tasks and information hierarchy, not around maximizing 
 
 Do not default every layout to a dashboard grid of cards.
 
-Motion communicates state/change; it is not decoration by default.
+Motion communicates state/change; it is not decoration by default. Shared popup/content cues use 140ms, disclosures/control colors 160ms, following the accepted shell reference. Internal AppCollapse retains disclosure drafts while making closed content inert; useContentMotion reveals changed retained content without remounting. Leaving floating/dialog/list content stops accepting input immediately, and interrupted reopening restores it. Reduced-motion and print remove nonessential motion, including active programmatic animations. The complete component audit and maintenance rules are in `.agents/skills/frontend/references/motion.md`; the point-21 extension awaits visual acceptance.
 
 Do not rebuild the whole design system during an unrelated roadmap.
 
@@ -222,7 +222,7 @@ Import individual existing primitives from `@/runa/ui` (Vite, Vitest and TypeScr
 
 Public identity, navigation, preference-storage, selection/export/provider and print types live behind the same facade. Identity, exact-path page resolution and versioned preferences are implemented. Selection/export/provider/print types remain integration contracts; export engines are not delivered yet. Existing `runa.locale`/`runa.theme` behavior remains unchanged. Application versions are independent of platform versions; URL-derived route context is separate from persisted navigation appearance.
 
-The temporary `resources/review/` entry is built separately with `./bin/pnpm exec vite build --config vite.review.config.mjs` into ignored `public/ui-review/`. In `local`/`testing`, named route `review.ui` serves `/__review/ui`; a missing build returns 404. Other environments do not register it, and its controller rejects stale review routes outside local/testing. No environment flag enables production review. The main production entry/import graph and Docker build output copies exclude this separate entry/output. `http://localhost:8080/__review/ui` uses the normal development Nginx endpoint. Category controls currently demonstrate existing controls only; the minimal layout preview is available at `/__review/ui?preview=minimal`; application layout preview is available at `/__review/application/overview`; the native email preview is available at `/__review/email`; native error samples are available at `/__review/errors/{403,404,419,429,500,503}` and the generated emergency document at `/__review/errors/emergency`. `/__review/not-found` is a real branded 404. There is no catch-all success route. Remove temporary infrastructure at roadmap point 21 after explicit final visual acceptance.
+The temporary `resources/review/` entry is built separately with `./bin/pnpm exec vite build --config vite.review.config.mjs` into ignored `public/ui-review/`. In `local`/`testing`, named route `review.ui` serves `/__review/ui`; a missing build returns 404. Other environments do not register it, and its controller rejects stale review routes outside local/testing. No environment flag enables production review. The main production entry/import graph and Docker build output copies exclude this separate entry/output. `http://localhost:8080/__review/ui` uses the normal development Nginx endpoint. Category controls currently demonstrate existing controls only; the minimal layout preview is available at `/__review/ui?preview=minimal`; application layout preview is available at `/__review/application/overview`; the native email preview is available at `/__review/email`; native error samples are available at `/__review/errors/{403,404,419,429,500,503}` and the generated emergency document at `/__review/errors/emergency`. `/__review/not-found` is a real branded 404. There is no catch-all success route. Remove temporary infrastructure at roadmap point 22 after explicit final motion acceptance.
 
 ## Minimal layout and branding
 
@@ -300,7 +300,7 @@ Override the header/footer/message/layout independently through `resources/views
 
 Laravel generates text automatically from Markdown/text components. For custom HTML with lossy conversion, use native `Content(html: ..., text: ...)` or `Mailable::text(...)` and provide an explicit text view. Raw HTML views must provide email-compatible inline CSS themselves; the automatic theme inliner belongs to Markdown rendering. Keep URLs as text alternatives to important actions. Dynamic values must use Blade escaping; raw slots are trusted template markup, not unsanitized user HTML.
 
-Production PHP explicitly includes the native/namespaced views, mail brand-tile PNG, shared light palette and VERSION. Temporary email fixtures remain under `resources/review/mail` and are excluded from runtime copies. The named local/testing `review.email` route serves HTML by default, `?format=text` and `?format=eml`, with `locale=pl|en`, `long=1`, and `images=cid|blocked|public`. It uses only Laravel's array transport and a synthetic `.invalid` recipient, never external delivery. HTML preview substitutes CID bytes as a data URL; downloaded EML retains actual related MIME/CID structure. This temporary route rejects production/staging registration and stale-route invocation, and is removed in point 21.
+Production PHP explicitly includes the native/namespaced views, mail brand-tile PNG, shared light palette and VERSION. Temporary email fixtures remain under `resources/review/mail` and are excluded from runtime copies. The named local/testing `review.email` route serves HTML by default, `?format=text` and `?format=eml`, with `locale=pl|en`, `long=1`, and `images=cid|blocked|public`. It uses only Laravel's array transport and a synthetic `.invalid` recipient, never external delivery. HTML preview substitutes CID bytes as a data URL; downloaded EML retains actual related MIME/CID structure. This temporary route rejects production/staging registration and stale-route invocation, and is removed in point 22.
 
 ## HTTP error pages
 
@@ -316,7 +316,7 @@ Development setup runs the normal frontend build and `php resources/errors/build
 
 Default locale is Polish; `?lang=pl|en` or Accept-Language selects native pages. `?theme=light|dark` selects an explicit theme, otherwise system colors apply through CSS. Browser-local SPA preferences are not readable by PHP; the native controls use query parameters. Technical HTTP codes remain English. The independent Nginx emergency response uses the same pre-rendered MinimalLayout and selects static PL/EN/system/light/dark documents from the whitelisted query values; see `docs/production/architecture.md`. Its metadata is fixed at build time, since a failed application cannot provide runtime identity.
 
-Local/testing samples under `/__review/errors/{403,404,419,429,500,503}` preserve real statuses; `/__review/not-found` is an actual branded 404 and `/__review/errors/emergency` previews the generated document through PHP. The preview is not proof of Nginx fallback. All review registrations/controllers reject production/staging and retire at point 21. Permanent error views/assets remain.
+Local/testing samples under `/__review/errors/{403,404,419,429,500,503}` preserve real statuses; `/__review/not-found` is an actual branded 404 and `/__review/errors/emergency` previews the generated document through PHP. The preview is not proof of Nginx fallback. All review registrations/controllers reject production/staging and retire at point 22. Permanent error views/assets remain.
 
 ## Browser favicon
 
@@ -330,7 +330,7 @@ The ApplicationLayout top menu and sidebar, including their entries, disclosures
 
 Public `@/runa/ui` action imports include Button, ButtonGroup and Icon, with exported ControlSize/ControlTone/ButtonVariant types. Controls remain shell-independent. Button preserves its original neutral/md appearance and compact compatibility; explicit variants use shared semantic tokens. Busy state blocks native activation. ButtonGroup joins adjacent controls with one divider. ApplicationLayout consumes Button while retaining its unique initials profile control. Action-list/split buttons and reusable avatars are deferred until a concrete need exists, per owner review. See the component catalogue for full contracts.
 
-The temporary `/__review/ui` controls category grows with each visual roadmap point; later component groups remain unimplemented until their own point. The review entry remains development/testing only and retires in point 21.
+The temporary `/__review/ui` catalog contains all delivered component categories, including integrated motion review. The review entry remains development/testing only and retires in point 22 after visual acceptance.
 
 ## Shared feedback and floating layers
 

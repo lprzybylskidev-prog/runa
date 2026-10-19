@@ -16,12 +16,12 @@ it('keeps accordion expansion controlled and relates its trigger to preserved co
   });
   await w.get('button').trigger('click');
   expect(w.emitted('update:modelValue')).toEqual([[true]]);
-  expect(w.find('[hidden]').exists()).toBe(true);
+  expect(w.find('[inert]').exists()).toBe(true);
   await w.setProps({ modelValue: true });
-  expect(w.find('[hidden]').exists()).toBe(false);
+  expect(w.find('[inert]').exists()).toBe(false);
   expect(w.get('input').element.value).toBe('draft');
   expect(w.get('button').attributes('aria-controls')).toBe(
-    w.get('input').element.parentElement?.id,
+    w.get('input').element.closest('[id]')?.id,
   );
 });
 it('navigates tabs with arrows/Home/End, skips disabled tabs and retains inactive content', async () => {

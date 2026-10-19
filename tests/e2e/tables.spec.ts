@@ -75,10 +75,28 @@ test('personalizes columns and manages a persisted default view', async ({
   await expect(dialog.getByLabel('Width: Name', { exact: true })).toHaveValue(
     '240',
   );
-  await dialog
-    .locator('[draggable=true]')
-    .nth(2)
-    .dragTo(dialog.locator('li').first());
+  // Retyping passes through an invalid width; let its exiting feedback leave before measuring the drag path.
+  await expect(
+    dialog.getByText('Enter 80–800 px.', { exact: true }),
+  ).toHaveCount(0);
+  const source = await dialog.locator('[draggable=true]').nth(2).boundingBox();
+  const target = await dialog.locator('li').first().boundingBox();
+  if (!source || !target)
+    throw new Error('Column drag controls must be visible');
+  // A real pointer path supplies dragover after entering the drop target.
+  await page.mouse.move(
+    source.x + source.width / 2,
+    source.y + source.height / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    source.x + source.width / 2,
+    source.y + source.height / 2 - 12,
+    { steps: 5 },
+  );
+  await page.mouse.move(target.x + 20, target.y + 20, { steps: 10 });
+  await page.mouse.move(target.x + 22, target.y + 22, { steps: 3 });
+  await page.mouse.up();
   await expect(dialog.locator('li').first()).toContainText('City');
   await dialog.getByLabel('View name', { exact: true }).fill('Compact');
   await dialog

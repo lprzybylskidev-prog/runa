@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useId } from 'vue';
+import AppCollapse from './AppCollapse.vue';
 withDefaults(
   defineProps<{
     title: string;
@@ -30,19 +31,20 @@ const id = useId();
         <span aria-hidden="true">{{ collapsed ? '+' : '−' }}</span></button
       ><span v-else>{{ title }}</span>
     </legend>
-    <div :id="id" :hidden="collapsible && collapsed" class="p-5 pt-3">
-      <p v-if="description" class="mb-5 text-xs leading-relaxed text-muted">
-        {{ description }}
-      </p>
-      <div
-        class="grid min-w-0 gap-5"
-        :class="{
-          'md:grid-cols-2': columns === 2,
-          'md:grid-cols-3': columns === 3,
-        }"
-      >
-        <slot />
-      </div>
-    </div>
+    <AppCollapse :id="id" :open="!collapsible || !collapsed"
+      ><div class="p-5 pt-3">
+        <p v-if="description" class="mb-5 text-xs leading-relaxed text-muted">
+          {{ description }}
+        </p>
+        <div
+          class="grid min-w-0 gap-5"
+          :class="{
+            'md:grid-cols-2': columns === 2,
+            'md:grid-cols-3': columns === 3,
+          }"
+        >
+          <slot />
+        </div></div
+    ></AppCollapse>
   </fieldset>
 </template>

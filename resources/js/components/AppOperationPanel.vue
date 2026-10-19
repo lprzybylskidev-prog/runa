@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed } from 'vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
@@ -56,54 +57,60 @@ const errorText = computed(() => {
 });
 </script>
 <template>
-  <AppAlert
-    v-if="state"
-    :tone="
-      state.state === 'failed'
-        ? 'danger'
-        : state.state === 'partial'
-          ? 'warning'
-          : state.state === 'completed'
-            ? 'success'
-            : 'neutral'
-    "
-    :title="labels[state.state]"
+  <Transition
+    name="runa-feedback"
+    @before-enter="activateMotionElement"
+    @before-leave="deactivateMotionElement"
   >
-    <p v-if="errorText" class="text-xs">{{ errorText }}</p>
-    <p v-if="state.state === 'partial'" class="text-xs">
-      {{ english ? 'Succeeded' : 'Wykonano' }}: {{ state.succeeded }} ·
-      {{ english ? 'Failed' : 'Błędy' }}: {{ state.failed }}
-    </p>
-    <p
-      v-if="state.state === 'completed' && state.succeeded !== undefined"
-      class="text-xs"
+    <AppAlert
+      v-if="state"
+      :tone="
+        state.state === 'failed'
+          ? 'danger'
+          : state.state === 'partial'
+            ? 'warning'
+            : state.state === 'completed'
+              ? 'success'
+              : 'neutral'
+      "
+      :title="labels[state.state]"
     >
-      {{ english ? 'Succeeded' : 'Wykonano' }}: {{ state.succeeded }}
-    </p>
-    <AppProgress
-      v-if="state.state === 'queued' || state.state === 'running'"
-      :label="labels[state.state]"
-      :value="state.state === 'running' ? (state.progress ?? null) : null"
-    />
-    <div class="mt-2 flex flex-wrap gap-2">
-      <AppButton
-        v-if="operation.canCancel.value"
-        size="sm"
-        @click="operation.cancel()"
-        >{{ english ? 'Cancel' : 'Anuluj' }}</AppButton
+      <p v-if="errorText" class="text-xs">{{ errorText }}</p>
+      <p v-if="state.state === 'partial'" class="text-xs">
+        {{ english ? 'Succeeded' : 'Wykonano' }}: {{ state.succeeded }} ·
+        {{ english ? 'Failed' : 'Błędy' }}: {{ state.failed }}
+      </p>
+      <p
+        v-if="state.state === 'completed' && state.succeeded !== undefined"
+        class="text-xs"
       >
-      <AppButton
-        v-if="operation.canRetry.value"
-        size="sm"
-        @click="operation.retry()"
-        >{{ english ? 'Retry' : 'Spróbuj ponownie' }}</AppButton
-      >
-      <AppButton
-        v-if="operation.download.value"
-        size="sm"
-        @click="downloadExport(operation.download.value)"
-        >{{ english ? 'Download' : 'Pobierz' }}</AppButton
-      >
-    </div>
-  </AppAlert>
+        {{ english ? 'Succeeded' : 'Wykonano' }}: {{ state.succeeded }}
+      </p>
+      <AppProgress
+        v-if="state.state === 'queued' || state.state === 'running'"
+        :label="labels[state.state]"
+        :value="state.state === 'running' ? (state.progress ?? null) : null"
+      />
+      <div class="mt-2 flex flex-wrap gap-2">
+        <AppButton
+          v-if="operation.canCancel.value"
+          size="sm"
+          @click="operation.cancel()"
+          >{{ english ? 'Cancel' : 'Anuluj' }}</AppButton
+        >
+        <AppButton
+          v-if="operation.canRetry.value"
+          size="sm"
+          @click="operation.retry()"
+          >{{ english ? 'Retry' : 'Spróbuj ponownie' }}</AppButton
+        >
+        <AppButton
+          v-if="operation.download.value"
+          size="sm"
+          @click="downloadExport(operation.download.value)"
+          >{{ english ? 'Download' : 'Pobierz' }}</AppButton
+        >
+      </div>
+    </AppAlert>
+  </Transition>
 </template>

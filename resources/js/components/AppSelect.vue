@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="Multiple extends boolean = false">
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppFormField from './AppFormField.vue';
 import AppButton from './AppButton.vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
@@ -321,103 +322,112 @@ onScopeDispose(cancel);
         >
       </div>
       <Teleport :to="teleportTarget">
-        <section
-          v-if="open"
-          :id="`${controlId}-panel`"
-          ref="panel"
-          role="dialog"
-          :aria-label="label"
-          tabindex="-1"
-          :data-size="size"
-          class="selection-panel"
-          :class="{ 'selection-ready': ready }"
-          :style="position"
-          @keydown="keyboard"
+        <Transition
+          name="runa-popup"
+          @before-enter="activateMotionElement"
+          @before-leave="deactivateMotionElement"
         >
-          <input
-            v-if="searchable || provider"
-            ref="search"
-            v-model="query"
-            :data-size="size"
-            class="runa-field-control mb-2"
-            :aria-label="text('Szukaj: ', 'Search: ') + label"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded="true"
-            :aria-controls="`${controlId}-list`"
-            :aria-activedescendant="
-              active >= 0 ? `${controlId}-option-${active}` : undefined
-            "
-          />
-          <div
-            :id="`${controlId}-list`"
-            role="listbox"
+          <section
+            v-if="open"
+            :id="`${controlId}-panel`"
+            ref="panel"
+            role="dialog"
             :aria-label="label"
-            :aria-multiselectable="multiple || undefined"
-            :aria-busy="loading"
-            :tabindex="searchable || provider ? undefined : 0"
-            :aria-activedescendant="
-              active >= 0 ? `${controlId}-option-${active}` : undefined
-            "
-            class="max-h-60 overflow-auto"
+            tabindex="-1"
+            :data-size="size"
+            class="selection-panel"
+            :class="{ 'selection-ready': ready }"
+            :style="position"
+            @keydown="keyboard"
           >
-            <div
-              v-for="(option, index) in shown"
-              :id="`${controlId}-option-${index}`"
-              :key="option.value"
-              role="option"
-              :aria-selected="values.includes(option.value)"
-              :aria-disabled="option.disabled || undefined"
-              :data-active="active === index"
-              class="selection-option"
-              @pointerdown.prevent
-              @click="choose(option)"
-            >
-              <span aria-hidden="true">{{
-                values.includes(option.value) ? '✓' : '·'
-              }}</span>
-              {{ option.label }}
-            </div>
-          </div>
-          <p role="status" class="p-2 text-xs text-muted">
-            {{
-              loading
-                ? text('Ładowanie…', 'Loading…')
-                : failed
-                  ? text(
-                      'Nie udało się pobrać opcji.',
-                      'Unable to load options.',
-                    )
-                  : !shown.length
-                    ? text('Brak wyników.', 'No results.')
-                    : ''
-            }}
-          </p>
-          <div class="flex flex-wrap gap-2">
-            <AppButton v-if="failed" :size="size" @click="load(retryAppend)">{{
-              text('Ponów', 'Retry')
-            }}</AppButton>
-            <AppButton
-              v-if="!provider && offset > 0"
-              :size="size"
-              @click="
-                offset = Math.max(0, offset - limit);
-                active = -1;
+            <input
+              v-if="searchable || provider"
+              ref="search"
+              v-model="query"
+              :data-size="size"
+              class="runa-field-control mb-2"
+              :aria-label="text('Szukaj: ', 'Search: ') + label"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="true"
+              :aria-controls="`${controlId}-list`"
+              :aria-activedescendant="
+                active >= 0 ? `${controlId}-option-${active}` : undefined
               "
-              >{{ text('Poprzednie', 'Previous') }}</AppButton
+            />
+            <div
+              :id="`${controlId}-list`"
+              role="listbox"
+              :aria-label="label"
+              :aria-multiselectable="multiple || undefined"
+              :aria-busy="loading"
+              :tabindex="searchable || provider ? undefined : 0"
+              :aria-activedescendant="
+                active >= 0 ? `${controlId}-option-${active}` : undefined
+              "
+              class="max-h-60 overflow-auto"
             >
-            <AppButton
-              v-if="canMore"
-              :size="size"
-              :disabled="loading"
-              @click="more"
-              >{{ text('Kolejne wyniki', 'More results') }}</AppButton
-            >
-            <AppButton :size="size" @click="close(true)">{{
-              text('Gotowe', 'Done')
-            }}</AppButton>
-          </div>
-        </section>
+              <div
+                v-for="(option, index) in shown"
+                :id="`${controlId}-option-${index}`"
+                :key="option.value"
+                role="option"
+                :aria-selected="values.includes(option.value)"
+                :aria-disabled="option.disabled || undefined"
+                :data-active="active === index"
+                class="selection-option"
+                @pointerdown.prevent
+                @click="choose(option)"
+              >
+                <span aria-hidden="true">{{
+                  values.includes(option.value) ? '✓' : '·'
+                }}</span>
+                {{ option.label }}
+              </div>
+            </div>
+            <p role="status" class="p-2 text-xs text-muted">
+              {{
+                loading
+                  ? text('Ładowanie…', 'Loading…')
+                  : failed
+                    ? text(
+                        'Nie udało się pobrać opcji.',
+                        'Unable to load options.',
+                      )
+                    : !shown.length
+                      ? text('Brak wyników.', 'No results.')
+                      : ''
+              }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <AppButton
+                v-if="failed"
+                :size="size"
+                @click="load(retryAppend)"
+                >{{ text('Ponów', 'Retry') }}</AppButton
+              >
+              <AppButton
+                v-if="!provider && offset > 0"
+                :size="size"
+                @click="
+                  offset = Math.max(0, offset - limit);
+                  active = -1;
+                "
+                >{{ text('Poprzednie', 'Previous') }}</AppButton
+              >
+              <AppButton
+                v-if="canMore"
+                :size="size"
+                :disabled="loading"
+                @click="more"
+                >{{ text('Kolejne wyniki', 'More results') }}</AppButton
+              >
+              <AppButton :size="size" @click="close(true)">{{
+                text('Gotowe', 'Done')
+              }}</AppButton>
+            </div>
+          </section>
+        </Transition>
       </Teleport>
     </template>
   </AppFormField>
@@ -437,6 +447,17 @@ onScopeDispose(cancel);
   border-bottom: 1.5px solid currentColor;
   transform: translateY(-50%) rotate(45deg);
   pointer-events: none;
+}
+.selection-trigger::after {
+  transition: transform 160ms ease-out;
+}
+.selection-trigger[aria-expanded='true']::after {
+  transform: translateY(-50%) rotate(225deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .selection-trigger::after {
+    transition: none;
+  }
 }
 .selection-trigger {
   position: relative;
@@ -459,6 +480,9 @@ onScopeDispose(cancel);
   visibility: visible;
 }
 .selection-option {
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
   min-height: 44px;
   padding: 12px;
   font-size: 12px;
@@ -483,6 +507,9 @@ onScopeDispose(cancel);
   padding: 8px;
 }
 .selection-panel[data-size='sm'] .selection-option {
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
   min-height: 36px;
   padding: 8px 10px;
   font-size: 12px;
@@ -492,5 +519,10 @@ onScopeDispose(cancel);
 }
 .selection-trigger[data-size='sm']::after {
   right: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .selection-option {
+    transition: none;
+  }
 }
 </style>

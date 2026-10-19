@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useId } from 'vue';
+import AppCollapse from './AppCollapse.vue';
 withDefaults(
   defineProps<{ modelValue: boolean; label: string; disabled?: boolean }>(),
   { disabled: false },
@@ -23,8 +24,8 @@ const id = useId();
         {{ label }}<span aria-hidden="true">{{ modelValue ? '−' : '+' }}</span>
       </button>
     </h3>
-    <div :id="id" :hidden="!modelValue" class="border-t border-line p-4">
-      <slot />
-    </div>
+    <AppCollapse :id="id" :open="modelValue"
+      ><div class="border-t border-line p-4"><slot /></div
+    ></AppCollapse>
   </section>
 </template>

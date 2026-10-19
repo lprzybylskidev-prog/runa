@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent mounted harnesses exercise nested dialog and floating-layer integration. */
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { AlertDialog, ConfirmDialog, Dialog, Select } from '@/runa/ui';
@@ -158,7 +158,10 @@ it('dismisses only the top nested modal and returns focus into the parent', asyn
         );
     },
   });
-  const w = mount(Harness, { attachTo: document.body });
+  const w = mount(Harness, {
+    attachTo: document.body,
+    global: { stubs: { transition: false } },
+  });
   await settle();
   const opener = dialog().querySelector<globalThis.HTMLButtonElement>(
     '[data-dialog-content] button',
@@ -168,10 +171,14 @@ it('dismisses only the top nested modal and returns focus into the parent', asyn
   await settle();
   expect(document.querySelectorAll('.dialog-panel')).toHaveLength(2);
   await key('Escape');
-  expect(document.querySelectorAll('.dialog-panel')).toHaveLength(1);
   expect(document.activeElement).toBe(opener);
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.dialog-panel')).toHaveLength(1),
+  );
   await key('Escape');
-  expect(document.querySelectorAll('.dialog-panel')).toHaveLength(0);
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.dialog-panel')).toHaveLength(0),
+  );
   w.unmount();
 });
 it('keeps floating selection inside the modal boundary and gives it Escape ownership', async () => {
@@ -197,7 +204,10 @@ it('keeps floating selection inside the modal boundary and gives it Escape owner
         );
     },
   });
-  const w = mount(Harness, { attachTo: document.body });
+  const w = mount(Harness, {
+    attachTo: document.body,
+    global: { stubs: { transition: false } },
+  });
   await settle();
   const trigger = dialog().querySelector<globalThis.HTMLButtonElement>(
     '[aria-haspopup=dialog]',
@@ -210,7 +220,9 @@ it('keeps floating selection inside the modal boundary and gives it Escape owner
   );
   expect(popup.closest('[inert]')).toBeNull();
   await key('Escape');
-  expect(document.querySelector('.selection-panel')).toBeNull();
+  await vi.waitFor(() =>
+    expect(document.querySelector('.selection-panel')).toBeNull(),
+  );
   expect(document.querySelector('.dialog-panel')).not.toBeNull();
   expect(document.activeElement).toBe(trigger);
   w.unmount();

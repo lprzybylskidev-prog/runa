@@ -27,7 +27,7 @@ Project frontend architecture is in `docs/architecture/frontend.md`.
 
 Before visual design or UI changes, read `docs/design/visual-direction.md` and the relevant design documents it links, including `docs/design/color-palette.md` for colors. Inspect only the reference images relevant to the task and follow their explicitly selected features. Distinguish approved decisions from open proposals; do not infer implementation approval from reference images. Preserve the active roadmap's discussion/approval gates.
 
-Consider motion when designing component states: make appropriate visual changes smooth and subtle, avoid animating everything, preserve immediate feedback and respect reduced-motion preferences. Follow the motion decisions in `docs/design/visual-direction.md`.
+Review motion for every new or changed component, including wrappers and their existing consumers. Add subtle transitions where they help explain opening/closing, feedback or state changes; make an explicit static choice where movement would distract. Use the accepted ApplicationLayout dropdown/disclosure rhythm, preserve immediate state/focus, and verify interrupted exits, reduced motion and print. Follow `docs/design/visual-direction.md` and load `references/motion.md` for implementation rules and the component audit.
 
 Vue implementation details belong to the Vue skill. Tailwind implementation details belong to the Tailwind skill.
 

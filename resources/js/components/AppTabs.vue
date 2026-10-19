@@ -79,7 +79,7 @@ function keydown(event: globalThis.KeyboardEvent) {
       :aria-labelledby="`${id}-tab-${index}`"
       :hidden="active?.id !== item.id"
       tabindex="0"
-      class="py-5 text-sm focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
+      class="runa-panel-reveal py-5 text-sm focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
     >
       <slot :name="item.id" :item="item" />
     </section>

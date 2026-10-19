@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppFormField from './AppFormField.vue';
 import AppButton from './AppButton.vue';
 import { validateFiles } from '../lib/files';
@@ -182,13 +183,27 @@ async function remove(index: number) {
     props.modelValue.filter((_, i) => i !== index),
   );
   await nextTick();
-  const controls =
-    root.value?.querySelectorAll<globalThis.HTMLElement>('[data-file-remove]');
+  const controls = Array.from(
+    root.value?.querySelectorAll<globalThis.HTMLElement>(
+      '[data-file-remove]',
+    ) ?? [],
+  ).filter((control) => !control.closest('[inert]'));
   (
     controls?.[Math.min(index, controls.length - 1)] ??
     root.value?.querySelector<globalThis.HTMLElement>('.file-dropzone')
   )?.focus({ preventScroll: true });
 }
+const fileIds = new WeakMap<globalThis.File, number>();
+let nextFileId = 0;
+const fileKeys = computed(() => {
+  const occurrences = new Map<globalThis.File, number>();
+  return props.modelValue.map((file) => {
+    if (!fileIds.has(file)) fileIds.set(file, ++nextFileId);
+    const occurrence = occurrences.get(file) ?? 0;
+    occurrences.set(file, occurrence + 1);
+    return `${fileIds.get(file)}-${occurrence}`;
+  });
+});
 </script>
 <template>
   <AppFormField
@@ -290,14 +305,17 @@ async function remove(index: number) {
         <p v-else class="py-1 text-xs text-muted" role="status">
           {{ emptyLabel }}
         </p>
-        <ul
-          v-if="modelValue.length"
-          class="space-y-2"
+        <TransitionGroup
+          tag="ul"
+          name="runa-list"
+          class="space-y-2 empty:hidden"
           :aria-label="text('Wybrane pliki', 'Selected files')"
+          @before-enter="activateMotionElement"
+          @before-leave="deactivateMotionElement"
         >
           <li
             v-for="(file, index) in modelValue"
-            :key="`${index}-${file.name}`"
+            :key="fileKeys[index]"
             class="file-row"
             :class="{ 'file-row-invalid': invalidFile(file) }"
           >
@@ -357,7 +375,7 @@ async function remove(index: number) {
                 /></svg
             ></AppButton>
           </li>
-        </ul>
+        </TransitionGroup>
       </div>
     </template>
   </AppFormField>

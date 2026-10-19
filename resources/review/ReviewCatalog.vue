@@ -121,7 +121,7 @@ const categories = [
     <template #default="{ t }">
       <h1 class="text-2xl font-semibold">Przegląd UI / UI review</h1>
       <p class="mt-4 text-sm text-muted">
-        RM-2026-004 · 8–20 · Komponenty / Components
+        RM-2026-004 · 8–21 · Komponenty / Components
       </p>
       <div class="mt-6">
         <Select

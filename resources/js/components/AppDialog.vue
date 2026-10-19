@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, provide, ref, toRef, useId } from 'vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
@@ -59,13 +60,17 @@ function up(event: globalThis.PointerEvent) {
   pressedOutside = false;
 }
 function leaving(element: globalThis.Element) {
-  if (element instanceof globalThis.HTMLElement) element.inert = true;
+  deactivateMotionElement(element);
 }
 defineExpose({ focus: layer.focus });
 </script>
 <template>
   <Teleport to="body"
-    ><Transition name="dialog-fade" @before-leave="leaving">
+    ><Transition
+      name="dialog-fade"
+      @before-enter="activateMotionElement"
+      @before-leave="leaving"
+    >
       <div
         v-if="modelValue"
         ref="root"

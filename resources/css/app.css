@@ -1282,3 +1282,75 @@ button.app-button.shell-avatar-button {
   height: 1px;
   border: 0;
 }
+
+/* Content motion follows the accepted application dropdown/disclosure rhythm. */
+.runa-popup-enter-active,
+.runa-popup-leave-active,
+.runa-feedback-enter-active,
+.runa-feedback-leave-active,
+.runa-list-enter-active,
+.runa-list-leave-active {
+  transition:
+    opacity 140ms ease-out,
+    translate 140ms ease-out;
+}
+.runa-popup-enter-from,
+.runa-popup-leave-to {
+  opacity: 0;
+  translate: 0 4px;
+}
+.runa-feedback-enter-from,
+.runa-feedback-leave-to,
+.runa-list-enter-from,
+.runa-list-leave-to {
+  opacity: 0;
+  translate: 0 2px;
+}
+.runa-popup-leave-active {
+  visibility: visible !important;
+}
+.runa-popup-leave-active,
+.runa-feedback-leave-active,
+.runa-list-leave-active {
+  pointer-events: none;
+}
+.runa-feedback {
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
+}
+.runa-panel-reveal:not([hidden]) {
+  animation: runa-content-enter 140ms ease-out;
+}
+@keyframes runa-content-enter {
+  from {
+    opacity: 0.55;
+    translate: 0 2px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.runa-choice-input {
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
+}
+@media (prefers-reduced-motion: reduce), print {
+  .runa-popup-enter-active,
+  .runa-popup-leave-active,
+  .runa-feedback-enter-active,
+  .runa-feedback-leave-active,
+  .runa-list-enter-active,
+  .runa-list-leave-active,
+  .runa-feedback,
+  .runa-choice-input {
+    transition: none;
+  }
+  .runa-panel-reveal:not([hidden]) {
+    animation: none;
+  }
+}

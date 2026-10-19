@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppToast from './AppToast.vue';
 import type { ToastMessage } from '../runa/ui/feedback';
 withDefaults(
@@ -11,7 +12,7 @@ withDefaults(
 );
 defineEmits<{ dismiss: [id: string] }>();
 function leaving(element: globalThis.Element) {
-  if (element instanceof globalThis.HTMLElement) element.inert = true;
+  deactivateMotionElement(element);
 }
 </script>
 <template>
@@ -22,7 +23,10 @@ function leaving(element: globalThis.Element) {
       aria-live="polite"
       aria-relevant="additions"
     >
-      <TransitionGroup name="toast-fade" @before-leave="leaving"
+      <TransitionGroup
+        name="toast-fade"
+        @before-enter="activateMotionElement"
+        @before-leave="leaving"
         ><AppToast
           v-for="message in messages"
           :key="message.id"

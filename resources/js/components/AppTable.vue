@@ -382,7 +382,7 @@ function changePage(value: number) {
           <tr
             v-for="row in page?.rows"
             :key="rowKey(row)"
-            class="border-b border-line last:border-0 hover:bg-[var(--runa-surface-hover)]"
+            class="border-b border-line transition-colors duration-160 motion-reduce:transition-none last:border-0 hover:bg-[var(--runa-surface-hover)]"
             :class="
               selectionContains(effectiveSelection, rowKey(row))
                 ? 'bg-[var(--runa-primary-subtle)]'

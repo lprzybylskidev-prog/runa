@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Frontend research combined community guidance with the already-established Runa frontend contract. Aesthetic dogma, mandatory Storybook, mandatory Lighthouse/axe dependencies, microfrontends, and design-system package architecture were rejected. The local skill focuses on measurable UX/accessibility and rendered acceptance.
@@ -15,6 +14,8 @@ Frontend research combined community guidance with the already-established Runa 
 ## Local-only material
 
 The local skill also contains Runa-specific rules that do not come from upstream, including project architecture, workflow, dependency, quality, language, and accepted exception decisions. These local sections must not be deleted during upstream maintenance merely because no upstream equivalent exists.
+
+Motion rules and the complete component inventory in `references/motion.md` were adapted from the existing accepted Runa ApplicationLayout navigation and the owner’s RM-2026-004 point-21 request (2026-10-19), without a new external dependency or upstream animation framework.
 
 ## Local authority
 

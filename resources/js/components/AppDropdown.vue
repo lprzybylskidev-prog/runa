@@ -16,7 +16,13 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
         :aria-controls="open ? panelId : undefined"
         aria-haspopup="dialog"
         @click="toggle"
-        >{{ label }}<span aria-hidden="true" class="ml-2">⌄</span></AppButton
+        >{{ label
+        }}<span
+          aria-hidden="true"
+          class="ml-2 inline-block transition-transform duration-160 motion-reduce:transition-none"
+          :class="{ 'rotate-180': open }"
+          >⌄</span
+        ></AppButton
       ></template
     ><template #default="{ close }"><slot :close="close" /></template
   ></AppPopover>

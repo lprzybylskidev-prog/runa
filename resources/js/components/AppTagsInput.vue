@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppFormField from './AppFormField.vue';
 import AppButton from './AppButton.vue';
 const props = withDefaults(
@@ -61,15 +62,25 @@ function add(event: globalThis.KeyboardEvent) {
   draft.value = '';
   message.value = '';
 }
-function remove(index: number) {
+async function remove(index: number) {
   if (!props.disabled && !props.readonly) {
     emit(
       'update:modelValue',
       props.modelValue.filter((_, i) => i !== index),
     );
     message.value = '';
+    await nextTick();
+    control.value?.focus({ preventScroll: true });
   }
 }
+const tagKeys = computed(() => {
+  const occurrences = new Map<string, number>();
+  return props.modelValue.map((tag) => {
+    const count = occurrences.get(tag) ?? 0;
+    occurrences.set(tag, count + 1);
+    return `${tag}-${count}`;
+  });
+});
 </script>
 <template>
   <AppFormField
@@ -81,10 +92,16 @@ function remove(index: number) {
       ...(message ? [message] : []),
     ]"
     ><template #default="{ id, describedBy, invalid }"
-      ><ul v-if="modelValue.length" class="flex min-w-0 flex-wrap gap-2">
+      ><TransitionGroup
+        tag="ul"
+        name="runa-list"
+        class="flex min-w-0 flex-wrap gap-2 empty:hidden"
+        @before-enter="activateMotionElement"
+        @before-leave="deactivateMotionElement"
+      >
         <li
           v-for="(tag, index) in modelValue"
-          :key="`${index}-${tag}`"
+          :key="tagKeys[index]"
           class="flex min-w-0 max-w-full items-center gap-1 rounded border border-line bg-[var(--runa-surface-muted)] px-2 text-xs"
         >
           <span class="min-w-0 break-all">{{ tag }}</span
@@ -98,7 +115,7 @@ function remove(index: number) {
             >×</AppButton
           >
         </li>
-      </ul>
+      </TransitionGroup>
       <input
         :id="id"
         ref="control"

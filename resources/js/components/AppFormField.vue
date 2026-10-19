@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, useId } from 'vue';
 const props = withDefaults(
   defineProps<{
@@ -65,19 +66,31 @@ const describedBy = computed(
     >
       {{ helper }}
     </p>
-    <p
-      v-if="warning"
-      :id="`${controlId}-warning`"
-      class="text-xs leading-relaxed text-[var(--runa-warning-text)]"
+    <Transition
+      name="runa-feedback"
+      @before-enter="activateMotionElement"
+      @before-leave="deactivateMotionElement"
     >
-      {{ warning }}
-    </p>
-    <ul
-      v-if="messages.length"
-      :id="`${controlId}-error`"
-      class="space-y-1 text-xs text-[var(--runa-danger-text)] [overflow-wrap:anywhere]"
+      <p
+        v-if="warning"
+        :id="`${controlId}-warning`"
+        class="text-xs leading-relaxed text-[var(--runa-warning-text)]"
+      >
+        {{ warning }}
+      </p>
+    </Transition>
+    <Transition
+      name="runa-feedback"
+      @before-enter="activateMotionElement"
+      @before-leave="deactivateMotionElement"
     >
-      <li v-for="(message, index) in messages" :key="index">{{ message }}</li>
-    </ul>
+      <ul
+        v-if="messages.length"
+        :id="`${controlId}-error`"
+        class="space-y-1 text-xs text-[var(--runa-danger-text)] [overflow-wrap:anywhere]"
+      >
+        <li v-for="(message, index) in messages" :key="index">{{ message }}</li>
+      </ul>
+    </Transition>
   </div>
 </template>

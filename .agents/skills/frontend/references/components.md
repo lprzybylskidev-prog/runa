@@ -2,6 +2,10 @@
 
 Search this catalogue and the source before introducing a new control. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
 
+## Motion composition
+
+All components have been reviewed for purposeful motion; see `motion.md` for the complete inventory, timing and accessibility rules. Internal AppCollapse (`resources/js/components/AppCollapse.vue`) preserves disclosure DOM/drafts while clipping natural height and applying immediate inert/aria-hidden. It is not a public facade export. Internal useContentMotion (`resources/js/composables/useContentMotion.ts`) reveals retained Wizard/CalendarPicker/AsyncContent updates without remounting; `resources/js/lib/motion.ts` owns immediate exit deactivation and interrupted-entry restoration. Consumers inherit shared behavior instead of adding duplicate page entrances. Point-21 motion awaits visual acceptance.
+
 ## AppSelect
 
 - Source: `resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.

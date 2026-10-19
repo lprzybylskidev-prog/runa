@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useContentMotion } from '../composables/useContentMotion';
 import { nextTick, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppProgress from './AppProgress.vue';
@@ -48,6 +49,8 @@ watch(
   },
 );
 defineExpose({ focusInvalid });
+const content = ref<globalThis.HTMLElement>();
+useContentMotion(content, () => props.modelValue);
 </script>
 <template>
   <section
@@ -84,7 +87,7 @@ defineExpose({ focusInvalid });
     <p v-if="steps[modelValue]?.description" class="text-xs text-muted">
       {{ steps[modelValue]?.description }}
     </p>
-    <fieldset :disabled="busy" class="min-w-0">
+    <fieldset ref="content" :disabled="busy" class="min-w-0">
       <slot :step="steps[modelValue]" :index="modelValue" />
     </fieldset>
     <slot name="feedback" />

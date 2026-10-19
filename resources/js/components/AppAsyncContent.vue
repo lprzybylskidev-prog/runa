@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useContentMotion } from '../composables/useContentMotion';
+import { ref } from 'vue';
 import AppSpinner from './AppSpinner.vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
 import AppEmptyState from './AppEmptyState.vue';
 import type { ControlSize } from '../runa/ui/controls';
 import type { AsyncContentState } from '../runa/ui/loading';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     state: AsyncContentState;
     actionSize?: ControlSize;
@@ -27,9 +29,11 @@ withDefaults(
   },
 );
 const emit = defineEmits<{ retry: [] }>();
+const content = ref<globalThis.HTMLElement>();
+useContentMotion(content, () => props.state);
 </script>
 <template>
-  <div :aria-busy="state === 'loading'" class="min-w-0">
+  <div ref="content" :aria-busy="state === 'loading'" class="min-w-0">
     <div v-if="state === 'loading'">
       <slot name="loading"
         ><div class="flex items-center gap-3 py-6 text-sm text-muted">
