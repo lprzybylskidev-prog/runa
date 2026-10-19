@@ -384,3 +384,11 @@ const mode = useStatisticsMode(
   </template>
 </Statistics>
 ```
+
+### Form foundation and exact numeric inputs
+
+Form extends the original controlled AppForm with feedback/actions slots, responsive columns, busy fieldset disabling, valid/dirty metadata and explicit focusInvalid() recovery. FormSection preserves fields through controlled collapse. FormField owns visible labels, stable IDs and linked helper/warning/error descriptions. TextInput covers text/textarea/password/email/url/tel and forwards native field/autofill attributes with controlled novalidate UX.
+
+NumberInput stores exact string/null values. Complete values normalize to decimal dots; PL/EN formatting preserves digits/zeros without binary conversion. Invalid intermediate drafts remain visible and in the model, so validation cannot accidentally submit a stale previous value. Validate with parseDecimal and serialize with serializeDecimal before an API call; optional scale rejects excessive precision rather than rounding. Currency/percentage kinds do not impose domain ranges or rescale values.
+
+useForm accepts finite JSON field values, isolates submitted snapshots, blocks concurrent/known-invalid writes and tracks nested dirty baselines. Successful submission advances only the submitted baseline; reset() restores that baseline and reset(serverSnapshot) explicitly loads new data. ApiError 422 maps exact nested Laravel keys; 409 marks conflict without replacing input, and other failures remain recoverable. Screens own immediate business validation, accessible error summaries, optimistic-lock tokens and deliberate comparison/reload/retry. No business write endpoints, masks, account storage or navigation guards are delivered in this point. Detailed component/decimal/error examples are maintained in the frontend form reference.

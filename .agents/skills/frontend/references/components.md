@@ -15,8 +15,8 @@ Search this catalogue and the source before introducing a new control. Keep entr
 
 - Source: `resources/js/components/AppForm.vue`.
 - Prefer for controlled application forms: always `novalidate`, prevents native navigation, emits the submit event only when not busy and exposes `aria-busy`.
-- Props: optional `busy`; emits `submit: SubmitEvent`; default slot contains fields/actions.
-- Field validation remains the owning feature's responsibility. No business field/error framework exists yet.
+- Props: busy/valid/dirty, label/description and responsive columns; slots default/feedback/actions. Busy disables contained controls; valid=false emits invalid instead of submit. focusInvalid() supports async error recovery.
+- Field validation remains the owning feature's responsibility; FormField/TextInput/NumberInput and useForm now supply reusable field/error/value contracts (see forms.md).
 - Retained as the controlled form wrapper; the root preference buttons do not require a form.
 
 ## AppIcon
@@ -154,3 +154,10 @@ Search this catalogue and the source before introducing a new control. Keep entr
 - Public `Statistic`, `Statistics`, `useStatisticsMode`; `StatisticsMode` is global/filtered. Statistic requires label/value (string or number); optional description/icon/trend and FeedbackTone. Semantic text/top indicator supplements the supplied labels and trend text; no numeric calculations or automatic good/bad direction inference. Slots label/value/icon/trend/visualization support custom summaries/charts; callers provide accessible chart equivalents and formatted values.
 - Statistics requires controlled modelValue, label/globalLabel/filteredLabel, optional disabled; always presents two pressed-state buttons and passes mode to its default slot. Its responsive grid holds ordinary Statistic children; no shell/provider dependency. Print hides the switch while preserving the rendered values. Callers supply global/filtered datasets; changing a filter must not change global values.
 - `useStatisticsMode(scope, defaultMode = 'global', store?)` uses versioned existing preference storage under control statistics.mode. Scope has stable applicationId/moduleKey/viewKey; each view may choose its own default. Values validate to global/filtered; corrupt/unsupported input falls back safely, denied storage uses existing session memory. Scope/default/store are fixed for a mount: remount a view on identity changes. ApplicationReview keys its statistics composition by route and demonstrates actual filtered sample values. No account sync, aggregation service or global store is introduced.
+
+## FormSection, FormField, TextInput, NumberInput and useForm
+
+- Sources: `resources/js/components/App{FormSection,FormField,TextInput,NumberInput}.vue`, `resources/js/composables/useForm.ts`, `resources/js/lib/decimal.ts`; public facade exports components, form types, useForm/laravelFieldErrors and parseDecimal/serializeDecimal/formatDecimal.
+- FormSection supplies semantic fieldsets, descriptions, 1/2/3 responsive columns and controlled collapse preserving values. FormField exposes linked labels/descriptions/errors through scoped slot IDs and invalid state.
+- TextInput supports text/textarea/password/email/url/tel, native autofill attributes and required/disabled/readonly/invalid states; nullable is opt-in. NumberInput supplies exact string/null values for integer/decimal/currency/percentage, localized decimal separators and optional scale without rounding; incomplete values remain in the model with inline errors.
+- useForm tracks cloned finite-JSON values, nested dirty baselines and controlled busy/errors; maps 422 dot keys, preserves 409/server-failure drafts and supports explicit server-snapshot reset. No hidden network requests, dirty-navigation guards, masks or business rules. Detailed API and numeric serialization contracts: forms.md.
