@@ -327,7 +327,7 @@ onScopeDispose(cancel);
           :id="controlId"
           v-bind="$attrs"
           type="button"
-          class="runa-field-control min-w-0 flex-1 text-left"
+          class="runa-field-control selection-trigger min-w-0 flex-1 text-left"
           :disabled="disabled"
           :aria-readonly="readonly || undefined"
           :aria-invalid="invalid || undefined"
@@ -339,10 +339,9 @@ onScopeDispose(cancel);
           @click="!readonly && (open = !open)"
           @keydown.down.prevent="!readonly && (open = true)"
         >
-          <span class="block truncate"
-            >{{ labels || text('Wybierz…', 'Choose…') }}
-            <span aria-hidden="true">⌄</span></span
-          >
+          <span class="block truncate">{{
+            labels || text('Wybierz…', 'Choose…')
+          }}</span>
         </button>
         <AppButton
           v-if="clearable && values.length"
@@ -451,7 +450,8 @@ onScopeDispose(cancel);
 .selection-anchor {
   position: relative;
 }
-.selection-anchor:has(select)::after {
+.selection-anchor:has(select)::after,
+.selection-trigger::after {
   content: '';
   position: absolute;
   right: 16px;
@@ -466,7 +466,11 @@ onScopeDispose(cancel);
 .selection-anchor:has(select):has(button)::after {
   right: 80px;
 }
-.selection-anchor select {
+.selection-trigger {
+  position: relative;
+}
+.selection-anchor select,
+.selection-trigger {
   padding-right: 36px;
 }
 .selection-panel {
