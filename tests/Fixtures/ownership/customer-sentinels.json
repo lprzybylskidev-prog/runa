@@ -1,0 +1,71 @@
+{
+  "format": 1,
+  "purpose": "Preservation markers for isolated ownership/install/update acceptance; not an executable application or an authoritative manifest schema.",
+  "files": [
+    {
+      "path": "src/app/Http/Controllers/CustomerSentinel.php",
+      "content": "<?php\n// Customer-owned source preservation marker.\n",
+      "sha256": "6675bfd1fab30e984644fde638eb2b6a84fdee166de7619898546a199b1adca4"
+    },
+    {
+      "path": "src/app/routes/customer.php",
+      "content": "<?php\n// Customer-owned route preservation marker.\n",
+      "sha256": "b6e918b4fbea566d50c0afb53c6699acdf7bd422dc4a73eb3e43b0ab8eb22342"
+    },
+    {
+      "path": "src/app/config/customer.php",
+      "content": "<?php\nreturn [\"marker\" => \"customer-config\"];\n",
+      "sha256": "a766f6acd8af71b30cb6e2ef9afd409c5e12cfaf299a8568b843a792a65e7763"
+    },
+    {
+      "path": "src/app/resources/js/CustomerSentinel.vue",
+      "content": "<template><p>Customer-owned frontend marker</p></template>\n",
+      "sha256": "8630de4c602eb5a6292510ee03f5b6ff4c8fc64f6e355f856acb58abde1e6507"
+    },
+    {
+      "path": "src/app/application.json",
+      "content": "{\"schema_version\":1,\"application_id\":\"preservation-fixture\",\"name\":\"Customer Sentinel\",\"version\":\"7.2.1\",\"runa\":\"^0.3.0\"}\n",
+      "sha256": "ff0b8d93fc1bc07a241805f196a45bddb72927e3caa4271e35cc3afec026d481"
+    },
+    {
+      "path": "src/app/composer.json",
+      "content": "{\"autoload\":{\"psr-4\":{\"CustomerSentinel\\\\\":\"custom/\"}}}\n",
+      "sha256": "bd0a1c6ec7205f19bdcdc24a366c3a29f4a3f4a0b99ccf39ec7d8c2ab94d8801"
+    },
+    {
+      "path": "src/app/package.json",
+      "content": "{\"name\":\"customer-preservation-fixture\",\"private\":true,\"type\":\"module\"}\n",
+      "sha256": "8bea395d46c969dbc5b01bd7a3317148b97fd4aa090837e4faa00d58b206ec60"
+    },
+    {
+      "path": "src/app/docs/customer.md",
+      "content": "# Customer preservation marker\n",
+      "sha256": "c02d097bb0affb975b512496a3f1eea72bcbe4d139de61a9ffd56d9500967194"
+    },
+    {
+      "path": "src/app/custom/unregistered.txt",
+      "content": "Unknown customer-owned file must survive.\n",
+      "sha256": "faf06dfb9ea5c5d84fc3e282c98305f3b9f8b00a8aa982ef4eb8f6fae725e3b4"
+    },
+    {
+      "path": "src/storage/app/application/private/preservation.txt",
+      "content": "Private customer durable file.\n",
+      "sha256": "7df66fc23102f2c9414e9b49706aca0b034a803631ad97073e3e9f007a469f14"
+    },
+    {
+      "path": "src/storage/app/application/public/preservation.txt",
+      "content": "Public customer durable file.\n",
+      "sha256": "f6fa9fb136a9f81b1e6b35d2b2aa1e5aaf0fd0638d51562b581efc865af40415"
+    },
+    {
+      "path": "src/storage/app/runa/private/preservation.txt",
+      "content": "Private platform durable file.\n",
+      "sha256": "c764e70fb74ff77fab3a0165f186e647004a2f10251270a1ebb516d5c31db67f"
+    },
+    {
+      "path": "src/storage/app/runa/public/preservation.txt",
+      "content": "Public platform durable file.\n",
+      "sha256": "77d18e68738f2e10c1810973e8202ff3be6cb8eb73c2a7447f974e84634b08eb"
+    }
+  ]
+}
