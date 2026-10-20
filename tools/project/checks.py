@@ -135,8 +135,8 @@ def development():
         with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(endpoint, timeout=10) as response:
             if response.status != 200:
                 raise ValueError('Development HTTP health failed.')
-    run(['./bin/dev', 'knowledge-status'])
-    run(['./bin/dev', 'profile'])
+    run(['php', 'artisan', 'runa:dev', 'knowledge-status'])
+    run(['php', 'artisan', 'runa:dev', 'profile'])
     print('PASS: config, database/migrations, queue/scheduler, Nginx, Mailpit and effective resources; optional AI availability reported separately.')
 
 

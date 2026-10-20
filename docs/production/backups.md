@@ -9,9 +9,9 @@ Baseline backup covers:
 
 Canonical interface:
 
-- `./bin/backup create`
-- `./bin/backup verify`
-- `./bin/backup restore`
+- `./bin/artisan runa:backup create`
+- `./bin/artisan runa:backup verify`
+- `./bin/artisan runa:backup restore`
 
 Backup target/location and retention are configurable.
 

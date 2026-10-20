@@ -16,7 +16,7 @@ The released foundation provides a non-root devcontainer, Nginx/PHP-FPM/Laravel,
 
 Production tooling provides isolated runtime images, deployment, guarded rollback, coordinated backups/restores, health and isolation checks, with local simulation acceptance. No business modules are included. Simulation acceptance does not constitute a real production deployment.
 
-Use `./bin/dev --help` for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION, roadmap directories and docs/project/state.yml; release publication is verified separately.
+Use `./bin/artisan runa:dev --help` from the host or `php artisan help runa:dev` inside the prepared container for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION, roadmap directories and docs/project/state.yml; release publication is verified separately.
 
 ## Core stack direction
 

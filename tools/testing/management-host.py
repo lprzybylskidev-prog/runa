@@ -46,6 +46,7 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
         shutil.copytree(ROOT / 'src/runa/management', root / 'src/runa/management')
+        shutil.copytree(ROOT / 'tools/project/executors', root / 'tools/project/executors')
         (root / '.devcontainer').mkdir()
         (root / '.devcontainer/compose.resources.yaml').write_text('{"services":{}}\n')
         (root / '.env.dev.local').write_text('DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n')

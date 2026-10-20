@@ -15,7 +15,10 @@ from runtime import ROOT
 
 MAX_OUTPUT = 65536
 TIMEOUT = 30
-OPERATIONS = {'development.status': 'status', 'development.up': 'up'}
+DEVELOPMENT_ACTIONS = ('prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'doctor', 'knowledge-init', 'knowledge-status')
+TOOLS = ('doctor', 'quality', 'knowledge', 'security', 'project', 'xdebug', 'check', 'hook', 'format', 'lint', 'typecheck', 'analyse', 'test', 'production', 'deploy', 'backup', 'install')
+OPERATIONS = {**{'development.' + action: action for action in DEVELOPMENT_ACTIONS},
+              **{'tooling.' + tool: tool for tool in TOOLS}}
 
 
 def image_identity():
@@ -38,7 +41,8 @@ def ensure_image():
     result = subprocess.run(inspect, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT)
     if result.returncode:
         print('Building the isolated management image (no app services are started).', file=sys.stderr)
-        subprocess.run(['docker', 'build', '--target', 'management', '--file', 'docker/php/Dockerfile',
+        target = 'development-management' if (ROOT / 'src/runa/management/development.php').is_file() else 'management'
+        subprocess.run(['docker', 'build', '--target', target, '--file', 'docker/php/Dockerfile',
                         '--label', 'runa.management.inputs=' + identity, '--tag', tag, '.'], cwd=ROOT, check=True,
                        stdout=sys.stderr, stderr=sys.stderr)
         result = subprocess.run(inspect, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=True)
@@ -94,8 +98,15 @@ def validate_plan(raw, request):
             or type(plan['schema_version']) is not int or plan['schema_version'] != 1
             or plan['request_id'] != request or not re.fullmatch(r'[a-f0-9]{32}', request)
             or not isinstance(plan['operation'], str) or plan['operation'] not in OPERATIONS
-            or type(plan['parameters']) is not dict or plan['parameters']):
+            or type(plan['parameters']) is not dict):
         raise ValueError('Unsupported, unbound or unsafe host plan.')
+    parameters = plan['parameters']
+    if set(parameters) - {'arguments'} or ('arguments' not in parameters and not plan['operation'].startswith('development.')):
+        raise ValueError('Unsupported host-plan parameters.')
+    arguments = parameters.get('arguments', [])
+    if (not isinstance(arguments, list) or len(arguments) > 128
+            or any(not isinstance(value, str) or len(value.encode()) > 4096 or '\x00' in value for value in arguments)):
+        raise ValueError('Invalid bounded host-plan arguments.')
     return plan
 
 
@@ -118,8 +129,9 @@ def execute_plan(plan, request):
     for path in (operations.STATE.parent, operations.STATE, operations.STATE / 'operation.lock'):
         if path.is_symlink():
             raise ValueError('Operation state/lock must not be a symlink.')
-    with operations.lock():
-        if plan['operation'] != 'development.status' and (operations.STATE / 'in-progress.json').exists():
+    from contextlib import nullcontext
+    with operations.lock() if plan['operation'].startswith('development.') else nullcontext():
+        if plan['operation'].startswith('development.') and plan['operation'] != 'development.status' and (operations.STATE / 'in-progress.json').exists():
             raise ValueError('An unresolved production operation requires explicit recovery before host mutation.')
         path = directory / (request + '.json')
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
@@ -128,17 +140,60 @@ def execute_plan(plan, request):
                 json.dump(plan, stream)
                 stream.write('\n')
             # Fixed trusted executable and action, never instructions from release/retrieval text.
-            result = subprocess.run([str(ROOT / 'bin/dev'), OPERATIONS[plan['operation']]], cwd=ROOT)
+            result = subprocess.run(execution_command(plan), cwd=ROOT)
             return result.returncode
         finally:
             path.unlink()
+
+
+def execution_command(plan):
+    """Fixed executable families only; plan data never supplies an executable or shell."""
+    from runtime import app_command, host_stack_health, compose
+    operation = plan['operation']
+    arguments = plan['parameters'].get('arguments', [])
+    if operation.startswith('development.'):
+        action = OPERATIONS[operation]
+        if action in ('setup', 'knowledge-init', 'knowledge-status', 'doctor'):
+            if action == 'doctor':
+                host_stack_health()
+            return app_command(['php', 'artisan', 'runa:dev', action, *arguments])
+        return ['python3', str(ROOT / 'tools/project/executors/dev.py'), action, *arguments]
+    tool = OPERATIONS[operation]
+    if tool in ('production', 'quality', 'security', 'project'):
+        return ['python3', str(ROOT / ('tools/project/executors/' + tool + '.py')), *arguments]
+    if tool in ('deploy', 'backup', 'install'):
+        return ['python3', str(ROOT / 'tools/project/executors/operations.py'),
+                'install-prod' if tool == 'install' else tool, *(arguments[1:] if tool == 'install' else arguments)]
+    if tool == 'hook':
+        return [str(ROOT / 'bin/git-hook'), *arguments]
+    if tool == 'check':
+        return ['python3', str(ROOT / 'tools/project/executors/quality_check.py'), *arguments]
+    if tool == 'doctor':
+        if arguments == ['production']:
+            return ['python3', str(ROOT / 'tools/project/executors/production.py'), 'self-test']
+        if not arguments or arguments == ['development']:
+            host_stack_health()
+    if tool == 'test' and arguments and arguments[0] == 'e2e':
+        subprocess.run(compose() + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=ROOT, check=True)
+    return app_command(['php', 'artisan', 'runa:' + tool, *arguments])
+
+
+def is_management_command(name):
+    # Reuse the same bounded, named-container lifecycle as every other discovery.
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()) as output:
+        status = launch(['list', '--raw'])
+    if status:
+        raise ValueError('Management command discovery failed.')
+    return name in {line.split()[0] for line in output.getvalue().splitlines() if line.strip()}
 
 
 def launch(args):
     if any(arg == '--host-request' or arg.startswith('--host-request=') for arg in args):
         raise ValueError('--host-request is reserved for the host transport.')
     request = uuid.uuid4().hex
-    planning = bool(args and args[0] == 'runa:dev' and '--help' not in args and '-h' not in args)
+    planning = bool(args and args[0].startswith('runa:') and '--help' not in args and '-h' not in args)
     image = ensure_image()
     name = 'runa-management-' + request
     command = ['docker', 'run', '--rm', '--name', name, '--network', 'none', '--read-only',

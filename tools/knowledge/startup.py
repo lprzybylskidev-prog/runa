@@ -44,7 +44,7 @@ def initialize():
         ready = subprocess.run([sys.executable, str(Path(__file__).resolve()), 'probe'], cwd=ROOT,
                                timeout=5, check=False).returncode == 0
         if ready:
-            result = subprocess.run([str(ROOT / 'bin/knowledge'), 'initialize'], cwd=ROOT, check=False)
+            result = subprocess.run([sys.executable, str(ROOT / 'tools/project/executors/knowledge.py'), 'initialize'], cwd=ROOT, check=False)
             if result.returncode == 0:
                 return 0
     except subprocess.TimeoutExpired:

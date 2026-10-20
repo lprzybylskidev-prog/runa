@@ -59,7 +59,7 @@ Tests should be parallel-safe from the start:
 
 Canonical command:
 
-`./bin/test --parallel`
+`./bin/artisan runa:test --parallel`
 
 If parallel execution reveals a concurrency/isolation defect:
 
@@ -209,18 +209,18 @@ The regression script deliberately resets only the guarded test database after v
 
 Run these from the host or development container:
 
-| Command                                 | Purpose                                                                           |
-| --------------------------------------- | --------------------------------------------------------------------------------- |
-| `./bin/format` / `./bin/format --check` | Pint for project PHP; Prettier for frontend, frontend tests and root tool configs |
-| `./bin/lint`                            | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
-| `./bin/typecheck`                       | Strict Vue/TypeScript application and test checking                               |
-| `./bin/analyse`                         | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
-| `./bin/test`                            | Backend feature tests, serial                                                     |
-| `./bin/test --parallel`                 | Backend feature tests, `TEST_WORKERS` from the resource profile                   |
-| `./bin/test frontend`                   | Vitest + Vue Test Utils in headless Chromium                                      |
-| `./bin/test e2e --critical`             | Current critical Playwright suite in Chromium, Firefox and mobile Chromium        |
+| Command                                                           | Purpose                                                                           |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `./bin/artisan runa:format` / `./bin/artisan runa:format --check` | Pint for project PHP; Prettier for frontend, frontend tests and root tool configs |
+| `./bin/artisan runa:lint`                                         | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
+| `./bin/artisan runa:typecheck`                                    | Strict Vue/TypeScript application and test checking                               |
+| `./bin/artisan runa:analyse`                                      | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
+| `./bin/artisan runa:test`                                         | Backend feature tests, serial                                                     |
+| `./bin/artisan runa:test --parallel`                              | Backend feature tests, `TEST_WORKERS` from the resource profile                   |
+| `./bin/artisan runa:test frontend`                                | Vitest + Vue Test Utils in headless Chromium                                      |
+| `./bin/artisan runa:test e2e --critical`                          | Current critical Playwright suite in Chromium, Firefox and mobile Chromium        |
 
-Runner options can follow the test selector, for example `./bin/test --filter=Health` or `./bin/test e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. `bin/check` is their shared dispatcher. Run `./bin/dev prepare` and start the development environment first.
+Runner options can follow the test selector, for example `./bin/artisan runa:test --filter=Health` or `./bin/artisan runa:test e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. `bin/check` is their shared dispatcher. Run `./bin/artisan runa:dev prepare` and start the development environment first.
 
 Pint excludes the vendored `src/runa/lang/` snapshot and generated/runtime trees. Prettier also excludes localization data and lockfiles. Formatting establishes consistent source layout without changing the catalog's integrity hashes. ESLint owns correctness, Prettier owns layout; the core assignment rule is disabled only for Vue SFCs because template reads are invisible to that core rule. Other recommended rules remain active. PHPStan uses one analysis process to bound memory and avoid the native parallel-worker crash observed during toolchain verification.
 
@@ -238,7 +238,7 @@ The test wrapper takes a nonblocking checkout-wide lock across backend, frontend
 
 The optional Compose `testing` profile starts `app-test` and `nginx-test`, using `.env.testing`, the dedicated PostgreSQL test role/database, native `LARAVEL_STORAGE_PATH=.runtime/tests/e2e`, synchronous queue and array mail. The PHP-FPM startup guard verifies its actual test database before serving. Nginx is reachable only on the internal Compose network at `http://nginx-test:8080`; no additional host port is published. Development remains at its own endpoint and database.
 
-From the host, `./bin/test e2e --critical` starts the testing profile and waits for readiness. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
+From the host, `./bin/artisan runa:test e2e --critical` starts the testing profile and waits for readiness. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
 
 ```sh
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
@@ -254,7 +254,7 @@ Before browser checks, build the application/native error renderer:
 
 ```sh
 ./bin/pnpm run build
-./bin/test e2e --critical
+./bin/artisan runa:test e2e --critical
 ```
 
 The normal E2E wrapper first finalizes static emergency documents with `php src/runa/resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The normal test command uses isolated testing Nginx/PHP-FPM. Playwright owns `src/runa/tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.

@@ -22,26 +22,26 @@ Both registry references were resolved on 2026-10-17 and include linux/amd64 man
 Run on the host:
 
 ```sh
-./bin/dev embeddings auto
-./bin/dev build
-./bin/dev up
+./bin/artisan runa:dev embeddings auto
+./bin/artisan runa:dev build
+./bin/artisan runa:dev up
 ```
 
 `auto` checks NVIDIA compute capability >=7.5 and the Docker NVIDIA runtime. `cpu` disables GPU selection; `cuda` requires host detection to pass. The ignored `.env.dev.local` stores the requested mode and resolved CUDA availability; preparation regenerates the override for normal Compose and VS Code startup. Changing resource profiles preserves this hardware choice. An old GPU sibling may remain after switching to CPU; the knowledge CLI follows the saved CPU choice and does not use it. Stop/remove that obsolete sibling explicitly on the host if needed; persistent caches are retained.
 
 Services run without published ports, Docker socket, privileged mode or extra capabilities. Derived images use the developer UID/GID for persistent-volume ownership. Qdrant has an HTTP readiness check; TEI health probes inference readiness. The `qdrant-data` and shared `embedding-cache` named volumes survive rebuilds. Pinned model files download on first startup into the cache; CPU and GPU can start independently and reuse the same persistent cache. No model code is executed from the repository; TEI uses its built-in implementation and the model's safetensors weights.
 
-Application setup and devcontainer post-create do not probe or initialize knowledge. The independent `knowledge-init` service performs bounded readiness probes, then calls `./bin/knowledge initialize` under the shared CLI lock. It initializes only a missing collection or an empty collection left by interrupted first initialization. Existing collections receive freshness diagnostics and explicit `./bin/knowledge index` instructions when stale; reopen does not automatically re-embed changed documents. Unavailable services, a held indexing lock or an indexing failure produce a delayed nonzero exit and Compose retries with `restart: on-failure`. No application service depends on this job or AI readiness. A successful job exits 0; a later normal startup reruns it. `./bin/dev up` waits for application services first, then starts AI services without waiting for model download, indexing or GPU health. If AI startup itself fails, it reports degradation; repair and rerun startup. `./bin/dev knowledge-status` inside the development container reports bounded service/freshness diagnostics; dedicated knowledge doctor/eval and final AI gates remain strict. Application requests, workers and database code do not call knowledge services. Production images use explicit application copies and contain neither this CLI nor `tools/knowledge`; production Compose must omit all knowledge services (baseline isolation acceptance is recorded in closed RM-2026-001).
+Application setup and devcontainer post-create do not probe or initialize knowledge. The independent `knowledge-init` service performs bounded readiness probes, then calls `./bin/artisan runa:knowledge initialize` under the shared CLI lock. It initializes only a missing collection or an empty collection left by interrupted first initialization. Existing collections receive freshness diagnostics and explicit `./bin/artisan runa:knowledge index` instructions when stale; reopen does not automatically re-embed changed documents. Unavailable services, a held indexing lock or an indexing failure produce a delayed nonzero exit and Compose retries with `restart: on-failure`. No application service depends on this job or AI readiness. A successful job exits 0; a later normal startup reruns it. `./bin/artisan runa:dev up` waits for application services first, then starts AI services without waiting for model download, indexing or GPU health. If AI startup itself fails, it reports degradation; repair and rerun startup. `./bin/artisan runa:dev knowledge-status` inside the development container reports bounded service/freshness diagnostics; dedicated knowledge doctor/eval and final AI gates remain strict. Application requests, workers and database code do not call knowledge services. Production images use explicit application copies and contain neither this CLI nor `tools/knowledge`; production Compose must omit all knowledge services (baseline isolation acceptance is recorded in closed RM-2026-001).
 
 ## Ingestion and freshness
 
 Inside the devcontainer:
 
 ```sh
-./bin/knowledge index
-./bin/knowledge status
-./bin/knowledge stale
-./bin/knowledge index --device cpu
+./bin/artisan runa:knowledge index
+./bin/artisan runa:knowledge status
+./bin/artisan runa:knowledge stale
+./bin/artisan runa:knowledge index --device cpu
 python3 tools/testing/knowledge.py
 python3 tools/testing/knowledge-live.py
 ```
@@ -58,7 +58,7 @@ The provider validates model/revision/runtime/input limits and vector dimensions
 
 Unchanged chunks are reused without embedding; source/Git metadata refreshes independently. A small embedding capability probe still runs on each index command. All changed vectors are prepared before content mutation. A remote `pending` marker is written before mutation and cleared only after upserts and obsolete/orphan deletion complete. Thus interrupted writes are visible even if local runtime state is lost; rerunning incremental indexing repairs them. This provides recoverable writes with an explicit error state, not transactional multi-point search isolation. A local lock prevents simultaneous index/status operations in the shared checkout. Do not run two checkouts against the same Compose project/collection.
 
-Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/knowledge rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
+Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/artisan runa:knowledge rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
 
 ## Supply-chain review and acceptance
 
@@ -98,12 +98,12 @@ CUDA startup exceeded the initial 2 GiB container RAM limit (Docker OOM/exit 137
 ## Retrieval, evaluation and diagnostics
 
 ```sh
-./bin/knowledge search "PostgreSQL public_id UUIDv7"
-./bin/knowledge search "production knowledge prohibition" --source-path docs/ai/knowledge-system.md
-./bin/knowledge search "hybrid retrieval" --roadmap-id RM-2026-001 --status closed --explain
-./bin/knowledge search "embedding fallback" --top-k 10 --device cpu
-./bin/knowledge doctor
-./bin/knowledge eval
+./bin/artisan runa:knowledge search "PostgreSQL public_id UUIDv7"
+./bin/artisan runa:knowledge search "production knowledge prohibition" --source-path docs/ai/knowledge-system.md
+./bin/artisan runa:knowledge search "hybrid retrieval" --roadmap-id RM-2026-001 --status closed --explain
+./bin/artisan runa:knowledge search "embedding fallback" --top-k 10 --device cpu
+./bin/artisan runa:knowledge doctor
+./bin/artisan runa:knowledge eval
 python3 tools/testing/knowledge-retrieval.py
 ```
 
@@ -117,6 +117,6 @@ Normal output includes path, heading and a bounded excerpt, defaulting to five d
 
 `tools/knowledge/golden.json` covers architecture, Git, roadmap workflow, isolation, embeddings, exact names, section grounding and roadmap/source filtering. Eval returns per-case paths, pass/fail and query latency; a required source (and optional section) must appear within its top-k. Initialization/freshness/provider checks occur before per-query timing. Keep expected sources stable when comparing retrieval changes and review meaningful regressions. When a referenced roadmap closes, update its path/status filter together while retaining the same historical source and query; examples and workflow templates are not roadmap instances. Doctor checks collection dimensions/distance, model/runtime/pooling/input limits, manifest/schema/source freshness, missing/orphan chunks, per-chunk model/schema metadata and an end-to-end filtered retrieval smoke query; it reports document/chunk counts and mean/median chunk word counts. Service or model failures exit nonzero rather than reporting a healthy partial result.
 
-`./bin/knowledge rebuild` explicitly discards this development collection and re-embeds the allowlisted corpus. It validates provider readiness and parses current sources before deletion. Do not use it for normal edits. A service failure after deletion leaves a missing/stale index and requires rerunning index/rebuild; no old index is promised during rebuild. All CLI commands share the checkout lock, so reads/evaluation cannot race a CLI index write.
+`./bin/artisan runa:knowledge rebuild` explicitly discards this development collection and re-embeds the allowlisted corpus. It validates provider readiness and parses current sources before deletion. Do not use it for normal edits. A service failure after deletion leaves a missing/stale index and requires rerunning index/rebuild; no old index is promised during rebuild. All CLI commands share the checkout lock, so reads/evaluation cannot race a CLI index write.
 
 The real-service retrieval contracts use a disposable collection and temporary checkout. They cover dense plus lexical signals, exact identifiers, source diversity, metadata filtering, empty results, invalid queries, stale/pending/branch/missing states, corrupted model metadata and explicit rebuild. Existing offline ingestion and CPU/CUDA acceptance remain separate commands above.

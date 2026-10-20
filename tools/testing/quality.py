@@ -28,7 +28,8 @@ class QualityContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / 'bin').mkdir()
-            shutil.copy(ROOT / 'bin/quality-check', root / 'bin/quality-check')
+            (root / 'tools/project/executors').mkdir(parents=True)
+            shutil.copy(ROOT / 'tools/project/executors/quality_check.py', root / 'tools/project/executors/quality_check.py')
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             sources = {
                 'src/runa/resources/views/errors/page.php': 'echo strtr($template, [',
@@ -38,7 +39,7 @@ class QualityContracts(unittest.TestCase):
                 target = root / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text('<?php\n' + statement + '\n')
-            command = [sys.executable, str(root / 'bin/quality-check'), 'debug-residue']
+            command = [sys.executable, str(root / 'tools/project/executors/quality_check.py'), 'debug-residue']
             self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
             for name, statement in sources.items():
                 for content in [statement + " dd('debug');", statement + "\necho 'debug';", "var_dump($value);"]:
@@ -126,8 +127,8 @@ class QualityContracts(unittest.TestCase):
             root = Path(folder)
             (root / 'bin').mkdir()
             (root / 'tools').mkdir()
-            (root / 'tools/project').symlink_to(ROOT / 'tools/project')
-            shutil.copy(ROOT / 'bin/quality', root / 'bin/quality')
+            (root / 'tools/project/executors').mkdir(parents=True)
+            shutil.copy(ROOT / 'tools/project/executors/quality.py', root / 'tools/project/executors/quality.py')
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
             harness = root / 'harness.py'
@@ -136,8 +137,8 @@ class QualityContracts(unittest.TestCase):
                 + f'sys.path.insert(0, {str(ROOT / "tools/project")!r})\n'
                 + 'import quality\n'
                 + 'quality.plan = lambda final: ' + repr(({'id': 'fixture', 'impact_areas': []}, {'wait': node('wait', "python3 -c 'import time; time.sleep(30)'")})) + '\n'
-                + f'sys.argv = [{str(root / "bin/quality")!r}, *sys.argv[1:]]\n'
-                + f'runpy.run_path({str(root / "bin/quality")!r}, run_name="__main__")\n')
+                + f'sys.argv = [{str(root / "tools/project/executors/quality.py")!r}, *sys.argv[1:]]\n'
+                + f'runpy.run_path({str(root / "tools/project/executors/quality.py")!r}, run_name="__main__")\n')
             command = [sys.executable, str(harness)]
             started = subprocess.run(command + ['roadmap', '--background'], capture_output=True, text=True)
             self.assertEqual(started.returncode, 0, started.stderr)

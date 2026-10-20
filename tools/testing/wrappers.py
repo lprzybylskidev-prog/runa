@@ -39,7 +39,7 @@ class WrapperContracts(unittest.TestCase):
 
     def test_logs_default_and_help_are_nonmutating(self):
         call = self.invoke('logs', [], False)
-        self.assertEqual(call.call_args.args[0], runtime.compose() + ['logs', '--tail', '100'])
+        self.assertEqual(call.call_args.args[0], [str(ROOT / 'bin/artisan'), '--management', 'runa:dev', 'logs'])
         self.assertFalse(self.invoke('prod', ['--help'], False).called)
 
 

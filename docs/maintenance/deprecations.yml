@@ -1,2 +1,8 @@
 version: 1
-items: []
+items:
+  - id: DEP-2026-001
+    deprecated: Independent bin domain-command implementations (thin compatibility aliases retained)
+    replacement: Canonical php artisan runa commands; host transport ./bin/artisan
+    introduced_at: 2026-10-20
+    removal_plan: Remove aliases only in an accepted roadmap after external callers and governance references migrate; preserve mandated quality and doctor transports meanwhile.
+    roadmap: RM-2026-005

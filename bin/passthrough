@@ -22,13 +22,9 @@ try:
             'passthrough': 'Usage: invoke artisan, composer, pnpm, seed, logs or prod wrapper.',
         }[name])
     elif name == 'prod':
-        run([str(ROOT / 'bin/production'), *args])
+        run([str(ROOT / 'bin/artisan'), '--management', 'runa:production', *args])
     elif name == 'logs':
-        if inside():
-            raise ValueError('Run ./bin/logs in a host terminal outside the devcontainer.')
-        if len(args) > 1 or (args and args[0] not in ('app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu', 'setup')):
-            raise ValueError('Provide one known development service name.')
-        run(compose() + ['logs', '--tail', '100', *args])
+        run([str(ROOT / 'bin/artisan'), '--management', 'runa:dev', 'logs', *args])
     else:
         commands = {'artisan': ['php', 'artisan'], 'composer': ['composer', '--working-dir=src'], 'pnpm': ['pnpm', '--dir', 'src'], 'seed': ['php', 'artisan', 'runa:seed']}
         run(app_command(commands[name] + args))

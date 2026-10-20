@@ -2,7 +2,7 @@
 
 ## VS Code
 
-Open the repository with **Dev Containers: Reopen in Container**. The devcontainer installs the extensions declared in `.devcontainer/devcontainer.json`, including PHP Debug, Microsoft Python (`ms-python.python`) and Pylance (`ms-python.vscode-pylance`), and enables format-on-save. Vue/TypeScript/JavaScript/JSON use the locked project Prettier; PHP uses Intelephense for interactive formatting. `./bin/format` remains the canonical Pint/Prettier repository formatter. Run it before committing.
+Open the repository with **Dev Containers: Reopen in Container**. The devcontainer installs the extensions declared in `.devcontainer/devcontainer.json`, including PHP Debug, Microsoft Python (`ms-python.python`) and Pylance (`ms-python.vscode-pylance`), and enables format-on-save. Vue/TypeScript/JavaScript/JSON use the locked project Prettier; PHP uses Intelephense for interactive formatting. `./bin/artisan runa:format` remains the canonical Pint/Prettier repository formatter. Run it before committing.
 
 Install the OpenAI/Codex extension manually inside the devcontainer. It is deliberately absent from automatic extension installation. Sign in interactively; do not put authentication in repository configuration or images.
 
@@ -19,23 +19,23 @@ Do not export a connection containing a password to workspace files. Database po
 
 ## Reopen recovery and manual verification
 
-Run Docker lifecycle commands in a host terminal. If reopening fails because `setup` exits with a missing tool that exists in the current development image, run `./bin/dev up`, then `./bin/dev doctor`. Compose recreates outdated containers; restarting alone retains their old images. VS Code may reuse existing containers with `--no-recreate`. Preserve named volumes and local credentials during recovery. If the current image itself is outdated, use `./bin/dev build` before `./bin/dev up`.
+Run Docker lifecycle commands in a host terminal. If reopening fails because `setup` exits with a missing tool that exists in the current development image, run `./bin/artisan runa:dev up`, then `./bin/artisan runa:dev doctor`. Compose recreates outdated containers; restarting alone retains their old images. VS Code may reuse existing containers with `--no-recreate`. Preserve named volumes and local credentials during recovery. If the current image itself is outdated, use `./bin/artisan runa:dev build` before `./bin/artisan runa:dev up`.
 
 After the host doctor passes:
 
 1. Select **Dev Containers: Reopen in Container** from the VS Code Command Palette. Confirm the workspace is `/workspace` and the terminal reports user `runa` with `whoami`.
 2. In Extensions, install the OpenAI/Codex extension in **Dev Container: Runa** if needed, open its panel and sign in interactively. Start a session from `/workspace` and ask it to call Boost `application-info` and `search-docs`; check the installed versions. A successful CLI check alone does not verify the extension.
 3. Open Database Client, add the PostgreSQL connection described above, connect and run `SELECT current_database(), current_user;`. Both values should be `runa`. Keep the password in the extension's private credential field.
-4. Run `./bin/dev doctor` in the container terminal. Report editor-specific failures separately from the host service checks.
+4. Run `./bin/artisan runa:dev doctor` in the container terminal. Report editor-specific failures separately from the host service checks.
 
 ## Xdebug
 
 Xdebug 3.5.3 exists only in the `development` Docker target. It starts with `xdebug.mode=off` and is absent from the production runtime. Run from the host or devcontainer:
 
 ```sh
-./bin/xdebug status
-./bin/xdebug on
-./bin/xdebug off
+./bin/artisan runa:xdebug status
+./bin/artisan runa:xdebug on
+./bin/artisan runa:xdebug off
 ```
 
 The wrapper updates development PHP configuration and gracefully reloads the app's PHP-FPM master. CLI PHP reads the new configuration on its next invocation. Recreation resets the mode to off. Queue/scheduler containers keep their default off configuration.
@@ -52,7 +52,7 @@ PHP connects to the VS Code debug adapter at `127.0.0.1:9003` inside the app con
 
 The development image includes pinned Codex CLI 0.163.0. Check `codex --version` and authenticate with `codex login` interactively inside the container. Authentication is local to that container unless the developer deliberately configures private persistent credential storage.
 
-Laravel Boost 2.10.3 is a Composer development dependency. `.codex/config.toml` registers the stdio MCP server with `./bin/boost-mcp`. The idempotent `./bin/dev setup` also registers the same launcher with `codex mcp add laravel-boost -- /workspace/bin/boost-mcp` in the container user configuration, making it available before project trust is established. The launcher uses PHP directly inside the devcontainer and `docker compose exec -T app` on the host. Start Codex from the repository root. Trust this project when prompted so its project MCP configuration can load. `codex mcp list` confirms registration; it does not prove agent access.
+Laravel Boost 2.10.3 is a Composer development dependency. `.codex/config.toml` registers the stdio MCP server with `./bin/boost-mcp`. The idempotent `./bin/artisan runa:dev setup` also registers the same launcher with `codex mcp add laravel-boost -- /workspace/bin/boost-mcp` in the container user configuration, making it available before project trust is established. The launcher uses PHP directly inside the devcontainer and `docker compose exec -T app` on the host. Start Codex from the repository root. Trust this project when prompted so its project MCP configuration can load. `codex mcp list` confirms registration; it does not prove agent access.
 
 The setup uses the official `php artisan boost:install --mcp --no-interaction` feature flag. Runa guidance and skills were hashed before setup and verified identical afterward. MCP-only setup generated no skills or agent instructions; the unrelated auto-detected Copilot MCP configuration was removed. `boost.json` records Codex only, guidelines disabled, and no generated skills. Do not run unrestricted `boost:install` or `boost:update`; follow `docs/ai/laravel-boost.md` for any future setup or update.
 
@@ -71,11 +71,11 @@ For a small host-only task, the agent supplies roughly 2–3 ordered commands, t
 For substantial Docker work:
 
 1. Persist the active roadmap's `Execution handoff` under [the roadmap procedure](../workflows/roadmaps.md#execution-handoff), including progress, exact commands, protected resources and remaining checks. Commit coherent work when appropriate; keep unfinished points open.
-2. Select **Dev Containers: Reopen Folder Locally**. In the host checkout, verify `pwd`, `git status --short` and `git branch --show-current`; read AGENTS, the active roadmap and its handoff. Run `./bin/dev status` and inspect relevant resource identities before mutations. If `.devcontainer/compose.resources.yaml` is missing, run `./bin/dev prepare` first. If app services are stopped, inspect state and use `./bin/dev up` following the recovery procedure above.
+2. Select **Dev Containers: Reopen Folder Locally**. In the host checkout, verify `pwd`, `git status --short` and `git branch --show-current`; read AGENTS, the active roadmap and its handoff. Run `./bin/artisan runa:dev status` and inspect relevant resource identities before mutations. If `.devcontainer/compose.resources.yaml` is missing, run `./bin/artisan runa:dev prepare` first. If app services are stopped, inspect state and use `./bin/artisan runa:dev up` following the recovery procedure above.
 3. Use host Docker, Python 3 and Git. Run application tooling through the existing containers: `./bin/composer --version` and `./bin/pnpm --version` delegate on the host. Do not install PHP/Composer/Node/pnpm/PostgreSQL on the host to complete container work. Do not mount the Docker socket into the devcontainer.
-4. Use the explicit project/environment/files from `bin/dev` for direct Compose commands: repository as project directory, `.env.dev.local`, `compose.yaml` and `.devcontainer/compose.resources.yaml`. Verify the resolved project identity before mutation. Prefer wrappers. Never print resolved secret-bearing configuration into shared evidence.
+4. Use the explicit project/environment/files from `tools/project/executors/dev.py` for direct Compose commands: repository as project directory, `.env.dev.local`, `compose.yaml` and `.devcontainer/compose.resources.yaml`. Verify the resolved project identity before mutation. Prefer wrappers. Never print resolved secret-bearing configuration into shared evidence.
 5. Update the same handoff with operations, checks, issues, current services, cleanup/preservation and return readiness. Select **Dev Containers: Reopen in Container** only when the recorded state permits it. The new session verifies branch/worktree/services and resumes remaining work.
 
-The devcontainer uses `shutdownAction: none`: closing/reopening the editor leaves Compose services running. They continue to consume resources until explicitly stopped with host `./bin/dev down`, which preserves volumes. Check actual state after transitions. RM-2026-003 records installed-editor acceptance separately from CLI checks.
+The devcontainer uses `shutdownAction: none`: closing/reopening the editor leaves Compose services running. They continue to consume resources until explicitly stopped with host `./bin/artisan runa:dev down`, which preserves volumes. Check actual state after transitions. RM-2026-003 records installed-editor acceptance separately from CLI checks.
 
-For sibling-only work, prefer `./bin/dev restart <service>` when only a process restart is needed. Restart retains the existing image/configuration. Use `./bin/dev build <service>` for a selected local image build, then `./bin/dev recreate <service>` for image/configuration changes after dependency review; recreation uses `--no-deps` in the same Compose context and does not certify readiness. Check application/knowledge health as appropriate; record app container ID/start time before and after to verify it stayed running when no app change was necessary. `./bin/dev build` without services builds all configured development images; `./bin/dev down` affects the whole project and preserves volumes. Restart without a service affects the whole stack. Recreating the attached app needs a planned session transition.
+For sibling-only work, prefer `./bin/artisan runa:dev restart <service>` when only a process restart is needed. Restart retains the existing image/configuration. Use `./bin/artisan runa:dev build <service>` for a selected local image build, then `./bin/artisan runa:dev recreate <service>` for image/configuration changes after dependency review; recreation uses `--no-deps` in the same Compose context and does not certify readiness. Check application/knowledge health as appropriate; record app container ID/start time before and after to verify it stayed running when no app change was necessary. `./bin/artisan runa:dev build` without services builds all configured development images; `./bin/artisan runa:dev down` affects the whole project and preserves volumes. Restart without a service affects the whole stack. Recreating the attached app needs a planned session transition.

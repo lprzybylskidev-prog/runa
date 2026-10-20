@@ -27,6 +27,15 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
           '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py',
+          '/bin/artisan', '/bin/command', '/tools/project/management.py', '/tools/project/executors/operations.py', '/tools/project/executors/production.py',
+          '/src/runa/management/autoload.php',
+          '/src/runa/management/bootstrap.php',
+          '/src/runa/management/commands.php',
+          '/src/runa/management/ToolingCommand.php',
+          '/src/runa/management/ProductionCommand.php',
+          '/src/runa/management/DeployCommand.php',
+          '/src/runa/management/BackupCommand.php',
+          '/src/runa/management/InstallCommand.php',
           '/tools/testing/production-runtime.php', '/docs/project/state.yml',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
@@ -283,7 +292,7 @@ def isolation(release=None, sparse=False):
 
 
 def assert_sparse(path):
-    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', '.env', '.env.dev.local'):
+    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.php', 'src/runa/management/KnowledgeCommand.php', 'tools/project/executors/knowledge.py', '.env', '.env.dev.local'):
         if (path / forbidden).exists():
             raise ValueError('Development material in production checkout: ' + forbidden)
     if not (path / 'docs/project/state.yml').is_file():

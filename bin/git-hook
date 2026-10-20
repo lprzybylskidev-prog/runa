@@ -8,7 +8,6 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools/project'))
 from runtime import compose, inside
-from hooks import commit_message, pre_commit
 
 try:
     args = sys.argv[1:]
@@ -25,10 +24,10 @@ try:
         raise SystemExit(subprocess.run(compose() + ['exec', '-T', *extra, 'app', './bin/git-hook', *args], cwd=ROOT).returncode)
     elif args == ['pre-commit']:
         repository = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], check=True, capture_output=True, text=True).stdout.strip())
-        pre_commit(repository, ROOT)
+        raise SystemExit(subprocess.run(['php', 'artisan', 'runa:hook', 'pre-commit', '--repository=' + str(repository)], cwd=ROOT).returncode)
     elif len(args) == 2 and args[0] == 'commit-msg':
         repository = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], check=True, capture_output=True, text=True).stdout.strip())
-        commit_message(repository, args[1])
+        raise SystemExit(subprocess.run(['php', 'artisan', 'runa:hook', 'commit-msg', args[1], '--repository=' + str(repository)], cwd=ROOT).returncode)
     else:
         raise ValueError('See ./bin/git-hook --help.')
 except (ValueError, OSError, subprocess.CalledProcessError, SyntaxError) as error:

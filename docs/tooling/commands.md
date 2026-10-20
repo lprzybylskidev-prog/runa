@@ -12,68 +12,49 @@ This file documents the implemented command surface: development lifecycle/profi
 
 ## Runtime-independent Artisan transport
 
-`./bin/artisan <arguments>` preserves ordinary application Artisan delegation. From the host, `./bin/artisan --management list` or `--management help runa:dev` uses an isolated short-lived image without requiring app services, checkout vendor/, `.env`, APP_KEY or a database. Its first invocation builds the `management` target from the existing pinned production PHP runtime and locked production Composer dependencies; Docker registry access is needed when those build inputs are not cached. The image has no application code, Node, Composer executable, Python, Boost or knowledge tooling. The host needs Python 3 and Docker, not PHP/Node.
+Artisan is the public domain-command registry. Inside the development application container use `php artisan runa:<family> ...`; the host uses `./bin/artisan runa:<family> ...` without host PHP/Node. Ordinary Laravel/application commands keep their full bootstrap. `php artisan` selects registered management commands before dotenv, application providers, DB or keys are needed.
 
-Currently delivered management operations:
+Cold `./bin/artisan --management list` and `--management help runa:dev` use isolated production-only Composer dependencies and the existing pinned PHP runtime. The host discovers command names from Artisan itself. First use builds a management artifact if its exact source/lock/input identity is absent; registry access is needed for uncached dependencies. No application service is started for help/discovery/plans. The setup/post-create transport has one narrow pre-autoload branch: while src/vendor/autoload.php is missing it runs the fixed dependency/setup helper, then uses normal Artisan dispatch. Compose knowledge-init calls its internal Python startup initializer directly so optional AI never depends on PHP/vendor/application initialization. These are bootstrap transports, not another public registry. `runa:dev config` validates with Compose --quiet; it never prints expanded env-file credentials. Use profile inspection for effective resource limits. The artifact has no customer source, Node, Composer executable, Python, Boost, Docker socket, application env or bind mounts.
 
-```sh
-./bin/artisan runa:dev status
-./bin/artisan runa:dev up --plan
-./bin/artisan runa:dev up
-```
+`src/runa/management/commands.php` always registers operational production/deploy/backup/install commands. Optional `development.php` adds development/diagnostic/test/quality/security/RAG/hooks/project commands. Full development checkouts build `development-management`; production sparse checkouts contain only the operational registry and build `management`, with no knowledge command or Python knowledge helper. Production application images contain neither management artifact/source nor development commands. The separate management process is never a production Compose service.
 
-`status` delegates to the existing `bin/dev status`. `up` delegates to `bin/dev up`, including its application-first readiness and independent optional AI startup/recovery. It does not reset data or clear failed production-operation evidence. Only these two development actions are implemented in the new registry at RM-005 point 2; keep using the documented existing wrappers for other operations until point 6 migrates them.
-
-The single PHP entrypoint is `php artisan ...`. It selects registered management commands before application initialization; ordinary commands keep the full Laravel bootstrap. `src/runa/management/bootstrap.php` is an internal bootstrap, not a separately invoked Artisan script. Normal local/testing Artisan and cold management share `src/runa/management/commands.php` and the same command class. `php artisan runa:dev ...` and `./bin/artisan runa:dev ...` inside the devcontainer only emit a plan: Docker lifecycle execution belongs to the native host. The normal production application does not register management commands, and production runtime images omit management source entirely. The management source now lives under src/runa/management; the canonical PHP entrypoint is src/artisan with a repository-root PHP compatibility transport.
+Inside the development container, tooling commands execute their PHP Actions or fixed local helper processes. Host-only operations (`dev` lifecycle, production/deploy/backup/install, host security scan, quality roadmap/final) emit inert plans when called directly in a container; invoke their host transport to execute. Local dev setup/AI initialization, profile inspection, doctor, tests, format/lint/type/static checks, hooks and RAG do not need Docker in the container. Quality show/status are read-only local queries.
 
 ### Host-plan v1 execution boundary
 
-The machine-readable contract is `src/runa/management/host-plan.v1.schema.json`: `schema_version`, `request_id`, `operation`, empty `parameters`; unknown/duplicate fields, unknown operations, noninteger versions, extra parameters and mismatched request identities are rejected. A direct container preview has null request_id and is not executable. The host supplies a fresh internal request ID to Artisan and consumes only the immediately returned bounded JSON response. There is no command that loads an arbitrary plan file. `--host-request` is reserved; operator-supplied values are rejected. `--plan` prints the bound plan without running the host operation.
+`src/runa/management/host-plan.v1.schema.json` defines schema_version, request_id, operation and parameters. Parameters are empty for argument-free development actions, otherwise contain only a bounded list of literal arguments (at most 128, at most 4096 bytes each). Unknown/duplicate fields, executable/shell/env/path/mount fields, unsupported operations and mismatched request IDs are rejected again by the executor. Only fixed allowlisted helper/tool families execute; argument arrays never become shell text. A null request ID is an inert container preview. The transport supplies a fresh internal ID and consumes only the immediately returned JSON; there is no arbitrary plan-file executor. Operator-supplied --host-request is rejected. --plan never executes the operation.
 
-The Python executor maps only `development.status` and `development.up` to fixed trusted helper/action pairs. Plans carry no executable, shell, arguments, environment, mount, repository path or remote-code fields. Validation occurs again at execution. The host uses the existing `.runtime/production/operation.lock` inode, so new management operations contend with deployment/backup/restore. Unresolved in-progress production evidence blocks `up`; it is never erased to permit recovery. A temporary receipt under private `.runtime/management/` is mode 600 and removed after execution; symlink traversal in state/lock paths is rejected. Host child exit codes propagate.
+Development lifecycle plans retain the shared production operation lock and unresolved-operation fencing. Production/deploy/backup helpers retain their existing locks/confirmation/recovery rules. Quality owns its stable quality lock and each gate owns its resource locks; the coordinator does not hold the production lock across its child gates. Test Actions retain the suite lock. Private mode-600 request receipts are removed after use; state/lock symlinks are rejected. Meaningful child exit codes propagate unchanged.
 
-The container runs from the inspected immutable image ID, selected by a digest of local management/build/lock inputs and verified image label. It has no bind mounts, Docker socket, forwarded application environment or network; it runs non-root with read-only root, no capabilities, no-new-privileges, bounded processes/memory/CPU and a disposable /tmp. Discovery output is capped at 64 KiB across stdout/stderr and 30 seconds. Timeout/interruption removes only its uniquely named management container. Host lifecycle actions retain their own existing durations; these discovery limits are not quality-gate timeouts.
+Management discovery runs the inspected immutable image ID with no network, mounts, forwarded env or capabilities, read-only root and bounded CPU/memory/PIDs/tmp. Combined output is capped at 64 KiB and 30 seconds; timeout/interruption removes only its named disposable container. Host operations and quality retain their own existing durations, not discovery timeouts. Background quality semantics and all hard gates remain unchanged: after launching a background roadmap/final gate, stop work and do not poll.
 
-### Command migration map (RM-005 points 2–8)
+### Command migration map (RM-005 point 6)
 
-The following table covers all 28 baseline bin entries. It defines the migration destination; except for the delivered transport/status/up above, proposed Artisan forms are not yet available. Existing aliases remain operational until their callers, hooks, recovery paths, docs and gates have migrated. Artisan remains the sole domain-command registry; protocol/tool launchers and fixed host execution mappings are transports.
+| Previous family                    | Canonical form                                                                                            | Execution                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| dev                                | `runa:dev action [arguments]`                                                                             | PHP validation; proven host/setup process mechanics           |
+| doctor                             | `runa:doctor [area]`                                                                                      | PHP application checks; deterministic source/host diagnostics |
+| quality                            | `runa:quality show/roadmap/final/status [--background]`                                                   | Existing dependency graph, locks and interruption evidence    |
+| knowledge                          | `runa:knowledge action [query] [filters]`                                                                 | Development-only internal retrieval/index engine              |
+| format/lint/typecheck/analyse/test | `runa:format`, `runa:lint`, `runa:typecheck`, `runa:analyse`, `runa:test [frontend/e2e] [runner options]` | PHP Actions; runner options may follow --                     |
+| xdebug                             | `runa:xdebug on/off/status`                                                                               | PHP development configuration Action                          |
+| security                           | `runa:security dependencies/secrets/trivy/review-changed-surface`                                         | Existing scanner/evidence mechanics; Trivy on host            |
+| production/prod                    | `runa:production action [service]`                                                                        | Fixed host Compose/image helper                               |
+| deploy/backup                      | `runa:deploy target [--simulation]`, `runa:backup action [id] [--confirm-runa-prod-restore]`              | Existing exact-source, lock, backup/recovery mechanics        |
+| install-prod                       | `runa:install production target [--simulation]`                                                           | Existing installer; unified dev/prod bootstrap is point 8     |
+| project                            | `runa:project mark-production-deployed --evidence=path`                                                   | Proven one-way Git/evidence transition                        |
+| git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                             | Staged-index-safe hook transport and source scanner           |
+| seed                               | `runa:seed ...`                                                                                           | Existing application command                                  |
+| logs                               | `runa:dev logs [service]`                                                                                 | Fixed host log action                                         |
+| artisan/composer/pnpm/boost-mcp    | Existing transports                                                                                       | Framework/tool/stdio entrypoints; no second domain registry   |
 
-| Existing entry  | Destination / role                                                                                                   | Delivery                                                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `artisan`       | Application transport; cold `--management` discovery; automatic `runa:dev status/up` plan/execution                  | Point 2 delivered                                               |
-| `dev`           | `runa:dev` lifecycle/profile/embeddings; setup moves to `runa:install` in dev mode                                   | status/up delivered; remaining callers point 6, install point 8 |
-| `doctor`        | `runa:doctor [area]`; retain thin governance compatibility wrapper                                                   | Point 6                                                         |
-| `quality`       | `runa:quality show/roadmap/final/status`; same graph, background stop/no-poll contract                               | Point 6                                                         |
-| `quality-check` | `runa:quality:check debug-residue`; bounded internal source checker                                                  | Point 6                                                         |
-| `security`      | `runa:security` existing scanner/review actions; host work remains fixed delegation                                  | Point 6                                                         |
-| `knowledge`     | `runa:knowledge` existing actions; development-only registration and build exclusion                                 | Point 6                                                         |
-| `xdebug`        | `runa:dev xdebug status/on/off`; development-only helper                                                             | Point 6                                                         |
-| `format`        | `runa:format [--check]`; locked Pint/Prettier                                                                        | Point 6                                                         |
-| `lint`          | `runa:lint`; locked ESLint                                                                                           | Point 6                                                         |
-| `typecheck`     | `runa:typecheck`; strict Vue/TypeScript                                                                              | Point 6                                                         |
-| `analyse`       | `runa:analyse`; PHPStan/Larastan                                                                                     | Point 6                                                         |
-| `test`          | `runa:test` backend/frontend/e2e/parallel; preserve suite lock and argument forwarding                               | Point 6                                                         |
-| `check`         | Internal compatibility dispatcher for the five preceding aliases; retire independent dispatch after caller migration | Point 6                                                         |
-| `composer`      | `runa:tools composer -- <tool arguments>`; container tool transport, never host Composer                             | Point 6                                                         |
-| `pnpm`          | `runa:tools pnpm -- <tool arguments>`; container tool transport, never host Node/pnpm                                | Point 6                                                         |
-| `seed`          | Existing `runa:seed` registry; thin compatibility transport                                                          | Point 6 caller migration                                        |
-| `logs`          | `runa:logs [service]`; fixed host Compose read operation                                                             | Point 6                                                         |
-| `production`    | `runa:production` current image/Compose validation/build/lifecycle actions                                           | Point 6                                                         |
-| `prod`          | Thin alias to the same `runa:production` operation implementation                                                    | Point 6                                                         |
-| `deploy`        | `runa:deploy` exact target/rollback semantics                                                                        | Point 6 transport; journal/update integration points 10–12      |
-| `backup`        | `runa:backup create/verify/restore`; preserve lock, confirmation, fencing and evidence                               | Point 6                                                         |
-| `install-prod`  | `runa:install` in prod mode; preserve real/simulation boundaries                                                     | Points 6/8                                                      |
-| `operations`    | Internal bounded deployment/backup/recovery executor; no independent domain command registry                         | Points 2/6/11                                                   |
-| `project`       | `runa:project mark-production-deployed`; validated private evidence and one-way versioned transition                 | Point 6                                                         |
-| `git-hook`      | `runa:hooks` pre-commit/commit-msg; keep versioned thin hook entrypoints and staged-content integrity                | Point 6                                                         |
-| `boost-mcp`     | Existing `boost:mcp`; retain development-only stdio protocol launcher                                                | Point 6 caller/path review                                      |
-| `passthrough`   | Internal tool/protocol argument transport; remove migrated domain-name dispatch only after callers change            | Point 6                                                         |
+Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/project`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/backup`, `./bin/install-prod`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `./bin/git-hook` retains only partial-index path transport and invokes runa:hook; versioned hooks keep that safe bridge. Removal is deferred until an accepted roadmap migrates external callers and any governance references. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
 
-Existing native Laravel commands and `runa:config:validate`, `runa:runtime:health`, `runa:runtime:pulse`, `runa:test-db:guard`, `runa:seed` keep their names. Guarded destructive database subclasses continue to enforce their current safety contracts. Private Python helpers under `tools/project/` retain host process/Compose/lock/backup mechanics where justified; application use cases move into PHP as scheduled. The standalone customer bootstrap in point 7 remains the explicit pre-Artisan exception.
+Internal Python process engines live under `tools/project/executors/` with no public bin registry. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/backup/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
 ## Development
 
-### `./bin/dev profile`
+### `./bin/artisan runa:dev profile`
 
 Show or change development resource profile.
 
@@ -86,25 +67,25 @@ Profiles:
 
 Doctor output includes effective resource values.
 
-### `./bin/dev up`
+### `./bin/artisan runa:dev up`
 
-Host-only application startup waits for PostgreSQL, app, successful setup, Nginx, queue, scheduler and Mailpit. It then starts Qdrant, configured embeddings and `knowledge-init` automatically without waiting for AI health/indexing. Application failures return nonzero; optional AI failures report degradation. Repair optional services and repeat startup, or run `./bin/knowledge index` for an existing stale index.
+Host-only application startup waits for PostgreSQL, app, successful setup, Nginx, queue, scheduler and Mailpit. It then starts Qdrant, configured embeddings and `knowledge-init` automatically without waiting for AI health/indexing. Application failures return nonzero; optional AI failures report degradation. Repair optional services and repeat startup, or run `./bin/artisan runa:knowledge index` for an existing stale index.
 
-### `./bin/dev knowledge-init` / `./bin/dev knowledge-status`
+### `./bin/artisan runa:dev knowledge-init` / `./bin/artisan runa:dev knowledge-status`
 
 Inside the development container: `knowledge-init` is the independent Compose initialization job, retrying through its restart policy; `knowledge-status` reports bounded optional service/freshness availability without failing application diagnostics. Neither is part of application setup/post-create.
 
-### `./bin/dev build` / `./bin/dev recreate`
+### `./bin/artisan runa:dev build` / `./bin/artisan runa:dev recreate`
 
 Host-only: `build [service ...]` builds selected local service images; no arguments builds all configured development images. Building does not recreate running containers. `recreate service [service ...]` requires explicit known services and runs selective `up -d --no-deps --force-recreate`; review prerequisite readiness and check health afterward. It starts no sibling dependencies and does not wait for health. App recreation can disconnect an attached editor; plan the host transition first. `restart [service]` retains image/configuration, with no service restarting the whole stack. `down` is explicitly whole-project and preserves volumes.
 
-### `./bin/dev doctor`
+### `./bin/artisan runa:dev doctor`
 
-Alias for `./bin/doctor development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `./bin/knowledge doctor` and `./bin/knowledge eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
+Alias for `./bin/artisan runa:doctor development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `./bin/artisan runa:knowledge doctor` and `./bin/artisan runa:knowledge eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
 
 ### Frontend and localization checks currently available
 
-Inside the devcontainer: `pnpm run typecheck`, `pnpm run build`, `pnpm run dev` (HMR port 5173 at `/build/`), `python3 tools/localization/snapshot.py check`, `php tools/testing/localization.php`. `./bin/dev setup` now includes locked frontend installation/build. Snapshot review/update commands are documented in `docs/development/localization.md` and never overwrite local catalogs.
+Inside the devcontainer: `pnpm run typecheck`, `pnpm run build`, `pnpm run dev` (HMR port 5173 at `/build/`), `python3 tools/localization/snapshot.py check`, `php tools/testing/localization.php`. `./bin/artisan runa:dev setup` now includes locked frontend installation/build. Snapshot review/update commands are documented in `docs/development/localization.md` and never overwrite local catalogs.
 
 ### Runtime services currently available
 
@@ -112,66 +93,66 @@ Inside the corresponding worker/scheduler container, `php artisan runa:runtime:h
 
 ## Formatting/lint/type/static analysis
 
-- `./bin/format`
-- `./bin/format --check`
-- `./bin/lint`
-- `./bin/typecheck`
-- `./bin/analyse`
+- `./bin/artisan runa:format`
+- `./bin/artisan runa:format --check`
+- `./bin/artisan runa:lint`
+- `./bin/artisan runa:typecheck`
+- `./bin/artisan runa:analyse`
 
 ## Tests
 
-### `./bin/test --parallel`
+### `./bin/artisan runa:test --parallel`
 
 Run backend tests with parallel-safe isolation.
 
-### `./bin/test frontend`
+### `./bin/artisan runa:test frontend`
 
 Run Vitest/Vue component tests.
 
-### `./bin/test e2e --critical`
+### `./bin/artisan runa:test e2e --critical`
 
 Run Playwright through an isolated loopback browser harness. Build assets first with `./bin/pnpm run build`. The E2E wrapper finalizes static emergency documents with PHP inside the application container before starting Playwright, including after a build replaces the generated output. Playwright owns harness startup/shutdown; root/API/native assets use isolated testing Nginx/PHP-FPM, while synthetic routes exist only in the test process. See `docs/testing/strategy.md`.
 
 ## Xdebug
 
-- `./bin/xdebug on`
-- `./bin/xdebug off`
-- `./bin/xdebug status`
+- `./bin/artisan runa:xdebug on`
+- `./bin/artisan runa:xdebug off`
+- `./bin/artisan runa:xdebug status`
 
 Xdebug is development-only and off by default.
 
 ## Seeding
 
-- `./bin/seed default`
-- `./bin/seed production`
-- `./bin/seed development`
-- `./bin/seed occasional <Seeder>`
-- `./bin/seed graph`
+- `./bin/artisan runa:seed default`
+- `./bin/artisan runa:seed production`
+- `./bin/artisan runa:seed development`
+- `./bin/artisan runa:seed occasional <Seeder>`
+- `./bin/artisan runa:seed graph`
 
 Implemented now; the initial graph is empty because no business/reference/demo entities exist. Categories and dependency validation run before execution; production refuses development dependencies, including explicit development requests. `--force` deliberately bypasses the production confirmation only for automated seed execution, not destructive database commands. See `docs/data/seeding.md`.
 
 ## Knowledge/RAG
 
-Knowledge commands include automatic first-index initialization and explicit maintenance/retrieval operations. Search supports `--top-k 1..50`, `--explain`, `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`; quote multiword queries. `--device cpu` forces CPU. Search/eval require a fresh index; doctor reports failures and rebuild explicitly resets the development collection. `python3 tools/testing/knowledge.py` runs offline ingestion contracts, `python3 tools/testing/knowledge-live.py` checks CPU/CUDA ingestion, and `python3 tools/testing/knowledge-retrieval.py` checks real hybrid retrieval in an isolated collection. `./bin/dev embeddings auto|cpu|cuda` selects host GPU policy; apply it with build/up. See `docs/development/knowledge.md`.
+Knowledge commands include automatic first-index initialization and explicit maintenance/retrieval operations. Search supports `--top-k 1..50`, `--explain`, `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`; quote multiword queries. `--device cpu` forces CPU. Search/eval require a fresh index; doctor reports failures and rebuild explicitly resets the development collection. `python3 tools/testing/knowledge.py` runs offline ingestion contracts, `python3 tools/testing/knowledge-live.py` checks CPU/CUDA ingestion, and `python3 tools/testing/knowledge-retrieval.py` checks real hybrid retrieval in an isolated collection. `./bin/artisan runa:dev embeddings auto|cpu|cuda` selects host GPU policy; apply it with build/up. See `docs/development/knowledge.md`.
 
-- `./bin/knowledge search <query>`
-- `./bin/knowledge search <query> --explain`
-- `./bin/knowledge index`
-- `./bin/knowledge initialize` — initializes only missing/empty collections under the shared lock; existing stale indexes require explicit indexing.
-- `./bin/knowledge status`
-- `./bin/knowledge rebuild`
-- `./bin/knowledge stale`
-- `./bin/knowledge doctor`
-- `./bin/knowledge eval`
+- `./bin/artisan runa:knowledge search <query>`
+- `./bin/artisan runa:knowledge search <query> --explain`
+- `./bin/artisan runa:knowledge index`
+- `./bin/artisan runa:knowledge initialize` — initializes only missing/empty collections under the shared lock; existing stale indexes require explicit indexing.
+- `./bin/artisan runa:knowledge status`
+- `./bin/artisan runa:knowledge rebuild`
+- `./bin/artisan runa:knowledge stale`
+- `./bin/artisan runa:knowledge doctor`
+- `./bin/artisan runa:knowledge eval`
 
 Production must reject/disable this command surface.
 
 ## Quality
 
-- `./bin/quality show`
-- `./bin/quality roadmap`
-- `./bin/quality final`
-- `./bin/quality status`
+- `./bin/artisan runa:quality show`
+- `./bin/artisan runa:quality roadmap`
+- `./bin/artisan runa:quality final`
+- `./bin/artisan runa:quality status`
 
 Latest-run-only local state lives under gitignored `.runtime/quality/`.
 
@@ -179,7 +160,7 @@ Latest-run-only local state lives under gitignored `.runtime/quality/`.
 
 Project provides:
 
-`./bin/doctor` and `./bin/doctor <area>`
+`./bin/artisan runa:doctor` and `./bin/artisan runa:doctor <area>`
 
 Implemented areas: `repository`, `config`, `maintenance`, `hooks`, `frontend`, `database-migrations`, `database`, `seeding`, `boost`, `tooling`, `docs`, `cleanliness`, `development`, `production`, `release`. `docs` checks public command documentation and the bounded README state contract in docs/workflows/releases.md; it does not interpret arbitrary prose. The read-only `release` check includes the same docs validation and computes the expected version from main and the active roadmap, permits only the final verification item to remain open, and rejects premature version/tag drift. After closure metadata edits it verifies VERSION/changelog/closed-roadmap/checklist/report agreement, release-type arithmetic and any existing annotated tag identity (with the documented main-only draft-planning exception); remote publication is verified separately. `frontend` uses the real browser diagnostic script and requires the testing Nginx service. `database-migrations` resets only the guarded isolated test database; `database` and `seeding` run the relevant backend contracts. `cleanliness` rejects unreviewed scratch and untracked/unstaged files; staged reviewed changes are allowed.
 
@@ -189,10 +170,10 @@ Do not turn doctor into one giant opaque script. Subcommands should have clear r
 
 Implemented wrapper surface:
 
-- `./bin/security dependencies`
-- `./bin/security secrets`
-- `./bin/security trivy`
-- `./bin/security review-changed-surface`
+- `./bin/artisan runa:security dependencies`
+- `./bin/artisan runa:security secrets`
+- `./bin/artisan runa:security trivy`
+- `./bin/artisan runa:security review-changed-surface`
 
 Underlying tools include:
 
@@ -205,31 +186,31 @@ Underlying tools include:
 
 Implemented helper surface:
 
-- `./bin/production build`
-- `./bin/production validate`
-- `./bin/production self-test`
-- `./bin/production verify-ai-isolation`
+- `./bin/artisan runa:production build`
+- `./bin/artisan runa:production validate`
+- `./bin/artisan runa:production self-test`
+- `./bin/artisan runa:production verify-ai-isolation`
 
 ## Deployment
 
-- `./bin/deploy`
-- `./bin/deploy rollback`
+- `./bin/artisan runa:deploy`
+- `./bin/artisan runa:deploy rollback`
 
 ## Backup
 
-- `./bin/backup create`
-- `./bin/backup verify`
-- `./bin/backup restore`
+- `./bin/artisan runa:backup create`
+- `./bin/artisan runa:backup verify`
+- `./bin/artisan runa:backup restore`
 
 ## Logs
 
-`./bin/logs`
+`./bin/artisan runa:dev logs`
 
 Provide a concise operator view across relevant production/development services without exposing secrets.
 
 ## Project state
 
-`./bin/project mark-production-deployed`
+`./bin/artisan runa:project mark-production-deployed`
 
 Use only after the first real successful production deployment to update versioned state according to `docs/production/deployment.md`.
 
@@ -248,13 +229,13 @@ Do not expose a "fix Docker" command that runs global host prune operations.
 
 Host-side development lifecycle:
 
-- `./bin/dev up`
-- `./bin/dev down`
-- `./bin/dev restart [service]`
-- `./bin/dev status`
-- `./bin/dev logs [service]`
+- `./bin/artisan runa:dev up`
+- `./bin/artisan runa:dev down`
+- `./bin/artisan runa:dev restart [service]`
+- `./bin/artisan runa:dev status`
+- `./bin/artisan runa:dev logs [service]`
 
-Production lifecycle uses `./bin/prod up|down|restart|status|logs` with an explicit production Compose context. `./bin/production` owns build/validate/self-test/isolation operations; `prod` may delegate to that shared implementation but must not contain a second independent Compose configuration path.
+Production lifecycle uses `./bin/artisan runa:production up|down|restart|status|logs` with an explicit production Compose context. `./bin/artisan runa:production` owns build/validate/self-test/isolation operations; `prod` may delegate to that shared implementation but must not contain a second independent Compose configuration path.
 
 Host application wrappers:
 
@@ -264,11 +245,11 @@ Host application wrappers:
 
 These forward arguments safely into the intended running application container. Within the devcontainer they invoke the installed tool directly. Do not invent an npm wrapper when pnpm is the accepted manager.
 
-`./bin/doctor` without an area is the required quick whole-development-stack diagnostic. It checks repository/maintenance/docs/tooling and development runtime readiness. Area subcommands provide focused checks, not an optional substitute for the global entrypoint. Area names used by the gate definition are part of the command contract.
+`./bin/artisan runa:doctor` without an area is the required quick whole-development-stack diagnostic. It checks repository/maintenance/docs/tooling and development runtime readiness. Area subcommands provide focused checks, not an optional substitute for the global entrypoint. Area names used by the gate definition are part of the command contract.
 
-`./bin/install-prod` is the guided production installer described in `docs/production/deployment.md`; run it from the production host. No separate developer installer is required.
+`./bin/artisan runa:install production` is the guided production installer described in `docs/production/deployment.md`; run it from the production host. No separate developer installer is required.
 
-Quality supports `./bin/quality final --background` and `./bin/quality roadmap --background`. `./bin/quality-check debug-residue` performs the focused source check used by the gate definition. The runner and referenced subcommands are implemented; each roadmap must run its selected checks before closure.
+Quality supports `./bin/artisan runa:quality final --background` and `./bin/artisan runa:quality roadmap --background`. `./bin/artisan runa:check debug-residue` performs the focused source check used by the gate definition. The runner and referenced subcommands are implemented; each roadmap must run its selected checks before closure.
 
 Host-only Docker lifecycle/build commands must say which terminal to use. App/knowledge commands work from host and devcontainer without granting the workspace Docker-socket privileges.
 
@@ -278,17 +259,17 @@ Gate-specific doctor areas include `repository`, `config`, `maintenance`, `hooks
 
 `./bin/git-hook pre-commit|commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Setup configures `core.hooksPath .githooks`. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint/Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
 
-If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `./bin/knowledge index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
+If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `./bin/artisan runa:knowledge index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
 
-`./bin/doctor hooks` invokes installed scripts against a temporary Git repository with safe synthetic fixtures; it never creates fixture commits. Maintenance validator regressions: `python3 tools/testing/maintenance.py`. Host/devcontainer argument forwarding contracts: `python3 tools/testing/wrappers.py`; these simulate the host context without granting Docker access. Baseline host lifecycle acceptance and its manual editor verification boundary are recorded in closed RM-2026-001.
+`./bin/artisan runa:doctor hooks` invokes installed scripts against a temporary Git repository with safe synthetic fixtures; it never creates fixture commits. Maintenance validator regressions: `python3 tools/testing/maintenance.py`. Host/devcontainer argument forwarding contracts: `python3 tools/testing/wrappers.py`; these simulate the host context without granting Docker access. Baseline host lifecycle acceptance and its manual editor verification boundary are recorded in closed RM-2026-001.
 
-`./bin/boost-mcp` starts the development-only Boost stdio MCP server; `--help` exits without starting a server. `bin/check`, `bin/passthrough` and `./bin/operations` are internal shared launchers for the public symlink commands. All public commands provide English `--help`; failures return nonzero. `./bin/logs [service]` is host-only and prints the last 100 development service log lines. Production logs use `./bin/prod logs [service]`; logs must never contain secrets.
+`./bin/boost-mcp` starts the development-only Boost stdio MCP server; `--help` exits without starting a server. `bin/command` and `bin/passthrough` are thin compatibility transports; canonical definitions are Artisan commands. All public commands provide English `--help`; failures return nonzero. `./bin/artisan runa:dev logs [service]` is host-only and prints the last 100 development service log lines. Production logs use `./bin/artisan runa:production logs [service]`; logs must never contain secrets.
 
 Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by development setup. The installer supports the selected Linux x86_64 environment and verifies the release archive against its published checksum and reviewed SHA256 pin. It fetches from the official GitHub release, has no application dependency and never enters the production runtime image. Missing/incompatible scanner tooling fails the hook rather than skipping it. Supply-chain sources: https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1 and its `config/gitleaks.toml`. Scanning uses the built-in defaults, ignores inline allow comments and does not load staged scanner configuration. No scanner finding is suppressed.
 
 ## Production image and lifecycle implementation
 
-`./bin/production validate|build` and `./bin/prod up|down|restart|status|logs [service]` run only in a host terminal with Docker Engine 26 or newer and Docker Compose 2.35 or newer (raw env-file and volume-subpath support). They always use `compose.production.yaml`, the explicit `runa-prod` (real) or `runa-prod-simulation` project and ignored `.env.prod.compose` interpolation settings. The explicit project flag prevents ambient `COMPOSE_PROJECT_NAME` from redirecting operations; ambient image-tag/port variables are removed so validated local settings control interpolation. Copy `.env.prod.compose.example` and select an exact `vX.Y.Z` release or full lowercase Git commit hash as `RUNA_IMAGE_TAG`; `latest`, branch names, abbreviated hashes and arbitrary option forwarding are rejected. `RUNA_HTTP_PORT` defaults to 8081 on loopback. The two runtime env files are `.env.prod` and `.env.prod.database`, based on their examples. Raw env-file loading preserves literal dollar signs in secrets; use unquoted values. Do not commit or print expanded environment files/configuration.
+`./bin/artisan runa:production validate|build` and `./bin/artisan runa:production up|down|restart|status|logs [service]` run only in a host terminal with Docker Engine 26 or newer and Docker Compose 2.35 or newer (raw env-file and volume-subpath support). They always use `compose.production.yaml`, the explicit `runa-prod` (real) or `runa-prod-simulation` project and ignored `.env.prod.compose` interpolation settings. The explicit project flag prevents ambient `COMPOSE_PROJECT_NAME` from redirecting operations; ambient image-tag/port variables are removed so validated local settings control interpolation. Copy `.env.prod.compose.example` and select an exact `vX.Y.Z` release or full lowercase Git commit hash as `RUNA_IMAGE_TAG`; `latest`, branch names, abbreviated hashes and arbitrary option forwarding are rejected. `RUNA_HTTP_PORT` defaults to 8081 on loopback. The two runtime env files are `.env.prod` and `.env.prod.database`, based on their examples. Raw env-file loading preserves literal dollar signs in secrets; use unquoted values. Do not commit or print expanded environment files/configuration.
 
 `validate` executes quiet Compose validation without printing expanded secrets. `build` requires a clean checkout matching the exact selected tag and builds PHP/Nginx from locked dependencies and then inspects those exact selected images: non-root users, required PHP extensions, no development dependencies/tools, SPA assets and Nginx config syntax. Image checks override the normal application entrypoint and require no application secrets or database. Compose still needs the runtime env files to exist; copied example files suffice for build-only checks. No production service is started by `build`.
 
@@ -296,14 +277,14 @@ Lifecycle `up` starts existing images and waits for health; it is not an install
 
 ## Production operations and security
 
-- `./bin/install-prod <vX.Y.Z|full-SHA> [--simulation]`: guided host install; refuses existing configuration, generates private secrets and prepares sparse checkouts.
-- `./bin/deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.
-- `./bin/deploy rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
-- `./bin/backup create|verify <backup-id>|restore <backup-id> [--confirm-runa-prod-restore]`: coordinated database/durable-file archives, actual isolated restore validation and deliberate destructive restore.
-- `./bin/production self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
-- `./bin/doctor production`: delegates to the same deep host self-test.
-- `./bin/project mark-production-deployed --evidence <first-deploy.json>`: development-only one-way versioned-state recording after a real successful deployment; requires a clean active-roadmap branch and commits/pushes.
-- `./bin/security dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.
+- `./bin/artisan runa:install production <vX.Y.Z|full-SHA> [--simulation]`: guided host install; refuses existing configuration, generates private secrets and prepares sparse checkouts.
+- `./bin/artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.
+- `./bin/artisan runa:deploy rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
+- `./bin/artisan runa:backup create|verify <backup-id>|restore <backup-id> [--confirm-runa-prod-restore]`: coordinated database/durable-file archives, actual isolated restore validation and deliberate destructive restore.
+- `./bin/artisan runa:production self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
+- `./bin/artisan runa:doctor production`: delegates to the same deep host self-test.
+- `./bin/artisan runa:project mark-production-deployed --evidence <first-deploy.json>`: development-only one-way versioned-state recording after a real successful deployment; requires a clean active-roadmap branch and commits/pushes.
+- `./bin/artisan runa:security dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.
 
 Production env files must be private (mode 600). `.env.prod.backup` configures a private absolute backup directory and positive retention count. Simulation mode must match the deploy flag and uses separate Compose resources; it never records the irreversible production-ever-deployed transition. All production operations share an exclusive lock. Follow `docs/production/deployment.md` and `docs/production/backups.md` for prerequisites, failure recovery and local acceptance commands.
 
@@ -319,7 +300,7 @@ Trivy collects the repository and every distinct selected runtime-image report e
 
 Approved PostgreSQL ICU production simulations now use `runa-prod-icu-simulation`, distinct from prior Bookworm simulations. `python3 tools/testing/docker-test-inventory.py` emits a read-only resource inventory without environment values for final cleanup review. No cleanup is performed. The security runner retains raw Trivy reports and applies only `docs/security/postgres-gosu-not-affected.json` after exact artifact/binary/CVE/evidence/expiry validation; disposition evidence is separate and any drift remains blocking.
 
-An isolated installer checkout can run `./bin/security trivy --dependencies-root /absolute/development/checkout` on the host. Image/repository scans target the installer checkout/deployment; dependency audits delegate read-only to the existing development app after byte-for-byte Composer/pnpm lockfile checks. No development container is started or restarted.
+An isolated installer checkout can run `./bin/artisan runa:security trivy --dependencies-root /absolute/development/checkout` on the host. Image/repository scans target the installer checkout/deployment; dependency audits delegate read-only to the existing development app after byte-for-byte Composer/pnpm lockfile checks. No development container is started or restarted.
 
 ## Source ownership and dependency inputs
 

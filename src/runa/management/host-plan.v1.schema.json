@@ -6,9 +6,63 @@
   "additionalProperties": false,
   "required": ["schema_version", "request_id", "operation", "parameters"],
   "properties": {
-    "schema_version": { "const": 1 },
-    "request_id": { "type": ["string", "null"], "pattern": "^[a-f0-9]{32}$" },
-    "operation": { "enum": ["development.status", "development.up"] },
-    "parameters": { "type": "object", "additionalProperties": false }
+    "schema_version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "operation": {
+      "enum": [
+        "development.prepare",
+        "development.up",
+        "development.down",
+        "development.config",
+        "development.shell",
+        "development.profile",
+        "development.embeddings",
+        "development.build",
+        "development.recreate",
+        "development.restart",
+        "development.logs",
+        "development.status",
+        "development.setup",
+        "development.doctor",
+        "development.knowledge-init",
+        "development.knowledge-status",
+        "tooling.doctor",
+        "tooling.quality",
+        "tooling.knowledge",
+        "tooling.security",
+        "tooling.project",
+        "tooling.xdebug",
+        "tooling.check",
+        "tooling.hook",
+        "tooling.format",
+        "tooling.lint",
+        "tooling.typecheck",
+        "tooling.analyse",
+        "tooling.test",
+        "tooling.production",
+        "tooling.deploy",
+        "tooling.backup",
+        "tooling.install"
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "string",
+            "maxLength": 4096
+          }
+        }
+      }
+    }
   }
 }

@@ -40,6 +40,27 @@ class ManagementContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Duplicate'):
             management.validate_plan(json.dumps(self.plan()).replace('"schema_version": 1', '"schema_version": 1, "schema_version": 1'), self.request)
 
+    def test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected(self):
+        arguments = ['--filter=literal $(false); value', 'line\nbreak']
+        plan = self.plan() | {'operation': 'tooling.test', 'parameters': {'arguments': arguments}}
+        validated = management.validate_plan(json.dumps(plan), self.request)
+        command = management.execution_command(validated)
+        self.assertEqual(command[-5:], ['php', 'artisan', 'runa:test', *arguments])
+        self.assertNotIn('sh', command)
+        for parameters in ({'arguments': 'false'}, {'arguments': [False]}, {'arguments': ['a' * 4097]}, {'arguments': [], 'executable': 'sh'}):
+            with self.subTest(parameters=parameters), self.assertRaises(ValueError):
+                management.validate_plan(json.dumps(plan | {'parameters': parameters}), self.request)
+
+    def test_quality_queries_do_not_hold_the_production_lock_across_child_gates(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            state = root / '.runtime/production'
+            plan = self.plan() | {'operation': 'tooling.quality', 'parameters': {'arguments': ['status']}}
+            with patch.object(management, 'ROOT', root), patch.object(operations, 'STATE', state), patch.object(management.subprocess, 'run', return_value=subprocess.CompletedProcess([], 7)) as run:
+                with operations.lock():
+                    self.assertEqual(management.execute_plan(plan, self.request), 7)
+                self.assertEqual(run.call_args.args[0], ['python3', str(root / 'tools/project/executors/quality.py'), 'status'])
+
     def test_transport_caps_output_and_duration(self):
         status, stdout, stderr = management.bounded_output([sys.executable, '-c', 'import sys; print("ok"); print("warning", file=sys.stderr)'])
         self.assertEqual((status, stdout, stderr), (0, 'ok\n', 'warning\n'))
@@ -54,7 +75,7 @@ class ManagementContracts(unittest.TestCase):
             state = root / '.runtime/production'
             with patch.object(management, 'ROOT', root), patch.object(operations, 'STATE', state), patch.object(management.subprocess, 'run') as run:
                 def execute(command, **kwargs):
-                    self.assertEqual(command, [str(root / 'bin/dev'), 'status'])
+                    self.assertEqual(command, ['python3', str(root / 'tools/project/executors/dev.py'), 'status'])
                     with self.assertRaisesRegex(ValueError, 'Another production operation'):
                         with operations.lock():
                             pass

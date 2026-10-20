@@ -23,56 +23,56 @@ base:
   - id: repository-state
     depends_on: []
     description: Validate roadmap state, branch alignment, dirty worktree expectations, and release metadata consistency.
-    command: ./bin/doctor repository
+    command: php artisan runa:doctor repository
     severity: hard_fail
 
   - id: configuration
     depends_on: [repository-state]
     description: Validate application and environment configuration contracts.
-    command: ./bin/doctor config
+    command: php artisan runa:doctor config
     severity: hard_fail
 
   - id: formatting
     depends_on: [repository-state]
     description: Verify repository formatting.
-    command: ./bin/format --check
+    command: php artisan runa:format --check
     severity: hard_fail
 
   - id: lint
     depends_on: [configuration]
     description: Run applicable lint checks.
-    command: ./bin/lint
+    command: php artisan runa:lint
     severity: hard_fail
 
   - id: backend-tests
     depends_on: [configuration]
     exclusive_group: testing-state
     description: Run backend tests in parallel-safe testing isolation.
-    command: ./bin/test --parallel
+    command: php artisan runa:test --parallel
     severity: hard_fail
 
   - id: php-static-analysis
     depends_on: [configuration]
     description: Run Larastan/PHPStan at the configured strict level.
-    command: ./bin/analyse
+    command: php artisan runa:analyse
     severity: hard_fail
 
   - id: dependency-audit
     depends_on: [configuration]
     description: Audit Composer and pnpm dependency vulnerabilities.
-    command: ./bin/security dependencies
+    command: php artisan runa:security dependencies
     severity: hard_fail
 
   - id: secret-scan
     depends_on: [repository-state]
     description: Scan repository content for leaked secrets.
-    command: ./bin/security secrets
+    command: php artisan runa:security secrets
     severity: hard_fail
 
   - id: debug-residue
     depends_on: [repository-state]
     description: Reject accidental temporary debugging output and breakpoints.
-    command: ./bin/quality-check debug-residue
+    command: php artisan runa:check debug-residue
     severity: hard_fail
 
   - id: quality-runner-contract
@@ -84,13 +84,13 @@ base:
   - id: maintenance-consistency
     depends_on: [repository-state]
     description: Validate maintenance backlog, deprecations, external registry, TODO links, and command documentation consistency.
-    command: ./bin/doctor maintenance
+    command: php artisan runa:doctor maintenance
     severity: hard_fail
 
   - id: hook-contract
     depends_on: [configuration]
     description: Verify installed hooks and safe rejection behavior without creating permanent fixture commits.
-    command: ./bin/doctor hooks
+    command: php artisan runa:doctor hooks
     severity: hard_fail
 
 impact_areas:
@@ -103,45 +103,45 @@ impact_areas:
 
     - id: frontend-typecheck
       depends_on: [configuration]
-      command: ./bin/typecheck
+      command: php artisan runa:typecheck
       severity: hard_fail
 
     - id: frontend-tests
       depends_on: [configuration]
       exclusive_group: testing-state
-      command: ./bin/test frontend
+      command: php artisan runa:test frontend
       severity: hard_fail
 
     - id: frontend-browser
       depends_on: [frontend-build, frontend-tests]
       exclusive_group: testing-state
-      command: ./bin/test e2e --critical
+      command: php artisan runa:test e2e --critical
       severity: hard_fail
 
     - id: frontend-render-diagnostics
       depends_on: [frontend-browser]
       exclusive_group: testing-state
-      command: ./bin/doctor frontend
+      command: php artisan runa:doctor frontend
       severity: hard_fail
 
   database:
     - id: database-migrations
       depends_on: [backend-tests]
       exclusive_group: testing-state
-      command: ./bin/doctor database-migrations
+      command: php artisan runa:doctor database-migrations
       severity: hard_fail
 
     - id: database-constraints
       depends_on: [database-migrations]
       exclusive_group: testing-state
-      command: ./bin/doctor database
+      command: php artisan runa:doctor database
       severity: hard_fail
 
     - id: seeding-contract
       depends_on: [database-constraints]
       exclusive_group: testing-state
       description: Validate category isolation, dependency graph, idempotence and relevant development scenario coverage.
-      command: ./bin/doctor seeding
+      command: php artisan runa:doctor seeding
       severity: hard_fail
 
   production:
@@ -154,28 +154,28 @@ impact_areas:
       execution_context: host
       depends_on: [production-compose]
       exclusive_group: production-simulation
-      command: ./bin/production build
+      command: ./bin/artisan runa:production build
       severity: hard_fail
 
     - id: production-compose
       execution_context: host
       depends_on: [configuration]
       exclusive_group: production-simulation
-      command: ./bin/production validate
+      command: ./bin/artisan runa:production validate
       severity: hard_fail
 
     - id: production-health
       execution_context: host
       depends_on: [production-build]
       exclusive_group: production-simulation
-      command: ./bin/production self-test
+      command: ./bin/artisan runa:production self-test
       severity: hard_fail
 
     - id: production-ai-isolation
       execution_context: host
       depends_on: [production-health]
       exclusive_group: production-simulation
-      command: ./bin/production verify-ai-isolation
+      command: ./bin/artisan runa:production verify-ai-isolation
       severity: hard_fail
 
   development:
@@ -192,23 +192,23 @@ impact_areas:
 
     - id: development-stack
       depends_on: [configuration]
-      command: ./bin/dev doctor
+      command: php artisan runa:dev doctor
       severity: hard_fail
 
   ai_environment:
     - id: knowledge-doctor
       depends_on: [configuration]
-      command: ./bin/knowledge doctor
+      command: php artisan runa:knowledge doctor
       severity: hard_fail
 
     - id: knowledge-evals
       depends_on: [knowledge-doctor]
-      command: ./bin/knowledge eval
+      command: php artisan runa:knowledge eval
       severity: hard_fail
 
     - id: boost-mcp
       depends_on: [configuration]
-      command: ./bin/doctor boost
+      command: php artisan runa:doctor boost
       severity: hard_fail
 
   security:
@@ -223,12 +223,12 @@ impact_areas:
       depends_on: [configuration]
       depends_on_if_selected:
         [production-build, frontend-build, frontend-render-diagnostics]
-      command: ./bin/security trivy
+      command: ./bin/artisan runa:security trivy
       severity: hard_fail
 
     - id: expanded-security-review
       depends_on: [repository-container-scan]
-      command: ./bin/security review-changed-surface
+      command: php artisan runa:security review-changed-surface
       severity: hard_fail
 
   tooling:
@@ -245,13 +245,13 @@ impact_areas:
 
     - id: tooling-help
       depends_on: [repository-state]
-      command: ./bin/doctor tooling
+      command: php artisan runa:doctor tooling
       severity: hard_fail
 
   documentation:
     - id: documentation-consistency
       depends_on: [repository-state]
-      command: ./bin/doctor docs
+      command: php artisan runa:doctor docs
       severity: hard_fail
 
 final:
@@ -264,13 +264,13 @@ final:
   - id: version-changelog-roadmap
     depends_on: [release-metadata-contract]
     description: Validate README state, command documentation, VERSION, CHANGELOG, roadmap state, release type, and final report facts.
-    command: ./bin/doctor release
+    command: php artisan runa:doctor release
     severity: hard_fail
 
   - id: source-tree-cleanliness
     depends_on: []
     description: Verify no scratch/debug/bootstrap-only files remain unintentionally.
-    command: ./bin/doctor cleanliness
+    command: php artisan runa:doctor cleanliness
     severity: hard_fail
 
 execution:

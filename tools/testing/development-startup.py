@@ -29,12 +29,23 @@ def load(name, path):
     return module
 
 
-dev = load('dev_startup_contract', 'bin/dev')
-cli = load('knowledge_startup_contract', 'bin/knowledge')
+dev = load('dev_startup_contract', 'tools/project/executors/dev.py')
+cli = load('knowledge_startup_contract', 'tools/project/executors/knowledge.py')
 startup = load('optional_startup_contract', 'tools/knowledge/startup.py')
 
 
 class StartupContracts(unittest.TestCase):
+    def test_pre_autoload_setup_bridge_does_not_require_artisan(self):
+        original = Path.is_file
+        def without_vendor(path):
+            return False if path == ROOT / 'src/vendor/autoload.php' else original(path)
+        import runpy
+        with patch.object(Path, 'is_file', without_vendor), patch.object(sys, 'argv', [str(ROOT / 'bin/dev'), 'setup', '--if-needed']), patch('subprocess.run', return_value=SimpleNamespace(returncode=0)) as run:
+            with self.assertRaises(SystemExit) as result:
+                runpy.run_path(str(ROOT / 'bin/dev'), run_name='__main__')
+            self.assertEqual(result.exception.code, 0)
+            self.assertEqual(run.call_args.args[0], ['python3', str(ROOT / 'tools/project/executors/dev.py'), 'setup', '--if-needed'])
+
     def host_context(self):
         exists = Path.exists
         return patch.object(Path, 'exists', lambda path: False if str(path) == '/.dockerenv' else exists(path))
@@ -74,6 +85,11 @@ class StartupContracts(unittest.TestCase):
                 run.assert_not_called()
                 persist.assert_not_called()
                 resolve.assert_not_called()
+
+    def test_config_validation_never_prints_expanded_environment(self):
+        with self.host_context(), patch.object(dev, 'load', return_value={'EMBEDDINGS_CUDA': '0'}), patch.object(dev, 'resolve_embeddings'), patch.object(dev, 'persist'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run, patch.object(dev.sys, 'argv', ['dev', 'config']), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(dev.main(), 0)
+        self.assertEqual(run.call_args.args[0][-2:], ['config', '--quiet'])
 
     def test_application_failure_is_not_swallowed(self):
         with self.host_context(), patch.object(dev, 'load', return_value={'EMBEDDINGS_CUDA': '0'}), patch.object(dev, 'resolve_embeddings'), patch.object(dev, 'persist'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=7)) as run, patch.object(dev.sys, 'argv', ['dev', 'up']):
@@ -157,7 +173,7 @@ class StartupContracts(unittest.TestCase):
     def test_initializer_recovers_and_exits_after_success(self):
         with patch.object(startup.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run, patch.object(startup.time, 'sleep') as delay, contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(startup.initialize(), 0)
-        self.assertEqual(run.call_args_list[1].args[0][-1], 'initialize')
+        self.assertEqual(run.call_args_list[1].args[0], [sys.executable, str(ROOT / 'tools/project/executors/knowledge.py'), 'initialize'])
         delay.assert_not_called()
 
     def initialize_cli(self, present, manifest, points, stale=True):

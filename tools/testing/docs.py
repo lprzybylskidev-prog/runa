@@ -38,7 +38,7 @@ class DocumentationContracts(unittest.TestCase):
             docs_checks.validate(self.root)
 
     def doctor(self, area):
-        # Exercise the actual CLI dispatcher with fixture sources and real validators.
+        # Exercise the actual diagnostic executor with fixture sources and real validators; Artisan forwarding has separate management contracts.
         script = ('import runpy, sys\n'
                   + f'sys.path.insert(0, {str(ROOT / "tools/project")!r})\n'
                   + 'import runtime, checks\n'
@@ -46,7 +46,7 @@ class DocumentationContracts(unittest.TestCase):
                   + f'checks.ROOT = Path({str(self.root)!r})\n'
                   + 'runtime.inside = lambda: True\n'
                   + f'sys.argv = ["doctor", {area!r}]\n'
-                  + f'runpy.run_path({str(ROOT / "bin/doctor")!r}, run_name="__main__")\n')
+                  + f'runpy.run_path({str(ROOT / "tools/project/executors/doctor.py")!r}, run_name="__main__")\n')
         return subprocess.run([sys.executable, '-c', script], capture_output=True, text=True)
 
     def test_released_stale_readme_is_rejected_by_actual_doctor(self):
@@ -129,7 +129,7 @@ class DocumentationContracts(unittest.TestCase):
     def test_final_gate_includes_docs_without_documentation_impact(self):
         definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
         selected = quality.select(definition, [], True)
-        self.assertEqual(selected['version-changelog-roadmap']['command'], './bin/doctor release')
+        self.assertEqual(selected['version-changelog-roadmap']['command'], 'php artisan runa:doctor release')
         self.assertIn('--with-docs-and-knowledge', selected['release-metadata-contract']['command'])
         # Closed fixture metadata would otherwise pass the actual release doctor.
         self.write('CHANGELOG.md', '# Changelog\n\n## [0.1.0]\nRM-2026-001\n')

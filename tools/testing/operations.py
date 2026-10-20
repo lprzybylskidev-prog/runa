@@ -73,7 +73,9 @@ print('parent:' + sys.stdin.read())
             root.mkdir()
             files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'src/app/example.php': '<?php',
                      'src/runa/platform.json': '{}', 'src/runa/Http/Controllers/HealthController.php': '<?php', 'src/runa/lang/pl/validation.php': '<?php',
-                     'src/runa/management/example.php': 'excluded', 'src/runa/tools/example.py': 'excluded', 'src/runa/tests/example.php': 'excluded',
+                     'src/runa/management/commands.php': 'operational registry',
+                     'src/runa/management/development.php': 'excluded', 'src/runa/management/KnowledgeCommand.php': 'excluded',
+                     'tools/project/executors/operations.py': 'operational helper', 'tools/project/executors/knowledge.py': 'excluded', 'src/runa/tools/example.py': 'excluded', 'src/runa/tests/example.php': 'excluded',
                      'docker/php/Dockerfile': 'FROM example', '.agents/example': 'excluded', 'bin/knowledge': 'excluded',
                      'tools/knowledge/example.py': 'excluded', 'bin/operations': 'launcher', 'bin/production': 'launcher',
                      'docs/ai/example.md': 'excluded', 'docker/embeddings/example': 'excluded'}
@@ -93,7 +95,12 @@ print('parent:' + sys.stdin.read())
                 self.assertTrue((release / 'src/runa/Http/Controllers/HealthController.php').is_file())
                 self.assertTrue((release / 'src/runa/lang/pl/validation.php').is_file())
                 self.assertTrue((release / 'src/runa/platform.json').is_file())
-                for excluded in ('management', 'tools', 'tests'):
+                self.assertTrue((release / 'src/runa/management/commands.php').is_file())
+                self.assertTrue((release / 'tools/project/executors/operations.py').is_file())
+                self.assertFalse((release / 'src/runa/management/development.php').exists())
+                self.assertFalse((release / 'src/runa/management/KnowledgeCommand.php').exists())
+                self.assertFalse((release / 'tools/project/executors/knowledge.py').exists())
+                for excluded in ('tools', 'tests'):
                     self.assertFalse((release / 'src/runa' / excluded).exists())
                 self.assertTrue((release / 'bin/operations').is_file())
                 self.assertTrue((release / 'docker/php/Dockerfile').is_file())

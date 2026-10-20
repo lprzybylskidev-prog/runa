@@ -15,11 +15,12 @@ try:
         print('Usage: ./bin/artisan [--management] <Artisan arguments>\n'
               'Ordinary commands use the app container. --management discovers cold management commands.\n'
               'runa:dev status|up automatically uses management; --plan prints without host execution.')
-    elif args[0] == '--management' or args[0] == 'runa:dev':
-        if args[0] == '--management':
+    elif args[0] == '--management' or (args[0].startswith('runa:') and (inside() or management.is_management_command(args[0]))):
+        explicit_management = args[0] == '--management'
+        if explicit_management:
             args = args[1:]
         if inside():
-            run(['php', 'artisan', '--management', *args])
+            run(['php', 'artisan', *(['--management'] if explicit_management else []), *args])
         else:
             raise SystemExit(management.launch(args))
     else:
