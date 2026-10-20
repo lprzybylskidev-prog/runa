@@ -1,10 +1,10 @@
 ---
 id: RM-2026-007
 title: Devcontainer setup readiness repair
-status: draft
+status: active
 branch: roadmap/RM-2026-007-devcontainer-setup-readiness
 created_at: 2026-10-20
-activated_at: null
+activated_at: 2026-10-20
 closed_at: null
 release_type: fix
 impact_areas:
