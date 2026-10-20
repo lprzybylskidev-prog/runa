@@ -103,6 +103,15 @@ COPY --chown=runa:runa resources/views/errors/ resources/views/errors/
 COPY --chown=runa:runa resources/css/light-palette.css resources/css/light-palette.css
 COPY --chown=runa:runa VERSION ./
 
+# A short-lived host management process, never a production application service.
+FROM production-runtime AS management
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /opt/runa/vendor/
+COPY --chown=runa:runa management/ /opt/runa/management/
+WORKDIR /opt/runa
+HEALTHCHECK NONE
+ENTRYPOINT ["php", "/opt/runa/management/artisan.php"]
+CMD ["list"]
+
 FROM node AS frontend-build
 WORKDIR /build
 RUN npm install --global corepack@0.36.0 && corepack enable && corepack install --global pnpm@12.14.0

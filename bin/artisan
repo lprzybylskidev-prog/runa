@@ -1,1 +1,30 @@
-passthrough
+#!/usr/bin/env python3
+"""Transport Artisan to the application or the runtime-independent management container."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tools/project'))
+from runtime import app_command, inside, run
+import management
+
+try:
+    args = sys.argv[1:]
+    if not args or args == ['--help']:
+        print('Usage: ./bin/artisan [--management] <Artisan arguments>\n'
+              'Ordinary commands use the app container. --management discovers cold management commands.\n'
+              'runa:dev status|up automatically uses management; --plan prints without host execution.')
+    elif args[0] == '--management' or args[0] == 'runa:dev':
+        if args[0] == '--management':
+            args = args[1:]
+        if inside():
+            run(['php', 'management/artisan.php', *args])
+        else:
+            raise SystemExit(management.launch(args))
+    else:
+        run(app_command(['php', 'artisan', *args]))
+except (ValueError, OSError, subprocess.SubprocessError) as error:
+    message = f'Child command failed (exit {error.returncode}).' if isinstance(error, subprocess.CalledProcessError) else str(error)
+    print('Artisan transport failed: ' + message, file=sys.stderr)
+    sys.exit(1)

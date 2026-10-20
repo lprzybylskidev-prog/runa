@@ -4,6 +4,7 @@ parameters:
     level: max
     paths:
         - app
+        - management
         - bootstrap/app.php
         - config
         - database

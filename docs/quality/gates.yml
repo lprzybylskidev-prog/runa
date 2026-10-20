@@ -226,6 +226,17 @@ impact_areas:
       severity: hard_fail
 
   tooling:
+    - id: management-transport-contracts
+      depends_on: [repository-state]
+      command: python3 tools/testing/management.py
+      severity: hard_fail
+
+    - id: management-host-acceptance
+      execution_context: host
+      depends_on: [management-transport-contracts]
+      command: python3 tools/testing/management-host.py
+      severity: hard_fail
+
     - id: tooling-help
       depends_on: [repository-state]
       command: ./bin/doctor tooling

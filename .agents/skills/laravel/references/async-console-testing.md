@@ -18,6 +18,8 @@
 
 ## Console commands
 
+Runtime-independent host operations share the explicit management command registry with normal local/testing Artisan. Use `./bin/artisan --management list` for cold discovery; application providers, dotenv, DB and keys are outside that bootstrap. The host executes validated fixed operation plans; container commands only produce plans. Follow the current transport contract and migration table in `docs/tooling/commands.md` when moving commands or changing their callers. Keep management source/registration outside production application images and registration.
+
 11. Console commands return meaningful exit codes.
 12. Output/help is concise, actionable, and English-only.
 13. Destructive commands require clear confirmation interactively.

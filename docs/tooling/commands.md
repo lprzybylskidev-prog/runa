@@ -10,6 +10,67 @@ Every durable `./bin/*` command must:
 
 This file documents the implemented command surface: development lifecycle/profile/setup, passthrough wrappers, seeders, doctor, hooks, knowledge, local quality, security, production lifecycle/deploy/backup/state tools and frontend/backend checks. RM-2026-001 records their baseline acceptance evidence. Commands still require their documented environment and operational prerequisites; simulation acceptance does not prove real production deployment.
 
+## Runtime-independent Artisan transport
+
+`./bin/artisan <arguments>` preserves ordinary application Artisan delegation. From the host, `./bin/artisan --management list` or `--management help runa:dev` uses an isolated short-lived image without requiring app services, checkout vendor/, `.env`, APP_KEY or a database. Its first invocation builds the `management` target from the existing pinned production PHP runtime and locked production Composer dependencies; Docker registry access is needed when those build inputs are not cached. The image has no application code, Node, Composer executable, Python, Boost or knowledge tooling. The host needs Python 3 and Docker, not PHP/Node.
+
+Currently delivered management operations:
+
+```sh
+./bin/artisan runa:dev status
+./bin/artisan runa:dev up --plan
+./bin/artisan runa:dev up
+```
+
+`status` delegates to the existing `bin/dev status`. `up` delegates to `bin/dev up`, including its application-first readiness and independent optional AI startup/recovery. It does not reset data or clear failed production-operation evidence. Only these two development actions are implemented in the new registry at RM-005 point 2; keep using the documented existing wrappers for other operations until point 6 migrates them.
+
+Normal local/testing Artisan and cold management share `management/commands.php` and the same command class. `php artisan runa:dev ...` and `./bin/artisan runa:dev ...` inside the devcontainer only emit a plan: Docker lifecycle execution belongs to the native host. The normal production application does not register management commands, and production runtime images omit management source entirely. This interim Runa-owned root moves under `src/runa/` during the ownership relocation.
+
+### Host-plan v1 execution boundary
+
+The machine-readable contract is `management/host-plan.v1.schema.json`: `schema_version`, `request_id`, `operation`, empty `parameters`; unknown/duplicate fields, unknown operations, noninteger versions, extra parameters and mismatched request identities are rejected. A direct container preview has null request_id and is not executable. The host supplies a fresh internal request ID to Artisan and consumes only the immediately returned bounded JSON response. There is no command that loads an arbitrary plan file. `--host-request` is reserved; operator-supplied values are rejected. `--plan` prints the bound plan without running the host operation.
+
+The Python executor maps only `development.status` and `development.up` to fixed trusted helper/action pairs. Plans carry no executable, shell, arguments, environment, mount, repository path or remote-code fields. Validation occurs again at execution. The host uses the existing `.runtime/production/operation.lock` inode, so new management operations contend with deployment/backup/restore. Unresolved in-progress production evidence blocks `up`; it is never erased to permit recovery. A temporary receipt under private `.runtime/management/` is mode 600 and removed after execution; symlink traversal in state/lock paths is rejected. Host child exit codes propagate.
+
+The container runs from the inspected immutable image ID, selected by a digest of local management/build/lock inputs and verified image label. It has no bind mounts, Docker socket, forwarded application environment or network; it runs non-root with read-only root, no capabilities, no-new-privileges, bounded processes/memory/CPU and a disposable /tmp. Discovery output is capped at 64 KiB across stdout/stderr and 30 seconds. Timeout/interruption removes only its uniquely named management container. Host lifecycle actions retain their own existing durations; these discovery limits are not quality-gate timeouts.
+
+### Command migration map (RM-005 points 2–8)
+
+The following table covers all 28 baseline bin entries. It defines the migration destination; except for the delivered transport/status/up above, proposed Artisan forms are not yet available. Existing aliases remain operational until their callers, hooks, recovery paths, docs and gates have migrated. Artisan remains the sole domain-command registry; protocol/tool launchers and fixed host execution mappings are transports.
+
+| Existing entry  | Destination / role                                                                                                   | Delivery                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `artisan`       | Application transport; cold `--management` discovery; automatic `runa:dev status/up` plan/execution                  | Point 2 delivered                                               |
+| `dev`           | `runa:dev` lifecycle/profile/embeddings; setup moves to `runa:install` in dev mode                                   | status/up delivered; remaining callers point 6, install point 8 |
+| `doctor`        | `runa:doctor [area]`; retain thin governance compatibility wrapper                                                   | Point 6                                                         |
+| `quality`       | `runa:quality show/roadmap/final/status`; same graph, background stop/no-poll contract                               | Point 6                                                         |
+| `quality-check` | `runa:quality:check debug-residue`; bounded internal source checker                                                  | Point 6                                                         |
+| `security`      | `runa:security` existing scanner/review actions; host work remains fixed delegation                                  | Point 6                                                         |
+| `knowledge`     | `runa:knowledge` existing actions; development-only registration and build exclusion                                 | Point 6                                                         |
+| `xdebug`        | `runa:dev xdebug status/on/off`; development-only helper                                                             | Point 6                                                         |
+| `format`        | `runa:format [--check]`; locked Pint/Prettier                                                                        | Point 6                                                         |
+| `lint`          | `runa:lint`; locked ESLint                                                                                           | Point 6                                                         |
+| `typecheck`     | `runa:typecheck`; strict Vue/TypeScript                                                                              | Point 6                                                         |
+| `analyse`       | `runa:analyse`; PHPStan/Larastan                                                                                     | Point 6                                                         |
+| `test`          | `runa:test` backend/frontend/e2e/parallel; preserve suite lock and argument forwarding                               | Point 6                                                         |
+| `check`         | Internal compatibility dispatcher for the five preceding aliases; retire independent dispatch after caller migration | Point 6                                                         |
+| `composer`      | `runa:tools composer -- <tool arguments>`; container tool transport, never host Composer                             | Point 6                                                         |
+| `pnpm`          | `runa:tools pnpm -- <tool arguments>`; container tool transport, never host Node/pnpm                                | Point 6                                                         |
+| `seed`          | Existing `runa:seed` registry; thin compatibility transport                                                          | Point 6 caller migration                                        |
+| `logs`          | `runa:logs [service]`; fixed host Compose read operation                                                             | Point 6                                                         |
+| `production`    | `runa:production` current image/Compose validation/build/lifecycle actions                                           | Point 6                                                         |
+| `prod`          | Thin alias to the same `runa:production` operation implementation                                                    | Point 6                                                         |
+| `deploy`        | `runa:deploy` exact target/rollback semantics                                                                        | Point 6 transport; journal/update integration points 10–12      |
+| `backup`        | `runa:backup create/verify/restore`; preserve lock, confirmation, fencing and evidence                               | Point 6                                                         |
+| `install-prod`  | `runa:install` in prod mode; preserve real/simulation boundaries                                                     | Points 6/8                                                      |
+| `operations`    | Internal bounded deployment/backup/recovery executor; no independent domain command registry                         | Points 2/6/11                                                   |
+| `project`       | `runa:project mark-production-deployed`; validated private evidence and one-way versioned transition                 | Point 6                                                         |
+| `git-hook`      | `runa:hooks` pre-commit/commit-msg; keep versioned thin hook entrypoints and staged-content integrity                | Point 6                                                         |
+| `boost-mcp`     | Existing `boost:mcp`; retain development-only stdio protocol launcher                                                | Point 6 caller/path review                                      |
+| `passthrough`   | Internal tool/protocol argument transport; remove migrated domain-name dispatch only after callers change            | Point 6                                                         |
+
+Existing native Laravel commands and `runa:config:validate`, `runa:runtime:health`, `runa:runtime:pulse`, `runa:test-db:guard`, `runa:seed` keep their names. Guarded destructive database subclasses continue to enforce their current safety contracts. Private Python helpers under `tools/project/` retain host process/Compose/lock/backup mechanics where justified; application use cases move into PHP as scheduled. The standalone customer bootstrap in point 7 remains the explicit pre-Artisan exception.
+
 ## Development
 
 ### `./bin/dev profile`

@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import secrets
 import shutil
+import stat
 import subprocess
 import tarfile
 
@@ -55,8 +56,17 @@ def read_state():
 
 @contextmanager
 def lock():
+    if any(path.is_symlink() for path in [STATE, *STATE.parents]):
+        raise ValueError('Operation state must not traverse symlinks.')
     STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (STATE / 'operation.lock').open('a') as stream:
+    info = STATE.stat()
+    if info.st_uid != os.getuid() or info.st_mode & 0o022:
+        raise ValueError('Operation state must be operator-owned and not writable by other users.')
+    descriptor = os.open(STATE / 'operation.lock', os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(descriptor, 'a') as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid():
+            raise ValueError('Operation lock must be a regular operator-owned file.')
         try:
             fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
