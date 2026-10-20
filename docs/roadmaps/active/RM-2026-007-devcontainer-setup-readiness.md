@@ -33,7 +33,7 @@ With a matching fingerprint and current required generated assets, setup --if-ne
 
 ## Implementation plan
 
-- [ ] 1. Repair setup readiness and regression coverage.
+- [x] 1. Repair setup readiness and regression coverage.
   - Verify current generator outputs, correct the stale readiness path, cover valid existing setup, missing output and stale fingerprint, preserve failure semantics, update development guidance and verify actual containerized fast setup/reopen preparation. Commit the coherent correction.
 - [ ] 2. Full verification, release finalization, merge and final report.
   - Review affected current-state docs and run the complete selected local gate including development and strict AI checks. Insert fix points/rerun on failures. Finalize patch metadata, close roadmap, refresh knowledge/docs/release checks, merge/main sanity, annotated tag/push/GitHub Release and branch deletion. End the turn after starting a background final gate.
@@ -41,3 +41,14 @@ With a matching fingerprint and current required generated assets, setup --if-ne
 ## Execution context
 
 Native host checkout: /home/lprzybylski/Documents/php/runa. Development Compose project runa-dev, compose.yaml plus .devcontainer/compose.resources.yaml and private .env.dev.local. Use existing app container for PHP/Composer/pnpm. Host recovery ./bin/dev up and ./bin/dev doctor passed before activation. Preserve all development/test data, caches, backups, reports and other projects; no destructive reset is needed. Installed VS Code reopening is owner-observed separately from CLI preparation.
+
+## Point 1 execution record
+
+- Corrected the stale readiness sentinel in bin/dev to the generated 503-pl-system.html. No changes to Composer/PHP flags, dependencies, normal migrations, setup fingerprint semantics or optional AI topology.
+- Added regression coverage demonstrating both failures before the fix: unnecessary full setup with valid current output, and incorrectly taking the shortcut when only the retired filename exists. After correction all 13 startup contracts pass, including stale fingerprint/full setup and existing failed-setup marker protection.
+- Actual containerized full setup passes after the input change. A second setup --if-needed reports dependency installation/frontend build skipped while retaining configuration/migration and MCP checks. Host ./bin/dev up and ./bin/dev doctor pass; app ID/start time are unchanged across reopen preparation. Composer SIGSEGV did not recur; its native cause remains unproven. Installed VS Code GUI attachment is not claimed by CLI checks. Local evidence: .runtime/rm007-setup-refresh.log, rm007-setup-fast.log, rm007-reopen-preparation.log, rm007-doctor.log and app-before/app-after files.
+- Updated current environment guidance. No task-created disposable Docker resources or data resets; development/test databases, knowledge/model caches, backups, reports and other projects remain preserved. Existing services remain running.
+
+## Final verification source review
+
+Reviewed README checked state, current VERSION, bin/dev setup/fingerprint/locking and Compose application/optional-AI ordering, current generated native-error output, startup contracts, docs/development/environment.md and editor-and-agents.md, command guidance and Docker lifecycle skill, plus roadmap/release/quality workflows. Guidance now identifies the real generated sentinel and fast/full behavior; no other capability correction is needed for this bounded repair. Closed roadmaps remain historical/immutable. Full gate and patch closure remain pending; no successor activation is authorized.
