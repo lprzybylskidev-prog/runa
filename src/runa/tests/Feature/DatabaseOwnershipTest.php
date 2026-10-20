@@ -81,6 +81,10 @@ it('rejects owner path, connection, seeder and dump bypasses before destructive 
         $fixture->command(true, ['migrate:reset', '--path=app/database/migrations', '--force'], false);
         $fixture->command(true, ['db:seed', '--class=Database\\Seeders\\DatabaseSeeder', '--force']); // Owner default maps to platform root.
         expect(DB::table('app_9c.records')->get()->toJson())->toBe($app);
+        symlink($fixture->root.'/runa/database/migrations/2026_10_17_000001_create_queue_tables.php', $fixture->root.'/app/database/migrations/2099_01_01_000002_escape.php');
+        $fixture->command(false, ['migrate:fresh', '--force'], false);
+        expect(DB::table('shared.migrations')->get()->toJson())->toBe($history);
+        expect(DB::table('app_9c.records')->get()->toJson())->toBe($app);
     } finally {
         DB::statement('DROP TABLE IF EXISTS app_9c.records');
         DB::statement('DROP SCHEMA IF EXISTS app_9c RESTRICT');

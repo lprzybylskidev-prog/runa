@@ -46,6 +46,12 @@ final readonly class DatabaseScope
             if ($resolved === false || ($resolved !== $root && ! str_starts_with($resolved, $root.'/'))) {
                 throw new RuntimeException('Migration path escapes the selected database owner.');
             }
+            foreach (is_dir($resolved) ? (glob($resolved.'/*.php') ?: []) : [] as $file) {
+                $target = realpath($file);
+                if ($target === false || ! str_starts_with($target, $root.'/')) {
+                    throw new RuntimeException('Migration file escapes the selected database owner.');
+                }
+            }
             $result[] = $resolved;
         }
 
