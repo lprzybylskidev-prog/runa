@@ -161,9 +161,11 @@ def execution_command(plan):
     tool = OPERATIONS[operation]
     if tool in ('production', 'quality', 'security', 'project'):
         return ['python3', str(ROOT / ('tools/project/executors/' + tool + '.py')), *arguments]
-    if tool in ('deploy', 'backup', 'install'):
+    if tool == 'install':
+        return ['python3', str(ROOT / 'tools/project/executors/install.py'), *arguments]
+    if tool in ('deploy', 'backup'):
         return ['python3', str(ROOT / 'tools/project/executors/operations.py'),
-                'install-prod' if tool == 'install' else tool, *(arguments[1:] if tool == 'install' else arguments)]
+                tool, *arguments]
     if tool == 'hook':
         return [str(ROOT / 'bin/git-hook'), *arguments]
     if tool == 'check':

@@ -15,6 +15,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import shlex
 import signal
 import stat
 import subprocess
@@ -285,10 +286,8 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
 
 
 def install_command(destination, mode, commit):
-    # Point 8 consolidates these existing mechanics into the unified installer.
     if (destination / 'src/runa/management/InstallCommand.php').is_file() and (destination / 'bin/artisan').is_file():
-        arguments = ['runa:dev', 'up'] if mode == 'dev' else ['runa:install', 'production', commit]
-        return ['./bin/artisan', *arguments]
+        return ['./bin/artisan', 'runa:install', mode, commit]
     return ['./bin/dev', 'up'] if mode == 'dev' else ['./bin/install-prod', commit]
 
 
@@ -300,6 +299,8 @@ def main(argv=None):
     parser.add_argument('--mode', choices=('dev', 'prod'))
     parser.add_argument('--install', choices=('now', 'later'))
     parser.add_argument('--non-interactive', action='store_true', help='Require every selection; never prompt')
+    parser.add_argument('--settings-file', help='Private host JSON settings for the unified production installer')
+    parser.add_argument('--profile', choices=('low', 'standard', 'high'), help='Unified development install resource profile')
     credentials = parser.add_mutually_exclusive_group()
     credentials.add_argument('--token-file', help='Private GitHub read credential file (never pass a token as an argument)')
     credentials.add_argument('--ask-token', action='store_true', help='Read private access token without echo')
@@ -330,9 +331,18 @@ def main(argv=None):
     destination = destination_path(args.destination)
     receipt = acquire(client, args.tag, destination, args.mode, args.expected_commit, args.expected_digest)
     command = install_command(destination, args.mode, receipt['commit'])
+    if command[0] == './bin/artisan':
+        if args.settings_file:
+            command += ['--settings-file=' + str(Path(args.settings_file).resolve())]
+        if args.profile:
+            command += ['--profile=' + args.profile]
+        if not interactive:
+            command.append('--non-interactive')
+    elif args.settings_file or args.profile:
+        raise BootstrapError('Selected older release has no unified installer options. Source is ready; use its legacy command.')
     print('Source verified and published. Installation has not run. Receipt: .git/runa-bootstrap.json')
     print('Source SHA-256: ' + receipt['source_sha256'])
-    print('From the destination directory run: ' + ' '.join(command))
+    print('From the destination directory run: ' + shlex.join(command))
     if args.install == 'now':
         print('Starting containerized installer; production settings may require interactive input.', flush=True)
         try:

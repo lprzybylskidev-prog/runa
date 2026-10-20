@@ -20,6 +20,12 @@
 
 Runtime-independent host operations share the explicit management command registry with normal local/testing Artisan. Use `./bin/artisan --management list` for cold discovery; application providers, dotenv, DB and keys are outside that bootstrap. The host executes validated fixed operation plans; host-only container commands produce inert plans; local development tooling runs PHP Actions/fixed local processes. Operational and optional development registries remain separate. Follow the current transport contract and migration table in `docs/tooling/commands.md` when moving commands or changing their callers. Keep management source/registration outside production application images and registration.
 
+First-install host plans use runa:install dev/prod, existing dev/deploy mechanics,
+private settings and explicit initial-install resume. Preserve the scaffold and
+generated secrets; repeat is not an update/reset. Native SMTP verification is an
+application command and must redact provider failures. Follow
+docs/tooling/installation.md for the implemented lifecycle and acceptance scope.
+
 11. Console commands return meaningful exit codes.
 12. Output/help is concise, actionable, and English-only.
 13. Destructive commands require clear confirmation interactively.

@@ -27,6 +27,7 @@ use Runa\Console\Commands\Database\GuardedWipeCommand;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\SeedProject;
 use Runa\Console\Commands\ValidateConfiguration;
+use Runa\Console\Commands\VerifyInstallationMail;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
@@ -63,6 +64,7 @@ final class RunaServiceProvider extends ServiceProvider
             PulseScheduler::class,
             SeedProject::class,
             ValidateConfiguration::class,
+            VerifyInstallationMail::class,
         ]);
         $this->app->extend(FreshCommand::class,
             fn ($command, Application $app) => $app->make(GuardedFreshCommand::class));

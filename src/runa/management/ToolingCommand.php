@@ -20,7 +20,7 @@ abstract class ToolingCommand extends Command
         'project' => ['mark-production-deployed'], 'xdebug' => ['on', 'off', 'status'],
         'check' => ['debug-residue'], 'hook' => ['pre-commit', 'commit-msg'],
         'production' => ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation'],
-        'backup' => ['create', 'verify', 'restore'], 'install' => ['production'],
+        'backup' => ['create', 'verify', 'restore'], 'install' => ['dev', 'prod', 'production'],
     ];
 
     public function __construct()
@@ -39,6 +39,7 @@ abstract class ToolingCommand extends Command
         try {
             $arguments = $this->forwardedArguments();
             $this->validateArguments($arguments);
+            $this->validateCommandArguments($arguments);
             $request = $this->input->getParameterOption('--host-request', null);
             if ($request !== null && (! is_string($request) || preg_match('/\A[a-f0-9]{32}\z/D', $request) !== 1)) {
                 throw new InvalidArgumentException('Invalid host request identity.');
@@ -73,6 +74,9 @@ abstract class ToolingCommand extends Command
             return self::INVALID;
         }
     }
+
+    /** @param list<string> $arguments */
+    protected function validateCommandArguments(array $arguments): void {}
 
     /** @return list<string> */
     private function forwardedArguments(): array

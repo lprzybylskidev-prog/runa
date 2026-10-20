@@ -172,7 +172,17 @@ Keep `docs/project/state.yml` in the production deployment checkout even when ot
 
 ## Implemented operator workflow
 
-Run host operations on Linux with Python 3.11+, Git, Docker Engine 26+ and Compose 2.35+. No host PHP/Node installation or Docker socket in the devcontainer is required. Run commands from the operator checkout, not from `.runtime/production/releases/`. Use a dedicated production clone. `install-prod <vX.Y.Z|full-SHA>` checks host versions, collects HTTPS/SMTP/backup settings, generates separate random database credentials and a Laravel key, and writes private raw env files. It refuses existing settings. Values are unquoted single lines; literal dollar signs remain literal. TLS termination/domain configuration is an operator prerequisite.
+Run host operations on Linux with Python 3.11+, Git 2.39+, Docker Engine 26+ and
+Compose 2.35+. No host PHP/Node or Docker socket in the devcontainer is required.
+Use a dedicated clean production checkout and run commands from its root, not
+`.runtime/production/releases/`. The [unified installer](../tooling/installation.md)
+`runa:install prod <vX.Y.Z|full-SHA>` accepts hidden interactive settings or a private
+JSON file, generates separate database/application credentials once, provisions
+standard Nginx TLS from supplied certificates (or verifies an explicitly selected
+existing terminator), checks HTTPS and submits an SMTP verification message.
+Existing settings without its own recovery state are refused. Use --resume for
+an interrupted initial installation; completed repeats preserve files/secrets/data.
+Raw env values stay unquoted single lines, including literal dollar signs.
 
 The real installer applies a non-cone sparse allowlist to the operator checkout and each immutable release checkout. Only application/build inputs, production Docker files, operation launchers/modules and `docs/project/state.yml` remain. Development AI files, knowledge CLI, agents, devcontainer and AI documentation are excluded. Simulation preserves the development operator checkout and checks the same sparse release allowlist. Runtime images exclude even the operational Python/Git scripts.
 
@@ -188,12 +198,19 @@ Production operations share one nonblocking lock, including lifecycle and backup
 
 ## Isolated local production acceptance
 
-Set `RUNA_PRODUCTION_MODE=simulation` in `.env.prod.compose` and pass `--simulation` to install/deploy. This selects `runa-prod-icu-simulation`, its own volumes/network, and the configured loopback port. Real mode selects `runa-prod`; a mode mismatch is rejected. A first managed deployment refuses existing unmanaged containers/volumes rather than adopting unknown data. Keep the prior point-13 diagnostic stack separate; stop its listener if it occupies the simulation port without deleting its volumes.
+Set `RUNA_PRODUCTION_MODE=simulation` in `.env.prod.compose` and pass `--simulation`
+to install/deploy. The default project remains `runa-prod-icu-simulation`; explicit
+installer setting `simulation_project` may select a fresh
+`runa-prod-simulation-*` project for isolated acceptance. Built-in simulation TLS
+binds to loopback. Real mode selects `runa-prod` and refuses custom simulation
+projects; a mode mismatch is rejected. A first managed deployment refuses existing
+unmanaged containers/volumes rather than adopting unknown data. Keep prior
+diagnostic stacks separate; stop a conflicting listener without deleting its data.
 
 When no production env files exist:
 
 ```bash
-./bin/artisan runa:install production "$(git rev-parse HEAD)" --simulation
+./bin/artisan runa:install prod "$(git rev-parse HEAD)" --simulation --settings-file=/private/simulation.json --non-interactive
 ```
 
 With existing synthetic operator settings: add the simulation mode to `.env.prod.compose`, make `.env.prod`, `.env.prod.database` and `.env.prod.compose` mode 600, configure `.env.prod.backup` from its example with a private absolute directory, then run:

@@ -1,10 +1,8 @@
 """Host-only production operations. No shell interpolation, global pruning or schema rollback."""
 import argparse
-import base64
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import fcntl
-import getpass
 import hashlib
 import json
 import os
@@ -26,7 +24,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py',
+          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/executors/install.py',
           '/bin/artisan', '/bin/command', '/tools/project/management.py', '/tools/project/executors/operations.py', '/tools/project/executors/production.py',
           '/src/runa/management/autoload.php',
           '/src/runa/management/bootstrap.php',
@@ -109,7 +107,7 @@ def command(release=None):
     old = production.ROOT
     try:
         production.ROOT = context
-        return production.compose()
+        return production.compose(tls_root=ROOT)
     finally:
         production.ROOT = old
 
@@ -312,7 +310,7 @@ def build_images(release=None):
     production.verify_images(command(release), environment())
 
 
-def deploy(target, simulation):
+def deploy(target, simulation, initial_resume=False, verification=None):
     sha = resolve(target)
     previous = read_state()['current']
     mode = read_env(ROOT / '.env.prod.compose').get('RUNA_PRODUCTION_MODE', 'real')
@@ -329,8 +327,10 @@ def deploy(target, simulation):
         project_command = command()
         project = project_command[project_command.index('--project-name') + 1]
         volumes = run(['docker', 'volume', 'ls', '--filter', 'label=com.docker.compose.project=' + project, '--format', '{{.Name}}'], capture_output=True, text=True).stdout.strip()
-        if existing or volumes:
+        if (existing or volumes) and not initial_resume:
             raise ValueError('Unmanaged production project already exists. Preserve it and choose a separate simulation context; do not adopt unknown data.')
+        if verification is not None and not (STATE / 'install-resources.json').exists():
+            atomic(STATE / 'install-resources.json', {'sha': sha, 'project': project, 'started_at': stamp()})
     release = checkout(sha)
     old_config = set_tag(sha)
     mutation_started = False
@@ -350,6 +350,8 @@ def deploy(target, simulation):
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
         resume_http(release, recreate=True)
         health(release, sparse=True)
+        if verification is not None:
+            verification(release)
         identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
                     'database_tree': tree_hash(sha), 'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}
         atomic(STATE / 'deployment.json', {'current': identity, 'previous': previous})
@@ -548,49 +550,9 @@ def restore(name, confirmed):
 
 
 def install(target, simulation):
-    if any((ROOT / name).exists() for name in ('.env.prod', '.env.prod.database', '.env.prod.compose')):
-        raise ValueError('Installer refuses to overwrite existing production settings. Use deploy for upgrades.')
-    if not simulation:
-        dirty = run(['git', 'status', '--porcelain', '--untracked-files=all'], capture_output=True, text=True).stdout.strip()
-        if dirty or (ROOT / '.env').exists() or (ROOT / '.env.dev.local').exists():
-            raise ValueError('Real installer requires a clean dedicated production clone without development environment files.')
-        run(['git', 'sparse-checkout', 'init', '--no-cone'])
-        run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
-        assert_sparse(ROOT)
-    engine = run(['docker', 'version', '--format', '{{.Server.Version}}'], capture_output=True, text=True).stdout.strip()
-    compose_version = run(['docker', 'compose', 'version', '--short'], capture_output=True, text=True).stdout.strip().lstrip('v')
-    def version(value):
-        match = re.match(r'^(\d+)\.(\d+)', value)
-        if not match:
-            raise ValueError('Unable to determine Docker/Compose version.')
-        return tuple(map(int, match.groups()))
-    if version(engine) < (26, 0) or version(compose_version) < (2, 35):
-        raise ValueError('Require Docker Engine >=26 and Compose >=2.35.')
-    print('Configure host HTTPS reverse proxy separately. Secrets are generated locally; SMTP password input is hidden.')
-    values = read_env(ROOT / '.env.prod.example')
-    http_port = input('Loopback HTTP port [8081]: ').strip() or '8081'
-    if not http_port.isascii() or not http_port.isdigit() or not 1024 <= int(http_port) <= 65535:
-        raise ValueError('HTTP port must be 1024–65535.')
-    values['APP_URL'] = input('HTTPS application URL: ').strip()
-    values['MAIL_HOST'] = input('SMTP host: ').strip()
-    values['MAIL_FROM_ADDRESS'] = input('Sender email: ').strip()
-    values['MAIL_USERNAME'] = input('SMTP username: ').strip()
-    values['MAIL_PASSWORD'] = getpass.getpass('SMTP password: ')
-    backup = {'BACKUP_DIRECTORY': input('Dedicated absolute backup directory: ').strip(), 'BACKUP_RETENTION': input('Number of complete backups to retain [7]: ').strip() or '7'}
-    values['APP_KEY'] = 'base64:' + base64.b64encode(secrets.token_bytes(32)).decode()
-    values['DB_PASSWORD'] = secrets.token_urlsafe(36)
-    database = {'POSTGRES_PASSWORD': secrets.token_urlsafe(36), 'APP_DB_PASSWORD': values['DB_PASSWORD']}
-    resolve(target)
-    for name, mapping in (('.env.prod', values), ('.env.prod.database', database), ('.env.prod.backup', backup),
-                          ('.env.prod.compose', {'RUNA_IMAGE_TAG': target, 'RUNA_HTTP_PORT': http_port, 'RUNA_PRODUCTION_MODE': 'simulation' if simulation else 'real'})):
-        with open(ROOT / name, 'x', opener=lambda p, flags: os.open(p, flags, 0o600)) as stream:
-            for key, value in mapping.items():
-                if any(char in value for char in '\r\n\x00'):
-                    raise ValueError('Environment values must be single-line raw values.')
-                stream.write(key + '=' + value + '\n')
-    backup_root()
-    print('Private configuration created. Validation/deploy failures preserve settings for operator correction.')
-    deploy(target, simulation)
+    # Compatibility for internal callers; Artisan uses the unified installer transport.
+    from installation import install as install_application
+    return install_application('prod', target, simulation=simulation)
 
 
 def main(name, args):

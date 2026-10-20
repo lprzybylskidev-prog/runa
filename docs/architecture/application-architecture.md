@@ -243,3 +243,13 @@ atomically publishes a new checkout before handing off to existing containerized
 commands. It never updates an installed customer tree. The source receipt is
 acquisition evidence, not application state or protected-source integrity;
 see [bootstrap](../tooling/bootstrap.md).
+
+The unified runa:install dev/prod host plan reuses resource-profile/dev setup and
+locked production deployment mechanics. Delivered customer source is the initial
+scaffold; first installation creates only missing empty extension directories and
+a private once-only marker, preserving manifests, presentation configuration and
+customer files. Repeat/resume never resets data or rotates generated secrets.
+Built-in Nginx TLS uses private runtime configuration/certificate mounts, and HTTPS
+plus native SMTP acceptance precedes production success. The first-install state
+is scoped separately from the later update/integrity protocol. See
+[installation](../tooling/installation.md).

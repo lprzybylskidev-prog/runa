@@ -25,6 +25,16 @@ Temporary source fixtures never start Docker services or use real credentials.
 Live public acquisition and authorized private acceptance are recorded separately;
 synthetic private failures do not prove live private access.
 
+First-install orchestration has offline preservation/failure/configuration
+contracts in `tools/testing/installation.py`, native command validation/mail
+redaction in `InstallationTest`, and host acceptance in
+`tools/testing/installation-host.py`. The latter uses real fresh isolated dev/prod
+containers and databases, certificate-verified HTTPS/SMTP and a deliberate SMTP
+rejection/resume. It checks unchanged active development identities, customer
+version/files, stable credentials, repeat behavior and absence of real production
+markers, then prints/removes only task-created disposable resources. Synthetic
+mail/TLS acceptance does not prove a real domain/provider or production deployment.
+
 ## Backend test framework
 
 Pest 5.3.2 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.2 and ParaTest 7.27.2 are resolved testing dependencies in `src/composer.lock`.

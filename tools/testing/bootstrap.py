@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import shlex
 from pathlib import Path
 import subprocess
 import sys
@@ -278,8 +279,25 @@ class BootstrapContracts(unittest.TestCase):
             marker = root / 'src/runa/management/InstallCommand.php'
             marker.parent.mkdir(parents=True)
             marker.touch()
-            self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40), ['./bin/artisan', 'runa:dev', 'up'])
-            self.assertEqual(bootstrap.install_command(root, 'prod', 'a' * 40), ['./bin/artisan', 'runa:install', 'production', 'a' * 40])
+            self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40), ['./bin/artisan', 'runa:install', 'dev', 'a' * 40])
+            self.assertEqual(bootstrap.install_command(root, 'prod', 'a' * 40), ['./bin/artisan', 'runa:install', 'prod', 'a' * 40])
+
+    def test_postponed_unified_handoff_preserves_private_settings_path_without_shell_interpretation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            destination = Path(folder) / 'download'
+            private_path = Path(folder) / 'private settings $(literal).json'
+            def acquire(*args):
+                marker = destination / 'src/runa/management/InstallCommand.php'
+                marker.parent.mkdir(parents=True)
+                marker.touch()
+                (destination / 'bin').mkdir()
+                (destination / 'bin/artisan').touch()
+                return {'commit': 'a' * 40, 'source_sha256': 'b' * 64}
+            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', side_effect=acquire), patch.object(bootstrap.subprocess, 'run') as run, contextlib.redirect_stdout(io.StringIO()) as output:
+                bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'prod', '--install', 'later', '--settings-file=' + str(private_path)])
+            line = next(line for line in output.getvalue().splitlines() if line.startswith('From the destination'))
+            self.assertEqual(shlex.split(line.split('run: ', 1)[1]), ['./bin/artisan', 'runa:install', 'prod', 'a' * 40, '--settings-file=' + str(private_path), '--non-interactive'])
+            run.assert_not_called()
 
     def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self):
         with tempfile.TemporaryDirectory() as folder:

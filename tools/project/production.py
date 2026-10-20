@@ -6,14 +6,14 @@ from runtime import ROOT, inside, run
 SERVICES = ('app', 'nginx', 'postgres', 'queue', 'scheduler')
 
 
-def compose():
+def compose(tls_root=None):
     path = ROOT / '.env.prod.compose'
     values = {}
     for line in path.read_text().splitlines():
         if not line.strip() or line.lstrip().startswith('#'):
             continue
         key, separator, value = line.partition('=')
-        if not separator or key not in ('RUNA_IMAGE_TAG', 'RUNA_HTTP_PORT', 'RUNA_PRODUCTION_MODE') or key in values:
+        if not separator or key not in ('RUNA_IMAGE_TAG', 'RUNA_HTTP_PORT', 'RUNA_PRODUCTION_MODE', 'RUNA_TLS_MODE', 'RUNA_SIMULATION_PROJECT') or key in values:
             raise ValueError('Invalid production Compose setting; use the example without quoting or interpolation.')
         values[key] = value
     if not re.fullmatch(r'(?:v\d+\.\d+\.\d+|[a-f0-9]{40})', values.get('RUNA_IMAGE_TAG', '')):
@@ -25,7 +25,19 @@ def compose():
     if mode not in ('real', 'simulation'):
         raise ValueError('RUNA_PRODUCTION_MODE must be real or simulation.')
     project = 'runa-prod-icu-simulation' if mode == 'simulation' else 'runa-prod'
-    return ['docker', 'compose', '--project-name', project, '--project-directory', str(ROOT), '--env-file', str(path), '-f', str(ROOT / 'compose.production.yaml')]
+    if 'RUNA_SIMULATION_PROJECT' in values:
+        if mode != 'simulation' or not re.fullmatch(r'runa-prod-simulation-[a-z0-9-]{1,40}', values['RUNA_SIMULATION_PROJECT']):
+            raise ValueError('Custom production project names are restricted to isolated simulations.')
+        project = values['RUNA_SIMULATION_PROJECT']
+    command = ['docker', 'compose', '--project-name', project, '--project-directory', str(ROOT), '--env-file', str(path), '-f', str(ROOT / 'compose.production.yaml')]
+    if values.get('RUNA_TLS_MODE', 'external') not in ('builtin', 'external'):
+        raise ValueError('RUNA_TLS_MODE must be builtin or external.')
+    if values.get('RUNA_TLS_MODE') == 'builtin':
+        overlay = (tls_root or ROOT) / '.runtime/production/tls/compose.json'
+        if overlay.is_symlink() or not overlay.is_file():
+            raise ValueError('Built-in TLS requires its installer-generated Compose overlay.')
+        command += ['-f', str(overlay)]
+    return command
 
 
 def dispatch(args):

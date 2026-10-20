@@ -36,23 +36,23 @@ Management discovery runs the inspected immutable image ID with no network, moun
 
 ### Command migration map (RM-005 point 6)
 
-| Previous family                    | Canonical form                                                                                            | Execution                                                     |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| dev                                | `runa:dev action [arguments]`                                                                             | PHP validation; proven host/setup process mechanics           |
-| doctor                             | `runa:doctor [area]`                                                                                      | PHP application checks; deterministic source/host diagnostics |
-| quality                            | `runa:quality show/roadmap/final/status [--background]`                                                   | Existing dependency graph, locks and interruption evidence    |
-| knowledge                          | `runa:knowledge action [query] [filters]`                                                                 | Development-only internal retrieval/index engine              |
-| format/lint/typecheck/analyse/test | `runa:format`, `runa:lint`, `runa:typecheck`, `runa:analyse`, `runa:test [frontend/e2e] [runner options]` | PHP Actions; runner options may follow --                     |
-| xdebug                             | `runa:xdebug on/off/status`                                                                               | PHP development configuration Action                          |
-| security                           | `runa:security dependencies/secrets/trivy/review-changed-surface`                                         | Existing scanner/evidence mechanics; Trivy on host            |
-| production/prod                    | `runa:production action [service]`                                                                        | Fixed host Compose/image helper                               |
-| deploy/backup                      | `runa:deploy target [--simulation]`, `runa:backup action [id] [--confirm-runa-prod-restore]`              | Existing exact-source, lock, backup/recovery mechanics        |
-| install-prod                       | `runa:install production target [--simulation]`                                                           | Existing installer; unified dev/prod bootstrap is point 8     |
-| project                            | `runa:project mark-production-deployed --evidence=path`                                                   | Proven one-way Git/evidence transition                        |
-| git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                             | Staged-index-safe hook transport and source scanner           |
-| seed                               | `runa:seed ...`                                                                                           | Existing application command                                  |
-| logs                               | `runa:dev logs [service]`                                                                                 | Fixed host log action                                         |
-| artisan/composer/pnpm/boost-mcp    | Existing transports                                                                                       | Framework/tool/stdio entrypoints; no second domain registry   |
+| Previous family                    | Canonical form                                                                                                           | Execution                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| dev                                | `runa:dev action [arguments]`                                                                                            | PHP validation; proven host/setup process mechanics           |
+| doctor                             | `runa:doctor [area]`                                                                                                     | PHP application checks; deterministic source/host diagnostics |
+| quality                            | `runa:quality show/roadmap/final/status [--background]`                                                                  | Existing dependency graph, locks and interruption evidence    |
+| knowledge                          | `runa:knowledge action [query] [filters]`                                                                                | Development-only internal retrieval/index engine              |
+| format/lint/typecheck/analyse/test | `runa:format`, `runa:lint`, `runa:typecheck`, `runa:analyse`, `runa:test [frontend/e2e] [runner options]`                | PHP Actions; runner options may follow --                     |
+| xdebug                             | `runa:xdebug on/off/status`                                                                                              | PHP development configuration Action                          |
+| security                           | `runa:security dependencies/secrets/trivy/review-changed-surface`                                                        | Existing scanner/evidence mechanics; Trivy on host            |
+| production/prod                    | `runa:production action [service]`                                                                                       | Fixed host Compose/image helper                               |
+| deploy/backup                      | `runa:deploy target [--simulation]`, `runa:backup action [id] [--confirm-runa-prod-restore]`                             | Existing exact-source, lock, backup/recovery mechanics        |
+| install-prod                       | `runa:install dev/prod target [--settings-file=path] [--profile=standard] [--resume] [--non-interactive] [--simulation]` | Unified first installation; production remains an alias       |
+| project                            | `runa:project mark-production-deployed --evidence=path`                                                                  | Proven one-way Git/evidence transition                        |
+| git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                                            | Staged-index-safe hook transport and source scanner           |
+| seed                               | `runa:seed ...`                                                                                                          | Existing application command                                  |
+| logs                               | `runa:dev logs [service]`                                                                                                | Fixed host log action                                         |
+| artisan/composer/pnpm/boost-mcp    | Existing transports                                                                                                      | Framework/tool/stdio entrypoints; no second domain registry   |
 
 Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/project`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/backup`, `./bin/install-prod`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `./bin/git-hook` retains only partial-index path transport and invokes runa:hook; versioned hooks keep that safe bridge. Removal is deferred until an accepted roadmap migrates external callers and any governance references. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
 
@@ -253,7 +253,13 @@ These forward arguments safely into the intended running application container. 
 
 `./bin/artisan runa:doctor` without an area is the required quick whole-development-stack diagnostic. It checks repository/maintenance/docs/tooling and development runtime readiness. Area subcommands provide focused checks, not an optional substitute for the global entrypoint. Area names used by the gate definition are part of the command contract.
 
-`./bin/artisan runa:install production` is the guided production installer described in `docs/production/deployment.md`; run it from the production host. No separate developer installer is required.
+`./bin/artisan runa:install dev|prod <target>` is the unified first installer described
+in [installation](installation.md); run it from the host. It preserves the customer
+scaffold and generated credentials, supports explicit failure recovery and uses
+existing development/production mechanics. Production accepts private JSON settings
+for built-in or external HTTPS, SMTP verification and backups. Runtime command
+`runa:install:verify-mail <recipient>` submits the explicitly requested technical
+SMTP check without printing provider errors or secrets.
 
 Quality supports `./bin/artisan runa:quality final --background` and `./bin/artisan runa:quality roadmap --background`. `./bin/artisan runa:check debug-residue` performs the focused source check used by the gate definition. The runner and referenced subcommands are implemented; each roadmap must run its selected checks before closure.
 
@@ -283,7 +289,7 @@ Lifecycle `up` starts existing images and waits for health; it is not an install
 
 ## Production operations and security
 
-- `./bin/artisan runa:install production <vX.Y.Z|full-SHA> [--simulation]`: guided host install; refuses existing configuration, generates private secrets and prepares sparse checkouts.
+- `./bin/artisan runa:install prod <vX.Y.Z|full-SHA> [--settings-file=path] [--non-interactive] [--simulation] [--resume]`: first host install; private TLS/SMTP/backup settings, preserved secrets/scaffold and explicit recovery. `production` remains an alias; development uses the same command with mode dev and optional profile.
 - `./bin/artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.
 - `./bin/artisan runa:deploy rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
 - `./bin/artisan runa:backup create|verify <backup-id>|restore <backup-id> [--confirm-runa-prod-restore]`: coordinated database/durable-file archives, actual isolated restore validation and deliberate destructive restore.

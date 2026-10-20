@@ -82,6 +82,14 @@ Host/container logging must have practical rotation/growth control.
 
 ## Health
 
+First installation uses the same Artisan installer as development. Standard
+Nginx can serve HTTPS with installer-generated configuration and read-only supplied
+certificate/key mounts, retaining nonroot runtime and the existing five services.
+An explicitly selected existing TLS terminator is verified instead. HTTPS
+root/readiness and SMTP provider acceptance must pass before successful real
+first-deploy evidence is written. See [installation](../tooling/installation.md)
+for private inputs, retry ownership, preserved secrets/scaffold and simulation.
+
 Production exposes a minimal safe health endpoint.
 
 Distinguish:

@@ -105,14 +105,15 @@ repository ID/name, tag object, commit, source digest, mode, trust and state
 not an installation-success marker or the later protected-source integrity system.
 
 `--install later` prints the exact command to run from the destination. `--install
-now` invokes the existing containerized command and propagates failure. Current
-management-aware source uses `./bin/artisan runa:dev up` or `./bin/artisan
-runa:install production <commit>`; older releases use `./bin/dev up` or
-`./bin/install-prod <commit>`. The mode-specific handoff reuses existing mechanics;
-the unified installer, scaffold lifecycle and production TLS/SMTP configuration
-work remain RM-2026-005 point 8. The current production installer requires
-interactive configuration; automation closes stdin and fails instead of hanging
-when the selected release still needs input.
+now` invokes the containerized command and propagates failure. Current source uses
+`./bin/artisan runa:install dev|prod <commit>`; older releases use `./bin/dev up`
+or `./bin/install-prod <commit>`. Optional `--profile=low|standard|high` and
+`--settings-file=/private/production.json` pass through to the unified installer;
+the private settings path is resolved on the host and shell-quoted in postponed
+instructions. Automation closes stdin and forwards `--non-interactive` to avoid
+hanging for missing inputs. See [installation](installation.md) for once-only
+scaffold, preservation/recovery, production HTTPS and SMTP settings. Older releases
+without unified installation reject the new passthrough options.
 
 After a failed install, keep the published source/settings and use its printed
 command plus installer diagnostics/recovery procedure. Do not rerun bootstrap over
