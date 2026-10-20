@@ -13,18 +13,6 @@ PY
 
 target_sha="$(git rev-parse HEAD)"
 ./bin/deploy "$target_sha" --simulation
-./bin/backup create
-backup_id="$(python3 - <<'PY'
-import sys
-from pathlib import Path
-sys.path.insert(0, 'tools/project')
-import operations
-root, _ = operations.backup_root()
-print(sorted(path.name for path in root.iterdir() if path.is_dir() and not path.is_symlink() and path.name.startswith('backup-') and not path.name.endswith('.partial'))[-1])
-PY
-)"
-./bin/backup verify "$backup_id"
-./bin/backup restore "$backup_id" --confirm-runa-prod-restore
 ./bin/production self-test
 
 # Collect all reports without downgrading the full security gate.
@@ -46,7 +34,7 @@ if image not in data.get('Metadata', {}).get('RepoTags', []) or 'Results' not in
 findings = [item for result in data['Results'] for key in ('Vulnerabilities', 'Secrets') for item in result.get(key, [])]
 if findings:
     raise SystemExit('FAIL: the PHP final-image report has HIGH/CRITICAL findings. Inspect its private JSON report.')
-print('PASS: actual Alpine PHP image build/runtime, simulated application/background health, backup/restore and final-image HIGH/CRITICAL vulnerability/secret scan.')
+print('PASS: actual Alpine PHP image build/runtime, simulated application/background health, and final-image HIGH/CRITICAL vulnerability/secret scan.')
 PY
 if [ "$scan_status" -ne 0 ]; then
     echo 'Full security gate remains FAILED; PostgreSQL assessment/decision is separate. No finding was suppressed.'

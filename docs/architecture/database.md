@@ -180,25 +180,13 @@ Retry only known transient deadlock/serialization conditions, and only when the 
 
 ## Migration policy
 
-The repository tracks whether production has ever been deployed in `docs/project/state.yml`.
+For a rebuildable development model that has not been used with production data, migrations may be edited/cleaned; prefer one migration per database object/table where practical. Define logical PostgreSQL column order in the original migration, without MySQL-style after() concepts. Edit an uncommitted migration rather than adding a redundant correction.
 
-Before first production deployment:
+Never edit a committed migration that may have run in production. Use new forward migrations for production schema changes. Changing an already applied file does not cause Laravel to execute it again; verify real old-to-new schema/data transitions during platform update acceptance. Migration decisions use the actual installation and data context.
 
-- committed migrations may be edited/cleaned while the database model is still pre-production,
-- prefer one migration per database object/table where practical,
-- define logical PostgreSQL column order in the original migration rather than adding meaningless MySQL-style `after()` concepts.
+### Development and test resets
 
-After `production.ever_deployed` becomes true:
-
-- never edit a committed migration that may have run in production,
-- all production schema changes use new migrations,
-- if a migration is still uncommitted, edit it rather than adding a fix migration.
-
-Actual real-deployment evidence overrides stale `production.ever_deployed: false` metadata. Check the existing production-local `first-deploy.json` and `deployment.json` evidence described in `docs/production/deployment.md` where applicable; simulation evidence does not establish a real deployment. If actual deployment contradicts repository state, stop migration/reset work and reconcile the state before proceeding.
-
-### Preproduction development and test resets
-
-While `production.ever_deployed` is false and no contradictory real-deployment evidence exists, an active roadmap authorizes necessary migration cleanup, technical-table rebuilds, `migrate:fresh`, recreation of identified Runa test databases and rebuilds of identified nonproduction Runa PostgreSQL volumes. Do not request repeated permission solely for hypothetical production data. Existing test database guards remain mandatory; this policy does not bypass them.
+An active roadmap authorizes identified necessary migration cleanup, technical-table rebuilds, migrate:fresh and recreation of rebuildable nonproduction Runa databases/volumes after inspecting their actual ownership and data context. Do not request repeated permission solely for hypothetical production data. Existing test database guards remain mandatory.
 
 Before destructive work, verify the actual connection/database/role or Compose project, volume labels, mount identities and references from both running and stopped containers. Show the exact deletion/reset scope and explain why its contents are rebuildable and the reset is necessary. A familiar volume name or old assessment alone is insufficient evidence. If ownership or irreplaceable data is uncertain, stop that operation and clarify.
 

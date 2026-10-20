@@ -102,9 +102,7 @@ never presented as an installed destination.
 Successful acquisition writes credential-free `.git/runa-bootstrap.json` with
 repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is clean and detached. This is acquisition evidence,
-not an installation-success marker. The separate .git/runa-ownership.json contains
-the full verified release inventory used by [integrity](integrity.md); profiles
-and fixed exclusions distinguish installed source from the complete release digest.
+not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The planned external owner updater will obtain original release source from the repository for comparison.
 
 The owner runs the separately delivered launcher personally or hands its reviewed
 single file to the customer. It is never installed into bin or customer source.
@@ -131,7 +129,7 @@ library and propagates failure. No installed standalone launcher or public
 the destination; the owner can hand over just that file without their checkout.
 Optional profile/settings/noninteractive options are forwarded. After a failed
 install preserve source/settings and rerun the printed command with `--resume`;
-do not reacquire into that directory. Ordinary lifecycle/backup/recovery uses
+do not reacquire into that directory. Ordinary lifecycle/recovery uses
 `php artisan` and the restricted host executor. The future updater is not yet delivered.
 See [installation](installation.md) for settings, preservation and recovery.
 

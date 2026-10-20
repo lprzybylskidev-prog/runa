@@ -44,7 +44,7 @@ it('selects the cold bootstrap through the single PHP entrypoint before applicat
 });
 
 it('exposes canonical tooling help and cold plans without booting application services', function (): void {
-    foreach (['doctor', 'quality', 'knowledge', 'security', 'test', 'production', 'deploy', 'backup', 'install'] as $tool) {
+    foreach (['doctor', 'quality', 'knowledge', 'security', 'test', 'production', 'deploy', 'install'] as $tool) {
         $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:'.$tool, '--help'], base_path(), [
             'APP_ENV' => 'production', 'APP_KEY' => '', 'DB_CONNECTION' => 'unavailable',
         ]);
@@ -105,22 +105,14 @@ it('rejects invalid operational scopes before emitting an executable plan', func
     [['runa:dev', 'recreate', 'nginx;false']],
     [['runa:dev', 'embeddings', 'unsafe']],
     [['runa:production', 'logs', 'app;false']],
-    [['runa:backup', 'verify', '../../escape']],
-    [['runa:project', 'mark-production-deployed']],
     [['runa:knowledge', 'status', '--device=unsafe']],
 ]);
 
-it('plans read-only integrity through the operational host registry', function (): void {
-    expect(Artisan::call('runa:integrity', ['--json' => true, '--plan' => true]))->toBe(0);
-    $plan = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
-    expect($plan['operation'])->toBe('tooling.integrity')
-        ->and($plan['parameters']['arguments'])->toBe(['--json']);
-
-    $cold = new Process([PHP_BINARY, base_path('artisan'), '--management', 'runa:integrity', '--json', '--plan'], base_path(), ['APP_KEY' => '', 'DB_CONNECTION' => 'unavailable']);
-    $cold->mustRun();
-    expect(json_decode($cold->getOutput(), true, flags: JSON_THROW_ON_ERROR)['operation'])->toBe('tooling.integrity');
-
-    $process = new Process([PHP_BINARY, base_path('artisan'), '--management', 'runa:integrity', '--exclude=src/runa', '--plan']);
-    $process->run();
-    expect($process->isSuccessful())->toBeFalse();
+it('does not expose retired features through normal or cold Artisan', function (): void {
+    foreach (['runa:backup', 'runa:integrity', 'runa:project'] as $name) {
+        expect(Artisan::all())->not->toHaveKey($name);
+        $process = new Process([PHP_BINARY, base_path('artisan'), '--management', $name, '--plan']);
+        $process->run();
+        expect($process->isSuccessful())->toBeFalse();
+    }
 });

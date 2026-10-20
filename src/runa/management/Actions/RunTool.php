@@ -31,7 +31,7 @@ final class RunTool
             return $this->process($doctor[$arguments[0]], $root, $output);
         }
         $helpers = ['dev' => 'dev', 'doctor' => 'doctor', 'quality' => 'quality', 'knowledge' => 'knowledge',
-            'security' => 'security', 'project' => 'project', 'check' => 'quality_check', 'hook' => 'git_hook'];
+            'security' => 'security', 'check' => 'quality_check', 'hook' => 'git_hook'];
         if (! isset($helpers[$tool])) {
             throw new InvalidArgumentException('Unsupported internal tool executor.');
         }
@@ -55,10 +55,6 @@ final class RunTool
 
         if ($tool === 'hook') {
             return $this->process(['python3', $root.'/distribution/maintenance/git_hook.py', ...$arguments], $cwd, $output);
-        }
-
-        if ($tool === 'project') {
-            return $this->process(['python3', $root.'/distribution/maintenance/project.py', ...$arguments], $cwd, $output);
         }
 
         return $this->process(['python3', $root.'/tools/project/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);

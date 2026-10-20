@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ALIASES = {'dev': 'dev', 'doctor': 'doctor', 'quality': 'quality', 'knowledge': 'knowledge',
            'security': 'security', 'xdebug': 'xdebug', 'quality-check': 'check',
            'format': 'format', 'lint': 'lint', 'typecheck': 'typecheck', 'analyse': 'analyse', 'test': 'test',
-           'deploy': 'deploy', 'backup': 'backup', 'production': 'production'}
+           'deploy': 'deploy', 'production': 'production'}
 name = Path(sys.argv[0]).name
 arguments = sys.argv[1:]
 if name in ('command', 'check', 'operations'):

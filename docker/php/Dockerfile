@@ -114,7 +114,7 @@ COPY --chown=runa:runa src/runa/platform.json runa/platform.json
 # A short-lived host management process, never a production application service.
 FROM production-runtime AS management
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /opt/runa/vendor/
-COPY --chown=runa:runa src/runa/management/autoload.php src/runa/management/bootstrap.php src/runa/management/commands.php src/runa/management/ToolingCommand.php src/runa/management/ProductionCommand.php src/runa/management/DeployCommand.php src/runa/management/BackupCommand.php src/runa/management/HostCommand.php src/runa/management/IntegrityCommand.php src/runa/management/HostBridge.php /opt/runa/runa/management/
+COPY --chown=runa:runa src/runa/management/autoload.php src/runa/management/bootstrap.php src/runa/management/commands.php src/runa/management/ToolingCommand.php src/runa/management/ProductionCommand.php src/runa/management/DeployCommand.php src/runa/management/HostCommand.php src/runa/management/HostBridge.php /opt/runa/runa/management/
 COPY --chown=runa:runa src/artisan /opt/runa/artisan
 WORKDIR /opt/runa
 HEALTHCHECK NONE

@@ -123,7 +123,7 @@ def main():
     state['databases'] = names
     save()
     print('PASS: new dev/test ICU cluster, migrations/test guards/tests/health; existing app session retained; old volume retained with unchanged contents since clean shutdown.')
-    print('Production simulation backup/restore/security and installer verification remain separate pending work.')
+    print('Production simulation security and installer verification remain separate pending work.')
 
 
 if __name__ == '__main__':

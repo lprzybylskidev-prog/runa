@@ -108,7 +108,6 @@ def verify_images(command, environment):
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php', php, '-r', code])
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-c', 'for tool in composer node npm pnpm codex python3 git gcc g++; do if command -v "$tool" >/dev/null 2>&1; then echo "Development tool in runtime: $tool" >&2; exit 1; fi; done'])
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php-fpm', php, '-tt'])
-    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-ec', 'mkdir -p /tmp/source/app /tmp/restore; printf probe > /tmp/source/app/probe; tar -C /tmp/source -czf /tmp/probe.tar.gz app; tar -C /tmp/restore --no-same-owner -xzf /tmp/probe.tar.gz; test "$(cat /tmp/restore/app/probe)" = probe; find /tmp/restore/app -mindepth 1 -delete; test ! -e /tmp/restore/app/probe'])
     run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--add-host', 'app:127.0.0.1', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', nginx, '-t'])
 
 

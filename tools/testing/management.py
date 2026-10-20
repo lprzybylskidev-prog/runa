@@ -30,7 +30,7 @@ class ManagementContracts(unittest.TestCase):
         self.assertEqual(set(schema['required']), set(self.plan()))
 
     def test_rejects_unversioned_unbound_and_executable_payloads(self):
-        variants = [None, [], {}, self.plan() | {'schema_version': True}, self.plan() | {'schema_version': 2},
+        variants = [self.plan() | {'operation': 'tooling.' + retired} for retired in ('backup', 'integrity', 'project')] + [None, [], {}, self.plan() | {'schema_version': True}, self.plan() | {'schema_version': 2},
                     self.plan() | {'request_id': 'b' * 32}, self.plan() | {'operation': 'development.up; touch /tmp/injected'},
                     self.plan() | {'operation': []}, self.plan() | {'parameters': []},
                     self.plan() | {'parameters': {'argv': ['sh', '-c', 'false']}}, self.plan() | {'shell': 'false'}]

@@ -8,7 +8,7 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
-This file documents the implemented command surface: development lifecycle/profile/setup, passthrough wrappers, seeders, doctor, hooks, knowledge, local quality, security, production lifecycle/deploy/backup/state tools and frontend/backend checks. RM-2026-001 records their baseline acceptance evidence. Commands still require their documented environment and operational prerequisites; simulation acceptance does not prove real production deployment.
+This file documents the implemented command surface: development lifecycle/profile/setup, passthrough wrappers, seeders, doctor, hooks, knowledge, local quality, security, production lifecycle/deploy tools and frontend/backend checks. RM-2026-001 records their baseline acceptance evidence. Commands still require their documented environment and operational prerequisites; simulation acceptance does not prove real production deployment.
 
 ## Runtime-independent Artisan transport
 
@@ -20,7 +20,7 @@ for host requirements, trust, credential handling and resume instructions.
 
 Artisan is the public domain-command registry. Normal configured-environment use is
 `php artisan runa:<family> ...` from the development/operator PHP terminal. Local
-commands run PHP Actions; host lifecycle/deploy/backup/quality/security operations
+commands run PHP Actions; host lifecycle/deploy/quality/security operations
 execute through the private workspace host executor and propagate output/exit
 status. Explicit --plan is nonexecuting. See [host executor](host-executor.md) for
 trust, lifecycle, cancellation and disconnected-operation recovery.
@@ -36,14 +36,14 @@ operational commands including runa:host, and optional development commands.
 
 Pre-autoload setup and independent knowledge-init retain their existing narrow
 bootstrap exceptions. Compatibility aliases remain transports, not another command
-registry. Mature Docker/Git/scanner/quality/backup mechanics stay fixed internal
+registry. Mature Docker/Git/scanner/quality mechanics stay fixed internal
 helpers; application source-tool/test/Xdebug orchestration stays in PHP Actions.
 
 ### Host-plan v1 execution boundary
 
 `src/runa/management/host-plan.v1.schema.json` defines schema_version, request_id, operation and parameters. Parameters are empty for argument-free development actions, otherwise contain only a bounded list of literal arguments (at most 128, at most 4096 bytes each). Unknown/duplicate fields, executable/shell/env/path/mount fields, unsupported operations and mismatched request IDs are rejected again by the executor. Only fixed allowlisted helper/tool families execute; argument arrays never become shell text. A null request ID is an explicit nonexecuting preview; normal host work is request-bound by the executor. The transport supplies a fresh internal ID and consumes only the immediately returned JSON; there is no arbitrary plan-file executor. Operator-supplied --host-request is rejected. --plan never executes the operation.
 
-Development lifecycle plans retain the shared production operation lock and unresolved-operation fencing. Production/deploy/backup helpers retain their existing locks/confirmation/recovery rules. Quality owns its stable quality lock and each gate owns its resource locks; the coordinator does not hold the production lock across its child gates. Test Actions retain the suite lock. Private mode-600 request receipts are removed after use; state/lock symlinks are rejected. Meaningful child exit codes propagate unchanged.
+Development lifecycle plans retain the shared production operation lock and unresolved-operation fencing. Production/deploy helpers retain their existing locks/recovery rules. Quality owns its stable quality lock and each gate owns its resource locks; the coordinator does not hold the production lock across its child gates. Test Actions retain the suite lock. Private mode-600 request receipts are removed after use; state/lock symlinks are rejected. Meaningful child exit codes propagate unchanged.
 
 Management discovery runs the inspected immutable image ID with no network, mounts, forwarded env or capabilities, read-only root and bounded CPU/memory/PIDs/tmp. Combined output is capped at 64 KiB and 30 seconds; timeout/interruption removes only its named disposable container. Host operations and quality retain their own existing durations, not discovery timeouts. Background quality semantics and all hard gates remain unchanged: after launching a background roadmap/final gate, stop work and do not poll.
 
@@ -59,18 +59,17 @@ Management discovery runs the inspected immutable image ID with no network, moun
 | xdebug                             | `runa:xdebug on/off/status`                                                                                              | PHP development configuration Action                                  |
 | security                           | `runa:security dependencies/secrets/trivy/review-changed-surface`                                                        | Existing scanner/evidence mechanics; Trivy on host                    |
 | production/prod                    | `runa:production action [service]`                                                                                       | Fixed host Compose/image helper                                       |
-| deploy/backup                      | `runa:deploy target [--simulation]`, `runa:backup action [id] [--confirm-runa-prod-restore]`                             | Existing exact-source, lock, backup/recovery mechanics                |
+| deploy                             | `runa:deploy target [--simulation]`                                                                                      | Exact-source, lock and recovery mechanics                             |
 | install-prod                       | `runa:install dev/prod target [--settings-file=path] [--profile=standard] [--resume] [--non-interactive] [--simulation]` | Owner distribution only; absent from customer registration            |
 | host                               | `runa:host status [operation-id]` / `stop`                                                                               | Private executor lifecycle and durable disconnected-operation results |
-| project                            | `runa:project mark-production-deployed --evidence=path`                                                                  | Owner maintenance only; absent from customer registration             |
 | git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                                            | Hook is owner maintenance only; source check remains available        |
 | seed                               | `runa:seed ...`                                                                                                          | Existing application command                                          |
 | logs                               | `runa:dev logs [service]`                                                                                                | Fixed host log action                                                 |
 | artisan/composer/pnpm/boost-mcp    | Existing transports                                                                                                      | Framework/tool/stdio entrypoints; no second domain registry           |
 
-Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/backup`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `bin/project`, `bin/install-prod` and `bin/git-hook` are removed. Owner hook transport lives in `distribution/maintenance/bin/git-hook` and is excluded from customer source. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
+Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `bin/project`, `bin/install-prod` and `bin/git-hook` are removed. Owner hook transport lives in `distribution/maintenance/bin/git-hook` and is excluded from customer source. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
 
-Internal Python process engines live under `tools/project/executors/` with no public bin registry. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/backup/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
+Internal Python process engines live under `tools/project/executors/` with no public bin registry. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
 ## Development
 
@@ -216,31 +215,11 @@ Implemented helper surface:
 - `php artisan runa:deploy`
 - `php artisan runa:deploy rollback`
 
-## Backup
-
-- `php artisan runa:backup create`
-- `php artisan runa:backup verify`
-- `php artisan runa:backup restore`
-
 ## Logs
 
 `php artisan runa:dev logs`
 
 Provide a concise operator view across relevant production/development services without exposing secrets.
-
-## Project state
-
-`php artisan runa:project mark-production-deployed`
-
-Available only in the owner maintenance checkout, never customer dev/prod. Explicit `git config --local runa.maintenance true` and the canonical Runa fetch/push origin are required before the state helper can commit/push. Use only after the first real successful production deployment to update versioned state according to `docs/production/deployment.md`.
-
-## Integrity
-
-`php artisan runa:integrity [--json]` compares installed source with the exact trusted
-release inventory. It reports protected-source failures separately from infrastructure
-and composed dependency drift, preserves customer src/app and never repairs files.
-Missing/stale/tampered evidence blocks rather than creating a baseline from live
-files. No custom exclusions or baseline acceptance options. See [integrity](integrity.md).
 
 ## Destructive commands
 
@@ -306,24 +285,22 @@ Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by d
 
 `validate` executes quiet Compose validation without printing expanded secrets. `build` requires a clean checkout matching the exact selected tag and builds PHP/Nginx from locked dependencies and then inspects those exact selected images: non-root users, required PHP extensions, no development dependencies/tools, SPA assets and Nginx config syntax. Image checks override the normal application entrypoint and require no application secrets or database. Compose still needs the runtime env files to exist; copied example files suffice for build-only checks. No production service is started by `build`.
 
-Lifecycle `up` starts existing images and waits for health; it is not an installer and requires prior migrations/seeding and valid runtime secrets/SMTP configuration. `down` preserves all volumes. `restart`/`logs` accept at most one of the five production services; logs show the last 100 lines. Self-test/isolation, actual-image Trivy scanning, deployment, rollback and backup have baseline host simulation evidence in closed RM-2026-001. Revalidate changed operational surfaces under the applicable roadmap gates. Image build alone cannot establish full production acceptance.
+Lifecycle `up` starts existing images and waits for health; it is not an installer and requires prior migrations/seeding and valid runtime secrets/SMTP configuration. `down` preserves all volumes. `restart`/`logs` accept at most one of the five production services; logs show the last 100 lines. Self-test/isolation, actual-image Trivy scanning, deployment and rollback have baseline host simulation evidence in closed RM-2026-001. Revalidate changed operational surfaces under the applicable roadmap gates. Image build alone cannot establish full production acceptance.
 
 ## Production operations and security
 
-- Owner distribution only: `php artisan runa:install prod <vX.Y.Z|full-SHA> [--settings-file=path] [--non-interactive] [--simulation] [--resume]`: first host install; private TLS/SMTP/backup settings, preserved secrets/scaffold and explicit recovery. `production` remains an alias; development uses the same command with mode dev and optional profile.
-- `php artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.
+- Owner distribution only: `php artisan runa:install prod <vX.Y.Z|full-SHA> [--settings-file=path] [--non-interactive] [--simulation] [--resume]`: first host install; private TLS/SMTP settings, preserved secrets/scaffold and explicit recovery. `production` remains an alias; development uses the same command with mode dev and optional profile.
+- `php artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/migrate/seed/recreate/health flow.
 - `php artisan runa:deploy rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
-- `php artisan runa:backup create|verify <backup-id>|restore <backup-id> [--confirm-runa-prod-restore]`: coordinated database/durable-file archives, actual isolated restore validation and deliberate destructive restore.
 - `php artisan runa:production self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
 - `php artisan runa:doctor production`: delegates to the same deep host self-test.
-- Owner maintenance only: `php artisan runa:project mark-production-deployed --evidence <first-deploy.json>`: development-only one-way versioned-state recording after a real successful deployment; requires a clean active-roadmap branch and commits/pushes.
 - `php artisan runa:security dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.
 
-Production env files must be private (mode 600). `.env.prod.backup` configures a private absolute backup directory and positive retention count. Simulation mode must match the deploy flag and uses separate Compose resources; it never records the irreversible production-ever-deployed transition. All production operations share an exclusive lock. Follow `docs/production/deployment.md` and `docs/production/backups.md` for prerequisites, failure recovery and local acceptance commands.
+Production env files must be private (mode 600). Simulation mode must match the deploy flag and uses separate Compose resources. All production operations share an exclusive lock. Follow docs/production/deployment.md for prerequisites, failure recovery and local acceptance. Backups are customer-managed.
 
 Trivy uses pinned 0.76.0, through an explicitly installed `.runtime/tools/trivy` or the approved `aquasec/trivy:0.76.0` host container. Images are exported to a temporary archive rather than sharing the Docker socket. HIGH/CRITICAL findings fail, with no suppression added. Detailed JSON reports are written under private ignored `.runtime/security/`, rather than echoing secret findings into terminal logs. No Trivy execution/image-scan PASS is claimed until actual host evidence is available. Agent review evidence under `.runtime/security-review.json` records a real review report and current changed-source hashes; missing/stale evidence fails rather than manufacturing a review.
 
-Run quality selections containing host gates from the Docker host; the coordinator delegates application checks to the development container and executes production/scanner gates locally. `show`/`status` work in both contexts. Local operational contracts: `python3 tools/testing/operations.py`; production topology/context contracts: `python3 tools/testing/production.py`. Neither substitutes for actual host deployment/backup/restore verification.
+Run quality selections containing host gates from the Docker host; the coordinator delegates application checks to the development container and executes production/scanner gates locally. `show`/`status` work in both contexts. Local operational contracts: `python3 tools/testing/operations.py`; production topology/context contracts: `python3 tools/testing/production.py`. Neither substitutes for actual host deployment and image-isolation verification.
 
 Trivy collects the repository and every distinct selected runtime-image report even when an earlier scan fails; it returns a combined nonzero result after collecting the available reports. Repository dependency scanning explicitly includes development dependencies. Scan completion never downgrades a finding to success.
 

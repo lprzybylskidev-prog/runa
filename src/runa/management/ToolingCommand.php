@@ -17,10 +17,10 @@ abstract class ToolingCommand extends Command
         'quality' => ['show', 'roadmap', 'final', 'status'],
         'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
         'security' => ['trivy', 'review-changed-surface', 'dependencies', 'secrets'],
-        'project' => ['mark-production-deployed'], 'xdebug' => ['on', 'off', 'status'],
+        'xdebug' => ['on', 'off', 'status'],
         'check' => ['debug-residue'], 'hook' => ['pre-commit', 'commit-msg'],
         'production' => ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation'],
-        'backup' => ['create', 'verify', 'restore'], 'install' => ['dev', 'prod', 'production'], 'host' => ['status', 'stop'],
+        'install' => ['dev', 'prod', 'production'], 'host' => ['status', 'stop'],
     ];
 
     public function __construct()
@@ -50,7 +50,7 @@ abstract class ToolingCommand extends Command
                 $operation = 'development.'.$arguments[0];
                 $parameters = count($arguments) === 1 ? new \stdClass : ['arguments' => array_slice($arguments, 1)];
             }
-            $host = in_array($this->tool, ['production', 'deploy', 'backup', 'install', 'host', 'integrity'], true)
+            $host = in_array($this->tool, ['production', 'deploy', 'install', 'host'], true)
                 || ($this->tool === 'quality' && in_array($arguments[0], ['roadmap', 'final'], true))
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
@@ -153,13 +153,6 @@ abstract class ToolingCommand extends Command
                 throw new InvalidArgumentException('An exact vX.Y.Z release or full SHA is required.');
             }
         }
-        if ($this->tool === 'backup' && (($arguments[0] === 'create') !== ! isset($arguments[1]))) {
-            // Options are not a backup ID; the executor validates confirmation and backup provenance too.
-            if ($arguments[0] !== 'create' || isset($arguments[1])) {
-                throw new InvalidArgumentException('Backup create takes no ID; verify/restore require an ID.');
-            }
-        }
-
         if ($this->tool === 'dev') {
             $action = $arguments[0];
             $tail = array_slice($arguments, 1);
@@ -197,20 +190,6 @@ abstract class ToolingCommand extends Command
             $tail = array_slice($arguments, 1);
             if ($tail !== [] && (! in_array($arguments[0], ['restart', 'logs'], true) || count($tail) !== 1 || ! in_array($tail[0], ['app', 'nginx', 'postgres', 'queue', 'scheduler'], true))) {
                 throw new InvalidArgumentException('Only production restart/logs accept one known service.');
-            }
-        }
-        if ($this->tool === 'backup' && $arguments[0] !== 'create') {
-            if (! isset($arguments[1]) || preg_match('/\Abackup-[0-9]{8}T[0-9]{12}Z\z/D', $arguments[1]) !== 1) {
-                throw new InvalidArgumentException('Provide a backup ID, not a path.');
-            }
-            if ($arguments[0] === 'restore' && ! in_array('--confirm-runa-prod-restore', $arguments, true)) {
-                throw new InvalidArgumentException('Restore requires explicit --confirm-runa-prod-restore.');
-            }
-        }
-        if ($this->tool === 'project') {
-            $evidence = $this->input->getParameterOption('--evidence', null);
-            if (! is_string($evidence) || $evidence === '') {
-                throw new InvalidArgumentException('Production state recording requires --evidence.');
             }
         }
         if ($this->tool === 'knowledge') {

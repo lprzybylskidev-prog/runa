@@ -2,7 +2,7 @@
 
 ## Current disposition — 2026-10-18
 
-Development/test and first-install production configuration use the accepted PostgreSQL Alpine/UTF8/ICU/pl-PL baseline. RM-2026-003 point 3 retired the unused Bookworm rollback volume `runa-dev_postgres-data` after fresh ownership/all-container-reference inspection and a read-only content fingerprint matching the recorded switch evidence. The unused `postgres-data` Compose declaration was removed. Active `runa-dev_postgres-icu-data`, its databases and all unrelated resources were preserved; no development database or data-volume reset was performed. Point verification reset only guarded `runa_test` through the existing database-guard checks. Local deployment records are simulations and `production.ever_deployed` remains false.
+Development/test and first-install production configuration use the accepted PostgreSQL Alpine/UTF8/ICU/pl-PL baseline. RM-2026-003 point 3 retired the unused Bookworm rollback volume `runa-dev_postgres-data` after fresh ownership/all-container-reference inspection and a read-only content fingerprint matching the recorded switch evidence. The unused `postgres-data` Compose declaration was removed. Active `runa-dev_postgres-icu-data`, its databases and all unrelated resources were preserved; no development database or data-volume reset was performed. Point verification reset only guarded `runa_test` through the existing database-guard checks. Local deployment records describe simulations.
 
 The selective switch is already delivered; do not rerun its one-time script against the current cluster or treat its retired rollback volume as available. Current initialization/reset authority is [database.md](../architecture/database.md); current production procedures are [deployment.md](deployment.md).
 
@@ -23,7 +23,7 @@ Read-only queries against the actual development cluster returned:
 
 The same cluster has ICU collations `pl-x-icu` and `pl-PL-x-icu`, recorded/actual version `153.120.42`. Development PHP reports ICU `72.1`. The actual SQL Polish-letter probe under explicit `pl-x-icu` returned `a,ą,c,ć,e,ę,l,ł,n,ń,o,ó,s,ś,z,ź,ż`; explicit `C` ordering returned `a,c,e,l,n,o,s,z,ó,ą,ć,ę,ł,ń,ś,ź,ż`. Native PHP Collator produced the Polish ordering too. This demonstrates why an encoding setting or `LANG` alone cannot establish Polish collation semantics. It does not establish equality between all libc/ICU versions or verify the Alpine server's runtime result.
 
-Versioned `docs/project/state.yml` still records `production.ever_deployed: false`; observed deployments are local simulations. No real production dataset has been identified. This proposal is a first-install baseline, not a design for migrating a live production system. Preserve current development/simulation volumes until their disposition is explicitly agreed; no automatic destructive reset is authorized here.
+Observed deployments are local simulations. No real production dataset has been identified. This proposal is a first-install baseline, not a design for migrating a live production system. Preserve current development/simulation volumes until their disposition is explicitly agreed; no automatic destructive reset is authorized here.
 
 ## musl, locale and Polish behavior
 

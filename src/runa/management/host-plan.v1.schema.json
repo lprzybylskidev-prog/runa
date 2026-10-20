@@ -35,7 +35,6 @@
         "tooling.quality",
         "tooling.knowledge",
         "tooling.security",
-        "tooling.project",
         "tooling.xdebug",
         "tooling.check",
         "tooling.hook",
@@ -46,10 +45,8 @@
         "tooling.test",
         "tooling.production",
         "tooling.deploy",
-        "tooling.backup",
         "tooling.install",
-        "tooling.host",
-        "tooling.integrity"
+        "tooling.host"
       ]
     },
     "parameters": {

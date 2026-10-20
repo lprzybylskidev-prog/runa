@@ -251,7 +251,7 @@ impact_areas:
 
     - id: installation-host-acceptance
       execution_context: host
-      depends_on: [installation-contracts, integrity-contracts]
+      depends_on: [installation-contracts]
       exclusive_group: production-simulation
       command: python3 tools/testing/installation-host.py
       severity: hard_fail
@@ -259,17 +259,6 @@ impact_areas:
     - id: bootstrap-source-contracts
       depends_on: [repository-state]
       command: python3 tools/testing/bootstrap.py
-      severity: hard_fail
-
-    - id: integrity-contracts
-      depends_on: [repository-state]
-      command: python3 tools/testing/integrity.py
-      severity: hard_fail
-
-    - id: integrity-host-acceptance
-      execution_context: host
-      depends_on: [integrity-contracts, management-transport-contracts]
-      command: python3 tools/testing/integrity-host.py
       severity: hard_fail
 
     - id: repository-boundary-contracts

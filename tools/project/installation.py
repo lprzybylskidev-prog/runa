@@ -63,7 +63,7 @@ def regular_file(value, private=False):
 
 
 def validate_settings(value, simulation):
-    if set(value) - {'app_url', 'http_port', 'tls', 'smtp', 'backup', 'simulation_project'}:
+    if set(value) - {'app_url', 'http_port', 'tls', 'smtp', 'simulation_project'}:
         raise InstallationError('Unknown installer settings field.')
     # Reject newlines/NUL recursively before serializing any raw environment value.
     def strings(item):
@@ -90,9 +90,9 @@ def validate_settings(value, simulation):
     http = port(value.get('http_port', 8081))
     if http < 1024:
         raise InstallationError('Loopback HTTP port must be unprivileged.')
-    tls, smtp, backup = (value.get(key) for key in ('tls', 'smtp', 'backup'))
-    if not all(isinstance(item, dict) for item in (tls, smtp, backup)):
-        raise InstallationError('TLS, SMTP and backup settings objects are required.')
+    tls, smtp = (value.get(key) for key in ('tls', 'smtp'))
+    if not all(isinstance(item, dict) for item in (tls, smtp)):
+        raise InstallationError('TLS and SMTP settings objects are required.')
     if set(tls) - {'mode', 'certificate', 'private_key', 'ca_file', 'https_port', 'bind'} or tls.get('mode') not in ('builtin', 'external'):
         raise InstallationError('Explicit TLS mode builtin/external and supported fields are required.')
     if tls['mode'] == 'builtin':
@@ -120,13 +120,6 @@ def validate_settings(value, simulation):
     for key in ('from', 'recipient'):
         if not isinstance(smtp.get(key), str) or not re.fullmatch(r'[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+', smtp[key]):
             raise InstallationError('Explicit sender and verification recipient email addresses are required.')
-    if set(backup) != {'directory', 'retention'} or type(backup['retention']) is not int or not 1 <= backup['retention'] <= 10000:
-        raise InstallationError('Backup directory and positive bounded retention are required.')
-    directory = Path(backup['directory'])
-    if not directory.is_absolute() or directory == Path('/') or directory.resolve() != directory:
-        raise InstallationError('Backup directory must be a dedicated absolute path without symlink components.')
-    if directory.exists() and (directory.stat().st_uid != os.getuid() or directory.stat().st_mode & 0o077):
-        raise InstallationError('Backup directory must be private and owned by the operator.')
     project = value.get('simulation_project')
     if project and (not simulation or not re.fullmatch(r'runa-prod-simulation-[a-z0-9-]{1,40}', project)):
         raise InstallationError('Custom project names are restricted to isolated runa-prod-simulation-* acceptance.')
@@ -134,7 +127,7 @@ def validate_settings(value, simulation):
 
 
 def collect_settings():
-    print('Production setup requires supplied certificates or an explicitly configured TLS terminator, SMTP and backup settings.')
+    print('Production setup requires supplied certificates or an explicitly configured TLS terminator, SMTP settings.')
     url = input('HTTPS application origin: ').strip()
     mode = input('TLS mode [builtin/external; default builtin]: ').strip() or 'builtin'
     tls = {'mode': mode}
@@ -151,9 +144,7 @@ def collect_settings():
             'password': getpass.getpass('SMTP password: '), 'from': input('Sender email: ').strip(),
             'recipient': input('Installation verification recipient email: ').strip()}
     return {'app_url': url, 'tls': tls, 'smtp': smtp,
-            'http_port': int(input('Loopback HTTP port [8081]: ').strip() or '8081'),
-            'backup': {'directory': input('Dedicated absolute backup directory: ').strip(),
-                       'retention': int(input('Backup retention [7]: ').strip() or '7')}}
+            'http_port': int(input('Loopback HTTP port [8081]: ').strip() or '8081')}
 
 
 def scaffold(sha, mode):
@@ -243,7 +234,6 @@ def provision(settings, sha, simulation):
             raise InstallationError('Existing application secrets are incomplete; inspect before resuming.')
         values = existing
     mappings = {'.env.prod': values, '.env.prod.database': {'POSTGRES_PASSWORD': secrets.token_urlsafe(36), 'APP_DB_PASSWORD': values['DB_PASSWORD']},
-                '.env.prod.backup': {'BACKUP_DIRECTORY': settings['backup']['directory'], 'BACKUP_RETENTION': str(settings['backup']['retention'])},
                 '.env.prod.compose': {'RUNA_IMAGE_TAG': sha, 'RUNA_HTTP_PORT': str(settings.get('http_port', 8081)), 'RUNA_PRODUCTION_MODE': 'simulation' if simulation else 'real',
                                       'RUNA_TLS_MODE': settings['tls']['mode']}}
     if settings.get('simulation_project'):
@@ -266,7 +256,6 @@ def provision(settings, sha, simulation):
     database = ops.read_env(ROOT / '.env.prod.database')
     if existing.get('DB_PASSWORD') != database.get('APP_DB_PASSWORD'):
         raise InstallationError('Partial configuration credentials differ; preserve files and reconcile before resuming.')
-    ops.backup_root()
 
 
 def resume_settings(settings_file, simulation):
@@ -387,7 +376,7 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
     elif mode == 'prod':
         if profile:
             raise InstallationError('Development resource profiles do not apply to production.')
-        if not journal and any((ROOT / name).exists() or (ROOT / name).is_symlink() for name in ('.env.prod', '.env.prod.database', '.env.prod.compose', '.env.prod.backup')):
+        if not journal and any((ROOT / name).exists() or (ROOT / name).is_symlink() for name in ('.env.prod', '.env.prod.database', '.env.prod.compose')):
             raise InstallationError('Installer refuses existing production settings without its own recovery journal. Use deploy for upgrades.')
         if not simulation and ((ROOT / '.env').exists() or (ROOT / '.env.dev.local').exists()):
             raise InstallationError('Real installation requires a dedicated production clone without development settings.')
@@ -396,7 +385,7 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
     if not journal:
         if mode == 'prod':
             if not settings_file and (non_interactive or not sys.stdin.isatty()):
-                raise InstallationError('Noninteractive production install requires --settings-file with explicit TLS/SMTP/backup choices.')
+                raise InstallationError('Noninteractive production install requires --settings-file with explicit TLS/SMTP choices.')
             settings = validate_settings(private_json(settings_file) if settings_file else collect_settings(), simulation)
             dirty = run(['git', 'status', '--porcelain', '--untracked-files=all'], capture_output=True, text=True).stdout.strip()
             if dirty:
@@ -422,8 +411,6 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
                 run(['git', 'sparse-checkout', 'init', '--no-cone'])
                 run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(ops.SPARSE) + '\n', text=True)
                 ops.assert_sparse(ROOT)
-                from integrity import seal
-                seal(ROOT, 'production')
             if settings['tls']['mode'] == 'builtin':
                 provision_tls(settings)
             provision(settings, sha, simulation)

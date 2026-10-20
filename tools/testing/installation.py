@@ -41,8 +41,7 @@ class InstallationContracts(unittest.TestCase):
         (self.root / 'src/app/application.json').write_text('{"version":"2.4.1","name":"Customer"}\n')
         shutil.copyfile(ROOT / '.env.prod.example', self.root / '.env.prod.example')
         self.settings = {'app_url': 'https://customer.example', 'http_port': 18081, 'tls': {'mode': 'external'},
-                         'smtp': {'host': 'smtp.customer.example', 'port': 587, 'scheme': 'smtp', 'username': 'fixture', 'password': 'synthetic_not_a_real_password', 'from': 'sender@example.invalid', 'recipient': 'recipient@example.invalid'},
-                         'backup': {'directory': str(self.root / 'backups'), 'retention': 7}}
+                         'smtp': {'host': 'smtp.customer.example', 'port': 587, 'scheme': 'smtp', 'username': 'fixture', 'password': 'synthetic_not_a_real_password', 'from': 'sender@example.invalid', 'recipient': 'recipient@example.invalid'}}
         for module, name, value in ((installer, 'ROOT', self.root), (ops, 'ROOT', self.root), (ops, 'STATE', self.state), (production, 'ROOT', self.root)):
             patcher = patch.object(module, name, value)
             patcher.start()
@@ -83,8 +82,11 @@ class InstallationContracts(unittest.TestCase):
             installer.private_json(path)
 
     def test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version(self):
+        external = self.root / '.env.prod.backup'
+        external.write_text('customer-managed backup configuration\n')
         installer.provision(self.settings, self.sha, True)
-        paths = [self.root / name for name in ('.env.prod', '.env.prod.database', '.env.prod.backup', '.env.prod.compose')]
+        self.assertEqual(external.read_text(), 'customer-managed backup configuration\n')
+        paths = [self.root / name for name in ('.env.prod', '.env.prod.database', '.env.prod.compose')]
         contents = {path: path.read_bytes() for path in paths}
         installer.provision(self.settings, self.sha, True)
         self.assertEqual(contents, {path: path.read_bytes() for path in paths})

@@ -1,5 +1,0 @@
-version: 1
-
-production:
-  ever_deployed: false
-  first_deployed_at: null

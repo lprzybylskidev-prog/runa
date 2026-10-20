@@ -19,7 +19,6 @@ class ReleaseContracts(unittest.TestCase):
         self.root = Path(self.folder.name)
         self.write('VERSION', '0.0.0\n')
         self.write('CHANGELOG.md', '# Changelog\n\n## Unreleased\n')
-        self.write('docs/project/state.yml', 'version: 1\nproduction:\n  ever_deployed: false\n  first_deployed_at: null\n')
         self.write('docs/tooling/commands.md', '# Fixture commands\n')
         (self.root / 'bin').mkdir()
         self.readme('0.0.0', 'none')
@@ -45,7 +44,7 @@ class ReleaseContracts(unittest.TestCase):
         p.write_text(text)
 
     def readme(self, version, roadmap):
-        self.write('README.md', f'# Fixture\n\n<!-- runa:current-state -->\n\n- Current version: `{version}`\n- Active roadmap: `{roadmap}`\n- Production ever deployed: `false`\n\n<!-- /runa:current-state -->\n')
+        self.write('README.md', f'# Fixture\n\n<!-- runa:current-state -->\n\n- Current version: `{version}`\n- Active roadmap: `{roadmap}`\n\n<!-- /runa:current-state -->\n')
 
     def roadmap(self):
         return f'---\nid: RM-2026-001\nstatus: active\nbranch: {self.branch}\nrelease_type: feature\nclosed_at: null\n---\n\n- [x] Implementation\n- [ ] Full final verification and release\n'

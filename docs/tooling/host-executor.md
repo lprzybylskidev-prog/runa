@@ -7,7 +7,7 @@ php artisan runa:dev up
 php artisan runa:dev logs app
 php artisan runa:test
 php artisan runa:quality show
-php artisan runa:backup verify <backup-id>
+php artisan runa:production status
 php artisan runa:deploy <exact-version>
 ```
 

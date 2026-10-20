@@ -20,10 +20,8 @@ Project Git identity:
 Runa maintenance commits/releases/state automation belongs only to the owner checkout.
 Owner-only entrypoints live under distribution/maintenance, outside customer source.
 Explicitly configure maintenance hooks with `git config --local core.hooksPath .githooks`.
-The production-state publishing helper additionally requires `git config --local
-runa.maintenance true` and the canonical Runa origin for both fetch and push.
 Customer installation mode never authorizes Runa Git writes. Customer deployment
-evidence stays local; backup/restore covers that installation's database/storage.
+evidence stays local; backups are externally managed by the customer.
 Verified acquisition records a fixed sparse projection and disables upstream pushes;
 unknown targets or altered customer remotes are refused without repair/repointing.
 See [bootstrap](../tooling/bootstrap.md) for the receipt and delivery boundary.

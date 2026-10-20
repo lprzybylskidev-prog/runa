@@ -157,7 +157,7 @@ PostgreSQL only.
 - No database views, stored procedures, stored functions, or business-logic triggers.
 - Indexes are query-driven, not mechanical.
 - Optimistic concurrency is the default for business edit forms.
-- After production has ever been deployed, never edit a committed migration that may have run there. See `docs/project/state.yml` and the database migration policy.
+- After production has ever been deployed, never edit a committed migration that may have run there. See the database migration policy.
 
 Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
 

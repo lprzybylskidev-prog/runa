@@ -93,8 +93,8 @@ def main():
                         '--mount', 'type=bind,src=' + str(root / '.runtime/host') + ',dst=/run/runa-host', image, '--management']
             result = subprocess.run(operator + ['runa:dev', 'up'], capture_output=True, text=True)
             check(result.returncode == 0 and bool(output(compose + ['ps', '--status', 'running', '-q', 'app'])), 'separate operator php artisan recovers a stopped application without host PHP or Docker socket')
-            result = subprocess.run(operator + ['runa:backup', 'verify', 'backup-20261020T000000000000Z'], capture_output=True, text=True)
-            check(result.returncode != 0 and 'Host operation:' in result.stderr, 'operational backup reaches its host guard and propagates failure without touching an unmanaged database')
+            result = subprocess.run(operator + ['runa:deploy', 'a' * 40], capture_output=True, text=True)
+            check(result.returncode != 0 and 'Host operation:' in result.stderr, 'deployment reaches its host guard and propagates failure without touching an unmanaged database')
             output(php + ['runa:host', 'stop'])
             for _ in range(100):
                 if not (root / '.runtime/host/client.json').exists():

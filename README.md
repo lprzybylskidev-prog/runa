@@ -8,13 +8,12 @@ Runa is a Laravel-based business application designed to evolve under an explici
 
 - Current version: `0.2.1`
 - Active roadmap: `RM-2026-005`
-- Production ever deployed: `false`
 
 <!-- /runa:current-state -->
 
 The released foundation provides a non-root devcontainer, Nginx/PHP-FPM/Laravel, PostgreSQL with an isolated guarded test database, and a responsive Vue SPA with Polish/English and light/dark/system preferences. Mailpit, a database queue worker, scheduler, local quality gates, Git hooks, Laravel Boost and development-only knowledge retrieval are implemented.
 
-Production tooling provides isolated runtime images, deployment, guarded rollback, coordinated backups/restores, health and isolation checks, with local simulation acceptance. No business modules are included. Simulation acceptance does not constitute a real production deployment.
+Production tooling provides isolated runtime images, deployment, guarded rollback, health and isolation checks, with local simulation acceptance. No business modules are included. Simulation acceptance does not constitute a real production deployment.
 
 The standalone [GitHub bootstrap](docs/tooling/bootstrap.md) downloads a verified
 release into a new directory before the application environment exists. Public
@@ -22,7 +21,7 @@ access needs no token; optional private credentials support future restricted ac
 Use [unified installation](docs/tooling/installation.md) for dev/prod setup,
 preserved application scaffolding and credentials, production HTTPS/SMTP and resume.
 
-Use `php artisan help runa:dev` in the prepared development/operator terminal; reserve the host transport for setup/recovery for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION, roadmap directories and docs/project/state.yml; release publication is verified separately.
+Use `php artisan help runa:dev` in the prepared development/operator terminal; reserve the host transport for setup/recovery for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION and roadmap directories; release publication is verified separately.
 
 ## Core stack direction
 
@@ -55,7 +54,7 @@ Read `AGENTS.md` first. It contains the compact operating contract and routes to
 - `docs/testing/` — backend/frontend/E2E testing strategy
 - `docs/quality/` — local quality-gate model
 - `docs/development/` — development environment requirements
-- `docs/production/` — production runtime, deployment, rollback, backup
+- `docs/production/` — production runtime, deployment and guarded rollback
 - `docs/ai/` — local skills, Laravel Boost, knowledge/RAG system
 - `docs/security/` — security baseline
 - `docs/data/` — seeding model

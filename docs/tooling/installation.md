@@ -17,7 +17,7 @@ its execution still requires an explicitly acquired installation target.
 
 `--profile=low|standard|high` is dev-only;
 omitting it preserves the existing/default resource selection. `--simulation` is
-prod-only and never creates real first-deploy evidence. Without
+prod-only and uses isolated resources. Without
 `--non-interactive`, a terminal production installation can collect required
 settings and read the SMTP password without echo. Automation fails rather than
 prompting when settings are missing.
@@ -72,16 +72,11 @@ ports/URLs are rejected. Example shape (replace all operator inputs):
     "password": "<provider-password>",
     "from": "sender@example.com",
     "recipient": "operator@example.com"
-  },
-  "backup": {
-    "directory": "/private/runa-backups",
-    "retention": 7
   }
 }
 ```
 
-The backup directory is dedicated, private and operator-owned. The installer
-generates distinct random admin/runtime database passwords and an application
+The installer generates distinct random admin/runtime database passwords and an application
 key once, writes raw mode-600 env files and preserves them on retries. Dollar
 signs remain literal. Existing unowned production settings/resources are refused;
 the installer never adopts an unknown database or rotates secrets to make startup
@@ -116,7 +111,7 @@ check the recipient mailbox for downstream delivery/filtering.
 
 Success requires actual HTTPS root/readiness and SMTP acceptance after the
 existing exact-image/config/migration/seeding/health/isolation sequence. A failed
-verification cannot write successful first-deploy evidence. Production still uses
+verification cannot complete the installation journal. Production still uses
 only PHP-FPM/Nginx/PostgreSQL/queue/scheduler and two durable storage/database
 volumes. Operational installation helpers are sparse-checkout inputs, never
 application-image content; AI/RAG/development tooling remains excluded.
@@ -128,9 +123,8 @@ mode, simulation, selected profile and started/failed/complete state. Production
 settings are separately private in `install-settings.json`; never attach these
 files to a public issue. `scaffold-<mode>.json` records initial scaffold creation.
 These are first-install records; the full update journal remains later roadmap work.
-[Integrity](integrity.md) uses the separately recorded trusted ownership inventory.
-Real production projection and immutable staging record their exact ownership
-profile/digest without accepting live source bytes.
+No trusted source baseline is stored in the installation. Repository-reference comparison belongs to the external owner updater, which remains pending in RM-005.
+Acquisition records the verified download digest; staged releases record their exact commit and operation ownership, without generating a trusted local file baseline.
 
 After failure, keep source, settings, volumes and deployment markers. Correct the
 reported prerequisite/provider failure and rerun the same command with `--resume`.
@@ -139,7 +133,7 @@ and refreshes corrected certificate/key contents at their originally selected
 paths. Explicit `--resume --settings-file=...` can correct SMTP inputs while
 preserving infrastructure choices and generated application/database keys. Recovery checks
 that pending first-install state, project/resources and target belong together;
-it cannot turn a pending update/restore into a new install. Migrations/seeders use
+it cannot turn a pending update into a new install. Migrations/seeders use
 their existing safe repeat behavior; no schema reversal or volume reset occurs.
 Existing generated credentials remain stable. A completed repeated install exits
 without touching application source, configuration, images, services or data.

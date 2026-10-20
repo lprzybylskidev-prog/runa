@@ -21,10 +21,9 @@ class DocumentationContracts(unittest.TestCase):
         self.root = Path(self.folder.name)
         subprocess.run(['git', 'init', '-q', '-b', 'main', str(self.root)], check=True)
         self.write('VERSION', '0.1.0\n')
-        self.write('docs/project/state.yml', 'version: 1\nproduction:\n  ever_deployed: false\n  first_deployed_at: null\n')
         self.write('docs/tooling/commands.md', '# Commands\n./bin/example\n')
         self.write('bin/example', '#!/bin/sh\nexit 0\n').chmod(0o755)
-        self.readme = '# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n- Production ever deployed: `false`\n\n<!-- /runa:current-state -->\n'
+        self.readme = '# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n\n<!-- /runa:current-state -->\n'
         self.write('README.md', self.readme)
 
     def write(self, name, content):
@@ -64,8 +63,7 @@ class DocumentationContracts(unittest.TestCase):
     def test_independent_state_mismatches_are_rejected(self):
         self.validate()
         for old, new, message in [('`0.1.0`', '`0.0.0`', 'Current version'),
-                                  ('`none`', '`RM-2026-001`', 'Active roadmap'),
-                                  ('`false`', '`true`', 'Production ever deployed')]:
+                                  ('`none`', '`RM-2026-001`', 'Active roadmap')]:
             with self.subTest(field=message):
                 self.write('README.md', self.readme.replace(old, new))
                 with self.assertRaisesRegex(ValueError, message):
@@ -75,7 +73,7 @@ class DocumentationContracts(unittest.TestCase):
         for text in [self.readme.replace(docs_checks.END, ''), self.readme * 2,
                      self.readme.replace('- Active roadmap: `none`\n', ''),
                      self.readme.replace('Active roadmap', 'Current version'),
-                     self.readme.replace('`false`', 'false'),
+                     self.readme.replace('`none`', 'none'),
                      self.readme.replace(docs_checks.START, 'SWAP').replace(docs_checks.END, docs_checks.START).replace('SWAP', docs_checks.END)]:
             with self.subTest(text=text):
                 self.write('README.md', text)
@@ -110,21 +108,6 @@ class DocumentationContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Multiple active'):
             self.validate()
 
-    def test_production_metadata_types_and_timestamp_coherence(self):
-        for content in ['version: true\nproduction: {}\n', 'version: 2\nproduction: {}\n',
-                        'version: 1\nproduction:\n  ever_deployed: "false"\n  first_deployed_at: null\n',
-                        'version: 1\nproduction:\n  ever_deployed: false\n',
-                        'version: 1\nproduction:\n  ever_deployed: false\n  first_deployed_at: 2026-10-18\n',
-                        'version: 1\nproduction:\n  ever_deployed: true\n  first_deployed_at: null\n',
-                        'version: 1\nproduction:\n  ever_deployed: true\n  first_deployed_at: 42\n',
-                        'version: 1\nproduction:\n  ever_deployed: true\n  first_deployed_at: "2026-10-18T12:00:00"\n']:
-            self.write('docs/project/state.yml', content)
-            with self.assertRaises(ValueError):
-                self.validate()
-        self.write('README.md', self.readme.replace('`false`', '`true`'))
-        for stamp in ['2026-10-18T12:00:00+00:00', '"2026-10-18T12:00:00Z"']:
-            self.write('docs/project/state.yml', 'version: 1\nproduction:\n  ever_deployed: true\n  first_deployed_at: ' + stamp + '\n')
-            self.validate()
 
     def test_final_gate_includes_docs_without_documentation_impact(self):
         definition = quality.yaml(ROOT / 'docs/quality/gates.yml')

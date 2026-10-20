@@ -87,7 +87,7 @@ Nginx can serve HTTPS with installer-generated configuration and read-only suppl
 certificate/key mounts, retaining nonroot runtime and the existing five services.
 An explicitly selected existing TLS terminator is verified instead. HTTPS
 root/readiness and SMTP provider acceptance must pass before successful real
-first-deploy evidence is written. See [installation](../tooling/installation.md)
+installation success is recorded. See [installation](../tooling/installation.md)
 for private inputs, retry ownership, preserved secrets/scaffold and simulation.
 
 Production exposes a minimal safe health endpoint.
@@ -155,7 +155,7 @@ Production requires Docker Engine 26 or newer for volume subpath mounts, plus Do
 
 ## Current production runtime and historical transition evidence
 
-The production PHP runtime uses the pinned Alpine PHP image below; PostgreSQL uses the approved Alpine/ICU baseline pinned in compose.production.yaml. Full baseline production simulation/security acceptance is recorded in closed RM-2026-001 and docs/security/RM-2026-001-final-review.md. No real deployment has been recorded in docs/project/state.yml.
+The production PHP runtime uses the pinned Alpine PHP image below; PostgreSQL uses the approved Alpine/ICU baseline pinned in compose.production.yaml. Full baseline production simulation/security acceptance is recorded in closed RM-2026-001 and docs/security/RM-2026-001-final-review.md.
 
 The following paragraphs preserve the earlier PHP candidate evaluation and its dated acceptance. Statements about pending PostgreSQL decisions and incomplete combined gates describe that earlier evaluation stage, before the later PostgreSQL transition and final gate; they are not the current delivery status.
 
@@ -163,7 +163,7 @@ The following paragraphs preserve the earlier PHP candidate evaluation and its d
 
 The production-only PHP runtime now uses official `php:8.4.26-fpm-alpine3.24` at index digest `sha256:78cd8de9970a9cd6ff4d98860a94eb5bf37dd2d5776b4785562dbfad01c29d5a`. Development retains the existing Debian/browser toolchain. The production dependency stage installs Composer/unzip on Alpine; neither enters the final image. Required PDO PostgreSQL, mbstring, intl/full ICU data, bcmath, OPcache, pcntl, ZIP, cURL and XML capabilities remain mandatory. UID/GID, FPM configuration, read-only mounts, startup validation, storage layout and health/worker/scheduler behavior keep their established contracts.
 
-The upstream Alpine PHP image uses GNU iconv rather than musl iconv. Final-image probes explicitly check Polish iconv/Laravel transliteration, multibyte text and ICU ordering; decimal/XML/ZIP/HTTPS/process support; required extensions, exact PHP version, UTC/non-root identity, assets and absence of development material. They also check FPM configuration and the actual tar/find options used for storage backup/restore. These probes are executed by the existing production build/image/self-test path; their source fixture remains operator tooling and is never copied into runtime images.
+The upstream Alpine PHP image uses GNU iconv rather than musl iconv. Final-image probes explicitly check Polish iconv/Laravel transliteration, multibyte text and ICU ordering; decimal/XML/ZIP/HTTPS/process support; required extensions, exact PHP version, UTC/non-root identity, assets and absence of development material. They also check FPM configuration. These probes are executed by the existing production build/image/self-test path; their source fixture remains operator tooling and is never copied into runtime images.
 
 The upstream base reported zero HIGH/CRITICAL findings, but this is not acceptance of the built Runa image. Actual Docker build, final-image probes, HTTP/background runtime, backup/restore, application/browser checks and final-image Trivy results remain required. No Docker-host evidence for the newly built Alpine PHP image has yet been supplied. PostgreSQL remains on its previous runtime configuration pending the separate [gosu](../security/gosu-assessment.md) and [locale](postgresql-alpine-assessment.md) decision.
 

@@ -186,17 +186,17 @@ Update Docker build context allowlists/COPY instructions, Nginx roots, PHP entry
 
 `src/storage/` is the single writable storage root, separate from both source owners. Use explicit application/platform filesystem disks rooted at `app/application/{private,public}` and `app/runa/{private,public}`; cache keys likewise include owner and application identity. Framework cache/sessions/views/health/maintenance and logs remain shared technical runtime state. Test workers retain their isolated storage and cache namespaces. Preserve the current default private-disk behavior until explicit application/platform disk configuration replaces it.
 
-Backup/restore covers both durable trees under storage/app plus PostgreSQL, using the existing coordinated lock/fencing/archive contract. Runtime framework state/logs remain excluded. Nginx mounts only each public subtree read-only, with separate explicit URL mappings; it cannot traverse either private subtree. Startup creates missing directories without deleting data. Updates preserve storage and private operation journals; a source-tree switch is never a storage replacement.
+Both durable storage trees and PostgreSQL must be preserved by operations. Any backup/restore strategy is externally managed by the customer. Nginx mounts only each public subtree read-only, with separate explicit URL mappings; it cannot traverse either private subtree. Startup creates missing directories without deleting data. Updates preserve storage and private operation journals; a source-tree switch is never a storage replacement.
 
 ### Relocation and preservation acceptance
 
-Before the move, inventory every tracked path with its source digest, symlink identity, owner, target and generated/runtime classification. RM-005 point 1 records its dated snapshot under `.runtime/ownership/`; this evidence describes the audited commit, not a permanent integrity baseline for later releases. At point 9 generate the trusted installed-release inventory from actual delivered protected inputs.
+Before the move, inventory every tracked path with its source digest, symlink identity, owner, target and generated/runtime classification. RM-005 point 1 records its dated snapshot under `.runtime/ownership/`; this evidence describes the audited commit, not a permanent integrity baseline for later releases. External update checks use original repository release inputs, never a customer-stored trusted baseline.
 
 Relocate by ownership: point 2 proves runtime-independent command transport against the existing layout; point 3 moves backend/framework/config/data and establishes the src base-path composition; point 4 completes frontend/tests/build/public paths. If that intermediate graph cannot remain runnable, extend the coherent relocation in point 3 only as far as needed for an operational bridge and finish/remove the bridge in point 4. No point may be committed complete with broken startup. Complete command caller migration in point 6 before retiring compatibility launchers.
 
 Existing mixed-ownership checkouts require an explicit old-to-new inventory comparison and a clean/collision-free destination. Preserve unrecognized customer additions; stop on ambiguous ownership, symlink escape, modified protected source or conflicting destination instead of overwriting. Existing `storage/app/private` and `storage/app/public` may contain customer data: determine provenance and migrate to the matching owner only after the exact scope is established. Ordinary reopen performs no relocation/reset.
 
-Preproduction metadata currently reports `production.ever_deployed: false`; check local real-deployment evidence before migration/reset work as required by [Database Architecture](database.md#migration-policy). Preserve `shared.migrations`, technical-table identity semantics and already-applied migration identity when only paths move. Relocation alone requires no schema reset or data deletion. Use the established scoped preproduction reset policy only if an actual need is demonstrated; never turn a source reorganization into an implicit volume rebuild.
+Inspect the actual database/data ownership before migration/reset work as required by [Database Architecture](database.md#migration-policy). Preserve `shared.migrations`, technical-table identity semantics and already-applied migration identity when only paths move. Relocation alone requires no schema reset or data deletion. Use the established scoped preproduction reset policy only if an actual need is demonstrated; never turn a source reorganization into an implicit volume rebuild.
 
 The durable customer preservation fixture is `src/runa/tests/Fixtures/ownership/customer-sentinels.json` until test relocation. It supplies distinct source/config/route/frontend/dependency/identity/private/public markers for both storage owners. Materialize it only in isolated acceptance installations, hash before each operation and require identical bytes afterward (except an explicitly requested customer edit). Include additional unknown customer files and collision cases when the update implementation is tested; this audit does not claim those future operations already pass.
 
@@ -263,13 +263,4 @@ never receive it. Host-only bin/artisan is setup/recovery. See
 [host executor](../tooling/host-executor.md) for lifecycle/trust and durable results
 when a command restarts its own invoking container.
 
-Installed source integrity uses the acquisition-time .git/runa-ownership.json release
-inventory, independently rechecked against exact Git objects and the recorded full
-source SHA256 on each report. Fixed source/production profiles separate materialized
-source from full release identity. Customer scaffold is excluded, infrastructure and
-composed manifests/locks are reported separately, and generated exceptions are
-narrow. No checker option accepts arbitrary exclusions or blesses live file bytes.
-Normal php artisan runa:integrity executes through the cold operational registry
-and restricted executor without application/bootstrap/DB dependencies or repair.
-See [integrity](../tooling/integrity.md) for the trust model and report contract;
-update preflight/consent/recovery remain subsequent roadmap work.
+No trusted installed-source baseline or customer integrity command is shipped. Repository-reference comparison is reserved for the external owner updater: read the installed platform version, obtain its original repository release, compare protected files and block on modifications. This updater is pending RM-005 points 10–11; removing the previous checker does not claim update delivery.

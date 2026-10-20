@@ -183,6 +183,7 @@ class BootstrapContracts(unittest.TestCase):
             receipt = bootstrap.acquire(client, 'v1.0.0', destination, 'dev', identity['commit'])
             self.assertEqual((destination / 'bin/alias').read_text(), 'fixture\n')
             self.assertEqual(receipt['state'], 'downloaded')
+            self.assertFalse((destination / '.git/runa-ownership.json').exists())
             self.assertEqual(destination.stat().st_mode & 0o777, 0o700)
             self.assertEqual(len(receipt['source_sha256']), 64)
             self.assertNotIn('synthetic', (destination / '.git/config').read_text())

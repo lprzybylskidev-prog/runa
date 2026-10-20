@@ -20,7 +20,7 @@ If documents conflict, use the authority hierarchy defined in `AGENTS.md`:
 - `testing/` — backend/frontend/E2E testing
 - `quality/` — local quality gate and gate definition
 - `development/` — development environment
-- `production/` — runtime, deploy, rollback, backup
+- `production/` — runtime, deploy and guarded rollback
 - `security/` — security baseline
 - `data/` — seeding
 - `maintenance/` — external dependency registry, maintenance backlog, deprecations

@@ -16,8 +16,7 @@
     "AGENTS.md",
     "README.md",
     "docs/quality/gates.yml",
-    "docs/maintenance/registry.yml",
-    "docs/project/state.yml"
+    "docs/maintenance/registry.yml"
   ],
   "markdown_roots": ["docs", ".agents/skills"],
   "pooling": "cls",

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Failure-first contracts for deployment identity and destructive backup boundaries."""
+"""Failure-first contracts for deployment identity and maintenance recovery boundaries."""
 import contextlib
 import io
 import json
 from pathlib import Path
 import subprocess
 import sys
-import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,7 +56,7 @@ print('parent:' + sys.stdin.read())
         result = subprocess.run([sys.executable, '-c', code], cwd=ROOT, input='remaining shell commands', text=True, capture_output=True, check=True)
         self.assertEqual(result.stdout, 'child:\nparent:remaining shell commands\n')
 
-    def test_explicit_backup_stream_and_input_are_preserved(self):
+    def test_explicit_process_stream_and_input_are_preserved(self):
         with patch.object(ops, 'command', return_value=['compose']), patch.object(ops, 'run') as run:
             stream = object()
             ops.dc(['exec'], stdin=stream)
@@ -78,7 +77,7 @@ print('parent:' + sys.stdin.read())
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / 'repository'
             root.mkdir()
-            files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'src/app/example.php': '<?php',
+            files = {'VERSION': '0.0.0', 'src/app/example.php': '<?php',
                      'src/runa/platform.json': '{}', 'src/runa/Http/Controllers/HealthController.php': '<?php', 'src/runa/lang/pl/validation.php': '<?php',
                      'src/runa/management/commands.php': 'operational registry',
                      'src/runa/management/development.php': 'excluded', 'src/runa/management/KnowledgeCommand.php': 'excluded',
@@ -146,7 +145,7 @@ print('parent:' + sys.stdin.read())
             def dc(args, release=None, **kwargs):
                 calls.append((args, release))
                 return subprocess.CompletedProcess(args, 0, stdout='')
-            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'resolve', return_value=sha), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'build_images'), patch.object(ops, 'create_backup'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
+            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'resolve', return_value=sha), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'build_images'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, 'migration failed'):
                     ops.deploy(sha, True)
                 self.assertEqual((state / 'in-progress.json').exists(), not compatible)
@@ -195,66 +194,6 @@ print('parent:' + sys.stdin.read())
             self.assertEqual(command[command.index('--project-name') + 1], 'runa-prod-icu-simulation')
             self.assertIn('RUNA_IMAGE_TAG=' + sha, (release / '.env.prod.compose').read_text())
             self.assertEqual((release / '.env.prod').stat().st_mode & 0o777, 0o600)
-
-    def test_backup_path_and_symlink_rejection(self):
-        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'backup_root', return_value=(Path(folder), 7)):
-            for name in ('../other', '/tmp/archive', 'backup-latest'):
-                with self.assertRaises(ValueError):
-                    ops.backup_path(name)
-            path = Path(folder) / 'backup-20261017T123456123456Z'
-            path.symlink_to(Path(folder), target_is_directory=True)
-            with self.assertRaises(ValueError):
-                ops.backup_path(path.name)
-
-    def test_tamper_and_archive_escape_rejected_before_pg_restore(self):
-        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'pg') as pg:
-            root = Path(folder)
-            (root / 'database.dump').write_bytes(b'dump')
-            for member_name in ('app/../../etc/passwd', '/etc/passwd', 'app/link'):
-                with tarfile.open(root / 'storage.tar.gz', 'w:gz') as archive:
-                    directory = tarfile.TarInfo('app')
-                    directory.type = tarfile.DIRTYPE
-                    archive.addfile(directory)
-                    member = tarfile.TarInfo(member_name)
-                    member.type = tarfile.SYMTYPE if member_name.endswith('link') else tarfile.REGTYPE
-                    member.linkname = '/etc/passwd'
-                    archive.addfile(member)
-                manifest = {'format': 1, 'files': {name: ops.digest(root / name) for name in ('database.dump', 'storage.tar.gz')}}
-                (root / 'manifest.json').write_text(json.dumps(manifest))
-                with self.assertRaisesRegex(ValueError, 'Unsafe storage'):
-                    ops.verify_backup_files(root, None)
-                pg.assert_not_called()
-            (root / 'database.dump').write_bytes(b'corrupt')
-            with self.assertRaisesRegex(ValueError, 'integrity mismatch'):
-                ops.verify_backup_files(root, None)
-            pg.assert_not_called()
-
-    def test_failed_isolated_restore_always_drops_only_generated_validation_db(self):
-        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'backup_path', return_value=Path(folder)), patch.object(ops, 'active_release', return_value=None), patch.object(ops, 'verify_backup_files'), patch.object(ops, 'pg') as pg:
-            (Path(folder) / 'database.dump').write_bytes(b'dump')
-            pg.side_effect = [None, ValueError('restore failed'), None]
-            with self.assertRaisesRegex(ValueError, 'restore failed'):
-                ops.verify_backup('backup-id')
-            create = pg.call_args_list[0].args[0]
-            drop = pg.call_args_list[-1].args[0]
-            self.assertEqual(drop[0], 'dropdb')
-            self.assertEqual(create[-1], drop[-1])
-            self.assertTrue(drop[-1].startswith('runa_backup_verify_'))
-
-    def test_restore_rejects_cross_version_and_simulation_before_mutation(self):
-        current = {'sha': 'a' * 40, 'path': '/release', 'simulation': True}
-        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'STATE', Path(folder)), patch.object(ops, 'read_state', return_value={'current': current}), patch.object(ops, 'backup_path', return_value=Path(folder)), patch.object(ops, 'verify_backup_files', return_value={'deployment': dict(current, simulation=False)}), patch.object(ops, 'dc') as dc:
-            with self.assertRaisesRegex(ValueError, 'same application SHA'):
-                ops.restore('backup-id', True)
-            dc.assert_not_called()
-
-    def test_backup_failure_never_publishes_complete_archive_and_restarts_services(self):
-        current = {'path': '/release'}
-        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'STATE', Path(folder) / 'state'), patch.object(ops, 'read_state', return_value={'current': current}), patch.object(ops, 'health'), patch.object(ops, 'backup_root', return_value=(Path(folder), 7)), patch.object(ops, 'dc') as dc, patch.object(ops, 'pg', side_effect=ValueError('dump failed')):
-            with self.assertRaisesRegex(ValueError, 'dump failed'):
-                ops.create_backup()
-            self.assertEqual(dc.call_args_list[-1].args[0], ['up', '-d', '--wait', '--no-build', '--no-deps', 'nginx'])
-            self.assertTrue(all(path.name.endswith('.partial') for path in Path(folder).iterdir() if path.name != 'state'))
 
 
 if __name__ == '__main__':

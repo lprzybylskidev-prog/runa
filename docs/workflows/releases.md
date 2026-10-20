@@ -123,11 +123,10 @@ For `release_type: release`, explicitly record the user-approved `target_version
 
 ## Checked README current state
 
-README has exactly one block between `<!-- runa:current-state -->` and `<!-- /runa:current-state -->`. Its content is exactly three ordered Markdown list fields, with inline-code values:
+README has exactly one block between `<!-- runa:current-state -->` and `<!-- /runa:current-state -->`. Its content is exactly two ordered Markdown list fields, with inline-code values:
 
 1. `Current version`: canonical VERSION, in X.Y.Z form.
 2. `Active roadmap`: the ID from the single active roadmap's frontmatter, or `none`. Its status, filename and branch must agree with its active location and current branch.
-3. `Production ever deployed`: lowercase `true` or `false`, matching the boolean in docs/project/state.yml. That source must retain schema version 1 and a coherent first-deployment timestamp (null before first deployment, an ISO timestamp with timezone afterward).
 
 Use these fields as a checked projection of existing sources, not as a second source of truth. Keep these current-state facts in the block instead of repeating values elsewhere in README prose. The block does not claim GitHub publication. Examples and historical documents are outside this bounded syntax and remain untouched.
 

@@ -43,7 +43,7 @@ class RepositoryBoundary(unittest.TestCase):
             with patch.object(operations, 'ROOT', root), self.assertRaises(ValueError):
                 operations.deploy('a' * 40, False)
             with patch.object(operations, 'ROOT', root), self.assertRaises(ValueError):
-                operations.main('backup', ['create'])
+                operations.main('deploy', ['a' * 40])
             self.assertEqual((root / '.git/config').read_bytes(), original)
             self.assertEqual(self.git(root, 'status', '--porcelain'), '')
 
@@ -90,12 +90,14 @@ class RepositoryBoundary(unittest.TestCase):
                 if restored:
                     shutil.copytree(ROOT / 'distribution/maintenance', root / 'distribution/maintenance')
                 registered = names()
-                self.assertIn('runa:backup', registered)
+                self.assertNotIn('runa:backup', registered)
+                self.assertNotIn('runa:integrity', registered)
+                self.assertNotIn('runa:project', registered)
                 self.assertIn('runa:dev', registered)
                 for name in ('runa:install', 'runa:project', 'runa:hook'):
                     self.assertNotIn(name, registered)
             (root / '.git/runa-bootstrap.json').unlink()
-            self.assertTrue({'runa:install', 'runa:project', 'runa:hook'}.issubset(names()))
+            self.assertTrue({'runa:install', 'runa:hook'}.issubset(names()))
 
     def test_distribution_projection_is_fixed_and_shared(self):
         spec = importlib.util.spec_from_file_location('standalone', ROOT / 'distribution/bootstrap.py')

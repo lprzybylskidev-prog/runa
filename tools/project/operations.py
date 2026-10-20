@@ -8,11 +8,9 @@ import json
 import os
 from pathlib import Path
 import re
-import secrets
 import shutil
 import stat
 import subprocess
-import tarfile
 
 import production
 from runtime import ROOT, inside, run
@@ -24,7 +22,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/repository_boundary.py', '/tools/project/integrity.py',
+          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/repository_boundary.py',
           '/bin/artisan', '/bin/command', '/tools/project/management.py', '/tools/project/executors/operations.py', '/tools/project/executors/production.py',
           '/src/runa/management/autoload.php',
           '/src/runa/management/bootstrap.php',
@@ -32,21 +30,15 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/runa/management/ToolingCommand.php',
           '/src/runa/management/ProductionCommand.php',
           '/src/runa/management/DeployCommand.php',
-          '/src/runa/management/BackupCommand.php',
-          '/src/runa/management/IntegrityCommand.php', '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
-          '/tools/testing/production-runtime.php', '/docs/project/state.yml',
-          '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/operations',
+          '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
+          '/tools/testing/production-runtime.php',
+          '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
-          '/.env.prod.database.example', '/.env.prod.compose.example', '/.env.prod.backup.example']
+          '/.env.prod.database.example', '/.env.prod.compose.example']
 
 
 def stamp():
     return datetime.now(timezone.utc).isoformat()
-
-
-def digest(path):
-    with path.open('rb') as stream:
-        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def atomic(path, value):
@@ -150,7 +142,7 @@ def pause_http(release=None):
 def resume_http(release=None, recreate=False):
     dc(['up', '-d', '--wait', '--no-build', *(['--force-recreate'] if recreate else []),
         'postgres', 'app', 'queue', 'scheduler'], release)
-    # Restore may replace the public-upload directory: refresh Nginx's subpath mount.
+    # Refresh Nginx's public-storage subpath mount when recreating the stack.
     dc(['up', '-d', '--no-build', '--no-deps', *(['--force-recreate'] if recreate else []), 'nginx'], release)
     http_maintenance(False, release)
     try:
@@ -225,10 +217,10 @@ def checkout(sha):
     run(['git', '-C', str(path), 'sparse-checkout', 'init', '--no-cone'])
     run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
     run(['git', '-C', str(path), 'checkout', '--detach', sha])
-    from integrity import release_inventory, seal
-    _, digest = release_inventory(path, sha)
-    write_staging_receipt(path, {**data, 'staging': staging, 'commit': sha, 'source_sha256': digest, 'mode': 'prod'})
-    seal(path, 'production')
+    staged = {**data, 'staging': staging, 'commit': sha, 'mode': 'prod'}
+    # Acquisition digests identify the original download, not a different staged commit.
+    staged.pop('source_sha256', None)
+    write_staging_receipt(path, staged)
     run(['git', '-C', str(path), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
     return path
 
@@ -310,8 +302,6 @@ def assert_sparse(path):
     for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.php', 'src/runa/management/KnowledgeCommand.php', 'tools/project/executors/knowledge.py', '.env', '.env.dev.local'):
         if (path / forbidden).exists():
             raise ValueError('Development material in production checkout: ' + forbidden)
-    if not (path / 'docs/project/state.yml').is_file():
-        raise ValueError('Missing production deployment-state policy.')
 
 
 def build_images(release=None):
@@ -358,8 +348,6 @@ def deploy(target, simulation, initial_resume=False, verification=None):
         # Never overwrite an immutable image identity with a different source tree.
         build_images(release)
         validate(release)
-        if previous:
-            create_backup()
         atomic(STATE / 'in-progress.json', {'target': sha, 'previous': previous, 'started_at': stamp(), 'phase': 'startup-and-migrations'})
         mutation_started = True
         dc(['up', '-d', '--wait', '--no-build', 'postgres'], release)
@@ -374,9 +362,6 @@ def deploy(target, simulation, initial_resume=False, verification=None):
         identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
                     'database_tree': tree_hash(sha), 'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}
         atomic(STATE / 'deployment.json', {'current': identity, 'previous': previous})
-        if not simulation and not (STATE / 'first-deploy.json').exists():
-            atomic(STATE / 'first-deploy.json', identity)
-            print('Real first-deploy evidence written. Reconcile versioned production state before editing migrations.')
         (STATE / 'in-progress.json').unlink()
         print('PASS: deployed ' + sha + (' (simulation).' if simulation else '.'))
     except BaseException:
@@ -423,183 +408,21 @@ def rollback():
     print('PASS: application rollback ' + current['sha'] + ' -> ' + previous['sha'] + '; database unchanged.')
 
 
-def backup_root():
-    settings = read_env(ROOT / '.env.prod.backup')
-    path = Path(settings.get('BACKUP_DIRECTORY', ''))
-    if not path.is_absolute() or path.is_symlink() or path == Path('/') or not re.fullmatch(r'[1-9]\d*', settings.get('BACKUP_RETENTION', '')):
-        raise ValueError('Backup directory must be an absolute dedicated path; retention must be positive.')
-    path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    if path.stat().st_mode & 0o077:
-        raise ValueError('Backup directory must be private (chmod 700).')
-    return path, int(settings['BACKUP_RETENTION'])
-
-
-def backup_path(name):
-    if not re.fullmatch(r'backup-\d{8}T\d{12}Z', name):
-        raise ValueError('Provide a backup ID, not an arbitrary path.')
-    root, _ = backup_root()
-    path = root / name
-    if path.is_symlink() or not path.is_dir():
-        raise ValueError('Backup is not a regular backup directory.')
-    return path
-
-
-def pg(args, release=None, **kwargs):
-    # Database-tool failures may include restored values; never echo those diagnostics.
-    kwargs.setdefault('stderr', subprocess.PIPE)
-    # Fixed shell program expands container credentials; no operator text is concatenated.
-    return dc(['exec', '-T', 'postgres', 'sh', '-c', 'export PGPASSWORD="$POSTGRES_PASSWORD"; exec "$@"', 'runa-pg', *args], release, **kwargs)
-
-
-def create_backup(protect=None):
-    current = read_state()['current']
-    if not current or (STATE / 'in-progress.json').exists():
-        raise ValueError('Backup requires an established deployment with no unresolved operation.')
-    release = current['path']
-    health(release, sparse=True)
-    root, retention = backup_root()
-    name = 'backup-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
-    partial = root / (name + '.partial')
-    partial.mkdir(mode=0o700)
-    atomic(STATE / 'in-progress.json', {'phase': 'backup', 'backup': name, 'started_at': stamp()})
-    try:
-        pause_http(release)
-        with (partial / 'database.dump').open('wb') as stream:
-            pg(['pg_dump', '-U', 'postgres', '-d', 'runa', '--format=custom', '--no-owner', '--no-acl'], release, stdout=stream)
-        with (partial / 'storage.tar.gz').open('wb') as stream:
-            dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/src/storage', '-czf', '-', 'app'], release, stdout=stream)
-        atomic(partial / 'manifest.json', {'format': 1, 'created_at': stamp(), 'deployment': current,
-              'files': {name: digest(partial / name) for name in ('database.dump', 'storage.tar.gz')}})
-        verify_backup_files(partial, release)
-        partial.rename(root / name)
-    finally:
-        resume_http(release)
-        (STATE / 'in-progress.json').unlink()
-    # Only prune complete, validated, named backups in this dedicated directory.
-    candidates = sorted(p for p in root.iterdir() if re.fullmatch(r'backup-\d{8}T\d{12}Z', p.name) and p.is_dir() and not p.is_symlink())
-    for path in candidates[:-retention]:
-        if path.name == protect:
-            continue
-        verify_backup_files(path, release)
-        shutil.rmtree(path)
-    print('PASS: coordinated backup ' + name)
-    return name
-
-
-def verify_backup_files(path, release):
-    for name in ('manifest.json', 'database.dump', 'storage.tar.gz'):
-        if (path / name).is_symlink() or not (path / name).is_file():
-            raise ValueError('Backup contains missing/non-regular files.')
-    manifest = json.loads((path / 'manifest.json').read_text())
-    if manifest.get('format') != 1 or set(manifest.get('files', {})) != {'database.dump', 'storage.tar.gz'}:
-        raise ValueError('Unsupported/incomplete backup metadata.')
-    for name, expected in manifest['files'].items():
-        if digest(path / name) != expected:
-            raise ValueError('Backup integrity mismatch: ' + name)
-    with tarfile.open(path / 'storage.tar.gz', 'r:gz') as archive:
-        members = archive.getmembers()
-        if not members or not any(m.name == 'app' and m.isdir() for m in members):
-            raise ValueError('Missing persistent application storage root.')
-        for member in members:
-            if member.name.startswith('/') or '..' in Path(member.name).parts or Path(member.name).parts[0] != 'app' or not (member.isfile() or member.isdir()):
-                raise ValueError('Unsafe storage archive entry; links/devices are forbidden.')
-            if member.isfile():
-                with archive.extractfile(member) as stream:
-                    while stream.read(1024 * 1024):
-                        pass
-    with (path / 'database.dump').open('rb') as stream:
-        pg(['pg_restore', '--list'], release, stdin=stream, stdout=subprocess.DEVNULL)
-    return manifest
-
-
-def verify_backup(name):
-    path = backup_path(name)
-    release = active_release()
-    verify_backup_files(path, release)
-    # Restore into an isolated temporary DB on the same server; never touch runa/runa_test.
-    database = 'runa_backup_verify_' + secrets.token_hex(8)
-    pg(['createdb', '-U', 'postgres', '-T', 'template0', database], release)
-    try:
-        with (path / 'database.dump').open('rb') as stream:
-            pg(['pg_restore', '-U', 'postgres', '--exit-on-error', '--no-owner', '--no-acl', '-d', database], release, stdin=stream, stdout=subprocess.DEVNULL)
-        pg(['psql', '-U', 'postgres', '-d', database, '-v', 'ON_ERROR_STOP=1', '-tAc', 'SELECT count(*) FROM shared.migrations'], release, stdout=subprocess.DEVNULL)
-    finally:
-        pg(['dropdb', '-U', 'postgres', database], release)
-    print('PASS: backup hashes, storage archive and actual isolated database restore: ' + name)
-
-
-def restore(name, confirmed):
-    current = read_state()['current']
-    if not current or (STATE / 'in-progress.json').exists():
-        raise ValueError('Restore requires an established deployment and no unresolved operation.')
-    path = backup_path(name)
-    manifest = verify_backup_files(path, current['path'])
-    if manifest['deployment']['sha'] != current['sha'] or manifest['deployment']['simulation'] != current['simulation']:
-        raise ValueError('Restore requires the same application SHA and real/simulation context as the backup.')
-    verify_backup(name)
-    project = 'runa-prod-icu-simulation' if current['simulation'] else 'runa-prod'
-    target = project + '/runa/application-storage'
-    print('Destructive restore target: ' + target + '; backup: ' + name)
-    if not confirmed and input('Type the full target to confirm: ') != target:
-        raise ValueError('Restore not confirmed.')
-    # Preserve the selected restore source even when retention would otherwise prune it.
-    create_backup(protect=name)
-    if not path.exists():
-        raise ValueError('Restore source expired during retention; use a higher retention setting and retry.')
-    release = current['path']
-    atomic(STATE / 'in-progress.json', {'phase': 'restore', 'backup': name, 'started_at': stamp()})
-    pause_http(release)
-    # Recreate only the explicitly named application DB. No down() or global volume operation.
-    pg(['dropdb', '-U', 'postgres', '--force', 'runa'], release)
-    pg(['createdb', '-U', 'postgres', '-O', 'runa', '-T', 'template0', 'runa'], release)
-    with (path / 'database.dump').open('rb') as stream:
-        pg(['pg_restore', '-U', 'postgres', '--role=runa', '--exit-on-error', '--no-owner', '--no-acl', '-d', 'runa'], release, stdin=stream)
-    pg(['psql', '-U', 'postgres', '-d', 'runa', '-v', 'ON_ERROR_STOP=1', '-c', 'REVOKE ALL ON DATABASE runa FROM PUBLIC; REVOKE ALL ON SCHEMA public FROM PUBLIC;'], release)
-    dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'sh', 'app', '-c', 'test ! -L /workspace/src/storage/app && find /workspace/src/storage/app -mindepth 1 -delete'], release)
-    with (path / 'storage.tar.gz').open('rb') as stream:
-        dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/src/storage', '--no-same-owner', '-xzf', '-'], release, stdin=stream)
-    try:
-        resume_http(release, recreate=True)
-        health(release, sparse=True)
-    except BaseException:
-        http_maintenance(True, release)
-        raise
-    (STATE / 'in-progress.json').unlink()
-    print('PASS: database/storage restored and application healthy.')
-
-
 def main(name, args):
-    if name not in ('deploy', 'backup'):
+    if name != 'deploy':
         raise ValueError('Unsupported internal operation family.')
     parser = argparse.ArgumentParser(prog='./bin/' + name)
-    if name == 'deploy':
-        parser.add_argument('target', help='Exact vX.Y.Z/full SHA, or rollback')
-        parser.add_argument('--simulation', action='store_true', help='Local production simulation; never sets real-deploy marker')
-    else:
-        parser.add_argument('action', choices=['create', 'verify', 'restore'])
-        parser.add_argument('backup_id', nargs='?')
-        parser.add_argument('--confirm-runa-prod-restore', action='store_true', help='Explicit destructive restore confirmation')
+    parser.add_argument('target', help='Exact vX.Y.Z/full SHA, or rollback')
+    parser.add_argument('--simulation', action='store_true', help='Isolated local production simulation')
     options = parser.parse_args(args)
     if inside():
         raise ValueError('Run production operations in a host terminal outside the devcontainer.')
     from repository_boundary import assert_installation
     assert_installation(ROOT)
     with lock():
-        if name == 'deploy':
-            if options.target == 'rollback':
-                rollback()
-            else:
-                if (STATE / 'in-progress.json').exists():
-                    raise ValueError('Unresolved failed deployment/restore; inspect in-progress.json before retrying.')
-                deploy(options.target, options.simulation)
-        elif options.action == 'create':
-            if options.backup_id:
-                raise ValueError('Create does not accept a backup ID.')
-            create_backup()
+        if options.target == 'rollback':
+            rollback()
         else:
-            if not options.backup_id:
-                raise ValueError('A backup ID is required.')
-            if options.action == 'verify':
-                verify_backup(options.backup_id)
-            else:
-                restore(options.backup_id, options.confirm_runa_prod_restore)
+            if (STATE / 'in-progress.json').exists():
+                raise ValueError('Unresolved failed deployment; inspect in-progress.json before retrying.')
+            deploy(options.target, options.simulation)

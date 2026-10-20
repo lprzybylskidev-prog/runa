@@ -1,10 +1,8 @@
 <?php
 
 use Illuminate\Console\Command;
-use Runa\Management\BackupCommand;
 use Runa\Management\DeployCommand;
 use Runa\Management\HostCommand;
-use Runa\Management\IntegrityCommand;
 use Runa\Management\ProductionCommand;
 
 require_once __DIR__.'/autoload.php';
@@ -12,9 +10,7 @@ require_once __DIR__.'/autoload.php';
 $commands = [
     ProductionCommand::class,
     DeployCommand::class,
-    BackupCommand::class,
     HostCommand::class,
-    IntegrityCommand::class,
 ];
 
 if (is_file(__DIR__.'/development.php')) {
