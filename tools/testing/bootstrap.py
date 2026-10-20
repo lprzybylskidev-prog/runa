@@ -6,6 +6,7 @@ import io
 import json
 import os
 import shlex
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -15,12 +16,22 @@ import urllib.error
 from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location('runa_bootstrap', ROOT / 'bootstrap.py')
+spec = importlib.util.spec_from_file_location('runa_bootstrap', ROOT / 'distribution/bootstrap.py')
 bootstrap = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bootstrap)
 
 
 class BootstrapContracts(unittest.TestCase):
+    def test_separately_delivered_single_file_runs_without_an_owner_checkout(self):
+        with tempfile.TemporaryDirectory() as folder:
+            launcher = Path(folder) / 'customer-installer.py'
+            shutil.copyfile(ROOT / 'distribution/bootstrap.py', launcher)
+            result = subprocess.run([sys.executable, '-I', str(launcher), '--help'], cwd=folder, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for option in ('--mode', '--install', '--expected-commit', '--expected-digest'):
+                self.assertIn(option, result.stdout)
+            self.assertEqual(sorted(path.name for path in Path(folder).iterdir()), ['customer-installer.py'])
+
     def test_repository_and_tag_reject_urls_secrets_options_and_paths(self):
         for value in ('https://github.com/a/b', 'a/b.git', 'a/b/../c', 'a/b?token=hidden', '-a/b', 'a/b\n'):
             with self.subTest(value=value), self.assertRaises(bootstrap.BootstrapError):
@@ -140,6 +151,10 @@ class BootstrapContracts(unittest.TestCase):
         (repo / 'bin/tool').write_text('fixture\n')
         (repo / 'bin/tool').chmod(0o755)
         (repo / 'bin/alias').symlink_to(link or 'tool')
+        for name in bootstrap.OWNER_PATHS:
+            file = repo / (name + '/owner-tool' if name in ('distribution', '.githooks') else name)
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text('owner-only source\n')
         git('add', '.')
         git('commit', '-qm', 'fixture')
         git('tag', '-a', 'v1.0.0', '-m', 'fixture')
@@ -174,8 +189,16 @@ class BootstrapContracts(unittest.TestCase):
             self.assertNotIn('synthetic', json.dumps(receipt))
             self.assertEqual(subprocess.check_output(['git', '-C', str(destination), 'status', '--porcelain']), b'')
             self.assertFalse(list(Path(folder).glob('.runa-bootstrap-*')))
+            self.assertEqual(receipt['projection'], {'version': 1, 'excluded': list(bootstrap.OWNER_PATHS)})
+            for name in bootstrap.OWNER_PATHS:
+                self.assertFalse((destination / name).exists(), name)
+            subprocess.run(['git', '-C', str(destination), 'checkout', '--detach', identity['commit']], check=True, capture_output=True)
+            subprocess.run(['git', '-C', str(destination), 'sparse-checkout', 'reapply'], check=True, capture_output=True)
+            self.assertTrue(all(not (destination / name).exists() for name in bootstrap.OWNER_PATHS))
+            self.assertEqual(subprocess.check_output(['git', '-C', str(destination), 'remote', 'get-url', '--push', 'origin']).strip(), b'disabled://runa-read-only-upstream')
             second = Path(folder) / 'second'
             self.assertEqual(bootstrap.acquire(client, 'v1.0.0', second, 'prod', expected_digest=receipt['source_sha256'])['source_sha256'], receipt['source_sha256'])
+            self.assertTrue(all(not (second / name).exists() for name in bootstrap.OWNER_PATHS))
 
     def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self):
         for failure in ('commit', 'digest', 'changed-ref', 'fetched-ref'):
@@ -276,18 +299,18 @@ class BootstrapContracts(unittest.TestCase):
             (root / 'bin/artisan').touch()
             # An older bin/artisan alone does not imply a management command registry.
             self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40), ['./bin/dev', 'up'])
-            marker = root / 'src/runa/management/InstallCommand.php'
+            marker = root / 'tools/project/installation.py'
             marker.parent.mkdir(parents=True)
             marker.touch()
-            self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40), ['./bin/artisan', 'runa:install', 'dev', 'a' * 40])
-            self.assertEqual(bootstrap.install_command(root, 'prod', 'a' * 40), ['./bin/artisan', 'runa:install', 'prod', 'a' * 40])
+            self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40)[-2:], ['dev', 'a' * 40])
+            self.assertEqual(bootstrap.install_command(root, 'prod', 'a' * 40)[-2:], ['prod', 'a' * 40])
 
     def test_postponed_unified_handoff_preserves_private_settings_path_without_shell_interpretation(self):
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / 'download'
             private_path = Path(folder) / 'private settings $(literal).json'
             def acquire(*args):
-                marker = destination / 'src/runa/management/InstallCommand.php'
+                marker = destination / 'tools/project/installation.py'
                 marker.parent.mkdir(parents=True)
                 marker.touch()
                 (destination / 'bin').mkdir()
@@ -296,7 +319,7 @@ class BootstrapContracts(unittest.TestCase):
             with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', side_effect=acquire), patch.object(bootstrap.subprocess, 'run') as run, contextlib.redirect_stdout(io.StringIO()) as output:
                 bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'prod', '--install', 'later', '--settings-file=' + str(private_path)])
             line = next(line for line in output.getvalue().splitlines() if line.startswith('From the destination'))
-            self.assertEqual(shlex.split(line.split('run: ', 1)[1]), ['./bin/artisan', 'runa:install', 'prod', 'a' * 40, '--settings-file=' + str(private_path), '--non-interactive'])
+            self.assertEqual(shlex.split(line.split('run: ', 1)[1])[-4:], ['prod', 'a' * 40, '--settings-file=' + str(private_path), '--non-interactive'])
             run.assert_not_called()
 
     def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self):
@@ -311,10 +334,10 @@ class BootstrapContracts(unittest.TestCase):
     def test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download(self):
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / 'download'
-            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), patch.object(bootstrap.subprocess, 'run', return_value=Mock(returncode=17)) as run, contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(bootstrap.BootstrapError, 'Source is ready; installation failed'):
+            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap, 'install_command', return_value=[sys.executable, '-c', 'fixture', 'prod', 'a' * 40]), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), patch.object(bootstrap.subprocess, 'run', return_value=Mock(returncode=17)) as run, contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(bootstrap.BootstrapError, 'Source is ready; installation failed'):
                 bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'prod', '--install', 'now'])
             self.assertIs(run.call_args.kwargs['stdin'], subprocess.DEVNULL)
-            self.assertEqual(run.call_args.args[0], ['./bin/install-prod', 'a' * 40])
+            self.assertEqual(run.call_args.args[0][-3:-1], ['prod', 'a' * 40])
 
 
 if __name__ == '__main__':

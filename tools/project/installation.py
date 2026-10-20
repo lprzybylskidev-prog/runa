@@ -22,6 +22,7 @@ import urllib.parse
 import urllib.request
 
 import operations as ops
+from repository_boundary import RepositoryBoundaryError
 from runtime import ROOT, inside, run
 
 
@@ -356,6 +357,8 @@ def development_context():
 
 
 def install(mode, target, simulation=False, settings_file=None, profile=None, resume=False, non_interactive=False):
+    from repository_boundary import assert_installation
+    assert_installation(ROOT)
     mode = 'prod' if mode == 'production' else mode
     sha = ops.resolve(target)
     head = run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
@@ -369,7 +372,7 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
         print('Installation already complete; application source, settings, secrets and data preserved. Use dev up or deploy for normal operation.')
         return
     if journal and not resume:
-        raise InstallationError('Installation is incomplete. Preserve files and use the same runa:install command with --resume.')
+        raise InstallationError('Installation is incomplete. Preserve files and use the owner-delivered installer command with --resume.')
     if not journal and resume:
         raise InstallationError('There is no recorded installation to resume.')
     if journal:
@@ -465,5 +468,5 @@ def main(arguments):
         return 130
     except (ValueError, OSError, KeyError, TypeError, EOFError, subprocess.CalledProcessError) as error:
         # Do not echo private JSON, filenames containing credentials or provider stderr.
-        print(str(error) if isinstance(error, InstallationError) else 'Installation did not complete. Check explicit inputs and private state; existing data and secrets have been preserved.', file=sys.stderr)
+        print(str(error) if isinstance(error, (InstallationError, RepositoryBoundaryError)) else 'Installation did not complete. Check explicit inputs and private state; existing data and secrets have been preserved.', file=sys.stderr)
         return 1

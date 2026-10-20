@@ -26,7 +26,8 @@ def main():
             git('read-tree', '--empty')
         git('init', '-q', '-b', 'roadmap/RM-2026-999-fixture')
         (root / 'bin').mkdir()
-        (root / 'bin/git-hook').symlink_to(ROOT / 'bin/git-hook')
+        (root / 'distribution/maintenance/bin').mkdir(parents=True)
+        (root / 'distribution/maintenance/bin/git-hook').symlink_to(ROOT / 'distribution/maintenance/bin/git-hook')
         knowledge = root / 'bin/knowledge'
         knowledge.write_text('#!/bin/sh\nexit 0\n'); knowledge.chmod(0o755)
         roadmap = root / 'docs/roadmaps/active/fixture.md'

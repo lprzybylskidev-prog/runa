@@ -31,6 +31,7 @@ def main():
     image = management.ensure_image()
     report['image'] = image
     active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev']).splitlines()
+    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project"}}', item]) == 'runa-dev']
     before = {item: output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) for item in active}
     def check(ok, text):
         if not ok:
@@ -45,6 +46,7 @@ def main():
             shutil.copy2(ROOT / name, destination)
         shutil.copytree(ROOT / 'tools/project', root / 'tools/project', ignore=shutil.ignore_patterns('__pycache__'))
         shutil.copytree(ROOT / 'src/runa/management', root / 'src/runa/management')
+        shutil.copytree(ROOT / 'distribution/maintenance', root / 'distribution/maintenance')
         (root / '.devcontainer').mkdir()
         (root / '.devcontainer/compose.resources.yaml').write_text('{"services":{}}')
         (root / '.env.dev.local').write_text('DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n')
@@ -117,7 +119,7 @@ def main():
             output(compose + ['down', '--remove-orphans'])
             report['cleanup'] = resources
             check(all(output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) == start for item, start in before.items()), 'active development/test containers and data were preserved')
-            destination = ROOT / '.runtime/ownership/RM-2026-005-point-8a-host.json'
+            destination = ROOT / '.runtime/ownership/RM-2026-005-host-executor-latest.json'
             destination.write_text(json.dumps(report, indent=2) + '\n')
 
 

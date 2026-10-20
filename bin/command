@@ -5,9 +5,9 @@ import subprocess
 import sys
 ROOT = Path(__file__).resolve().parents[1]
 ALIASES = {'dev': 'dev', 'doctor': 'doctor', 'quality': 'quality', 'knowledge': 'knowledge',
-           'security': 'security', 'project': 'project', 'xdebug': 'xdebug', 'quality-check': 'check',
+           'security': 'security', 'xdebug': 'xdebug', 'quality-check': 'check',
            'format': 'format', 'lint': 'lint', 'typecheck': 'typecheck', 'analyse': 'analyse', 'test': 'test',
-           'deploy': 'deploy', 'backup': 'backup', 'install-prod': 'install', 'production': 'production'}
+           'deploy': 'deploy', 'backup': 'backup', 'production': 'production'}
 name = Path(sys.argv[0]).name
 arguments = sys.argv[1:]
 if name in ('command', 'check', 'operations'):
@@ -17,6 +17,4 @@ if name in ('command', 'check', 'operations'):
 # The setup job must prepare Composer before Artisan's autoloader exists.
 if name == 'dev' and arguments[:1] == ['setup'] and Path('/.dockerenv').exists() and not (ROOT / 'src/vendor/autoload.php').is_file():
     raise SystemExit(subprocess.run(['python3', str(ROOT / 'tools/project/executors/dev.py'), *arguments], cwd=ROOT).returncode)
-if name == 'install-prod':
-    arguments = ['production', *arguments]
 raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'runa:' + ALIASES[name], *arguments], cwd=ROOT).returncode)

@@ -236,7 +236,7 @@ The RM-005 command consolidation uses PHP Actions for application/source-tool in
 
 Two pre-autoload service paths stay deliberately independent: the thin bin/dev setup bridge invokes the fixed Python dependency/bootstrap helper only while Composer's autoloader is absent; afterward it dispatches Artisan. Compose knowledge-init invokes the Python startup/knowledge initializer directly, without PHP/vendor or the application kernel. These internal initialization/recovery paths introduce no additional public domain-command registry.
 
-Before any checkout exists, the repository-root standalone bootstrap.py is the
+Before any checkout exists, the owner-distributed standalone distribution/bootstrap.py is the
 explicit pre-Artisan source-acquisition exception. It uses host Python/Git and
 verified GitHub release identities, optionally with private credentials, and
 atomically publishes a new checkout before handing off to existing containerized
@@ -244,7 +244,7 @@ commands. It never updates an installed customer tree. The source receipt is
 acquisition evidence, not application state or protected-source integrity;
 see [bootstrap](../tooling/bootstrap.md).
 
-The unified runa:install dev/prod host plan reuses resource-profile/dev setup and
+The internal dev/prod installation library, invoked by owner delivery, reuses resource-profile/dev setup and
 locked production deployment mechanics. Delivered customer source is the initial
 scaffold; first installation creates only missing empty extension directories and
 a private once-only marker, preserving manifests, presentation configuration and

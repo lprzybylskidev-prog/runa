@@ -12,7 +12,7 @@ This file documents the implemented command surface: development lifecycle/profi
 
 ## Runtime-independent Artisan transport
 
-Before a checkout exists, the standalone `python3 bootstrap.py` exception acquires
+Before a checkout exists, the separately supplied `distribution/bootstrap.py` exception acquires
 an exact GitHub release, with public access by default and optional private
 credentials. It supports interactive selection, explicit noninteractive inputs,
 atomic publication and install-now/postponement. See [bootstrap](bootstrap.md)
@@ -60,15 +60,15 @@ Management discovery runs the inspected immutable image ID with no network, moun
 | security                           | `runa:security dependencies/secrets/trivy/review-changed-surface`                                                        | Existing scanner/evidence mechanics; Trivy on host                    |
 | production/prod                    | `runa:production action [service]`                                                                                       | Fixed host Compose/image helper                                       |
 | deploy/backup                      | `runa:deploy target [--simulation]`, `runa:backup action [id] [--confirm-runa-prod-restore]`                             | Existing exact-source, lock, backup/recovery mechanics                |
-| install-prod                       | `runa:install dev/prod target [--settings-file=path] [--profile=standard] [--resume] [--non-interactive] [--simulation]` | Unified first installation; production remains an alias               |
+| install-prod                       | `runa:install dev/prod target [--settings-file=path] [--profile=standard] [--resume] [--non-interactive] [--simulation]` | Owner distribution only; absent from customer registration            |
 | host                               | `runa:host status [operation-id]` / `stop`                                                                               | Private executor lifecycle and durable disconnected-operation results |
-| project                            | `runa:project mark-production-deployed --evidence=path`                                                                  | Proven one-way Git/evidence transition                                |
-| git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                                            | Staged-index-safe hook transport and source scanner                   |
+| project                            | `runa:project mark-production-deployed --evidence=path`                                                                  | Owner maintenance only; absent from customer registration             |
+| git-hook/quality-check             | `runa:hook pre-commit/commit-msg`, `runa:check debug-residue`                                                            | Hook is owner maintenance only; source check remains available        |
 | seed                               | `runa:seed ...`                                                                                                          | Existing application command                                          |
 | logs                               | `runa:dev logs [service]`                                                                                                | Fixed host log action                                                 |
 | artisan/composer/pnpm/boost-mcp    | Existing transports                                                                                                      | Framework/tool/stdio entrypoints; no second domain registry           |
 
-Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/project`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/backup`, `./bin/install-prod`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `./bin/git-hook` retains only partial-index path transport and invokes runa:hook; versioned hooks keep that safe bridge. Removal is deferred until an accepted roadmap migrates external callers and any governance references. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
+Compatibility retained on 2026-10-20: `./bin/dev`, `./bin/doctor`, `./bin/quality`, `./bin/knowledge`, `./bin/security`, `./bin/xdebug`, `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test`, `./bin/deploy`, `./bin/backup`, `./bin/production`, `./bin/prod`, `./bin/logs`, `./bin/seed`, `./bin/quality-check`. They are thin aliases through `./bin/command` or passthrough; `./bin/check` and `./bin/operations` are internal shared names and show discovery help. `bin/project`, `bin/install-prod` and `bin/git-hook` are removed. Owner hook transport lives in `distribution/maintenance/bin/git-hook` and is excluded from customer source. Governance-required quality/doctor entrypoints stay available. See docs/maintenance/deprecations.yml.
 
 Internal Python process engines live under `tools/project/executors/` with no public bin registry. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/backup/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
@@ -232,7 +232,7 @@ Provide a concise operator view across relevant production/development services 
 
 `php artisan runa:project mark-production-deployed`
 
-Use only after the first real successful production deployment to update versioned state according to `docs/production/deployment.md`.
+Available only in the owner maintenance checkout, never customer dev/prod. Explicit `git config --local runa.maintenance true` and the canonical Runa fetch/push origin are required before the state helper can commit/push. Use only after the first real successful production deployment to update versioned state according to `docs/production/deployment.md`.
 
 ## Destructive commands
 
@@ -267,11 +267,10 @@ These forward arguments safely into the intended running application container. 
 
 `php artisan runa:doctor` without an area is the required quick whole-development-stack diagnostic. It checks repository/maintenance/docs/tooling and development runtime readiness. Area subcommands provide focused checks, not an optional substitute for the global entrypoint. Area names used by the gate definition are part of the command contract.
 
-`php artisan runa:install dev|prod <target>` is the unified first installer described
-in [installation](installation.md); run it from the host. It preserves the customer
-scaffold and generated credentials, supports explicit failure recovery and uses
-existing development/production mechanics. Production accepts private JSON settings
-for built-in or external HTTPS, SMTP verification and backups. Runtime command
+First installation is owner-controlled standalone delivery; see
+[installation](installation.md). No default customer `runa:install`, `runa:project`
+or `runa:hook` command is registered. Required internal installation/recovery
+primitives stay in the platform. Runtime command
 `runa:install:verify-mail <recipient>` submits the explicitly requested technical
 SMTP check without printing provider errors or secrets.
 
@@ -283,7 +282,7 @@ Gate-specific doctor areas include `repository`, `config`, `maintenance`, `hooks
 
 ## Versioned Git hooks and internal launchers
 
-`./bin/git-hook pre-commit|commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Setup configures `core.hooksPath .githooks`. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint/Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
+`./distribution/maintenance/bin/git-hook pre-commit|commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Owner maintenance setup explicitly configures `git config --local core.hooksPath .githooks`; customer development startup does not alter Git hook configuration. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint/Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
 
 If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `php artisan runa:knowledge index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
 
@@ -303,13 +302,13 @@ Lifecycle `up` starts existing images and waits for health; it is not an install
 
 ## Production operations and security
 
-- `php artisan runa:install prod <vX.Y.Z|full-SHA> [--settings-file=path] [--non-interactive] [--simulation] [--resume]`: first host install; private TLS/SMTP/backup settings, preserved secrets/scaffold and explicit recovery. `production` remains an alias; development uses the same command with mode dev and optional profile.
+- Owner distribution only: `php artisan runa:install prod <vX.Y.Z|full-SHA> [--settings-file=path] [--non-interactive] [--simulation] [--resume]`: first host install; private TLS/SMTP/backup settings, preserved secrets/scaffold and explicit recovery. `production` remains an alias; development uses the same command with mode dev and optional profile.
 - `php artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/backup/migrate/seed/recreate/health flow.
 - `php artisan runa:deploy rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
 - `php artisan runa:backup create|verify <backup-id>|restore <backup-id> [--confirm-runa-prod-restore]`: coordinated database/durable-file archives, actual isolated restore validation and deliberate destructive restore.
 - `php artisan runa:production self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
 - `php artisan runa:doctor production`: delegates to the same deep host self-test.
-- `php artisan runa:project mark-production-deployed --evidence <first-deploy.json>`: development-only one-way versioned-state recording after a real successful deployment; requires a clean active-roadmap branch and commits/pushes.
+- Owner maintenance only: `php artisan runa:project mark-production-deployed --evidence <first-deploy.json>`: development-only one-way versioned-state recording after a real successful deployment; requires a clean active-roadmap branch and commits/pushes.
 - `php artisan runa:security dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.
 
 Production env files must be private (mode 600). `.env.prod.backup` configures a private absolute backup directory and positive retention count. Simulation mode must match the deploy flag and uses separate Compose resources; it never records the irreversible production-ever-deployed transition. All production operations share an exclusive lock. Follow `docs/production/deployment.md` and `docs/production/backups.md` for prerequisites, failure recovery and local acceptance commands.

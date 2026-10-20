@@ -1,0 +1,51 @@
+"""Explicit installation/staging ownership; upstream is read-only release input."""
+import json
+import os
+from pathlib import Path
+import subprocess
+
+OWNER_PATHS = ('distribution', 'bootstrap.py', '.githooks', 'bin/project', 'bin/install-prod', 'bin/git-hook',
+               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php',
+               'tools/project/executors/project.py', 'tools/project/executors/install.py',
+               'src/runa/management/HookCommand.php', 'tools/project/executors/git_hook.py', 'tools/project/hooks.py')
+
+
+class RepositoryBoundaryError(ValueError):
+    """Fixed diagnostics for an unapproved acquisition/maintenance target."""
+
+
+def receipt(root):
+    root = Path(root)
+    if any(key.startswith('GIT_') and key != 'GIT_PAGER' for key in os.environ):
+        raise RepositoryBoundaryError('Inherited Git overrides are not an installation ownership context; use a clean operator environment.')
+    if root.resolve() != root or (root / '.git').is_symlink():
+        raise RepositoryBoundaryError('Installation repository must not traverse symlinks.')
+    path = root / '.git/runa-bootstrap.json'
+    if path.is_symlink() or not path.is_file():
+        raise RepositoryBoundaryError('Missing trusted installation acquisition receipt. Refusing the Runa maintenance/unknown checkout.')
+    data = json.loads(path.read_text())
+    if data.get('schema_version') != 1 or data.get('projection') != {'version': 1, 'excluded': list(OWNER_PATHS)}:
+        raise RepositoryBoundaryError('Unsupported installation source projection; request owner migration rather than repairing silently.')
+    if any((root / name).exists() or (root / name).is_symlink() for name in OWNER_PATHS):
+        raise RepositoryBoundaryError('Owner distribution source is materialized in a customer installation; inspect source projection.')
+    return data
+
+
+def assert_installation(root):
+    data = receipt(root)
+    # Never replace or repoint a preexisting customer remote/history.
+    origin = subprocess.run(['git', '-C', str(root), 'remote', 'get-url', '--all', 'origin'], capture_output=True, text=True, check=True).stdout.strip()
+    expected = 'https://github.com/' + data['repository'] + '.git'
+    if origin != expected:
+        raise RepositoryBoundaryError('Recorded read-only release upstream differs; preserve customer remotes and inspect ownership.')
+    push = subprocess.run(['git', '-C', str(root), 'remote', 'get-url', '--push', '--all', 'origin'], capture_output=True, text=True, check=True).stdout.strip()
+    if push != 'disabled://runa-read-only-upstream':
+        raise RepositoryBoundaryError('Release upstream is not fenced against accidental writes.')
+    return data
+
+
+def write_staging_receipt(root, data):
+    path = Path(root) / '.git/runa-bootstrap.json'
+    if path.is_symlink():
+        raise RepositoryBoundaryError('Staging acquisition receipt must not be a symlink.')
+    path.write_text(json.dumps(data, indent=2) + '\n')

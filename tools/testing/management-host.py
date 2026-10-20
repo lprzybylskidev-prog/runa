@@ -20,7 +20,7 @@ def output(command, **kwargs):
 def main():
     if len(sys.argv) != 1 or Path('/.dockerenv').exists():
         raise SystemExit('Run python3 tools/testing/management-host.py on the native Docker host.')
-    report_path = ROOT / '.runtime/ownership/RM-2026-005-point-2-host.json'
+    report_path = ROOT / '.runtime/ownership/RM-2026-005-management-host-latest.json'
     report_path.parent.mkdir(parents=True, exist_ok=True)
     checks = []
     report = {'result': 'RUNNING', 'checks': checks, 'scope': 'Transport recovery using real bin/dev and isolated PHP process fixtures; not full Laravel installation acceptance.'}
@@ -46,6 +46,7 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
         shutil.copytree(ROOT / 'src/runa/management', root / 'src/runa/management')
+        shutil.copytree(ROOT / 'distribution/maintenance', root / 'distribution/maintenance')
         shutil.copytree(ROOT / 'tools/project/executors', root / 'tools/project/executors')
         (root / '.devcontainer').mkdir()
         (root / '.devcontainer/compose.resources.yaml').write_text('{"services":{}}\n')

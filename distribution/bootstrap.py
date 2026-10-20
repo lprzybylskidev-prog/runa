@@ -29,6 +29,11 @@ TAG = r'v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)'
 SHA = r'[a-f0-9]{40}'
 MIN_FREE = 5 * 1024 ** 3
 MAX_SOURCE = 512 * 1024 ** 2
+# Fixed release projection, not server-provided exclusions or customer config.
+OWNER_PATHS = ('distribution', 'bootstrap.py', '.githooks', 'bin/project', 'bin/install-prod', 'bin/git-hook',
+               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php',
+               'tools/project/executors/project.py', 'tools/project/executors/install.py',
+               'src/runa/management/HookCommand.php', 'tools/project/executors/git_hook.py', 'tools/project/hooks.py')
 
 
 class BootstrapError(Exception):
@@ -120,12 +125,12 @@ def validate_token(token):
     return token
 
 
-def process(arguments, *, cwd=None, env=None, timeout=600):
+def process(arguments, *, cwd=None, env=None, timeout=600, input_data=None):
     try:
-        child = subprocess.Popen(arguments, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+        child = subprocess.Popen(arguments, cwd=cwd, env=env, stdin=subprocess.PIPE if input_data is not None else subprocess.DEVNULL,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, start_new_session=True)
         try:
-            output, _ = child.communicate(timeout=timeout)
+            output, _ = child.communicate(input=input_data.encode() if input_data is not None else None, timeout=timeout)
         except BaseException:
             # Include Git's HTTPS/index-pack children; interrupted downloads leave no workers.
             try:
@@ -173,11 +178,11 @@ def git_environment(home, token=''):
     return env
 
 
-def git(source, home, *arguments, token=''):
+def git(source, home, *arguments, token='', input_data=None):
     return process(['git', '-c', 'http.followRedirects=false', '-c', 'http.sslVerify=true',
                     '-c', 'credential.helper=', '-c', 'core.hooksPath=/dev/null', '-c', 'core.attributesFile=/dev/null',
                     '-c', 'fetch.fsckObjects=true', '-c', 'transfer.fsckObjects=true',
-                    '-C', str(source), *arguments], env=git_environment(home, token))
+                    '-C', str(source), *arguments], env=git_environment(home, token), input_data=input_data)
 
 
 def inspect_tree(source, home, commit):
@@ -279,16 +284,30 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
             raise BootstrapError('GitHub release/tag/repository changed during acquisition; no source published.')
         receipt = dict(schema_version=1, repository=client.repository, repository_id=repository_id,
                        tag=tag, **identity, source_sha256=digest, mode=mode, state='downloaded',
+                       projection={'version': 1, 'excluded': list(OWNER_PATHS)},
                        trust='GitHub HTTPS + annotated tag and Git object hashes; no independent signature')
+        patterns = ['/*', *['!/' + name + ('/' if name in ('distribution', '.githooks') else '') for name in OWNER_PATHS]]
+        git(source, home, 'sparse-checkout', 'init', '--no-cone')
+        git(source, home, 'sparse-checkout', 'set', '--no-cone', '--stdin', input_data='\n'.join(patterns) + '\n')
+        if any((source / name).exists() or (source / name).is_symlink() for name in OWNER_PATHS):
+            raise BootstrapError('Owner distribution sources remain in the projected installation.')
+        # Keep origin as a credential-free upstream read source. An impossible
+        # push URL prevents accidental publishing without repointing client history.
+        git(source, home, 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream')
         (source / '.git/runa-bootstrap.json').write_text(json.dumps(receipt, indent=2) + '\n')
         publish(source, destination)
     return receipt
 
 
 def install_command(destination, mode, commit):
-    if (destination / 'src/runa/management/InstallCommand.php').is_file() and (destination / 'bin/artisan').is_file():
-        return ['./bin/artisan', 'runa:install', mode, commit]
-    return ['./bin/dev', 'up'] if mode == 'dev' else ['./bin/install-prod', commit]
+    if (destination / 'tools/project/installation.py').is_file():
+        # Sole pre-Artisan distribution exception. The owner-delivered launcher
+        # invokes an internal library, not an installed public install command.
+        program = 'import sys; sys.path.insert(0,"tools/project"); from installation import main; raise SystemExit(main(sys.argv[1:]))'
+        return [sys.executable, '-c', program, mode, commit]
+    if mode == 'dev':
+        return ['./bin/dev', 'up']
+    raise BootstrapError('This older release has no supported internal production installer. Source is verified; request a current owner-supplied release.')
 
 
 def main(argv=None):
@@ -331,7 +350,7 @@ def main(argv=None):
     destination = destination_path(args.destination)
     receipt = acquire(client, args.tag, destination, args.mode, args.expected_commit, args.expected_digest)
     command = install_command(destination, args.mode, receipt['commit'])
-    if command[0] == './bin/artisan':
+    if '-c' in command:
         if args.settings_file:
             command += ['--settings-file=' + str(Path(args.settings_file).resolve())]
         if args.profile:

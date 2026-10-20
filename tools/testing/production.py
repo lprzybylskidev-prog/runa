@@ -13,8 +13,15 @@ sys.path.insert(0, str(ROOT / 'tools/project'))
 import production
 from checks import yaml
 
+import repository_boundary
+
 
 class ProductionContracts(unittest.TestCase):
+    def setUp(self):
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary.start()
+        self.addCleanup(boundary.stop)
+
     def test_runtime_topology_and_isolation(self):
         data = yaml(ROOT / 'compose.production.yaml')
         services = data['services']

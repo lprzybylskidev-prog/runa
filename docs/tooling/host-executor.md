@@ -70,7 +70,7 @@ private development credentials can request its allowlisted developer operations
 This is not isolation against malicious developer code running as that same user.
 Production application processes do not receive the transport or its credentials;
 only the separate authorized operator context can request production operations.
-Owner-only distribution/maintenance separation is a further point-8b boundary.
+Owner distribution/maintenance registration is excluded from customer images and source; their pinned command registry cannot authorize install/project/hook requests. The owner artifact uses a separate explicit named build context; normal builds exclude distribution source. See [bootstrap](bootstrap.md).
 
 ## Disconnection, cancellation and results
 

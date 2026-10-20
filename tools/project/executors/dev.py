@@ -183,7 +183,6 @@ def application_setup(args):
     if args == ['--if-needed'] and marker.exists() and marker.read_text().strip() == setup_fingerprint() and all((ROOT / p).exists() for p in required):
         subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
         subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
-        subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
         register_boost()
         print('Development setup is current; dependency installation and frontend build skipped.')
         return 0
@@ -200,7 +199,6 @@ def application_setup(args):
     subprocess.run(['pnpm', '--dir', 'src', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
     subprocess.run(['pnpm', '--dir', 'src', 'run', 'build'], cwd=ROOT, check=True)
     subprocess.run(['php', 'src/runa/resources/errors/build.php'], cwd=ROOT, check=True)
-    subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
     register_boost()
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text(setup_fingerprint() + '\n')

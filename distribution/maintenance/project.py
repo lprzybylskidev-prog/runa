@@ -3,12 +3,13 @@
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/project'))
 from runtime import run
 import checks
@@ -18,6 +19,17 @@ parser.add_argument('action', choices=['mark-production-deployed'])
 parser.add_argument('--evidence', required=True, help='Private first-deploy.json copied from the real production host')
 try:
     options = parser.parse_args()
+    if any(key.startswith('GIT_') and key != 'GIT_PAGER' for key in os.environ):
+        raise ValueError('Owner maintenance requires a clean Git environment, without inherited target/config overrides.')
+    if (ROOT / '.git/runa-bootstrap.json').exists():
+        raise ValueError('Customer installation cannot record or publish Runa maintenance state.')
+    context = subprocess.run(['git', 'config', '--local', '--get', 'runa.maintenance'], cwd=ROOT, capture_output=True, text=True)
+    if context.stdout.strip() != 'true':
+        raise ValueError('Explicit owner maintenance context required: git config --local runa.maintenance true')
+    expected = 'https://github.com/lprzybylskidev-prog/runa.git'
+    for arguments in (['remote', 'get-url', '--all', 'origin'], ['remote', 'get-url', '--push', '--all', 'origin']):
+        if run(['git', *arguments], capture_output=True, text=True).stdout.strip() != expected:
+            raise ValueError('Owner maintenance origin identity differs; no remote is rewritten.')
     checks.repository()
     active = list((ROOT / 'docs/roadmaps/active').glob('*.md'))
     if len(active) != 1:

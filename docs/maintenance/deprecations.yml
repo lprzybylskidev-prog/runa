@@ -4,5 +4,5 @@ items:
     deprecated: Independent bin domain-command implementations (thin compatibility aliases retained)
     replacement: Canonical php artisan runa commands; host transport ./bin/artisan
     introduced_at: 2026-10-20
-    removal_plan: Remove aliases only in an accepted roadmap after external callers and governance references migrate; preserve mandated quality and doctor transports meanwhile.
+    removal_plan: Remove aliases only in an accepted roadmap after external callers and governance references migrate; preserve mandated quality and doctor transports meanwhile. Owner project/install-prod/git-hook aliases were removed in point 8b and replaced by separately delivered distribution source.
     roadmap: RM-2026-005

@@ -47,6 +47,9 @@ def dispatch(args):
     if inside():
         raise ValueError('Run production Docker operations in a host terminal outside the devcontainer; no Docker socket is mounted here.')
     action, *services = args
+    if action in ('build', 'up', 'down', 'restart'):
+        from repository_boundary import assert_installation
+        assert_installation(ROOT)
     if action in ('self-test', 'verify-ai-isolation'):
         if services:
             raise ValueError('This operation takes no service arguments.')

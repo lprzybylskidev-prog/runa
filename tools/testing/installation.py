@@ -21,9 +21,14 @@ import production
 import management
 import host_executor
 
+import repository_boundary
+
 
 class InstallationContracts(unittest.TestCase):
     def setUp(self):
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary.start()
+        self.addCleanup(boundary.stop)
         executor = patch.object(host_executor, 'ensure')
         executor.start()
         self.addCleanup(executor.stop)
@@ -210,7 +215,7 @@ class InstallationContracts(unittest.TestCase):
         plan = {'operation': 'tooling.install', 'parameters': {'arguments': ['dev', self.sha, '--profile=low', '--resume']}}
         command = management.execution_command(plan)
         self.assertEqual(command[-4:], plan['parameters']['arguments'])
-        self.assertTrue(command[1].endswith('/executors/install.py'))
+        self.assertTrue(command[1].endswith('/maintenance/install.py'))
 
 
 if __name__ == '__main__':

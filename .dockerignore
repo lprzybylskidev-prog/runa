@@ -51,3 +51,7 @@ src/.runtime
 src/tests
 
 .pnpm-store/
+
+# Owner source is outside every normal image context. Only the maintainer target
+# receives a separate explicit named build context from the owner transport.
+distribution/

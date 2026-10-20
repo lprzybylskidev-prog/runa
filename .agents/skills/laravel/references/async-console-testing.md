@@ -20,7 +20,7 @@
 
 Runtime-independent host operations share the explicit management command registry with normal local/testing Artisan. Normal php artisan host commands execute through the authenticated private workspace executor; only explicit --plan is inert. Use `./bin/artisan --management list` for cold discovery and --recover-host/--operator for setup/recovery; application providers, dotenv, DB and keys are outside that bootstrap. Local development tooling runs PHP Actions/fixed local processes. Operational and optional development registries remain separate. Production runtime has no management commands, executor socket or credentials; only the separate operator environment receives transport access. Follow docs/tooling/host-executor.md and the current command reference, including operation receipts after self-restart/disconnection and no blind mutation retry.
 
-First-install host plans use runa:install dev/prod, existing dev/deploy mechanics,
+Owner-delivered first installation uses internal dev/prod installation and existing dev/deploy mechanics,
 private settings and explicit initial-install resume. Preserve the scaffold and
 generated secrets; repeat is not an update/reset. Native SMTP verification is an
 application command and must redact provider failures. Follow

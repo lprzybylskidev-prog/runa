@@ -15,8 +15,15 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/project'))
 import operations as ops
 
+import repository_boundary
+
 
 class OperationContracts(unittest.TestCase):
+    def setUp(self):
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary.start()
+        self.addCleanup(boundary.stop)
+
     def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self):
         events = []
         with patch.object(ops, 'http_maintenance', side_effect=lambda enabled, release: events.append(('marker', enabled))), patch.object(ops, 'dc', side_effect=lambda args, release: events.append(('compose', args))):
@@ -87,6 +94,7 @@ print('parent:' + sys.stdin.read())
             subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
             subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], check=True)
             sha = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+            repository_boundary.write_staging_receipt(root, {'schema_version': 1, 'repository': 'fixture/runa', 'projection': {'version': 1, 'excluded': list(repository_boundary.OWNER_PATHS)}})
             import runtime
             with patch.object(ops, 'ROOT', root), patch.object(runtime, 'ROOT', root), patch.object(ops, 'STATE', Path(folder) / 'state'):
                 release = ops.checkout(sha)
@@ -104,6 +112,11 @@ print('parent:' + sys.stdin.read())
                     self.assertFalse((release / 'src/runa' / excluded).exists())
                 self.assertTrue((release / 'bin/operations').is_file())
                 self.assertTrue((release / 'docker/php/Dockerfile').is_file())
+                self.assertEqual(ops.checkout(sha), release)
+                alias = Path(folder) / 'aliased-state'
+                alias.symlink_to(Path(folder) / 'state')
+                with patch.object(ops, 'STATE', alias), self.assertRaisesRegex(ValueError, 'symlinks'):
+                    ops.checkout(sha)
                 (release / 'VERSION').write_text('tampered')
                 with self.assertRaisesRegex(ValueError, 'modified'):
                     ops.checkout(sha)

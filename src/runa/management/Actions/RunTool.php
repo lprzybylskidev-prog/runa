@@ -53,6 +53,14 @@ final class RunTool
             $arguments = $filtered;
         }
 
+        if ($tool === 'hook') {
+            return $this->process(['python3', $root.'/distribution/maintenance/git_hook.py', ...$arguments], $cwd, $output);
+        }
+
+        if ($tool === 'project') {
+            return $this->process(['python3', $root.'/distribution/maintenance/project.py', ...$arguments], $cwd, $output);
+        }
+
         return $this->process(['python3', $root.'/tools/project/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);
     }
 

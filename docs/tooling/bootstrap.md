@@ -2,7 +2,7 @@
 
 The repository is currently public. The same bootstrap supports future private
 GitHub access; public acquisition does not need a token. It does not change
-repository visibility. Deliver the reviewed repository-root `bootstrap.py` as
+repository visibility. Deliver the reviewed `distribution/bootstrap.py` as
 the initial standalone file. Do not pipe an unreviewed network script into a shell.
 The bootstrap uses only Python's standard library; PHP, Composer, Node and pnpm
 remain containerized.
@@ -104,22 +104,34 @@ repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is clean and detached. This is acquisition evidence,
 not an installation-success marker or the later protected-source integrity system.
 
-`--install later` prints the exact command to run from the destination. `--install
-now` invokes the containerized command and propagates failure. Current source uses
-`./bin/artisan runa:install dev|prod <commit>`; older releases use `./bin/dev up`
-or `./bin/install-prod <commit>`. Optional `--profile=low|standard|high` and
-`--settings-file=/private/production.json` pass through to the unified installer;
-the private settings path is resolved on the host and shell-quoted in postponed
-instructions. Automation closes stdin and forwards `--non-interactive` to avoid
-hanging for missing inputs. See [installation](installation.md) for once-only
-scaffold, preservation/recovery, production HTTPS and SMTP settings. Older releases
-without unified installation reject the new passthrough options.
+The owner runs the separately delivered launcher personally or hands its reviewed
+single file to the customer. It is never installed into bin or customer source.
+After verifying the **complete** release, acquisition applies a fixed non-cone
+sparse projection before atomic publication. Both dev/prod and now/later exclude
+`distribution/`, maintainer hooks, install/project aliases and old owner entrypoints.
+The credential-free receipt records the full source digest and projection version
+plus exact exclusions. Git remains clean and detached at the verified commit;
+subsequent checkouts retain the sparse projection. Git objects/history may contain
+excluded sources: this is delivery layout, not confidentiality or purchase enforcement.
 
-After a failed install, keep the published source/settings and use its printed
-command plus installer diagnostics/recovery procedure. Do not rerun bootstrap over
-that directory. After failed acquisition, correct access/prerequisites and rerun
-the original credential-free selections with a new/absent destination; no token
-or response body is included in resume instructions.
+The upstream fetch URL stays canonical; its push URL is explicitly disabled.
+Installation/deployment refuses missing/inconsistent acquisition roles, restored
+owner source or changed remotes rather than modifying an unknown/maintenance/customer
+repository. Existing customer remotes/history are never automatically repointed.
+A distinct customer-source remote lifecycle is not implemented by this acquisition flow.
+The local receipt records ownership context; it is not a signature or a security
+boundary against an operator deliberately rewriting the installation.
+
+`--install later` prints a shell-quoted fixed Python invocation of the internal
+installation library from the destination. `--install now` invokes exactly that
+library and propagates failure. No installed standalone launcher or public
+`runa:install` command is required. Keep the separately supplied launcher outside
+the destination; the owner can hand over just that file without their checkout.
+Optional profile/settings/noninteractive options are forwarded. After a failed
+install preserve source/settings and rerun the printed command with `--resume`;
+do not reacquire into that directory. Ordinary lifecycle/backup/recovery uses
+`php artisan` and the restricted host executor. The future updater is not yet delivered.
+See [installation](installation.md) for settings, preservation and recovery.
 
 Offline acceptance: `python3 tools/testing/bootstrap.py`. The local quality graph
 includes `bootstrap-source-contracts`; tests use synthetic credentials and real

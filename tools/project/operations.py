@@ -24,7 +24,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/executors/install.py',
+          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/repository_boundary.py',
           '/bin/artisan', '/bin/command', '/tools/project/management.py', '/tools/project/executors/operations.py', '/tools/project/executors/production.py',
           '/src/runa/management/autoload.php',
           '/src/runa/management/bootstrap.php',
@@ -33,9 +33,9 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/runa/management/ProductionCommand.php',
           '/src/runa/management/DeployCommand.php',
           '/src/runa/management/BackupCommand.php',
-          '/src/runa/management/InstallCommand.php', '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
+          '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
           '/tools/testing/production-runtime.php', '/docs/project/state.yml',
-          '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
+          '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
           '/.env.prod.database.example', '/.env.prod.compose.example', '/.env.prod.backup.example']
 
@@ -204,18 +204,29 @@ def tree_hash(sha):
 
 
 def checkout(sha):
+    from repository_boundary import receipt, write_staging_receipt
+    data = receipt(ROOT)
+    if not re.fullmatch('[a-f0-9]{40}', sha):
+        raise ValueError('Staging requires an exact commit identity.')
     path = STATE / 'releases' / sha
+    if path.resolve() != path:
+        raise ValueError('Release staging must not traverse symlinks.')
+    staging = {'source_checkout': str(ROOT), 'commit': sha}
     if path.exists():
         actual = run(['git', '-C', str(path), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
         dirty = run(['git', '-C', str(path), 'status', '--porcelain', '--untracked-files=all'], capture_output=True, text=True).stdout
         if actual != sha or dirty:
             raise ValueError('Existing release checkout is modified; inspect it before retrying.')
+        if receipt(path).get('staging') != staging:
+            raise ValueError('Existing release staging ownership differs; no source is adopted or repaired.')
         return path
     path.parent.mkdir(parents=True, exist_ok=True)
     run(['git', 'clone', '--no-checkout', '--no-hardlinks', str(ROOT), str(path)])
     run(['git', '-C', str(path), 'sparse-checkout', 'init', '--no-cone'])
     run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
     run(['git', '-C', str(path), 'checkout', '--detach', sha])
+    write_staging_receipt(path, {**data, 'staging': staging})
+    run(['git', '-C', str(path), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
     return path
 
 
@@ -290,6 +301,9 @@ def isolation(release=None, sparse=False):
 
 
 def assert_sparse(path):
+    from repository_boundary import OWNER_PATHS
+    if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
+        raise ValueError('Owner distribution/maintenance tools are present in production source.')
     for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.php', 'src/runa/management/KnowledgeCommand.php', 'tools/project/executors/knowledge.py', '.env', '.env.dev.local'):
         if (path / forbidden).exists():
             raise ValueError('Development material in production checkout: ' + forbidden)
@@ -311,6 +325,8 @@ def build_images(release=None):
 
 
 def deploy(target, simulation, initial_resume=False, verification=None):
+    from repository_boundary import assert_installation
+    assert_installation(ROOT)
     sha = resolve(target)
     previous = read_state()['current']
     mode = read_env(ROOT / '.env.prod.compose').get('RUNA_PRODUCTION_MODE', 'real')
@@ -549,20 +565,13 @@ def restore(name, confirmed):
     print('PASS: database/storage restored and application healthy.')
 
 
-def install(target, simulation):
-    # Compatibility for internal callers; Artisan uses the unified installer transport.
-    from installation import install as install_application
-    return install_application('prod', target, simulation=simulation)
-
-
 def main(name, args):
+    if name not in ('deploy', 'backup'):
+        raise ValueError('Unsupported internal operation family.')
     parser = argparse.ArgumentParser(prog='./bin/' + name)
     if name == 'deploy':
         parser.add_argument('target', help='Exact vX.Y.Z/full SHA, or rollback')
         parser.add_argument('--simulation', action='store_true', help='Local production simulation; never sets real-deploy marker')
-    elif name == 'install-prod':
-        parser.add_argument('target', help='Exact vX.Y.Z/full SHA')
-        parser.add_argument('--simulation', action='store_true')
     else:
         parser.add_argument('action', choices=['create', 'verify', 'restore'])
         parser.add_argument('backup_id', nargs='?')
@@ -570,6 +579,8 @@ def main(name, args):
     options = parser.parse_args(args)
     if inside():
         raise ValueError('Run production operations in a host terminal outside the devcontainer.')
+    from repository_boundary import assert_installation
+    assert_installation(ROOT)
     with lock():
         if name == 'deploy':
             if options.target == 'rollback':
@@ -578,8 +589,6 @@ def main(name, args):
                 if (STATE / 'in-progress.json').exists():
                     raise ValueError('Unresolved failed deployment/restore; inspect in-progress.json before retrying.')
                 deploy(options.target, options.simulation)
-        elif name == 'install-prod':
-            install(options.target, options.simulation)
         elif options.action == 'create':
             if options.backup_id:
                 raise ValueError('Create does not accept a backup ID.')

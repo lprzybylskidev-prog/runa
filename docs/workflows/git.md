@@ -15,6 +15,19 @@ Project Git identity:
 - name: `Łukasz Przybylski`
 - email: `lprzybylskidev@gmail.com`
 
+## Source ownership
+
+Runa maintenance commits/releases/state automation belongs only to the owner checkout.
+Owner-only entrypoints live under distribution/maintenance, outside customer source.
+Explicitly configure maintenance hooks with `git config --local core.hooksPath .githooks`.
+The production-state publishing helper additionally requires `git config --local
+runa.maintenance true` and the canonical Runa origin for both fetch and push.
+Customer installation mode never authorizes Runa Git writes. Customer deployment
+evidence stays local; backup/restore covers that installation's database/storage.
+Verified acquisition records a fixed sparse projection and disables upstream pushes;
+unknown targets or altered customer remotes are refused without repair/repointing.
+See [bootstrap](../tooling/bootstrap.md) for the receipt and delivery boundary.
+
 ## Branching
 
 Application implementation occurs on roadmap branches:
@@ -40,6 +53,7 @@ Roadmap-related commits include the roadmap ID in the scope:
 The agent decides logical commit boundaries.
 
 Avoid:
+
 - giant unrelated commits,
 - one-line-one-commit mechanical history,
 - squash-by-default workflows that erase useful roadmap history.
@@ -61,6 +75,7 @@ Rebase only as a conscious repository-maintenance decision, not an automatic hab
 `main` must remain healthy and deployable.
 
 After roadmap merge:
+
 - run a short sanity check on `main`,
 - do not leave known branch-only assumptions,
 - delete the roadmap branch after release finalization.
@@ -78,6 +93,7 @@ Do not use Husky.
 ### pre-commit
 
 Fast/preventive checks only:
+
 - Gitleaks on staged content,
 - formatting changed files,
 - quick lint changed files,
@@ -92,12 +108,14 @@ Do not run the entire test/static/security suite on every commit.
 ### commit-msg
 
 Validate:
+
 - Conventional Commit structure,
 - required roadmap ID scope when a roadmap is active.
 
 ## Unsafe Git behavior
 
 Do not:
+
 - force-push `main`,
 - rewrite closed roadmap history,
 - blindly rebase a paused branch,

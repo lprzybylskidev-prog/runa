@@ -27,6 +27,9 @@ def image_identity():
     if not (ROOT / 'src/runa/management').is_dir() or (ROOT / 'src/runa/management').is_symlink():
         raise ValueError('Management build inputs must not traverse symlinks.')
     paths += sorted(path for path in (ROOT / 'src/runa/management').rglob('*') if not path.is_dir() or path.is_symlink())
+    owner = ROOT / 'distribution/maintenance'
+    if owner.is_dir() and not (ROOT / '.git/runa-bootstrap.json').is_file():
+        paths += sorted(path for path in owner.rglob('*') if (not path.is_dir() or path.is_symlink()) and '__pycache__' not in path.parts)
     for path in paths:
         if path.is_symlink() or not path.is_file():
             raise ValueError('Missing regular management build input.')
@@ -41,8 +44,9 @@ def ensure_image():
     result = subprocess.run(inspect, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT)
     if result.returncode:
         print('Building the isolated management image (no app services are started).', file=sys.stderr)
-        target = 'development-management' if (ROOT / 'src/runa/management/development.php').is_file() else 'management'
-        subprocess.run(['docker', 'build', '--target', target, '--file', 'docker/php/Dockerfile',
+        target = 'maintainer-management' if (ROOT / 'distribution/maintenance/commands.php').is_file() and not (ROOT / '.git/runa-bootstrap.json').is_file() else ('development-management' if (ROOT / 'src/runa/management/development.php').is_file() else 'management')
+        context = ['--build-context', 'runa-maintenance=' + str(ROOT / 'distribution/maintenance')] if target == 'maintainer-management' else []
+        subprocess.run(['docker', 'build', *context, '--target', target, '--file', 'docker/php/Dockerfile',
                         '--label', 'runa.management.inputs=' + identity, '--tag', tag, '.'], cwd=ROOT, check=True,
                        stdout=sys.stderr, stderr=sys.stderr)
         result = subprocess.run(inspect, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=True)
@@ -161,15 +165,17 @@ def execution_command(plan):
     tool = OPERATIONS[operation]
     if tool == 'host':
         return ['python3', str(ROOT / 'tools/project/host_executor.py'), '--control', *arguments]
-    if tool in ('production', 'quality', 'security', 'project'):
+    if tool == 'project':
+        return ['python3', str(ROOT / 'distribution/maintenance/project.py'), *arguments]
+    if tool in ('production', 'quality', 'security'):
         return ['python3', str(ROOT / ('tools/project/executors/' + tool + '.py')), *arguments]
     if tool == 'install':
-        return ['python3', str(ROOT / 'tools/project/executors/install.py'), *arguments]
+        return ['python3', str(ROOT / 'distribution/maintenance/install.py'), *arguments]
     if tool in ('deploy', 'backup'):
         return ['python3', str(ROOT / 'tools/project/executors/operations.py'),
                 tool, *arguments]
     if tool == 'hook':
-        return [str(ROOT / 'bin/git-hook'), *arguments]
+        return [str(ROOT / 'distribution/maintenance/bin/git-hook'), *arguments]
     if tool == 'check':
         return ['python3', str(ROOT / 'tools/project/executors/quality_check.py'), *arguments]
     if tool == 'doctor':

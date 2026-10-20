@@ -261,6 +261,11 @@ impact_areas:
       command: python3 tools/testing/bootstrap.py
       severity: hard_fail
 
+    - id: repository-boundary-contracts
+      depends_on: [repository-state]
+      command: python3 tools/testing/repository-boundary.py
+      severity: hard_fail
+
     - id: management-transport-contracts
       depends_on: [repository-state]
       command: python3 tools/testing/management.py

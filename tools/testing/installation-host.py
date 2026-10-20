@@ -18,6 +18,8 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 REPORTS = ROOT / '.runtime/ownership'
+sys.path.insert(0, str(ROOT / 'tools/project'))
+from repository_boundary import OWNER_PATHS, write_staging_receipt
 
 
 def call(arguments, cwd=ROOT, env=None, capture=False, check=True):
@@ -63,6 +65,23 @@ def commit(root):
     return output(['git', '-C', str(root), 'rev-parse', 'HEAD'])
 
 
+def project_customer(root, sha):
+    patterns = '/*\n' + ''.join('!/' + name + ('/' if name in ('distribution', '.githooks') else '') + '\n' for name in OWNER_PATHS)
+    call(['git', '-C', str(root), 'sparse-checkout', 'init', '--no-cone'])
+    subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
+    call(['git', '-C', str(root), 'remote', 'set-url', 'origin', 'https://github.com/fixture/runa.git'])
+    call(['git', '-C', str(root), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
+    write_staging_receipt(root, {'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
+                               'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
+    assert all(not (root / name).exists() for name in OWNER_PATHS)
+    assert not output(['git', '-C', str(root), 'status', '--porcelain'])
+
+
+def installer(root, mode, sha):
+    # Owner delivery invokes a fixed internal library, never an installed launcher.
+    return [sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/project"); from installation import main; raise SystemExit(main(sys.argv[1:]))', mode, sha]
+
+
 def remove_project(project, report):
     def ids(kind):
         return output(['docker', kind, 'ls', '-q', '--filter', 'label=com.docker.compose.project=' + project]).splitlines()
@@ -84,13 +103,14 @@ def main():
     REPORTS.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex[:10]
     report = {'result': 'RUNNING', 'checks': [], 'preserved': ['active development/test services and data', 'rollback resources', 'Qdrant/model/shared dependency/build caches', 'backups', 'verification reports']}
-    report_path = REPORTS / 'RM-2026-005-point-8-host.json'
+    report_path = REPORTS / 'RM-2026-005-point-8b-install-host.json'
     def check(condition, text):
         if not condition:
             raise RuntimeError(text)
         report['checks'].append(text)
         print('PASS: ' + text, flush=True)
     active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev']).splitlines()
+    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project"}}', item]) == 'runa-dev']
     before = {item: output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) for item in active}
     dev_project = 'runa-dev-install-' + token
     prod_project = 'runa-prod-simulation-' + token
@@ -117,11 +137,12 @@ def main():
         data['services']['mailpit']['ports'] = ['127.0.0.1:' + str(mail_port) + ':8025']
         (dev / 'compose.yaml').write_text(json.dumps(data, indent=2) + '\n')
         dev_sha = commit(dev)
+        project_customer(dev, dev_sha)
         env = dict(os.environ, COMPOSE_PROJECT_NAME=dev_project)
         # Avoid GPU/model resources even on a CUDA-capable acceptance host.
         (dev / '.env.dev.local').write_text('EMBEDDINGS_DEVICE=cpu\n')
         (dev / '.env.dev.local').chmod(0o600)
-        command = [str(dev / 'bin/artisan'), 'runa:install', 'dev', dev_sha, '--profile=low', '--non-interactive']
+        command = installer(dev, 'dev', dev_sha) + ['--profile=low', '--non-interactive']
         check(not (dev / 'src/vendor').exists() and not (dev / '.env').exists(), 'development starts with no vendor, application key or database settings')
         call(command, cwd=dev, env=env)
         with urllib.request.urlopen('http://127.0.0.1:' + str(web_port) + '/api/ready', timeout=10) as response:
@@ -161,6 +182,7 @@ def main():
             data['services'][service]['volumes'].append({'type': 'bind', 'source': str(certificates / 'certificate.pem'), 'target': '/run/fixture-ca.pem', 'read_only': True})
         (prod / 'compose.production.yaml').write_text(json.dumps(data, indent=2) + '\n')
         sha = commit(prod)
+        project_customer(prod, sha)
         https_port, http_port = port(), port()
         settings = {'app_url': 'https://localhost:' + str(https_port), 'http_port': http_port, 'simulation_project': prod_project,
                     'tls': {'mode': 'builtin', 'certificate': str(certificates / 'certificate.pem'), 'private_key': str(certificates / 'private-key.pem'), 'ca_file': str(certificates / 'certificate.pem'), 'https_port': https_port, 'bind': '127.0.0.1'},
@@ -169,7 +191,7 @@ def main():
         settings_file = fixture_directory / 'settings.json'
         settings_file.write_text(json.dumps(settings))
         settings_file.chmod(0o600)
-        command = [str(prod / 'bin/artisan'), 'runa:install', 'prod', sha, '--simulation', '--settings-file=' + str(settings_file), '--non-interactive']
+        command = installer(prod, 'prod', sha) + ['--simulation', '--settings-file=' + str(settings_file), '--non-interactive']
         failed = call(command, cwd=prod, check=False)
         check(failed.returncode != 0 and (prod / '.runtime/production/in-progress.json').exists(), 'SMTP rejection fails initial installation and retains recovery state after real migrations/startup')
         check((mail_reports / 'rejected.eml').is_file(), 'failed installation actually reached SMTP DATA and was rejected by the synthetic provider')
@@ -192,6 +214,11 @@ def main():
         report['result'] = 'FAIL'
         raise
     finally:
+        for mode in ('dev', 'prod'):
+            source = fixture_directory / mode
+            if (source / '.runtime/host/client.json').exists():
+                print('Scoped fixture executor shutdown: ' + str(source), flush=True)
+                call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/project"); from host_executor import stop; stop()'], cwd=source, check=False)
         remove_project(dev_project, report)
         remove_project(prod_project, report)
         if output(['docker', 'ps', '-a', '-q', '--filter', 'name=^/' + smtp + '$']):

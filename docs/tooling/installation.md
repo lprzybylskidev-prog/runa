@@ -6,13 +6,16 @@ Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ with
 daemon access are required. The target is an exact annotated release tag or full
 lowercase commit SHA matching the checked-out source; branches are rejected.
 
-```sh
-./bin/artisan runa:install dev <full-SHA> --profile=standard --non-interactive
-./bin/artisan runa:install prod <full-SHA> --settings-file=/private/production.json --non-interactive
-```
+Installation is initiated by the separately supplied `distribution/bootstrap.py`
+(single-file delivery; use its delivered filename), with `--mode dev|prod` and
+`--install now|later`. It verifies and projects source before handing off to a fixed
+internal library. The postponed command is printed with the exact acquired commit.
+Keep it for an explicit `--resume` after failure. Neither `runa:install` nor
+`bin/install-prod` is installed as a customer entrypoint. Owner maintenance source
+retains `runa:install` registration solely for its separately delivered orchestration;
+its execution still requires an explicitly acquired installation target.
 
-`production` remains a compatibility spelling of `prod`; `./bin/install-prod`
-forwards to the same registry/installer. `--profile=low|standard|high` is dev-only;
+`--profile=low|standard|high` is dev-only;
 omitting it preserves the existing/default resource selection. `--simulation` is
 prod-only and never creates real first-deploy evidence. Without
 `--non-interactive`, a terminal production installation can collect required
