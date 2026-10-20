@@ -20,7 +20,7 @@ OPERATIONS = {'development.status': 'status', 'development.up': 'up'}
 
 def image_identity():
     digest = hashlib.sha256()
-    paths = [ROOT / name for name in ('composer.json', 'composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
+    paths = [ROOT / name for name in ('artisan', 'composer.json', 'composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
     if not (ROOT / 'management').is_dir() or (ROOT / 'management').is_symlink():
         raise ValueError('Management build inputs must not traverse symlinks.')
     paths += sorted(path for path in (ROOT / 'management').rglob('*') if not path.is_dir() or path.is_symlink())
@@ -143,7 +143,7 @@ def launch(args):
     name = 'runa-management-' + request
     command = ['docker', 'run', '--rm', '--name', name, '--network', 'none', '--read-only',
                '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--pids-limit', '128',
-               '--memory', '128m', '--cpus', '1', '--tmpfs', '/tmp:rw,nosuid,nodev,noexec,size=16m', image, *args]
+               '--memory', '128m', '--cpus', '1', '--tmpfs', '/tmp:rw,nosuid,nodev,noexec,size=16m', image, '--management', *args]
     if planning:
         command += ['--host-request=' + request]
     try:

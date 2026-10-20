@@ -24,7 +24,7 @@ Currently delivered management operations:
 
 `status` delegates to the existing `bin/dev status`. `up` delegates to `bin/dev up`, including its application-first readiness and independent optional AI startup/recovery. It does not reset data or clear failed production-operation evidence. Only these two development actions are implemented in the new registry at RM-005 point 2; keep using the documented existing wrappers for other operations until point 6 migrates them.
 
-Normal local/testing Artisan and cold management share `management/commands.php` and the same command class. `php artisan runa:dev ...` and `./bin/artisan runa:dev ...` inside the devcontainer only emit a plan: Docker lifecycle execution belongs to the native host. The normal production application does not register management commands, and production runtime images omit management source entirely. This interim Runa-owned root moves under `src/runa/` during the ownership relocation.
+The single PHP entrypoint is `php artisan ...`. It selects registered management commands before application initialization; ordinary commands keep the full Laravel bootstrap. `management/bootstrap.php` is an internal bootstrap, not a separately invoked Artisan script. Normal local/testing Artisan and cold management share `management/commands.php` and the same command class. `php artisan runa:dev ...` and `./bin/artisan runa:dev ...` inside the devcontainer only emit a plan: Docker lifecycle execution belongs to the native host. The normal production application does not register management commands, and production runtime images omit management source entirely. This interim Runa-owned root moves under `src/runa/` during the ownership relocation.
 
 ### Host-plan v1 execution boundary
 

@@ -19,7 +19,7 @@ try:
         if args[0] == '--management':
             args = args[1:]
         if inside():
-            run(['php', 'management/artisan.php', *args])
+            run(['php', 'artisan', '--management', *args])
         else:
             raise SystemExit(management.launch(args))
     else:

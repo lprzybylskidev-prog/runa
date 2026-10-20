@@ -26,3 +26,16 @@ it('keeps the management command out of the production application registry', fu
 
     expect($process->getOutput())->not->toContain('runa:dev');
 });
+
+it('selects the cold bootstrap through the single PHP entrypoint before application initialization', function (): void {
+    $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:dev', 'status', '--plan'], base_path(), [
+        'APP_ENV' => 'production',
+        'APP_KEY' => '',
+        'DB_CONNECTION' => 'unavailable',
+        'APP_CONFIG_CACHE' => '/missing/config.php',
+    ]);
+    $process->mustRun();
+
+    expect(json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR)['operation'])->toBe('development.status');
+    expect(is_file(base_path('management/artisan.php')))->toBeFalse();
+});

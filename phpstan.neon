@@ -3,6 +3,7 @@ includes:
 parameters:
     level: max
     paths:
+        - artisan
         - app
         - management
         - bootstrap/app.php

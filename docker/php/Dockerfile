@@ -107,10 +107,11 @@ COPY --chown=runa:runa VERSION ./
 FROM production-runtime AS management
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /opt/runa/vendor/
 COPY --chown=runa:runa management/ /opt/runa/management/
+COPY --chown=runa:runa artisan /opt/runa/artisan
 WORKDIR /opt/runa
 HEALTHCHECK NONE
-ENTRYPOINT ["php", "/opt/runa/management/artisan.php"]
-CMD ["list"]
+ENTRYPOINT ["php", "/opt/runa/artisan"]
+CMD ["--management", "list"]
 
 FROM node AS frontend-build
 WORKDIR /build
