@@ -422,6 +422,8 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
                 run(['git', 'sparse-checkout', 'init', '--no-cone'])
                 run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(ops.SPARSE) + '\n', text=True)
                 ops.assert_sparse(ROOT)
+                from integrity import seal
+                seal(ROOT, 'production')
             if settings['tls']['mode'] == 'builtin':
                 provision_tls(settings)
             provision(settings, sha, simulation)

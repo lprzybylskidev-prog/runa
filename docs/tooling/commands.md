@@ -234,6 +234,14 @@ Provide a concise operator view across relevant production/development services 
 
 Available only in the owner maintenance checkout, never customer dev/prod. Explicit `git config --local runa.maintenance true` and the canonical Runa fetch/push origin are required before the state helper can commit/push. Use only after the first real successful production deployment to update versioned state according to `docs/production/deployment.md`.
 
+## Integrity
+
+`php artisan runa:integrity [--json]` compares installed source with the exact trusted
+release inventory. It reports protected-source failures separately from infrastructure
+and composed dependency drift, preserves customer src/app and never repairs files.
+Missing/stale/tampered evidence blocks rather than creating a baseline from live
+files. No custom exclusions or baseline acceptance options. See [integrity](integrity.md).
+
 ## Destructive commands
 
 Any destructive reset/prune/restore command must:

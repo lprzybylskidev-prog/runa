@@ -71,8 +71,11 @@ def project_customer(root, sha):
     subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
     call(['git', '-C', str(root), 'remote', 'set-url', 'origin', 'https://github.com/fixture/runa.git'])
     call(['git', '-C', str(root), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
-    write_staging_receipt(root, {'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
+    from integrity import release_inventory, seal
+    _, digest = release_inventory(root, sha)
+    write_staging_receipt(root, {'mode': 'prod' if root.name == 'prod' else 'dev', 'source_sha256': digest, 'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
                                'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
+    seal(root)
     assert all(not (root / name).exists() for name in OWNER_PATHS)
     assert not output(['git', '-C', str(root), 'status', '--porcelain'])
 
@@ -103,7 +106,7 @@ def main():
     REPORTS.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex[:10]
     report = {'result': 'RUNNING', 'checks': [], 'preserved': ['active development/test services and data', 'rollback resources', 'Qdrant/model/shared dependency/build caches', 'backups', 'verification reports']}
-    report_path = REPORTS / 'RM-2026-005-point-8b-install-host.json'
+    report_path = REPORTS / 'RM-2026-005-point-9-install-host.json'
     def check(condition, text):
         if not condition:
             raise RuntimeError(text)
@@ -147,6 +150,8 @@ def main():
         call(command, cwd=dev, env=env)
         with urllib.request.urlopen('http://127.0.0.1:' + str(web_port) + '/api/ready', timeout=10) as response:
             check(json.load(response)['status'] == 'ok', 'fresh development installation serves real Laravel readiness')
+        result = json.loads(output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:integrity', '--json']))
+        check(result['ok'], 'normal development php artisan integrity verifies trusted source and generated outputs without application bootstrap')
         secrets = {name: (dev / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
         customer = dev / 'src/app/customer-sentinel.txt'
         customer.write_text('preserve customer source\n')
@@ -207,6 +212,11 @@ def main():
         check(not (prod / '.runtime/production/in-progress.json').exists() and not (prod / '.runtime/production/first-deploy.json').exists(), 'successful simulation clears its pending marker without writing real production evidence')
         call(command, cwd=prod)
         check(all((prod / name).read_bytes() == value for name, value in secrets.items()), 'completed production install is repeatable without secret rotation or redeployment')
+        result = json.loads(output([sys.executable, str(prod / 'tools/project/integrity.py'), '--json'], cwd=prod))
+        check(result['ok'], 'production simulation operator source integrity remains valid after resume and repeated installation')
+        release = Path(deployment['current']['path'])
+        result = json.loads(output([sys.executable, str(release / 'tools/project/integrity.py'), '--json'], cwd=release))
+        check(result['ok'] and result['profile'] == 'production', 'immutable sparse production release has a trusted projected ownership baseline')
         report['dev_sha'], report['prod_sha'] = dev_sha, sha
         report['images'] = deployment['current']['images']
         report['result'] = 'PASS'

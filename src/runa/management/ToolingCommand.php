@@ -50,7 +50,7 @@ abstract class ToolingCommand extends Command
                 $operation = 'development.'.$arguments[0];
                 $parameters = count($arguments) === 1 ? new \stdClass : ['arguments' => array_slice($arguments, 1)];
             }
-            $host = in_array($this->tool, ['production', 'deploy', 'backup', 'install', 'host'], true)
+            $host = in_array($this->tool, ['production', 'deploy', 'backup', 'install', 'host', 'integrity'], true)
                 || ($this->tool === 'quality' && in_array($arguments[0], ['roadmap', 'final'], true))
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')

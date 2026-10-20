@@ -262,3 +262,14 @@ operator context receives its transport mount; production HTTP/workers/scheduler
 never receive it. Host-only bin/artisan is setup/recovery. See
 [host executor](../tooling/host-executor.md) for lifecycle/trust and durable results
 when a command restarts its own invoking container.
+
+Installed source integrity uses the acquisition-time .git/runa-ownership.json release
+inventory, independently rechecked against exact Git objects and the recorded full
+source SHA256 on each report. Fixed source/production profiles separate materialized
+source from full release identity. Customer scaffold is excluded, infrastructure and
+composed manifests/locks are reported separately, and generated exceptions are
+narrow. No checker option accepts arbitrary exclusions or blesses live file bytes.
+Normal php artisan runa:integrity executes through the cold operational registry
+and restricted executor without application/bootstrap/DB dependencies or repair.
+See [integrity](../tooling/integrity.md) for the trust model and report contract;
+update preflight/consent/recovery remain subsequent roadmap work.

@@ -48,7 +48,8 @@
         "tooling.deploy",
         "tooling.backup",
         "tooling.install",
-        "tooling.host"
+        "tooling.host",
+        "tooling.integrity"
       ]
     },
     "parameters": {

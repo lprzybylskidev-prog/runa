@@ -208,7 +208,7 @@ def inspect_tree(source, home, commit):
     return entries
 
 
-def verify_files(source, entries):
+def verify_files(source, entries, inventory=None):
     digest = hashlib.sha256()
     names = {path for path, _, _, _ in entries}
     for path, mode, oid, size in entries:
@@ -237,7 +237,10 @@ def verify_files(source, entries):
             content = file.read_bytes()
         if hashlib.sha1(b'blob ' + str(len(content)).encode() + b'\0' + content).hexdigest() != oid:
             raise BootstrapError('Release file hash differs from its verified Git object.')
-        digest.update(json.dumps([path, mode, hashlib.sha256(content).hexdigest()], separators=(',', ':')).encode() + b'\n')
+        value = hashlib.sha256(content).hexdigest()
+        if inventory is not None:
+            inventory.append({'path': path, 'mode': mode, 'sha256': value})
+        digest.update(json.dumps([path, mode, value], separators=(',', ':')).encode() + b'\n')
     return digest.hexdigest()
 
 
@@ -275,7 +278,8 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
         git(source, home, 'fsck', '--strict', '--no-reflogs')
         entries = inspect_tree(source, home, actual_commit)
         git(source, home, 'checkout', '--quiet', '--detach', actual_commit)
-        digest = verify_files(source, entries)
+        inventory = []
+        digest = verify_files(source, entries, inventory)
         if expected_digest and digest != expected_digest:
             raise BootstrapError('Release differs from the independently supplied source digest.')
         if (source / 'VERSION').read_text().strip() != tag[1:]:
@@ -283,7 +287,7 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
         if client.resolve(tag) != identity or client.verify_repository() != repository_id:
             raise BootstrapError('GitHub release/tag/repository changed during acquisition; no source published.')
         receipt = dict(schema_version=1, repository=client.repository, repository_id=repository_id,
-                       tag=tag, **identity, source_sha256=digest, mode=mode, state='downloaded',
+                       tag=tag, **identity, source_sha256=digest, mode=mode, state='downloaded', installed_profile='source',
                        projection={'version': 1, 'excluded': list(OWNER_PATHS)},
                        trust='GitHub HTTPS + annotated tag and Git object hashes; no independent signature')
         patterns = ['/*', *['!/' + name + ('/' if name in ('distribution', '.githooks') else '') for name in OWNER_PATHS]]
@@ -295,6 +299,9 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
         # push URL prevents accidental publishing without repointing client history.
         git(source, home, 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream')
         (source / '.git/runa-bootstrap.json').write_text(json.dumps(receipt, indent=2) + '\n')
+        baseline = {'schema_version': 1, 'policy_version': 1, 'commit': actual_commit, 'source_sha256': digest,
+                    'projection': receipt['projection'], 'profile': 'source', 'files': inventory}
+        (source / '.git/runa-ownership.json').write_text(json.dumps(baseline, separators=(',', ':')) + '\n')
         publish(source, destination)
     return receipt
 

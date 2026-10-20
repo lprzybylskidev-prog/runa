@@ -127,8 +127,10 @@ Private `.runtime/production/install-dev.json` / `install-prod.json` records sou
 mode, simulation, selected profile and started/failed/complete state. Production
 settings are separately private in `install-settings.json`; never attach these
 files to a public issue. `scaffold-<mode>.json` records initial scaffold creation.
-These are first-install records, not the full update/integrity journal delivered
-by later roadmap points.
+These are first-install records; the full update journal remains later roadmap work.
+[Integrity](integrity.md) uses the separately recorded trusted ownership inventory.
+Real production projection and immutable staging record their exact ownership
+profile/digest without accepting live source bytes.
 
 After failure, keep source, settings, volumes and deployment markers. Correct the
 reported prerequisite/provider failure and rerun the same command with `--resume`.

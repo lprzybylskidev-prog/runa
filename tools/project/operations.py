@@ -24,7 +24,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/repository_boundary.py',
+          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py', '/tools/project/installation.py', '/tools/project/repository_boundary.py', '/tools/project/integrity.py',
           '/bin/artisan', '/bin/command', '/tools/project/management.py', '/tools/project/executors/operations.py', '/tools/project/executors/production.py',
           '/src/runa/management/autoload.php',
           '/src/runa/management/bootstrap.php',
@@ -33,7 +33,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/runa/management/ProductionCommand.php',
           '/src/runa/management/DeployCommand.php',
           '/src/runa/management/BackupCommand.php',
-          '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
+          '/src/runa/management/IntegrityCommand.php', '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
           '/tools/testing/production-runtime.php', '/docs/project/state.yml',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
@@ -225,7 +225,10 @@ def checkout(sha):
     run(['git', '-C', str(path), 'sparse-checkout', 'init', '--no-cone'])
     run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
     run(['git', '-C', str(path), 'checkout', '--detach', sha])
-    write_staging_receipt(path, {**data, 'staging': staging})
+    from integrity import release_inventory, seal
+    _, digest = release_inventory(path, sha)
+    write_staging_receipt(path, {**data, 'staging': staging, 'commit': sha, 'source_sha256': digest, 'mode': 'prod'})
+    seal(path, 'production')
     run(['git', '-C', str(path), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
     return path
 
