@@ -179,7 +179,7 @@ def application_setup(args):
     subprocess.run(['python3', 'tools/project/install-scanners.py'], cwd=ROOT, check=True)
     env = ROOT / '.env'
     marker = ROOT / '.runtime/dev/setup.sha256'
-    required = ['vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html', 'public/runa-error/styles.css', 'public/runa-error/pages/503-pl.html']
+    required = ['vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html', 'public/runa-error/styles.css', 'public/runa-error/pages/503-pl-system.html']
     if args == ['--if-needed'] and marker.exists() and marker.read_text().strip() == setup_fingerprint() and all((ROOT / p).exists() for p in required):
         subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
         subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)

@@ -98,6 +98,50 @@ class StartupContracts(unittest.TestCase):
                     dev.main()
             self.assertFalse((root / '.runtime/dev/setup.sha256').exists())
 
+    def setup_fixture(self, root):
+        for name in ('vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html', 'public/runa-error/styles.css', 'public/runa-error/pages/503-pl-system.html'):
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+        (root / '.env').write_text('APP_KEY=test\n')
+        (root / '.env.testing').write_text('APP_KEY=test\n')
+        marker = root / '.runtime/dev/setup.sha256'
+        marker.parent.mkdir(parents=True)
+        marker.write_text('current\n')
+        return marker
+
+    def test_current_setup_skips_install_and_build_with_generated_error_document(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            marker = self.setup_fixture(root)
+            with patch.object(dev, 'ROOT', root), patch.object(dev, 'environment_files'), patch.object(dev, 'register_boost') as register, patch.object(dev, 'setup_fingerprint', return_value='current'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run, contextlib.redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(dev.application_setup(['--if-needed']), 0)
+            commands = [call.args[0] for call in run.call_args_list]
+            self.assertFalse(any(command[0] in ('composer', 'pnpm') for command in commands))
+            self.assertIn(['php', 'artisan', 'runa:config:validate', '--templates'], commands)
+            self.assertIn(['php', 'artisan', 'migrate', '--force'], commands)
+            register.assert_called_once()
+            self.assertIn('frontend build skipped', output.getvalue())
+            self.assertEqual(marker.read_text(), 'current\n')
+
+    def test_missing_current_document_or_stale_fingerprint_runs_full_setup(self):
+        for reason in ('missing_document', 'stale_fingerprint'):
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                marker = self.setup_fixture(root)
+                if reason == 'missing_document':
+                    (root / 'public/runa-error/pages/503-pl-system.html').unlink()
+                    (root / 'public/runa-error/pages/503-pl.html').touch()
+                else:
+                    marker.write_text('stale\n')
+                with patch.object(dev, 'ROOT', root), patch.object(dev, 'environment_files'), patch.object(dev, 'register_boost'), patch.object(dev, 'setup_fingerprint', return_value='current'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run:
+                    self.assertEqual(dev.application_setup(['--if-needed']), 0)
+                commands = [call.args[0] for call in run.call_args_list]
+                self.assertIn(['composer', 'install', '--no-interaction', '--prefer-dist'], commands)
+                self.assertIn(['pnpm', 'run', 'build'], commands)
+                self.assertIn(['php', 'resources/errors/build.php'], commands)
+                self.assertEqual(marker.read_text(), 'current\n')
+
     def test_optional_probe_has_process_deadline(self):
         with patch.object(dev.subprocess, 'run', side_effect=subprocess.TimeoutExpired('probe', 5)) as run, contextlib.redirect_stdout(io.StringIO()) as output:
             dev.knowledge_availability()
