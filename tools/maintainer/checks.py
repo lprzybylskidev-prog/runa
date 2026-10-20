@@ -126,7 +126,8 @@ def tooling():
 def development():
     run(['php', 'artisan', 'runa:config:validate'])
     run(['php', 'artisan', 'runa:config:templates'])
-    run(['php', 'artisan', 'migrate:status', '--no-ansi'])
+    if any((ROOT / 'src/app/database/migrations').glob('*.php')):
+        run(['php', 'artisan', 'migrate:status', '--no-ansi'])
     for service, limit in (('queue', 120), ('scheduler', 150)):
         heartbeat = json.loads((ROOT / 'src/storage/framework/health' / (service + '.json')).read_text())
         age = time.time() - heartbeat.get('recorded_at', 0)

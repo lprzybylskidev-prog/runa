@@ -38,7 +38,7 @@ linked extension paths fail instead of triggering an ambiguous repair.
 
 Development delegates to the existing resource-profile/prepare/up mechanics,
 including stable private database/test credentials, bind mounts, setup
-fingerprints, locked dependencies, safe migrations, devcontainer and independent
+fingerprints, locked dependencies, devcontainer and independent
 knowledge initialization. Optional AI degradation does not make application
 startup fail. It refuses to take over a development Compose project belonging to
 another checkout. Ordinary reopen/start remains `runa:dev:up`; installer repeat
@@ -131,8 +131,7 @@ and refreshes corrected certificate/key contents at their originally selected
 paths. Explicit `--resume --settings-file=...` can correct SMTP inputs while
 preserving infrastructure choices and generated application/database keys. Recovery checks
 that pending first-install state, project/resources and target belong together;
-it cannot turn a pending update into a new install. Migrations/seeders use
-their existing safe repeat behavior; no schema reversal or volume reset occurs.
+it cannot turn a pending update into a new install. Platform migrations retain their own history; required platform seed data and its release/root completion record commit atomically, so failed steps can retry and successful steps do not duplicate on resume. No schema reversal or volume reset occurs.
 Existing generated credentials remain stable. A completed repeated install exits
 without touching application source, configuration, images, services or data.
 For normal later source changes use the application lifecycle or platform
@@ -145,3 +144,9 @@ and YAML reader). It uses isolated projects/ports/fresh volumes and synthetic
 TLS/SMTP, preserves active development and model caches, prints exact cleanup
 scope, and keeps verification reports. Simulation acceptance is not a real
 production deployment or live provider/domain acceptance.
+
+## Database initialization boundary
+
+Development installation prepares configuration and starts PostgreSQL, PHP and the one-shot dependency setup service. It explicitly waits for setup to exit successfully before invoking the external owner database bootstrap, then starts the remaining development services. Ordinary setup/startup/reopen never migrates or seeds.
+
+`distribution/platform-database.php` stays with the owner. The installer passes its trusted source to prepared PHP via argument-vector execution; the helper is neither copied into customer source/images nor registered as Artisan commands. Installation runs only platform `migrate` and explicitly required platform `DatabaseSeeder`, with per-release atomic seed completion in `shared.platform_seed_runs`. Application migrations and application seeders are never part of this installation path. Production installation uses the same private callback in the operational sequence; ordinary customer deployment instead executes application `migrate` and `db:seed`. The later external updater will reuse these owner routines after its repository comparison. See [database boundaries and transition constraints](../architecture/database.md#platformapplication-source-ownership).

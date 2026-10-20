@@ -316,7 +316,7 @@ def build_images(release=None):
     production.verify_images(command(release), environment())
 
 
-def deploy(target, simulation, initial_resume=False, verification=None):
+def deploy(target, simulation, initial_resume=False, verification=None, database_setup=None):
     from repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
     sha = resolve(target)
@@ -351,8 +351,11 @@ def deploy(target, simulation, initial_resume=False, verification=None):
         mutation_started = True
         dc(['up', '-d', '--wait', '--no-build', 'postgres'], release)
         pause_http(release)
-        artisan(['migrate', '--force'], release)
-        artisan(['runa:seed:production', '--force'], release)
+        if database_setup is not None:
+            database_setup(release)
+        else:
+            artisan(['migrate', '--force'], release)
+            artisan(['db:seed', '--force'], release)
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
         resume_http(release, recreate=True)
         health(release, sparse=True)

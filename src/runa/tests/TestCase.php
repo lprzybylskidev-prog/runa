@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Runa\Support\TestDatabaseGuard;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 
 abstract class TestCase extends FrameworkTestCase
 {
@@ -61,6 +62,9 @@ abstract class TestCase extends FrameworkTestCase
         config()->set('queue.default', 'sync');
         config()->set('mail.default', 'array');
         if (! isset(self::$migrated[$name])) {
+            $platform = new Process([PHP_BINARY, dirname(__DIR__, 3).'/distribution/platform-database.php', 'migrate', '--force', '--no-interaction'], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => $name, 'LARAVEL_STORAGE_PATH' => $storage]);
+            $platform->setTimeout(null);
+            $platform->mustRun();
             if (Artisan::call('migrate', ['--force' => true, '--no-interaction' => true]) !== 0) {
                 throw new RuntimeException('Test database migration failed.');
             }

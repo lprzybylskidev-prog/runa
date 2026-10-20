@@ -2,6 +2,7 @@
 
 namespace Runa\Support\Seeding;
 
+use Runa\Database\DatabaseScope;
 use RuntimeException;
 
 final class SeedGraph
@@ -10,20 +11,16 @@ final class SeedGraph
     public function __construct(private readonly array $classes) {}
 
     /** @return list<class-string<ManagedSeeder>> */
-    public static function discover(): array
+    public static function registered(): array
     {
         $classes = config('seeding.register', []);
         if (! is_array($classes)) {
             throw new RuntimeException('Seeder registration must be a list.');
         }
-        foreach ([base_path('runa/database/seeders') => 'Runa\\Database\\Seeders\\', database_path('seeders') => 'Database\\Seeders\\'] as $root => $namespace) {
-            foreach (['Production', 'Development', 'Occasional'] as $directory) {
-                foreach (glob($root.'/'.$directory.'/*.php') ?: [] as $file) {
-                    $classes[] = $namespace.$directory.'\\'.basename($file, '.php');
-                }
-            }
-        }
         foreach ($classes as $class) {
+            if (is_string($class)) {
+                app(DatabaseScope::class)->seeder($class);
+            }
             if (! is_string($class) || ! is_subclass_of($class, ManagedSeeder::class)) {
                 throw new RuntimeException('Every registered seeder must extend ManagedSeeder.');
             }

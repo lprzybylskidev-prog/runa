@@ -2,9 +2,9 @@
 
 namespace Runa\Console\Commands;
 
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use Runa\Database\Seeders\DatabaseSeeder;
 use Runa\Support\Seeding\SeedGraph;
 
 final class SeedProject extends Command
@@ -33,7 +33,7 @@ final class SeedProject extends Command
         if ($scenario !== null && ! is_string($scenario)) {
             throw new \InvalidArgumentException('A seeder scenario must be a string.');
         }
-        $plan = (new SeedGraph(SeedGraph::discover()))->plan($mode, app()->environment(), $scenario);
+        $plan = (new SeedGraph(SeedGraph::registered()))->plan($mode, app()->environment(), $scenario);
         if ($mode === 'graph') {
             foreach ($plan as $class) {
                 $this->line($class::category()->value.' '.$class.' dependsOn='.implode(',', $class::dependsOn()));

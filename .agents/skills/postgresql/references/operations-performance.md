@@ -30,3 +30,5 @@
 28. Runa does not use stored procedures/functions/views.
 29. `pg_stat_statements` may be introduced later as a diagnostic extension, not as a baseline dependency.
 30. Backup trust requires actual restore verification, not merely successful dump creation.
+
+Runa/application ownership is independent of PostgreSQL schema names. Keep `DatabaseScope::PLATFORM_TABLES` synchronized with every real platform migration and its inventory test. App commands cannot select Runa paths/classes/history; owner scripts use the external bootstrap. Scoped resets drop only selected tables atomically with RESTRICT, never schemas/CASCADE; cross-owner dependants block reset. Unknown legacy Runa history requires an explicit owner transition. Setup/reopen never runs migrations/seeds. See docs/architecture/database.md for separate histories and required-seed transaction journals.

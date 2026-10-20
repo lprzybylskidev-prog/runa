@@ -128,11 +128,31 @@ class InstallationContracts(unittest.TestCase):
                 installer.install('dev', self.sha)
             installer.install('dev', self.sha, resume=True)
             self.assertTrue(any(call.args[0][-2:] == ['profile', 'low'] for call in process.call_args_list))
+            calls = [call.args[0] for call in process.call_args_list]
+            wait = next(i for i, call in enumerate(calls) if call[-2:] == ['wait', 'setup'])
+            database = [i for i, call in enumerate(calls) if '-r' in call]
+            self.assertEqual(len(database), 2)
+            self.assertTrue(all(i > wait for i in database))
+            self.assertEqual(calls[database[0]][-3:], ['migrate', '--force', '--no-interaction'])
+            self.assertEqual(calls[database[1]][-2:], ['install-seeds', self.sha])
             count = len(process.call_args_list)
             installer.install('dev', self.sha)
             # Repeat reads source identity but never launches setup/services again.
             self.assertEqual(len(process.call_args_list), count + 1)
         self.assertFalse((self.state / 'first-deploy.json').exists())
+
+    def test_failed_dependency_setup_stops_before_platform_database_initialization(self):
+        with self.tools() as process:
+            original = process.side_effect
+            def fail_setup(arguments, **kwargs):
+                if arguments[-2:] == ['wait', 'setup']:
+                    raise subprocess.CalledProcessError(1, arguments)
+                return original(arguments, **kwargs)
+            process.side_effect = fail_setup
+            with self.assertRaises(subprocess.CalledProcessError):
+                installer.install('dev', self.sha)
+            self.assertFalse(any('-r' in call.args[0] for call in process.call_args_list))
+        self.assertEqual(json.loads((self.state / 'install-dev.json').read_text())['state'], 'failed')
 
     def test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration(self):
         with self.tools(), self.assertRaisesRegex(ValueError, '--settings-file'):
@@ -151,6 +171,7 @@ class InstallationContracts(unittest.TestCase):
             installer.install('prod', self.sha, simulation=True, resume=True)
             deploy.assert_called_once()
             self.assertIsNotNone(deploy.call_args.kwargs['verification'])
+            self.assertIsNotNone(deploy.call_args.kwargs['database_setup'])
         self.assertEqual((self.root / '.env.prod').read_bytes(), original)
         self.assertEqual(json.loads((self.state / 'install-prod.json').read_text())['state'], 'complete')
         self.assertFalse((self.state / 'first-deploy.json').exists())

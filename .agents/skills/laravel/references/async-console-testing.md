@@ -55,3 +55,5 @@ Use Laravel cache and filesystem abstractions where infrastructure changes shoul
 ## Project seeding
 
 Use the shared `ManagedSeeder` / `SeedGraph` foundation and `docs/data/seeding.md` for reference/demo/manual scenarios. Validate dependencies before execution and retain the direct development-environment guard. Keep scenario options in Laravel config and use each `SeedContext`'s independent generator; never seed global randomness or invent demo entities merely to populate the framework.
+
+Database commands use `DatabaseScope`: native Artisan operations and `DatabaseSeeder` are app-only; owner `tools/maintainer` scripts use a private external bootstrap and no public scope selector. Use explicit application `seeding.register`, never folder discovery or delegation to Runa seeds. Startup performs no migrations/seeding. Protect the separate `shared.migrations` / `shared.application_migrations` histories, table inventory, and isolated-test reset guards; see docs/architecture/database.md.

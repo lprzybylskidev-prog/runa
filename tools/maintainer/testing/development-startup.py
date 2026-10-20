@@ -125,7 +125,7 @@ class StartupContracts(unittest.TestCase):
             def present(path):
                 return str(path) == '/.dockerenv' or exists(path)
             def command(args, **kwargs):
-                if args[:3] == ['php', 'artisan', 'migrate']:
+                if args[:3] == ['php', 'artisan', 'runa:config:validate']:
                     raise subprocess.CalledProcessError(1, args)
                 self.assertNotIn('knowledge', ' '.join(args))
                 return SimpleNamespace(returncode=0)
@@ -155,7 +155,7 @@ class StartupContracts(unittest.TestCase):
             commands = [call.args[0] for call in run.call_args_list]
             self.assertFalse(any(command[0] in ('composer', 'pnpm') for command in commands))
             self.assertIn(['php', 'artisan', 'runa:config:validate'], commands)
-            self.assertIn(['php', 'artisan', 'migrate', '--force'], commands)
+            self.assertFalse(any(command[:3] in (['php', 'artisan', 'migrate'], ['php', 'artisan', 'db:seed']) for command in commands))
             register.assert_called_once()
             self.assertIn('frontend build skipped', output.getvalue())
             self.assertEqual(marker.read_text(), 'current\n')

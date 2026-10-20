@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Artisan;
+use Runa\Database\Seeders\DatabaseSeeder;
 use Runa\Support\Seeding\SeedContext;
 use Runa\Support\Seeding\SeedGraph;
 use Tests\Fixtures\BrokenSeed;
@@ -27,16 +28,13 @@ it('validates the complete Seeding graph before any execution', function () {
     expect(fn () => (new SeedGraph([ReferenceSeed::class]))->plan('occasional', 'testing', 'ReferenceSeed'))->toThrow(RuntimeException::class);
 });
 
-it('dispatches DatabaseSeeder and explicit Seeding commands with category isolation', function () {
-    config()->set('seeding.register', [ReferenceSeed::class, DemoSeed::class, ScenarioSeed::class]);
+it('rejects platform-owned registration before executing application seeders', function () {
+    config()->set('seeding.register', [ReferenceSeed::class]);
     FixtureSeed::$executed = [];
-    expect(Artisan::call('db:seed', ['--force' => true]))->toBe(0);
-    expect(FixtureSeed::$executed)->toBe([ReferenceSeed::class, DemoSeed::class]);
-    FixtureSeed::$executed = [];
-    expect(Artisan::call('runa:seed:production'))->toBe(0);
-    expect(FixtureSeed::$executed)->toBe([ReferenceSeed::class]);
-    app()->instance('env', 'production');
-    expect(fn () => app(DemoSeed::class)->run())->toThrow(RuntimeException::class, 'local or testing');
+    expect(fn () => Artisan::call('db:seed', ['--force' => true]))->toThrow(RuntimeException::class, 'Seeder escapes');
+    expect(FixtureSeed::$executed)->toBe([]);
+    expect(fn () => Artisan::call('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true]))
+        ->toThrow(RuntimeException::class, 'Seeder escapes');
 });
 
 it('keeps independent deterministic Seeding random streams and validates per-group counts', function () {
@@ -51,5 +49,5 @@ it('keeps independent deterministic Seeding random streams and validates per-gro
 it('has an empty idempotent Seeding foundation without invented business data', function () {
     expect(Artisan::call('runa:seed'))->toBe(0);
     expect(Artisan::call('runa:seed'))->toBe(0);
-    expect(SeedGraph::discover())->toBe([]);
+    expect(SeedGraph::registered())->toBe([]);
 });

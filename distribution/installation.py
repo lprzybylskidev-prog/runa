@@ -347,6 +347,24 @@ def development_context():
             raise InstallationError('Development project belongs to another checkout. Preserve it; use the owning workspace or a separate project.')
 
 
+def platform_database(release_sha, mode, release=None):
+    program = Path(__file__).with_name('platform-database.php').read_text()
+    if not program.startswith('<?php'):
+        raise InstallationError('Invalid external platform database entrypoint.')
+    program = program.removeprefix('<?php')
+    steps = [('migrate', '--force', '--no-interaction'), ('install-seeds', release_sha)]
+    for arguments in steps:
+        if mode == 'dev':
+            run(dev_compose() + ['exec', '-T', 'app', 'php', '-r', program, '--', *arguments])
+        else:
+            ops.dc(['run', '--rm', '--no-deps', '-T', 'app', 'php', '-r', program, '--', *arguments], release)
+
+
+def dev_compose():
+    from runtime import compose
+    return compose()
+
+
 def install(mode, target, simulation=False, settings_file=None, profile=None, resume=False, non_interactive=False):
     from repository_boundary import assert_installation
     assert_installation(ROOT)
@@ -406,6 +424,10 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
             if profile:
                 run(['python3', str(helper), 'profile', profile])
             run(['python3', str(helper), 'prepare'])
+            run(dev_compose() + ['up', '-d', '--wait', 'postgres', 'app', 'setup'])
+            # setup is a one-shot service; container health does not mean Composer finished.
+            run(dev_compose() + ['wait', 'setup'])
+            platform_database(sha, 'dev')
             run(['python3', str(helper), 'up'])
         else:
             settings = resume_settings(settings_file if resume else None, simulation)
@@ -422,7 +444,7 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
                 verify_endpoints(settings, Path(current['path']))
             else:
                 owned_resume = resume_is_owned(journal) if resume else False
-                ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release))
+                ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release), database_setup=lambda release: platform_database(sha, 'prod', release))
             if os.environ.get('RUNA_HOST_WORKER') != '1':
                 import host_executor
                 host_executor.ensure()

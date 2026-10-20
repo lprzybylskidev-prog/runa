@@ -34,11 +34,11 @@ class ToolOwnership(unittest.TestCase):
     def test_owner_migration_and_seeder_arguments_use_fixed_platform_scope(self):
         code, calls = self.invoke('migrate', ['--pretend'])
         self.assertEqual(code, 0)
-        self.assertEqual(calls[0].args[0], ['php', 'artisan', 'migrate', '--path=runa/database/migrations', '--pretend'])
+        self.assertEqual(calls[0].args[0], ['php', str(ROOT / 'distribution/platform-database.php'), 'migrate', '--pretend'])
         seeder = 'Runa\\Database\\Seeders\\DatabaseSeeder'
         code, calls = self.invoke('seed', [seeder])
         self.assertEqual(code, 0)
-        self.assertEqual(calls[0].args[0], ['php', 'artisan', 'db:seed', '--class=' + seeder])
+        self.assertEqual(calls[0].args[0], ['php', str(ROOT / 'distribution/platform-database.php'), 'db:seed', '--class=' + seeder])
 
     def test_owner_entrypoints_reject_foreign_actions_before_running_anything(self):
         for name in ('check-repository', 'quality-plan', 'quality-status', 'quality-roadmap'):

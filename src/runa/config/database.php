@@ -18,5 +18,5 @@ return [
             'timezone' => 'UTC',
         ],
     ],
-    'migrations' => ['table' => 'shared.migrations', 'update_date_on_publish' => true],
+    'migrations' => ['table' => 'shared.application_migrations', 'update_date_on_publish' => true],
 ];

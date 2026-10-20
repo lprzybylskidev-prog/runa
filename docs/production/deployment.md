@@ -58,8 +58,8 @@ Typical flow:
    - prefer distribution packages,
    - optimized/autoloader behavior appropriate to Laravel,
 5. build frontend assets from the locked pnpm graph,
-6. run migrations,
-7. run production seeders,
+6. run application migrations,
+7. run application `DatabaseSeeder` (`db:seed`),
 8. ensure required persistent-storage/public-link setup such as `storage:link` is correct and idempotent,
 9. build Laravel production caches/optimization,
 10. restart/update required runtime services,
@@ -110,7 +110,7 @@ A deployment should make it possible to identify:
 
 ## Production seeders
 
-Deploy order is migrations then production seeders.
+Deploy order is application `migrate --force` then `db:seed --force`. The application `DatabaseSeeder` selects its explicit registered graph (production category by default); loose files and Runa seeders are never discovered. External first installation uses a private platform-only callback instead.
 
 Production seeders are idempotent.
 
@@ -155,7 +155,7 @@ The real installer applies a non-cone sparse allowlist to the operator checkout 
 
 For an existing acquired installation, use `php artisan runa:deploy <vX.Y.Z|full-SHA>`. Branch names, abbreviated hashes and arbitrary command forwarding are rejected. Fetch the intended trusted release into the operator repository before deployment; deploy never follows a mutable branch or fetches an unreviewed update automatically. A clean detached sparse clone is prepared under `.runtime/production/releases/<SHA>`. Build dependencies/frontend assets remain locked in the existing Docker stages. Existing complete exact-SHA image pairs are reused; an incomplete pair requires explicit operator inspection. Do not overwrite immutable image tags with diagnostic builds.
 
-Preflight validates Compose, images, private env permissions, separate admin/runtime credentials and Laravel configuration before stopping services or running migrations. Operations enable a dedicated shared HTTP-maintenance marker, keep Nginx serving static 503 while stopping application/workers/scheduler, run migrations and production seeders, recreate the writers, reopen HTTP and check health/root/readiness/isolation. Laravel config optimization remains per-container in the production entrypoint; static storage uses the existing Nginx public-volume subpath and needs no public symlink. Maintenance returns branded HTML or English JSON 503 rather than requiring PHP to serve the notice. Nginx recreation during version switching/remounts can still cause a brief transport interruption; this baseline does not promise zero downtime.
+Preflight validates Compose, images, private env permissions, separate admin/runtime credentials and Laravel configuration before stopping services or running migrations. Operations enable a dedicated shared HTTP-maintenance marker, keep Nginx serving static 503 while stopping application/workers/scheduler, run application migrations and its `DatabaseSeeder`, recreate the writers, reopen HTTP and check health/root/readiness/isolation. Laravel config optimization remains per-container in the production entrypoint; static storage uses the existing Nginx public-volume subpath and needs no public symlink. Maintenance returns branded HTML or English JSON 503 rather than requiring PHP to serve the notice. Nginx recreation during version switching/remounts can still cause a brief transport interruption; this baseline does not promise zero downtime.
 
 State lives in ignored, private `.runtime/production/`. `deployment.json` records current/previous SHA, semantic version, image IDs, UTC time, context and a fingerprint of migration/seeder sources. `in-progress.json` records operations that may have changed data. An interrupted or incompatible failed operation blocks further deploy/rollback until an operator inspects database/application state and follows the appropriate recovery procedure. Never delete that marker to turn a failed operation into a reported success. After recovery, preserve its evidence separately before deliberately clearing it. Preflight failure restores the original selected tag. Failure after migrations attempts application recovery only if previous migration/seeder sources are identical; the deploy still exits nonzero. Recovery failure leaves the marker in place.
 

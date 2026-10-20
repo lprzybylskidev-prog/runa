@@ -165,7 +165,7 @@ Customer state lives under gitignored `.runtime/application-quality/`; owner rel
 
 Invoke `php artisan runa:doctor:<area>` for repository, config, templates, maintenance, hooks, frontend, database-migrations, database, seeding, boost, tooling, docs or development. There is no bare global doctor. Production readiness uses `runa:production:self-test`. Owner release/cleanliness checks use `python3 tools/maintainer/check-release` and `check-cleanliness`.
 
-The [inventory](command-migration.md) records the operations and scope. Database-migrations retains isolated-test identity protection. Final application/platform data and suite separation remains points 9c/9d.
+The [inventory](command-migration.md) records the operations and scope. Database-migrations retains isolated-test identity protection. Database ownership is isolated as described in [database architecture](../architecture/database.md#platformapplication-source-ownership); final test suite separation remains point 9d.
 
 ## Security
 
@@ -308,7 +308,7 @@ Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `pyt
 - tools/maintainer: owner-only platform test harnesses, release metadata, diagnostics and quality entrypoints; excluded from customer projection.
 - distribution: external owner bootstrap/installation helpers and reserved updater; excluded from customer projection.
 
-Owner entrypoints are dedicated `tools/maintainer/check-*`, `quality-*`, `test-backend`, `test-frontend`, `test-e2e`, plus `migrate`, `make-migration` and `seed`. See the [complete map](command-migration.md). They delegate application toolchains into containers; no customer aliases exist. Migration and suite ownership hardening remains 9c/9d.
+Owner entrypoints are dedicated `tools/maintainer/check-*`, `quality-*`, `test-backend`, `test-frontend`, `test-e2e`, plus `migrate`, `migrate-status`, `migrate-fresh`, `migrate-refresh`, `migrate-reset`, `migrate-rollback`, `wipe`, `make-migration` and `seed`. See the [complete map](command-migration.md). They delegate application toolchains into containers; no customer aliases exist. Database operations select only platform paths/history/tables/seeds, retaining test-only destructive guards. Native Artisan database commands select only application ownership. Suite separation remains point 9d.
 
 Customer runa:quality stores results under .runtime/application-quality and uses tools/application/quality.yml and application roadmap metadata under docs/app/roadmaps; basic checks work before a business roadmap is created. Runa release results remain under .runtime/quality; release gates remain in docs/quality/gates.yml and run only via the owner quality entrypoint. Owner release checks use python3 tools/maintainer/check-release, not customer runa:doctor. Command splitting is complete; documentation relocation remains point 9e.
 

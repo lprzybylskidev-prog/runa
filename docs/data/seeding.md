@@ -22,7 +22,7 @@ User-managed records may only have required initial existence ensured. Productio
 
 Deletion is prohibited by default. Destructive reference-data change belongs in an explicit roadmap/migration/data operation.
 
-Do not create a separate "seeder already ran" registry. Idempotence is the contract.
+Application seeders remain idempotent and have no run-once registry. The external platform installer separately journals required seed steps transactionally for safe resume; this does not replace seeder idempotence.
 
 A one-time non-idempotent data transformation is a data migration/dedicated operation, not a production seeder.
 
@@ -102,9 +102,9 @@ Use named factory states for important domain states.
 
 Seeders declare explicit dependencies, such as `dependsOn`.
 
-The runner uses hybrid discovery:
+The application runner uses explicit `seeding.register` entries only:
 
-- fixed namespaces/registration contract/attribute/metadata,
+- no folder, namespace or attribute autodiscovery,
 - deterministic ordering,
 - topological dependency sort,
 - cycle detection,
@@ -135,8 +135,8 @@ Expected behavior:
 
 Deployment order includes:
 
-1. migrations,
-2. production seeders,
+1. application migrations,
+2. application `DatabaseSeeder` (production graph by default),
 3. optimization/cache work,
 4. service restart/update,
 5. health checks.
@@ -147,10 +147,16 @@ Production mode rejects explicit development seeding as well as excluding it fro
 
 ## Implemented foundation
 
-`DatabaseSeeder` delegates Laravel's normal `db:seed`/`migrate:fresh --seed` entrypoint to the same validated graph as `php artisan runa:seed`. The existing destructive test-database guard still governs reset commands; seeding does not weaken it. The initial graph is deliberately empty: technical queue tables need no reference rows, and there are no business entities or demo accounts yet.
+The application `DatabaseSeeder` delegates Laravel's normal `db:seed`/`migrate:fresh --seed` entrypoint to the same validated graph as `php artisan runa:seed`. The existing destructive test-database guard still governs reset commands; seeding does not weaken it. The initial graph is deliberately empty: technical queue tables need no reference rows, and there are no business entities or demo accounts yet.
 
-Extend `Runa\Support\Seeding\ManagedSeeder`, implement `category()` and `seed(SeedContext)`, and declare `dependsOn()` as class names. Discovery combines immediate PHP files under `src/runa/database/seeders/{Production,Development,Occasional}` (Runa\Database\Seeders) and `src/app/database/seeders/{Production,Development,Occasional}` (Database\Seeders), with explicit platform/application seeding config registrations. Registration supports classes outside those fixed directories; dependencies must themselves be registered/discovered. Names are sorted deterministically, then topologically ordered. The entire graph is checked for missing dependencies, cycles and category violations before any seed is executed. Production may depend only on production; development cannot depend on occasional scenarios. The occasional command accepts a unique short name or full registered class name and executes only its dependency closure. Production rejects any closure containing development seeders.
+Extend `Runa\Support\Seeding\ManagedSeeder`, implement `category()` and `seed(SeedContext)`, and declare `dependsOn()` as class names. Register each application class explicitly in `src/app/config/seeding.php` under `register`; dependencies must also be registered. Classes must reside within `src/app` and extend `ManagedSeeder`; platform seeders cannot enter this graph. A loose file under any category folder does not execute automatically. The application `DatabaseSeeder` may also explicitly call ordinary application seeders using Laravel's standard API. Names are sorted deterministically, then topologically ordered. The entire graph is checked for missing dependencies, cycles and category violations before any seed is executed. Production may depend only on production; development cannot depend on occasional scenarios. The occasional command accepts a unique short name or full registered class name and executes only its dependency closure. Production rejects any closure containing development seeders.
 
 Development options live under `seeding.development.<ClassBasename>`: boolean `random` (default false), integer `seed` (default 1), and a `counts` map of independent nonnegative integer group sizes. `SeedContext` supplies an independent native PHP random generator and validated `count(group, default)`; it never changes global PRNG state. Production ignores development options. The first real demo seeder must add its own typed config/env tuning and dev/test template documentation; there are no unused fake tuning variables in this foundation. Sort source dictionaries/relationship candidates before sampling. If Faker is needed later, follow dependency policy and seed it independently rather than using uncontrolled global state.
 
-Production seeders must still enforce idempotent upserts and preserve user-managed values; the framework does not infer ownership or suppress reruns. Each future populated production seeder needs a meaningful idempotence test. `./bin/artisan runa:doctor:seeding` covers graph ordering, categories, missing/cyclic dependencies, direct development rejection, Laravel/CLI dispatch, independent determinism and the empty repeatable baseline.
+Production seeders must still enforce idempotent upserts and preserve user-managed values; the framework does not infer ownership or suppress reruns. Each future populated production seeder needs a meaningful idempotence test. `php artisan runa:doctor:seeding` covers graph ordering, categories, missing/cyclic dependencies, direct development rejection, Laravel/CLI dispatch, independent determinism and the empty repeatable baseline.
+
+## Platform ownership
+
+No application `DatabaseSeeder`, `db:seed`, `runa:seed` or reset command invokes Runa seeders. Native `db:seed --class` also validates application ownership. Private `python3 tools/maintainer/seed 'Runa\Database\Seeders\ClassName'` manually runs one selected platform seeder; loose platform seeders are not discovered. The platform `DatabaseSeeder` explicitly lists only required platform initialization (currently empty).
+
+Only external owner installation/update automatically executes platform migrations and that required seed root. Its `shared.platform_seed_runs` record and seed data share one transaction per exact release commit/root. Successful retries skip the completed step; exceptions roll back the record and its data. Keep required seed effects transactional; external/nontransactional side effects need a separately designed recovery operation. Manual owner seed execution deliberately has no run-once record. Ordinary startup/reopen does neither owner's migrations or seeding. Application deployment uses application `migrate` then `db:seed`, never loose platform files. See [database ownership](../architecture/database.md#platformapplication-source-ownership).

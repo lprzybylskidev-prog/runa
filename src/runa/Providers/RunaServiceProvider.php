@@ -5,9 +5,12 @@ namespace Runa\Providers;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Console\Migrations\FreshCommand;
+use Illuminate\Database\Console\Migrations\MigrateCommand;
 use Illuminate\Database\Console\Migrations\RefreshCommand;
 use Illuminate\Database\Console\Migrations\ResetCommand;
 use Illuminate\Database\Console\Migrations\RollbackCommand;
+use Illuminate\Database\Console\Migrations\StatusCommand;
+use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Database\Console\WipeCommand;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
@@ -27,12 +30,16 @@ use Runa\Console\Commands\Database\GuardedRefreshCommand;
 use Runa\Console\Commands\Database\GuardedResetCommand;
 use Runa\Console\Commands\Database\GuardedRollbackCommand;
 use Runa\Console\Commands\Database\GuardedWipeCommand;
+use Runa\Console\Commands\Database\ScopedMigrateCommand;
+use Runa\Console\Commands\Database\ScopedSeedCommand;
+use Runa\Console\Commands\Database\ScopedStatusCommand;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\SeedProject;
 use Runa\Console\Commands\TestMail;
 use Runa\Console\Commands\ValidateConfiguration;
+use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
@@ -65,7 +72,10 @@ final class RunaServiceProvider extends ServiceProvider
             fn ($command, Application $app) => $app->make(ApplicationConfigMakeCommand::class));
         $this->app->extend(TestMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
-        $this->loadMigrationsFrom(base_path('runa/database/migrations'));
+        $this->app->singletonIf(DatabaseScope::class, fn () => new DatabaseScope(base_path()));
+        foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
+            $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
+        }
         $this->commands([
             CheckApplicationManifest::class,
             CheckRuntimeHealth::class,
@@ -91,7 +101,7 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->extend(WipeCommand::class,
             fn ($command, Application $app) => $app->make(GuardedWipeCommand::class));
         $this->app->extend('migration.repository', function (DatabaseMigrationRepository $repository, Application $app): IdentityMigrationRepository {
-            return new IdentityMigrationRepository($app->make(DatabaseManager::class), 'shared.migrations');
+            return new IdentityMigrationRepository($app->make(DatabaseManager::class), $app->make(DatabaseScope::class)->repository());
         });
     }
 
