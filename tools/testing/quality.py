@@ -31,8 +31,8 @@ class QualityContracts(unittest.TestCase):
             shutil.copy(ROOT / 'bin/quality-check', root / 'bin/quality-check')
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             sources = {
-                'resources/views/errors/page.php': 'echo strtr($template, [',
-                'tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
+                'src/runa/resources/views/errors/page.php': 'echo strtr($template, [',
+                'src/runa/tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
             }
             for name, statement in sources.items():
                 target = root / name
@@ -48,7 +48,7 @@ class QualityContracts(unittest.TestCase):
                 (root / name).write_text('<?php\n' + statement + '\n')
             other = root / 'src/runa/src/Other.php'
             other.parent.mkdir(parents=True)
-            other.write_text('<?php\n' + sources['resources/views/errors/page.php'] + '\n')
+            other.write_text('<?php\n' + sources['src/runa/resources/views/errors/page.php'] + '\n')
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
     def test_actual_host_production_gates_share_the_operation_group(self):

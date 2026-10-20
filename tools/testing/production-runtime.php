@@ -3,7 +3,7 @@
 declare(strict_types=1);
 use Illuminate\Support\Str;
 
-require '/workspace/vendor/autoload.php';
+require '/workspace/src/vendor/autoload.php';
 
 $expect = static function (bool $condition, string $message): void {
     if (! $condition) {
@@ -62,10 +62,10 @@ if ($pid === 0) {
 $expect(pcntl_waitpid($pid, $status) === $pid && pcntl_wifexited($status) && pcntl_wexitstatus($status) === 0, 'Process wait failed.');
 $process = proc_open([PHP_BINARY, '-r', 'exit(42);'], [], $pipes);
 $expect(is_resource($process) && proc_close($process) === 42, 'Application child-process execution failed.');
-foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'vendor/laravel/boost', 'vendor/pestphp', 'vendor/phpstan'] as $path) {
+foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'src/tests', 'src/runa/tests', 'src/app/tests', 'src/runa/tools', 'src/runa/management', 'src/node_modules', 'src/vendor/laravel/boost', 'src/vendor/pestphp', 'src/vendor/phpstan'] as $path) {
     $expect(! file_exists('/workspace/'.$path), 'Development material in runtime: '.$path);
 }
-$installed = json_decode(file_get_contents('/workspace/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
+$installed = json_decode(file_get_contents('/workspace/src/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
 $expect($installed['dev'] === false, 'Development dependencies included.');
-$expect(is_file('/workspace/public/build/index.html'), 'Missing SPA build.');
+$expect(is_file('/workspace/src/public/build/index.html'), 'Missing SPA build.');
 fwrite(STDOUT, 'PASS: PHP version, extensions, Unicode/ICU/iconv, decimal/XML/ZIP/HTTPS/process capabilities, runtime user and isolation. ICU '.INTL_ICU_VERSION."\n");

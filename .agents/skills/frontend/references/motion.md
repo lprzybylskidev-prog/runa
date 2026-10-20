@@ -12,7 +12,7 @@ Verify real rendered normal/reduced behavior, rapid reversal, Escape, keyboard f
 
 ## Complete component audit (RM-2026-004 point 21)
 
-Names below refer to `resources/js/components/<name>.vue`. Every component is assigned once; inherited motion is deliberate and must stay in the shared source.
+Names below refer to `src/runa/resources/js/components/<name>.vue`. Every component is assigned once; inherited motion is deliberate and must stay in the shared source.
 
 | Components                                                                                                      | Decision                                                                                                                                                          |
 | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |

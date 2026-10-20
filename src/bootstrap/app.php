@@ -23,13 +23,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         );
     })->create();
 
-// Compatibility paths for the staged frontend/tooling relocation in point 4.
+// Private environment inputs remain outside the protected Laravel source tree.
 $app->useEnvironmentPath(dirname(__DIR__, 2));
 $app->useConfigPath(dirname(__DIR__).'/runa/config');
 $app->useDatabasePath(dirname(__DIR__).'/app/database');
-$app->usePublicPath(dirname(__DIR__, 2).'/public');
-$app->useLangPath(dirname(__DIR__, 2).'/lang');
+$app->usePublicPath(dirname(__DIR__).'/public');
+$app->useLangPath(dirname(__DIR__).'/runa/resources/lang');
 $storage = $_ENV['LARAVEL_STORAGE_PATH'] ?? $_SERVER['LARAVEL_STORAGE_PATH'] ?? null;
-$app->useStoragePath(is_string($storage) && $storage !== '' ? $storage : dirname(__DIR__, 2).'/storage');
+$app->useStoragePath(is_string($storage) && $storage !== '' ? $storage : dirname(__DIR__).'/storage');
 
 return $app;

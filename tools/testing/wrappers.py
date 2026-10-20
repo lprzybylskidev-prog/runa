@@ -22,7 +22,7 @@ class WrapperContracts(unittest.TestCase):
 
     def test_host_arguments_preserved_without_shell_interpretation(self):
         arguments = ['list', 'literal $(false); message', 'line\nbreak']
-        for name, prefix in [('artisan', ['php', 'artisan']), ('composer', ['composer']), ('pnpm', ['pnpm']), ('seed', ['php', 'artisan', 'runa:seed'])]:
+        for name, prefix in [('artisan', ['php', 'artisan']), ('composer', ['composer', '--working-dir=src']), ('pnpm', ['pnpm', '--dir', 'src']), ('seed', ['php', 'artisan', 'runa:seed'])]:
             call = self.invoke(name, arguments, False)
             self.assertEqual(call.call_args.args[0], runtime.compose() + ['exec', '-T', 'app', *prefix, *arguments])
 

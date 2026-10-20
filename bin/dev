@@ -158,8 +158,8 @@ def environment_files():
 
 
 def setup_fingerprint():
-    paths = [ROOT / p for p in ('composer.json', 'composer.lock', 'pnpm-lock.yaml', 'vite.config.mjs', 'tsconfig.json', '.env', 'bin/dev')]
-    for directory in ('src/runa/config', 'src/app/config', 'src/runa/database/migrations', 'src/app/database/migrations', 'resources'):
+    paths = [ROOT / p for p in ('src/composer.json', 'src/runa/composer.json', 'src/app/composer.json', 'src/package.json', 'src/runa/package.json', 'src/app/package.json', 'src/composer.lock', 'src/pnpm-lock.yaml', 'src/vite.config.mjs', 'src/tsconfig.json', '.env', 'bin/dev')]
+    for directory in ('src/runa/config', 'src/app/config', 'src/app/resources', 'src/runa/database/migrations', 'src/app/database/migrations', 'resources'):
         paths.extend(p for p in (ROOT / directory).rglob('*') if p.is_file())
     digest = hashlib.sha256()
     for path in sorted(paths):
@@ -179,7 +179,7 @@ def application_setup(args):
     subprocess.run(['python3', 'tools/project/install-scanners.py'], cwd=ROOT, check=True)
     env = ROOT / '.env'
     marker = ROOT / '.runtime/dev/setup.sha256'
-    required = ['vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html', 'public/runa-error/styles.css', 'public/runa-error/pages/503-pl-system.html']
+    required = ['src/vendor/autoload.php', 'src/node_modules/.modules.yaml', 'src/public/build/index.html', 'src/public/runa-error/styles.css', 'src/public/runa-error/pages/503-pl-system.html']
     if args == ['--if-needed'] and marker.exists() and marker.read_text().strip() == setup_fingerprint() and all((ROOT / p).exists() for p in required):
         subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
         subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
@@ -187,7 +187,8 @@ def application_setup(args):
         register_boost()
         print('Development setup is current; dependency installation and frontend build skipped.')
         return 0
-    subprocess.run(['composer', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
+    subprocess.run(['python3', 'tools/project/dependencies.py', '--check'], cwd=ROOT, check=True)
+    subprocess.run(['composer', '--working-dir=src', 'install', '--no-interaction', '--prefer-dist'], cwd=ROOT, check=True)
     if any(line == 'APP_KEY=' for line in env.read_text().splitlines()):
         subprocess.run(['php', 'artisan', 'key:generate', '--force'], cwd=ROOT, check=True)
     testing = ROOT / '.env.testing'
@@ -196,9 +197,9 @@ def application_setup(args):
         testing.write_text(testing.read_text().replace('APP_KEY=\n', key + '\n'))
     subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
     subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
-    subprocess.run(['pnpm', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
-    subprocess.run(['pnpm', 'run', 'build'], cwd=ROOT, check=True)
-    subprocess.run(['php', 'resources/errors/build.php'], cwd=ROOT, check=True)
+    subprocess.run(['pnpm', '--dir', 'src', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
+    subprocess.run(['pnpm', '--dir', 'src', 'run', 'build'], cwd=ROOT, check=True)
+    subprocess.run(['php', 'src/runa/resources/errors/build.php'], cwd=ROOT, check=True)
     subprocess.run(['git', 'config', 'core.hooksPath', '.githooks'], cwd=ROOT, check=True)
     register_boost()
     marker.parent.mkdir(parents=True, exist_ok=True)

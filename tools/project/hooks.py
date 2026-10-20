@@ -51,20 +51,23 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
                 continue
             formatted = data
             suffix = Path(name).suffix
-            if suffix == '.php':
-                subprocess.run([str(tools_root / 'vendor/bin/pint'), '--config', str(tools_root / 'pint.json'), str(target)],
+            if suffix == '.php' and name == 'src/runa/resources/lang/pl/validation.php':
+                # Imported snapshot bytes are audited by the localization contract.
+                subprocess.run(['php', '-l', str(target)], check=True, capture_output=True)
+            elif suffix == '.php':
+                subprocess.run([str(tools_root / 'src/vendor/bin/pint'), '--config', str(tools_root / 'src/pint.json'), str(target)],
                                cwd=tools_root, check=True, capture_output=True)
                 formatted = target.read_bytes()
             elif suffix in ('.md', '.json', '.yaml', '.yml', '.vue', '.ts', '.js', '.mjs', '.css'):
-                formatted = subprocess.run(['pnpm', 'exec', 'prettier', '--stdin-filepath', name], cwd=tools_root,
+                formatted = subprocess.run(['pnpm', '--dir', str(tools_root / 'src'), 'exec', 'prettier', '--stdin-filepath', str(root / name)], cwd=tools_root,
                                            input=data, capture_output=True, check=True).stdout
             if formatted != data:
                 path = root / name
                 if path.is_symlink() or not path.exists() or path.read_bytes() != data:
                     raise ValueError(f'Formatter would change partially staged file {name}. Format it and stage the intended hunks explicitly.')
                 transformed.append((name, formatted, row))
-            if suffix in ('.vue', '.ts', '.js', '.mjs') and (name.startswith(('resources/', 'tests/frontend/', 'tests/e2e/')) or '/' not in name):
-                subprocess.run(['pnpm', 'exec', 'eslint', '--stdin', '--stdin-filename', name, '--max-warnings=0'],
+            if suffix in ('.vue', '.ts', '.js', '.mjs') and (name.startswith(('src/app/resources/', 'src/runa/resources/', 'src/runa/tests/frontend/', 'src/runa/tests/e2e/')) or (name.startswith('src/') and name.count('/') == 1)):
+                subprocess.run(['pnpm', '--dir', str(tools_root / 'src'), 'exec', 'eslint', '--stdin', '--stdin-filename', str(root / name), '--max-warnings=0'],
                                cwd=tools_root, input=formatted, check=True)
             elif suffix == '.py' or (name.startswith('bin/') and data.startswith(b'#!/usr/bin/env python3')):
                 compile(formatted, name, 'exec')

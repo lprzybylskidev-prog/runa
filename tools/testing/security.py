@@ -49,9 +49,9 @@ class ReviewContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / 'installer'
             dev = Path(folder) / 'dev'
-            root.mkdir(); dev.mkdir()
-            (root / 'composer.lock').write_text('one')
-            (dev / 'composer.lock').write_text('two')
+            (root / 'src').mkdir(parents=True); (dev / 'src').mkdir(parents=True)
+            (root / 'src/composer.lock').write_text('one')
+            (dev / 'src/composer.lock').write_text('two')
             with patch.object(security, 'ROOT', root), patch.object(security, 'AUDIT_ROOT', dev), patch.object(security, 'inside', return_value=False), patch.object(security.subprocess, 'run') as run:
                 with self.assertRaisesRegex(ValueError, 'lockfiles differ'):
                     security.dependencies()

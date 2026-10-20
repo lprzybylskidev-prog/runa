@@ -20,7 +20,7 @@ OPERATIONS = {'development.status': 'status', 'development.up': 'up'}
 
 def image_identity():
     digest = hashlib.sha256()
-    paths = [ROOT / name for name in ('src/artisan', 'composer.json', 'composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
+    paths = [ROOT / name for name in ('src/artisan', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
     if not (ROOT / 'src/runa/management').is_dir() or (ROOT / 'src/runa/management').is_symlink():
         raise ValueError('Management build inputs must not traverse symlinks.')
     paths += sorted(path for path in (ROOT / 'src/runa/management').rglob('*') if not path.is_dir() or path.is_symlink())

@@ -21,8 +21,8 @@ patterns = {
 # Reviewed permanent output, not debug logging. Match the exact source statement,
 # never exempt a whole file or another echo/debug expression in the same file.
 intentional_output = {
-    'resources/views/errors/page.php': 'echo strtr($template, [',
-    'tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
+    'src/runa/resources/views/errors/page.php': 'echo strtr($template, [',
+    'src/runa/tests/Fixtures/browser-document.php': "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
 }
 failures = []
 paths = subprocess.check_output(['git', 'ls-files', '-co', '--exclude-standard', '-z'], cwd=ROOT).decode().split('\0')

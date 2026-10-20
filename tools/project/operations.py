@@ -21,12 +21,14 @@ from runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
-SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/src/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/', '/src/artisan', '/src/composer.json', '/src/resources', '/lang/', '/public/', '/resources/',
-          '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/docs/project/state.yml',
-          '/tools/testing/production-runtime.php', '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
+SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/src/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/',
+          '/src/runa/resources/', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
+          '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
+          '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
+          '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
+          '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py', '/tools/project/dependencies.py',
+          '/tools/testing/production-runtime.php', '/docs/project/state.yml',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
-          '/artisan', '/composer.json', '/composer.lock', '/package.json', '/pnpm-lock.yaml',
-          '/pnpm-workspace.yaml', '/tsconfig.json', '/vite.config.mjs', '/vite.errors.config.mjs', '/VERSION',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
           '/.env.prod.database.example', '/.env.prod.compose.example', '/.env.prod.backup.example']
 
@@ -121,7 +123,7 @@ def artisan(args, release=None, **kwargs):
 
 def http_maintenance(enabled, release=None):
     # Dedicated shared directory: Nginx never needs session/cache/private-upload access.
-    program = ('$directory = "/workspace/storage/framework/maintenance"; '
+    program = ('$directory = "/workspace/src/storage/framework/maintenance"; '
                'if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) { throw new RuntimeException("Cannot create HTTP maintenance directory."); } '
                '$path = $directory . "/enabled"; ')
     if enabled:
@@ -289,6 +291,8 @@ def assert_sparse(path):
 
 
 def build_images(release=None):
+    from dependencies import materialize
+    materialize(Path(release) if release else ROOT, check=True)
     selected = dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
     app_images = sorted({image for image in selected if image.startswith(('runa-production:', 'runa-nginx:'))})
     present = [subprocess.run(['docker', 'image', 'inspect', image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0 for image in app_images]
@@ -433,7 +437,7 @@ def create_backup(protect=None):
         with (partial / 'database.dump').open('wb') as stream:
             pg(['pg_dump', '-U', 'postgres', '-d', 'runa', '--format=custom', '--no-owner', '--no-acl'], release, stdout=stream)
         with (partial / 'storage.tar.gz').open('wb') as stream:
-            dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/storage', '-czf', '-', 'app'], release, stdout=stream)
+            dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/src/storage', '-czf', '-', 'app'], release, stdout=stream)
         atomic(partial / 'manifest.json', {'format': 1, 'created_at': stamp(), 'deployment': current,
               'files': {name: digest(partial / name) for name in ('database.dump', 'storage.tar.gz')}})
         verify_backup_files(partial, release)
@@ -521,9 +525,9 @@ def restore(name, confirmed):
     with (path / 'database.dump').open('rb') as stream:
         pg(['pg_restore', '-U', 'postgres', '--role=runa', '--exit-on-error', '--no-owner', '--no-acl', '-d', 'runa'], release, stdin=stream)
     pg(['psql', '-U', 'postgres', '-d', 'runa', '-v', 'ON_ERROR_STOP=1', '-c', 'REVOKE ALL ON DATABASE runa FROM PUBLIC; REVOKE ALL ON SCHEMA public FROM PUBLIC;'], release)
-    dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'sh', 'app', '-c', 'test ! -L /workspace/storage/app && find /workspace/storage/app -mindepth 1 -delete'], release)
+    dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'sh', 'app', '-c', 'test ! -L /workspace/src/storage/app && find /workspace/src/storage/app -mindepth 1 -delete'], release)
     with (path / 'storage.tar.gz').open('rb') as stream:
-        dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/storage', '--no-same-owner', '-xzf', '-'], release, stdin=stream)
+        dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'tar', 'app', '-C', '/workspace/src/storage', '--no-same-owner', '-xzf', '-'], release, stdin=stream)
     try:
         resume_http(release, recreate=True)
         health(release, sparse=True)

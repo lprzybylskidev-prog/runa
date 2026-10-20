@@ -368,7 +368,7 @@ entries:
     pinned_revision: a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7
     imported_at: 2026-10-17
     license: MIT
-    source: lang/SOURCE.json
+    source: src/runa/resources/lang/SOURCE.json
     review_procedure: docs/development/localization.md
     last_reviewed: 2026-10-17
     review_every_days: 90
@@ -516,7 +516,7 @@ entries:
     version: 0.3.12
     last_reviewed: 2026-10-19
     review_every_days: 90
-    source: resources/licenses/export-dependencies.txt
+    source: src/runa/resources/licenses/export-dependencies.txt
 
   - id: write-excel-file
     package: write-excel-file
@@ -526,4 +526,4 @@ entries:
     version: 4.1.1
     last_reviewed: 2026-10-19
     review_every_days: 90
-    source: resources/licenses/export-dependencies.txt
+    source: src/runa/resources/licenses/export-dependencies.txt

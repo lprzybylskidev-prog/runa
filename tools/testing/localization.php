@@ -3,8 +3,8 @@
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Validator;
 
-require __DIR__.'/../../vendor/autoload.php';
-$app = require __DIR__.'/../../bootstrap/app.php';
+require __DIR__.'/../../src/vendor/autoload.php';
+$app = require __DIR__.'/../../src/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 
 if ($app->getLocale() !== 'en') {

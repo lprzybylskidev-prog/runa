@@ -30,7 +30,7 @@ try:
             raise ValueError('Provide one known development service name.')
         run(compose() + ['logs', '--tail', '100', *args])
     else:
-        commands = {'artisan': ['php', 'artisan'], 'composer': ['composer'], 'pnpm': ['pnpm'], 'seed': ['php', 'artisan', 'runa:seed']}
+        commands = {'artisan': ['php', 'artisan'], 'composer': ['composer', '--working-dir=src'], 'pnpm': ['pnpm', '--dir', 'src'], 'seed': ['php', 'artisan', 'runa:seed']}
         run(app_command(commands[name] + args))
 except (KeyError, ValueError, OSError, subprocess.CalledProcessError) as error:
     print(f'Error: child command failed (exit {error.returncode}).' if isinstance(error, subprocess.CalledProcessError) else f'Error: {error}', file=sys.stderr)

@@ -38,3 +38,16 @@ src/storage
 src/bootstrap/cache/*.php
 src/app/tests
 src/app/docs
+
+src/runa/tests
+src/runa/tools
+src/public/build
+src/public/runa-error
+src/public/ui-review
+src/runa/resources/views/errors/generated
+
+src/.runtime
+
+src/tests
+
+.pnpm-store/

@@ -32,7 +32,7 @@ try:
             commands = {
                 'config': ['php', 'artisan', 'runa:config:validate', '--templates'],
                 'hooks': ['python3', 'tools/testing/hooks.py'],
-                'frontend': ['node', 'tools/testing/frontend.mjs'],
+                'frontend': ['node', 'src/runa/tools/testing/frontend.mjs'],
                 'database-migrations': ['python3', 'tools/testing/database-guards.py'],
                 'database': ['./bin/test', '--filter=Database'],
                 'seeding': ['./bin/test', '--filter=Seeding'],

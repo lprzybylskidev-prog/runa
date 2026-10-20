@@ -69,7 +69,7 @@ def trivy():
         raise ValueError('Trivy version must be exactly 0.76.0.')
     print('Private Trivy reports: ' + str(reports), flush=True)
     scan_command(prefix + ['fs', '--include-dev-deps', '--format', 'json', '--output', report('repository.json'), '--scanners', 'vuln,secret,misconfig', '--severity', 'HIGH,CRITICAL', '--exit-code', '1',
-                  '--skip-dirs', '.git,.runtime,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
+                  '--skip-dirs', '.git,.runtime,.pnpm-store,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
     if inside():
         raise ValueError('Repository scan finished; final runtime-image scanning still requires the Docker host.')
     import operations
@@ -107,17 +107,17 @@ def dependencies():
     if AUDIT_ROOT is not None:
         if inside():
             raise ValueError('Explicit development checkout delegation is host-only.')
-        for name in ('composer.lock', 'pnpm-lock.yaml'):
+        for name in ('src/composer.lock', 'src/pnpm-lock.yaml'):
             if (ROOT / name).read_bytes() != (AUDIT_ROOT / name).read_bytes():
                 raise ValueError('Dependency audit checkout lockfiles differ from the scanned checkout.')
         if not (AUDIT_ROOT / '.env.dev.local').is_file() or not (AUDIT_ROOT / '.devcontainer/compose.resources.yaml').is_file():
             raise ValueError('The audit target is not a prepared development checkout.')
         context = ['docker', 'compose', '--project-directory', str(AUDIT_ROOT), '--env-file', str(AUDIT_ROOT / '.env.dev.local'), '-f', str(AUDIT_ROOT / 'compose.yaml'), '-f', str(AUDIT_ROOT / '.devcontainer/compose.resources.yaml'), 'exec', '-T', 'app']
-        for command in (['composer', 'audit'], ['pnpm', 'audit', '--audit-level=high']):
+        for command in (['composer', '--working-dir=src', 'audit'], ['pnpm', '--dir', 'src', 'audit', '--audit-level=high']):
             subprocess.run(context + command, cwd=AUDIT_ROOT, stdin=subprocess.DEVNULL, check=True)
         return
-    run(app_command(['composer', 'audit']))
-    run(app_command(['pnpm', 'audit', '--audit-level=high']))
+    run(app_command(['composer', '--working-dir=src', 'audit']))
+    run(app_command(['pnpm', '--dir', 'src', 'audit', '--audit-level=high']))
 
 
 def secrets_scan():

@@ -21,21 +21,21 @@ if '--help' in args:
     sys.exit(0)
 
 def run(command, **kwargs):
-    subprocess.run(command, check=True, **kwargs)
+    subprocess.run(command, check=True, cwd=ROOT / 'src', **kwargs)
 
 try:
     if not Path('/.dockerenv').exists():
         command = ['docker', 'compose', '--env-file', '.env.dev.local', '-f', 'compose.yaml', '-f', '.devcontainer/compose.resources.yaml']
         if name == 'test' and args and args[0] == 'e2e':
-            run(command + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'])
-        run(command + ['exec', '-T', 'app', './bin/' + name, *args])
+            subprocess.run(command + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], check=True)
+        subprocess.run(command + ['exec', '-T', 'app', './bin/' + name, *args], check=True)
     elif name == 'format':
         if args not in ([], ['--check']):
             raise ValueError('Only --check is supported.')
         run(['vendor/bin/pint', *(['--test'] if args else [])])
-        run(['pnpm', 'exec', 'prettier', '--check' if args else '--write', 'resources', 'tests/frontend', 'tests/e2e', '*.mjs', 'package.json', 'tsconfig.json', 'pint.json', '.prettierrc.json'])
+        run(['pnpm', 'exec', 'prettier', '--check' if args else '--write', 'app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e', '*.mjs', 'package.json', 'tsconfig.json', 'pint.json', '../.prettierrc.json'])
     elif name == 'lint':
-        run(['pnpm', 'exec', 'eslint', 'resources', 'tests/frontend', 'tests/e2e', '*.mjs', '--max-warnings=0', *args])
+        run(['pnpm', 'exec', 'eslint', 'app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e', '*.mjs', '--max-warnings=0', *args])
     elif name == 'typecheck':
         run(['pnpm', 'run', 'typecheck', *args])
     elif name == 'analyse':
@@ -52,10 +52,10 @@ try:
                 run(['pnpm', 'exec', 'vitest', 'run', *args[1:]])
             elif args and args[0] == 'e2e':
                 # The frontend build replaces error output; finalize its current shells before the harness reads them.
-                run(['php', 'resources/errors/build.php'])
+                run(['php', 'runa/resources/errors/build.php'])
                 run(['pnpm', 'exec', 'playwright', 'test', *[arg for arg in args[1:] if arg != '--critical']])
             else:
-                if (ROOT / 'bootstrap/cache/config.php').exists():
+                if (ROOT / 'src/bootstrap/cache/config.php').exists():
                     raise ValueError('Clear cached development config before testing: php artisan config:clear')
                 env = dict(os.environ, APP_ENV='testing')
                 if '--parallel' in args and not any(arg.startswith('--processes') for arg in args):

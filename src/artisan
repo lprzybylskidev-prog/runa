@@ -8,8 +8,11 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 define('LARAVEL_START', microtime(true));
 
+// Framework subprocesses (including native test discovery) use the Laravel root.
+chdir(__DIR__);
+
 // Register the Composer autoloader...
-require is_file(__DIR__.'/vendor/autoload.php') ? __DIR__.'/vendor/autoload.php' : dirname(__DIR__).'/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
 /** @var list<string> $arguments */
 $arguments = $_SERVER['argv'];

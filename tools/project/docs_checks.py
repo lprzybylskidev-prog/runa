@@ -15,7 +15,7 @@ FIELDS = ('Current version', 'Active roadmap', 'Production ever deployed')
 
 def read_yaml(path):
     # Preserve YAML timestamps as ISO strings; the default parser turns them into integers.
-    script = ('require "vendor/autoload.php"; '
+    script = ('require "src/vendor/autoload.php"; '
               '$data = Symfony\\Component\\Yaml\\Yaml::parseFile($argv[1], Symfony\\Component\\Yaml\\Yaml::PARSE_DATETIME); '
               'if (is_array($data)) { array_walk_recursive($data, static function (&$value) { '
               'if ($value instanceof DateTimeInterface) { $value = $value->format(DATE_ATOM); } }); } '

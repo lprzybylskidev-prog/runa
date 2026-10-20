@@ -53,6 +53,15 @@ def main():
         invoke('pre-commit')
         assert git('show', ':fixture.json') == target.read_bytes() and b'"staged": true' in target.read_bytes()
         clear()
+        vendored = root / 'src/runa/resources/lang/pl/validation.php'
+        vendored.parent.mkdir(parents=True)
+        imported = b"<?php\nreturn array ('required' => 'Fixture message');\n"
+        vendored.write_bytes(imported)
+        git('add', str(vendored.relative_to(root)))
+        invoke('pre-commit')
+        assert git('show', ':' + str(vendored.relative_to(root))) == imported
+        assert vendored.read_bytes() == imported
+        clear()
         knowledge.write_text('#!/bin/sh\necho "Index stale; run ./bin/knowledge index" >&2\nexit 1\n')
         invoke('pre-commit', expected='Index stale')
     print('PASS: installed hooks reject env/staged synthetic secrets/invalid messages/stale knowledge; partial staging preserved; full-file formatting succeeds; fixtures removed without commits.')

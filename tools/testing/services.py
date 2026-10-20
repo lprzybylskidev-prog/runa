@@ -13,7 +13,7 @@ argparse.ArgumentParser(description=__doc__).parse_args()
 ROOT = Path(__file__).resolve().parents[2]
 subject = 'Runa runtime smoke ' + secrets.token_hex(8)
 code = r'''
-require 'vendor/autoload.php';
+require 'src/vendor/autoload.php';
 $app = require 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 if (!$app->environment('local') || config('mail.default') !== 'smtp'

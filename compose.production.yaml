@@ -18,7 +18,7 @@ x-application: &application
     - /tmp:rw,nosuid,nodev,size=64m,mode=1777
     - /workspace/src/bootstrap/cache:rw,nosuid,nodev,size=16m,uid=1000,gid=1000,mode=0770
   volumes:
-    - application-storage:/workspace/storage
+    - application-storage:/workspace/src/storage
   depends_on:
     postgres: { condition: service_healthy }
   cap_drop: [ALL]
@@ -118,9 +118,14 @@ services:
     volumes:
       - type: volume
         source: application-storage
-        target: /workspace/storage/app/public
+        target: /workspace/src/storage/app/application/public
         read_only: true
         volume: { subpath: app/application/public }
+      - type: volume
+        source: application-storage
+        target: /workspace/src/storage/app/runa/public
+        read_only: true
+        volume: { subpath: app/runa/public }
       - type: volume
         source: application-storage
         target: /run/runa-maintenance

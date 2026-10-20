@@ -1,14 +1,14 @@
 # Component Catalogue
 
-Search this catalogue and the source before introducing a new control. First-use page-local elements are allowed; on second use, extract the common element into `resources/js/components/`, migrate both consumers, expose its reusable contract through `@/runa/ui` and document it here in the same task. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
+Search this catalogue and the source before introducing a new control. First-use page-local elements are allowed; on second use, extract the common element into `src/runa/resources/js/components/`, migrate both consumers, expose its reusable contract through `@/runa/ui` and document it here in the same task. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
 
 ## Motion composition
 
-All components have been reviewed for purposeful motion; see `motion.md` for the complete inventory, timing and accessibility rules. Internal AppCollapse (`resources/js/components/AppCollapse.vue`) preserves disclosure DOM/drafts while clipping natural height and applying immediate inert/aria-hidden. It is not a public facade export. Internal useContentMotion (`resources/js/composables/useContentMotion.ts`) reveals retained Wizard/CalendarPicker/AsyncContent updates without remounting; `resources/js/lib/motion.ts` owns immediate exit deactivation and interrupted-entry restoration. Consumers inherit shared behavior instead of adding duplicate page entrances. Point-21 motion was accepted on 2026-10-19.
+All components have been reviewed for purposeful motion; see `motion.md` for the complete inventory, timing and accessibility rules. Internal AppCollapse (`src/runa/resources/js/components/AppCollapse.vue`) preserves disclosure DOM/drafts while clipping natural height and applying immediate inert/aria-hidden. It is not a public facade export. Internal useContentMotion (`src/runa/resources/js/composables/useContentMotion.ts`) reveals retained Wizard/CalendarPicker/AsyncContent updates without remounting; `src/runa/resources/js/lib/motion.ts` owns immediate exit deactivation and interrupted-entry restoration. Consumers inherit shared behavior instead of adding duplicate page entrances. Point-21 motion was accepted on 2026-10-19.
 
 ## AppSelect
 
-- Source: `resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.
+- Source: `src/runa/resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.
 - All selection modes use the shared themed floating dialog/listbox, including simple single selection. Searchable adds a search field; multiple changes the value contract. No browser-owned option popup is used. String values are stable IDs; multiple=true uses string[]. Disabled options cannot be chosen. FormField supplies label/helper/warning/errors and required semantics; disabled/readonly block edits, clearable is explicit.
 - Search is locale-aware for local options; provider queries debounce (250ms default), abort prior requests and ignore stale responses even if a provider ignores cancellation. Loading/error/retry/empty states remain distinct. Escape restores trigger focus, outside pointer dismisses, arrows/Home/End move over enabled options and Enter selects; IME composition is preserved. Multiple selection stays open until Done.
 - Rendering is bounded to one page (40 default, at most 100). Local pages offer previous/next; remote providers receive query/cursor/limit/AbortSignal and return options/nextCursor. Remote next replaces the visible page; the provider owns cursor semantics, transport, ordering and authorization, without whole-dataset fetching. No automatic request on selection changes.
@@ -16,7 +16,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppForm
 
-- Source: `resources/js/components/AppForm.vue`.
+- Source: `src/runa/resources/js/components/AppForm.vue`.
 - Prefer for controlled application forms: always `novalidate`, prevents native navigation, emits the submit event only when not busy and exposes `aria-busy`.
 - Props: busy/valid/dirty, label/description and responsive columns; slots default/feedback/actions. Busy disables contained controls; valid=false emits invalid instead of submit. focusInvalid() supports async error recovery.
 - Field validation remains the owning feature's responsibility; FormField/TextInput/NumberInput and useForm now supply reusable field/error/value contracts (see forms.md).
@@ -24,31 +24,31 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppIcon
 
-- Source: `resources/js/components/AppIcon.vue`.
+- Source: `src/runa/resources/js/components/AppIcon.vue`.
 - Typed subset of four Tabler outline icons with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
 - Local source assets, licenses and revision/hash provenance: `docs/design/assets.md`.
 
 ## Root preference buttons
 
-- Sources: `resources/js/components/AppPreferenceControls.vue`, `resources/js/composables/useDisplayPreferences.ts`, consumed by both web layouts.
+- Sources: `src/runa/resources/js/components/AppPreferenceControls.vue`, `src/runa/resources/js/composables/useDisplayPreferences.ts`, consumed by both web layouts.
 - Exactly two buttons (44px md in MinimalLayout, 36px sm in ApplicationLayout): language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names describe current/next values; short application tooltips identify the action. Both controls use AppButton. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip
 
-- Source: `resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
+- Source: `src/runa/resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
 - Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
 - Uses shared `useFloatingLayer` for measured viewport-clamped fixed positioning, resize/content observation, top-layer Escape/outside dismissal and teardown. Both placements teleport outside scroll clipping; no runtime DOM access during static error rendering.
 - Tooltip is descriptive only; use Popover for interactive content. Opacity transition is 140ms with reduced-motion support. Keep an accessible name on icon-only triggers.
 
 ## AppAlert, AppBadge and AppStatus
 
-- Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: neutral/success/info/warning/danger for alerts, toasts, badges and statuses. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, with no status tint. All use shared theme role tokens.
+- Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `src/runa/resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: neutral/success/info/warning/danger for alerts, toasts, badges and statuses. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, with no status tint. All use shared theme role tokens.
 - Alert accepts optional title, content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
 - Badge is static inline labeling/counts, size sm/md, no live role. Status pairs a decorative dot with required caller-provided readable slot content; announce opt-in enables role status.
 
 ## AppPopover
 
-- Source: `resources/js/components/AppPopover.vue`; public `Popover`. Required label names its nonmodal dialog; optional align start/end. Trigger slot receives toggle/open/panelId; default slot receives close. Optional picker uses a viewport-bounded 360px panel with compact padding; initialFocus targets a selector inside the panel. Tabbing excludes roving tabindex=-1 items. Caller owns the trigger label, aria-expanded/controls and aria-haspopup=dialog.
+- Source: `src/runa/resources/js/components/AppPopover.vue`; public `Popover`. Required label names its nonmodal dialog; optional align start/end. Trigger slot receives toggle/open/panelId; default slot receives close. Optional picker uses a viewport-bounded 360px panel with compact padding; initialFocus targets a selector inside the panel. Tabbing excludes roving tabindex=-1 items. Caller owns the trigger label, aria-expanded/controls and aria-haspopup=dialog.
 - Focus moves to the first control (or panel); Escape closes the top layer and returns to its trigger. Outside pointer dismisses without stealing focus. Tab leaves the nonmodal panel through normal neighboring trigger order; Shift+Tab from the first control returns to the trigger. Shared viewport positioning flips/clamps, reacts to scroll/resize/content and escapes clipping. Nested popovers dismiss one level per Escape.
 - ApplicationLayout's unique initials profile control now uses Popover for its existing user-menu slot; navigation remains specialized because its route/availability/scroll/Tab contracts differ. No generic action-list or split buttons are reintroduced.
 
@@ -61,7 +61,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppButton
 
-- Source: `resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
+- Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
 - `variant`: neutral (compatible default), solid, outline, soft, ghost. `tone`: primary, secondary, success, danger, warning, info, accent. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
 - `busy` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
@@ -69,13 +69,13 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppButtonGroup
 
-- Source: `resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
+- Source: `src/runa/resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
 - Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
 - Action-list/split buttons and reusable avatars were removed at the owner's request; build these only when an actual application need appears. ApplicationLayout retains its unique initials profile control.
 
 ## AppFooter
 
-- Source: `resources/js/components/AppFooter.vue`.
+- Source: `src/runa/resources/js/components/AppFooter.vue`.
 - `poweredByLabel` defaults to English `Powered by` for standalone use. MinimalLayout passes the current translation (`Oparte na` in Polish), reusing its existing locale state.
 - Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; both bundled versions default to actual root VERSION.
 - `options: FooterOptions` independently controls visible/application/platform/copyright/repository; optional copyrightText/repositoryUrl/repositoryLabel customize content. URL validation rejects unsafe links. Copyright and GitHub remain default supplemental elements. Removed obsolete versionLabel prop.
@@ -83,41 +83,41 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## IdentityProvider
 
-- Source: `resources/js/components/AppIdentityProvider.vue`; public `IdentityProvider`, `useIdentity`, `defaultIdentity`, `resolveIdentity` from `@/runa/ui`.
+- Source: `src/runa/resources/js/components/AppIdentityProvider.vue`; public `IdentityProvider`, `useIdentity`, `defaultIdentity`, `resolveIdentity` from `@/runa/ui`.
 - Reactive partial ApplicationIdentity overrides scope to descendants, with safe bundled defaults and independent application/platform versions. No global setup or shell dependency. Nested providers are independent scopes with bundled defaults, not implicit merges with their parents.
 - Logo accepts same-origin absolute asset paths or credential-free HTTPS URLs. Missing/invalid URLs use the supplied Runa mark and application name; blank accessible names fall back to the application name. Failed image loading restores the mark; changed sources retry.
 
 ## AppBrandIllustration
 
-- Source: `resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
+- Source: `src/runa/resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
 
 ## AppLoadingOverlay
 
-- Source: `resources/js/components/AppLoadingOverlay.vue`.
+- Source: `src/runa/resources/js/components/AppLoadingOverlay.vue`.
 - Teleported opaque full-screen loading cover, centered circular spinner and accessible status label. Props: `active`, `label`; emits `covered` after enter and `revealed` after leave.
 - Shared 340ms smooth opacity transitions and 700ms spinner cycle, disabled for reduced motion. Cover colors are captured at activation so theme updates do not abruptly recolor the visible overlay. The fully covered class must not override leave-transition opacity. Caller owns pending operation, inert/busy state and focus restoration; MinimalLayout provides the canonical language/theme flow.
 
 ## AppBackdrop
 
-- Source: `resources/js/components/AppBackdrop.vue`.
+- Source: `src/runa/resources/js/components/AppBackdrop.vue`.
 - Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture, animation or external assets.
 - Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/design/visual-direction.md`.
 
 ## RunaLogo
 
-- Source: `resources/js/components/RunaLogo.vue`.
+- Source: `src/runa/resources/js/components/RunaLogo.vue`.
 - Shared decorative project mark based on the supplied transparent PNG alpha mask. Inherits `currentColor`; CSS mask crops transparent padding without modifying the original image. Default height 28px with the mark's natural aspect ratio; CSS may override height.
 - Use in brand links and decorative artwork instead of the temporary Tabler mark. The owning link/control supplies its accessible name; the decorative mark is hidden from assistive technology. Source/provenance: `docs/design/assets.md`.
 
 ## AppConstellation
 
-- Source: `resources/js/components/AppConstellation.vue`.
+- Source: `src/runa/resources/js/components/AppConstellation.vue`.
 - Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. No motion, randomness, image asset or dependency.
 - Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.
 
 ## ApplicationLayout and AppNavigation
 
-- Sources: `resources/js/layouts/ApplicationLayout.vue`, internal recursive `resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/architecture/frontend.md` and page-layouts.md.
+- Sources: `src/runa/resources/js/layouts/ApplicationLayout.vue`, internal recursive `src/runa/resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/architecture/frontend.md` and page-layouts.md.
 - AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, whole-row disclosure buttons for groups and collapsed labels. Group labels do not navigate; leaf entries remain links. A centered CSS chevron lives inside the disclosure control, matching top-navigation convention. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
 - Header and sidebar share a static 44px CSS grid over their opaque surface, using 30% of the theme backdrop-grid opacity and secondary-text color; forced-colors removes the decorative texture.
 - The initials profile trigger remains a dedicated 44px circular button; its shell selector takes precedence over the shared button corner style. ApplicationLayout preference buttons use sm (36px) with 18px icons. The sidebar toggle uses an 18×14px geometric three-bar mark centered in a 36px sm square, 24px from the header left edge, avoiding font-baseline glyph shifts. Header toggle and initials avatar expose visible hover/focus/pressed states through the semantic primary palette in both themes.
@@ -129,13 +129,13 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppTopNavigation
 
-- Source: `resources/js/components/AppTopNavigation.vue`; internal application-shell navigation, not a generic dropdown component. Distinct from the sidebar's recursive AppNavigation.
+- Source: `src/runa/resources/js/components/AppTopNavigation.vue`; internal application-shell navigation, not a generic dropdown component. Distinct from the sidebar's recursive AppNavigation.
 - Horizontal group labels are disclosure buttons. Their dropdown card is teleported to body outside the scroll container, positioned under the trigger/header and clamped to the viewport. Header stays 64px when open; sidebar groups retain inline expansion. The panel reuses AppNavigation for its child links.
 - Escape, outside click, route change, document scroll and resize dismiss it; nav scrolling updates its anchor position; focus returns on Escape. Tab boundaries connect the popup back to normal navigation order. General tooltip/popover floating behavior is implemented in point 9; route navigation retains its specialized anchoring and keyboard contract.
 
 ## Content containers and navigation
 
-- Public `Card`, `Divider`, `Accordion`, `Tabs`, `Dropdown`, `Breadcrumbs`, `Pagination` map to `resources/js/components/App*.vue`; types `TabItem`/`BreadcrumbItem` come from `@/runa/ui`. No shell, router or global installation is required.
+- Public `Card`, `Divider`, `Accordion`, `Tabs`, `Dropdown`, `Breadcrumbs`, `Pagination` map to `src/runa/resources/js/components/App*.vue`; types `TabItem`/`BreadcrumbItem` come from `@/runa/ui`. No shell, router or global installation is required.
 - Card offers header/actions/default/footer slots; absent header/footer reserve no space. Card and Accordion headers use the lighter raised surface and semibold ordinary-text titles above darker neutral bodies (muted surface in light theme, ordinary surface in dark theme). The card footer matches the lighter header surface, with smaller secondary text and compact spacing. Divider is a semantic horizontal rule, or a decorative labeled section break.
 - Accordion requires boolean v-model and label; optional disabled. Native Enter/Space toggles through update:modelValue; its hidden content stays mounted. Compose independent accordions for multiple expansion, or control their values for exclusive expansion.
 - Tabs requires string v-model, unique stable item IDs and label. Each item has id/label/optional disabled; named slots match IDs. Horizontal arrows wrap across enabled tabs; Home/End move to endpoints and automatically activate. Inactive panels stay mounted and hidden. If the controlled selection disappears/is disabled, the first enabled item is presented; the owner should reconcile its model. Empty/all-disabled lists have no active panel.
@@ -145,7 +145,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## Loading and asynchronous content
 
-- Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `resources/js/components/App*.vue`. `AsyncContentState` is loading/error/empty/success. No fetch/provider lifecycle is hidden in these primitives.
+- Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `src/runa/resources/js/components/App*.vue`. `AsyncContentState` is loading/error/empty/success. No fetch/provider lifecycle is hidden in these primitives.
 - Spinner requires localized label; sm/md/lg are 14/24/44px. Standalone uses role=status; decorative removes announcement for an already named parent. Button busy state and LoadingOverlay now compose this shared spinner, preserving overlay timing/focus/color capture. Reduced motion removes rotation.
 - Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not implement avatars or imply actual data progress.
 - Progress requires localized label; value null/absent/nonfinite is indeterminate. Finite value is clamped to 0..max (positive finite max, otherwise 100). ARIA uses actual value/max units; visible percentage is derived only for determinate progress. Optional valueText supplies a localized meaningful equivalent. FeedbackTone selects neutral/success/info/warning/danger; reduced motion stops travel/transition while leaving the status visible. The caller owns completion/failure/cancellation.
@@ -160,7 +160,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## FormSection, FormField, TextInput, NumberInput and useForm
 
-- Sources: `resources/js/components/App{FormSection,FormField,TextInput,NumberInput}.vue`, `resources/js/composables/useForm.ts`, `resources/js/lib/decimal.ts`; public facade exports components, form types, useForm/laravelFieldErrors and parseDecimal/serializeDecimal/formatDecimal.
+- Sources: `src/runa/resources/js/components/App{FormSection,FormField,TextInput,NumberInput}.vue`, `src/runa/resources/js/composables/useForm.ts`, `src/runa/resources/js/lib/decimal.ts`; public facade exports components, form types, useForm/laravelFieldErrors and parseDecimal/serializeDecimal/formatDecimal.
 - FormSection supplies semantic fieldsets, descriptions, 1/2/3 responsive columns and controlled collapse preserving values. FormField exposes linked labels/descriptions/errors through scoped slot IDs and invalid state.
 - TextInput supports text/textarea/password/email/url/tel, native autofill attributes and required/disabled/readonly/invalid states; nullable is opt-in. NumberInput supplies exact string/null values for integer/decimal/currency/percentage, localized decimal separators and optional scale without rounding; incomplete values remain in the model with inline errors. Units such as PLN/% appear beside the input through TextInput's noneditable suffix slot, remain linked to its accessible description and stay outside its value.
 - useForm tracks cloned finite-JSON values, nested dirty baselines and controlled busy/errors; maps 422 dot keys, preserves 409/server-failure drafts and supports explicit server-snapshot reset. useForm itself has no hidden network requests or business rules; optional dirty guards and masks compose it separately. Detailed API and numeric serialization contracts: forms.md.
@@ -189,7 +189,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 
 ### Table
 
-`Table` (`resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
+`Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
 
 ### Nested semantic colors
 
@@ -197,7 +197,7 @@ Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statist
 
 ### TablePreferences and useTableViews
 
-`resources/js/components/AppTablePreferences.vue` supplies a sm icon-only ghost settings button with a localized accessible name/Tooltip, matching export settings, plus the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
+`src/runa/resources/js/components/AppTablePreferences.vue` supplies a sm icon-only ghost settings button with a localized accessible name/Tooltip, matching export settings, plus the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
 
 ### Small field controls
 
@@ -209,11 +209,11 @@ TableActions composes sm icon export/print actions, a scope/orientation settings
 
 ## Independent consumer verification
 
-`tests/frontend/fixtures/StandaloneConsumer.vue` composes public form/field/selection, Tabs, ConfirmDialog, Table and TableActions APIs with caller-owned state and bounded synthetic data. Its entry imports the shared CSS and initializes only the document locale/theme; it imports no shell, resolver, registry or preference initialization. `tools/testing/ui-boundaries.mjs` verifies emitted modules/code, permitting ordinary control composables while rejecting shell/router/preferences. Playwright builds the independent consumer separately from other scenarios under .runtime/browser-harness/standalone. Test sources/tools/output are excluded from production; no application preview or permanent catalog remains.
+`src/runa/tests/frontend/fixtures/StandaloneConsumer.vue` composes public form/field/selection, Tabs, ConfirmDialog, Table and TableActions APIs with caller-owned state and bounded synthetic data. Its entry imports the shared CSS and initializes only the document locale/theme; it imports no shell, resolver, registry or preference initialization. `src/runa/tools/testing/ui-boundaries.mjs` verifies emitted modules/code, permitting ordinary control composables while rejecting shell/router/preferences. Playwright builds the independent consumer separately from other scenarios under .runtime/browser-harness/standalone. Test sources/tools/output are excluded from production; no application preview or permanent catalog remains.
 
 ## Import and extension example
 
-Load `resources/css/app.css` once in the consuming entry, then use individual public components without a shell/router installation:
+Load `src/runa/resources/css/app.css` once in the consuming entry, then use individual public components without a shell/router installation:
 
 ```vue
 <script setup lang="ts">
@@ -227,4 +227,4 @@ const name = ref('');
 </template>
 ```
 
-Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Executable shell-free composition is retained in `tests/frontend/fixtures/StandaloneConsumer.vue`; component/layout scenarios are test assets, never application demos.
+Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Executable shell-free composition is retained in `src/runa/tests/frontend/fixtures/StandaloneConsumer.vue`; component/layout scenarios are test assets, never application demos.

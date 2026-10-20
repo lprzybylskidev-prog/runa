@@ -83,7 +83,12 @@ final class RunaServiceProvider extends ServiceProvider
             }
         }
 
-        $this->loadViewsFrom(resource_path('views/runa-mail'), 'runa-mail');
+        $this->loadViewsFrom([app_path('resources/views/runa-mail'), resource_path('views/runa-mail')], 'runa-mail');
+        $this->loadViewsFrom([app_path('resources/views/errors'), resource_path('views/errors')], 'runa-errors');
+        $this->loadTranslationsFrom(resource_path('lang'), 'runa');
+        $this->app->make('translator')->addNamespace('application', app_path('lang'));
+        $this->loadTranslationsFrom(app_path('lang'));
+        $this->loadJsonTranslationsFrom(app_path('lang'));
 
         Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));

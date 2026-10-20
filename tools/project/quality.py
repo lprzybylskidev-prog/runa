@@ -45,7 +45,7 @@ def plan(final=False):
         raise ValueError('Exactly one active roadmap is required.')
     header = active[0].read_text().split('---', 2)[1]
     # Use the existing Symfony YAML parser without introducing Python dependencies.
-    result = subprocess.run(app_command(['php', '-r', 'require "vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
+    result = subprocess.run(app_command(['php', '-r', 'require "src/vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
     roadmap = json.loads(result.stdout)
     return roadmap, select(yaml(ROOT / 'docs/quality/gates.yml'), roadmap['impact_areas'], final)
 

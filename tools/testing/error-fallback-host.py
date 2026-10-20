@@ -54,6 +54,12 @@ def main():
     with tempfile.TemporaryDirectory(prefix=name + '-') as folder:
         marker = Path(folder)
         marker.chmod(0o755)
+        for owner in ('application', 'runa'):
+            public = marker / owner / 'public'
+            public.mkdir(parents=True)
+            (public / 'probe.txt').write_text(owner + ' public')
+            (marker / owner / 'private.txt').write_text(owner + ' private')
+            (public / 'private-link.txt').symlink_to('../private.txt')
         try:
             # A disposable tag, never an immutable release tag. Build uses locked production stages.
             build_started = True
@@ -66,6 +72,8 @@ def main():
                  '--label', 'runa.task=RM-2026-004-point5', '--label', 'runa.test.run=' + token, '--read-only', '--tmpfs', '/tmp',
                  '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
                  '--mount', 'type=bind,src=' + str(marker) + ',dst=/run/runa-maintenance,readonly',
+                 '--mount', 'type=bind,src=' + str(marker / 'application/public') + ',dst=/workspace/src/storage/app/application/public,readonly',
+                 '--mount', 'type=bind,src=' + str(marker / 'runa/public') + ',dst=/workspace/src/storage/app/runa/public,readonly',
                  '-p', '127.0.0.1::8080', image])
             created.append(('container', frontend))
             port = output(['docker', 'port', frontend, '8080/tcp']).rsplit(':', 1)[1]
@@ -98,6 +106,10 @@ def main():
             check(status == 503 and headers.get_content_type() == 'application/json' and json.loads(body)['code'] == 'service_unavailable', 'API outage is JSON with status 503')
             status, headers, body = fetch('/missing', {'Accept': 'application/problem+json'})
             check(status == 503 and headers.get_content_type() == 'application/json', 'negotiated JSON outage')
+            for owner, prefix in (('application', '/storage/'), ('runa', '/runa-storage/')):
+                check(fetch(prefix + 'probe.txt')[2] == (owner + ' public').encode(), owner + ' public storage serves its own subtree')
+                check(fetch(prefix + 'private-link.txt')[0] == 404, owner + ' public storage cannot traverse an unmounted private sibling')
+                check(fetch(prefix + 'private.txt')[0] == 404, owner + ' private storage is not published')
             check(fetch('/runa-error/pages/503-pl-system.html')[0] == 404, 'emergency HTML is internal')
             check(fetch('/runa-error/pages/503.json')[0] == 404, 'emergency JSON is internal')
             for asset in ('styles.css', 'runa-logo.png', 'IBMPlexMono-Regular.woff2', 'IBMPlexMono-SemiBold.woff2'):

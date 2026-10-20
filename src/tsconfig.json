@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "paths": {
+      "@/runa/*": ["./runa/resources/js/runa/*"],
+      "@/runa/ui": ["./runa/resources/js/runa/ui/index.ts"],
+      "@runa/*": ["./runa/resources/js/*"],
+      "@/*": ["./app/resources/js/*"]
+    },
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "types": ["vite/client"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "app/resources/**/*.ts",
+    "app/resources/**/*.vue",
+    "runa/resources/**/*.ts",
+    "runa/resources/**/*.vue",
+    "runa/tests/frontend/**/*.ts",
+    "runa/tests/e2e/**/*.ts",
+    "app/tests/frontend/**/*.ts"
+  ]
+}

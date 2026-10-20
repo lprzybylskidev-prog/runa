@@ -99,7 +99,7 @@ class StartupContracts(unittest.TestCase):
             self.assertFalse((root / '.runtime/dev/setup.sha256').exists())
 
     def setup_fixture(self, root):
-        for name in ('vendor/autoload.php', 'node_modules/.modules.yaml', 'public/build/index.html', 'public/runa-error/styles.css', 'public/runa-error/pages/503-pl-system.html'):
+        for name in ('src/vendor/autoload.php', 'src/node_modules/.modules.yaml', 'src/public/build/index.html', 'src/public/runa-error/styles.css', 'src/public/runa-error/pages/503-pl-system.html'):
             path = root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.touch()
@@ -130,16 +130,16 @@ class StartupContracts(unittest.TestCase):
                 root = Path(folder)
                 marker = self.setup_fixture(root)
                 if reason == 'missing_document':
-                    (root / 'public/runa-error/pages/503-pl-system.html').unlink()
-                    (root / 'public/runa-error/pages/503-pl.html').touch()
+                    (root / 'src/public/runa-error/pages/503-pl-system.html').unlink()
+                    (root / 'src/public/runa-error/pages/503-pl.html').touch()
                 else:
                     marker.write_text('stale\n')
                 with patch.object(dev, 'ROOT', root), patch.object(dev, 'environment_files'), patch.object(dev, 'register_boost'), patch.object(dev, 'setup_fingerprint', return_value='current'), patch.object(dev.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run:
                     self.assertEqual(dev.application_setup(['--if-needed']), 0)
                 commands = [call.args[0] for call in run.call_args_list]
-                self.assertIn(['composer', 'install', '--no-interaction', '--prefer-dist'], commands)
-                self.assertIn(['pnpm', 'run', 'build'], commands)
-                self.assertIn(['php', 'resources/errors/build.php'], commands)
+                self.assertIn(['composer', '--working-dir=src', 'install', '--no-interaction', '--prefer-dist'], commands)
+                self.assertIn(['pnpm', '--dir', 'src', 'run', 'build'], commands)
+                self.assertIn(['php', 'src/runa/resources/errors/build.php'], commands)
                 self.assertEqual(marker.read_text(), 'current\n')
 
     def test_optional_probe_has_process_deadline(self):

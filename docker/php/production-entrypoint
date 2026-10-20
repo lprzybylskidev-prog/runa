@@ -2,8 +2,8 @@
 set -eu
 umask 0027
 # Preserve durable files; initialize only missing runtime directories.
-mkdir -p storage/app/application/private storage/app/application/public storage/app/runa/private storage/app/runa/public storage/framework/cache/data \
-    storage/framework/sessions storage/framework/views storage/framework/health storage/framework/maintenance storage/logs bootstrap/cache
+mkdir -p src/storage/app/application/private src/storage/app/application/public src/storage/app/runa/private src/storage/app/runa/public src/storage/framework/cache/data \
+    src/storage/framework/sessions src/storage/framework/views src/storage/framework/health src/storage/framework/maintenance src/storage/logs src/bootstrap/cache
 php artisan runa:config:validate
 # Caches are per-container and must never bake operator secrets into an image.
 php artisan config:cache --no-interaction

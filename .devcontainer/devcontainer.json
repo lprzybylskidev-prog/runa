@@ -45,6 +45,7 @@
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
         "php.validate.executablePath": "/usr/local/bin/php",
+        "eslint.workingDirectories": ["./src"],
         "eslint.validate": ["javascript", "typescript", "vue"]
       }
     }

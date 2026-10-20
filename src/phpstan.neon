@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+parameters:
+    level: max
+    paths:
+        - artisan
+        - app
+        - runa/src
+        - runa/management
+        - bootstrap/app.php
+        - runa/config
+        - runa/database
+        - runa/routes
+    tmpDir: ../.runtime/phpstan
+    parallel:
+        maximumNumberOfProcesses: 1

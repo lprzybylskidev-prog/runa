@@ -17,7 +17,7 @@ return [
     ],
     'markdown' => [
         'theme' => 'runa',
-        'paths' => [resource_path('views/mail')],
+        'paths' => [app_path('resources/views/mail'), resource_path('views/mail')],
     ],
     'from' => ['address' => env('MAIL_FROM_ADDRESS', 'runa@example.com'), 'name' => 'Runa'],
 ];

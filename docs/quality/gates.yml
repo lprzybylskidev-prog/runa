@@ -179,6 +179,12 @@ impact_areas:
       severity: hard_fail
 
   development:
+    - id: dependency-composition-contracts
+      depends_on: [repository-state]
+      description: Verify owner dependency composition, conflict rejection and lock preservation.
+      command: python3 tools/testing/dependencies.py
+      severity: hard_fail
+
     - id: development-startup-contract
       depends_on: [repository-state]
       command: python3 tools/testing/development-startup.py

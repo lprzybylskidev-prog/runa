@@ -88,7 +88,7 @@ Use Corepack where appropriate and pin `packageManager` in project metadata.
 
 Do not rely on random host-global npm/pnpm tooling.
 
-Commit `pnpm-lock.yaml`.
+Commit `src/pnpm-lock.yaml`.
 
 Use frozen installs in controlled/production builds.
 
@@ -340,9 +340,9 @@ The devcontainer initializes the resource override before Compose starts and att
 
 ## Laravel foundation
 
-The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
+The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `src/composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
 
-The devcontainer's post-create command is `./bin/dev setup --if-needed`, executed inside the container. With a matching setup fingerprint and required dependency/build outputs (including the generated `public/runa-error/pages/503-pl-system.html`), it skips dependency installation and frontend rebuilding while retaining configuration/migration and hook/MCP checks. Missing output or changed inputs run complete setup; the retired `503-pl.html` filename is not readiness evidence. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment, applies ordinary migrations and installs/builds the locked frontend as described below.
+The devcontainer's post-create command is `./bin/dev setup --if-needed`, executed inside the container. With a matching setup fingerprint and required dependency/build outputs (including the generated `src/public/runa-error/pages/503-pl-system.html`), it skips dependency installation and frontend rebuilding while retaining configuration/migration and hook/MCP checks. Missing output or changed inputs run complete setup; the retired `503-pl.html` filename is not readiness evidence. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment, applies ordinary migrations and installs/builds the locked frontend as described below.
 
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
@@ -358,13 +358,13 @@ Initialization scripts run only for an empty volume. Changing local passwords do
 
 ## Frontend foundation
 
-When setup inputs or generated outputs require it, post-create `./bin/dev setup --if-needed` installs `pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
+When setup inputs or generated outputs require it, post-create `./bin/dev setup --if-needed` installs `src/pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `src/public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 
 The production Dockerfile has explicit `production` and `production-nginx` targets that consume the same locked frontend build stage. PHP gets native translation data/license and the SPA HTML/assets; Nginx gets only static frontend assets/configuration. No host-built frontend output is copied as a build input. Production container behavior and host build checks are documented in `docs/production/architecture.md` and `docs/tooling/commands.md`; operational self-tests and their baseline host simulation evidence are recorded in closed RM-2026-001.
 
-Browser verification uses `tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node tools/testing/frontend.mjs` inside the container after provisioning those browsers. The development image provisions the pinned browsers and system dependencies; baseline acceptance is recorded in closed RM-2026-001.
+Browser verification uses `src/runa/tools/testing/frontend.mjs` with project Playwright, Chromium and Firefox. Its screenshots are ignored under `artifacts/playwright/foundation`. Run `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright node src/runa/tools/testing/frontend.mjs` inside the container after provisioning those browsers. The development image provisions the pinned browsers and system dependencies; baseline acceptance is recorded in closed RM-2026-001.
 
 ## Complete runtime services and startup order
 
@@ -414,4 +414,4 @@ Shared development/test and production-build Nginx runtime inputs use tag plus r
 
 ## Standalone HTTP error assets
 
-Native HTTP errors and emergency 503 are build-time renders of the actual MinimalLayout Vue component. `./bin/dev setup` builds these as part of `pnpm run build` and finalizes static 503 documents with `php resources/errors/build.php`. For a manual refresh use `./bin/pnpm run build:errors` then `php resources/errors/build.php` inside the application container. Rebuild after shared layout/component/style/copy/branding changes. Private generated views and public standalone assets are ignored and recreated independently in production; runtime rendering does not need Vue/Node/JavaScript, Vite's main build files, a database or optional AI tooling. Browser checks use isolated test fixtures; there are no application preview routes or catalog.
+Native HTTP errors and emergency 503 are build-time renders of the actual MinimalLayout Vue component. `./bin/dev setup` builds these as part of `pnpm run build` and finalizes static 503 documents with `php src/runa/resources/errors/build.php`. For a manual refresh use `./bin/pnpm run build:errors` then `php src/runa/resources/errors/build.php` inside the application container. Rebuild after shared layout/component/style/copy/branding changes. Private generated views and public standalone assets are ignored and recreated independently in production; runtime rendering does not need Vue/Node/JavaScript, Vite's main build files, a database or optional AI tooling. Browser checks use isolated test fixtures; there are no application preview routes or catalog.

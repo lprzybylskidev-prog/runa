@@ -85,8 +85,8 @@ def maintenance():
                 if not any(identifier in line for identifier in known):
                     raise ValueError('Unlinked maintenance comment: ' + name)
     # Direct application dependencies must have a registered reviewed version.
-    composer = json.loads((ROOT / 'composer.json').read_text())
-    package = json.loads((ROOT / 'package.json').read_text())
+    composer = json.loads((ROOT / 'src/composer.json').read_text())
+    package = json.loads((ROOT / 'src/package.json').read_text())
     versions = {entry['package']: str(entry.get('version')) for entry in registry['entries'] if entry.get('package')}
     if len(versions) != sum('package' in entry for entry in registry['entries']):
         raise ValueError('Duplicate registry package mapping.')
@@ -127,7 +127,7 @@ def development():
     run(['php', 'artisan', 'runa:config:validate', '--templates'])
     run(['php', 'artisan', 'migrate:status', '--no-ansi'])
     for service, limit in (('queue', 120), ('scheduler', 150)):
-        heartbeat = json.loads((ROOT / 'storage/framework/health' / (service + '.json')).read_text())
+        heartbeat = json.loads((ROOT / 'src/storage/framework/health' / (service + '.json')).read_text())
         age = time.time() - heartbeat.get('recorded_at', 0)
         if not heartbeat.get('instance') or not 0 <= age <= limit:
             raise ValueError(service + ' shared heartbeat is missing/stale.')
