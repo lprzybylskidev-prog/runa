@@ -43,16 +43,12 @@ class StartupContracts(unittest.TestCase):
         executor.start()
         self.addCleanup(executor.stop)
 
-    def test_pre_autoload_setup_bridge_does_not_require_artisan(self):
-        original = Path.is_file
-        def without_vendor(path):
-            return False if path == ROOT / 'src/vendor/autoload.php' else original(path)
-        import runpy
-        with patch.object(Path, 'is_file', without_vendor), patch.object(sys, 'argv', [str(ROOT / 'bin/dev'), 'setup', '--if-needed']), patch('subprocess.run', return_value=SimpleNamespace(returncode=0)) as run:
-            with self.assertRaises(SystemExit) as result:
-                runpy.run_path(str(ROOT / 'bin/dev'), run_name='__main__')
-            self.assertEqual(result.exception.code, 0)
-            self.assertEqual(run.call_args.args[0], ['python3', str(ROOT / 'tools/application/executors/dev.py'), 'setup', '--if-needed'])
+    def test_pre_autoload_setup_uses_the_private_executor(self):
+        self.assertIn('command: [python3, tools/application/executors/dev.py, setup, --if-needed]', (ROOT / 'compose.yaml').read_text())
+        self.assertFalse((ROOT / 'bin/dev').exists())
+        editor = json.loads((ROOT / '.devcontainer/devcontainer.json').read_text())
+        self.assertEqual(editor['initializeCommand'], ['./bin/artisan', 'runa:dev:prepare'])
+        self.assertEqual(editor['postCreateCommand'], ['python3', 'tools/application/executors/dev.py', 'setup', '--if-needed'])
 
     def host_context(self):
         exists = Path.exists
@@ -71,7 +67,7 @@ class StartupContracts(unittest.TestCase):
         self.assertIn('--no-deps', optional)
         self.assertIn('embeddings-gpu', optional)
         self.assertIn('knowledge-init', optional)
-        self.assertEqual(diagnostics[-1], 'knowledge-status')
+        self.assertEqual(diagnostics[-1], 'runa:dev:knowledge-status')
 
     def test_selective_build_and_recreate_do_not_touch_siblings(self):
         for action, service in (('build', 'mailpit'), ('recreate', 'qdrant')):
@@ -142,7 +138,7 @@ class StartupContracts(unittest.TestCase):
                 self.assertEqual(dev.application_setup(['--if-needed']), 0)
             commands = [call.args[0] for call in run.call_args_list]
             self.assertFalse(any(command[0] in ('composer', 'pnpm') for command in commands))
-            self.assertIn(['php', 'artisan', 'runa:config:validate', '--templates'], commands)
+            self.assertIn(['php', 'artisan', 'runa:config:validate'], commands)
             self.assertIn(['php', 'artisan', 'migrate', '--force'], commands)
             register.assert_called_once()
             self.assertIn('frontend build skipped', output.getvalue())

@@ -124,7 +124,8 @@ def tooling():
 
 
 def development():
-    run(['php', 'artisan', 'runa:config:validate', '--templates'])
+    run(['php', 'artisan', 'runa:config:validate'])
+    run(['php', 'artisan', 'runa:config:templates'])
     run(['php', 'artisan', 'migrate:status', '--no-ansi'])
     for service, limit in (('queue', 120), ('scheduler', 150)):
         heartbeat = json.loads((ROOT / 'src/storage/framework/health' / (service + '.json')).read_text())
@@ -135,8 +136,8 @@ def development():
         with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(endpoint, timeout=10) as response:
             if response.status != 200:
                 raise ValueError('Development HTTP health failed.')
-    run(['php', 'artisan', 'runa:dev', 'knowledge-status'])
-    run(['php', 'artisan', 'runa:dev', 'profile'])
+    run(['php', 'artisan', 'runa:dev:knowledge-status'])
+    run(['php', 'artisan', 'runa:dev:profile'])
     print('PASS: config, database/migrations, queue/scheduler, Nginx, Mailpit and effective resources; optional AI availability reported separately.')
 
 

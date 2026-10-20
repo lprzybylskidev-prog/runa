@@ -243,7 +243,7 @@ When the agent starts a long final gate:
 
 - it must end its current turn/work,
 - it must not poll in a loop waiting for completion,
-- the user can later provide `python3 tools/maintainer/quality status` output or relevant full logs.
+- the user can later provide `python3 tools/maintainer/quality-status` output or relevant full logs.
 
 The quality tool stores only the latest run.
 

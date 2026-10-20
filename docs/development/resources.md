@@ -1,6 +1,6 @@
 # Development Resources
 
-Profiles are selected through `./bin/dev profile` and persisted in ignored local configuration such as `.env.dev.local`. The portable default is `standard`; use `high` for the initial project owner's machine.
+Profiles are selected through `./bin/artisan runa:dev:profile` and persisted in ignored local configuration such as `.env.dev.local`. The portable default is `standard`; use `high` for the initial project owner's machine.
 
 | Profile  | Intent                                                                |
 | -------- | --------------------------------------------------------------------- |
@@ -34,15 +34,15 @@ The application/devcontainer has these initial limits. These are portable starti
 
 `DEV_CPU_LIMIT` and `DEV_MEMORY_LIMIT` apply to the app/devcontainer, not independently to every sibling service. Service budgets are established with their services. `TEST_WORKERS` and `PLAYWRIGHT_WORKERS` configure test runner concurrency in the implemented test runners.
 
-Use `./bin/dev profile` to report effective local settings, `./bin/dev profile high` to select a preset, or for example:
+Use `./bin/artisan runa:dev:profile` to report effective local settings, `./bin/artisan runa:dev:profile:set high` to select a preset, or for example:
 
 ```sh
-./bin/dev profile custom DEV_CPU_LIMIT=6 DEV_MEMORY_LIMIT=6G TEST_WORKERS=4 PLAYWRIGHT_WORKERS=2
+./bin/artisan runa:dev:profile:set custom DEV_CPU_LIMIT=6 DEV_MEMORY_LIMIT=6G TEST_WORKERS=4 PLAYWRIGHT_WORKERS=2
 ```
 
-Custom starts from the current values and changes only supplied resource keys. Invalid input fails without replacing the local settings. No shell expressions are evaluated. Profile values and the host UID/GID are persisted in `.env.dev.local` (mode 0600). `./bin/dev prepare` idempotently generates the ignored `.devcontainer/compose.resources.yaml` used by VS Code and the host wrapper. It does not start containers, remove volumes or migrate databases.
+Custom starts from the current values and changes only supplied resource keys. Invalid input fails without replacing the local settings. No shell expressions are evaluated. Profile values and the host UID/GID are persisted in `.env.dev.local` (mode 0600). `./bin/artisan runa:dev:prepare` idempotently generates the ignored `.devcontainer/compose.resources.yaml` used by VS Code and the host wrapper. It does not start containers, remove volumes or migrate databases.
 
-Apply changed limits with `./bin/dev up` in a host terminal, or Rebuild/Reopen in Container. The CLI and VS Code use the same generated override. Docker commands must run on the host; the devcontainer has no Docker socket. `./bin/dev doctor` reports the effective profile.
+Apply changed limits with `./bin/artisan runa:dev:up` in a host terminal, or Rebuild/Reopen in Container. The CLI and VS Code use the same generated override. Docker commands must run on the host; the devcontainer has no Docker socket. `./bin/artisan runa:doctor:development` reports the effective profile.
 
 ## Sibling service budgets
 
@@ -60,7 +60,7 @@ The one-shot setup service uses the selected app budget because dependency insta
 
 ## Knowledge service budgets
 
-Qdrant uses 0.5 CPU/256 MB (low), 1 CPU/512 MB (standard/custom), or 2 CPU/1 GB (high). CPU embeddings uses 1/2/4 CPUs respectively and 2 GB memory. Optional CUDA embeddings uses 2 CPUs/4 GiB system memory in addition to GPU memory; it is a separate sibling so CPU fallback remains available after a GPU failure. These are initial limits verified through service startup, not workload benchmarks. Both embedding services share a persistent model cache. Select hardware with host-only `./bin/dev embeddings auto|cpu|cuda`; automatic detection requires NVIDIA compute capability >=7.5 and the Docker NVIDIA runtime. See `knowledge.md`.
+Qdrant uses 0.5 CPU/256 MB (low), 1 CPU/512 MB (standard/custom), or 2 CPU/1 GB (high). CPU embeddings uses 1/2/4 CPUs respectively and 2 GB memory. Optional CUDA embeddings uses 2 CPUs/4 GiB system memory in addition to GPU memory; it is a separate sibling so CPU fallback remains available after a GPU failure. These are initial limits verified through service startup, not workload benchmarks. Both embedding services share a persistent model cache. Select hardware with host-only `./bin/artisan runa:dev:embeddings:set auto|cpu|cuda`; automatic detection requires NVIDIA compute capability >=7.5 and the Docker NVIDIA runtime. See `knowledge.md`.
 
 The first CUDA startup exceeded its initial 2 GiB container RAM limit: Docker recorded OOM events and exit code 137. Startup succeeded with a 4 GiB limit and a smaller 2048-token server batch (CPU remains at 8192). The post-startup snapshot showed 482.1 MiB CUDA-service RAM and 270.1 MiB CPU-service RAM; startup peak usage has not been measured.
 
@@ -68,4 +68,4 @@ The first CUDA startup exceeded its initial 2 GiB container RAM limit: Docker re
 
 These limits are per-container ceilings, not host minimum requirements, reservations or application-capacity guarantees. The native Linux host needs Docker Engine/Compose, build/storage capacity and headroom for its editor, browsers, concurrent services and startup peaks. Select a profile that fits measured host CPU/RAM/I/O availability; the administrator owns sizing and concurrent workloads. Do not infer required host RAM by adding nominal ceilings, or infer business throughput from the initial smoke tests. Measure pressure, OOM events, latency and actual concurrency before changing allocations; preserve the current numerical presets without new evidence.
 
-The independent first-index initializer is limited to 1 CPU/512 MB; setup retains the selected app budget. Services left running by `shutdownAction: none` keep consuming resources until explicit `./bin/dev down`.
+The independent first-index initializer is limited to 1 CPU/512 MB; setup retains the selected app budget. Services left running by `shutdownAction: none` keep consuming resources until explicit `./bin/artisan runa:dev:down`.

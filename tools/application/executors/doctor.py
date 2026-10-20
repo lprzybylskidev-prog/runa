@@ -10,28 +10,25 @@ sys.path.insert(0, str(ROOT / 'tools/application'))
 from runtime import app_command, host_stack_health, inside, run
 import checks
 
-AREAS = ('repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production')
+AREAS = ('repository', 'templates', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development')
 try:
     args = sys.argv[1:]
     if args == ['--help']:
-        print('Usage: ./bin/artisan runa:doctor [area]\nNo area: quick whole-development diagnostic. Focused areas: ' + ', '.join(AREAS) + '.\nChecks never repair or deploy. Database-migrations resets only the guarded testing database.')
-    elif args == ['production']:
-        run([str(ROOT / 'bin/production'), 'self-test'])
+        print('Private diagnostic engine. Public focused commands: runa:doctor:' + ', '.join(AREAS) + '.\nChecks never repair or deploy. Database-migrations resets only the guarded testing database.')
+    elif len(args) != 1 or args[0] not in AREAS:
+        raise ValueError('A fixed diagnostic area is required.')
     elif not inside():
-        if not args or args == ['development']:
+        if args == ['development']:
             host_stack_health()
-        raise SystemExit(subprocess.run(app_command(['php', 'artisan', 'runa:doctor', *args]), cwd=ROOT).returncode)
+        raise SystemExit(subprocess.run(app_command(['php', 'artisan', 'runa:doctor:' + args[0]]), cwd=ROOT).returncode)
     else:
-        if len(args) > 1 or (args and args[0] not in AREAS):
-            raise ValueError('Unknown doctor area. See ./bin/artisan runa:doctor --help.')
-        area = args[0] if args else 'global'
-        if area == 'global':
-            checks.repository(); checks.maintenance(); checks.docs(); checks.tooling(); checks.development()
-        elif hasattr(checks, area):
+        area = args[0]
+        if hasattr(checks, area):
             getattr(checks, area)()
         else:
             commands = {
-                'config': ['php', 'artisan', 'runa:config:validate', '--templates'],
+                'config': ['php', 'artisan', 'runa:config:validate'],
+                'templates': ['php', 'artisan', 'runa:config:templates'],
                 'hooks': ['python3', 'tools/application/testing/hooks.py'],
                 'frontend': ['php', 'artisan', 'runa:typecheck'],
                 'database-migrations': ['php', 'artisan', 'runa:test-db:guard', '--env=testing'],

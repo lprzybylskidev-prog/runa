@@ -1,0 +1,93 @@
+[
+  {
+    "name": "runa:production:validate",
+    "tool": "production",
+    "prefix": ["validate"],
+    "signature": "",
+    "description": "Production validate"
+  },
+  {
+    "name": "runa:production:build",
+    "tool": "production",
+    "prefix": ["build"],
+    "signature": "",
+    "description": "Build and verify the selected production images"
+  },
+  {
+    "name": "runa:production:up",
+    "tool": "production",
+    "prefix": ["up"],
+    "signature": "",
+    "description": "Start production services and wait for health"
+  },
+  {
+    "name": "runa:production:down",
+    "tool": "production",
+    "prefix": ["down"],
+    "signature": "",
+    "description": "Stop production services, preserving volumes"
+  },
+  {
+    "name": "runa:production:restart",
+    "tool": "production",
+    "prefix": ["restart"],
+    "signature": "{service?}",
+    "description": "Production restart"
+  },
+  {
+    "name": "runa:production:status",
+    "tool": "production",
+    "prefix": ["status"],
+    "signature": "",
+    "description": "Production status"
+  },
+  {
+    "name": "runa:production:logs",
+    "tool": "production",
+    "prefix": ["logs"],
+    "signature": "{service?}",
+    "description": "Production logs"
+  },
+  {
+    "name": "runa:production:self-test",
+    "tool": "production",
+    "prefix": ["self-test"],
+    "signature": "",
+    "description": "Check production health and deployment readiness"
+  },
+  {
+    "name": "runa:production:verify-ai-isolation",
+    "tool": "production",
+    "prefix": ["verify-ai-isolation"],
+    "signature": "",
+    "description": "Verify production excludes development AI tooling"
+  },
+  {
+    "name": "runa:deploy",
+    "tool": "deploy",
+    "prefix": [],
+    "signature": "{target} {--simulation}",
+    "description": "Deploy the selected application release and verify readiness"
+  },
+  {
+    "name": "runa:deploy:rollback",
+    "tool": "deploy",
+    "prefix": ["rollback"],
+    "signature": "{--simulation}",
+    "description": "Restore compatible previous application images"
+  },
+  {
+    "name": "runa:host:status",
+    "tool": "host",
+    "prefix": ["status"],
+    "signature": "{request?}",
+    "description": "Inspect the private executor or an operation"
+  },
+  {
+    "name": "runa:host:stop",
+    "tool": "host",
+    "prefix": ["stop"],
+    "signature": "",
+    "description": "Stop the private executor"
+  }
+]

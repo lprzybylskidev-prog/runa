@@ -4,6 +4,10 @@ base:
     depends_on: []
     command: php artisan runa:config:validate
     severity: hard_fail
+  - id: application-config-templates
+    depends_on: []
+    command: php artisan runa:config:templates
+    severity: hard_fail
   - id: application-format
     depends_on: [application-config]
     command: php artisan runa:format --check
@@ -27,7 +31,7 @@ base:
     severity: hard_fail
   - id: application-secrets
     depends_on: [application-config]
-    command: php artisan runa:security secrets
+    command: php artisan runa:security:secrets
     severity: hard_fail
 impact_areas:
   backend: []
@@ -43,9 +47,9 @@ final:
   - id: application-container-security
     depends_on: []
     execution_context: host
-    command: ./bin/artisan runa:security trivy
+    command: ./bin/artisan runa:security:trivy
     severity: hard_fail
   - id: application-dependencies
     depends_on: []
-    command: php artisan runa:security dependencies
+    command: php artisan runa:security:dependencies
     severity: hard_fail

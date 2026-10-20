@@ -1,0 +1,408 @@
+[
+  {
+    "name": "runa:dev:prepare",
+    "tool": "dev",
+    "prefix": ["prepare"],
+    "signature": "",
+    "description": "Development prepare"
+  },
+  {
+    "name": "runa:dev:up",
+    "tool": "dev",
+    "prefix": ["up"],
+    "signature": "",
+    "description": "Start development services and wait for readiness"
+  },
+  {
+    "name": "runa:dev:down",
+    "tool": "dev",
+    "prefix": ["down"],
+    "signature": "",
+    "description": "Development down"
+  },
+  {
+    "name": "runa:dev:config",
+    "tool": "dev",
+    "prefix": ["config"],
+    "signature": "",
+    "description": "Development config"
+  },
+  {
+    "name": "runa:dev:shell",
+    "tool": "dev",
+    "prefix": ["shell"],
+    "signature": "",
+    "description": "Development shell"
+  },
+  {
+    "name": "runa:dev:build",
+    "tool": "dev",
+    "prefix": ["build"],
+    "signature": "{services?*}",
+    "description": "Development build"
+  },
+  {
+    "name": "runa:dev:recreate",
+    "tool": "dev",
+    "prefix": ["recreate"],
+    "signature": "{services*}",
+    "description": "Development recreate"
+  },
+  {
+    "name": "runa:dev:restart",
+    "tool": "dev",
+    "prefix": ["restart"],
+    "signature": "{service?}",
+    "description": "Development restart"
+  },
+  {
+    "name": "runa:dev:logs",
+    "tool": "dev",
+    "prefix": ["logs"],
+    "signature": "{service?}",
+    "description": "Development logs"
+  },
+  {
+    "name": "runa:dev:status",
+    "tool": "dev",
+    "prefix": ["status"],
+    "signature": "",
+    "description": "Development status"
+  },
+  {
+    "name": "runa:dev:setup",
+    "tool": "dev",
+    "prefix": ["setup"],
+    "signature": "{--if-needed}",
+    "description": "Prepare development dependencies, environment and assets"
+  },
+  {
+    "name": "runa:dev:knowledge-init",
+    "tool": "dev",
+    "prefix": ["knowledge-init"],
+    "signature": "",
+    "description": "Initialize the optional knowledge services"
+  },
+  {
+    "name": "runa:dev:knowledge-status",
+    "tool": "dev",
+    "prefix": ["knowledge-status"],
+    "signature": "",
+    "description": "Inspect optional knowledge startup readiness"
+  },
+  {
+    "name": "runa:dev:profile",
+    "tool": "dev",
+    "prefix": ["profile"],
+    "signature": "",
+    "description": "Show the development resource profile"
+  },
+  {
+    "name": "runa:dev:profile:set",
+    "tool": "dev",
+    "prefix": ["profile"],
+    "signature": "{profile} {settings?*}",
+    "description": "Select development resource limits"
+  },
+  {
+    "name": "runa:dev:embeddings:set",
+    "tool": "dev",
+    "prefix": ["embeddings"],
+    "signature": "{device}",
+    "description": "Select the embedding execution device"
+  },
+  {
+    "name": "runa:doctor:repository",
+    "tool": "doctor",
+    "prefix": ["repository"],
+    "signature": "",
+    "description": "Check repository without repair"
+  },
+  {
+    "name": "runa:doctor:config",
+    "tool": "doctor",
+    "prefix": ["config"],
+    "signature": "",
+    "description": "Check config without repair"
+  },
+  {
+    "name": "runa:doctor:maintenance",
+    "tool": "doctor",
+    "prefix": ["maintenance"],
+    "signature": "",
+    "description": "Check maintenance without repair"
+  },
+  {
+    "name": "runa:doctor:hooks",
+    "tool": "doctor",
+    "prefix": ["hooks"],
+    "signature": "",
+    "description": "Check hooks without repair"
+  },
+  {
+    "name": "runa:doctor:frontend",
+    "tool": "doctor",
+    "prefix": ["frontend"],
+    "signature": "",
+    "description": "Check frontend without repair"
+  },
+  {
+    "name": "runa:doctor:database-migrations",
+    "tool": "doctor",
+    "prefix": ["database-migrations"],
+    "signature": "",
+    "description": "Check database-migrations without repair"
+  },
+  {
+    "name": "runa:doctor:database",
+    "tool": "doctor",
+    "prefix": ["database"],
+    "signature": "",
+    "description": "Check database without repair"
+  },
+  {
+    "name": "runa:doctor:seeding",
+    "tool": "doctor",
+    "prefix": ["seeding"],
+    "signature": "",
+    "description": "Check seeding without repair"
+  },
+  {
+    "name": "runa:doctor:boost",
+    "tool": "doctor",
+    "prefix": ["boost"],
+    "signature": "",
+    "description": "Check boost without repair"
+  },
+  {
+    "name": "runa:doctor:tooling",
+    "tool": "doctor",
+    "prefix": ["tooling"],
+    "signature": "",
+    "description": "Check tooling without repair"
+  },
+  {
+    "name": "runa:doctor:docs",
+    "tool": "doctor",
+    "prefix": ["docs"],
+    "signature": "",
+    "description": "Check docs without repair"
+  },
+  {
+    "name": "runa:doctor:development",
+    "tool": "doctor",
+    "prefix": ["development"],
+    "signature": "",
+    "description": "Check development without repair"
+  },
+  {
+    "name": "runa:quality:plan",
+    "tool": "quality",
+    "prefix": ["show"],
+    "signature": "",
+    "description": "Show selected application quality gates"
+  },
+  {
+    "name": "runa:quality:roadmap",
+    "tool": "quality",
+    "prefix": ["roadmap"],
+    "signature": "{--background}",
+    "description": "Run the selected application roadmap quality workflow"
+  },
+  {
+    "name": "runa:quality:final",
+    "tool": "quality",
+    "prefix": ["final"],
+    "signature": "{--background}",
+    "description": "Run the full application quality workflow"
+  },
+  {
+    "name": "runa:quality:status",
+    "tool": "quality",
+    "prefix": ["status"],
+    "signature": "",
+    "description": "Show the latest application quality result"
+  },
+  {
+    "name": "runa:knowledge:search",
+    "tool": "knowledge",
+    "prefix": ["search"],
+    "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=}",
+    "description": "Development knowledge search"
+  },
+  {
+    "name": "runa:knowledge:index",
+    "tool": "knowledge",
+    "prefix": ["index"],
+    "signature": " {--device=}",
+    "description": "Development knowledge index"
+  },
+  {
+    "name": "runa:knowledge:rebuild",
+    "tool": "knowledge",
+    "prefix": ["rebuild"],
+    "signature": " {--device=}",
+    "description": "Development knowledge rebuild"
+  },
+  {
+    "name": "runa:knowledge:status",
+    "tool": "knowledge",
+    "prefix": ["status"],
+    "signature": "",
+    "description": "Development knowledge status"
+  },
+  {
+    "name": "runa:knowledge:stale",
+    "tool": "knowledge",
+    "prefix": ["stale"],
+    "signature": "",
+    "description": "Development knowledge stale"
+  },
+  {
+    "name": "runa:knowledge:doctor",
+    "tool": "knowledge",
+    "prefix": ["doctor"],
+    "signature": " {--device=}",
+    "description": "Development knowledge doctor"
+  },
+  {
+    "name": "runa:knowledge:eval",
+    "tool": "knowledge",
+    "prefix": ["eval"],
+    "signature": " {--device=}",
+    "description": "Development knowledge eval"
+  },
+  {
+    "name": "runa:knowledge:initialize",
+    "tool": "knowledge",
+    "prefix": ["initialize"],
+    "signature": "{--device=}",
+    "description": "Development knowledge initialize"
+  },
+  {
+    "name": "runa:security:trivy",
+    "tool": "security",
+    "prefix": ["trivy"],
+    "signature": "{--dependencies-root=}",
+    "description": "Check trivy"
+  },
+  {
+    "name": "runa:security:review-changed-surface",
+    "tool": "security",
+    "prefix": ["review-changed-surface"],
+    "signature": "",
+    "description": "Check review-changed-surface"
+  },
+  {
+    "name": "runa:security:dependencies",
+    "tool": "security",
+    "prefix": ["dependencies"],
+    "signature": "",
+    "description": "Check dependencies"
+  },
+  {
+    "name": "runa:security:secrets",
+    "tool": "security",
+    "prefix": ["secrets"],
+    "signature": "",
+    "description": "Check secrets"
+  },
+  {
+    "name": "runa:xdebug:enable",
+    "tool": "xdebug",
+    "prefix": ["on"],
+    "signature": "",
+    "description": "Development Xdebug on"
+  },
+  {
+    "name": "runa:xdebug:disable",
+    "tool": "xdebug",
+    "prefix": ["off"],
+    "signature": "",
+    "description": "Development Xdebug off"
+  },
+  {
+    "name": "runa:xdebug:status",
+    "tool": "xdebug",
+    "prefix": ["status"],
+    "signature": "",
+    "description": "Development Xdebug status"
+  },
+  {
+    "name": "runa:hook:pre-commit",
+    "tool": "hook",
+    "prefix": ["pre-commit"],
+    "signature": "{--repository= : Internal Git repository context}",
+    "description": "Run the pre-commit Git hook"
+  },
+  {
+    "name": "runa:hook:commit-msg",
+    "tool": "hook",
+    "prefix": ["commit-msg"],
+    "signature": "{message_file} {--repository= : Internal Git repository context}",
+    "description": "Run the commit-msg Git hook"
+  },
+  {
+    "name": "runa:check:debug-residue",
+    "tool": "check",
+    "prefix": ["debug-residue"],
+    "signature": "",
+    "description": "Check sources for debug residue"
+  },
+  {
+    "name": "runa:format",
+    "tool": "format",
+    "prefix": [],
+    "signature": "{--check}",
+    "description": "Format sources or check their formatting"
+  },
+  {
+    "name": "runa:lint",
+    "tool": "lint",
+    "prefix": [],
+    "signature": "{arguments?*}",
+    "description": "Run frontend lint"
+  },
+  {
+    "name": "runa:typecheck",
+    "tool": "typecheck",
+    "prefix": [],
+    "signature": "{arguments?*}",
+    "description": "Check frontend types"
+  },
+  {
+    "name": "runa:analyse",
+    "tool": "analyse",
+    "prefix": [],
+    "signature": "{arguments?*}",
+    "description": "Run backend static analysis"
+  },
+  {
+    "name": "runa:test",
+    "tool": "test",
+    "prefix": [],
+    "signature": "{arguments?*} {--parallel} {--processes=} {--filter=} {--compact}",
+    "description": "Run backend tests"
+  },
+  {
+    "name": "runa:test:frontend",
+    "tool": "test",
+    "prefix": ["frontend"],
+    "signature": "{arguments?*}",
+    "description": "Run frontend unit tests"
+  },
+  {
+    "name": "runa:test:e2e",
+    "tool": "test",
+    "prefix": ["e2e"],
+    "signature": "{arguments?*} {--critical}",
+    "description": "Run browser tests"
+  },
+  {
+    "name": "runa:doctor:templates",
+    "tool": "doctor",
+    "prefix": ["templates"],
+    "signature": "",
+    "description": "Check environment example coverage"
+  }
+]

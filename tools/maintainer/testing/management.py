@@ -53,6 +53,21 @@ class ManagementContracts(unittest.TestCase):
             with self.subTest(parameters=parameters), self.assertRaises(ValueError):
                 management.validate_plan(json.dumps(plan | {'parameters': parameters}), self.request)
 
+    def test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments(self):
+        cases = [
+            ('dev', ['profile'], ['runa:dev:profile']),
+            ('dev', ['profile', 'custom', 'DEV_CPU_LIMIT=2'], ['runa:dev:profile:set', 'custom', 'DEV_CPU_LIMIT=2']),
+            ('test', ['frontend', '--filter=literal $(false)'], ['runa:test:frontend', '--filter=literal $(false)']),
+            ('test', ['--filter=literal $(false)'], ['runa:test', '--filter=literal $(false)']),
+            ('deploy', ['rollback'], ['runa:deploy:rollback']),
+            ('hook', ['commit-msg', 'literal;message'], ['runa:hook:commit-msg', 'literal;message']),
+        ]
+        for tool, arguments, expected in cases:
+            with self.subTest(tool=tool, arguments=arguments):
+                self.assertEqual(management.public_command(tool, arguments), expected)
+        with self.assertRaises(ValueError):
+            management.public_command('unregistered', ['false'])
+
     def test_quality_queries_do_not_hold_the_production_lock_across_child_gates(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -135,12 +150,12 @@ class ManagementContracts(unittest.TestCase):
         with patch.object(management, 'ensure_image', return_value='image'), patch.object(management, 'execute_plan') as execute, patch.object(management.uuid, 'uuid4') as identity, contextlib.redirect_stdout(io.StringIO()):
             identity.return_value.hex = self.request
             with patch.object(management, 'bounded_output', return_value=(0, json.dumps(self.plan()), '')):
-                self.assertEqual(management.launch(['runa:dev', 'status', '--plan']), 0)
+                self.assertEqual(management.launch(['runa:dev:status', '--plan']), 0)
             with patch.object(management, 'bounded_output', return_value=(0, json.dumps(self.plan() | {'argv': ['false']}), '')), self.assertRaises(ValueError):
-                management.launch(['runa:dev', 'status'])
+                management.launch(['runa:dev:status'])
             execute.assert_not_called()
         with self.assertRaisesRegex(ValueError, 'reserved'):
-            management.launch(['runa:dev', 'status', '--host-request=' + self.request])
+            management.launch(['runa:dev:status', '--host-request=' + self.request])
 
     def test_interrupted_transport_removes_only_its_own_container(self):
         with patch.object(management, 'ensure_image', return_value='image'), patch.object(management.uuid, 'uuid4') as identity, patch.object(management, 'bounded_output', side_effect=ValueError('timed out')), patch.object(management.subprocess, 'run') as cleanup:

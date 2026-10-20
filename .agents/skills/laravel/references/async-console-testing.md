@@ -18,6 +18,8 @@
 
 ## Console commands
 
+Custom commands expose one fixed operation per discoverable name (for example `runa:dev:up`, `runa:knowledge:search`, `runa:test:frontend`). Do not add a public action selector or a flag that starts an unrelated task. Keep native framework combinations and explicitly named install/update/deploy/quality workflows. Use the shared versioned management definitions for normal/cold/host registration; owner `tools/maintainer/check-*`, `quality-*` and `test-*` entrypoints have no customer aliases. See docs/tooling/command-migration.md.
+
 Runtime-independent host operations share the explicit management command registry with normal local/testing Artisan. Normal php artisan host commands execute through the authenticated private workspace executor; only explicit --plan is inert. Use `./bin/artisan --management list` for cold discovery and --recover-host/--operator for setup/recovery; application providers, dotenv, DB and keys are outside that bootstrap. Local development tooling runs PHP Actions/fixed local processes. Operational and optional development registries remain separate. Production runtime has no management commands, executor socket or credentials; only the separate operator environment receives transport access. Follow docs/tooling/host-executor.md and the current command reference, including operation receipts after self-restart/disconnection and no blind mutation retry.
 
 Owner-delivered first installation uses internal dev/prod installation and existing dev/deploy mechanics,

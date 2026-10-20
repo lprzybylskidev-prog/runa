@@ -40,6 +40,15 @@ class ToolOwnership(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(calls[0].args[0], ['php', 'artisan', 'db:seed', '--class=' + seeder])
 
+    def test_owner_entrypoints_reject_foreign_actions_before_running_anything(self):
+        for name in ('check-repository', 'quality-plan', 'quality-status', 'quality-roadmap'):
+            with self.subTest(name=name):
+                code, calls = self.invoke(name, ['release'])
+                self.assertIsInstance(code, str)
+                self.assertEqual(calls, [])
+        for retired in ('doctor', 'quality', 'test'):
+            self.assertFalse((ROOT / 'tools/maintainer' / retired).exists())
+
     def test_customer_quality_does_not_require_a_runa_roadmap_or_maintainer_files(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'ROOT', Path(folder)), patch.object(quality, 'yaml', return_value={'base': [], 'impact_areas': {}, 'final': []}) as yaml:
             roadmap, nodes = quality.plan()

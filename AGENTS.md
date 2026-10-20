@@ -96,7 +96,7 @@ Do not add GitHub Actions or another CI pipeline unless the user explicitly chan
 Runa uses:
 
 - versioned local Git hooks,
-- `python3 tools/maintainer/quality`,
+- `python3 tools/maintainer/quality-roadmap`,
 - explicit local verification,
 - release checks.
 

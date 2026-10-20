@@ -74,7 +74,7 @@ def validate_request(value, credentials, challenge):
             or not isinstance(value['token'], str) or not hmac.compare_digest(value['token'], credentials['token'])
             or value['workspace'] != credentials['workspace'] or value['challenge'] != challenge
             or not isinstance(value['id'], str) or not re.fullmatch('[a-f0-9]{32}', value['id'])
-            or not isinstance(value['command'], str) or not re.fullmatch('runa:[a-z-]+', value['command'])
+            or not isinstance(value['command'], str) or not re.fullmatch('runa:[a-z-]+(?::[a-z-]+)*', value['command'])
             or type(value['interactive']) is not bool
             or not isinstance(value['arguments'], list) or len(value['arguments']) > 128
             or any(not isinstance(arg, str) or len(arg.encode()) > 4096 or '\0' in arg for arg in value['arguments'])):
@@ -140,8 +140,8 @@ class Handler(socketserver.StreamRequestHandler):
             json.dump(state, stream)
         try:
             plan = validated_plan(value, self.server.image)
-            if value['command'] == 'runa:host':
-                args = value['arguments']
+            if value['command'] in ('runa:host:status', 'runa:host:stop'):
+                args = [value['command'].rsplit(':', 1)[1], *value['arguments']]
                 if args[:1] == ['status']:
                     result = self.server.public_status(args[1] if len(args) == 2 else None)
                     self.wfile.write(encode({'type': 'stdout', 'data': base64.b64encode((json.dumps(result, indent=2) + '\n').encode()).decode()}))
@@ -343,8 +343,8 @@ def control(arguments):
         stream = client.makefile('rwb', buffering=0)
         challenge = read_json(stream)
         stream.write(encode({'version': 1, 'workspace': credentials['workspace'], 'token': credentials['token'],
-                             'challenge': challenge['value'], 'id': secrets.token_hex(16), 'command': 'runa:host',
-                             'arguments': arguments, 'interactive': False}))
+                             'challenge': challenge['value'], 'id': secrets.token_hex(16), 'command': 'runa:host:' + arguments[0],
+                             'arguments': arguments[1:], 'interactive': False}))
         while True:
             frame = read_json(stream)
             if frame['type'] == 'exit':

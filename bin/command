@@ -1,20 +1,10 @@
 #!/usr/bin/env python3
-"""Compatibility transport; public command definitions live in Artisan (RM-2026-005)."""
+"""Thin recovery aliases for single-purpose Artisan source commands."""
 from pathlib import Path
 import subprocess
 import sys
 ROOT = Path(__file__).resolve().parents[1]
-ALIASES = {'dev': 'dev', 'doctor': 'doctor', 'quality': 'quality', 'knowledge': 'knowledge',
-           'security': 'security', 'xdebug': 'xdebug', 'quality-check': 'check',
-           'format': 'format', 'lint': 'lint', 'typecheck': 'typecheck', 'analyse': 'analyse', 'test': 'test',
-           'deploy': 'deploy', 'production': 'production'}
 name = Path(sys.argv[0]).name
-arguments = sys.argv[1:]
-if name in ('command', 'check', 'operations'):
-    if arguments not in ([], ['--help']):
-        raise SystemExit('Invoke a named compatibility alias or ./bin/artisan runa:<command>.')
+if name not in ('format', 'lint', 'typecheck', 'analyse', 'test', 'deploy'):
     raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'list'], cwd=ROOT).returncode)
-# The setup job must prepare Composer before Artisan's autoloader exists.
-if name == 'dev' and arguments[:1] == ['setup'] and Path('/.dockerenv').exists() and not (ROOT / 'src/vendor/autoload.php').is_file():
-    raise SystemExit(subprocess.run(['python3', str(ROOT / 'tools/application/executors/dev.py'), *arguments], cwd=ROOT).returncode)
-raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'runa:' + ALIASES[name], *arguments], cwd=ROOT).returncode)
+raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'runa:' + name, *sys.argv[1:]], cwd=ROOT).returncode)

@@ -39,7 +39,7 @@ class Retriever:
         self.store = Store(config)
         health = status(root, config, self.store)
         if health['stale']:
-            raise ValueError('Knowledge index is stale/missing/incompatible; run ./bin/knowledge index and open original sources.')
+            raise ValueError('Knowledge index is stale/missing/incompatible; run ./bin/artisan runa:knowledge:index and open original sources.')
         self.points = self.store.all_points()
         self.branch = git_value(root, 'branch', '--show-current')
         self.provider = Embeddings(config, device)

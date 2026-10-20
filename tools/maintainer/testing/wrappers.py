@@ -24,7 +24,7 @@ class WrapperContracts(unittest.TestCase):
 
     def test_host_arguments_preserved_without_shell_interpretation(self):
         arguments = ['list', 'literal $(false); message', 'line\nbreak']
-        for name, prefix in [('artisan', ['php', 'artisan']), ('composer', ['composer', '--working-dir=src']), ('pnpm', ['pnpm', '--dir', 'src']), ('seed', ['php', 'artisan', 'runa:seed'])]:
+        for name, prefix in [('artisan', ['php', 'artisan']), ('composer', ['composer', '--working-dir=src']), ('pnpm', ['pnpm', '--dir', 'src'])]:
             call = self.invoke(name, arguments, False)
             self.assertEqual(call.call_args.args[0], runtime.compose() + ['exec', '-T', 'app', *prefix, *arguments])
 
@@ -41,8 +41,8 @@ class WrapperContracts(unittest.TestCase):
 
     def test_logs_default_and_help_are_nonmutating(self):
         call = self.invoke('logs', [], False)
-        self.assertEqual(call.call_args.args[0], [str(ROOT / 'bin/artisan'), '--management', 'runa:dev', 'logs'])
-        self.assertFalse(self.invoke('prod', ['--help'], False).called)
+        self.assertEqual(call.call_args.args[0], [str(ROOT / 'bin/artisan'), '--management', 'runa:dev:logs'])
+        self.assertFalse(self.invoke('logs', ['--help'], False).called)
 
 
 if __name__ == '__main__':

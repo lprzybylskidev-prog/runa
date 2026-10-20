@@ -7,8 +7,13 @@
   "updateRemoteUserUID": false,
   "overrideCommand": false,
   "shutdownAction": "none",
-  "initializeCommand": ["./bin/dev", "prepare"],
-  "postCreateCommand": "./bin/dev setup --if-needed",
+  "initializeCommand": ["./bin/artisan", "runa:dev:prepare"],
+  "postCreateCommand": [
+    "python3",
+    "tools/application/executors/dev.py",
+    "setup",
+    "--if-needed"
+  ],
   "forwardPorts": [5173],
   "customizations": {
     "vscode": {

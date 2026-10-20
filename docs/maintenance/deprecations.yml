@@ -1,8 +1,8 @@
 version: 1
 items:
   - id: DEP-2026-001
-    deprecated: Independent bin domain-command implementations (thin compatibility aliases retained)
-    replacement: Canonical php artisan runa commands; host transport ./bin/artisan
+    deprecated: Multi-action bin aliases and public Artisan action selectors
+    replacement: Explicit single-purpose Artisan commands; owner standalone check/test/quality entrypoints
     introduced_at: 2026-10-20
-    removal_plan: Remove aliases only in an accepted roadmap after external callers and governance references migrate; preserve mandated quality and doctor transports meanwhile. Owner project/install-prod/git-hook aliases were removed in point 8b and replaced by separately delivered distribution source.
+    removal_plan: Removed in RM-2026-005 point 9b1 after caller, hook, help and gate migration. Single-purpose recovery/tool transports remain; see docs/tooling/command-migration.md.
     roadmap: RM-2026-005

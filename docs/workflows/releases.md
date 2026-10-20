@@ -96,7 +96,7 @@ Near roadmap completion:
 6. update `VERSION` and the version field of `src/runa/platform.json` to the same value; preserve `src/app/application.json`,
 7. update `CHANGELOG.md` and synchronize the README current version,
 8. complete the roadmap checklist/review evidence, move it to `closed/` on the roadmap branch and set the README active roadmap to `none`,
-9. refresh the knowledge index incrementally and run `./bin/doctor docs` and `./bin/doctor release`, including the closure-state review from the roadmap workflow,
+9. refresh the knowledge index incrementally and run `python3 tools/maintainer/check-docs` and `python3 tools/maintainer/check-release`, including the closure-state review from the roadmap workflow,
 10. commit final release metadata,
 11. merge with a merge commit to `main`,
 12. sanity-check `main`,
@@ -115,7 +115,7 @@ Before 1.0, follow `docs/release/1.0-readiness.md`.
 
 ## Read-only metadata validation
 
-`./bin/doctor release` validates the pre-gate active state and prints the expected next version. It does not edit files, tag, push or publish. The only open checklist item at that stage must be final verification.
+`python3 tools/maintainer/check-release` validates the pre-gate active state and prints the expected next version. It does not edit files, tag, push or publish. The only open checklist item at that stage must be final verification.
 
 Run it again after updating VERSION/CHANGELOG/README and moving the roadmap to closed. A closed roadmap needs its completion checklist, `closed_at` date and `## Final report` naming its ID and version; the newest changelog entry identifies the same roadmap. Any existing release tag must be annotated and identify HEAD. On main only, a tagged ancestor may be followed by draft roadmap Markdown changes under `docs/roadmaps/draft/`; all other paths must be identical to the tagged release, whose own version/changelog/closed-roadmap metadata must be valid. Runtime changes or unrelated metadata drift never qualify as draft planning. The roadmap branch additionally checks the version increment against main; after merge the same metadata check is part of main sanity.
 

@@ -47,8 +47,8 @@ class DocumentationContracts(unittest.TestCase):
                   + 'from pathlib import Path\n'
                   + f'checks.ROOT = Path({str(self.root)!r})\n'
                   + 'runtime.inside = lambda: True\n'
-                  + f'sys.argv = ["doctor", {area!r}]\n'
-                  + f'runpy.run_path({str(ROOT / "tools/maintainer/doctor")!r}, run_name="__main__")\n')
+                  + f'sys.argv = ["check-" + {area!r}]\n'
+                  + f'runpy.run_path({str(ROOT / ("tools/maintainer/check-" + area))!r}, run_name="__main__")\n')
         return subprocess.run([sys.executable, '-c', script], capture_output=True, text=True)
 
     def test_released_stale_readme_is_rejected_by_actual_doctor(self):
@@ -115,7 +115,7 @@ class DocumentationContracts(unittest.TestCase):
     def test_final_gate_includes_docs_without_documentation_impact(self):
         definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
         selected = quality.select(definition, [], True)
-        self.assertEqual(selected['version-changelog-roadmap']['command'], 'python3 tools/maintainer/doctor release')
+        self.assertEqual(selected['version-changelog-roadmap']['command'], 'python3 tools/maintainer/check-release')
         self.assertIn('--with-docs-and-knowledge', selected['release-metadata-contract']['command'])
         # Closed fixture metadata would otherwise pass the actual release doctor.
         self.write('CHANGELOG.md', '# Changelog\n\n## [0.1.0]\nRM-2026-001\n')

@@ -11,14 +11,28 @@ final class SeedProject extends Command
 {
     use ConfirmableTrait;
 
-    protected $signature = 'runa:seed {mode=default} {scenario?} {--force : Run production seeders without interactive confirmation}';
+    protected $signature = 'runa:seed';
 
     protected $description = 'Run the validated production/development/occasional seeder dependency graph';
 
+    public function __construct(private readonly string $mode = 'default')
+    {
+        $this->signature = 'runa:seed'.($mode === 'default' ? '' : ':'.($mode === 'graph' ? 'plan' : $mode));
+        $this->signature .= $mode === 'occasional' ? ' {scenario}' : '';
+        if ($mode !== 'graph') {
+            $this->signature .= ' {--force : Run without interactive production confirmation}';
+        }
+        $this->description = $mode === 'graph' ? 'Show the seeder dependency graph without executing it' : 'Run the '.$mode.' seeder selection';
+        parent::__construct();
+    }
+
     public function handle(): int
     {
-        $mode = $this->argument('mode');
-        $scenario = $this->argument('scenario');
+        $mode = $this->mode;
+        $scenario = $mode === 'occasional' ? $this->input->getArgument('scenario') : null;
+        if ($scenario !== null && ! is_string($scenario)) {
+            throw new \InvalidArgumentException('A seeder scenario must be a string.');
+        }
         $plan = (new SeedGraph(SeedGraph::discover()))->plan($mode, app()->environment(), $scenario);
         if ($mode === 'graph') {
             foreach ($plan as $class) {

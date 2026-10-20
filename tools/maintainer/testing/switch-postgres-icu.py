@@ -98,9 +98,9 @@ def main():
     state['phase'] = 'new-cluster-started'
     save()
     run(dc + ['exec', '-T', 'app', 'php', 'artisan', 'migrate', '--no-interaction'])
-    run(dc + ['exec', '-T', 'app', './bin/seed', 'default'])
+    run(dc + ['exec', '-T', 'app', 'php', 'artisan', 'runa:seed'])
     run(dc + ['exec', '-T', 'app', './bin/test', '--parallel'])
-    run(dc + ['exec', '-T', 'app', './bin/doctor', 'database-migrations'])
+    run(dc + ['exec', '-T', 'app', 'php', 'artisan', 'runa:doctor:database-migrations'])
     spec = importlib.util.spec_from_file_location('pg_probe', ROOT / 'tools/maintainer/testing/postgres-alpine.py')
     probe = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(probe)
@@ -114,7 +114,7 @@ def main():
     run(dc + ['up', '-d', '--no-deps', '--no-build', '--wait', 'queue', 'scheduler'])
     run(dc + ['exec', '-T', 'app', './bin/test', 'frontend'])
     run(dc + ['exec', '-T', 'app', './bin/analyse'])
-    run(dc + ['exec', '-T', 'app', './bin/doctor', 'development'])
+    run(dc + ['exec', '-T', 'app', 'php', 'artisan', 'runa:doctor:development'])
     if fingerprint(old_volume, original['Image']) != state['old_content_sha256']:
         raise ValueError('Rollback-volume content changed after clean shutdown.')
     for name, prior in unaffected.items():

@@ -20,7 +20,8 @@ final class RunTool
             return (new ConfigureXdebug)->execute($arguments[0], $output);
         }
         $doctor = [
-            'config' => [PHP_BINARY, 'artisan', 'runa:config:validate', '--templates'],
+            'config' => [PHP_BINARY, 'artisan', 'runa:config:validate'],
+            'templates' => [PHP_BINARY, 'artisan', 'runa:config:templates'],
             'hooks' => ['python3', 'tools/application/testing/hooks.py'],
             'frontend' => [PHP_BINARY, 'artisan', 'runa:typecheck'],
             'database-migrations' => [PHP_BINARY, 'artisan', 'runa:test-db:guard', '--env=testing'],

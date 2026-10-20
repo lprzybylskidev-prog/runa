@@ -29,7 +29,7 @@ class HostContracts(unittest.TestCase):
         self.credentials = {'token': 'a' * 64, 'workspace': 'b' * 64}
         self.challenge = 'c' * 64
         self.value = {'version': 1, **self.credentials, 'challenge': self.challenge, 'id': 'd' * 32,
-                      'command': 'runa:dev', 'arguments': ['status'], 'interactive': False}
+                      'command': 'runa:dev:status', 'arguments': [], 'interactive': False}
 
     def test_request_is_bound_to_private_credentials_workspace_and_one_time_challenge(self):
         self.assertEqual(host.validate_request(self.value, self.credentials, self.challenge), self.value)

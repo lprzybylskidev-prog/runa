@@ -3,11 +3,11 @@
 In the configured development terminal use `php artisan` for local and host work:
 
 ```sh
-php artisan runa:dev up
-php artisan runa:dev logs app
+php artisan runa:dev:up
+php artisan runa:dev:logs app
 php artisan runa:test
-php artisan runa:quality show
-php artisan runa:production status
+php artisan runa:quality:plan
+php artisan runa:production:status
 php artisan runa:deploy <exact-version>
 ```
 
@@ -37,8 +37,8 @@ Use these transports from the owning native host checkout only for setup/recover
 `--recover-host` gracefully stops an old executor and prepares a fresh one. It
 waits for active operations to drain; it does not kill a deployment to make an
 upgrade of the executor appear successful. `./bin/artisan --stop-host` provides
-host-side shutdown if PHP is unavailable. Normally use `php artisan runa:host stop`
-and `php artisan runa:host status [operation-id]`. Registry/source changes require
+host-side shutdown if PHP is unavailable. Normally use `php artisan runa:host:stop`
+and `php artisan runa:host:status [operation-id]`. Registry/source changes require
 explicit recovery rather than silently trusting changed host capabilities.
 
 The process is detached from the application and can recover/restart a stopped
@@ -77,7 +77,7 @@ Owner installation, release and maintenance are excluded from every Artisan regi
 Accepted commands print a fresh `Host operation: <id>` and write a private durable
 receipt. If a command restarts/stops its invoking container, the host operation
 continues and records its actual result. Recover the terminal/operator context and
-run `php artisan runa:host status <id>` before deciding whether anything needs
+run `php artisan runa:host:status <id>` before deciding whether anything needs
 resuming. A lost connection is never automatic permission to retry a mutation.
 Disconnect closes stdin, so a confirmation cannot be manufactured after the
 operator disappears. Use explicit noninteractive confirmation/settings options

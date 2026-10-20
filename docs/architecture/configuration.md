@@ -64,7 +64,7 @@ It manages business settings. Exact business modules/settings are introduced by 
 
 ## Implemented validation entry point
 
-Run `php artisan runa:config:validate` before critical operations. Add `--templates` in development/quality checks to require every literal `env()` key in project `config/*.php` to appear in all three `.env.dev.example`, `.env.test.example` and `.env.prod.example` files. Templates intentionally leave secrets blank; local setup generates them without printing them. Production runtime images do not need development templates.
+Run `php artisan runa:config:validate` before critical operations. Run the separate `php artisan runa:config:templates` in development/quality checks to require every literal `env()` key in project `config/*.php` to appear in all three `.env.dev.example`, `.env.test.example` and `.env.prod.example` files. Templates intentionally leave secrets blank; local setup generates them without printing them. Production runtime images do not need development templates.
 
 HTTP bootstrap also fails closed on invalid application configuration. Validation reports setting names, never secret values. The initial checks cover required strings, application environment/key/HTTP URL, boolean flags, PostgreSQL-only default connection, port bounds, SSL mode, log level and production debug/knowledge/HTTPS contradictions. Services introduced later extend this contract with their own settings. CLI key generation remains possible before the key exists; deployment/lifecycle commands must explicitly validate before performing critical work.
 

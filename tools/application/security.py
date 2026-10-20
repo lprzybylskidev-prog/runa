@@ -122,7 +122,7 @@ def dependencies():
 
 def secrets_scan():
     if not inside():
-        run(app_command(['./bin/security', 'secrets']))
+        run(app_command(['php', 'artisan', 'runa:security:secrets']))
         return
     names = run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], capture_output=True).stdout.decode().split('\0')
     with tempfile.TemporaryDirectory(prefix='runa-secret-scan-') as folder:

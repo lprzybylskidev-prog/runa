@@ -14,12 +14,13 @@ from runtime import app_command, inside
 import quality
 
 try:
+    prefix = getattr(quality, 'COMMAND_PREFIX', 'php artisan runa:quality:')
     args = sys.argv[1:]
     if args == ['--help']:
-        print('Usage: ./bin/artisan runa:quality show|roadmap|final|status [--background]\nExecute the selected local gates; keep only latest logs. Background is supported for roadmap/final. No automatic timeouts.')
+        print('Usage: ' + prefix + 'plan|roadmap|final|status [--background]\nExecute the selected local gates; keep only latest logs. Background is supported for roadmap/final. No automatic timeouts.')
         raise SystemExit(0)
     if not args or args[0] not in ('show', 'roadmap', 'final', 'status') or args[1:] not in ([], ['--background']) or (len(args) > 1 and args[0] in ('show', 'status')):
-        raise ValueError('Invalid arguments. See ./bin/artisan runa:quality --help.')
+        raise ValueError('Invalid arguments. Use php artisan list runa and help <exact-command>.')
     directory = getattr(quality, 'RUN_DIRECTORY', ROOT / '.runtime/application-quality')
     directory.mkdir(parents=True, exist_ok=True)
     # Stable lock inode lives outside the replaceable latest-run directory.
@@ -38,9 +39,9 @@ try:
                 print(key + ': ' + node['command'] + ' [after: ' + ', '.join(node['depends_on']) + ']')
             raise SystemExit(0)
         if inside() and any(node.get('execution_context') == 'host' for node in nodes.values()):
-            raise ValueError('Selected production gates need the Docker host. Run ./bin/artisan runa:quality ' + args[0] + ' in the host terminal; it delegates application checks to the devcontainer.')
+            raise ValueError('Selected production gates need the Docker host. Run ' + prefix + args[0] + ' in the host terminal; it delegates application checks to the devcontainer.')
         if active:
-            raise ValueError('Another quality run is active. Use ./bin/artisan runa:quality status.')
+            raise ValueError('Another quality run is active. Use ' + prefix + 'status.')
         # Refuse surviving children from a crashed coordinator before replacing evidence.
         prior = directory / 'state.json'
         if prior.exists():
@@ -54,7 +55,7 @@ try:
         if '--background' in args:
             pid = os.fork()
             if pid:
-                print('Quality started in background. Use ./bin/artisan runa:quality status.', flush=True)
+                print('Quality started in background. Use ' + prefix + 'status.', flush=True)
                 os._exit(0)
             os.setsid()
             with open(os.devnull, 'r') as source, (directory / 'runner.log').open('a') as output:

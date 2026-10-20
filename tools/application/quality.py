@@ -101,7 +101,7 @@ def execute(directory, state):
                         arguments = shlex.split(node['command'])
                         if node.get('execution_context') == 'host':
                             if inside():
-                                raise OSError('This gate requires the host coordinator: run ./bin/quality from the Docker host.')
+                                raise OSError('This gate requires the host coordinator: invoke the selected explicit quality workflow through the Docker host executor.')
                         elif not inside():
                             arguments = app_command(arguments)
                         process = subprocess.Popen(arguments, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)

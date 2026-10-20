@@ -41,7 +41,7 @@ including stable private database/test credentials, bind mounts, setup
 fingerprints, locked dependencies, safe migrations, devcontainer and independent
 knowledge initialization. Optional AI degradation does not make application
 startup fail. It refuses to take over a development Compose project belonging to
-another checkout. Ordinary reopen/start remains `runa:dev up`; installer repeat
+another checkout. Ordinary reopen/start remains `runa:dev:up`; installer repeat
 is a preservation check, not an upgrade or forced restart.
 
 ## Production settings

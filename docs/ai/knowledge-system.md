@@ -254,26 +254,26 @@ When implementation or release finalization changes durable current-state docume
 
 If knowledge sources changed and the index is stale, the hook blocks/instructs:
 
-`./bin/knowledge index`
+`./bin/artisan runa:knowledge:index`
 
 ## CLI
 
 Canonical interface:
 
-- `./bin/knowledge search`
-- `./bin/knowledge index`
-- `./bin/knowledge initialize` (first-index startup)
-- `./bin/knowledge status`
-- `./bin/knowledge rebuild`
-- `./bin/knowledge stale`
-- `./bin/knowledge doctor`
-- `./bin/knowledge eval`
+- `./bin/artisan runa:knowledge:search`
+- `./bin/artisan runa:knowledge:index`
+- `./bin/artisan runa:knowledge:initialize` (first-index startup)
+- `./bin/artisan runa:knowledge:status`
+- `./bin/artisan runa:knowledge:rebuild`
+- `./bin/artisan runa:knowledge:stale`
+- `./bin/artisan runa:knowledge:doctor`
+- `./bin/artisan runa:knowledge:eval`
 
 It should work from both host and devcontainer where appropriate, with consistent semantics.
 
 Search supports a diagnostic mode such as:
 
-`./bin/knowledge search "query" --explain`
+`./bin/artisan runa:knowledge:search "query" --explain`
 
 Explain mode may show:
 
@@ -337,7 +337,7 @@ Qdrant snapshots are not required as the primary backup of project knowledge.
 
 ## Doctor
 
-`./bin/knowledge doctor` should validate:
+`./bin/artisan runa:knowledge:doctor` should validate:
 
 - Qdrant health,
 - embedding service health,
@@ -373,7 +373,7 @@ Production self-test verifies these assertions.
 
 Select an English technical-documentation embedding model; multilingual support is not required. Record the researched model/provider, license, limits, dimensions and pinned version during the environment roadmap. Do not silently install a large RAG framework or an external API provider as part of the local provider abstraction.
 
-Qdrant and local embeddings start with the development stack automatically, independently of application readiness. The restartable `knowledge-init` service calls `./bin/knowledge initialize` after bounded readiness probes; it creates a missing index under the shared CLI lock and retries failures independently. Existing stale indexes require explicit incremental indexing. Application setup and post-create contain no knowledge operations. Application diagnostics report bounded AI degradation without failing application readiness; dedicated knowledge doctor/evals and final AI gates remain strict. Application code has no runtime dependency on these services.
+Qdrant and local embeddings start with the development stack automatically, independently of application readiness. The restartable `knowledge-init` service calls `./bin/artisan runa:knowledge:initialize` after bounded readiness probes; it creates a missing index under the shared CLI lock and retries failures independently. Existing stale indexes require explicit incremental indexing. Application setup and post-create contain no knowledge operations. Application diagnostics report bounded AI degradation without failing application readiness; dedicated knowledge doctor/evals and final AI gates remain strict. Application code has no runtime dependency on these services.
 
 Staleness is primarily a source/content and index-schema comparison, with Git context for traceability. A commit changing only non-indexed content does not by itself require re-embedding unchanged sources. After branch changes/merge remove or supersede obsolete branch chunks so stale policy cannot win retrieval.
 

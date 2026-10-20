@@ -5,7 +5,7 @@ Runa intentionally has no CI/GitHub Actions pipeline.
 Quality is enforced locally through:
 
 - versioned Git hooks,
-- `python3 tools/maintainer/quality`,
+- `python3 tools/maintainer/quality-roadmap`,
 - framework/tool commands,
 - roadmap final verification.
 
@@ -13,21 +13,21 @@ Quality is enforced locally through:
 
 ## Modes
 
-### `python3 tools/maintainer/quality show`
+### `python3 tools/maintainer/quality-plan`
 
 Show the checks selected for the active roadmap based on its `impact_areas`.
 
 Do not execute the full gate.
 
-### `python3 tools/maintainer/quality roadmap`
+### `python3 tools/maintainer/quality-roadmap`
 
 Run the complete gate required for the current roadmap.
 
-### `python3 tools/maintainer/quality final`
+### `python3 tools/maintainer/quality-final`
 
 Run final closure verification. Semantically equivalent to the strictest applicable roadmap gate and release consistency checks.
 
-### `python3 tools/maintainer/quality status`
+### `python3 tools/maintainer/quality-status`
 
 Inspect the latest run.
 
@@ -72,7 +72,7 @@ Long final checks may run in the background.
 
 When an agent starts a long final quality run, it must end its turn rather than poll continuously.
 
-The user may later provide `python3 tools/maintainer/quality status` or relevant full logs.
+The user may later provide `python3 tools/maintainer/quality-status` or relevant full logs.
 
 If the run is interrupted by crash/reboot/manual termination:
 
@@ -138,7 +138,7 @@ Generated runtime artifacts may be gitignored.
 
 ## Execution contract
 
-`python3 tools/maintainer/quality final --background` is the canonical long-running entrypoint. `roadmap --background` has the same background lifecycle. The process survives terminal closure. One run is active at a time; refuse another start while it is running so its state/logs cannot be overwritten. Replace the previous completed/interrupted run only on a new intentional start.
+`python3 tools/maintainer/quality-final --background` is the canonical long-running entrypoint. `roadmap --background` has the same background lifecycle. The process survives terminal closure. One run is active at a time; refuse another start while it is running so its state/logs cannot be overwritten. Replace the previous completed/interrupted run only on a new intentional start.
 
 While running, status tails each process log and finishes with `Process is still running.` When finished or interrupted, tail each relevant log, show full-log paths and finish with the overall status. Preserve per-step results and the last known step locally. Do not add automatic runner/step deadlines; application network timeouts or separately designed job semantics are different concerns.
 

@@ -21,7 +21,7 @@ access needs no token; optional private credentials support future restricted ac
 Use [unified installation](docs/tooling/installation.md) for dev/prod setup,
 preserved application scaffolding and credentials, production HTTPS/SMTP and resume.
 
-Use `php artisan help runa:dev` in the prepared development/operator terminal; reserve the host transport for setup/recovery for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION and roadmap directories; release publication is verified separately.
+Use `php artisan help runa:dev:up` in the prepared development/operator terminal; reserve the host transport for setup/recovery for development lifecycle commands and [the command reference](docs/tooling/commands.md) for the implemented tooling. The state fields above are checked against VERSION and roadmap directories; release publication is verified separately.
 
 ## Core stack direction
 

@@ -33,7 +33,7 @@ it('dispatches DatabaseSeeder and explicit Seeding commands with category isolat
     expect(Artisan::call('db:seed', ['--force' => true]))->toBe(0);
     expect(FixtureSeed::$executed)->toBe([ReferenceSeed::class, DemoSeed::class]);
     FixtureSeed::$executed = [];
-    expect(Artisan::call('runa:seed', ['mode' => 'production']))->toBe(0);
+    expect(Artisan::call('runa:seed:production'))->toBe(0);
     expect(FixtureSeed::$executed)->toBe([ReferenceSeed::class]);
     app()->instance('env', 'production');
     expect(fn () => app(DemoSeed::class)->run())->toThrow(RuntimeException::class, 'local or testing');

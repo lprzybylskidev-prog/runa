@@ -13,12 +13,12 @@ PY
 
 target_sha="$(git rev-parse HEAD)"
 ./bin/deploy "$target_sha" --simulation
-./bin/production self-test
+./bin/artisan runa:production:self-test
 
 # Collect all reports without downgrading the full security gate.
 scan_status=0
 scan_started="$(python3 -c 'import time; print(time.time())')"
-./bin/security trivy || scan_status=$?
+./bin/artisan runa:security:trivy || scan_status=$?
 python3 - "$target_sha" "$scan_started" <<'PY'
 import hashlib
 import json

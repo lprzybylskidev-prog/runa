@@ -82,7 +82,7 @@ final class HostBridge
                     }
                     $raw = fread($socket, 8192);
                     if ($raw === false || $raw === '') {
-                        throw new InvalidArgumentException('Host connection lost. Operation '.$id.' may still be running. Use php artisan runa:host status '.$id.' after recovery; do not retry the mutation blindly.');
+                        throw new InvalidArgumentException('Host connection lost. Operation '.$id.' may still be running. Use php artisan runa:host:status '.$id.' after recovery; do not retry the mutation blindly.');
                     }
                     $buffer .= $raw;
                     if (strlen($buffer) > 65536) {

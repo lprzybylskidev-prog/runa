@@ -125,10 +125,10 @@ def knowledge_availability():
         if result.returncode:
             print('DEGRADED: optional knowledge unavailable; use source search.')
             return
-        result = subprocess.run(['php', 'artisan', 'runa:knowledge', 'status'], cwd=ROOT,
+        result = subprocess.run(['php', 'artisan', 'runa:knowledge:status'], cwd=ROOT,
                                 timeout=8, check=False)
         if result.returncode:
-            print('DEGRADED: knowledge freshness unavailable/stale; use source search or ./bin/artisan runa:knowledge index.')
+            print('DEGRADED: knowledge freshness unavailable/stale; use source search or ./bin/artisan runa:knowledge:index.')
     except subprocess.TimeoutExpired:
         print('DEGRADED: optional knowledge probe timed out; use source search.')
 
@@ -158,7 +158,7 @@ def environment_files():
 
 
 def setup_fingerprint():
-    paths = [ROOT / p for p in ('src/composer.json', 'src/runa/composer.json', 'src/app/composer.json', 'src/package.json', 'src/runa/package.json', 'src/app/package.json', 'src/app/application.json', 'src/runa/platform.json', 'src/composer.lock', 'src/pnpm-lock.yaml', 'src/vite.config.mjs', 'src/tsconfig.json', '.env', 'bin/dev', 'tools/application/executors/dev.py')]
+    paths = [ROOT / p for p in ('src/composer.json', 'src/runa/composer.json', 'src/app/composer.json', 'src/package.json', 'src/runa/package.json', 'src/app/package.json', 'src/app/application.json', 'src/runa/platform.json', 'src/composer.lock', 'src/pnpm-lock.yaml', 'src/vite.config.mjs', 'src/tsconfig.json', '.env', 'tools/application/executors/dev.py')]
     for directory in ('src/runa/config', 'src/app/config', 'src/app/resources', 'src/runa/database/migrations', 'src/app/database/migrations', 'resources'):
         paths.extend(p for p in (ROOT / directory).rglob('*') if p.is_file())
     digest = hashlib.sha256()
@@ -200,7 +200,8 @@ def application_setup(args):
     marker = ROOT / '.runtime/dev/setup.sha256'
     required = ['src/vendor/autoload.php', 'src/node_modules/.modules.yaml', 'src/public/build/index.html', 'src/public/runa-error/styles.css', 'src/public/runa-error/pages/503-pl-system.html']
     if args == ['--if-needed'] and marker.exists() and marker.read_text().strip() == setup_fingerprint() and all((ROOT / p).exists() for p in required):
-        subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
+        subprocess.run(['php', 'artisan', 'runa:config:validate'], cwd=ROOT, check=True)
+        subprocess.run(['php', 'artisan', 'runa:config:templates'], cwd=ROOT, check=True)
         subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
         register_boost()
         print('Development setup is current; dependency installation and frontend build skipped.')
@@ -213,7 +214,8 @@ def application_setup(args):
     if 'APP_KEY=\n' in testing.read_text():
         key = next(line for line in env.read_text().splitlines() if line.startswith('APP_KEY='))
         testing.write_text(testing.read_text().replace('APP_KEY=\n', key + '\n'))
-    subprocess.run(['php', 'artisan', 'runa:config:validate', '--templates'], cwd=ROOT, check=True)
+    subprocess.run(['php', 'artisan', 'runa:config:validate'], cwd=ROOT, check=True)
+    subprocess.run(['php', 'artisan', 'runa:config:templates'], cwd=ROOT, check=True)
     subprocess.run(['php', 'artisan', 'migrate', '--force'], cwd=ROOT, check=True)
     subprocess.run(['pnpm', '--dir', 'src', 'install', '--frozen-lockfile'], cwd=ROOT, check=True)
     subprocess.run(['pnpm', '--dir', 'src', 'run', 'build'], cwd=ROOT, check=True)
@@ -227,13 +229,13 @@ def application_setup(args):
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
-        print('Usage: ./bin/artisan runa:dev profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/artisan runa:dev prepare|up|down|config|shell|status|doctor\n'
-              '       ./bin/artisan runa:dev build [service ...] | recreate service [service ...] (host only)\n'
-              '       ./bin/artisan runa:dev restart|logs [service] (host only)\n'
-              '       ./bin/artisan runa:dev embeddings auto|cpu|cuda (host only)\n'
-              '       ./bin/artisan runa:dev setup [--if-needed] (inside the devcontainer)\n'
-              '       ./bin/artisan runa:dev knowledge-init|knowledge-status (inside the devcontainer)\n'
+        print('Usage: ./bin/artisan runa:dev:profile [low|standard|high|custom KEY=VALUE ...]\n'
+              '       ./bin/artisan runa:dev:prepare|up|down|config|shell|status|doctor\n'
+              '       ./bin/artisan runa:dev:build [service ...] | recreate service [service ...] (host only)\n'
+              '       ./bin/artisan runa:dev:restart|logs [service] (host only)\n'
+              '       ./bin/artisan runa:dev:embeddings:set auto|cpu|cuda (host only)\n'
+              '       ./bin/artisan runa:dev:setup [--if-needed] (inside the devcontainer)\n'
+              '       ./bin/artisan runa:dev:knowledge-init|knowledge-status (inside the devcontainer)\n'
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
               'down preserves volumes; destructive volume deletion is not supported.')
         return 0
@@ -241,11 +243,11 @@ def main():
     command = args.pop(0)
     if command == 'embeddings':
         if Path('/.dockerenv').exists() or len(args) != 1 or args[0] not in ('auto', 'cpu', 'cuda'):
-            raise ValueError('Run ./bin/artisan runa:dev embeddings auto|cpu|cuda on the host.')
+            raise ValueError('Run ./bin/artisan runa:dev:embeddings:set auto|cpu|cuda on the host.')
         values['EMBEDDINGS_DEVICE'] = args[0]
         resolve_embeddings(values)
         persist(values)
-        print('Apply using ./bin/artisan runa:dev build and ./bin/artisan runa:dev up (persistent data preserved).')
+        print('Apply using ./bin/artisan runa:dev:build and ./bin/artisan runa:dev:up (persistent data preserved).')
         return 0
     if command == 'profile':
         if args:
@@ -274,16 +276,12 @@ def main():
         return subprocess.run([sys.executable, str(ROOT / 'tools/application/knowledge/startup.py'), 'initialize'], cwd=ROOT).returncode
     if command == 'setup':
         if args not in ([], ['--if-needed']) or not Path('/.dockerenv').exists():
-            raise ValueError('Run ./bin/artisan runa:dev setup [--if-needed] inside the devcontainer.')
+            raise ValueError('Run ./bin/artisan runa:dev:setup [--if-needed] inside the devcontainer.')
         lock_dir = ROOT / '.runtime/dev'
         lock_dir.mkdir(parents=True, exist_ok=True)
         with (lock_dir / 'setup.lock').open('w') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             return application_setup(args)
-    if command == 'doctor':
-        if args:
-            raise ValueError('Usage: ./bin/artisan runa:dev doctor')
-        return subprocess.run(['php', 'artisan', 'runa:doctor', 'development'], cwd=ROOT).returncode
     if command in ('restart', 'logs', 'status'):
         if Path('/.dockerenv').exists():
             raise ValueError('Run Docker lifecycle commands in a host terminal, outside the devcontainer.')
@@ -313,7 +311,7 @@ def main():
         return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(LOCAL),
                                '-f', str(ROOT / 'compose.yaml'), '-f', str(OVERRIDE), *action, *selected], cwd=ROOT).returncode
     if args:
-        raise ValueError('Unexpected arguments. See ./bin/artisan runa:dev --help.')
+        raise ValueError('Unexpected arguments. Use php artisan list runa and help <exact-command>.')
     resolve_embeddings(values)
     persist(values)
     if command == 'prepare':
@@ -329,7 +327,7 @@ def main():
     commands = {'up': ['up', '-d', '--wait', 'postgres', 'app', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit'],
                 'down': ['down'], 'config': ['config', '--quiet'], 'shell': ['exec', 'app', 'bash']}
     if command not in commands:
-        raise ValueError('Unknown command. See ./bin/artisan runa:dev --help.')
+        raise ValueError('Unknown command. Use php artisan list runa and help <exact-command>.')
     result = subprocess.run(['docker', 'compose', '--project-directory', str(ROOT),
                              '--env-file', str(LOCAL), '-f', str(ROOT / 'compose.yaml'),
                              '-f', str(OVERRIDE), *commands[command]], cwd=ROOT, check=False)
@@ -343,8 +341,8 @@ def main():
         optional = ['qdrant', 'embeddings', *(['embeddings-gpu'] if values['EMBEDDINGS_CUDA'] == '1' else []), 'knowledge-init']
         ai = subprocess.run([*context, 'up', '-d', '--no-deps', *optional], cwd=ROOT, check=False)
         if ai.returncode:
-            print('DEGRADED: optional AI services failed to start; application readiness passed. Retry ./bin/artisan runa:dev up after repair.')
-        subprocess.run([*context, 'exec', '-T', 'app', 'php', 'artisan', 'runa:dev', 'knowledge-status'], cwd=ROOT, check=False)
+            print('DEGRADED: optional AI services failed to start; application readiness passed. Retry ./bin/artisan runa:dev:up after repair.')
+        subprocess.run([*context, 'exec', '-T', 'app', 'php', 'artisan', 'runa:dev:knowledge-status'], cwd=ROOT, check=False)
     if command == 'config' and result.returncode == 0:
         print('Development Compose configuration is valid.')
     return result.returncode

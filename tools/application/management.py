@@ -15,7 +15,7 @@ from runtime import ROOT
 
 MAX_OUTPUT = 65536
 TIMEOUT = 30
-DEVELOPMENT_ACTIONS = ('prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'doctor', 'knowledge-init', 'knowledge-status')
+DEVELOPMENT_ACTIONS = ('prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status')
 TOOLS = ('doctor', 'quality', 'knowledge', 'security', 'xdebug', 'check', 'hook', 'format', 'lint', 'typecheck', 'analyse', 'test', 'production', 'deploy', 'host')
 OPERATIONS = {**{'development.' + action: action for action in DEVELOPMENT_ACTIONS},
               **{'tooling.' + tool: tool for tool in TOOLS}}
@@ -41,7 +41,7 @@ def ensure_image():
     result = subprocess.run(inspect, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT)
     if result.returncode:
         print('Building the isolated management image (no app services are started).', file=sys.stderr)
-        target = 'development-management' if (ROOT / 'src/runa/management/development.php').is_file() else 'management'
+        target = 'development-management' if (ROOT / 'src/runa/management/development.json').is_file() else 'management'
         subprocess.run(['docker', 'build', '--target', target, '--file', 'docker/php/Dockerfile',
                         '--label', 'runa.management.inputs=' + identity, '--tag', tag, '.'], cwd=ROOT, check=True,
                        stdout=sys.stderr, stderr=sys.stderr)
@@ -146,6 +146,21 @@ def execute_plan(plan, request):
             path.unlink()
 
 
+def public_command(tool, arguments):
+    """Resolve only fixed public definitions; the destination reparses its own options."""
+    definitions = json.loads((ROOT / 'src/runa/management/operations.json').read_text())
+    development = ROOT / 'src/runa/management/development.json'
+    if development.exists():
+        definitions += json.loads(development.read_text())
+    candidates = [entry for entry in definitions if entry['tool'] == tool
+                  and arguments[:len(entry['prefix'])] == entry['prefix']]
+    candidates.sort(key=lambda entry: (len(entry['prefix']), entry['name'] == 'runa:dev:profile:set' and len(arguments) > 1), reverse=True)
+    if not candidates:
+        raise ValueError('No public command matches this internal operation.')
+    entry = candidates[0]
+    return [entry['name'], *arguments[len(entry['prefix']):]]
+
+
 def execution_command(plan):
     """Fixed executable families only; plan data never supplies an executable or shell."""
     from runtime import app_command, host_stack_health, compose
@@ -153,10 +168,8 @@ def execution_command(plan):
     arguments = plan['parameters'].get('arguments', [])
     if operation.startswith('development.'):
         action = OPERATIONS[operation]
-        if action in ('setup', 'knowledge-init', 'knowledge-status', 'doctor'):
-            if action == 'doctor':
-                host_stack_health()
-            return app_command(['php', 'artisan', 'runa:dev', action, *arguments])
+        if action in ('setup', 'knowledge-init', 'knowledge-status'):
+            return app_command(['php', 'artisan', *public_command('dev', [action, *arguments])])
         return ['python3', str(ROOT / 'tools/application/executors/dev.py'), action, *arguments]
     tool = OPERATIONS[operation]
     if tool == 'host':
@@ -167,7 +180,7 @@ def execution_command(plan):
         return ['python3', str(ROOT / 'tools/application/executors/operations.py'),
                 tool, *arguments]
     if tool == 'hook':
-        return [str(ROOT / 'tools/application/bin/git-hook'), *arguments]
+        return [str(ROOT / 'tools/application/bin' / arguments[0]), *arguments[1:]]
     if tool == 'check':
         return ['python3', str(ROOT / 'tools/application/executors/quality_check.py'), *arguments]
     if tool == 'doctor':
@@ -177,7 +190,7 @@ def execution_command(plan):
             host_stack_health()
     if tool == 'test' and arguments and arguments[0] == 'e2e':
         subprocess.run(compose() + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=ROOT, check=True)
-    return app_command(['php', 'artisan', 'runa:' + tool, *arguments])
+    return app_command(['php', 'artisan', *public_command(tool, arguments)])
 
 
 def is_management_command(name):

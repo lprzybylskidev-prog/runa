@@ -78,7 +78,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
                 subprocess.run(['sh', '-n'], input=formatted, check=True)
         scanner = tools_root / '.runtime/tools/gitleaks'
         if not scanner.exists():
-            raise ValueError('Pinned Gitleaks is missing. Run ./bin/dev setup inside the devcontainer.')
+            raise ValueError('Pinned Gitleaks is missing. Run ./bin/artisan runa:dev:setup inside the devcontainer.')
         # Explicit built-in defaults prevent staged config/allow comments from disabling scanning.
         scanner_config = Path(directory) / 'scanner.toml'
         scanner_config.write_text('[extend]\nuseDefault = true\n')
@@ -86,7 +86,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
         subprocess.run([str(scanner), 'dir', '--config', str(scanner_config), '--gitleaks-ignore-path', str(snapshot / '.no-ignore'),
                         '--ignore-gitleaks-allow', '--redact', '--no-banner', str(snapshot)], cwd=snapshot, env=env, check=True)
     if check_knowledge:
-        subprocess.run([str(root / 'bin/knowledge'), 'stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['php', str(root / 'artisan'), 'runa:knowledge:stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
     # Do not mutate index/worktree until all checks and partial-staging checks pass.
     for name, formatted, mode in transformed:
         path = root / name
@@ -98,5 +98,5 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
         git(root, 'update-index', '--cacheinfo', f'{mode},{blob},{name}')
     if transformed and check_knowledge:
         # Formatting indexed docs can make knowledge stale; instruct explicit indexing, never reindex in a hook.
-        subprocess.run([str(root / 'bin/knowledge'), 'stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['php', str(root / 'artisan'), 'runa:knowledge:stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
     print('PASS: staged secrets, formatting, quick lint, repository sanity and knowledge freshness.')

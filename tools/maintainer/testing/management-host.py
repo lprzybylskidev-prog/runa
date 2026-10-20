@@ -25,7 +25,7 @@ def main():
     report_path = ROOT / '.runtime/ownership/RM-2026-005-management-host-latest.json'
     report_path.parent.mkdir(parents=True, exist_ok=True)
     checks = []
-    report = {'result': 'RUNNING', 'checks': checks, 'scope': 'Transport recovery using real bin/dev and isolated PHP process fixtures; not full Laravel installation acceptance.'}
+    report = {'result': 'RUNNING', 'checks': checks, 'scope': 'Transport recovery using fixed development operations and isolated PHP process fixtures; not full Laravel installation acceptance.'}
     report_path.write_text(json.dumps(report, indent=2) + '\n')
     image = management.ensure_image()
     report['management_image'] = image
@@ -43,7 +43,7 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix=project + '-', dir=ROOT / '.runtime') as folder:
         root = Path(folder)
-        for name in ('artisan', 'src/artisan', 'bin/artisan', 'bin/dev', 'tools/application/runtime.py', 'tools/application/management.py', 'tools/application/host_executor.py', 'tools/application/operations.py', 'tools/application/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
+        for name in ('artisan', 'src/artisan', 'bin/artisan', 'tools/application/runtime.py', 'tools/application/management.py', 'tools/application/host_executor.py', 'tools/application/operations.py', 'tools/application/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
@@ -69,9 +69,9 @@ def main():
             check('runa:dev' in listing and 'migrate' not in listing, 'cold discovery uses the packaged production dependencies and explicit management registry')
             check('runa:dev' in output([launcher, '--management'], cwd=root), 'default management invocation lists commands')
             check(not output(compose + ['ps', '-aq']), 'cold discovery started no application or database services')
-            plan = json.loads(output([launcher, 'runa:dev', 'up', '--plan'], cwd=root))
+            plan = json.loads(output([launcher, 'runa:dev:up', '--plan'], cwd=root))
             check(plan['operation'] == 'development.up' and not output(compose + ['ps', '-aq']), 'plan-only does not start services')
-            result = subprocess.run([launcher, 'runa:dev', 'up'], cwd=root, capture_output=True, text=True)
+            result = subprocess.run([launcher, 'runa:dev:up'], cwd=root, capture_output=True, text=True)
             report['cold_recovery'] = {'exit_code': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}
             check(result.returncode == 0, 'bound Artisan plan runs the existing host dev lifecycle on an empty isolated project')
             app = output(compose + ['ps', '-q', 'app'])
@@ -79,9 +79,9 @@ def main():
             output(compose + ['stop', 'app'])
             check(output(['docker', 'inspect', '--format', '{{.State.Running}}', app]) == 'false', 'isolated application target is stopped before recovery check')
             check('runa:dev' in output([launcher, '--management', 'list', '--raw'], cwd=root), 'discovery still works with the application stopped')
-            result = subprocess.run([launcher, 'runa:dev', 'up'], cwd=root, capture_output=True, text=True)
+            result = subprocess.run([launcher, 'runa:dev:up'], cwd=root, capture_output=True, text=True)
             check(result.returncode == 0 and output(['docker', 'inspect', '--format', '{{.State.Running}}', app]) == 'true', 'real host lifecycle recovers the stopped target through the management plan')
-            for arguments in (['runa:dev', 'destroy'], ['runa:dev', 'status', '--unknown'], ['runa:dev', 'status', '--host-request=spoof']):
+            for arguments in (['runa:dev', 'destroy'], ['runa:dev:status', '--unknown'], ['runa:dev:status', '--host-request=spoof']):
                 result = subprocess.run([launcher, *arguments], cwd=root, capture_output=True, text=True)
                 check(result.returncode != 0, 'invalid action/option/request rejected: ' + arguments[-1])
             check(not (root / '.env').exists() and not list((root / '.runtime/management').glob('*.json')), 'no application secrets or reusable executable plan files were created')

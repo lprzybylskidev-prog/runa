@@ -84,7 +84,7 @@ class RepositoryBoundary(unittest.TestCase):
             root = Path(folder)
             source = root / 'src/runa/management'
             shutil.copytree(ROOT / 'src/runa/management', source)
-            program = 'require $argv[1]; $classes = require $argv[2]; foreach ($classes as $class) { echo (new $class)->getName(), "\\n"; }'
+            program = 'require $argv[1]; $classes = require $argv[2]; foreach ($classes as $command) { echo $command->getName(), "\\n"; }'
             def names():
                 return subprocess.check_output(['php', '-r', program, str(ROOT / 'src/vendor/autoload.php'), str(source / 'commands.php')]).decode().splitlines()
             self.fixture(root)
@@ -96,8 +96,8 @@ class RepositoryBoundary(unittest.TestCase):
                 registered = names()
                 for name in ('runa:backup', 'runa:integrity', 'runa:project', 'runa:install'):
                     self.assertNotIn(name, registered)
-                self.assertIn('runa:dev', registered)
-                self.assertIn('runa:hook', registered)
+                self.assertIn('runa:dev:up', registered)
+                self.assertIn('runa:hook:pre-commit', registered)
             (root / '.git/runa-bootstrap.json').unlink()
             self.assertNotIn('runa:install', names())
 

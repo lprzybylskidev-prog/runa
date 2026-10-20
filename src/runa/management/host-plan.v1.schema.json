@@ -28,7 +28,6 @@
         "development.logs",
         "development.status",
         "development.setup",
-        "development.doctor",
         "development.knowledge-init",
         "development.knowledge-status",
         "tooling.doctor",

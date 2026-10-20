@@ -35,7 +35,7 @@ def probe():
     if unavailable:
         print('DEGRADED: optional knowledge services unavailable: ' + ', '.join(unavailable), flush=True)
         return 1
-    print('Optional knowledge services reachable; strict model/retrieval checks: ./bin/knowledge doctor.', flush=True)
+    print('Optional knowledge services reachable; strict model/retrieval checks: ./bin/artisan runa:knowledge:doctor.', flush=True)
     return 0
 
 

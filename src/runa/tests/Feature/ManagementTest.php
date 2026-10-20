@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Process\Process;
 
 it('registers the same management command in normal Artisan without executing host actions', function (): void {
-    expect(Artisan::call('runa:dev', ['action' => 'status', '--plan' => true]))->toBe(0);
+    expect(Artisan::call('runa:dev:status', ['--plan' => true]))->toBe(0);
     expect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR))->toBe([
         'schema_version' => 1,
         'request_id' => null,
@@ -17,9 +17,7 @@ it('registers the same management command in normal Artisan without executing ho
 });
 
 it('rejects unknown actions and invalid request bindings before producing a plan', function (): void {
-    expect(Artisan::call('runa:dev', ['action' => 'destroy']))->toBe(2);
-    expect(Artisan::output())->not->toContain('schema_version');
-    expect(Artisan::call('runa:dev', ['action' => 'up', '--host-request' => 'unsafe']))->toBe(2);
+    expect(Artisan::call('runa:dev:up', ['--host-request' => 'unsafe']))->toBe(2);
     expect(Artisan::output())->not->toContain('schema_version');
 });
 
@@ -31,7 +29,7 @@ it('keeps the management command out of the production application registry', fu
 });
 
 it('selects the cold bootstrap through the single PHP entrypoint before application initialization', function (): void {
-    $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:dev', 'status', '--plan'], base_path(), [
+    $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:dev:status', '--plan'], base_path(), [
         'APP_ENV' => 'production',
         'APP_KEY' => '',
         'DB_CONNECTION' => 'unavailable',
@@ -44,14 +42,14 @@ it('selects the cold bootstrap through the single PHP entrypoint before applicat
 });
 
 it('exposes canonical tooling help and cold plans without booting application services', function (): void {
-    foreach (['doctor', 'quality', 'knowledge', 'security', 'test', 'production', 'deploy'] as $tool) {
+    foreach (['doctor:config', 'quality:plan', 'knowledge:status', 'security:dependencies', 'test', 'production:status', 'deploy'] as $tool) {
         $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:'.$tool, '--help'], base_path(), [
             'APP_ENV' => 'production', 'APP_KEY' => '', 'DB_CONNECTION' => 'unavailable',
         ]);
         $process->mustRun();
         expect($process->getOutput())->toContain('runa:'.$tool);
     }
-    expect(Artisan::call('runa:quality', ['action' => 'final', '--background' => true, '--plan' => true]))->toBe(0);
+    expect(Artisan::call('runa:quality:final', ['--background' => true, '--plan' => true]))->toBe(0);
     $plan = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
     expect($plan['operation'])->toBe('tooling.quality')
         ->and($plan['parameters']['arguments'])->toBe(['final', '--background']);
@@ -100,16 +98,16 @@ it('keeps host bindings after passthrough runner flags', function (): void {
 
 it('rejects invalid operational scopes before emitting an executable plan', function (array $arguments): void {
     $process = new Process([PHP_BINARY, base_path('artisan'), ...$arguments, '--plan'], base_path());
-    expect($process->run())->toBe(2)->and($process->getOutput())->not->toContain('schema_version');
+    expect($process->run())->not->toBe(0)->and($process->getOutput())->not->toContain('schema_version');
 })->with([
-    [['runa:dev', 'recreate', 'nginx;false']],
-    [['runa:dev', 'embeddings', 'unsafe']],
-    [['runa:production', 'logs', 'app;false']],
-    [['runa:knowledge', 'status', '--device=unsafe']],
+    [['runa:dev:recreate', 'nginx;false']],
+    [['runa:dev:embeddings:set', 'unsafe']],
+    [['runa:production:logs', 'app;false']],
+    [['runa:knowledge:status', '--device=unsafe']],
 ]);
 
 it('does not expose retired features through normal or cold Artisan', function (): void {
-    foreach (['runa:backup', 'runa:integrity', 'runa:project', 'runa:install'] as $name) {
+    foreach (['runa:backup', 'runa:integrity', 'runa:project', 'runa:install', 'runa:dev', 'runa:doctor', 'runa:quality', 'runa:knowledge', 'runa:security', 'runa:xdebug', 'runa:hook', 'runa:production', 'runa:host', 'runa:check'] as $name) {
         expect(Artisan::all())->not->toHaveKey($name);
         $process = new Process([PHP_BINARY, base_path('artisan'), '--management', $name, '--plan']);
         $process->run();
@@ -119,7 +117,33 @@ it('does not expose retired features through normal or cold Artisan', function (
 
 it('keeps owner release diagnostics outside customer Artisan', function (): void {
     foreach (['release', 'cleanliness'] as $area) {
-        expect(Artisan::call('runa:doctor', ['area' => $area, '--plan' => true]))->toBe(2);
+        expect(Artisan::all())->not->toHaveKey('runa:doctor:'.$area);
     }
-    expect(Artisan::all())->toHaveKey('runa:hook')->toHaveKey('runa:mail:test');
+    expect(Artisan::all())->toHaveKey('runa:hook:pre-commit')->toHaveKey('runa:mail:test');
 });
+
+it('binds every named operation to its own fixed action in cold preview', function (): void {
+    $definitions = [...json_decode(file_get_contents(base_path('runa/management/operations.json')), true, flags: JSON_THROW_ON_ERROR),
+        ...json_decode(file_get_contents(base_path('runa/management/development.json')), true, flags: JSON_THROW_ON_ERROR)];
+    $examples = ['runa:deploy' => ['v0.2.1'], 'runa:dev:profile:set' => ['low'],
+        'runa:dev:embeddings:set' => ['cpu'], 'runa:dev:recreate' => ['nginx'],
+        'runa:knowledge:search' => ['literal $(false); query'], 'runa:hook:commit-msg' => ['message.txt']];
+    foreach ($definitions as $definition) {
+        $arguments = $examples[$definition['name']] ?? [];
+        $process = new Process([PHP_BINARY, base_path('artisan'), $definition['name'], ...$arguments, '--plan']);
+        $process->mustRun();
+        $plan = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+        $fixed = [...$definition['prefix'], ...$arguments];
+        expect($plan['operation'])->toBe($definition['tool'] === 'dev' ? 'development.'.$fixed[0] : 'tooling.'.$definition['tool']);
+        expect($plan['parameters']['arguments'] ?? [])->toBe($definition['tool'] === 'dev' ? array_slice($fixed, 1) : $fixed);
+    }
+});
+
+it('rejects legacy selectors on retained workflows and fixed commands', function (array $arguments): void {
+    $process = new Process([PHP_BINARY, base_path('artisan'), ...$arguments, '--plan']);
+    expect($process->run())->not->toBe(0)->and($process->getOutput())->not->toContain('schema_version');
+})->with([
+    [['runa:test', 'frontend']], [['runa:deploy', 'rollback']],
+    [['runa:dev:up', 'down']], [['runa:quality:plan', '--background']],
+    [['runa:host:stop', str_repeat('a', 32)]], [['runa:config:validate', '--templates']],
+]);

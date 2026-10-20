@@ -29,7 +29,7 @@ def main():
     if not Path('/.dockerenv').exists():
         return subprocess.run(['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(ROOT / '.env.dev.local'),
                                '-f', str(ROOT / 'compose.yaml'), '-f', str(ROOT / '.devcontainer/compose.resources.yaml'),
-                               'exec', '-T', 'app', 'php', 'artisan', 'runa:knowledge', *sys.argv[1:]], cwd=ROOT).returncode
+                               'exec', '-T', 'app', 'php', 'artisan', 'runa:knowledge:' + sys.argv[1], *sys.argv[2:]], cwd=ROOT).returncode
     # Also inspect Laravel's actual local environment, rather than trusting the caller's default.
     environment = ROOT / '.env'
     if not environment.exists() or 'APP_ENV=local' not in environment.read_text().splitlines():
@@ -54,7 +54,7 @@ def main():
             if args.command == 'doctor':
                 health = status(ROOT, config)
                 if health['stale']:
-                    print(json.dumps({**health, 'passed': False, 'instruction': 'Run ./bin/artisan runa:knowledge index; review model/schema mismatch before rebuild.'}, indent=2))
+                    print(json.dumps({**health, 'passed': False, 'instruction': 'Run ./bin/artisan runa:knowledge:index; review model/schema mismatch before rebuild.'}, indent=2))
                     return 1
             retriever = Retriever(ROOT, config, device)
             if args.command == 'search':
@@ -82,14 +82,14 @@ def main():
             result = status(ROOT, config, store)
             print(json.dumps(result, indent=2))
             if result['stale']:
-                print('Existing knowledge index requires attention; run ./bin/artisan runa:knowledge index explicitly.')
+                print('Existing knowledge index requires attention; run ./bin/artisan runa:knowledge:index explicitly.')
             return 0
         if args.command == 'index':
             return index(ROOT, config, device)
         result = status(ROOT, config)
         print(json.dumps(result, indent=2))
         if result['stale']:
-            print('Run ./bin/artisan runa:knowledge index before relying on knowledge results.', file=sys.stderr)
+            print('Run ./bin/artisan runa:knowledge:index before relying on knowledge results.', file=sys.stderr)
         return 1 if result['stale'] else 0
 
 

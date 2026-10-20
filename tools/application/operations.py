@@ -28,11 +28,10 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/runa/management/bootstrap.php',
           '/src/runa/management/commands.php',
           '/src/runa/management/ToolingCommand.php',
-          '/src/runa/management/ProductionCommand.php',
-          '/src/runa/management/DeployCommand.php',
-          '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/application/host_executor.py',
+          '/src/runa/management/NamedToolCommand.php',
+          '/src/runa/management/operations.json', '/src/runa/management/HostBridge.php', '/tools/application/host_executor.py',
           '/tools/application/testing/production-runtime.php',
-          '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/operations',
+          '/bin/passthrough', '/bin/deploy', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
           '/.env.prod.database.example', '/.env.prod.compose.example']
 
@@ -299,7 +298,7 @@ def assert_sparse(path):
     from repository_boundary import OWNER_PATHS
     if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
         raise ValueError('Owner distribution/maintenance tools are present in production source.')
-    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/application/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.php', 'src/runa/management/KnowledgeCommand.php', 'tools/application/executors/knowledge.py', '.env', '.env.dev.local'):
+    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/application/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.json', 'src/runa/management/development.php', 'tools/application/executors/knowledge.py', '.env', '.env.dev.local'):
         if (path / forbidden).exists():
             raise ValueError('Development material in production checkout: ' + forbidden)
 
@@ -353,7 +352,7 @@ def deploy(target, simulation, initial_resume=False, verification=None):
         dc(['up', '-d', '--wait', '--no-build', 'postgres'], release)
         pause_http(release)
         artisan(['migrate', '--force'], release)
-        artisan(['runa:seed', 'production', '--force'], release)
+        artisan(['runa:seed:production', '--force'], release)
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
         resume_http(release, recreate=True)
         health(release, sparse=True)

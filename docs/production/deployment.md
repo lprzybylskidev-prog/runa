@@ -83,7 +83,7 @@ When a roadmap introduces a migration that constrains rollback:
 
 Canonical command:
 
-`php artisan runa:deploy rollback`
+`php artisan runa:deploy:rollback`
 
 Deployment records the previous version/image/commit identity needed for rollback.
 
@@ -157,7 +157,7 @@ Preflight validates Compose, images, private env permissions, separate admin/run
 
 State lives in ignored, private `.runtime/production/`. `deployment.json` records current/previous SHA, semantic version, image IDs, UTC time, context and a fingerprint of migration/seeder sources. `in-progress.json` records operations that may have changed data. An interrupted or incompatible failed operation blocks further deploy/rollback until an operator inspects database/application state and follows the appropriate recovery procedure. Never delete that marker to turn a failed operation into a reported success. After recovery, preserve its evidence separately before deliberately clearing it. Preflight failure restores the original selected tag. Failure after migrations attempts application recovery only if previous migration/seeder sources are identical; the deploy still exits nonzero. Recovery failure leaves the marker in place.
 
-`php artisan runa:deploy rollback` verifies recorded previous image IDs and unchanged migration/seeder fingerprints, validates settings, recreates the previous application and checks health. It never calls migration rollback/down. Changed migration/seeder sources block this automatic path, even when a human might establish compatibility. Such changes require a documented recovery strategy and deliberate operator execution.
+`php artisan runa:deploy:rollback` verifies recorded previous image IDs and unchanged migration/seeder fingerprints, validates settings, recreates the previous application and checks health. It never calls migration rollback/down. Changed migration/seeder sources block this automatic path, even when a human might establish compatibility. Such changes require a documented recovery strategy and deliberate operator execution.
 
 Production operations share one nonblocking lock, including lifecycle and deployment commands. Logs never print expanded environment/Compose configuration. Keep the entire operator `.runtime/production` directory and env files private; they contain operational identities and configuration. Preserve secrets separately with appropriate access controls; backup provisioning and recovery are externally managed by the customer.
 
@@ -183,8 +183,8 @@ With existing synthetic operator settings: add the simulation mode to `.env.prod
 
 ```bash
 php artisan runa:deploy <full-SHA> --simulation
-php artisan runa:production self-test
-php artisan runa:production verify-ai-isolation
+php artisan runa:production:self-test
+php artisan runa:production:verify-ai-isolation
 ```
 
 Validate an upgrade/rollback using two committed, reviewed versions with identical database/seeder fingerprints; a single initial deployment has no previous release to roll back to. Do not manufacture a release tag or alter migrations merely to make that demonstration pass. Host execution evidence remains required; offline contract tests cannot prove Docker/image scanning success.
@@ -194,7 +194,7 @@ Validate an upgrade/rollback using two committed, reviewed versions with identic
 Run normal operational commands from the separately prepared PHP operator context;
 initial setup/recovery uses `./bin/artisan`, and `./bin/artisan --operator` enters
 that context without host PHP or a Docker socket. In the owner development
-workspace, `php artisan runa:quality roadmap|final` forwards host work to the private
+workspace, `php artisan runa:quality:roadmap|final` forwards host work to the private
 executor, preserving the dependency graph and background/no-poll contract. The
 host coordinator executes host steps and delegates application checks to the
 configured development container. Scanners/quality/RAG are absent from production

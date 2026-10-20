@@ -42,7 +42,7 @@ def compose(tls_root=None):
 
 def dispatch(args):
     if args == ['--help'] or not args:
-        print('Usage: ./bin/production validate|build|up|down|restart|status|logs [service]|self-test|verify-ai-isolation\nHost terminal only; requires .env.prod.compose, .env.prod and .env.prod.database.\nBuild creates exact-tag PHP/Nginx images. Up expects migrations/production seeding already complete. Down preserves volumes. Use install-prod/deploy for migrations and managed releases.')
+        print('Usage: ./bin/artisan runa:production:validate|build|up|down|restart|status|logs [service]|self-test|verify-ai-isolation\nHost terminal only; requires .env.prod.compose, .env.prod and .env.prod.database.\nBuild creates exact-tag PHP/Nginx images. Up expects migrations/production seeding already complete. Down preserves volumes. Use install-prod/deploy for migrations and managed releases.')
         return
     if inside():
         raise ValueError('Run production Docker operations in a host terminal outside the devcontainer; no Docker socket is mounted here.')
@@ -61,7 +61,7 @@ def dispatch(args):
             operations.isolation(release, sparse=True)
         return
     if action not in ('validate', 'build', 'up', 'down', 'restart', 'status', 'logs'):
-        raise ValueError('Unknown or not yet implemented production operation. See ./bin/production --help.')
+        raise ValueError('Unknown or not yet implemented production operation. Use php artisan list runa:production and help <exact-command>.')
     if services and (action not in ('restart', 'logs') or len(services) != 1 or services[0] not in SERVICES):
         raise ValueError('Only restart/logs accept one known production service.')
     command = compose()

@@ -27,9 +27,10 @@ def main():
         git('init', '-q', '-b', 'roadmap/RM-2026-999-fixture')
         (root / 'bin').mkdir()
         (root / 'tools/application/bin').mkdir(parents=True)
-        (root / 'tools/application/bin/git-hook').symlink_to(ROOT / 'tools/application/bin/git-hook')
-        knowledge = root / 'bin/knowledge'
-        knowledge.write_text('#!/bin/sh\nexit 0\n'); knowledge.chmod(0o755)
+        for hook in ('pre-commit', 'commit-msg'):
+            (root / 'tools/application/bin' / hook).symlink_to(ROOT / 'tools/application/bin' / hook)
+        knowledge = root / 'artisan'
+        knowledge.write_text('<?php exit(0);\n'); knowledge.chmod(0o755)
         roadmap = root / 'docs/roadmaps/active/fixture.md'
         roadmap.parent.mkdir(parents=True)
         roadmap.write_text('---\nid: RM-2026-999\nstatus: active\n---\n')
@@ -71,7 +72,7 @@ def main():
         assert git('show', ':' + str(lockfile.relative_to(root))) == locked
         assert lockfile.read_bytes() == locked
         clear()
-        knowledge.write_text('#!/bin/sh\necho "Index stale; run ./bin/knowledge index" >&2\nexit 1\n')
+        knowledge.write_text('<?php fwrite(STDERR, "Index stale; run php artisan runa:knowledge:index\\n"); exit(1);\n')
         invoke('pre-commit', expected='Index stale')
     print('PASS: installed hooks reject env/staged synthetic secrets/invalid messages/stale knowledge; partial staging preserved; full-file formatting succeeds; fixtures removed without commits.')
 

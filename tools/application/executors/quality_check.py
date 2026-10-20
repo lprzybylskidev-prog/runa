@@ -7,10 +7,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[3]
 if sys.argv[1:] == ['--help']:
-    print('Usage: ./bin/artisan runa:check debug-residue\nReject debug statements in application/test sources and visible scratch files. No files are modified.')
+    print('Usage: ./bin/artisan runa:check:debug-residue\nReject debug statements in application/test sources and visible scratch files. No files are modified.')
     sys.exit(0)
 if sys.argv[1:] != ['debug-residue']:
-    print('Unknown check. See ./bin/artisan runa:check --help.', file=sys.stderr)
+    print('Unknown check. Use php artisan list runa and help <exact-command>.', file=sys.stderr)
     sys.exit(1)
 patterns = {
     '.php': re.compile(r'\b(?:dd|dump|var_dump|print_r|xdebug_break)\s*\(|\becho\s'),

@@ -11,9 +11,12 @@ abstract class ToolingCommand extends Command
 {
     protected string $tool;
 
+    /** @var list<string> */
+    protected array $prefix = [];
+
     private const ACTIONS = [
-        'dev' => ['prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'doctor', 'knowledge-init', 'knowledge-status'],
-        'doctor' => ['repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production'],
+        'dev' => ['prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status'],
+        'doctor' => ['templates', 'repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production'],
         'quality' => ['show', 'roadmap', 'final', 'status'],
         'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
         'security' => ['trivy', 'review-changed-surface', 'dependencies', 'secrets'],
@@ -26,9 +29,6 @@ abstract class ToolingCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        if (isset(self::ACTIONS[$this->tool])) {
-            $this->setHelp('Accepted action/area: '.implode(', ', self::ACTIONS[$this->tool]).'.');
-        }
         if (in_array($this->tool, ['test', 'lint', 'typecheck', 'analyse'], true)) {
             $this->ignoreValidationErrors();
         }
@@ -37,7 +37,8 @@ abstract class ToolingCommand extends Command
     public function handle(): int
     {
         try {
-            $arguments = $this->forwardedArguments();
+            $forwarded = $this->forwardedArguments();
+            $arguments = [...$this->prefix, ...$forwarded];
             $this->validateArguments($arguments);
             $this->validateCommandArguments($arguments);
             $request = $this->input->getParameterOption('--host-request', null);
@@ -54,9 +55,9 @@ abstract class ToolingCommand extends Command
                 || ($this->tool === 'quality' && in_array($arguments[0], ['roadmap', 'final'], true))
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
-                || ($this->tool === 'dev' && ! in_array($arguments[0], ['setup', 'doctor', 'knowledge-init', 'knowledge-status'], true) && ! ($arguments[0] === 'profile' && count($arguments) === 1));
+                || ($this->tool === 'dev' && ! in_array($arguments[0], ['setup', 'knowledge-init', 'knowledge-status'], true) && ! ($arguments[0] === 'profile' && count($arguments) === 1));
             $root = dirname(__DIR__, 3);
-            if (! $this->input->hasParameterOption('--plan') && $request === null && ! $host && is_file('/.dockerenv') && is_file($root.'/bin/dev')) {
+            if (! $this->input->hasParameterOption('--plan') && $request === null && ! $host && is_file('/.dockerenv') && is_file($root.'/tools/application/executors/dev.py')) {
                 if (getenv('APP_ENV') === 'production') {
                     throw new InvalidArgumentException('Development tooling is unavailable in production.');
                 }
@@ -64,7 +65,7 @@ abstract class ToolingCommand extends Command
                 return (new RunTool)->execute($this->tool, $arguments, $root, $this->output);
             }
             if ($host && ! $this->input->hasParameterOption('--plan') && $request === null) {
-                return (new HostBridge)->execute($root, 'runa:'.$this->tool, $arguments, $this->input->isInteractive() && defined('STDIN') && stream_isatty(STDIN), $this->output);
+                return (new HostBridge)->execute($root, $this->getName() ?? throw new \LogicException('Management command name is required.'), $forwarded, $this->input->isInteractive() && defined('STDIN') && stream_isatty(STDIN), $this->output);
             }
             // Explicit preview or isolated host registry validation only.
             $this->line(json_encode(['schema_version' => 1, 'request_id' => $request,
@@ -157,7 +158,7 @@ abstract class ToolingCommand extends Command
             $action = $arguments[0];
             $tail = array_slice($arguments, 1);
             $services = ['app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu', 'setup', 'knowledge-init'];
-            if (in_array($action, ['prepare', 'up', 'down', 'config', 'shell', 'status', 'doctor', 'knowledge-init', 'knowledge-status'], true) && $tail !== []) {
+            if (in_array($action, ['prepare', 'up', 'down', 'config', 'shell', 'status', 'knowledge-init', 'knowledge-status'], true) && $tail !== []) {
                 throw new InvalidArgumentException('This development action takes no additional arguments.');
             }
             if ($action === 'setup' && ! in_array($tail, [[], ['--if-needed']], true)) {

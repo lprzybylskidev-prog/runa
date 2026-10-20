@@ -19,6 +19,7 @@ use Illuminate\Queue\Events\WorkerIdle;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Runa\Console\Commands\CheckApplicationManifest;
+use Runa\Console\Commands\CheckConfigurationTemplates;
 use Runa\Console\Commands\CheckRuntimeHealth;
 use Runa\Console\Commands\CheckTestDatabase;
 use Runa\Console\Commands\Database\GuardedFreshCommand;
@@ -70,7 +71,12 @@ final class RunaServiceProvider extends ServiceProvider
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,
-            SeedProject::class,
+            new SeedProject,
+            new SeedProject('production'),
+            new SeedProject('development'),
+            new SeedProject('occasional'),
+            new SeedProject('graph'),
+            CheckConfigurationTemplates::class,
             ValidateConfiguration::class,
             TestMail::class,
         ]);
