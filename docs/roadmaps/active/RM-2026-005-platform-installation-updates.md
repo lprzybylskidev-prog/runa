@@ -1,10 +1,10 @@
 ---
 id: RM-2026-005
 title: Platform ownership, installation and GitHub updates
-status: draft
+status: active
 branch: roadmap/RM-2026-005-platform-installation-updates
 created_at: 2026-10-18
-activated_at: null
+activated_at: 2026-10-20
 closed_at: null
 release_type: feature
 impact_areas:
@@ -27,9 +27,11 @@ impact_areas:
 
 Establish protected Runa/platform versus customer application boundaries, one Artisan command vocabulary, bootstrap installation and safe GitHub-based platform updates. Reuse the functioning development and production toolchain rather than replacing it with a parallel installer.
 
-Planning-only draft. Requires [RM-2026-004](../active/RM-2026-004-ui-foundations.md) closed, merged and released before activation/implementation. Its successor [RM-2026-006](RM-2026-006-module-framework.md) cannot begin until this roadmap is closed, merged and released. Refresh predecessor paths after their lifecycle moves.
+Activated by the owner on 2026-10-20. [RM-2026-004](../closed/RM-2026-004-ui-foundations.md) and the subsequent [RM-2026-007 setup readiness fix](../closed/RM-2026-007-devcontainer-setup-readiness.md) are closed, merged and released. Its successor [RM-2026-006](../draft/RM-2026-006-module-framework.md) cannot begin until this roadmap is closed, merged and released.
 
-Planned **0.3.0**, based on 0.2.0 from RM-004. Although architectural cleanup is substantial, install/update/integrity/identity are new features: `release_type: feature` increments minor under existing release rules. The platform remains pre-1.0 and this does not authorize a major bump. Document compatibility changes instead of declaring stable 1.0. Rebase the planned arithmetic on actual VERSION at activation without rewriting historical releases.
+Planned **0.3.0**, based on actual 0.2.1 after RM-004 and RM-007. Although architectural cleanup is substantial, install/update/integrity/identity are new features: `release_type: feature` increments minor under existing release rules. The platform remains pre-1.0 and this does not authorize a major bump. Document compatibility changes instead of declaring stable 1.0. Rebase the planned arithmetic on actual VERSION at activation without rewriting historical releases.
+
+Activation baseline: clean `main` at `238cfbb`, synchronized with `origin/main`; VERSION 0.2.1; no other active roadmap; production-ever-deployed remains false. The detailed ownership/public-contract refresh remains open in point 1. Activation does not complete or start implementation points.
 
 ### Scope and exclusions
 
@@ -68,6 +70,10 @@ Current production installation already provisions settings and exact source/ima
 - 2026-10-18 — Distribution is one private GitHub repository/tag mechanism for both self-managed and provider-supported installations. No separate release-bundle service or license infrastructure. Customer applications have their own source lifecycle.
 - 2026-10-18 — Reuse RM-004 identity/import contracts. Separate platform VERSION from an application manifest version; updating platform never bumps customer application version.
 - 2026-10-18 — Leave module-specific lifecycle to RM-006. Provide narrowly typed update/preflight contribution seams only; no placeholder registry or Core implementations.
+
+### Execution environment
+
+The owner selected host-side work for this roadmap on 2026-10-20. The verified checkout is `/home/lprzybylski/Documents/php/runa`. Use host Git, Python and Docker/Compose for lifecycle orchestration, with application PHP/Composer/Node/pnpm tooling in project containers. This allows cold installation, app recreation and recovery checks without depending on an attached app container. Preserve the existing development stack and data; use isolated disposable resources for acceptance. Record an Execution handoff before any later substantial host/container transition under the normal workflow.
 
 ### Requirement authority and audit corrections
 

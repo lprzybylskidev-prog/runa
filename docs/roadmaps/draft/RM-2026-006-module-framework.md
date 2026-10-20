@@ -26,7 +26,7 @@ impact_areas:
 
 Deliver the modular infrastructure and developer contracts through which future Runa and business modules can register, communicate, operate safely and update. Keep ordinary application code and independent customer frontends fully supported.
 
-Planning-only draft. Requires [RM-2026-005](RM-2026-005-platform-installation-updates.md) closed, merged and released; that roadmap itself requires [RM-2026-004](../active/RM-2026-004-ui-foundations.md). Do not activate concurrently or begin a consumer before its predecessor. Update links after predecessor lifecycle moves.
+Planning-only draft. Requires [RM-2026-005](../active/RM-2026-005-platform-installation-updates.md) closed, merged and released; that roadmap itself requires [RM-2026-004](../closed/RM-2026-004-ui-foundations.md). Do not activate concurrently or begin a consumer before its predecessor. Update links after predecessor lifecycle moves.
 
 Planned release **0.4.0**, following planned 0.3.0. `release_type: feature` reflects new framework capability and follows the existing pre-1.0 minor-release rule. Independent module versions do not determine platform VERSION. No major bump or readiness claim is authorized. Recompute the projected version if actual main has intervening releases.
 
