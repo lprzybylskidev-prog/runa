@@ -21,8 +21,8 @@ from runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
-SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/src/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/',
-          '/src/runa/resources/', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
+SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Database/', '/src/runa/Foundation/', '/src/runa/Http/', '/src/runa/Providers/', '/src/runa/Support/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/',
+          '/src/runa/resources/', '/src/runa/lang/', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
@@ -193,7 +193,7 @@ def resolve(target):
 
 def tree_hash(sha):
     # Conservatively block rollback on any migration or seeder implementation change.
-    return hashlib.sha256(run(['git', 'ls-tree', '-r', sha, 'database', 'app/Support/Seeding', 'app/Console/Commands/SeedProject.php', 'src/app/database', 'src/runa/database', 'src/runa/src/Support/Seeding', 'src/runa/src/Console/Commands/SeedProject.php'], capture_output=True).stdout).hexdigest()
+    return hashlib.sha256(run(['git', 'ls-tree', '-r', sha, 'database', 'app/Support/Seeding', 'app/Console/Commands/SeedProject.php', 'src/app/database', 'src/runa/database', 'src/runa/Support/Seeding', 'src/runa/Console/Commands/SeedProject.php'], capture_output=True).stdout).hexdigest()
 
 
 def checkout(sha):

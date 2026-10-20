@@ -53,7 +53,7 @@ def main():
         invoke('pre-commit')
         assert git('show', ':fixture.json') == target.read_bytes() and b'"staged": true' in target.read_bytes()
         clear()
-        vendored = root / 'src/runa/resources/lang/pl/validation.php'
+        vendored = root / 'src/runa/lang/pl/validation.php'
         vendored.parent.mkdir(parents=True)
         imported = b"<?php\nreturn array ('required' => 'Fixture message');\n"
         vendored.write_bytes(imported)

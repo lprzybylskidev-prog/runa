@@ -51,7 +51,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
                 continue
             formatted = data
             suffix = Path(name).suffix
-            if suffix == '.php' and name == 'src/runa/resources/lang/pl/validation.php':
+            if suffix == '.php' and name == 'src/runa/lang/pl/validation.php':
                 # Imported snapshot bytes are audited by the localization contract.
                 subprocess.run(['php', '-l', str(target)], check=True, capture_output=True)
             elif suffix == '.php':

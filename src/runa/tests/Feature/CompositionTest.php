@@ -13,6 +13,7 @@ it('composes customer code and platform behavior under one Laravel base', functi
     expect(base_path())->toBe(dirname(__DIR__, 3))
         ->and(app()->path())->toBe(base_path('app'))
         ->and(config_path())->toBe(base_path('runa/config'))
+        ->and(lang_path())->toBe(base_path('runa/lang'))
         ->and(database_path())->toBe(base_path('app/database'))
         ->and(app()->environmentPath())->toBe(dirname(__DIR__, 4))
         ->and(app()->getNamespace())->toBe('App\\')

@@ -72,6 +72,8 @@ print('parent:' + sys.stdin.read())
             root = Path(folder) / 'repository'
             root.mkdir()
             files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'src/app/example.php': '<?php',
+                     'src/runa/Http/Controllers/HealthController.php': '<?php', 'src/runa/lang/pl/validation.php': '<?php',
+                     'src/runa/management/example.php': 'excluded', 'src/runa/tools/example.py': 'excluded', 'src/runa/tests/example.php': 'excluded',
                      'docker/php/Dockerfile': 'FROM example', '.agents/example': 'excluded', 'bin/knowledge': 'excluded',
                      'tools/knowledge/example.py': 'excluded', 'bin/operations': 'launcher', 'bin/production': 'launcher',
                      'docs/ai/example.md': 'excluded', 'docker/embeddings/example': 'excluded'}
@@ -88,6 +90,10 @@ print('parent:' + sys.stdin.read())
                 release = ops.checkout(sha)
                 ops.assert_sparse(release)
                 self.assertTrue((release / 'src/app/example.php').is_file())
+                self.assertTrue((release / 'src/runa/Http/Controllers/HealthController.php').is_file())
+                self.assertTrue((release / 'src/runa/lang/pl/validation.php').is_file())
+                for excluded in ('management', 'tools', 'tests'):
+                    self.assertFalse((release / 'src/runa' / excluded).exists())
                 self.assertTrue((release / 'bin/operations').is_file())
                 self.assertTrue((release / 'docker/php/Dockerfile').is_file())
                 (release / 'VERSION').write_text('tampered')
@@ -119,7 +125,7 @@ print('parent:' + sys.stdin.read())
             def dc(args, release=None, **kwargs):
                 calls.append((args, release))
                 return subprocess.CompletedProcess(args, 0, stdout='')
-            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'resolve', return_value=sha), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'create_backup'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
+            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'resolve', return_value=sha), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'build_images'), patch.object(ops, 'create_backup'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, 'migration failed'):
                     ops.deploy(sha, True)
                 self.assertEqual((state / 'in-progress.json').exists(), not compatible)

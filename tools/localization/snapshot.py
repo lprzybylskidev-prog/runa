@@ -10,7 +10,7 @@ import subprocess
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / 'src/runa/resources/lang/SOURCE.json'
+MANIFEST = ROOT / 'src/runa/lang/SOURCE.json'
 FRAMEWORK = 'src/vendor/laravel/framework/src/Illuminate/Translation/lang/en/validation.php'
 
 
@@ -106,7 +106,7 @@ def prepare(commit, version):
                 'imported_files': ['lang/pl/validation.php', 'lang/LICENSE.laravel-lang']}
     metadata['framework_version'] = next(p['version'] for p in json.loads((ROOT / 'src/composer.lock').read_text())['packages'] if p['name'] == 'laravel/framework')
     (target / 'source.json').write_text(json.dumps(metadata, indent=2) + '\n')
-    current = ROOT / 'src/runa/resources/lang/pl/validation.php'
+    current = ROOT / 'src/runa/lang/pl/validation.php'
     if current.exists():
         print(''.join(difflib.unified_diff(current.read_text().splitlines(True), php.splitlines(True),
                                          fromfile='local/lang/pl/validation.php', tofile='candidate/validation.php')))
@@ -125,12 +125,12 @@ def main():
         prepare(args.commit, args.version)
     else:
         metadata = json.loads(MANIFEST.read_text())
-        path = ROOT / 'src/runa/resources/lang/pl/validation.php'
+        path = ROOT / 'src/runa/lang/pl/validation.php'
         count = verify(catalog(path))
         modified = hashlib.sha256(path.read_bytes()).hexdigest() != metadata['catalog_sha256']
-        if not (ROOT / 'src/runa/resources/lang/LICENSE.laravel-lang').is_file():
+        if not (ROOT / 'src/runa/lang/LICENSE.laravel-lang').is_file():
             raise ValueError('MIT attribution is missing.')
-        if hashlib.sha256((ROOT / 'src/runa/resources/lang/LICENSE.laravel-lang').read_bytes()).hexdigest() != metadata['license_sha256']:
+        if hashlib.sha256((ROOT / 'src/runa/lang/LICENSE.laravel-lang').read_bytes()).hexdigest() != metadata['license_sha256']:
             raise ValueError('MIT license notice differs from the imported source.')
         print(f'PASS: {count} messages; local changes since import: {modified}. Review before updating.')
 

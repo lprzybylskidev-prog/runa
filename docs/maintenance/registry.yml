@@ -368,7 +368,7 @@ entries:
     pinned_revision: a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7
     imported_at: 2026-10-17
     license: MIT
-    source: src/runa/resources/lang/SOURCE.json
+    source: src/runa/lang/SOURCE.json
     review_procedure: docs/development/localization.md
     last_reviewed: 2026-10-17
     review_every_days: 90

@@ -28,7 +28,7 @@ $app->useEnvironmentPath(dirname(__DIR__, 2));
 $app->useConfigPath(dirname(__DIR__).'/runa/config');
 $app->useDatabasePath(dirname(__DIR__).'/app/database');
 $app->usePublicPath(dirname(__DIR__).'/public');
-$app->useLangPath(dirname(__DIR__).'/runa/resources/lang');
+$app->useLangPath(dirname(__DIR__).'/runa/lang');
 $storage = $_ENV['LARAVEL_STORAGE_PATH'] ?? $_SERVER['LARAVEL_STORAGE_PATH'] ?? null;
 $app->useStoragePath(is_string($storage) && $storage !== '' ? $storage : dirname(__DIR__).'/storage');
 

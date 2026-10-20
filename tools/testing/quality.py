@@ -46,8 +46,8 @@ class QualityContracts(unittest.TestCase):
                         (root / name).write_text('<?php\n' + content + '\n')
                         self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
                 (root / name).write_text('<?php\n' + statement + '\n')
-            other = root / 'src/runa/src/Other.php'
-            other.parent.mkdir(parents=True)
+            other = root / 'src/runa/Other.php'
+            other.parent.mkdir(parents=True, exist_ok=True)
             other.write_text('<?php\n' + sources['src/runa/resources/views/errors/page.php'] + '\n')
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 

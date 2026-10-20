@@ -6,7 +6,7 @@ coverage/
 public/build/
 storage/
 bootstrap/cache/
-src/runa/resources/lang/
+src/runa/lang/
 src/composer.lock
 src/pnpm-lock.yaml
 .devcontainer/compose.resources.yaml

@@ -18,12 +18,15 @@
   "autoload": {
     "psr-4": {
       "App\\": "app/",
-      "Runa\\": "runa/src/",
+      "Runa\\": "runa/",
       "Runa\\Database\\Seeders\\": "runa/database/seeders/",
       "Runa\\Database\\Factories\\": "runa/database/factories/",
       "Database\\Seeders\\": "app/database/seeders/",
       "Database\\Factories\\": "app/database/factories/"
-    }
+    },
+    "exclude-from-classmap": [
+      "runa/management/"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

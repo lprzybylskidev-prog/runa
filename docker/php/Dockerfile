@@ -95,7 +95,12 @@ WORKDIR /tmp/runa-build/src
 COPY --chown=runa:runa src/composer.json src/composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY --chown=runa:runa src/app/ app/
-COPY --chown=runa:runa src/runa/src/ runa/src/
+COPY --chown=runa:runa src/runa/Console/ runa/Console/
+COPY --chown=runa:runa src/runa/Database/ runa/Database/
+COPY --chown=runa:runa src/runa/Foundation/ runa/Foundation/
+COPY --chown=runa:runa src/runa/Http/ runa/Http/
+COPY --chown=runa:runa src/runa/Providers/ runa/Providers/
+COPY --chown=runa:runa src/runa/Support/ runa/Support/
 COPY --chown=runa:runa src/runa/database/ runa/database/
 RUN composer dump-autoload --no-dev --no-scripts --optimize \
     && rm -rf app/resources/js app/resources/css app/resources/index.html
@@ -140,7 +145,12 @@ CMD ["php-fpm", "-F"]
 COPY --chown=runa:runa src/composer.json /workspace/src/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /workspace/src/vendor/
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/app/ /workspace/src/app/
-COPY --chown=runa:runa src/runa/src/ /workspace/src/runa/src/
+COPY --chown=runa:runa src/runa/Console/ /workspace/src/runa/Console/
+COPY --chown=runa:runa src/runa/Database/ /workspace/src/runa/Database/
+COPY --chown=runa:runa src/runa/Foundation/ /workspace/src/runa/Foundation/
+COPY --chown=runa:runa src/runa/Http/ /workspace/src/runa/Http/
+COPY --chown=runa:runa src/runa/Providers/ /workspace/src/runa/Providers/
+COPY --chown=runa:runa src/runa/Support/ /workspace/src/runa/Support/
 COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
 COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
 COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/
@@ -152,7 +162,7 @@ COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/public/runa-
 COPY --chown=runa:runa src/runa/resources/images/runa-mail-logo.png /workspace/src/runa/resources/images/runa-mail-logo.png
 COPY --chown=runa:runa VERSION /workspace/VERSION
 COPY --chown=runa:runa src/runa/routes/ /workspace/src/runa/routes/
-COPY --chown=runa:runa src/runa/resources/lang/ /workspace/src/runa/resources/lang/
+COPY --chown=runa:runa src/runa/lang/ /workspace/src/runa/lang/
 COPY --chown=runa:runa src/public/index.php src/public/favicon.ico /workspace/src/public/
 COPY --chown=runa:runa --from=frontend-build /build/src/public/build/ /workspace/src/public/build/
 RUN mkdir -p src/storage/app/application/private src/storage/app/application/public src/storage/app/runa/private src/storage/app/runa/public src/storage/framework/cache/data \
