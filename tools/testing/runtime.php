@@ -1,9 +1,9 @@
 <?php
 
-use App\Support\ConfigurationValidator;
-use App\Support\RuntimeHeartbeat;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Filesystem\Filesystem;
+use Runa\Support\ConfigurationValidator;
+use Runa\Support\RuntimeHeartbeat;
 
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';

@@ -1,8 +1,8 @@
 <?php
 
-use App\Support\Seeding\SeedContext;
-use App\Support\Seeding\SeedGraph;
 use Illuminate\Support\Facades\Artisan;
+use Runa\Support\Seeding\SeedContext;
+use Runa\Support\Seeding\SeedGraph;
 use Tests\Fixtures\BrokenSeed;
 use Tests\Fixtures\CycleSeed;
 use Tests\Fixtures\DemoSeed;

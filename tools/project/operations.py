@@ -21,7 +21,7 @@ from runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
-SPARSE = ['/app/', '/bootstrap/', '/config/', '/database/', '/lang/', '/public/', '/resources/', '/routes/',
+SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/src/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/', '/src/artisan', '/src/composer.json', '/src/resources', '/lang/', '/public/', '/resources/',
           '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/docs/project/state.yml',
           '/tools/testing/production-runtime.php', '/tools/project/runtime.py', '/tools/project/production.py', '/tools/project/operations.py',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
@@ -191,7 +191,7 @@ def resolve(target):
 
 def tree_hash(sha):
     # Conservatively block rollback on any migration or seeder implementation change.
-    return hashlib.sha256(run(['git', 'ls-tree', '-r', sha, 'database', 'app/Support/Seeding', 'app/Console/Commands/SeedProject.php'], capture_output=True).stdout).hexdigest()
+    return hashlib.sha256(run(['git', 'ls-tree', '-r', sha, 'database', 'app/Support/Seeding', 'app/Console/Commands/SeedProject.php', 'src/app/database', 'src/runa/database', 'src/runa/src/Support/Seeding', 'src/runa/src/Console/Commands/SeedProject.php'], capture_output=True).stdout).hexdigest()
 
 
 def checkout(sha):

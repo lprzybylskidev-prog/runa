@@ -30,7 +30,7 @@ for name in sorted(set(paths) - {''}):
     path = ROOT / name
     if name.startswith(('tools/scratch/', '.playwright/scratch/')):
         failures.append(name + ': remove or promote scratch source')
-    if name.split('/')[0] not in ('app', 'resources', 'routes', 'database', 'tests') or path.suffix not in patterns or not path.is_file():
+    if name.split('/')[0] not in ('src', 'resources', 'tests') or path.suffix not in patterns or not path.is_file():
         continue
     for number, line in enumerate(path.read_text().splitlines(), 1):
         if patterns[path.suffix].search(line) and line.strip() != intentional_output.get(name):

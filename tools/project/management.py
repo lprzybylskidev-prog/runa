@@ -20,10 +20,10 @@ OPERATIONS = {'development.status': 'status', 'development.up': 'up'}
 
 def image_identity():
     digest = hashlib.sha256()
-    paths = [ROOT / name for name in ('artisan', 'composer.json', 'composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
-    if not (ROOT / 'management').is_dir() or (ROOT / 'management').is_symlink():
+    paths = [ROOT / name for name in ('src/artisan', 'composer.json', 'composer.lock', 'docker/php/Dockerfile', '.dockerignore')]
+    if not (ROOT / 'src/runa/management').is_dir() or (ROOT / 'src/runa/management').is_symlink():
         raise ValueError('Management build inputs must not traverse symlinks.')
-    paths += sorted(path for path in (ROOT / 'management').rglob('*') if not path.is_dir() or path.is_symlink())
+    paths += sorted(path for path in (ROOT / 'src/runa/management').rglob('*') if not path.is_dir() or path.is_symlink())
     for path in paths:
         if path.is_symlink() or not path.is_file():
             raise ValueError('Missing regular management build input.')

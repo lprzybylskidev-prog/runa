@@ -13,7 +13,8 @@ Do not turn environment variables into a substitute for business configuration.
 Never call `env()` outside Laravel configuration files.
 
 Every new technical option must update, as applicable:
-- a dedicated `config/*.php` entry,
+
+- a dedicated `src/runa/config/*.php` entry (or customer `src/app/config/*.php` override),
 - environment handling,
 - the relevant `.env*.example` templates,
 - configuration validation/doctor checks,
@@ -24,6 +25,7 @@ Every new technical option must update, as applicable:
 Configuration must be validated before critical runtime/deploy operations.
 
 Detect:
+
 - missing required values,
 - invalid empty values,
 - wrong types,
@@ -65,3 +67,9 @@ It manages business settings. Exact business modules/settings are introduced by 
 Run `php artisan runa:config:validate` before critical operations. Add `--templates` in development/quality checks to require every literal `env()` key in project `config/*.php` to appear in all three `.env.dev.example`, `.env.test.example` and `.env.prod.example` files. Templates intentionally leave secrets blank; local setup generates them without printing them. Production runtime images do not need development templates.
 
 HTTP bootstrap also fails closed on invalid application configuration. Validation reports setting names, never secret values. The initial checks cover required strings, application environment/key/HTTP URL, boolean flags, PostgreSQL-only default connection, port bounds, SSL mode, log level and production debug/knowledge/HTTPS contradictions. Services introduced later extend this contract with their own settings. CLI key generation remains possible before the key exists; deployment/lifecycle commands must explicitly validate before performing critical work.
+
+## Platform and application composition
+
+The Laravel base path is `src/`; technical defaults are owned by `src/runa/config/`. The thin customer provider lives in `src/app/Providers/`, with optional trusted PHP config arrays under `src/app/config/`. The platform provider merges each override into the matching namespace before config caching, preserving unspecified defaults. Non-array namespaces/overrides fail explicitly; cached configuration is loaded without re-reading overrides. The repository-root config link is a temporary tool compatibility bridge until RM-005 point 4.
+
+Private `.env`, `.env.testing` and production environment files remain at repository root. Bootstrap loads that environment path explicitly. File disks separate application/platform private/public ownership; the default local disk resolves to application-private storage. Cache consumers use the application file store or explicit platform runa_file store. Full path/bridge details belong to [Application Architecture](application-architecture.md#current-point-3-compatibility-bridges).

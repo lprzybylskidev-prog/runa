@@ -16,7 +16,7 @@ x-application: &application
   read_only: true
   tmpfs:
     - /tmp:rw,nosuid,nodev,size=64m,mode=1777
-    - /workspace/bootstrap/cache:rw,nosuid,nodev,size=16m,uid=1000,gid=1000,mode=0770
+    - /workspace/src/bootstrap/cache:rw,nosuid,nodev,size=16m,uid=1000,gid=1000,mode=0770
   volumes:
     - application-storage:/workspace/storage
   depends_on:
@@ -120,7 +120,7 @@ services:
         source: application-storage
         target: /workspace/storage/app/public
         read_only: true
-        volume: { subpath: app/public }
+        volume: { subpath: app/application/public }
       - type: volume
         source: application-storage
         target: /run/runa-maintenance

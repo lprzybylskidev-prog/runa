@@ -2,12 +2,12 @@
 
 namespace Tests;
 
-use App\Support\TestDatabaseGuard;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as FrameworkTestCase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Runa\Support\TestDatabaseGuard;
 use RuntimeException;
 
 abstract class TestCase extends FrameworkTestCase

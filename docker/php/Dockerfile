@@ -94,10 +94,11 @@ ENV COMPOSER_HOME=/tmp/composer
 WORKDIR /tmp/runa-build
 COPY --chown=runa:runa composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
-COPY --chown=runa:runa app/ app/
-COPY --chown=runa:runa database/ database/
+COPY --chown=runa:runa src/app/ src/app/
+COPY --chown=runa:runa src/runa/src/ src/runa/src/
+COPY --chown=runa:runa src/runa/database/ src/runa/database/
 RUN composer dump-autoload --no-dev --no-scripts --optimize
-COPY --chown=runa:runa config/branding.php config/branding.php
+COPY --chown=runa:runa src/runa/config/branding.php src/runa/config/branding.php
 COPY --chown=runa:runa resources/errors/ resources/errors/
 COPY --chown=runa:runa resources/views/errors/ resources/views/errors/
 COPY --chown=runa:runa resources/css/light-palette.css resources/css/light-palette.css
@@ -106,8 +107,8 @@ COPY --chown=runa:runa VERSION ./
 # A short-lived host management process, never a production application service.
 FROM production-runtime AS management
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /opt/runa/vendor/
-COPY --chown=runa:runa management/ /opt/runa/management/
-COPY --chown=runa:runa artisan /opt/runa/artisan
+COPY --chown=runa:runa src/runa/management/ /opt/runa/runa/management/
+COPY --chown=runa:runa src/artisan /opt/runa/artisan
 WORKDIR /opt/runa
 HEALTHCHECK NONE
 ENTRYPOINT ["php", "/opt/runa/artisan"]
@@ -136,10 +137,11 @@ CMD ["php-fpm", "-F"]
 # Laravel command discovery reads the application namespace from this metadata.
 COPY --chown=runa:runa composer.json /workspace/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
-COPY --chown=runa:runa app/ /workspace/app/
-COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
-COPY --chown=runa:runa config/ /workspace/config/
-COPY --chown=runa:runa database/ /workspace/database/
+COPY --chown=runa:runa src/app/ /workspace/src/app/
+COPY --chown=runa:runa src/runa/src/ /workspace/src/runa/src/
+COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
+COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
+COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/
 COPY --chown=runa:runa resources/css/light-palette.css /workspace/resources/css/light-palette.css
 COPY --chown=runa:runa resources/views/ /workspace/resources/views/
 COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/resources/views/errors/generated/ /workspace/resources/views/errors/generated/
@@ -147,13 +149,15 @@ COPY --chown=runa:runa resources/errors/messages.json /workspace/resources/error
 COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
 COPY --chown=runa:runa resources/images/runa-mail-logo.png /workspace/resources/images/runa-mail-logo.png
 COPY --chown=runa:runa VERSION /workspace/VERSION
-COPY --chown=runa:runa routes/ /workspace/routes/
+COPY --chown=runa:runa src/runa/routes/ /workspace/src/runa/routes/
 COPY --chown=runa:runa lang/ /workspace/lang/
 COPY --chown=runa:runa public/index.php public/favicon.ico /workspace/public/
 COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
-RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
+RUN ln -s src/bootstrap bootstrap && ln -s ../resources src/resources && ln -s ../composer.json src/composer.json && ln -s ../vendor src/vendor \
+    && mkdir -p storage/app/application/private storage/app/application/public storage/app/runa/private storage/app/runa/public storage/framework/cache/data \
     storage/framework/sessions storage/framework/views storage/framework/health storage/framework/maintenance storage/logs
 COPY --chown=runa:runa artisan /workspace/artisan
+COPY --chown=runa:runa src/artisan /workspace/src/artisan
 
 FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf

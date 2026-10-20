@@ -1,4 +1,4 @@
-@inject('branding', 'App\Support\MailBranding')
+@inject('branding', 'Runa\Support\MailBranding')
 @php($logo = $branding->logo())
 <tr><td class="header" align="center">
 <table align="center" cellpadding="0" cellspacing="0" role="presentation"><tr>

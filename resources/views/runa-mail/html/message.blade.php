@@ -1,4 +1,4 @@
-@inject('branding', 'App\Support\MailBranding')
+@inject('branding', 'Runa\Support\MailBranding')
 <x-mail::layout>
 <x-slot:header>
 @include('runa-mail::html.header')

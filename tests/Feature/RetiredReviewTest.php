@@ -10,7 +10,7 @@ it('has no preview or fixture routes in any application environment', function (
     try {
         $this->app->instance('env', $environment);
         Route::swap($router);
-        require base_path('routes/spa.php');
+        require base_path('app/routes/web.php');
         $router->getRoutes()->refreshNameLookups();
         expect($router->getRoutes()->getByName('spa'))->not->toBeNull();
         expect($router->getRoutes()->count())->toBe(1);

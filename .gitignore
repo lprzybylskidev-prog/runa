@@ -17,3 +17,6 @@ __pycache__/
 /public/ui-review/
 /public/runa-error/
 /resources/views/errors/generated/
+
+/src/storage/*.key
+/src/bootstrap/cache/*.php

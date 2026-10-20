@@ -33,7 +33,7 @@ class ProductionContracts(unittest.TestCase):
             self.assertEqual(service['cap_drop'], ['ALL'])
         public = services['nginx']['volumes'][0]
         self.assertTrue(public['read_only'])
-        self.assertEqual(public['volume']['subpath'], 'app/public')
+        self.assertEqual(public['volume']['subpath'], 'app/application/public')
         self.assertEqual(set(data['volumes']), {'application-storage', 'postgres-icu-data'})
         for service in services.values():
             for mount in service.get('tmpfs', []):

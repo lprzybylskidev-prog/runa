@@ -1,1 +1,1 @@
-@include('errors.page', app(\App\Support\HttpErrorPage::class)->forRequest(403, request()))
+@include('errors.page', app(\Runa\Support\HttpErrorPage::class)->forRequest(403, request()))

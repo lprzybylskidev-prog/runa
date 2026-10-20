@@ -2,8 +2,8 @@
 
 namespace Tests\Fixtures;
 
-use App\Support\Seeding\ManagedSeeder;
-use App\Support\Seeding\SeedContext;
+use Runa\Support\Seeding\ManagedSeeder;
+use Runa\Support\Seeding\SeedContext;
 
 abstract class FixtureSeed extends ManagedSeeder
 {

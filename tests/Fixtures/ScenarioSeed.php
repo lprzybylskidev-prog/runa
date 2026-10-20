@@ -2,7 +2,7 @@
 
 namespace Tests\Fixtures;
 
-use App\Support\Seeding\SeedCategory;
+use Runa\Support\Seeding\SeedCategory;
 
 class ScenarioSeed extends FixtureSeed
 {

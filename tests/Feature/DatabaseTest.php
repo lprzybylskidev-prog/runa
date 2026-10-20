@@ -1,8 +1,8 @@
 <?php
 
-use App\Support\TestDatabaseGuard;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Runa\Support\TestDatabaseGuard;
 
 it('uses an isolated PostgreSQL database with the technical schema', function () {
     app(TestDatabaseGuard::class)->assertSafe();

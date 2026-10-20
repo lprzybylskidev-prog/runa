@@ -18,3 +18,7 @@
 16. Generic Boost guidelines are advisory; active Runa roadmap/code/project rules win.
 17. A final review of a substantial Laravel change may include simplification of the changed/relevant area. Do not opportunistically refactor the entire application.
 18. Do not adopt Laravel Cloud/Nightwatch/starter-kit workflow assumptions unless a future roadmap explicitly chooses them.
+
+## Source and runtime ownership
+
+Laravel's base path is src/. Platform classes use Runa under src/runa/src; App under src/app is the customer extension root. Technical defaults/data/routes belong to Runa, with distinct customer configuration/migration/seeder contributions. Follow docs/architecture/application-architecture.md for the current composition/compatibility paths before using generators, package discovery or caches. Keep platform/application filesystem and cache stores separate; do not put writable state inside either source tree.

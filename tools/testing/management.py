@@ -23,7 +23,7 @@ class ManagementContracts(unittest.TestCase):
         return dict(schema_version=1, request_id=self.request, operation='development.status', parameters={}, **changes)
 
     def test_published_schema_and_executor_allowlist_agree(self):
-        schema = json.loads((ROOT / 'management/host-plan.v1.schema.json').read_text())
+        schema = json.loads((ROOT / 'src/runa/management/host-plan.v1.schema.json').read_text())
         self.assertEqual(set(schema['properties']['operation']['enum']), set(management.OPERATIONS))
         self.assertFalse(schema['additionalProperties'])
         self.assertFalse(schema['properties']['parameters']['additionalProperties'])

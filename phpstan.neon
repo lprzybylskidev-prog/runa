@@ -4,12 +4,14 @@ parameters:
     level: max
     paths:
         - artisan
-        - app
-        - management
-        - bootstrap/app.php
-        - config
-        - database
-        - routes
+        - src/artisan
+        - src/app
+        - src/runa/src
+        - src/runa/management
+        - src/bootstrap/app.php
+        - src/runa/config
+        - src/runa/database
+        - src/runa/routes
     tmpDir: .runtime/phpstan
     parallel:
         maximumNumberOfProcesses: 1

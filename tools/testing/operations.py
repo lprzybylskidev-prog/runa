@@ -71,7 +71,7 @@ print('parent:' + sys.stdin.read())
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / 'repository'
             root.mkdir()
-            files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'app/example.php': '<?php',
+            files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'src/app/example.php': '<?php',
                      'docker/php/Dockerfile': 'FROM example', '.agents/example': 'excluded', 'bin/knowledge': 'excluded',
                      'tools/knowledge/example.py': 'excluded', 'bin/operations': 'launcher', 'bin/production': 'launcher',
                      'docs/ai/example.md': 'excluded', 'docker/embeddings/example': 'excluded'}
@@ -87,7 +87,7 @@ print('parent:' + sys.stdin.read())
             with patch.object(ops, 'ROOT', root), patch.object(runtime, 'ROOT', root), patch.object(ops, 'STATE', Path(folder) / 'state'):
                 release = ops.checkout(sha)
                 ops.assert_sparse(release)
-                self.assertTrue((release / 'app/example.php').is_file())
+                self.assertTrue((release / 'src/app/example.php').is_file())
                 self.assertTrue((release / 'bin/operations').is_file())
                 self.assertTrue((release / 'docker/php/Dockerfile').is_file())
                 (release / 'VERSION').write_text('tampered')

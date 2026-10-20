@@ -1,9 +1,9 @@
 <?php
 
-use App\Support\HttpErrorPage;
+use Runa\Support\HttpErrorPage;
 
 // Build standalone assets without booting Laravel, loading env files or accessing a database.
-require __DIR__.'/../../app/Support/HttpErrorPage.php';
+require __DIR__.'/../../src/runa/src/Support/HttpErrorPage.php';
 
 $root = dirname(__DIR__, 2);
 $output = $argv[1] ?? $root.'/public/runa-error';
@@ -13,7 +13,7 @@ if (! is_dir($output.'/pages') && ! mkdir($output.'/pages', 0775, true) && ! is_
 if (! is_file($output.'/styles.css') || ! is_dir($root.'/resources/views/errors/generated')) {
     throw new RuntimeException('Build the shared MinimalLayout error shells with pnpm run build:errors first.');
 }
-$branding = require $root.'/config/branding.php';
+$branding = require $root.'/src/runa/config/branding.php';
 $renderer = new HttpErrorPage;
 foreach (['pl', 'en'] as $locale) {
     foreach (['system', 'light', 'dark'] as $theme) {

@@ -33,3 +33,8 @@ resources/views/errors/generated
 
 # Retired pre-release preview output must never enter a production context.
 public/ui-review
+
+src/storage
+src/bootstrap/cache/*.php
+src/app/tests
+src/app/docs

@@ -158,8 +158,8 @@ def environment_files():
 
 
 def setup_fingerprint():
-    paths = [ROOT / p for p in ('composer.lock', 'pnpm-lock.yaml', 'vite.config.mjs', 'tsconfig.json', '.env', 'bin/dev')]
-    for directory in ('config', 'database/migrations', 'resources'):
+    paths = [ROOT / p for p in ('composer.json', 'composer.lock', 'pnpm-lock.yaml', 'vite.config.mjs', 'tsconfig.json', '.env', 'bin/dev')]
+    for directory in ('src/runa/config', 'src/app/config', 'src/runa/database/migrations', 'src/app/database/migrations', 'resources'):
         paths.extend(p for p in (ROOT / directory).rglob('*') if p.is_file())
     digest = hashlib.sha256()
     for path in sorted(paths):
