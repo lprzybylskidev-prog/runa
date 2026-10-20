@@ -123,6 +123,19 @@ def main():
             write_staging_receipt(root, acquisition)
             check('PASS: production validate.' in output(php + ['runa:production:validate']),
                   'production-mode simulation still executes actual quiet Compose validation')
+            examples = {'runa:dev:recreate': ['nginx'], 'runa:dev:profile:set': ['low'],
+                        'runa:dev:embeddings:set': ['cpu'], 'runa:knowledge:search': ['fixture query'],
+                        'runa:hook:commit-msg': ['message.txt']}
+            development = json.loads((root / 'src/runa/management/development.json').read_text())
+            for entry in development:
+                result = subprocess.run(php + [entry['name'], *examples.get(entry['name'], [])], capture_output=True, text=True)
+                check(result.returncode != 0 and 'Development tooling is blocked' in result.stdout + result.stderr,
+                      'production installation rejects ' + entry['name'] + ' despite copied development source')
+            result = subprocess.run([launcher, 'runa:dev:up'], cwd=root, capture_output=True, text=True)
+            check(result.returncode != 0 and 'Development tooling is blocked' in result.stdout + result.stderr,
+                  'cold recovery transport cannot start development services in production')
+            check(output(compose + ['ps', '-q']) == container_ids and snapshot == {path: path.read_bytes() for path in (root / '.runtime/production').rglob('*') if path.is_file()},
+                  'rejected development commands preserve services and production state')
             output(php + ['runa:host:stop'])
             for _ in range(100):
                 if not (root / '.runtime/host/client.json').exists():

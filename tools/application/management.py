@@ -123,6 +123,7 @@ def private_directory(path):
 def execute_plan(plan, request):
     # Revalidate at the execution boundary; no caller can supply shell/argv/env/path fields.
     plan = validate_plan(json.dumps(plan), request)
+    assert_operation_context(plan)
     import operations
     directory = ROOT / '.runtime/management'
     private_directory(directory)
@@ -161,8 +162,15 @@ def public_command(tool, arguments):
     return [entry['name'], *arguments[len(entry['prefix']):]]
 
 
+def assert_operation_context(plan):
+    if plan['operation'] not in ('tooling.production', 'tooling.deploy', 'tooling.host'):
+        from repository_boundary import assert_development_context
+        assert_development_context(ROOT)
+
+
 def execution_command(plan):
     """Fixed executable families only; plan data never supplies an executable or shell."""
+    assert_operation_context(plan)
     from runtime import app_command, host_stack_health, compose
     operation = plan['operation']
     arguments = plan['parameters'].get('arguments', [])

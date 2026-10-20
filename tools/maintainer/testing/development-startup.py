@@ -50,6 +50,22 @@ class StartupContracts(unittest.TestCase):
         self.assertEqual(editor['initializeCommand'], ['./bin/artisan', 'runa:dev:prepare'])
         self.assertEqual(editor['postCreateCommand'], ['python3', 'tools/application/executors/dev.py', 'setup', '--if-needed'])
 
+    def test_standalone_bootstrap_rejects_production_before_preparing_files(self):
+        import shutil
+        from repository_boundary import OWNER_PATHS, write_staging_receipt
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'tools/application/executors').mkdir(parents=True)
+            (root / '.git').mkdir()
+            for name in ('tools/application/executors/dev.py', 'tools/application/repository_boundary.py'):
+                shutil.copy2(ROOT / name, root / name)
+            write_staging_receipt(root, {'schema_version': 1, 'mode': 'prod', 'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
+            result = subprocess.run([sys.executable, str(root / 'tools/application/executors/dev.py'), 'prepare'], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('Development tooling is blocked', result.stdout + result.stderr)
+            self.assertFalse((root / '.env.dev.local').exists())
+            self.assertFalse((root / '.devcontainer').exists())
+
     def host_context(self):
         exists = Path.exists
         return patch.object(Path, 'exists', lambda path: False if str(path) == '/.dockerenv' else exists(path))

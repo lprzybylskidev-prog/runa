@@ -3,6 +3,7 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -67,6 +68,45 @@ class ManagementContracts(unittest.TestCase):
                 self.assertEqual(management.public_command(tool, arguments), expected)
         with self.assertRaises(ValueError):
             management.public_command('unregistered', ['false'])
+
+    def test_development_plans_are_denied_in_prod_before_state_locks_or_executors(self):
+        from repository_boundary import write_staging_receipt, OWNER_PATHS
+        definitions = json.loads((ROOT / 'src/runa/management/development.json').read_text())
+        for mode in ('prod', None, 'unknown'):
+            with tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                (root / '.git').mkdir()
+                write_staging_receipt(root, {'schema_version': 1, 'mode': mode, 'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
+                for entry in definitions:
+                    tool = entry['tool']
+                    arguments = entry['prefix']
+                    operation = 'development.' + arguments[0] if tool == 'dev' else 'tooling.' + tool
+                    parameters = {'arguments': arguments[1:] if tool == 'dev' else arguments}
+                    plan = self.plan() | {'operation': operation, 'parameters': parameters}
+                    with self.subTest(mode=mode, command=entry['name']), patch.object(management, 'ROOT', root), patch.object(management.subprocess, 'run') as run, patch.object(operations, 'lock') as lock, patch.dict(os.environ, {'APP_ENV': 'local'}):
+                        with self.assertRaisesRegex(ValueError, 'Development tooling is blocked'):
+                            management.execute_plan(plan, self.request)
+                        run.assert_not_called()
+                        lock.assert_not_called()
+                        self.assertFalse((root / '.runtime').exists())
+
+    def test_worker_reports_a_fixed_nonsecret_development_mode_denial(self):
+        import shutil
+        from repository_boundary import OWNER_PATHS, write_staging_receipt
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'tools/application').mkdir(parents=True)
+            (root / '.git').mkdir()
+            for name in ('host_executor.py', 'management.py', 'repository_boundary.py', 'runtime.py'):
+                shutil.copy2(ROOT / 'tools/application' / name, root / 'tools/application' / name)
+            write_staging_receipt(root, {'schema_version': 1, 'mode': 'prod', 'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
+            result = subprocess.run([sys.executable, str(root / 'tools/application/host_executor.py'), '--worker'],
+                                    input=json.dumps(self.plan()) + '\n', capture_output=True, text=True,
+                                    env=dict(os.environ, RUNA_HOST_WORKER='1', APP_ENV='local'))
+            self.assertEqual(result.returncode, 2)
+            self.assertIn('Development tooling is blocked', result.stderr)
+            self.assertNotIn('Traceback', result.stderr)
+            self.assertFalse((root / '.runtime').exists())
 
     def test_quality_queries_do_not_hold_the_production_lock_across_child_gates(self):
         with tempfile.TemporaryDirectory() as folder:

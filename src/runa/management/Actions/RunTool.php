@@ -4,6 +4,7 @@ namespace Runa\Management\Actions;
 
 use Illuminate\Console\OutputStyle;
 use InvalidArgumentException;
+use Runa\Management\DevelopmentContext;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
@@ -13,6 +14,7 @@ final class RunTool
     /** @param list<string> $arguments */
     public function execute(string $tool, array $arguments, string $root, OutputInterface $output): int
     {
+        DevelopmentContext::assertAllowed($root);
         if (in_array($tool, ['test', 'format', 'lint', 'typecheck', 'analyse'], true)) {
             return (new RunSourceChecks)->execute($tool, $arguments, $root, $output);
         }

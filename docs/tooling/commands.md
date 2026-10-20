@@ -57,6 +57,8 @@ Internal Python process engines live under `tools/application/executors/` with n
 
 ## Development
 
+Development operation guard: the entire optional development command catalog (dev lifecycle/profiles, tests, formatting/lint/type/static analysis, doctor/quality, hooks, security checks, Xdebug and knowledge/RAG) is blocked in a prod-mode installation, even if development source was copied there or the caller supplies APP_ENV=local. Existing invalid/unknown acquisition modes also fail closed. PHP checks before local Actions/host dispatch and the independent executor checks before locks, operation-state writes or Docker/tool execution. Production APP_ENV and the configured .env production value also block development tools. Owner development and cold bootstrap remain available before acquisition/environment initialization. Help/discovery and explicit nonexecuting --plan remain available. Production/deploy/host control stay operational; production runtime artifacts still omit development tooling. Native Laravel commands retain their framework safeguards; this guard concerns Runa's optional development catalog.
+
 ### `php artisan runa:dev:profile`
 
 Show the development resource profile. Change it with `php artisan runa:dev:profile:set <profile> [settings]`.

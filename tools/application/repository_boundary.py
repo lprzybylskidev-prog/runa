@@ -12,6 +12,10 @@ class RepositoryBoundaryError(ValueError):
     """Fixed diagnostics for an unapproved acquisition/maintenance target."""
 
 
+class DevelopmentContextError(RepositoryBoundaryError):
+    """A fixed, nonsecret development-mode denial safe to report to an operator."""
+
+
 def receipt(root):
     root = Path(root)
     if any(key.startswith('GIT_') and key != 'GIT_PAGER' for key in os.environ):
@@ -48,6 +52,25 @@ def assert_production_installation(root):
     if data.get('mode') != 'prod':
         raise RepositoryBoundaryError('Production commands require a production installation (mode=prod). Development or unknown installation mode is blocked; APP_ENV and --simulation do not override it.')
     return data
+
+
+def assert_development_context(root):
+    """Deny installed production even when a caller supplies a development APP_ENV."""
+    root = Path(root)
+    marker = root / '.git/runa-bootstrap.json'
+    if marker.exists() or marker.is_symlink():
+        data = receipt(root)
+        if data.get('mode') != 'dev':
+            raise DevelopmentContextError('Development tooling is blocked in production or unknown installation mode.')
+    environment = root / '.env'
+    configured_production = False
+    if environment.is_file():
+        for line in environment.read_text().splitlines():
+            key, sep, value = line.strip().removeprefix('export ').partition('=')
+            if sep and key.strip() == 'APP_ENV' and value.split('#', 1)[0].strip().strip("\"'") == 'production':
+                configured_production = True
+    if os.environ.get('APP_ENV') == 'production' or configured_production:
+        raise DevelopmentContextError('Development tooling is blocked in the production environment.')
 
 
 def write_staging_receipt(root, data):

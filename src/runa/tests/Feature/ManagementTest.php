@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Runa\Management\Actions\RunSourceChecks;
+use Runa\Management\Actions\RunTool;
+use Runa\Management\DevelopmentContext;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Process\Process;
 
@@ -147,3 +149,35 @@ it('rejects legacy selectors on retained workflows and fixed commands', function
     [['runa:dev:up', 'down']], [['runa:quality:plan', '--background']],
     [['runa:host:stop', str_repeat('a', 32)]], [['runa:config:validate', '--templates']],
 ]);
+
+it('rejects local development Actions in production contexts before starting tools', function (): void {
+    $root = sys_get_temp_dir().'/runa-dev-context-'.bin2hex(random_bytes(6));
+    mkdir($root.'/.git', 0775, true);
+    try {
+        foreach (['prod', null, 'unknown'] as $mode) {
+            file_put_contents($root.'/.git/runa-bootstrap.json', json_encode(['schema_version' => 1, 'mode' => $mode], JSON_THROW_ON_ERROR));
+            expect(fn () => (new RunTool)->execute('format', [], $root, new BufferedOutput))
+                ->toThrow(InvalidArgumentException::class, 'Development tooling is blocked');
+            expect(is_dir($root.'/.runtime'))->toBeFalse();
+        }
+        file_put_contents($root.'/.git/runa-bootstrap.json', '{invalid');
+        expect(fn () => DevelopmentContext::assertAllowed($root))->toThrow(InvalidArgumentException::class);
+        unlink($root.'/.git/runa-bootstrap.json');
+        foreach (["APP_ENV=production\n", "APP_ENV=\"production\" # target\r\n", "export APP_ENV='production'\n"] as $environment) {
+            file_put_contents($root.'/.env', $environment);
+            expect(fn () => DevelopmentContext::assertAllowed($root))
+                ->toThrow(InvalidArgumentException::class, 'production environment');
+        }
+        file_put_contents($root.'/.env', "APP_ENV=local\n");
+        DevelopmentContext::assertAllowed($root);
+        expect(is_dir($root.'/.runtime'))->toBeFalse();
+    } finally {
+        File::deleteDirectory($root);
+    }
+});
+
+it('rejects executing development host commands from a production PHP environment', function (): void {
+    $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:dev:up'], base_path(), ['APP_ENV' => 'production']);
+    expect($process->run())->toBe(2)->and($process->getOutput())->toContain('Development tooling is blocked')
+        ->and($process->getOutput())->not->toContain('schema_version');
+});

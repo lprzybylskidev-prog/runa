@@ -40,6 +40,15 @@ class HostContracts(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 host.validate_request(self.value | change, self.credentials, self.challenge)
 
+    def test_every_registered_command_name_can_reach_independent_validation(self):
+        definitions = json.loads((ROOT / 'src/runa/management/operations.json').read_text()) + json.loads((ROOT / 'src/runa/management/development.json').read_text())
+        for entry in definitions:
+            value = self.value | {'command': entry['name']}
+            self.assertEqual(host.validate_request(value, self.credentials, self.challenge), value)
+        for name in ('runa::test', 'runa:test;e2e', 'runa:2test', 'runa:Test', 'runa:test e2e'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                host.validate_request(self.value | {'command': name}, self.credentials, self.challenge)
+
     def test_transport_rejects_duplicate_and_oversized_frames(self):
         for content in (b'{"id":1,"id":2}\n', b'x' * (host.LIMIT + 1), b'{}', b''):
             with self.subTest(content=content[:20]), self.assertRaises(ValueError):

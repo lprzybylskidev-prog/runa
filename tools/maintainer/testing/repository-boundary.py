@@ -66,6 +66,28 @@ class RepositoryBoundary(unittest.TestCase):
                         boundary.assert_production_installation(root)
                 self.assertEqual(path.read_bytes(), before)
 
+    def test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            with patch.dict(os.environ, {'APP_ENV': 'local'}):
+                boundary.assert_development_context(root)
+                for text in ('APP_ENV=production\n', 'export APP_ENV="production" # target\n'):
+                    (root / '.env').write_text(text)
+                    with self.assertRaisesRegex(ValueError, 'production environment'):
+                        boundary.assert_development_context(root)
+                (root / '.env').write_text('APP_ENV=local\n')
+                boundary.assert_development_context(root)
+                self.fixture(root)
+                data = json.loads((root / '.git/runa-bootstrap.json').read_text())
+                data['mode'] = 'dev'
+                boundary.write_staging_receipt(root, data)
+                boundary.assert_development_context(root)
+                data['mode'] = 'prod'
+                boundary.write_staging_receipt(root, data)
+                with self.assertRaisesRegex(ValueError, 'blocked in production'):
+                    boundary.assert_development_context(root)
+            self.assertFalse((root / '.runtime').exists())
+
     def test_customer_read_only_role_and_existing_customer_remote_preservation(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

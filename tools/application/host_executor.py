@@ -25,6 +25,7 @@ import time
 import contextlib
 
 import management
+from repository_boundary import DevelopmentContextError
 from runtime import ROOT
 
 LIMIT = 65536
@@ -74,7 +75,7 @@ def validate_request(value, credentials, challenge):
             or not isinstance(value['token'], str) or not hmac.compare_digest(value['token'], credentials['token'])
             or value['workspace'] != credentials['workspace'] or value['challenge'] != challenge
             or not isinstance(value['id'], str) or not re.fullmatch('[a-f0-9]{32}', value['id'])
-            or not isinstance(value['command'], str) or not re.fullmatch('runa:[a-z-]+(?::[a-z-]+)*', value['command'])
+            or not isinstance(value['command'], str) or not re.fullmatch('runa:[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)*', value['command'])
             or type(value['interactive']) is not bool
             or not isinstance(value['arguments'], list) or len(value['arguments']) > 128
             or any(not isinstance(arg, str) or len(arg.encode()) > 4096 or '\0' in arg for arg in value['arguments'])):
@@ -394,6 +395,9 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('Host operation interrupted. Inspect its receipt and existing recovery markers before retrying.', file=sys.stderr)
         raise SystemExit(130)
+    except DevelopmentContextError:
+        print('Development tooling is blocked in production or unknown installation context.', file=sys.stderr)
+        raise SystemExit(2)
     except (ValueError, OSError, KeyError, TypeError, subprocess.SubprocessError):
         print('Host execution failed. Inspect the private operation receipt; do not retry a mutation blindly.', file=sys.stderr)
         raise SystemExit(1)

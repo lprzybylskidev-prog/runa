@@ -32,6 +32,9 @@ abstract class ToolingCommand extends Command
         if (in_array($this->tool, ['production', 'deploy'], true)) {
             $this->setHelp('Execution requires an installer-selected production installation (mode=prod). Development installations are blocked; APP_ENV and --simulation cannot override this. Help and explicit --plan do not execute operations.');
         }
+        if (! in_array($this->tool, ['production', 'deploy', 'host'], true)) {
+            $this->setHelp('Development only: execution is blocked in production installations and environments. Help and explicit --plan remain nonexecuting.');
+        }
         if (in_array($this->tool, ['test', 'lint', 'typecheck', 'analyse'], true)) {
             $this->ignoreValidationErrors();
         }
@@ -60,6 +63,9 @@ abstract class ToolingCommand extends Command
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
                 || ($this->tool === 'dev' && ! in_array($arguments[0], ['setup', 'knowledge-init', 'knowledge-status'], true) && ! ($arguments[0] === 'profile' && count($arguments) === 1));
             $root = dirname(__DIR__, 3);
+            if (! in_array($this->tool, ['production', 'deploy', 'host'], true) && ! $this->input->hasParameterOption('--plan') && $request === null) {
+                DevelopmentContext::assertAllowed($root);
+            }
             if (! $this->input->hasParameterOption('--plan') && $request === null && ! $host && is_file('/.dockerenv') && is_file($root.'/tools/application/executors/dev.py')) {
                 if (getenv('APP_ENV') === 'production') {
                     throw new InvalidArgumentException('Development tooling is unavailable in production.');
@@ -67,7 +73,7 @@ abstract class ToolingCommand extends Command
 
                 return (new RunTool)->execute($this->tool, $arguments, $root, $this->output);
             }
-            if ($host && ! $this->input->hasParameterOption('--plan') && $request === null) {
+            if (! $this->input->hasParameterOption('--plan') && $request === null) {
                 return (new HostBridge)->execute($root, $this->getName() ?? throw new \LogicException('Management command name is required.'), $forwarded, $this->input->isInteractive() && defined('STDIN') && stream_isatty(STDIN), $this->output);
             }
             // Explicit preview or isolated host registry validation only.

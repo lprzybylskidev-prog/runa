@@ -11,6 +11,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / 'tools/application'))
 LOCAL = ROOT / '.env.dev.local'
 OVERRIDE = ROOT / '.devcontainer/compose.resources.yaml'
 PRESETS = {
@@ -239,6 +240,8 @@ def main():
               'Run Docker lifecycle commands on the host. Profile changes apply on container recreation.\n'
               'down preserves volumes; destructive volume deletion is not supported.')
         return 0
+    from repository_boundary import assert_development_context
+    assert_development_context(ROOT)
     values = load()
     command = args.pop(0)
     if command == 'embeddings':
