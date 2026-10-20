@@ -1,11 +1,11 @@
 ---
 id: RM-2026-007
 title: Devcontainer setup readiness repair
-status: active
+status: closed
 branch: roadmap/RM-2026-007-devcontainer-setup-readiness
 created_at: 2026-10-20
 activated_at: 2026-10-20
-closed_at: null
+closed_at: 2026-10-20
 release_type: fix
 impact_areas:
   - development
@@ -35,7 +35,7 @@ With a matching fingerprint and current required generated assets, setup --if-ne
 
 - [x] 1. Repair setup readiness and regression coverage.
   - Verify current generator outputs, correct the stale readiness path, cover valid existing setup, missing output and stale fingerprint, preserve failure semantics, update development guidance and verify actual containerized fast setup/reopen preparation. Commit the coherent correction.
-- [ ] 2. Full verification, release finalization, merge and final report.
+- [x] 2. Full verification, release finalization, merge and final report.
   - Review affected current-state docs and run the complete selected local gate including development and strict AI checks. Insert fix points/rerun on failures. Finalize patch metadata, close roadmap, refresh knowledge/docs/release checks, merge/main sanity, annotated tag/push/GitHub Release and branch deletion. End the turn after starting a background final gate.
 
 ## Execution context
@@ -51,4 +51,12 @@ Native host checkout: /home/lprzybylski/Documents/php/runa. Development Compose 
 
 ## Final verification source review
 
-Reviewed README checked state, current VERSION, bin/dev setup/fingerprint/locking and Compose application/optional-AI ordering, current generated native-error output, startup contracts, docs/development/environment.md and editor-and-agents.md, command guidance and Docker lifecycle skill, plus roadmap/release/quality workflows. Guidance now identifies the real generated sentinel and fast/full behavior; no other capability correction is needed for this bounded repair. Closed roadmaps remain historical/immutable. Full gate and patch closure remain pending; no successor activation is authorized.
+Reviewed README checked state, current VERSION, bin/dev setup/fingerprint/locking and Compose application/optional-AI ordering, current generated native-error output, startup contracts, docs/development/environment.md and editor-and-agents.md, command guidance and Docker lifecycle skill, plus roadmap/release/quality workflows. Guidance now identifies the real generated sentinel and fast/full behavior; no other capability correction is needed for this bounded repair. Closed roadmaps remain historical/immutable. The complete selected final gate passed; release closure records no active roadmap and no successor activation.
+
+## Final report
+
+RM-2026-007 delivers fix release 0.2.1. Development setup now recognizes the actual generated 503-pl-system.html readiness output. A matching fingerprint and valid assets retain the lightweight configuration/migration/hook/MCP path; missing output or stale inputs still trigger full setup, and failures still propagate. Regression tests reproduced the old defect before correction and all 13 startup contracts pass afterward. Actual full/fast container setup and host startup/doctor passed; the app container ID/start time remained unchanged across reopen preparation. VS Code GUI attachment remains owner-observed, not inferred from CLI success. The observed Composer SIGSEGV did not recur; no native crash root cause or PHP-level fix is claimed.
+
+All 22 selected final quality nodes passed on 765c140f350fe6d511600249e242d699ab4d2652, including backend tests, formatting/lint/PHPStan, dependency/secret checks, hook/runner/startup/release/docs contracts, development health and strict knowledge doctor/evals/Boost validation. Local full evidence is .runtime/quality; setup/recovery evidence is listed above. Current-state documentation was reviewed and synchronized in point 1. Post-gate edits are limited to release metadata: VERSION/CHANGELOG/README and roadmap closure/evidence. Focused docs/release validation and knowledge synchronization apply under the release workflow, followed by merge/main sanity and immutable annotated tag/GitHub publication.
+
+No new dependency, PHP/image change, migration, production behavior or real deployment was introduced. No disposable Docker containers/networks/images/volumes were created for the fix, so no cleanup was required. Existing development/test services and data, knowledge/model caches, backups, verification reports and other projects are preserved. Release metadata is 0.2.1 with no active roadmap; RM-2026-005/006 remain drafts.

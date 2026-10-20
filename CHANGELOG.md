@@ -2,6 +2,16 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.2.1] - 2026-10-20
+
+Fix release — RM-2026-007.
+
+- Recognize the generated emergency error document when checking development setup readiness, so an unchanged valid environment skips redundant Composer installation and frontend builds.
+- Cover valid setup, missing current output, stale fingerprints and existing failure propagation with startup regression contracts; synchronize development guidance.
+- Verify containerized full/fast setup, host startup/health and the complete selected local quality/strict AI gate.
+
+No dependency, PHP/image, application schema or production change. Development/test data, knowledge/model caches, backups and reports were preserved. The observed native Composer SIGSEGV did not recur during recovery; its cause was not established by this repair.
+
 ## [0.2.0] - 2026-10-19
 
 Feature release — RM-2026-004.
