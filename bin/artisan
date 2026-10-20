@@ -27,4 +27,4 @@ try:
 except (ValueError, OSError, subprocess.SubprocessError) as error:
     message = f'Child command failed (exit {error.returncode}).' if isinstance(error, subprocess.CalledProcessError) else str(error)
     print('Artisan transport failed: ' + message, file=sys.stderr)
-    sys.exit(1)
+    sys.exit(getattr(error, 'returncode', 1))

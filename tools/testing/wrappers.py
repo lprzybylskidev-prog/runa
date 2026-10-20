@@ -5,6 +5,7 @@ import io
 from pathlib import Path
 import runpy
 import sys
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -28,6 +29,13 @@ class WrapperContracts(unittest.TestCase):
     def test_devcontainer_uses_installed_tool_directly(self):
         call = self.invoke('artisan', ['list'], True)
         self.assertEqual(call.call_args.args[0], ['php', 'artisan', 'list'])
+
+    def test_artisan_preserves_child_failure_exit_code(self):
+        for inside in (False, True):
+            with self.subTest(inside=inside), patch.object(sys, 'argv', [str(ROOT / 'bin/artisan'), 'list']), patch.object(runtime, 'inside', return_value=inside), patch.object(runtime, 'run', side_effect=subprocess.CalledProcessError(7, ['php', 'artisan', 'list'])), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as result:
+                    runpy.run_path(str(ROOT / 'bin/artisan'), run_name='__main__')
+                self.assertEqual(result.exception.code, 7)
 
     def test_logs_default_and_help_are_nonmutating(self):
         call = self.invoke('logs', [], False)
