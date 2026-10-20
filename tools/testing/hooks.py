@@ -62,6 +62,14 @@ def main():
         assert git('show', ':' + str(vendored.relative_to(root))) == imported
         assert vendored.read_bytes() == imported
         clear()
+        lockfile = root / 'src/pnpm-lock.yaml'
+        locked = b"value:    [1,2]\n"
+        lockfile.write_bytes(locked)
+        git('add', str(lockfile.relative_to(root)))
+        invoke('pre-commit')
+        assert git('show', ':' + str(lockfile.relative_to(root))) == locked
+        assert lockfile.read_bytes() == locked
+        clear()
         knowledge.write_text('#!/bin/sh\necho "Index stale; run ./bin/knowledge index" >&2\nexit 1\n')
         invoke('pre-commit', expected='Index stale')
     print('PASS: installed hooks reject env/staged synthetic secrets/invalid messages/stale knowledge; partial staging preserved; full-file formatting succeeds; fixtures removed without commits.')

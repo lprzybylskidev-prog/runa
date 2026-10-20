@@ -58,7 +58,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
                 subprocess.run([str(tools_root / 'src/vendor/bin/pint'), '--config', str(tools_root / 'src/pint.json'), str(target)],
                                cwd=tools_root, check=True, capture_output=True)
                 formatted = target.read_bytes()
-            elif suffix in ('.md', '.json', '.yaml', '.yml', '.vue', '.ts', '.js', '.mjs', '.css'):
+            elif suffix in ('.md', '.json', '.yaml', '.yml', '.vue', '.ts', '.js', '.mjs', '.css') and name != 'src/pnpm-lock.yaml':
                 formatted = subprocess.run(['pnpm', '--dir', str(tools_root / 'src'), 'exec', 'prettier', '--stdin-filepath', str(root / name)], cwd=tools_root,
                                            input=data, capture_output=True, check=True).stdout
             if formatted != data:
