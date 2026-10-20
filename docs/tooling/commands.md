@@ -12,6 +12,12 @@ This file documents the implemented command surface: development lifecycle/profi
 
 ## Runtime-independent Artisan transport
 
+Before a checkout exists, the standalone `python3 bootstrap.py` exception acquires
+an exact GitHub release, with public access by default and optional private
+credentials. It supports interactive selection, explicit noninteractive inputs,
+atomic publication and install-now/postponement. See [bootstrap](bootstrap.md)
+for host requirements, trust, credential handling and resume instructions.
+
 Artisan is the public domain-command registry. Inside the development application container use `php artisan runa:<family> ...`; the host uses `./bin/artisan runa:<family> ...` without host PHP/Node. Ordinary Laravel/application commands keep their full bootstrap. `php artisan` selects registered management commands before dotenv, application providers, DB or keys are needed.
 
 Cold `./bin/artisan --management list` and `--management help runa:dev` use isolated production-only Composer dependencies and the existing pinned PHP runtime. The host discovers command names from Artisan itself. First use builds a management artifact if its exact source/lock/input identity is absent; registry access is needed for uncached dependencies. No application service is started for help/discovery/plans. The setup/post-create transport has one narrow pre-autoload branch: while src/vendor/autoload.php is missing it runs the fixed dependency/setup helper, then uses normal Artisan dispatch. Compose knowledge-init calls its internal Python startup initializer directly so optional AI never depends on PHP/vendor/application initialization. These are bootstrap transports, not another public registry. `runa:dev config` validates with Compose --quiet; it never prints expanded env-file credentials. Use profile inspection for effective resource limits. The artifact has no customer source, Node, Composer executable, Python, Boost, Docker socket, application env or bind mounts.

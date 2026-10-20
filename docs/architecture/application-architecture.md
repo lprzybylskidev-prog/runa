@@ -235,3 +235,11 @@ Protected branding configuration projects the validated manifest into `Applicati
 The RM-005 command consolidation uses PHP Actions for application/source-tool invocation and Xdebug, with mature host/quality/scanner/Git/RAG mechanics in internal tools/project/executors helpers. Thin bin aliases are compatibility transports. Production sparse source and the management artifact contain only operational command classes/host helpers, excluding development registration and knowledge CLI source; the development-management artifact is separate. Quality graph, locks, background stop/no-poll semantics and production application isolation remain unchanged.
 
 Two pre-autoload service paths stay deliberately independent: the thin bin/dev setup bridge invokes the fixed Python dependency/bootstrap helper only while Composer's autoloader is absent; afterward it dispatches Artisan. Compose knowledge-init invokes the Python startup/knowledge initializer directly, without PHP/vendor or the application kernel. These internal initialization/recovery paths introduce no additional public domain-command registry.
+
+Before any checkout exists, the repository-root standalone bootstrap.py is the
+explicit pre-Artisan source-acquisition exception. It uses host Python/Git and
+verified GitHub release identities, optionally with private credentials, and
+atomically publishes a new checkout before handing off to existing containerized
+commands. It never updates an installed customer tree. The source receipt is
+acquisition evidence, not application state or protected-source integrity;
+see [bootstrap](../tooling/bootstrap.md).

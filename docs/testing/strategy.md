@@ -16,6 +16,15 @@ Before writing tests, identify the scenarios that matter:
 
 Coverage is informational, not a pass/fail target by itself.
 
+Standalone GitHub acquisition has offline source/security contracts in
+`python3 tools/testing/bootstrap.py` (`bootstrap-source-contracts` local gate).
+They cover public/private credential transport, redirect denial, access failures,
+tag/commit mismatch, malicious paths/links, real Git blob/mode verification,
+atomic publication races, interruption, selection and installer failure/resume.
+Temporary source fixtures never start Docker services or use real credentials.
+Live public acquisition and authorized private acceptance are recorded separately;
+synthetic private failures do not prove live private access.
+
 ## Backend test framework
 
 Pest 5.3.2 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.2 and ParaTest 7.27.2 are resolved testing dependencies in `src/composer.lock`.

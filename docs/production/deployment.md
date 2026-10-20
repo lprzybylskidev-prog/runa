@@ -2,6 +2,13 @@
 
 ## Production installer
 
+For a new operator checkout, use the [standalone GitHub bootstrap](../tooling/bootstrap.md)
+to acquire and verify an exact published release without overwriting existing
+files. Public access requires no token; private access uses hidden input or a
+private credential file. Acquisition can be postponed before the existing
+containerized installer. Existing installed repositories still follow the
+deployment/update procedure below; bootstrap never replaces a customer checkout.
+
 A production installer is required.
 
 It should guide/check:
