@@ -22,4 +22,4 @@
 20. Pre-commit does not reindex automatically; stale knowledge sources block/instruct a deliberate `./bin/artisan runa:knowledge:index`.
 21. The production environment hard-disables/omits knowledge CLI and all Qdrant/embedding runtime capability.
 
-Application setup/post-create never waits for knowledge. Independent `knowledge-init` retries bounded readiness and first-index initialization under the shared CLI lock; existing stale indexes require explicit `./bin/artisan runa:knowledge:index`. Application diagnostics report optional degradation separately. Dedicated knowledge doctor/evals and final AI gates remain strict; see `docs/development/knowledge.md`.
+Application setup/post-create never waits for knowledge. Independent `knowledge-init` retries bounded readiness and first-index initialization under the shared CLI lock; existing stale indexes require explicit `./bin/artisan runa:knowledge:index`. Application diagnostics report optional degradation separately. Dedicated knowledge doctor/evals and final AI gates remain strict; see `docs/runa/handbook/development/knowledge.md`.

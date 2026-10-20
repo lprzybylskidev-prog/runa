@@ -17,11 +17,17 @@ from ingest import index, rebuild, status
 from retrieval import Retriever, doctor
 from store import Store
 
-CONFIG = json.loads((ROOT / 'tools/application/knowledge/config.json').read_text())
+from configuration import load
+import corpus
+from unittest.mock import patch
+CONFIG = load(ROOT)
 
 
 class RetrievalContracts(unittest.TestCase):
     def setUp(self):
+        owner = patch.object(corpus, 'maintainer_checkout', return_value=True)
+        owner.start()
+        self.addCleanup(owner.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -31,8 +37,8 @@ class RetrievalContracts(unittest.TestCase):
         self.git('init', '-q', '-b', 'retrieval-test')
         for name, text in {
             'AGENTS.md': '# Rules\n\nPostgreSQL uses schemas and bigint identity keys.\n',
-            'docs/ai/knowledge-system.md': '# Knowledge\n## Production prohibition\nQdrant and embeddings are development-only. Never deploy knowledge services.\n',
-            'docs/roadmaps/closed/RM-2026-099-example.md': '---\nid: RM-2026-099\nstatus: closed\n---\n# History\n## Specification\nLegacy frobnicator_739 configuration.\n',
+            'docs/runa/handbook/ai/knowledge-system.md': '# Knowledge\n## Production prohibition\nQdrant and embeddings are development-only. Never deploy knowledge services.\n',
+            'docs/runa/maintainer/roadmaps/closed/RM-2026-099-example.md': '---\nid: RM-2026-099\nstatus: closed\n---\n# History\n## Specification\nLegacy frobnicator_739 configuration.\n',
         }.items():
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -25,14 +25,18 @@ For discovery and maintenance load:
 - `references/forms.md` — shared field/error/action patterns
 - `references/tables.md` — list/filter/statistics/table behavior
 
-Project frontend architecture is in `docs/architecture/frontend.md`.
+Project frontend architecture is in `docs/runa/handbook/architecture/frontend.md`.
 
-Before visual design or UI changes, read `docs/design/visual-direction.md` and the relevant design documents it links, including `docs/design/color-palette.md` for colors. Inspect only the reference images relevant to the task and follow their explicitly selected features. Distinguish approved decisions from open proposals; do not infer implementation approval from reference images. Preserve the active roadmap's discussion/approval gates.
+Before visual design or UI changes, read `docs/runa/handbook/design/visual-direction.md` and the relevant design documents it links, including `docs/runa/handbook/design/color-palette.md` for colors. Inspect only the reference images relevant to the task and follow their explicitly selected features. Distinguish approved decisions from open proposals; do not infer implementation approval from reference images. Preserve the active roadmap's discussion/approval gates.
 
-Review motion for every new or changed component, including wrappers and their existing consumers. Add subtle transitions where they help explain opening/closing, feedback or state changes; make an explicit static choice where movement would distract. Use the accepted ApplicationLayout dropdown/disclosure rhythm, preserve immediate state/focus, and verify interrupted exits, reduced motion and print. Follow `docs/design/visual-direction.md` and load `references/motion.md` for implementation rules and the component audit.
+Review motion for every new or changed component, including wrappers and their existing consumers. Add subtle transitions where they help explain opening/closing, feedback or state changes; make an explicit static choice where movement would distract. Use the accepted ApplicationLayout dropdown/disclosure rhythm, preserve immediate state/focus, and verify interrupted exits, reduced motion and print. Follow `docs/runa/handbook/design/visual-direction.md` and load `references/motion.md` for implementation rules and the component audit.
 
 Vue implementation details belong to the Vue skill. Tailwind implementation details belong to the Tailwind skill.
 
 Use concise, factual, professional interface copy. Avoid generic promotional slogans and motivational filler; omit text that adds no useful information.
 
 Keep repeated controls and their hover/focus/disabled/transition styling in shared components (for example `AppButton`, `AppTooltip`), not page-local copies. Check the component catalogue before adding markup; extend existing components when a real additional use requires it. Shared layout or design tokens alone do not replace reusable controls.
+
+## Documentation placement
+
+Synchronize affected current guidance and domain/pattern references in the same point. Apply the reader/task placement and delivery rules in `docs/README.md` and `AGENTS.md`; validate public links and staged knowledge freshness. Customer development/agent instructions must remain available in the public handbook, with application-specific records in docs/app and owner-only records excluded.

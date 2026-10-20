@@ -157,6 +157,14 @@ def main():
         check((dev / 'src/app/Providers/CustomerGeneratorProbeProvider.php').is_file() and 'CustomerGeneratorProbeProvider' in (dev / 'src/app/providers.php').read_text() and (dev / 'src/bootstrap/providers.php').read_bytes() == bootstrap_providers, 'provider generation registers the application provider without editing platform bootstrap')
 
         check(not (dev / 'src/runa/tests').exists() and not (dev / 'src/runa/tools').exists(), 'customer source excludes all platform tests and browser harnesses')
+        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:doctor:docs'])
+        check(not (dev / 'docs/runa/maintainer').exists() and all((dev / 'docs/app/roadmaps' / state).is_dir() and not list((dev / 'docs/app/roadmaps' / state).glob('*.md')) for state in ('draft', 'active', 'paused', 'closed')), 'customer documentation and empty application roadmaps contain no owner history')
+        plan = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:quality:plan'])
+        check('tools/maintainer' not in plan and 'runa:doctor:docs' in plan, 'customer quality plan retains public documentation/security checks without owner gates')
+        corpus = 'import sys; from pathlib import Path; sys.path.insert(0,"tools/application/knowledge"); from configuration import load; from corpus import sources; root=Path.cwd(); names=[p.relative_to(root).as_posix() for p in sources(root,load(root))]; assert "docs/app/README.md" in names; assert "docs/runa/handbook/security/baseline.md" in names; assert not any("/maintainer/" in p for p in names); print("PASS: delivered app/public corpus and skills; no owner sources.")'
+        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', '-c', corpus])
+        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', 'tools/application/testing/hooks.py'])
+        check(True, 'delivered customer hooks and knowledge source selection work without maintainer source')
         native_tests = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'test', '--list-tests'])
         check('WelcomeTest' in native_tests and 'Runa\\tests' not in native_tests and 'ManagementTest' not in native_tests, 'native customer Artisan discovers application tests without owner autoloading')
         for test_command in ('test', 'runa:test', 'runa:test:frontend'):

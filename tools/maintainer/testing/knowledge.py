@@ -20,7 +20,8 @@ import ingest
 from provider import Embeddings
 from transport import RequestError
 
-CONFIG = json.loads((ROOT / 'tools/application/knowledge/config.json').read_text())
+from configuration import load
+CONFIG = load(ROOT)
 
 
 class Provider:
@@ -84,6 +85,9 @@ class KnowledgeContracts(unittest.TestCase):
         self.track()
         subprocess.run(['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture'], cwd=self.root, check=True)
         Store.points, Store.present, Store.fail_upsert, Provider.calls = {}, False, False, []
+        owner = patch.object(corpus, 'maintainer_checkout', return_value=True)
+        owner.start()
+        self.addCleanup(owner.stop)
         self.patch_store = patch.object(ingest, 'Store', Store)
         self.patch_provider = patch.object(ingest, 'Embeddings', Provider)
         self.patch_store.start()
@@ -111,15 +115,15 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertEqual([p.name for p in corpus.sources(self.root, CONFIG)], ['AGENTS.md'])
 
     def test_symlink_cannot_import_outside_content(self):
-        (self.root / 'docs').mkdir()
-        (self.root / 'docs/link.md').symlink_to('/etc/passwd')
+        (self.root / 'docs/app').mkdir(parents=True)
+        (self.root / 'docs/app/link.md').symlink_to('/etc/passwd')
         self.track()
         with self.assertRaisesRegex(ValueError, 'Symlink'):
             corpus.sources(self.root, CONFIG)
 
     def test_structural_budget_and_closed_roadmap_filter(self):
         text = '---\nid: RM-2026-099\nstatus: closed\n---\n# Roadmap\n## Overview\n' + ('Knowledge text. ' * 700) + '\n## Implementation plan\nDo not index this checklist.\n'
-        p = self.write('docs/roadmaps/closed/RM-2026-099.md', text)
+        p = self.write('docs/runa/maintainer/roadmaps/closed/RM-2026-099.md', text)
         meta, rows = corpus.chunks(p, self.root, text, Provider(CONFIG), CONFIG)
         self.assertEqual(meta['roadmap_id'], 'RM-2026-099')
         self.assertGreater(len(rows), 1)
@@ -136,7 +140,7 @@ class KnowledgeContracts(unittest.TestCase):
 
     def test_roadmap_examples_and_templates_are_documentation(self):
         text = '# Workflow\n```yaml\nid: RM-2026-003\nstatus: active\n```\n'
-        for name in ('docs/workflows/roadmaps.md', 'docs/roadmaps/roadmap-template.md'):
+        for name in ('docs/runa/maintainer/workflows/roadmaps.md', 'docs/runa/handbook/workflows/roadmap-template.md'):
             with self.subTest(source=name):
                 path = self.write(name, text)
                 meta = corpus.metadata(path, self.root, text)
@@ -147,10 +151,10 @@ class KnowledgeContracts(unittest.TestCase):
 
     def test_real_roadmap_identity_survives_closure_and_ignores_body_examples(self):
         text = '---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n```yaml\nid: RM-2026-003\nstatus: closed\n```\n'
-        active = self.write('docs/roadmaps/active/RM-2026-099-test.md', text)
+        active = self.write('docs/runa/maintainer/roadmaps/active/RM-2026-099-test.md', text)
         before = corpus.metadata(active, self.root, text)
         closed_text = text.replace('status: active', 'status: closed', 1)
-        closed = self.write('docs/roadmaps/closed/RM-2026-099-test.md', closed_text)
+        closed = self.write('docs/runa/maintainer/roadmaps/closed/RM-2026-099-test.md', closed_text)
         after = corpus.metadata(closed, self.root, closed_text)
         self.assertEqual(before['document_id'], after['document_id'])
         self.assertEqual(before['roadmap_id'], 'RM-2026-099')
@@ -164,7 +168,7 @@ class KnowledgeContracts(unittest.TestCase):
                 corpus.metadata(active, self.root, invalid)
 
     def test_parser_refresh_removes_false_roadmap_filter_without_emptying_docs(self):
-        name = 'docs/workflows/roadmaps.md'
+        name = 'docs/runa/maintainer/workflows/roadmaps.md'
         text = '# Workflow\n```yaml\nid: RM-2026-003\nstatus: draft\n```\n'
         self.write(name, text)
         self.track()
@@ -185,7 +189,7 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertFalse(any(p.get('roadmap_id') == 'RM-2026-003' for p in points.values()))
 
     def test_idempotent_then_edit_delete_and_orphan_cleanup(self):
-        self.write('docs/architecture/example.md', '# Rule\n\nOriginal technical contract.\n')
+        self.write('docs/runa/handbook/architecture/example.md', '# Rule\n\nOriginal technical contract.\n')
         self.track()
         self.assertEqual(self.index(), 0)
         before = set(Store.points)
@@ -193,11 +197,11 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertEqual(self.index(), 0)
         self.assertEqual(len(Provider.calls), 1)  # Only the dimension capability probe.
         self.assertEqual(set(Store.points), before)
-        self.write('docs/architecture/example.md', '# Rule\n\nRevised technical contract.\n')
+        self.write('docs/runa/handbook/architecture/example.md', '# Rule\n\nRevised technical contract.\n')
         self.assertTrue(ingest.status(self.root, CONFIG)['stale'])
         self.assertEqual(self.index(), 0)
         self.assertNotEqual(set(Store.points), before)
-        (self.root / 'docs/architecture/example.md').unlink()
+        (self.root / 'docs/runa/handbook/architecture/example.md').unlink()
         Store.points['orphan'] = {'kind': 'chunk', 'content': 'obsolete'}
         self.assertEqual(self.index(), 0)
         self.assertNotIn('orphan', Store.points)

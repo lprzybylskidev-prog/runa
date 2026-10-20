@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 The OpenAI security-best-practices skill informed the focused, evidence-based review model and project-overrides concept. Runa expands it with PHP/Laravel/Vue/Docker/agent/RAG supply-chain rules. Generic requirements for unrelated languages and heavyweight security programs were omitted.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

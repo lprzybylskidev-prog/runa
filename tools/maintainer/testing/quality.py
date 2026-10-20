@@ -55,13 +55,13 @@ class QualityContracts(unittest.TestCase):
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
     def test_actual_host_production_gates_share_the_operation_group(self):
-        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        definition = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
         nodes = quality.select(definition, ['production', 'security'])
         for key in ('production-compose', 'production-build', 'production-health', 'production-ai-isolation', 'repository-container-scan'):
             self.assertEqual(nodes[key]['exclusive_group'], 'production-simulation', key)
 
     def test_repository_scan_waits_for_selected_artifact_builds(self):
-        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        definition = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
         for areas in (['security'], ['security', 'frontend'], ['security', 'production'], ['security', 'frontend', 'production']):
             with self.subTest(areas=areas):
                 nodes = quality.select(definition, areas)

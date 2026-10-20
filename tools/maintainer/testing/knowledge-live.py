@@ -60,10 +60,10 @@ def main():
             assert run_index()['embedded_chunks'] == 1
             assert run_index()['embedded_chunks'] == 0
             assert run_index('cpu')['embedded_chunks'] == 0
-            (root / 'docs').mkdir()
-            document = root / 'docs/architecture.md'
+            (root / 'docs/app').mkdir(parents=True)
+            document = root / 'docs/app/architecture.md'
             document.write_text('# Runtime\n\nNever deploy knowledge services into production.\n')
-            git('add', 'docs/architecture.md')
+            git('add', 'docs/app/architecture.md')
             assert status(root, config)['stale']
             assert run_index()['embedded_chunks'] == 1
             document.write_text('# Runtime\n\nKeep Qdrant and embedding services development-only.\n')

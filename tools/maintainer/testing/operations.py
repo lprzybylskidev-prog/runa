@@ -100,7 +100,7 @@ print('parent:' + sys.stdin.read())
                      'tools/application/executors/operations.py': 'operational helper', 'tools/application/executors/knowledge.py': 'excluded', 'src/runa/tools/example.py': 'excluded', 'src/runa/tests/example.php': 'excluded',
                      'docker/php/Dockerfile': 'FROM example', '.agents/example': 'excluded', 'bin/knowledge': 'excluded',
                      'tools/application/knowledge/example.py': 'excluded', 'bin/operations': 'launcher', 'bin/production': 'launcher',
-                     'docs/ai/example.md': 'excluded', 'docker/embeddings/example': 'excluded'}
+                     'docs/runa/handbook/ai/example.md': 'excluded', 'docs/runa/maintainer/internal.md': 'excluded', 'docker/embeddings/example': 'excluded'}
             for name, text in files.items():
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -109,6 +109,10 @@ print('parent:' + sys.stdin.read())
             subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
             subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], check=True)
             sha = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+            # Start from the actual delivered customer source projection, not a materialized owner tree.
+            patterns = '/*\n' + ''.join('!/' + name + '\n' for name in repository_boundary.OWNER_PATHS)
+            subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'init', '--no-cone'], check=True)
+            subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
             repository_boundary.write_staging_receipt(root, {'schema_version': 1, 'repository': 'fixture/runa', 'projection': {'version': 1, 'excluded': list(repository_boundary.OWNER_PATHS)}})
             import runtime
             with patch.object(ops, 'ROOT', root), patch.object(runtime, 'ROOT', root), patch.object(ops, 'STATE', Path(folder) / 'state'):

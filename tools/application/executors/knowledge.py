@@ -35,7 +35,8 @@ def main():
     if not environment.exists() or 'APP_ENV=local' not in environment.read_text().splitlines():
         raise ValueError('Knowledge CLI requires the local development environment.')
     from ingest import index, status
-    config = json.loads((ROOT / 'tools/application/knowledge/config.json').read_text())
+    from configuration import load, golden
+    config = load(ROOT)
     lock_dir = ROOT / '.runtime/knowledge'
     lock_dir.mkdir(parents=True, exist_ok=True)
     with (lock_dir / 'index.lock').open('w') as lock:
@@ -69,7 +70,7 @@ def main():
                     print('Open original source files before acting on retrieved rules.')
                 return 0
             result = doctor(retriever) if args.command == 'doctor' else evaluate(
-                retriever, json.loads((ROOT / 'tools/application/knowledge/golden.json').read_text()))
+                retriever, golden(ROOT))
             print(json.dumps(result, indent=2))
             return 0 if result['passed'] else 1
         if args.command == 'initialize':

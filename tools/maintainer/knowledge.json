@@ -1,0 +1,7 @@
+{
+  "files": [
+    "docs/runa/maintainer/quality/gates.yml",
+    "docs/runa/maintainer/maintenance/registry.yml"
+  ],
+  "markdown_roots": ["docs/runa/maintainer"]
+}

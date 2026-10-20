@@ -15,7 +15,7 @@ def yaml(path):
 
 
 def repository():
-    active = list((ROOT / 'docs/roadmaps/active').glob('*.md'))
+    active = list((ROOT / 'docs/runa/maintainer/roadmaps/active').glob('*.md'))
     if len(active) > 1:
         raise ValueError('Multiple active roadmaps.')
     if active:
@@ -32,7 +32,7 @@ def repository():
 
 
 def maintenance():
-    registry = yaml(ROOT / 'docs/maintenance/registry.yml')
+    registry = yaml(ROOT / 'docs/runa/maintainer/maintenance/registry.yml')
     ids = set()
     for entry in registry['entries']:
         required = ('id', 'type', 'name', 'last_reviewed', 'review_every_days')
@@ -49,10 +49,10 @@ def maintenance():
         due = (datetime.fromtimestamp(entry['last_reviewed'], timezone.utc).date() if isinstance(entry['last_reviewed'], int) else date.fromisoformat(entry['last_reviewed'])) + timedelta(days=interval)
         if due < date.today():
             print('REVIEW DUE: ' + entry['id'] + ' ' + due.isoformat())
-    roadmap_ids = {p.stem[:11] for p in (ROOT / 'docs/roadmaps').rglob('RM-*.md')}
+    roadmap_ids = {p.stem[:11] for p in (ROOT / 'docs/runa/maintainer/roadmaps').rglob('RM-*.md')}
     known = set()
     for kind in ('backlog', 'deprecations'):
-        data = yaml(ROOT / f'docs/maintenance/{kind}.yml')
+        data = yaml(ROOT / f'docs/runa/maintainer/maintenance/{kind}.yml')
         if data.get('version') != 1 or not isinstance(data.get('items'), list):
             raise ValueError('Invalid maintenance document: ' + kind)
         for item in data['items']:

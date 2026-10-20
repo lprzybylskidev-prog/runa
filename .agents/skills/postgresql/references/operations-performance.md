@@ -21,8 +21,8 @@
 19. Advisory locks are only for real global coordination needs.
 20. Runa's default business edit concurrency remains optimistic.
 21. Do not introduce hard edit locks merely because two users might open the same record.
-22. Committed migrations that may have run in production are immutable; use the canonical policy in `docs/architecture/database.md`.
-23. Before first production deployment, clean/edit committed migrations as needed to keep the initial schema coherent. Necessary identified Runa dev/test resets and volume rebuilds are authorized within an active roadmap under `docs/architecture/database.md`; inspect actual context, show exact scope, preserve unrelated/durable data and retain test guards. Never reset automatically on reopen.
+22. Committed migrations that may have run in production are immutable; use the canonical policy in `docs/runa/handbook/architecture/database.md`.
+23. Before first production deployment, clean/edit committed migrations as needed to keep the initial schema coherent. Necessary identified Runa dev/test resets and volume rebuilds are authorized within an active roadmap under `docs/runa/handbook/architecture/database.md`; inspect actual context, show exact scope, preserve unrelated/durable data and retain test guards. Never reset automatically on reopen.
 24. If an uncommitted migration is wrong, fix it instead of adding a compensating migration.
 25. Actual real-deployment evidence overrides stale false metadata; simulation does not. Stop and reconcile contradictory evidence before migration/reset work, using the canonical database policy.
 26. Runa does not use database RLS as the baseline authorization layer.
@@ -31,4 +31,4 @@
 29. `pg_stat_statements` may be introduced later as a diagnostic extension, not as a baseline dependency.
 30. Backup trust requires actual restore verification, not merely successful dump creation.
 
-Runa/application ownership is independent of PostgreSQL schema names. Keep `DatabaseScope::PLATFORM_TABLES` synchronized with every real platform migration and its inventory test. App commands cannot select Runa paths/classes/history; owner scripts use the external bootstrap. Scoped resets drop only selected tables atomically with RESTRICT, never schemas/CASCADE; cross-owner dependants block reset. Unknown legacy Runa history requires an explicit owner transition. Setup/reopen never runs migrations/seeds. See docs/architecture/database.md for separate histories and required-seed transaction journals.
+Runa/application ownership is independent of PostgreSQL schema names. Keep `DatabaseScope::PLATFORM_TABLES` synchronized with every real platform migration and its inventory test. App commands cannot select Runa paths/classes/history; owner scripts use the external bootstrap. Scoped resets drop only selected tables atomically with RESTRICT, never schemas/CASCADE; cross-owner dependants block reset. Unknown legacy Runa history requires an explicit owner transition. Setup/reopen never runs migrations/seeds. See docs/runa/handbook/architecture/database.md for separate histories and required-seed transaction journals.

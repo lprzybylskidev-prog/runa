@@ -57,7 +57,7 @@ def bind_report(report, installed, policy, config_id):
     return dict(report, Metadata=dict(metadata, RepoDigests=[digest]))
 
 def apply(image, report_path, archive_path):
-    policy_path = ROOT / 'docs/security/postgres-gosu-not-affected.json'
+    policy_path = ROOT / 'tools/application/security/postgres-gosu-not-affected.json'
     policy = json.loads(policy_path.read_text())
     if image != policy['image']:
         return False

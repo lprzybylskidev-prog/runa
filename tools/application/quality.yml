@@ -25,6 +25,10 @@ base:
     command: php artisan runa:test
     exclusive_group: testing-state
     severity: hard_fail
+  - id: application-docs
+    depends_on: [application-config]
+    command: php artisan runa:doctor:docs
+    severity: hard_fail
   - id: application-analysis
     depends_on: [application-config]
     command: php artisan runa:analyse
@@ -52,4 +56,12 @@ final:
   - id: application-dependencies
     depends_on: []
     command: php artisan runa:security:dependencies
+    severity: hard_fail
+  - id: application-knowledge-doctor
+    depends_on: []
+    command: php artisan runa:knowledge:doctor
+    severity: hard_fail
+  - id: application-knowledge-eval
+    depends_on: []
+    command: php artisan runa:knowledge:eval
     severity: hard_fail

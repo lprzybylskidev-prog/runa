@@ -1,42 +1,33 @@
 [
   {
     "query": "knowledge production isolation Qdrant embeddings",
-    "source_path": "docs/ai/knowledge-system.md"
-  },
-  {
-    "query": "Conventional Commits roadmap scope merge commit",
-    "source_path": "docs/workflows/git.md"
-  },
-  {
-    "query": "active roadmap final verification failed fix point",
-    "source_path": "docs/workflows/roadmaps.md"
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md"
   },
   {
     "query": "PostgreSQL bigint identity public_id UUIDv7",
-    "source_path": "docs/architecture/database.md"
+    "source_path": "docs/runa/handbook/architecture/database.md"
   },
   {
     "query": "embedding model BGE CPU CUDA fallback",
-    "source_path": "docs/development/knowledge.md"
+    "source_path": "docs/runa/handbook/development/knowledge.md"
   },
   {
     "query": "query exact knowledge CLI golden retrieval evaluation",
-    "source_path": "docs/ai/knowledge-system.md"
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md"
   },
   {
     "query": "production knowledge prohibition",
-    "source_path": "docs/ai/knowledge-system.md",
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md",
     "section": "Production prohibition",
     "filters": {
-      "source_path": "docs/ai/knowledge-system.md"
+      "source_path": "docs/runa/handbook/ai/knowledge-system.md"
     }
   },
   {
-    "query": "hybrid knowledge retrieval evaluation doctor",
-    "source_path": "docs/roadmaps/closed/RM-2026-001-development-environment.md",
+    "query": "application documentation independent application roadmap lifecycle",
+    "source_path": "docs/app/README.md",
     "filters": {
-      "roadmap_id": "RM-2026-001",
-      "status": "closed"
+      "source_path": "docs/app/README.md"
     }
   }
 ]

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / 'tools/application'))
 sys.path.insert(0, str(ROOT / 'tools/maintainer'))
 sys.path.insert(0, str(ROOT / 'distribution'))
 from gosu_disposition import validate_report, bind_report, archive_config_id
-POLICY = json.loads((ROOT / 'docs/security/postgres-gosu-not-affected.json').read_text())
+POLICY = json.loads((ROOT / 'tools/application/security/postgres-gosu-not-affected.json').read_text())
 
 
 def fixture():

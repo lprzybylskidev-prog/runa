@@ -17,7 +17,7 @@ import checks
 
 class MaintenanceContracts(unittest.TestCase):
     def setUp(self):
-        self.data = {kind: checks.yaml(ROOT / f'docs/maintenance/{kind}.yml') for kind in ('registry', 'backlog', 'deprecations')}
+        self.data = {kind: checks.yaml(ROOT / f'docs/runa/maintainer/maintenance/{kind}.yml') for kind in ('registry', 'backlog', 'deprecations')}
 
     def validate(self):
         with patch.object(checks, 'yaml', side_effect=lambda path: self.data[path.stem]), contextlib.redirect_stdout(io.StringIO()):

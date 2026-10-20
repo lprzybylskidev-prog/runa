@@ -31,12 +31,29 @@ def main():
             (root / 'tools/application/bin' / hook).symlink_to(ROOT / 'tools/application/bin' / hook)
         knowledge = root / 'artisan'
         knowledge.write_text('<?php exit(0);\n'); knowledge.chmod(0o755)
-        roadmap = root / 'docs/roadmaps/active/fixture.md'
+        roadmap = root / 'docs/app/roadmaps/active/fixture.md'
         roadmap.parent.mkdir(parents=True)
         roadmap.write_text('---\nid: RM-2026-999\nstatus: active\n---\n')
         message = root / 'message.txt'
         for text, expected in [('bad message', 'Conventional'), ('feat: missing scope', 'scope'), ('feat(RM-2026-001): wrong scope', 'scope'), ('feat(RM-2026-999): fixture', None)]:
             message.write_text(text + '\n'); invoke('commit-msg', str(message), expected=expected)
+        # Owner checkout selects the owner roadmap even though empty app directories exist.
+        (root / 'tools/maintainer').mkdir()
+        owner_contract = root / 'docs/runa/maintainer/agent-contract.md'
+        owner_contract.parent.mkdir(parents=True)
+        owner_contract.write_text('# Owner contract\n')
+        owner_roadmap = owner_contract.parent / 'roadmaps/active/owner.md'
+        owner_roadmap.parent.mkdir(parents=True)
+        owner_roadmap.write_text('---\nid: RM-2026-998\nstatus: active\n---\n')
+        message.write_text('feat(RM-2026-999): wrong owner scope\n')
+        invoke('commit-msg', str(message), expected='scope')
+        message.write_text('feat(RM-2026-998): owner scope\n')
+        invoke('commit-msg', str(message))
+        # Acquisition receipt always selects the application contract, even with copied owner source.
+        receipt = root / '.git/runa-bootstrap.json'
+        receipt.write_text('{}\n')
+        message.write_text('feat(RM-2026-999): customer scope\n')
+        invoke('commit-msg', str(message))
         secret = root / '.env'
         secret.write_text('SAFE_FIXTURE=not-a-real-secret\n'); git('add', '.env')
         invoke('pre-commit', expected='Environment'); clear()
@@ -45,6 +62,18 @@ def main():
         secret.write_text('aws_access_key_id = ' + 'AKIA' + 'Q7M2N3R4T6V5X3W5' + '\n'); git('add', 'fixture.txt')
         secret.write_text('Unstaged safe content.\n')
         invoke('pre-commit', expected='returned non-zero'); clear()
+        archived = root / 'docs/app/roadmaps/closed/RM-2026-997-fixture.md'
+        archived.parent.mkdir(parents=True)
+        archived.write_text('# Historical record\n\nOriginal spacing.  \n')
+        original = archived.read_bytes()
+        git('add', str(archived.relative_to(root)))
+        invoke('pre-commit')
+        assert archived.read_bytes() == original, 'Closed roadmap bytes must not be reformatted'
+        clear()
+        archived.write_text('aws_access_key_id = ' + 'AKIA' + 'Q7M2N3R4T6V5X3W5' + '\n')
+        git('add', str(archived.relative_to(root)))
+        invoke('pre-commit', expected='returned non-zero')
+        clear()
         target = root / 'fixture.json'
         target.write_text('{"staged":true}\n'); git('add', 'fixture.json')
         target.write_text('{"unstaged":true}\n')

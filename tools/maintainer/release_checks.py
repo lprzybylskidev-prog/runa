@@ -58,7 +58,7 @@ def validate(root):
     current = (root / 'VERSION').read_text().strip()
     version(current)
     branch = git(root, 'branch', '--show-current')
-    changelog = (root / 'CHANGELOG.md').read_text()
+    changelog = (root / 'docs/runa/maintainer/CHANGELOG.md').read_text()
     entries = re.findall(r'^## \[?(\d+\.\d+\.\d+)\]?[^\n]*$', changelog, re.M)
     if len(entries) != len(set(entries)):
         raise ValueError('Duplicate changelog version.')
@@ -66,7 +66,7 @@ def validate(root):
         version(entry)
     if any(version(a) <= version(b) for a, b in zip(entries, entries[1:])):
         raise ValueError('Changelog versions must be newest first.')
-    active = list((root / 'docs/roadmaps/active').glob('*.md'))
+    active = list((root / 'docs/runa/maintainer/roadmaps/active').glob('*.md'))
     if len(active) > 1:
         raise ValueError('Multiple active roadmaps.')
     if active:
@@ -101,7 +101,7 @@ def validate(root):
     if len(ids) != 1:
         raise ValueError('Release changelog must identify exactly one roadmap.')
     identifier = ids.pop()
-    paths = list((root / 'docs/roadmaps/closed').glob(identifier + '-*.md'))
+    paths = list((root / 'docs/runa/maintainer/roadmaps/closed').glob(identifier + '-*.md'))
     if len(paths) != 1:
         raise ValueError('Matching closed roadmap is missing/ambiguous.')
     data, text = metadata(paths[0])
@@ -132,7 +132,7 @@ def validate(root):
             # Only draft Markdown may follow a release on main; never excuse runtime drift.
             changed = git(root, 'diff', '--no-renames', '--name-only', '-z', tagged, 'HEAD').split('\0')
             if branch != 'main' or not ancestor or any(
-                name and not re.fullmatch(r'docs/roadmaps/draft/[^/]+\.md', name) for name in changed
+                name and not re.fullmatch(r'docs/runa/maintainer/roadmaps/draft/[^/]+\.md', name) for name in changed
             ):
                 raise ValueError('Existing release tag does not identify HEAD or a main-only draft-planning baseline.')
     print(f'PASS: closed release metadata {identifier} / {current}; publication is checked separately.')

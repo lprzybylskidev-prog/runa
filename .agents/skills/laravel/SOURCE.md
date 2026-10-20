@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Laravel Boost and current Laravel conventions were used as the main framework-aware source. Runa intentionally does not retain Boost-generated skills. Useful guidance was adapted into this local skill, while starter-kit assumptions, Laravel Cloud/Nightwatch assumptions, and conventions conflicting with Runa architecture were excluded.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

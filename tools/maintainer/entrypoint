@@ -31,7 +31,7 @@ elif name in QUALITY:
     quality.RUN_DIRECTORY = ROOT / '.runtime/quality'
     quality.COMMAND_PREFIX = 'python3 tools/maintainer/quality-'
     original_plan = quality.plan
-    quality.plan = lambda final=False: original_plan(final, ROOT / 'docs/roadmaps/active', ROOT / 'docs/quality/gates.yml')
+    quality.plan = lambda final=False: original_plan(final, ROOT / 'docs/runa/maintainer/roadmaps/active', ROOT / 'docs/runa/maintainer/quality/gates.yml')
     sys.argv = [sys.argv[0], QUALITY[name], *arguments]
     runpy.run_path(str(ROOT / 'tools/application/executors/quality.py'), run_name='__main__')
 elif name in TESTS:

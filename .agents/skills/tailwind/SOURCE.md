@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Tailwind v4/current-version guidance and practical utility patterns were adapted. Other reviewed community sources informed class discoverability and project-conventions-first rules. Runa rejected automatic variant libraries, animation packages, stack-utility abstraction, dogmatic `@apply` bans, and migrations performed incidentally.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

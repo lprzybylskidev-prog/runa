@@ -106,7 +106,7 @@ def doctor(retriever):
     invalid = sum(any(p.get(key) != value for key, value in expected.items()) for p in points.values())
     sizes = [len(tokens(p['content'])) for p in points.values()]
     smoke = evaluate(retriever, [{'query': 'production knowledge Qdrant embeddings prohibition',
-                                 'source_path': 'docs/ai/knowledge-system.md', 'filters': {'source_path': 'docs/ai/knowledge-system.md'}}])
+                                 'source_path': 'docs/runa/handbook/ai/knowledge-system.md', 'filters': {'source_path': 'docs/runa/handbook/ai/knowledge-system.md'}}])
     return {**retriever.health, 'invalid_metadata_chunks': invalid, 'average_chunk_words': round(statistics.mean(sizes), 1) if sizes else 0,
             'median_chunk_words': statistics.median(sizes) if sizes else 0, 'smoke': smoke,
             'passed': not invalid and bool(points) and smoke['passed']}

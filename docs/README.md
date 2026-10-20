@@ -1,40 +1,17 @@
-# Runa Documentation
+# Documentation ownership
 
-This directory is the durable project knowledge base. Keep documents focused, current, and non-duplicative.
+Classify a document by its reader and task, not by whether it mentions development.
 
-## Authority
+- `docs/app`: application-owned documentation, decisions and roadmaps. The lifecycle directories `roadmaps/draft`, `active`, `paused` and `closed` start empty. Keep application records here, never under `src/app/docs`.
+- `docs/runa/handbook`: delivered Runa guidance for application developers, operators and agents, including development/testing, architecture/public contracts, security, quality, workflows/templates, Boost and knowledge tooling.
+- `docs/runa/maintainer`: owner-only Runa engineering, platform roadmaps/release metadata, dependency maintenance and audit evidence. It is absent from customer dev/prod source and images and from their knowledge corpus.
 
-If documents conflict, use the authority hierarchy defined in `AGENTS.md`:
+The root README and AGENTS contract address the application workflow. Supplied `.agents/skills`, hooks and `tools/application` remain available to customer development. Owner tools under `tools/maintainer` and `distribution` are excluded from delivery. One authoritative document owns each rule; split mixed material instead of copying an entire owner guide into the handbook.
 
-1. active roadmap,
-2. current code,
-3. `AGENTS.md`,
-4. project skills and durable docs,
-5. README/general docs.
+## Maintenance rules
 
-## Sections
+Use English. Follow the authority hierarchy in AGENTS.md. Update affected current-state documentation with implementation, replace obsolete claims and preserve historical evidence. Never persist chat transcripts, task chatter, temporary debug notes or speculation as durable knowledge.
 
-- `architecture/` — application, database, API, frontend, configuration, naming, deferred concerns
-- `ai/` — skills, knowledge/RAG, Laravel Boost policy
-- `workflows/` — roadmap, Git, releases
-- `testing/` — backend/frontend/E2E testing
-- `quality/` — local quality gate and gate definition
-- `development/` — development environment
-- `production/` — runtime, deploy and guarded rollback
-- `security/` — security baseline
-- `data/` — seeding
-- `maintenance/` — external dependency registry, maintenance backlog, deprecations
-- `release/` — release-readiness requirements
-- `tooling/` — canonical command surface
-- `roadmaps/` — roadmap lifecycle instances
+Closed roadmaps and dated reports retain their original contents when moved. Their old paths and dates describe historical source layout; do not rewrite them to claim current behavior. Current procedures and live tools use the paths above. Full roadmap verification includes a source review of current guidance; deterministic link/state checks supplement that review.
 
-## Documentation rules
-
-- English only.
-- Update existing material instead of blindly appending.
-- Remove obsolete statements when a durable rule or delivered capability changes, in the same implementation point.
-- Distinguish current guidance from dated evidence, release history, closed roadmaps and explicit proposals. Historical versions or measurements remain valid in their historical context.
-- The mandatory current-state review and its evidence belong to `workflows/roadmaps.md`; release-transition synchronization belongs to `workflows/releases.md`.
-- Do not preserve task chatter, temporary debugging notes, speculation, or abandoned designs.
-- Keep implementation details close to the document that owns them.
-- Do not create a new document merely to avoid editing the correct existing document.
+The knowledge allowlist includes app/public guidance and supplied skills. Owner checkouts explicitly add owner material through their excluded maintainer configuration. Customer receipt contexts never add maintainer documents even if private files were accidentally copied locally. Stage new durable sources before incremental indexing; knowledge freshness checks remain mandatory.

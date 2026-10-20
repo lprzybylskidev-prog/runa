@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import importlib.util
+import json
 
 
 START = '<!-- runa:current-state -->'
@@ -12,9 +14,9 @@ FIELDS = ('Current version', 'Active roadmap')
 
 def validate(root):
     root = Path(root)
-    text = (root / 'README.md').read_text()
+    text = (root / 'docs/runa/maintainer/README.md').read_text()
     if text.count(START) != 1 or text.count(END) != 1:
-        raise ValueError('README must contain exactly one runa:current-state block; see docs/workflows/releases.md.')
+        raise ValueError('README must contain exactly one runa:current-state block; see docs/runa/maintainer/workflows/releases.md.')
     before, rest = text.split(START)
     if END in before or END not in rest:
         raise ValueError('README current-state markers are out of order.')
@@ -33,7 +35,7 @@ def validate(root):
         raise ValueError('Invalid canonical VERSION for documentation.')
     if values['Current version'] != current:
         raise ValueError('README Current version does not match VERSION.')
-    active = sorted((root / 'docs/roadmaps/active').glob('*.md'))
+    active = sorted((root / 'docs/runa/maintainer/roadmaps/active').glob('*.md'))
     if len(active) > 1:
         raise ValueError('Multiple active roadmaps for README state.')
     identifier = 'none'
@@ -47,9 +49,21 @@ def validate(root):
             raise ValueError('Active roadmap status/branch mismatch for README state.')
     if values['Active roadmap'] != identifier:
         raise ValueError('README Active roadmap does not match roadmap directories.')
-    commands = (root / 'docs/tooling/commands.md').read_text()
+    commands = (root / 'docs/runa/handbook/tooling/commands.md').read_text()
     for path in (root / 'bin').iterdir():
         if path.is_file() and os.access(path, os.X_OK) and path.name not in ('check', 'passthrough'):
             if './bin/' + path.name not in commands:
                 raise ValueError('Undocumented command: ' + path.name)
+    source = Path(__file__).resolve().parents[1] / 'application/docs_checks.py'
+    spec = importlib.util.spec_from_file_location('application_docs_checks', source)
+    public = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(public)
+    public.validate(root)
+    mapping = root / 'docs/runa/maintainer/documentation-map.json'
+    historical = set(json.loads(mapping.read_text())['immutable_sha256']) if mapping.is_file() else set()
+    current = [p for p in (root / 'docs/runa/maintainer').rglob('*.md')
+               if p.relative_to(root).as_posix() not in historical
+               and '/evidence/' not in p.relative_to(root).as_posix()
+               and '/roadmaps/closed/' not in p.relative_to(root).as_posix()]
+    public.links(root, current, public=False)
     print('PASS: README version/active-roadmap state and public command documentation; prose review is separate.')

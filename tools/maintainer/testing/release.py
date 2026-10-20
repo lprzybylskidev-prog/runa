@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from documentation_fixture import copy_public
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'application'))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -18,9 +19,10 @@ class ReleaseContracts(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
+        copy_public(self.root)
         self.write('VERSION', '0.0.0\n')
-        self.write('CHANGELOG.md', '# Changelog\n\n## Unreleased\n')
-        self.write('docs/tooling/commands.md', '# Fixture commands\n')
+        self.write('docs/runa/maintainer/CHANGELOG.md', '# Changelog\n\n## Unreleased\n')
+        self.write('docs/runa/handbook/tooling/commands.md', '# Fixture commands\n')
         (self.root / 'bin').mkdir()
         self.readme('0.0.0', 'none')
         self.git('init', '--initial-branch=main')
@@ -31,7 +33,7 @@ class ReleaseContracts(unittest.TestCase):
         self.git('commit', '-m', 'fixture baseline')
         self.branch = 'roadmap/RM-2026-001-test'
         self.git('switch', '-c', self.branch)
-        self.active = 'docs/roadmaps/active/RM-2026-001-test.md'
+        self.active = 'docs/runa/maintainer/roadmaps/active/RM-2026-001-test.md'
         self.closed = self.active.replace('/active/', '/closed/')
         self.write(self.active, self.roadmap())
         self.readme('0.0.0', 'RM-2026-001')
@@ -45,7 +47,7 @@ class ReleaseContracts(unittest.TestCase):
         p.write_text(text)
 
     def readme(self, version, roadmap):
-        self.write('README.md', f'# Fixture\n\n<!-- runa:current-state -->\n\n- Current version: `{version}`\n- Active roadmap: `{roadmap}`\n\n<!-- /runa:current-state -->\n')
+        self.write('docs/runa/maintainer/README.md', f'# Fixture\n\n<!-- runa:current-state -->\n\n- Current version: `{version}`\n- Active roadmap: `{roadmap}`\n\n<!-- /runa:current-state -->\n')
 
     def roadmap(self):
         return f'---\nid: RM-2026-001\nstatus: active\nbranch: {self.branch}\nrelease_type: feature\nclosed_at: null\n---\n\n- [x] Implementation\n- [ ] Full final verification and release\n'
@@ -61,7 +63,7 @@ class ReleaseContracts(unittest.TestCase):
         self.write(self.closed, text)
         self.write('VERSION', '0.1.0\n')
         self.readme('0.1.0', 'none')
-        self.write('CHANGELOG.md', '# Changelog\n\n## 0.1.0 — 2026-10-18\nFeature: RM-2026-001 foundation.\n')
+        self.write('docs/runa/maintainer/CHANGELOG.md', '# Changelog\n\n## 0.1.0 — 2026-10-18\nFeature: RM-2026-001 foundation.\n')
 
     def test_application_compatibility_does_not_change_release_arithmetic_or_customer_version(self):
         self.write('src/composer.json', '{}')
@@ -130,9 +132,9 @@ class ReleaseContracts(unittest.TestCase):
 
     def test_changelog_mismatch_duplicates_and_missing_roadmap_fail(self):
         self.close()
-        original = (self.root / 'CHANGELOG.md').read_text()
+        original = (self.root / 'docs/runa/maintainer/CHANGELOG.md').read_text()
         for content in [original.replace('0.1.0', '0.2.0'), original + '\n## 0.1.0\nDuplicate\n', original.replace('RM-2026-001', 'RM-2026-999')]:
-            self.write('CHANGELOG.md', content)
+            self.write('docs/runa/maintainer/CHANGELOG.md', content)
             with self.assertRaises(ValueError):
                 self.validate()
 
@@ -159,7 +161,7 @@ class ReleaseContracts(unittest.TestCase):
     def test_main_allows_only_draft_planning_after_valid_release_tag(self):
         self.merge_release()
         self.assertEqual(self.validate(), '0.1.0')
-        self.write('docs/roadmaps/draft/RM-2026-002-test.md', '# Draft planning\n')
+        self.write('docs/runa/maintainer/roadmaps/draft/RM-2026-002-test.md', '# Draft planning\n')
         self.git('add', '.')
         self.git('commit', '-m', 'fixture planning')
         self.assertEqual(self.validate(), '0.1.0')

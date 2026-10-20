@@ -3,6 +3,11 @@ import hashlib
 import re
 import subprocess
 import uuid
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from documentation import maintainer_checkout
 
 NAMESPACE = uuid.UUID('b8857f5f-4537-596f-a80b-dc263a9e83c4')
 
@@ -20,8 +25,11 @@ def sources(root, config):
     # cannot become knowledge merely by appearing under docs/.
     result = subprocess.run(['git', 'ls-files', '-z'], cwd=root, check=True, capture_output=True)
     paths = []
+    owner = maintainer_checkout(root)
     for name in result.stdout.decode().split('\0'):
         if not name:
+            continue
+        if not owner and (name.startswith('docs/runa/maintainer/') or name.startswith('tools/maintainer/')):
             continue
         path = root / name
         parts = path.parts
@@ -86,7 +94,7 @@ def sections(text, markdown=True):
 
 def metadata(path, root, text):
     name = path.relative_to(root).as_posix()
-    location = re.fullmatch(r'docs/roadmaps/(draft|active|paused|closed)/([^/]+)\.md', name)
+    location = re.fullmatch(r'docs/(app/roadmaps|runa/maintainer/roadmaps)/(draft|active|paused|closed)/([^/]+)\.md', name)
     identifier, status = None, None
     if location:
         header = re.match(r'\A---\n(.*?)\n---\n', text, re.S)
@@ -94,12 +102,12 @@ def metadata(path, root, text):
             raise ValueError('Missing roadmap frontmatter: ' + name)
         ids = re.findall(r'^id: (RM-\d{4}-\d{3})$', header[1], re.M)
         states = re.findall(r'^status: (draft|active|paused|closed)$', header[1], re.M)
-        if len(ids) != 1 or len(states) != 1 or states[0] != location[1] or not re.fullmatch(re.escape(ids[0]) + r'(?:-.+)?', location[2]):
+        if len(ids) != 1 or len(states) != 1 or states[0] != location[2] or not re.fullmatch(re.escape(ids[0]) + r'(?:-.+)?', location[3]):
             raise ValueError('Invalid roadmap identity/status/location: ' + name)
         identifier, status = ids[0], states[0]
     kind = 'roadmap' if identifier else ('skill' if name.startswith('.agents/skills/') else ('config' if path.suffix != '.md' else 'documentation'))
-    return {'document_id': identity('roadmap:' + identifier if identifier else 'source:' + name),
-            'source_path': name, 'document_type': kind, 'scope': name.split('/')[1] if name.startswith('docs/') else 'project',
+    return {'document_id': identity((('roadmap:' if location[1].startswith('runa/') else 'application-roadmap:') + identifier) if identifier else 'source:' + name),
+            'source_path': name, 'document_type': kind, 'scope': ('application' if name.startswith('docs/app/') else ('maintainer' if name.startswith('docs/runa/maintainer/') else (name.split('/')[3] if name.startswith('docs/runa/handbook/') and len(name.split('/')) > 4 else 'project'))),
             'roadmap_id': identifier, 'status': status,
             'tags': [kind], 'source_hash': digest(text)}
 

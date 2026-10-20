@@ -10,7 +10,7 @@ Use CSS for ordinary transitions. The internal useContentMotion helper gives ret
 
 Verify real rendered normal/reduced behavior, rapid reversal, Escape, keyboard focus, preserved drafts, mobile/tablet/desktop and both themes/locales. Existing screenshots cannot prove timing; use interaction tests and inspect intermediate visibility/inert state where meaningful. No dependency or global animation service is needed.
 
-## Complete component audit (RM-2026-004 point 21)
+## Established component motion inventory
 
 Names below refer to `src/runa/resources/js/components/<name>.vue`. Every component is assigned once; inherited motion is deliberate and must stay in the shared source.
 

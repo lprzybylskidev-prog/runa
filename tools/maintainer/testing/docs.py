@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from documentation_fixture import copy_public
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'tools/application'))
@@ -21,12 +22,13 @@ class DocumentationContracts(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
+        copy_public(self.root)
         subprocess.run(['git', 'init', '-q', '-b', 'main', str(self.root)], check=True)
         self.write('VERSION', '0.1.0\n')
-        self.write('docs/tooling/commands.md', '# Commands\n./bin/example\n')
+        self.write('docs/runa/handbook/tooling/commands.md', '# Commands\n./bin/example\n')
         self.write('bin/example', '#!/bin/sh\nexit 0\n').chmod(0o755)
         self.readme = '# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n\n<!-- /runa:current-state -->\n'
-        self.write('README.md', self.readme)
+        self.write('docs/runa/maintainer/README.md', self.readme)
 
     def write(self, name, content):
         path = self.root / name
@@ -58,7 +60,7 @@ class DocumentationContracts(unittest.TestCase):
                  'Initial version: `0.0.0`.\n\n'
                  'Remaining quality, knowledge, development-service and production-operation requirements are not yet delivered; this is not a completed release.\n\n'
                  'The first feature roadmap is expected to produce `0.1.0` when it is fully verified, closed, merged, tagged, and released.\n')
-        self.write('README.md', stale)
+        self.write('docs/runa/maintainer/README.md', stale)
         result = self.doctor('docs')
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn('exactly one runa:current-state block', result.stderr)
@@ -68,7 +70,7 @@ class DocumentationContracts(unittest.TestCase):
         for old, new, message in [('`0.1.0`', '`0.0.0`', 'Current version'),
                                   ('`none`', '`RM-2026-001`', 'Active roadmap')]:
             with self.subTest(field=message):
-                self.write('README.md', self.readme.replace(old, new))
+                self.write('docs/runa/maintainer/README.md', self.readme.replace(old, new))
                 with self.assertRaisesRegex(ValueError, message):
                     self.validate()
 
@@ -79,25 +81,25 @@ class DocumentationContracts(unittest.TestCase):
                      self.readme.replace('`none`', 'none'),
                      self.readme.replace(docs_checks.START, 'SWAP').replace(docs_checks.END, docs_checks.START).replace('SWAP', docs_checks.END)]:
             with self.subTest(text=text):
-                self.write('README.md', text)
+                self.write('docs/runa/maintainer/README.md', text)
                 with self.assertRaises(ValueError):
                     self.validate()
 
     def test_actual_doctor_accepts_history_but_rejects_unlisted_commands(self):
-        self.write('README.md', self.readme + '\n## Release history\nInitial version 0.0.0. RM-2026-001 was active during bootstrap.\n')
-        self.write('docs/roadmaps/closed/RM-2026-001-history.md', 'Historical release 0.0.0, not a current claim.\n')
-        self.write('docs/workflows/example.md', '```yaml\nid: RM-2026-003\nstatus: active\n```\n')
+        self.write('docs/runa/maintainer/README.md', self.readme + '\n## Release history\nInitial version 0.0.0. RM-2026-001 was active during bootstrap.\n')
+        self.write('docs/runa/maintainer/roadmaps/closed/RM-2026-001-history.md', 'Historical release 0.0.0, not a current claim.\n')
+        self.write('docs/runa/maintainer/workflows/example.md', '```yaml\nid: RM-2026-003\nstatus: active\n```\n')
         result = self.doctor('docs')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.write('docs/tooling/commands.md', '# Commands\n')
+        self.write('docs/runa/handbook/tooling/commands.md', '# Commands\n')
         result = self.doctor('docs')
         self.assertEqual(result.returncode, 1)
         self.assertIn('Undocumented command: example', result.stderr)
 
     def test_active_roadmap_location_frontmatter_and_branch(self):
-        path = self.write('docs/roadmaps/active/RM-2026-002-test.md',
+        path = self.write('docs/runa/maintainer/roadmaps/active/RM-2026-002-test.md',
                           '---\nid: RM-2026-002\nstatus: active\nbranch: main\n---\n# Fixture\n')
-        self.write('README.md', self.readme.replace('`none`', '`RM-2026-002`'))
+        self.write('docs/runa/maintainer/README.md', self.readme.replace('`none`', '`RM-2026-002`'))
         self.validate()
         original = path.read_text()
         for content in [original.replace('status: active', 'status: closed'),
@@ -107,22 +109,22 @@ class DocumentationContracts(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.validate()
         path.write_text(original)
-        self.write('docs/roadmaps/active/RM-2026-003-second.md', original)
+        self.write('docs/runa/maintainer/roadmaps/active/RM-2026-003-second.md', original)
         with self.assertRaisesRegex(ValueError, 'Multiple active'):
             self.validate()
 
 
     def test_final_gate_includes_docs_without_documentation_impact(self):
-        definition = quality.yaml(ROOT / 'docs/quality/gates.yml')
+        definition = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
         selected = quality.select(definition, [], True)
         self.assertEqual(selected['version-changelog-roadmap']['command'], 'python3 tools/maintainer/check-release')
         self.assertIn('--with-docs-and-knowledge', selected['release-metadata-contract']['command'])
         # Closed fixture metadata would otherwise pass the actual release doctor.
-        self.write('CHANGELOG.md', '# Changelog\n\n## [0.1.0]\nRM-2026-001\n')
-        self.write('docs/roadmaps/closed/RM-2026-001-test.md',
+        self.write('docs/runa/maintainer/CHANGELOG.md', '# Changelog\n\n## [0.1.0]\nRM-2026-001\n')
+        self.write('docs/runa/maintainer/roadmaps/closed/RM-2026-001-test.md',
                    '---\nid: RM-2026-001\nstatus: closed\nbranch: roadmap/RM-2026-001-test\nclosed_at: 2026-10-18\nrelease_type: feature\n---\n- [x] Complete\n## Final report\nRM-2026-001 delivers 0.1.0.\n')
         self.assertEqual(self.doctor('release').returncode, 0)
-        self.write('README.md', self.readme.replace('`0.1.0`', '`0.0.0`'))
+        self.write('docs/runa/maintainer/README.md', self.readme.replace('`0.1.0`', '`0.0.0`'))
         result = self.doctor('release')
         self.assertEqual(result.returncode, 1)
         self.assertIn('README Current version', result.stderr)

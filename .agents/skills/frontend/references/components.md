@@ -26,7 +26,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Source: `src/runa/resources/js/components/AppIcon.vue`.
 - Typed subset of four Tabler outline icons with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
-- Local source assets, licenses and revision/hash provenance: `docs/design/assets.md`.
+- Local source assets, licenses and revision/hash provenance: `docs/runa/handbook/design/assets.md`.
 
 ## Root preference buttons
 
@@ -101,13 +101,13 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Source: `src/runa/resources/js/components/AppBackdrop.vue`.
 - Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture, animation or external assets.
-- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/design/visual-direction.md`.
+- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/runa/handbook/design/visual-direction.md`.
 
 ## RunaLogo
 
 - Source: `src/runa/resources/js/components/RunaLogo.vue`.
 - Shared decorative project mark based on the supplied transparent PNG alpha mask. Inherits `currentColor`; CSS mask crops transparent padding without modifying the original image. Default height 28px with the mark's natural aspect ratio; CSS may override height.
-- Use in brand links and decorative artwork instead of the temporary Tabler mark. The owning link/control supplies its accessible name; the decorative mark is hidden from assistive technology. Source/provenance: `docs/design/assets.md`.
+- Use in brand links and decorative artwork instead of the temporary Tabler mark. The owning link/control supplies its accessible name; the decorative mark is hidden from assistive technology. Source/provenance: `docs/runa/handbook/design/assets.md`.
 
 ## AppConstellation
 
@@ -117,7 +117,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## ApplicationLayout and AppNavigation
 
-- Sources: `src/runa/resources/js/layouts/ApplicationLayout.vue`, internal recursive `src/runa/resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/architecture/frontend.md` and page-layouts.md.
+- Sources: `src/runa/resources/js/layouts/ApplicationLayout.vue`, internal recursive `src/runa/resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/runa/handbook/architecture/frontend.md` and page-layouts.md.
 - AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, whole-row disclosure buttons for groups and collapsed labels. Group labels do not navigate; leaf entries remain links. A centered CSS chevron lives inside the disclosure control, matching top-navigation convention. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
 - Header and sidebar share a static 44px CSS grid over their opaque surface, using 30% of the theme backdrop-grid opacity and secondary-text color; forced-colors removes the decorative texture.
 - The initials profile trigger remains a dedicated 44px circular button; its shell selector takes precedence over the shared button corner style. ApplicationLayout preference buttons use sm (36px) with 18px icons. The sidebar toggle uses an 18×14px geometric three-bar mark centered in a 36px sm square, 24px from the header left edge, avoiding font-baseline glyph shifts. Header toggle and initials avatar expose visible hover/focus/pressed states through the semantic primary palette in both themes.
@@ -209,7 +209,7 @@ TableActions composes sm icon export/print actions, a scope/orientation settings
 
 ## Independent consumer verification
 
-`src/runa/tests/frontend/fixtures/StandaloneConsumer.vue` composes public form/field/selection, Tabs, ConfirmDialog, Table and TableActions APIs with caller-owned state and bounded synthetic data. Its entry imports the shared CSS and initializes only the document locale/theme; it imports no shell, resolver, registry or preference initialization. `src/runa/tools/testing/ui-boundaries.mjs` verifies emitted modules/code, permitting ordinary control composables while rejecting shell/router/preferences. Playwright builds the independent consumer separately from other scenarios under .runtime/browser-harness/standalone. Test sources/tools/output are excluded from production; no application preview or permanent catalog remains.
+Verify independent application consumers through src/app/tests: compose public forms, selections, Tabs, ConfirmDialog, Table and TableActions with caller-owned state and bounded fixtures. Import the shared CSS and initialize only the needed locale/theme; a shell, resolver, registry or preference bootstrap is optional. Use the real testing Nginx endpoint for application E2E. Platform fixture harnesses and regressions remain owner-only and are not installed customer dependencies. Test tools/output never enter production.
 
 ## Import and extension example
 
@@ -227,6 +227,6 @@ const name = ref('');
 </template>
 ```
 
-Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Executable shell-free composition is retained in `src/runa/tests/frontend/fixtures/StandaloneConsumer.vue`; component/layout scenarios are test assets, never application demos.
+Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Keep application composition coverage under src/app/tests; test scenarios are test assets, never application demo routes.
 
-IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version (synchronized with VERSION). See docs/architecture/application-architecture.md for canonical metadata and compatibility, and docs/architecture/frontend.md for consumer behavior.
+IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version (synchronized with VERSION). See docs/runa/handbook/architecture/application-architecture.md for canonical metadata and compatibility, and docs/runa/handbook/architecture/frontend.md for consumer behavior.

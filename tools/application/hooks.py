@@ -1,5 +1,7 @@
 """Fast staged-content checks; no full test/static-analysis suite."""
 import os
+import json
+import hashlib
 from pathlib import Path
 import re
 import subprocess
@@ -15,9 +17,8 @@ def commit_message(root, path):
     match = re.fullmatch(r'(feat|fix|docs|style|refactor|perf|test|build|chore|revert|merge)(?:\(([A-Za-z0-9_.-]+)\))?!?: [^\s].*', first)
     if not match:
         raise ValueError('Use Conventional Commits: type(RM-YYYY-NNN): description')
-    roadmaps = root / 'docs/app/roadmaps'
-    if not roadmaps.exists():
-        roadmaps = root / 'docs/roadmaps'
+    from documentation import roadmap_root
+    roadmaps = roadmap_root(root)
     active = list((roadmaps / 'active').glob('*.md'))
     if len(active) > 1:
         raise ValueError('At most one active roadmap is allowed.')
@@ -51,6 +52,22 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
             if row == '120000':
+                continue
+            historical = bool(re.fullmatch(r'docs/(?:app|runa/maintainer)/roadmaps/closed/[^/]+\.md', name))
+            from documentation import maintainer_checkout
+            if maintainer_checkout(root):
+                mapping = root / 'docs/runa/maintainer/documentation-map.json'
+                if mapping.is_file() and not mapping.is_symlink():
+                    expected = json.loads(mapping.read_text())['immutable_sha256'].get(name)
+                    if expected:
+                        if hashlib.sha256(data).hexdigest() != expected:
+                            raise ValueError('Immutable historical source changed: ' + name)
+                        historical = True
+            if historical:
+                previous = subprocess.run(['git', 'show', 'HEAD:' + name], cwd=root, capture_output=True)
+                if previous.returncode == 0 and previous.stdout != data:
+                    raise ValueError('Immutable historical source changed: ' + name)
+                # Preserve archived source bytes while still scanning staged content for secrets.
                 continue
             formatted = data
             suffix = Path(name).suffix

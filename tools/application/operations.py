@@ -298,7 +298,7 @@ def assert_sparse(path):
     from repository_boundary import OWNER_PATHS
     if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
         raise ValueError('Owner distribution/maintenance tools are present in production source.')
-    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/application/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/ai', 'src/runa/management/development.json', 'src/runa/management/development.php', 'tools/application/executors/knowledge.py', '.env', '.env.dev.local'):
+    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/application/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/runa/handbook/ai', 'docs/runa/maintainer', 'src/runa/management/development.json', 'src/runa/management/development.php', 'tools/application/executors/knowledge.py', '.env', '.env.dev.local'):
         if (path / forbidden).exists():
             raise ValueError('Development material in production checkout: ' + forbidden)
 

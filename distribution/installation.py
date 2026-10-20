@@ -163,7 +163,7 @@ def scaffold(sha, mode):
     manifest = base / 'application.json'
     if manifest.is_symlink() or not manifest.is_file():
         raise InstallationError('Delivered application scaffold/manifest is missing; restore the verified source before installation.')
-    for name in ('Actions', 'modules', 'config', 'docs', 'lang', 'database/migrations', 'database/factories', 'resources/js', 'tests/Feature'):
+    for name in ('Actions', 'modules', 'config', 'lang', 'database/migrations', 'database/factories', 'resources/js', 'tests/Feature'):
         path = base / name
         if path.resolve() != path or path.is_symlink():
             raise InstallationError('Application extension directories must not traverse symlinks.')

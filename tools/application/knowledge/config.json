@@ -15,10 +15,10 @@
   "files": [
     "AGENTS.md",
     "README.md",
-    "docs/quality/gates.yml",
-    "docs/maintenance/registry.yml"
+    "docs/README.md",
+    "tools/application/quality.yml"
   ],
-  "markdown_roots": ["docs", ".agents/skills"],
+  "markdown_roots": ["docs/app", "docs/runa/handbook", ".agents/skills"],
   "pooling": "cls",
   "dtype": "float32",
   "normalize": true,
