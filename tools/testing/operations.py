@@ -72,7 +72,7 @@ print('parent:' + sys.stdin.read())
             root = Path(folder) / 'repository'
             root.mkdir()
             files = {'VERSION': '0.0.0', 'docs/project/state.yml': 'production: {}', 'src/app/example.php': '<?php',
-                     'src/runa/Http/Controllers/HealthController.php': '<?php', 'src/runa/lang/pl/validation.php': '<?php',
+                     'src/runa/platform.json': '{}', 'src/runa/Http/Controllers/HealthController.php': '<?php', 'src/runa/lang/pl/validation.php': '<?php',
                      'src/runa/management/example.php': 'excluded', 'src/runa/tools/example.py': 'excluded', 'src/runa/tests/example.php': 'excluded',
                      'docker/php/Dockerfile': 'FROM example', '.agents/example': 'excluded', 'bin/knowledge': 'excluded',
                      'tools/knowledge/example.py': 'excluded', 'bin/operations': 'launcher', 'bin/production': 'launcher',
@@ -92,6 +92,7 @@ print('parent:' + sys.stdin.read())
                 self.assertTrue((release / 'src/app/example.php').is_file())
                 self.assertTrue((release / 'src/runa/Http/Controllers/HealthController.php').is_file())
                 self.assertTrue((release / 'src/runa/lang/pl/validation.php').is_file())
+                self.assertTrue((release / 'src/runa/platform.json').is_file())
                 for excluded in ('management', 'tools', 'tests'):
                     self.assertFalse((release / 'src/runa' / excluded).exists())
                 self.assertTrue((release / 'bin/operations').is_file())

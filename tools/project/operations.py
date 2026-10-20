@@ -22,7 +22,7 @@ from runtime import ROOT, inside, run
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
 SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Database/', '/src/runa/Foundation/', '/src/runa/Http/', '/src/runa/Providers/', '/src/runa/Support/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/',
-          '/src/runa/resources/', '/src/runa/lang/', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
+          '/src/runa/resources/', '/src/runa/lang/', '/src/runa/platform.json', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',

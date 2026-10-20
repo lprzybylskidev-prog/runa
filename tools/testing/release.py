@@ -65,6 +65,7 @@ class ReleaseContracts(unittest.TestCase):
 
     def test_application_compatibility_does_not_change_release_arithmetic_or_customer_version(self):
         self.write('src/composer.json', '{}')
+        self.write('src/runa/platform.json', '{"schema_version":1,"id":"runa","name":"Runa","version":"0.0.0"}')
         self.write('src/app/application.json', '{"schema_version":1,"id":"customer","name":"Customer","version":"9.4.2","runa":">=0.1.0 <0.2.0"}')
         before = (self.root / 'src/app/application.json').read_bytes()
         release.check_application(self.root, '0.1.0')
@@ -72,6 +73,9 @@ class ReleaseContracts(unittest.TestCase):
         self.assertEqual((self.root / 'src/app/application.json').read_bytes(), before)
         with self.assertRaisesRegex(ValueError, 'compatible'):
             release.check_application(self.root, '0.2.0')
+        self.write('src/runa/platform.json', '{"schema_version":1,"id":"runa","name":"Runa","version":"0.1.0"}')
+        with self.assertRaisesRegex(ValueError, 'platform manifest'):
+            release.check_application(self.root, '0.1.0')
         (self.root / 'src/app/application.json').unlink()
         with self.assertRaisesRegex(ValueError, 'manifest'):
             release.check_application(self.root, '0.1.0')

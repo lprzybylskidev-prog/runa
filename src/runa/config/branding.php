@@ -1,12 +1,14 @@
 <?php
 
 use Runa\Support\ApplicationManifest;
+use Runa\Support\PlatformManifest;
 
 $version = file_get_contents(dirname(__DIR__, 3).'/VERSION');
 if ($version === false) {
     throw new RuntimeException('Application VERSION is missing.');
 }
-$version = trim($version);
+$platform = PlatformManifest::load(base_path('runa/platform.json'), trim($version));
+$version = $platform->version;
 $manifest = ApplicationManifest::load(base_path('app/application.json'));
 $manifest->assertCompatible($version);
 

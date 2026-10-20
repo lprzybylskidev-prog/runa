@@ -46,11 +46,11 @@ def check_application(root, target):
         return
     from runtime import ROOT, app_command
     loader = ROOT / 'src/vendor/autoload.php'
-    script = 'require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]);'
-    result = subprocess.run(app_command(['php', '-r', script, str(loader), str(root / 'src/app/application.json'), target]),
+    script = 'require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); Runa\\Support\\PlatformManifest::load($argv[4], trim(file_get_contents($argv[5])));'
+    result = subprocess.run(app_command(['php', '-r', script, str(loader), str(root / 'src/app/application.json'), target, str(root / 'src/runa/platform.json'), str(root / 'VERSION')]),
                             capture_output=True, text=True)
     if result.returncode:
-        raise ValueError('Application manifest must be valid and compatible with the release target.')
+        raise ValueError('Application manifest must be valid and compatible with the release target; platform manifest must match VERSION.')
 
 
 def validate(root):

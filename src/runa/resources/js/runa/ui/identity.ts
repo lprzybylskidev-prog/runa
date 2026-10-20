@@ -1,6 +1,6 @@
 import { computed, inject } from 'vue';
 import type { ComputedRef, InjectionKey } from 'vue';
-import version from '../../../../../../VERSION?raw';
+import { version } from '../../../../platform.json';
 import {
   id,
   name,

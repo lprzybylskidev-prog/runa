@@ -2,7 +2,7 @@
 
 ## Canonical version
 
-The root `VERSION` file is the canonical project version.
+The root `VERSION` file is the canonical platform version. The protected code manifest `src/runa/platform.json` must carry the same version; runtime, browser builds and release validation reject drift. The customer application version in `src/app/application.json` is independent and is never bumped by a platform release.
 
 Initial version:
 
@@ -93,7 +93,7 @@ Near roadmap completion:
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
 5. compute the version from current `VERSION` and `release_type`,
-6. update `VERSION`,
+6. update `VERSION` and the version field of `src/runa/platform.json` to the same value; preserve `src/app/application.json`,
 7. update `CHANGELOG.md` and synchronize the README current version,
 8. complete the roadmap checklist/review evidence, move it to `closed/` on the roadmap branch and set the README active roadmap to `none`,
 9. refresh the knowledge index incrementally and run `./bin/doctor docs` and `./bin/doctor release`, including the closure-state review from the roadmap workflow,
@@ -105,7 +105,7 @@ Near roadmap completion:
 15. publish GitHub Release,
 16. delete roadmap branch.
 
-Reviewed release-only edits after the full gate are limited to VERSION, CHANGELOG, roadmap checklist/closure/report evidence and the README block's version/active-roadmap values. Reindex affected knowledge and run focused docs/release checks. Capability prose, procedures, validators or runtime changes require an inserted fix point and a new full gate. Do not reuse a PASS for substantive changes. Repeat docs/release checks as part of main sanity.
+Reviewed release-only edits after the full gate are limited to VERSION, the matching version field in src/runa/platform.json, CHANGELOG, roadmap checklist/closure/report evidence and the README block's version/active-roadmap values. Reindex affected knowledge and run focused docs/release checks. Capability prose, procedures, validators or runtime changes require an inserted fix point and a new full gate. Do not reuse a PASS for substantive changes. Repeat docs/release checks as part of main sanity.
 
 ## Release 1.0
 

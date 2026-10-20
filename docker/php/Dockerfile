@@ -109,6 +109,7 @@ COPY --chown=runa:runa src/runa/resources/errors/ runa/resources/errors/
 COPY --chown=runa:runa src/runa/resources/views/errors/ runa/resources/views/errors/
 COPY --chown=runa:runa src/runa/resources/css/light-palette.css runa/resources/css/light-palette.css
 COPY --chown=runa:runa VERSION ../VERSION
+COPY --chown=runa:runa src/runa/platform.json runa/platform.json
 
 # A short-lived host management process, never a production application service.
 FROM production-runtime AS management
@@ -128,6 +129,7 @@ RUN pnpm install --frozen-lockfile
 COPY src/runa/resources/ runa/resources/
 COPY src/app/resources/ app/resources/
 COPY src/app/application.json app/application.json
+COPY src/runa/platform.json runa/platform.json
 COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 COPY VERSION ../VERSION
 RUN pnpm run build
@@ -162,6 +164,7 @@ COPY --chown=runa:runa src/runa/resources/errors/messages.json /workspace/src/ru
 COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/
 COPY --chown=runa:runa src/runa/resources/images/runa-mail-logo.png /workspace/src/runa/resources/images/runa-mail-logo.png
 COPY --chown=runa:runa VERSION /workspace/VERSION
+COPY --chown=runa:runa src/runa/platform.json /workspace/src/runa/platform.json
 COPY --chown=runa:runa src/runa/routes/ /workspace/src/runa/routes/
 COPY --chown=runa:runa src/runa/lang/ /workspace/src/runa/lang/
 COPY --chown=runa:runa src/public/index.php src/public/favicon.ico /workspace/src/public/

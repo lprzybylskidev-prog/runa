@@ -5,6 +5,7 @@ namespace Runa\Console\Commands;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
 use Runa\Support\ApplicationManifest;
+use Runa\Support\PlatformManifest;
 
 final class CheckApplicationManifest extends Command
 {
@@ -17,7 +18,8 @@ final class CheckApplicationManifest extends Command
         $target = $this->option('platform-version');
         try {
             $manifest = ApplicationManifest::load(app_path('application.json'));
-            $version = is_string($target) && $target !== '' ? $target : trim((string) file_get_contents(base_path('../VERSION')));
+            $platform = PlatformManifest::load(base_path('runa/platform.json'), trim((string) file_get_contents(base_path('../VERSION'))));
+            $version = is_string($target) && $target !== '' ? $target : $platform->version;
             $manifest->assertCompatible($version);
         } catch (InvalidArgumentException $error) {
             $this->error($error->getMessage());
