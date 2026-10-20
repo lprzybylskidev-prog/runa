@@ -16,6 +16,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\WorkerIdle;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Runa\Console\Commands\CheckApplicationManifest;
 use Runa\Console\Commands\CheckRuntimeHealth;
 use Runa\Console\Commands\CheckTestDatabase;
 use Runa\Console\Commands\Database\GuardedFreshCommand;
@@ -43,6 +44,9 @@ final class RunaServiceProvider extends ServiceProvider
                     throw new RuntimeException('Application configuration must return an array.');
                 }
                 $key = basename($file, '.php');
+                if ($key === 'branding' && array_intersect(array_keys($overrides), ['application_id', 'application_name', 'application_version', 'platform_version', 'logo']) !== []) {
+                    throw new RuntimeException('Application identity belongs in app/application.json, not branding configuration.');
+                }
                 $config = $this->app->make(Repository::class);
                 $defaults = $config->get($key, []);
                 if (! is_array($defaults)) {
@@ -53,6 +57,7 @@ final class RunaServiceProvider extends ServiceProvider
         }
         $this->loadMigrationsFrom(base_path('runa/database/migrations'));
         $this->commands([
+            CheckApplicationManifest::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,

@@ -63,6 +63,19 @@ class ReleaseContracts(unittest.TestCase):
         self.readme('0.1.0', 'none')
         self.write('CHANGELOG.md', '# Changelog\n\n## 0.1.0 — 2026-10-18\nFeature: RM-2026-001 foundation.\n')
 
+    def test_application_compatibility_does_not_change_release_arithmetic_or_customer_version(self):
+        self.write('src/composer.json', '{}')
+        self.write('src/app/application.json', '{"schema_version":1,"id":"customer","name":"Customer","version":"9.4.2","runa":">=0.1.0 <0.2.0"}')
+        before = (self.root / 'src/app/application.json').read_bytes()
+        release.check_application(self.root, '0.1.0')
+        self.assertEqual(release.expected('0.0.0', 'feature'), '0.1.0')
+        self.assertEqual((self.root / 'src/app/application.json').read_bytes(), before)
+        with self.assertRaisesRegex(ValueError, 'compatible'):
+            release.check_application(self.root, '0.2.0')
+        (self.root / 'src/app/application.json').unlink()
+        with self.assertRaisesRegex(ValueError, 'manifest'):
+            release.check_application(self.root, '0.1.0')
+
     def test_pre_gate_allows_only_final_open_and_computes_version(self):
         self.assertEqual(self.validate(), '0.1.0')
         self.write(self.active, self.roadmap() + '- [ ] Unfinished fix\n')

@@ -40,6 +40,19 @@ def metadata(path):
     return result, text
 
 
+def check_application(root, target):
+    # Minimal release fixtures have no Laravel composition; real applications must have a manifest.
+    if not (root / 'src/composer.json').is_file():
+        return
+    from runtime import ROOT, app_command
+    loader = ROOT / 'src/vendor/autoload.php'
+    script = 'require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]);'
+    result = subprocess.run(app_command(['php', '-r', script, str(loader), str(root / 'src/app/application.json'), target]),
+                            capture_output=True, text=True)
+    if result.returncode:
+        raise ValueError('Application manifest must be valid and compatible with the release target.')
+
+
 def validate(root):
     root = Path(root)
     current = (root / 'VERSION').read_text().strip()
@@ -71,6 +84,7 @@ def validate(root):
         pending = re.findall(r'^\s*- \[ \] (.+)$', text, re.M)
         if len(pending) != 1 or not all(word in pending[0].lower() for word in ('final', 'verification')):
             raise ValueError('Only the final verification item may remain pending.')
+        check_application(root, target)
         tags = git(root, 'tag', '--list', 'v' + target)
         if tags:
             raise ValueError('Computed release tag already exists; never overwrite it.')
@@ -78,6 +92,7 @@ def validate(root):
         validate_docs(root)
         print(f'PASS: active release metadata; {data["release_type"]} {base} -> {target}; final item remains open.')
         return target
+    check_application(root, current)
     if not entries or entries[0] != current:
         raise ValueError('Final VERSION and changelog head differ.')
     heading = re.search(r'^## \[?' + re.escape(current) + r'\]?[^\n]*$', changelog, re.M)

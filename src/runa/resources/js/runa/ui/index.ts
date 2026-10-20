@@ -146,3 +146,5 @@ export {
   createApiExportProvider,
   decodeOperationStatus,
 } from '../../lib/serverExports';
+
+export { loadApplicationIdentity } from './loadIdentity';

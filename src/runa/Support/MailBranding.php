@@ -11,9 +11,7 @@ final class MailBranding
 
     public function name(): string
     {
-        $name = config('branding.application_name');
-
-        return is_string($name) && trim($name) !== '' ? $name : 'Runa';
+        return app(ApplicationIdentity::class)->applicationName;
     }
 
     public function logo(): ?string

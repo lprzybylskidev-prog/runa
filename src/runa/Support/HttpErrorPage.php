@@ -14,14 +14,12 @@ final class HttpErrorPage
         $lang = $request->query('lang');
         $locale = in_array($lang, ['pl', 'en'], true) ? $lang : ($request->getPreferredLanguage(['pl', 'en']) ?? 'pl');
         $theme = $request->query('theme');
-        $name = config('branding.application_name');
-        $version = config('branding.application_version');
-        $platform = config('branding.platform_version');
+        $identity = app(ApplicationIdentity::class);
         $id = $request->attributes->get('request_id');
 
         return $this->data($status, $locale, in_array($theme, ['light', 'dark'], true) ? $theme : 'system',
-            is_string($name) ? $name : 'Runa', is_string($version) ? $version : '',
-            is_string($platform) ? $platform : '', is_string($id) ? $id : '');
+            $identity->applicationName, $identity->applicationVersion,
+            $identity->platformVersion, is_string($id) ? $id : '');
     }
 
     /** @return array<string, mixed> */

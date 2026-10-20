@@ -127,6 +127,7 @@ COPY src/package.json src/pnpm-lock.yaml src/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY src/runa/resources/ runa/resources/
 COPY src/app/resources/ app/resources/
+COPY src/app/application.json app/application.json
 COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 COPY VERSION ../VERSION
 RUN pnpm run build

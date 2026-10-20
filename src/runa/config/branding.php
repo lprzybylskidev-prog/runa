@@ -1,10 +1,14 @@
 <?php
 
+use Runa\Support\ApplicationManifest;
+
 $version = file_get_contents(dirname(__DIR__, 3).'/VERSION');
 if ($version === false) {
     throw new RuntimeException('Application VERSION is missing.');
 }
 $version = trim($version);
+$manifest = ApplicationManifest::load(base_path('app/application.json'));
+$manifest->assertCompatible($version);
 
 // The same light palette is imported by the Vue application's CSS.
 $paletteSource = file_get_contents(resource_path('css/light-palette.css'));
@@ -19,13 +23,14 @@ foreach ($matches as $match) {
 
 return [
     'colors' => $colors,
-    'application_id' => 'runa',
-    'application_name' => 'Runa',
-    'application_version' => $version,
+    'application_id' => $manifest->id,
+    'application_name' => $manifest->name,
+    'application_version' => $manifest->version,
+    'logo' => $manifest->logo,
     'platform_version' => $version,
     // A trusted local PNG/JPEG path for CID, or a credential-free public HTTPS URL.
     'mail_logo_path' => resource_path('images/runa-mail-logo.png'),
-    'mail_logo_url' => null,
-    'mail_logo_alt' => null,
+    'mail_logo_url' => $manifest->logo !== null && str_starts_with($manifest->logo['src'], 'https://') ? $manifest->logo['src'] : null,
+    'mail_logo_alt' => $manifest->logo['accessibleName'] ?? null,
     'mail_footer' => ['visible' => true, 'application' => true, 'platform' => true],
 ];

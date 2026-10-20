@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "runa",
+  "name": "Runa",
+  "version": "0.2.1",
+  "runa": ">=0.2.1 <0.4.0"
+}

@@ -7,6 +7,9 @@ process.chdir(fileURLToPath(new URL('../../../', import.meta.url)));
 
 const base = 'http://nginx-test:8080';
 const version = (await readFile('../VERSION', 'utf8')).trim();
+const applicationVersion = JSON.parse(
+  await readFile('app/application.json', 'utf8'),
+).version;
 const artifacts = '../artifacts/playwright/foundation';
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch();
@@ -125,7 +128,7 @@ try {
   await page.keyboard.press('Enter');
   await expect(page.locator('#main')).toBeFocused();
   const footer = page.getByRole('contentinfo');
-  await expect(footer).toContainText(`Runa v${version}`);
+  await expect(footer).toContainText(`Runa v${applicationVersion}`);
   await expect(footer).toContainText(`Powered by Runa v${version}`);
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
     'target',

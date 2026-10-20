@@ -185,3 +185,7 @@ The optional UI facade provides typed explicit/all-matching selections, export s
 ## Platform/application route ownership
 
 Platform health/readiness routes are registered from `src/runa/routes/api.php`, with Runa namespace controllers. The customer `src/app/routes/web.php` owns only the named `/` welcome entry (`spa`), served by App namespace SpaController. API URLs/names, JSON negotiation, status codes and request IDs are unchanged by RM-005 backend relocation. Unknown paths remain real 404s.
+
+## Public application identity
+
+`GET /api/identity`, named `api.identity`, returns `data` containing applicationId, applicationName, applicationVersion, platformVersion and optional `logo: {src, accessibleName}`. It is public, read-only and no-store; it does not expose manifest compatibility, internal paths or configuration. See [application identity](application-architecture.md#application-identity-and-compatibility).

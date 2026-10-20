@@ -1,6 +1,11 @@
 import { computed, inject } from 'vue';
 import type { ComputedRef, InjectionKey } from 'vue';
 import version from '../../../../../../VERSION?raw';
+import {
+  id,
+  name,
+  version as applicationVersion,
+} from '../../../../../app/application.json';
 
 export interface ApplicationIdentity {
   readonly applicationId: string;
@@ -23,9 +28,9 @@ export interface FooterOptions {
 
 export const defaultIdentity: Readonly<ApplicationIdentity> =
   /* @__PURE__ */ Object.freeze({
-    applicationId: 'runa',
-    applicationName: 'Runa',
-    applicationVersion: version.trim(),
+    applicationId: id,
+    applicationName: name,
+    applicationVersion: applicationVersion,
     platformVersion: version.trim(),
   });
 

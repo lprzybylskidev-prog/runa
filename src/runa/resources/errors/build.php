@@ -3,7 +3,7 @@
 use Runa\Support\HttpErrorPage;
 
 // Build standalone assets without booting Laravel, loading env files or accessing a database.
-require __DIR__.'/../../Support/HttpErrorPage.php';
+require dirname(__DIR__, 3).'/vendor/autoload.php';
 
 $root = dirname(__DIR__, 3);
 $output = $argv[1] ?? $root.'/public/runa-error';
