@@ -96,6 +96,33 @@ def main():
             check(result.returncode == 0 and bool(output(compose + ['ps', '--status', 'running', '-q', 'app'])), 'separate operator php artisan recovers a stopped application without host PHP or Docker socket')
             result = subprocess.run(operator + ['runa:deploy', 'a' * 40], capture_output=True, text=True)
             check(result.returncode != 0 and 'Host operation:' in result.stderr, 'deployment reaches its host guard and propagates failure without touching an unmanaged database')
+            # Real dev acquisition context: neither caller APP_ENV nor prod settings may enable production work.
+            output(['git', 'init', '--quiet', str(root)])
+            output(['git', '-C', str(root), 'remote', 'add', 'origin', 'https://github.com/fixture/runa.git'])
+            output(['git', '-C', str(root), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
+            from repository_boundary import write_staging_receipt, OWNER_PATHS
+            acquisition = {'schema_version': 1, 'repository': 'fixture/runa', 'mode': 'dev',
+                           'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}}
+            write_staging_receipt(root, acquisition)
+            (root / '.env.prod.compose').write_text('RUNA_IMAGE_TAG=' + 'a' * 40 + '\nRUNA_PRODUCTION_MODE=simulation\nRUNA_SIMULATION_PROJECT=runa-prod-simulation-mode-guard\n')
+            (root / 'compose.production.yaml').write_text(json.dumps({'services': {'probe': {'image': 'runa-management:' + management.image_identity()[:24]}}}))
+            snapshot = {path: path.read_bytes() for path in (root / '.runtime/production').rglob('*') if path.is_file()}
+            container_ids = output(compose + ['ps', '-q'])
+            forbidden = [['runa:production:' + action] for action in ('validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation')]
+            forbidden += [['runa:deploy', 'a' * 40, '--simulation'], ['runa:deploy:rollback']]
+            for args in forbidden:
+                result = subprocess.run(php + args, capture_output=True, text=True)
+                check(result.returncode != 0 and 'require a production installation' in result.stdout + result.stderr,
+                      'dev installation rejects ' + args[0] + ' through normal php artisan')
+            result = subprocess.run([launcher, 'runa:production:build'], cwd=root, capture_output=True, text=True)
+            check(result.returncode != 0 and 'require a production installation' in result.stdout + result.stderr,
+                  'recovery transport cannot bypass the development installation guard')
+            check(output(compose + ['ps', '-q']) == container_ids and snapshot == {path: path.read_bytes() for path in (root / '.runtime/production').rglob('*') if path.is_file()},
+                  'rejected production commands preserve target containers and operational state')
+            acquisition['mode'] = 'prod'
+            write_staging_receipt(root, acquisition)
+            check('PASS: production validate.' in output(php + ['runa:production:validate']),
+                  'production-mode simulation still executes actual quiet Compose validation')
             output(php + ['runa:host:stop'])
             for _ in range(100):
                 if not (root / '.runtime/host/client.json').exists():

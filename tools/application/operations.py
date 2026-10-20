@@ -317,8 +317,8 @@ def build_images(release=None):
 
 
 def deploy(target, simulation, initial_resume=False, verification=None):
-    from repository_boundary import assert_installation
-    assert_installation(ROOT)
+    from repository_boundary import assert_production_installation
+    assert_production_installation(ROOT)
     sha = resolve(target)
     previous = read_state()['current']
     mode = read_env(ROOT / '.env.prod.compose').get('RUNA_PRODUCTION_MODE', 'real')
@@ -380,6 +380,8 @@ def deploy(target, simulation, initial_resume=False, verification=None):
 
 
 def rollback():
+    from repository_boundary import assert_production_installation
+    assert_production_installation(ROOT)
     state = read_state()
     current, previous = state['current'], state['previous']
     if not current or not previous or (STATE / 'in-progress.json').exists():
@@ -416,8 +418,8 @@ def main(name, args):
     options = parser.parse_args(args)
     if inside():
         raise ValueError('Run production operations in a host terminal outside the devcontainer.')
-    from repository_boundary import assert_installation
-    assert_installation(ROOT)
+    from repository_boundary import assert_production_installation
+    assert_production_installation(ROOT)
     with lock():
         if options.target == 'rollback':
             rollback()

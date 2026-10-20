@@ -21,9 +21,23 @@ import repository_boundary
 
 class OperationContracts(unittest.TestCase):
     def setUp(self):
-        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={'mode': 'prod'})
         boundary.start()
         self.addCleanup(boundary.stop)
+
+    def test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work(self):
+        for mode in ('dev', None, 'unknown'):
+            for simulation in (False, True):
+                with self.subTest(mode=mode, simulation=simulation), patch.object(repository_boundary, 'assert_installation', return_value={'mode': mode}), patch.object(ops, 'inside', return_value=False), patch.object(ops, 'resolve') as resolve, patch.object(ops, 'read_state') as read, patch.object(ops, 'lock') as lock, patch.object(ops, 'run') as run:
+                    for invoke in (lambda: ops.deploy('a' * 40, simulation), ops.rollback,
+                                   lambda: ops.main('deploy', ['a' * 40, *(['--simulation'] if simulation else [])]),
+                                   lambda: ops.main('deploy', ['rollback'])):
+                        with self.assertRaisesRegex(ValueError, 'require a production installation'):
+                            invoke()
+                    resolve.assert_not_called()
+                    read.assert_not_called()
+                    lock.assert_not_called()
+                    run.assert_not_called()
 
     def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self):
         events = []

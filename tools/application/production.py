@@ -47,9 +47,8 @@ def dispatch(args):
     if inside():
         raise ValueError('Run production Docker operations in a host terminal outside the devcontainer; no Docker socket is mounted here.')
     action, *services = args
-    if action in ('build', 'up', 'down', 'restart'):
-        from repository_boundary import assert_installation
-        assert_installation(ROOT)
+    from repository_boundary import assert_production_installation
+    assert_production_installation(ROOT)
     if action in ('self-test', 'verify-ai-isolation'):
         if services:
             raise ValueError('This operation takes no service arguments.')
@@ -114,6 +113,8 @@ def verify_images(command, environment):
 def main(args):
     if not args or args == ['--help'] or inside():
         return dispatch(args)
+    from repository_boundary import assert_production_installation
+    assert_production_installation(ROOT)
     import operations
     with operations.lock():
         return dispatch(args)

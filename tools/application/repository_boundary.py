@@ -42,6 +42,14 @@ def assert_installation(root):
     return data
 
 
+def assert_production_installation(root):
+    """Bind operations to installer-selected target mode, never the caller's APP_ENV."""
+    data = assert_installation(root)
+    if data.get('mode') != 'prod':
+        raise RepositoryBoundaryError('Production commands require a production installation (mode=prod). Development or unknown installation mode is blocked; APP_ENV and --simulation do not override it.')
+    return data
+
+
 def write_staging_receipt(root, data):
     path = Path(root) / '.git/runa-bootstrap.json'
     if path.is_symlink():

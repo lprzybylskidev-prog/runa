@@ -2,6 +2,7 @@
 """Production topology and command-boundary contracts without Docker privileges."""
 import contextlib
 import io
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -20,9 +21,36 @@ import repository_boundary
 
 class ProductionContracts(unittest.TestCase):
     def setUp(self):
-        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={'mode': 'prod'})
         boundary.start()
         self.addCleanup(boundary.stop)
+
+    def test_every_production_action_is_blocked_before_locks_or_host_work_in_dev(self):
+        import operations
+        actions = ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation']
+        for mode in ('dev', None, 'unknown'):
+            for action in actions:
+                for entrypoint in (production.main, production.dispatch):
+                    with self.subTest(mode=mode, action=action, entrypoint=entrypoint.__name__), patch.object(repository_boundary, 'assert_installation', return_value={'mode': mode}), patch.object(production, 'inside', return_value=False), patch.object(production, 'run') as run, patch.object(production, 'compose') as compose, patch.object(operations, 'lock') as lock, patch.object(operations, 'active_release') as active, patch.dict(os.environ, {'APP_ENV': 'production'}):
+                        with self.assertRaisesRegex(ValueError, 'require a production installation'):
+                            entrypoint([action])
+                        run.assert_not_called()
+                        compose.assert_not_called()
+                        lock.assert_not_called()
+                        active.assert_not_called()
+
+    def test_dev_block_preserves_files_even_with_production_settings_present(self):
+        import operations
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            settings = root / '.env.prod.compose'
+            settings.write_text('RUNA_PRODUCTION_MODE=simulation\nRUNA_IMAGE_TAG=v0.2.1\n')
+            original = settings.read_bytes()
+            with patch.object(repository_boundary, 'assert_installation', return_value={'mode': 'dev'}), patch.object(production, 'ROOT', root), patch.object(production, 'inside', return_value=False), patch.object(operations, 'STATE', root / '.runtime/production'):
+                with self.assertRaises(ValueError):
+                    production.main(['build'])
+            self.assertEqual(settings.read_bytes(), original)
+            self.assertFalse((root / '.runtime').exists())
 
     def test_runtime_topology_and_isolation(self):
         data = yaml(ROOT / 'compose.production.yaml')

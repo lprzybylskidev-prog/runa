@@ -29,6 +29,9 @@ abstract class ToolingCommand extends Command
     public function __construct()
     {
         parent::__construct();
+        if (in_array($this->tool, ['production', 'deploy'], true)) {
+            $this->setHelp('Execution requires an installer-selected production installation (mode=prod). Development installations are blocked; APP_ENV and --simulation cannot override this. Help and explicit --plan do not execute operations.');
+        }
         if (in_array($this->tool, ['test', 'lint', 'typecheck', 'analyse'], true)) {
             $this->ignoreValidationErrors();
         }

@@ -1,5 +1,7 @@
 # Production Deployment and Rollback
 
+Production operation guard: every `runa:production:*` execution, `runa:deploy` and `runa:deploy:rollback` requires the existing installer-selected acquisition mode `prod`. A development, missing or unknown installation mode is rejected before production locks/state, Docker/builds or deployment work. `APP_ENV=production`, production configuration files and `--simulation` do not bypass this restriction. Production simulations use separate production-mode fixture installations. Help, discovery and explicit nonexecuting `--plan` remain available from development. This uses acquisition context, not a first-production history flag or licensing mechanism.
+
 ## Production installer
 
 For a new operator checkout, use the [standalone GitHub bootstrap](../tooling/bootstrap.md)

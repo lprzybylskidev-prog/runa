@@ -28,7 +28,7 @@ import repository_boundary
 
 class InstallationContracts(unittest.TestCase):
     def setUp(self):
-        boundary = patch.object(repository_boundary, 'assert_installation', return_value={})
+        boundary = patch.object(repository_boundary, 'assert_installation', return_value={'mode': 'prod'})
         boundary.start()
         self.addCleanup(boundary.stop)
         executor = patch.object(host_executor, 'ensure')

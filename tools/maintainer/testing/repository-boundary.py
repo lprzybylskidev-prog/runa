@@ -49,6 +49,23 @@ class RepositoryBoundary(unittest.TestCase):
             self.assertEqual((root / '.git/config').read_bytes(), original)
             self.assertEqual(self.git(root, 'status', '--porcelain'), '')
 
+    def test_production_mode_uses_the_real_receipt_and_never_changes_it(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.fixture(root)
+            path = root / '.git/runa-bootstrap.json'
+            data = json.loads(path.read_text())
+            for mode in ('dev', None, 'unknown', 'prod'):
+                data['mode'] = mode
+                boundary.write_staging_receipt(root, data)
+                before = path.read_bytes()
+                if mode == 'prod':
+                    self.assertEqual(boundary.assert_production_installation(root)['mode'], 'prod')
+                else:
+                    with self.assertRaisesRegex(ValueError, 'require a production installation'):
+                        boundary.assert_production_installation(root)
+                self.assertEqual(path.read_bytes(), before)
+
     def test_customer_read_only_role_and_existing_customer_remote_preservation(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
