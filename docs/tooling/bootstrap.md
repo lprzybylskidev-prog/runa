@@ -2,8 +2,7 @@
 
 The repository is currently public. The same bootstrap supports future private
 GitHub access; public acquisition does not need a token. It does not change
-repository visibility. Deliver the reviewed `distribution/bootstrap.py` as
-the initial standalone file. Do not pipe an unreviewed network script into a shell.
+repository visibility. Keep the reviewed owner tool directory containing `distribution/bootstrap.py` and `distribution/installation.py` outside the destination. Do not pipe an unreviewed network script into a shell.
 The bootstrap uses only Python's standard library; PHP, Composer, Node and pnpm
 remain containerized.
 
@@ -104,11 +103,10 @@ repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is clean and detached. This is acquisition evidence,
 not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The planned external owner updater will obtain original release source from the repository for comparison.
 
-The owner runs the separately delivered launcher personally or hands its reviewed
-single file to the customer. It is never installed into bin or customer source.
+The owner runs the external launcher personally; neither the launcher nor its adjacent installation helper is delivered as customer tooling. It is never installed into bin or customer source.
 After verifying the **complete** release, acquisition applies a fixed non-cone
 sparse projection before atomic publication. Both dev/prod and now/later exclude
-`distribution/`, maintainer hooks, install/project aliases and old owner entrypoints.
+`distribution/`, `tools/maintainer/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
 The credential-free receipt records the full source digest and projection version
 plus exact exclusions. Git remains clean and detached at the verified commit;
 subsequent checkouts retain the sparse projection. Git objects/history may contain
@@ -122,18 +120,18 @@ A distinct customer-source remote lifecycle is not implemented by this acquisiti
 The local receipt records ownership context; it is not a signature or a security
 boundary against an operator deliberately rewriting the installation.
 
-`--install later` prints a shell-quoted fixed Python invocation of the internal
-installation library from the destination. `--install now` invokes exactly that
-library and propagates failure. No installed standalone launcher or public
+`--install later` prints a shell-quoted fixed Python invocation of the
+external installation helper, with the destination as its working directory. `--install now` invokes exactly that
+helper and propagates failure. No installed standalone launcher or public
 `runa:install` command is required. Keep the separately supplied launcher outside
-the destination; the owner can hand over just that file without their checkout.
+the destination; retain its adjacent installation.py helper for postponed installation and resume.
 Optional profile/settings/noninteractive options are forwarded. After a failed
 install preserve source/settings and rerun the printed command with `--resume`;
 do not reacquire into that directory. Ordinary lifecycle/recovery uses
 `php artisan` and the restricted host executor. The future updater is not yet delivered.
 See [installation](installation.md) for settings, preservation and recovery.
 
-Offline acceptance: `python3 tools/testing/bootstrap.py`. The local quality graph
+Offline acceptance: `python3 tools/maintainer/testing/bootstrap.py`. The local quality graph
 includes `bootstrap-source-contracts`; tests use synthetic credentials and real
 temporary Git repositories/atomic filesystem operations. Live public acquisition
 checks the real API/ref/file identities without provisioning services. See

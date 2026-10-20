@@ -30,10 +30,8 @@ SHA = r'[a-f0-9]{40}'
 MIN_FREE = 5 * 1024 ** 3
 MAX_SOURCE = 512 * 1024 ** 2
 # Fixed release projection, not server-provided exclusions or customer config.
-OWNER_PATHS = ('distribution', 'bootstrap.py', '.githooks', 'bin/project', 'bin/install-prod', 'bin/git-hook',
-               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php',
-               'tools/project/executors/project.py', 'tools/project/executors/install.py',
-               'src/runa/management/HookCommand.php', 'tools/project/executors/git_hook.py', 'tools/project/hooks.py')
+OWNER_PATHS = ('distribution', 'tools/maintainer', 'bootstrap.py', 'bin/project', 'bin/install-prod',
+               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
 
 
 class BootstrapError(Exception):
@@ -287,7 +285,7 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
                        tag=tag, **identity, source_sha256=digest, mode=mode, state='downloaded', installed_profile='source',
                        projection={'version': 1, 'excluded': list(OWNER_PATHS)},
                        trust='GitHub HTTPS + annotated tag and Git object hashes; no independent signature')
-        patterns = ['/*', *['!/' + name + ('/' if name in ('distribution', '.githooks') else '') for name in OWNER_PATHS]]
+        patterns = ['/*', *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
         git(source, home, 'sparse-checkout', 'init', '--no-cone')
         git(source, home, 'sparse-checkout', 'set', '--no-cone', '--stdin', input_data='\n'.join(patterns) + '\n')
         if any((source / name).exists() or (source / name).is_symlink() for name in OWNER_PATHS):
@@ -301,14 +299,12 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
 
 
 def install_command(destination, mode, commit):
-    if (destination / 'tools/project/installation.py').is_file():
-        # Sole pre-Artisan distribution exception. The owner-delivered launcher
-        # invokes an internal library, not an installed public install command.
-        program = 'import sys; sys.path.insert(0,"tools/project"); from installation import main; raise SystemExit(main(sys.argv[1:]))'
-        return [sys.executable, '-c', program, mode, commit]
-    if mode == 'dev':
-        return ['./bin/dev', 'up']
-    raise BootstrapError('This older release has no supported internal production installer. Source is verified; request a current owner-supplied release.')
+    helper = Path(__file__).resolve().with_name('installation.py')
+    if not helper.is_file():
+        raise BootstrapError('Owner installation helper is missing beside the external launcher; obtain the complete owner tool directory.')
+    # The child imports installed operational primitives but executes only the external owner helper.
+    program = 'import runpy,sys; sys.path.insert(0,"tools/application"); path=sys.argv.pop(1); runpy.run_path(path,run_name="__main__")'
+    return [sys.executable, '-c', program, str(helper), mode, commit]
 
 
 def main(argv=None):

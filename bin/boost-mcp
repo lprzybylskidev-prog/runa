@@ -6,7 +6,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 os.chdir(root)
-sys.path.insert(0, str(root / 'tools/project'))
+sys.path.insert(0, str(root / 'tools/application'))
 from runtime import app_command
 if sys.argv[1:] == ['--help']:
     print('Usage: ./bin/boost-mcp\nStart development-only Laravel Boost stdio MCP server.')

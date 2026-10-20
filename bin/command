@@ -16,5 +16,5 @@ if name in ('command', 'check', 'operations'):
     raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'list'], cwd=ROOT).returncode)
 # The setup job must prepare Composer before Artisan's autoloader exists.
 if name == 'dev' and arguments[:1] == ['setup'] and Path('/.dockerenv').exists() and not (ROOT / 'src/vendor/autoload.php').is_file():
-    raise SystemExit(subprocess.run(['python3', str(ROOT / 'tools/project/executors/dev.py'), *arguments], cwd=ROOT).returncode)
+    raise SystemExit(subprocess.run(['python3', str(ROOT / 'tools/application/executors/dev.py'), *arguments], cwd=ROOT).returncode)
 raise SystemExit(subprocess.run([str(ROOT / 'bin/artisan'), '--management', 'runa:' + ALIASES[name], *arguments], cwd=ROOT).returncode)

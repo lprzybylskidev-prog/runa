@@ -124,9 +124,6 @@ CMD ["--management", "list"]
 FROM management AS development-management
 COPY --chown=runa:runa src/runa/management/ /opt/runa/runa/management/
 
-FROM development-management AS maintainer-management
-COPY --from=runa-maintenance --chown=runa:runa / /opt/runa/distribution/maintenance/
-
 FROM node AS frontend-build
 WORKDIR /build/src
 RUN npm install --global corepack@0.36.0 && corepack enable && corepack install --global pnpm@12.14.0

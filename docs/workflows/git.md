@@ -18,7 +18,7 @@ Project Git identity:
 ## Source ownership
 
 Runa maintenance commits/releases/state automation belongs only to the owner checkout.
-Owner-only entrypoints live under distribution/maintenance, outside customer source.
+Owner-only development/release entrypoints live under tools/maintainer; installation/update belongs to distribution. Neither root is delivered to the customer. Shared customer hooks live under tools/application.
 Explicitly configure maintenance hooks with `git config --local core.hooksPath .githooks`.
 Customer installation mode never authorizes Runa Git writes. Customer deployment
 evidence stays local; backups are externally managed by the customer.

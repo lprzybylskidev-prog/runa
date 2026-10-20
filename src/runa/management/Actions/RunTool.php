@@ -21,14 +21,14 @@ final class RunTool
         }
         $doctor = [
             'config' => [PHP_BINARY, 'artisan', 'runa:config:validate', '--templates'],
-            'hooks' => ['python3', 'tools/testing/hooks.py'],
-            'frontend' => ['node', 'src/runa/tools/testing/frontend.mjs'],
-            'database-migrations' => ['python3', 'tools/testing/database-guards.py'],
+            'hooks' => ['python3', 'tools/application/testing/hooks.py'],
+            'frontend' => [PHP_BINARY, 'artisan', 'runa:typecheck'],
+            'database-migrations' => [PHP_BINARY, 'artisan', 'runa:test-db:guard', '--env=testing'],
             'database' => [PHP_BINARY, 'artisan', 'runa:test', '--filter=Database'],
             'seeding' => [PHP_BINARY, 'artisan', 'runa:test', '--filter=Seeding'],
         ];
         if ($tool === 'doctor' && isset($doctor[$arguments[0] ?? ''])) {
-            return $this->process($doctor[$arguments[0]], $root, $output);
+            return $this->process($doctor[$arguments[0]], $root, $output, $arguments[0] === 'database-migrations' ? ['APP_ENV' => 'testing'] : null);
         }
         $helpers = ['dev' => 'dev', 'doctor' => 'doctor', 'quality' => 'quality', 'knowledge' => 'knowledge',
             'security' => 'security', 'check' => 'quality_check', 'hook' => 'git_hook'];
@@ -54,10 +54,10 @@ final class RunTool
         }
 
         if ($tool === 'hook') {
-            return $this->process(['python3', $root.'/distribution/maintenance/git_hook.py', ...$arguments], $cwd, $output);
+            return $this->process(['python3', $root.'/tools/application/git_hook.py', ...$arguments], $cwd, $output);
         }
 
-        return $this->process(['python3', $root.'/tools/project/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);
+        return $this->process(['python3', $root.'/tools/application/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);
     }
 
     /** @param list<string> $command

@@ -58,7 +58,7 @@ PHP's development runtime remains Debian for the existing browser toolchain; the
 Run on the Docker host:
 
 ```bash
-python3 tools/testing/postgres-alpine.py
+python3 tools/maintainer/testing/postgres-alpine.py
 ```
 
 The probe uses the official digest, unchanged official entrypoint and gosu. It creates a uniquely named temporary container, no published ports, network `none`, tmpfs database storage, private random credentials and no persistent volume/bind mounts. It removes that exact temporary container on normal failure/success/interruption. It never connects the candidate to development, testing or simulation volumes and never invokes Runa migrations.
@@ -87,7 +87,7 @@ This proposal avoids destroying even the apparently disposable technical data an
 
 ## Authorized selective development switch
 
-The user explicitly approved the new volume and selective PostgreSQL service replacement on 2026-10-17. App/devcontainer must stay running: no Compose down, app restart/rebuild, socket mount, broad prune or volume deletion is permitted. `tools/testing/switch-postgres-icu.py` is the host-only execution path. It refuses an existing target volume or prior switch state, records actual project/container/volume identities, and targets only queue/scheduler and PostgreSQL. The new development mount is `postgres-icu-data`; `postgres-data` remains declared and preserved.
+The user explicitly approved the new volume and selective PostgreSQL service replacement on 2026-10-17. App/devcontainer must stay running: no Compose down, app restart/rebuild, socket mount, broad prune or volume deletion is permitted. `tools/maintainer/testing/switch-postgres-icu.py` is the host-only execution path. It refuses an existing target volume or prior switch state, records actual project/container/volume identities, and targets only queue/scheduler and PostgreSQL. The new development mount is `postgres-icu-data`; `postgres-data` remains declared and preserved.
 
 The script pulls the approved image first, stops queue/scheduler and cleanly stops the old PostgreSQL service, then fingerprints the old volume through a read-only mount using the exact original image and its postgres user. Normal clean shutdown necessarily checkpoints the running old cluster; the no-write preservation boundary is after that shutdown. It never performs SQL, reindex, locale changes or any write mount against the stopped old cluster. Content hashes are compared again after the switch. Volume metadata alone is not represented as proof of unchanged contents.
 
@@ -96,7 +96,7 @@ It replaces only PostgreSQL with `--no-deps`, initializes the new cluster, invok
 Run from the host repository:
 
 ```bash
-python3 tools/testing/switch-postgres-icu.py </dev/null 2>&1 | tee .runtime/postgres-icu-switch.log
+python3 tools/maintainer/testing/switch-postgres-icu.py </dev/null 2>&1 | tee .runtime/postgres-icu-switch.log
 ```
 
 Evidence is stored at `.runtime/postgres-icu-switch/state.json`. It records the old physical volume name for later rollback/cleanup review. Cleanup must never include that volume or the new active volume without separate explicit permission. A final cleanup document will list inspected test resources, precise container/network/image removals, separately approval-gated test volumes and expected retained development state; it will never execute cleanup automatically.

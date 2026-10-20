@@ -386,8 +386,8 @@ Worker health combines a heartbeat from Laravel's idle/successful-job events wit
 php artisan runa:runtime:health queue
 php artisan runa:runtime:health scheduler
 php artisan schedule:list
-php tools/testing/runtime.php
-python3 tools/testing/services.py
+php tools/maintainer/testing/runtime.php
+python3 tools/maintainer/testing/services.py
 ```
 
 Run health commands in the corresponding container because instance IDs differ. The development-only services smoke enqueues a real Laravel email, waits for worker delivery to Mailpit and leaves an identifiable test message. It refuses production, alternate SMTP hosts and synchronous queue configuration.
@@ -416,4 +416,4 @@ Shared development/test and production-build Nginx runtime inputs use tag plus r
 
 Native HTTP errors and emergency 503 are build-time renders of the actual MinimalLayout Vue component. `./bin/artisan runa:dev setup` builds these as part of `pnpm run build` and finalizes static 503 documents with `php src/runa/resources/errors/build.php`. For a manual refresh use `./bin/pnpm run build:errors` then `php src/runa/resources/errors/build.php` inside the application container. Rebuild after shared layout/component/style/copy/branding changes. Private generated views and public standalone assets are ignored and recreated independently in production; runtime rendering does not need Vue/Node/JavaScript, Vite's main build files, a database or optional AI tooling. Browser checks use isolated test fixtures; there are no application preview routes or catalog.
 
-The Compose setup/post-create path retains the thin bin/dev setup bootstrap bridge only to prepare missing Composer dependencies before Artisan can load; with vendor available it dispatches runa:dev setup. Compose knowledge-init invokes tools/knowledge/startup.py directly, independently of PHP/vendor/application readiness. Normal operator commands use the Artisan vocabulary documented in Tooling Commands.
+The Compose setup/post-create path retains the thin bin/dev setup bootstrap bridge only to prepare missing Composer dependencies before Artisan can load; with vendor available it dispatches runa:dev setup. Compose knowledge-init invokes tools/application/knowledge/startup.py directly, independently of PHP/vendor/application readiness. Normal operator commands use the Artisan vocabulary documented in Tooling Commands.

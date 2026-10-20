@@ -70,7 +70,7 @@ private development credentials can request its allowlisted developer operations
 This is not isolation against malicious developer code running as that same user.
 Production application processes do not receive the transport or its credentials;
 only the separate authorized operator context can request production operations.
-Owner distribution/maintenance registration is excluded from customer images and source; their pinned command registry cannot authorize install/project/hook requests. The owner artifact uses a separate explicit named build context; normal builds exclude distribution source. See [bootstrap](bootstrap.md).
+Owner installation, release and maintenance are excluded from every Artisan registry and management image. There is no maintainer management build context. Customer hooks remain a development capability. External distribution scripts operate outside the customer registry. See [bootstrap](bootstrap.md).
 
 ## Disconnection, cancellation and results
 
@@ -92,7 +92,7 @@ No receipt falsely attests completion after the executor itself is killed.
 The existing background quality contract remains unchanged: after starting a
 background gate, return control without polling; use its normal later status.
 
-Offline contracts: `python3 tools/testing/host-executor.py`. Native host acceptance:
-`python3 tools/testing/host-executor-host.py` uses isolated process fixtures,
+Offline contracts: `python3 tools/maintainer/testing/host-executor.py`. Native host acceptance:
+`python3 tools/maintainer/testing/host-executor-host.py` uses isolated process fixtures,
 actual PHP -> Unix socket -> Docker execution, self-restart/disconnection,
 operator recovery and scoped container/network cleanup with no data volumes.

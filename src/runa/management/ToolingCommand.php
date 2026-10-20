@@ -13,14 +13,14 @@ abstract class ToolingCommand extends Command
 
     private const ACTIONS = [
         'dev' => ['prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'doctor', 'knowledge-init', 'knowledge-status'],
-        'doctor' => ['repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'release', 'cleanliness', 'development', 'production'],
+        'doctor' => ['repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production'],
         'quality' => ['show', 'roadmap', 'final', 'status'],
         'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
         'security' => ['trivy', 'review-changed-surface', 'dependencies', 'secrets'],
         'xdebug' => ['on', 'off', 'status'],
         'check' => ['debug-residue'], 'hook' => ['pre-commit', 'commit-msg'],
         'production' => ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation'],
-        'install' => ['dev', 'prod', 'production'], 'host' => ['status', 'stop'],
+        'host' => ['status', 'stop'],
     ];
 
     public function __construct()
@@ -50,7 +50,7 @@ abstract class ToolingCommand extends Command
                 $operation = 'development.'.$arguments[0];
                 $parameters = count($arguments) === 1 ? new \stdClass : ['arguments' => array_slice($arguments, 1)];
             }
-            $host = in_array($this->tool, ['production', 'deploy', 'install', 'host'], true)
+            $host = in_array($this->tool, ['production', 'deploy', 'host'], true)
                 || ($this->tool === 'quality' && in_array($arguments[0], ['roadmap', 'final'], true))
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
@@ -147,9 +147,9 @@ abstract class ToolingCommand extends Command
         if ($this->tool === 'quality' && in_array($arguments[0], ['show', 'status'], true) && count($arguments) !== 1) {
             throw new InvalidArgumentException('Quality show/status take no execution options.');
         }
-        if ($this->tool === 'deploy' || $this->tool === 'install') {
-            $target = $arguments[$this->tool === 'install' ? 1 : 0] ?? '';
-            if (! ($this->tool === 'deploy' && $target === 'rollback') && preg_match('/\A(?:v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)|[a-f0-9]{40})\z/D', $target) !== 1) {
+        if ($this->tool === 'deploy') {
+            $target = $arguments[0] ?? '';
+            if ($target !== 'rollback' && preg_match('/\A(?:v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)|[a-f0-9]{40})\z/D', $target) !== 1) {
                 throw new InvalidArgumentException('An exact vX.Y.Z release or full SHA is required.');
             }
         }

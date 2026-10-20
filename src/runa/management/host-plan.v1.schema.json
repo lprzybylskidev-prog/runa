@@ -45,7 +45,6 @@
         "tooling.test",
         "tooling.production",
         "tooling.deploy",
-        "tooling.install",
         "tooling.host"
       ]
     },

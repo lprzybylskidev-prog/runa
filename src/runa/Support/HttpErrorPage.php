@@ -28,7 +28,7 @@ final class HttpErrorPage
         if (! in_array($status, self::STATUSES, true) || ! in_array($locale, ['pl', 'en'], true) || ! in_array($theme, ['system', 'light', 'dark'], true)) {
             throw new \InvalidArgumentException('Unsupported HTTP error page.');
         }
-        $source = file_get_contents(resource_path('errors/messages.json'));
+        $source = file_get_contents(base_path('runa/resources/errors/messages.json'));
         if ($source === false) {
             throw new \RuntimeException('HTTP error messages are missing.');
         }

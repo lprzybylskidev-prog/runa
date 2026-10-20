@@ -149,7 +149,7 @@ Health layers:
 - Named `GET /api/ready` verifies a read against the required `shared.jobs` table, returning only `status: ok` or HTTP 503 with `status: unavailable` and no database details. It disables response caching. Nginx's production healthcheck uses this path, so a listening process before migrations is not a ready application.
 - Queue/scheduler use instance-aware heartbeat plus database checks. Deep diagnostics remain operator commands; public readiness does not run seeding, SMTP delivery, scanners or repair operations.
 
-`python3 tools/testing/production.py` checks topology and production command safety without Docker access. Actual build/image/stack checks require the host's Docker daemon; source tests do not prove container startup. Deployment/self-test/isolation automation and baseline host lifecycle acceptance are recorded in closed RM-2026-001, including the explicit manual editor verification boundary.
+`python3 tools/maintainer/testing/production.py` checks topology and production command safety without Docker access. Actual build/image/stack checks require the host's Docker daemon; source tests do not prove container startup. Deployment/self-test/isolation automation and baseline host lifecycle acceptance are recorded in closed RM-2026-001, including the explicit manual editor verification boundary.
 
 Production requires Docker Engine 26 or newer for volume subpath mounts, plus Docker Compose 2.35 or newer. The Nginx container cannot access private application storage through its public-file mount. Volume subpaths must already exist; application health is the startup dependency after the PHP entrypoint initializes storage.
 

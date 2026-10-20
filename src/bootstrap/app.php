@@ -7,7 +7,11 @@ use Illuminate\Http\Request;
 use Runa\Foundation\Application;
 use Runa\Http\Middleware\AssignRequestId;
 
+/** @var list<class-string> $platformProviders */
+$platformProviders = require __DIR__.'/providers.php';
+
 $app = Application::configure(basePath: dirname(__DIR__))
+    ->withProviders($platformProviders)
     ->withRouting(api: __DIR__.'/../runa/routes/api.php', then: function (): void {
         require __DIR__.'/../app/routes/web.php';
     })

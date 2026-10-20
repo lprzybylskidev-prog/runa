@@ -5,7 +5,7 @@ Runa intentionally has no CI/GitHub Actions pipeline.
 Quality is enforced locally through:
 
 - versioned Git hooks,
-- `./bin/quality`,
+- `python3 tools/maintainer/quality`,
 - framework/tool commands,
 - roadmap final verification.
 
@@ -13,21 +13,21 @@ Quality is enforced locally through:
 
 ## Modes
 
-### `./bin/quality show`
+### `python3 tools/maintainer/quality show`
 
 Show the checks selected for the active roadmap based on its `impact_areas`.
 
 Do not execute the full gate.
 
-### `./bin/quality roadmap`
+### `python3 tools/maintainer/quality roadmap`
 
 Run the complete gate required for the current roadmap.
 
-### `./bin/quality final`
+### `python3 tools/maintainer/quality final`
 
 Run final closure verification. Semantically equivalent to the strictest applicable roadmap gate and release consistency checks.
 
-### `./bin/quality status`
+### `python3 tools/maintainer/quality status`
 
 Inspect the latest run.
 
@@ -72,7 +72,7 @@ Long final checks may run in the background.
 
 When an agent starts a long final quality run, it must end its turn rather than poll continuously.
 
-The user may later provide `./bin/quality status` or relevant full logs.
+The user may later provide `python3 tools/maintainer/quality status` or relevant full logs.
 
 If the run is interrupted by crash/reboot/manual termination:
 
@@ -138,7 +138,7 @@ Generated runtime artifacts may be gitignored.
 
 ## Execution contract
 
-`./bin/quality final --background` is the canonical long-running entrypoint. `roadmap --background` has the same background lifecycle. The process survives terminal closure. One run is active at a time; refuse another start while it is running so its state/logs cannot be overwritten. Replace the previous completed/interrupted run only on a new intentional start.
+`python3 tools/maintainer/quality final --background` is the canonical long-running entrypoint. `roadmap --background` has the same background lifecycle. The process survives terminal closure. One run is active at a time; refuse another start while it is running so its state/logs cannot be overwritten. Replace the previous completed/interrupted run only on a new intentional start.
 
 While running, status tails each process log and finishes with `Process is still running.` When finished or interrupted, tail each relevant log, show full-log paths and finish with the overall status. Preserve per-step results and the last known step locally. Do not add automatic runner/step deadlines; application network timeouts or separately designed job semantics are different concerns.
 
@@ -156,4 +156,4 @@ Commands execute as argument arrays without a shell. Missing commands fail with 
 
 A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. A final run always starts from the beginning.
 
-`./bin/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/testing/quality.py`.
+`python3 tools/maintainer/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/maintainer/testing/quality.py`.

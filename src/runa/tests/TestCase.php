@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as FrameworkTestCase;
 use Illuminate\Support\Facades\Artisan;
@@ -14,6 +15,19 @@ abstract class TestCase extends FrameworkTestCase
 {
     /** @var array<string, true> */
     private static array $migrated = [];
+
+    protected function tearDown(): void
+    {
+        $database = $this->app?->make(DatabaseManager::class);
+        try {
+            // Let transaction/other framework teardown callbacks finish first.
+            parent::tearDown();
+        } finally {
+            foreach ($database?->getConnections() ?? [] as $connection) {
+                $connection->disconnect();
+            }
+        }
+    }
 
     public function createApplication(): Application
     {

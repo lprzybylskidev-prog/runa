@@ -11,6 +11,8 @@ use Illuminate\Database\Console\Migrations\RollbackCommand;
 use Illuminate\Database\Console\WipeCommand;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
+use Illuminate\Foundation\Console\ConfigMakeCommand;
+use Illuminate\Foundation\Console\TestMakeCommand;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\WorkerIdle;
@@ -24,10 +26,12 @@ use Runa\Console\Commands\Database\GuardedRefreshCommand;
 use Runa\Console\Commands\Database\GuardedResetCommand;
 use Runa\Console\Commands\Database\GuardedRollbackCommand;
 use Runa\Console\Commands\Database\GuardedWipeCommand;
+use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
+use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\SeedProject;
+use Runa\Console\Commands\TestMail;
 use Runa\Console\Commands\ValidateConfiguration;
-use Runa\Console\Commands\VerifyInstallationMail;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
@@ -56,6 +60,10 @@ final class RunaServiceProvider extends ServiceProvider
                 $config->set($key, array_replace_recursive($defaults, $overrides));
             }
         }
+        $this->app->extend(ConfigMakeCommand::class,
+            fn ($command, Application $app) => $app->make(ApplicationConfigMakeCommand::class));
+        $this->app->extend(TestMakeCommand::class,
+            fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
         $this->loadMigrationsFrom(base_path('runa/database/migrations'));
         $this->commands([
             CheckApplicationManifest::class,
@@ -64,7 +72,7 @@ final class RunaServiceProvider extends ServiceProvider
             PulseScheduler::class,
             SeedProject::class,
             ValidateConfiguration::class,
-            VerifyInstallationMail::class,
+            TestMail::class,
         ]);
         $this->app->extend(FreshCommand::class,
             fn ($command, Application $app) => $app->make(GuardedFreshCommand::class));
@@ -90,8 +98,8 @@ final class RunaServiceProvider extends ServiceProvider
             }
         }
 
-        $this->loadViewsFrom([app_path('resources/views/runa-mail'), resource_path('views/runa-mail')], 'runa-mail');
-        $this->loadViewsFrom([app_path('resources/views/errors'), resource_path('views/errors')], 'runa-errors');
+        $this->loadViewsFrom([app_path('resources/views/runa-mail'), base_path('runa/resources/views/runa-mail')], 'runa-mail');
+        $this->loadViewsFrom([app_path('resources/views/errors'), base_path('runa/resources/views/errors')], 'runa-errors');
         $this->loadTranslationsFrom(lang_path(), 'runa');
         $this->app->make('translator')->addNamespace('application', app_path('lang'));
         $this->loadTranslationsFrom(app_path('lang'));

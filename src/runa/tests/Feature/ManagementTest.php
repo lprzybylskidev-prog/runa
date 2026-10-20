@@ -44,7 +44,7 @@ it('selects the cold bootstrap through the single PHP entrypoint before applicat
 });
 
 it('exposes canonical tooling help and cold plans without booting application services', function (): void {
-    foreach (['doctor', 'quality', 'knowledge', 'security', 'test', 'production', 'deploy', 'install'] as $tool) {
+    foreach (['doctor', 'quality', 'knowledge', 'security', 'test', 'production', 'deploy'] as $tool) {
         $process = new Process([PHP_BINARY, base_path('artisan'), 'runa:'.$tool, '--help'], base_path(), [
             'APP_ENV' => 'production', 'APP_KEY' => '', 'DB_CONNECTION' => 'unavailable',
         ]);
@@ -109,10 +109,17 @@ it('rejects invalid operational scopes before emitting an executable plan', func
 ]);
 
 it('does not expose retired features through normal or cold Artisan', function (): void {
-    foreach (['runa:backup', 'runa:integrity', 'runa:project'] as $name) {
+    foreach (['runa:backup', 'runa:integrity', 'runa:project', 'runa:install'] as $name) {
         expect(Artisan::all())->not->toHaveKey($name);
         $process = new Process([PHP_BINARY, base_path('artisan'), '--management', $name, '--plan']);
         $process->run();
         expect($process->isSuccessful())->toBeFalse();
     }
+});
+
+it('keeps owner release diagnostics outside customer Artisan', function (): void {
+    foreach (['release', 'cleanliness'] as $area) {
+        expect(Artisan::call('runa:doctor', ['area' => $area, '--plan' => true]))->toBe(2);
+    }
+    expect(Artisan::all())->toHaveKey('runa:hook')->toHaveKey('runa:mail:test');
 });

@@ -7,13 +7,11 @@ daemon access are required. The target is an exact annotated release tag or full
 lowercase commit SHA matching the checked-out source; branches are rejected.
 
 Installation is initiated by the separately supplied `distribution/bootstrap.py`
-(single-file delivery; use its delivered filename), with `--mode dev|prod` and
+(keep its adjacent distribution/installation.py helper outside the destination), with `--mode dev|prod` and
 `--install now|later`. It verifies and projects source before handing off to a fixed
-internal library. The postponed command is printed with the exact acquired commit.
+external owner helper. The postponed command is printed with the exact acquired commit.
 Keep it for an explicit `--resume` after failure. Neither `runa:install` nor
-`bin/install-prod` is installed as a customer entrypoint. Owner maintenance source
-retains `runa:install` registration solely for its separately delivered orchestration;
-its execution still requires an explicitly acquired installation target.
+`bin/install-prod` is installed as a customer entrypoint. No Artisan registry, including the owner checkout, registers installation. The external helper requires an explicitly acquired installation target.
 
 `--profile=low|standard|high` is dev-only;
 omitting it preserves the existing/default resource selection. `--simulation` is
@@ -104,7 +102,7 @@ verification is never disabled. URL/listener ports must agree in built-in mode.
 SMTP always requires TLS: `smtp` normally uses STARTTLS, `smtps` uses implicit TLS.
 Supply username/password together, or leave both empty only for an authorized
 relay. `recipient` explicitly authorizes one installation verification email. The
-native `runa:install:verify-mail <recipient>` command validates configuration and
+native `runa:mail:test <recipient>` command validates configuration and
 submits a fixed technical message without application data; provider exceptions
 are redacted. Success proves provider acceptance, not final inbox placement;
 check the recipient mailbox for downstream delivery/filtering.
@@ -140,9 +138,9 @@ without touching application source, configuration, images, services or data.
 For normal later source changes use the application lifecycle or platform
 deployment/update procedure, rather than another first installation.
 
-Offline contracts: `python3 tools/testing/installation.py`; PHP acceptance:
+Offline contracts: `python3 tools/maintainer/testing/installation.py`; PHP acceptance:
 `runa:test --filter=InstallationTest`. Native disposable acceptance:
-`python3 tools/testing/installation-host.py` (requires the active development image
+`python3 tools/maintainer/testing/installation-host.py` (requires the active development image
 and YAML reader). It uses isolated projects/ports/fresh volumes and synthetic
 TLS/SMTP, preserves active development and model caches, prints exact cleanup
 scope, and keeps verification reports. Simulation acceptance is not a real

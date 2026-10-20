@@ -4,6 +4,7 @@ use Runa\Management\AnalyseCommand;
 use Runa\Management\DevelopmentCommand;
 use Runa\Management\DoctorCommand;
 use Runa\Management\FormatCommand;
+use Runa\Management\HookCommand;
 use Runa\Management\KnowledgeCommand;
 use Runa\Management\LintCommand;
 use Runa\Management\QualityCommand;
@@ -19,6 +20,7 @@ return [
     DoctorCommand::class,
     QualityCommand::class,
     KnowledgeCommand::class,
+    HookCommand::class,
     SecurityCommand::class,
     XdebugCommand::class,
     SourceCheckCommand::class,

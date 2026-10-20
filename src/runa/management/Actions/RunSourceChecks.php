@@ -12,6 +12,7 @@ final class RunSourceChecks
     {
         $runner = new RunTool;
         $cwd = $root.'/src';
+        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
         if ($tool === 'format') {
             if (! in_array($arguments, [[], ['--check']], true)) {
                 throw new InvalidArgumentException('Format supports only --check.');
@@ -21,9 +22,9 @@ final class RunSourceChecks
                 return $status;
             }
 
-            return $runner->process(['pnpm', 'exec', 'prettier', $arguments ? '--check' : '--write', 'app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e', '*.mjs', 'package.json', 'tsconfig.json', 'pint.json', '../.prettierrc.json'], $cwd, $output);
+            return $runner->process(['pnpm', 'exec', 'prettier', $arguments ? '--check' : '--write', ...$sourcePaths, '*.mjs', 'package.json', 'tsconfig.json', 'pint.json', '../.prettierrc.json'], $cwd, $output);
         }
-        $commands = ['lint' => ['pnpm', 'exec', 'eslint', 'app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e', '*.mjs', '--max-warnings=0'],
+        $commands = ['lint' => ['pnpm', 'exec', 'eslint', ...$sourcePaths, '*.mjs', '--max-warnings=0'],
             'typecheck' => ['pnpm', 'run', 'typecheck'], 'analyse' => ['vendor/bin/phpstan', 'analyse', '--memory-limit=1G']];
         if (isset($commands[$tool])) {
             return $runner->process([...$commands[$tool], ...$arguments], $cwd, $output);

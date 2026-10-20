@@ -1,4 +1,4 @@
 #!/bin/sh
 set -eu
 cd "$(git rev-parse --show-toplevel)"
-exec ./distribution/maintenance/bin/git-hook commit-msg "$@"
+exec ./tools/application/bin/git-hook commit-msg "$@"

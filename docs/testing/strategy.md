@@ -17,7 +17,7 @@ Before writing tests, identify the scenarios that matter:
 Coverage is informational, not a pass/fail target by itself.
 
 Standalone GitHub acquisition has offline source/security contracts in
-`python3 tools/testing/bootstrap.py` (`bootstrap-source-contracts` local gate).
+`python3 tools/maintainer/testing/bootstrap.py` (`bootstrap-source-contracts` local gate).
 They cover public/private credential transport, redirect denial, access failures,
 tag/commit mismatch, malicious paths/links, real Git blob/mode verification,
 atomic publication races, interruption, selection and installer failure/resume.
@@ -26,9 +26,9 @@ Live public acquisition and authorized private acceptance are recorded separatel
 synthetic private failures do not prove live private access.
 
 First-install orchestration has offline preservation/failure/configuration
-contracts in `tools/testing/installation.py`, native command validation/mail
+contracts in `tools/maintainer/testing/installation.py`, native command validation/mail
 redaction in `InstallationTest`, and host acceptance in
-`tools/testing/installation-host.py`. The latter uses real fresh isolated dev/prod
+`tools/maintainer/testing/installation-host.py`. The latter uses real fresh isolated dev/prod
 containers and databases, certificate-verified HTTPS/SMTP and a deliberate SMTP
 rejection/resume. It checks unchanged active development identities, customer
 version/files, stable credentials, repeat behavior and absence of real production
@@ -218,7 +218,7 @@ Guarded subclasses of Laravel's `db:wipe`, `migrate:fresh`, `migrate:refresh`, `
 Run inside the devcontainer:
 
 ```sh
-python3 tools/testing/database-guards.py
+python3 tools/maintainer/testing/database-guards.py
 APP_ENV=testing php artisan runa:test-db:guard
 ```
 
@@ -290,7 +290,7 @@ Form/unit scenarios cover controlled submission/validation, field/error associat
 
 MailLayoutTest sends real messages through Laravel’s array transport, checking standard Markdown/notification defaults, multipart/alternative, related CID branding, PL/EN, explicit/automatic text, independent versions, escaping, HTTPS/missing/unsafe image inputs, namespaced overrides and footer visibility. Test-only mail/browser templates live under tests/Fixtures; AppServiceProvider registers only the production runa-mail namespace. Browser email checks cover no-JavaScript responsive HTML, long/blocked images, real text/MIME attachments and a public action URL. Browser engines do not certify Outlook/Gmail/Apple Mail rendering.
 
-HttpErrorsTest registers synthetic failures inside the test process and covers six statuses in PL/EN, unknown paths, API/JSON negotiation, Retry-After/request IDs, identity escaping and database/build-asset failure without sensitive exception detail. Browser errors cover actual kernel statuses, no-JavaScript 404/503 responsive/theme matrices, shared MinimalLayout artwork, GET preference controls and generated standalone emergency output. These tests do not prove production Nginx fallback: retain the separate host `tools/testing/error-fallback-host.py` gate and production isolation checks. Favicon shape/dimensions and native asset contracts remain permanent.
+HttpErrorsTest registers synthetic failures inside the test process and covers six statuses in PL/EN, unknown paths, API/JSON negotiation, Retry-After/request IDs, identity escaping and database/build-asset failure without sensitive exception detail. Browser errors cover actual kernel statuses, no-JavaScript 404/503 responsive/theme matrices, shared MinimalLayout artwork, GET preference controls and generated standalone emergency output. These tests do not prove production Nginx fallback: retain the separate host `tools/maintainer/testing/error-fallback-host.py` gate and production isolation checks. Favicon shape/dimensions and native asset contracts remain permanent.
 
 ### Tables and exports
 
@@ -306,9 +306,9 @@ Component motion tests cover Select exits/interrupted reopening, immediate inert
 
 ## Management transport and cold recovery
 
-`python3 tools/testing/management.py` checks host-plan rejection (including duplicate/unknown fields and arbitrary execution payloads), schema/allowlist agreement, output/time limits, shared production-lock contention, private receipt permissions/removal, unresolved-operation fencing, symlink rejection, plan-only behavior and scoped container cleanup after interruption. `ManagementTest` verifies the shared normal Artisan command and its absence from the normal production registry.
+`python3 tools/maintainer/testing/management.py` checks host-plan rejection (including duplicate/unknown fields and arbitrary execution payloads), schema/allowlist agreement, output/time limits, shared production-lock contention, private receipt permissions/removal, unresolved-operation fencing, symlink rejection, plan-only behavior and scoped container cleanup after interruption. `ManagementTest` verifies the shared normal Artisan command and its absence from the normal production registry.
 
-On the native Docker host, `python3 tools/testing/management-host.py` builds/reuses the isolated management image, copies only explicit credential-free transport/build inputs into a disposable checkout, proves discovery and plan-only with no application kernel/vendor/key/DB, then runs the real `bin/dev` lifecycle against small isolated PHP process services. It stops and recovers that fixture app, rejects bad inputs and verifies active development app identity/start time did not change. This is transport/Compose recovery acceptance, not full Laravel installation or production acceptance (RM-005 point 8 onward). No database, model cache or durable volume is provisioned. Before scoped cleanup it lists fixture container/network identities; it preserves development/test data, caches, backups and evidence. The report is `.runtime/ownership/RM-2026-005-point-2-host.json`.
+On the native Docker host, `python3 tools/maintainer/testing/management-host.py` builds/reuses the isolated management image, copies only explicit credential-free transport/build inputs into a disposable checkout, proves discovery and plan-only with no application kernel/vendor/key/DB, then runs the real `bin/dev` lifecycle against small isolated PHP process services. It stops and recovers that fixture app, rejects bad inputs and verifies active development app identity/start time did not change. This is transport/Compose recovery acceptance, not full Laravel installation or production acceptance (RM-005 point 8 onward). No database, model cache or durable volume is provisioned. Before scoped cleanup it lists fixture container/network identities; it preserves development/test data, caches, backups and evidence. The report is `.runtime/ownership/RM-2026-005-point-2-host.json`.
 
 Both tests are selected by tooling quality gates, with the real host acceptance explicitly marked host-only. They do not require Docker privileges inside the devcontainer. Management PHP is included in the existing Pint and PHPStan scopes.
 

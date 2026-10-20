@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'tools/project'))
+sys.path.insert(0, str(ROOT / 'tools/application'))
 from runtime import app_command, inside, run
 import management
 

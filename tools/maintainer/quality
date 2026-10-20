@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Run Runa release gates outside customer Artisan."""
+import runpy
+import sys
+from context import ROOT
+import quality
+quality.RUN_DIRECTORY = ROOT / '.runtime/quality'
+original_plan = quality.plan
+quality.plan = lambda final=False: original_plan(final, ROOT / 'docs/roadmaps/active', ROOT / 'docs/quality/gates.yml')
+runpy.run_path(str(ROOT / 'tools/application/executors/quality.py'), run_name='__main__')

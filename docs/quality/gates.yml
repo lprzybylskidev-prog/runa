@@ -23,7 +23,7 @@ base:
   - id: repository-state
     depends_on: []
     description: Validate roadmap state, branch alignment, dirty worktree expectations, and release metadata consistency.
-    command: php artisan runa:doctor repository
+    command: python3 tools/maintainer/doctor repository
     severity: hard_fail
 
   - id: configuration
@@ -48,7 +48,7 @@ base:
     depends_on: [configuration]
     exclusive_group: testing-state
     description: Run backend tests in parallel-safe testing isolation.
-    command: php artisan runa:test --parallel
+    command: python3 tools/maintainer/test --parallel
     severity: hard_fail
 
   - id: php-static-analysis
@@ -78,13 +78,13 @@ base:
   - id: quality-runner-contract
     depends_on: [repository-state]
     description: Validate graph selection, failure propagation, parallel exclusion, background locking and interruption.
-    command: python3 tools/testing/quality.py
+    command: python3 tools/maintainer/testing/quality.py
     severity: hard_fail
 
   - id: maintenance-consistency
     depends_on: [repository-state]
     description: Validate maintenance backlog, deprecations, external registry, TODO links, and command documentation consistency.
-    command: php artisan runa:doctor maintenance
+    command: python3 tools/maintainer/doctor maintenance
     severity: hard_fail
 
   - id: hook-contract
@@ -109,26 +109,26 @@ impact_areas:
     - id: frontend-tests
       depends_on: [configuration]
       exclusive_group: testing-state
-      command: php artisan runa:test frontend
+      command: python3 tools/maintainer/test frontend
       severity: hard_fail
 
     - id: frontend-browser
       depends_on: [frontend-build, frontend-tests]
       exclusive_group: testing-state
-      command: php artisan runa:test e2e --critical
+      command: python3 tools/maintainer/test e2e --critical
       severity: hard_fail
 
     - id: frontend-render-diagnostics
       depends_on: [frontend-browser]
       exclusive_group: testing-state
-      command: php artisan runa:doctor frontend
+      command: python3 tools/maintainer/doctor frontend
       severity: hard_fail
 
   database:
     - id: database-migrations
       depends_on: [backend-tests]
       exclusive_group: testing-state
-      command: php artisan runa:doctor database-migrations
+      command: python3 tools/maintainer/doctor database-migrations
       severity: hard_fail
 
     - id: database-constraints
@@ -147,7 +147,7 @@ impact_areas:
   production:
     - id: production-operation-contracts
       depends_on: [configuration]
-      command: python3 tools/testing/operations.py
+      command: python3 tools/maintainer/testing/operations.py
       severity: hard_fail
 
     - id: production-build
@@ -182,12 +182,12 @@ impact_areas:
     - id: dependency-composition-contracts
       depends_on: [repository-state]
       description: Verify owner dependency composition, conflict rejection and lock preservation.
-      command: python3 tools/testing/dependencies.py
+      command: python3 tools/maintainer/testing/dependencies.py
       severity: hard_fail
 
     - id: development-startup-contract
       depends_on: [repository-state]
-      command: python3 tools/testing/development-startup.py
+      command: python3 tools/maintainer/testing/development-startup.py
       severity: hard_fail
 
     - id: development-stack
@@ -214,7 +214,7 @@ impact_areas:
   security:
     - id: security-review-contracts
       depends_on: [configuration]
-      command: python3 tools/testing/security.py
+      command: python3 tools/maintainer/testing/security.py
       severity: hard_fail
 
     - id: repository-container-scan
@@ -232,49 +232,54 @@ impact_areas:
       severity: hard_fail
 
   tooling:
+    - id: tool-ownership-contracts
+      depends_on: [repository-state]
+      command: python3 tools/maintainer/testing/tool-ownership.py
+      severity: hard_fail
+
     - id: host-executor-contracts
       depends_on: [repository-state]
-      command: python3 tools/testing/host-executor.py
+      command: python3 tools/maintainer/testing/host-executor.py
       severity: hard_fail
 
     - id: host-executor-acceptance
       execution_context: host
       depends_on: [host-executor-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/testing/host-executor-host.py
+      command: python3 tools/maintainer/testing/host-executor-host.py
       severity: hard_fail
 
     - id: installation-contracts
       depends_on: [repository-state]
-      command: python3 tools/testing/installation.py
+      command: python3 tools/maintainer/testing/installation.py
       severity: hard_fail
 
     - id: installation-host-acceptance
       execution_context: host
       depends_on: [installation-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/testing/installation-host.py
+      command: python3 tools/maintainer/testing/installation-host.py
       severity: hard_fail
 
     - id: bootstrap-source-contracts
       depends_on: [repository-state]
-      command: python3 tools/testing/bootstrap.py
+      command: python3 tools/maintainer/testing/bootstrap.py
       severity: hard_fail
 
     - id: repository-boundary-contracts
       depends_on: [repository-state]
-      command: python3 tools/testing/repository-boundary.py
+      command: python3 tools/maintainer/testing/repository-boundary.py
       severity: hard_fail
 
     - id: management-transport-contracts
       depends_on: [repository-state]
-      command: python3 tools/testing/management.py
+      command: python3 tools/maintainer/testing/management.py
       severity: hard_fail
 
     - id: management-host-acceptance
       execution_context: host
       depends_on: [management-transport-contracts]
-      command: python3 tools/testing/management-host.py
+      command: python3 tools/maintainer/testing/management-host.py
       severity: hard_fail
 
     - id: tooling-help
@@ -285,26 +290,26 @@ impact_areas:
   documentation:
     - id: documentation-consistency
       depends_on: [repository-state]
-      command: php artisan runa:doctor docs
+      command: python3 tools/maintainer/doctor docs
       severity: hard_fail
 
 final:
   - id: release-metadata-contract
     depends_on: []
     description: Verify isolated release, documentation and knowledge metadata rejection contracts.
-    command: python3 tools/testing/release.py --with-docs-and-knowledge
+    command: python3 tools/maintainer/testing/release.py --with-docs-and-knowledge
     severity: hard_fail
 
   - id: version-changelog-roadmap
     depends_on: [release-metadata-contract]
     description: Validate README state, command documentation, VERSION, CHANGELOG, roadmap state, release type, and final report facts.
-    command: php artisan runa:doctor release
+    command: python3 tools/maintainer/doctor release
     severity: hard_fail
 
   - id: source-tree-cleanliness
     depends_on: []
     description: Verify no scratch/debug/bootstrap-only files remain unintentionally.
-    command: php artisan runa:doctor cleanliness
+    command: python3 tools/maintainer/doctor cleanliness
     severity: hard_fail
 
 execution:

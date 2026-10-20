@@ -1,4 +1,4 @@
 #!/bin/sh
 set -eu
 cd "$(git rev-parse --show-toplevel)"
-exec ./distribution/maintenance/bin/git-hook pre-commit "$@"
+exec ./tools/application/bin/git-hook pre-commit "$@"
