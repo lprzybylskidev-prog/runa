@@ -33,7 +33,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/runa/management/ProductionCommand.php',
           '/src/runa/management/DeployCommand.php',
           '/src/runa/management/BackupCommand.php',
-          '/src/runa/management/InstallCommand.php',
+          '/src/runa/management/InstallCommand.php', '/src/runa/management/HostCommand.php', '/src/runa/management/HostBridge.php', '/tools/project/host_executor.py',
           '/tools/testing/production-runtime.php', '/docs/project/state.yml',
           '/bin/production', '/bin/prod', '/bin/passthrough', '/bin/deploy', '/bin/backup', '/bin/install-prod', '/bin/operations',
           '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',

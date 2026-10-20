@@ -301,6 +301,10 @@ def main():
     persist(values)
     if command == 'prepare':
         environment_files()
+        if not Path('/.dockerenv').exists() and os.environ.get('RUNA_HOST_WORKER') != '1':
+            sys.path.insert(0, str(ROOT / 'tools/project'))
+            import host_executor
+            host_executor.ensure()
         print('Development profile prepared; persistent data preserved.')
         return 0
     if Path('/.dockerenv').exists():
@@ -313,6 +317,10 @@ def main():
                              '--env-file', str(LOCAL), '-f', str(ROOT / 'compose.yaml'),
                              '-f', str(OVERRIDE), *commands[command]], cwd=ROOT, check=False)
     if command == 'up' and result.returncode == 0:
+        if os.environ.get('RUNA_HOST_WORKER') != '1':
+            sys.path.insert(0, str(ROOT / 'tools/project'))
+            import host_executor
+            host_executor.ensure()
         context = ['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(LOCAL),
                    '-f', str(ROOT / 'compose.yaml'), '-f', str(OVERRIDE)]
         optional = ['qdrant', 'embeddings', *(['embeddings-gpu'] if values['EMBEDDINGS_CUDA'] == '1' else []), 'knowledge-init']

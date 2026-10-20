@@ -41,7 +41,7 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix=project + '-', dir=ROOT / '.runtime') as folder:
         root = Path(folder)
-        for name in ('artisan', 'src/artisan', 'bin/artisan', 'bin/dev', 'tools/project/runtime.py', 'tools/project/management.py', 'tools/project/operations.py', 'tools/project/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
+        for name in ('artisan', 'src/artisan', 'bin/artisan', 'bin/dev', 'tools/project/runtime.py', 'tools/project/management.py', 'tools/project/host_executor.py', 'tools/project/operations.py', 'tools/project/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
@@ -86,6 +86,8 @@ def main():
             check(all(output(['docker', 'inspect', '--format', '{{.Id}} {{.State.StartedAt}}', name]) == value for name, value in before.items()), 'active development application identity/start time unchanged')
             report['result'] = 'PASS'
         finally:
+            if (root / '.runtime/host/client.json').exists():
+                output([launcher, '--stop-host'], cwd=root)
             containers = output(compose + ['ps', '--all', '-q']).splitlines()
             networks = output(['docker', 'network', 'ls', '-q', '--filter', 'label=com.docker.compose.project=' + project]).splitlines()
             volumes = output(['docker', 'volume', 'ls', '-q', '--filter', 'label=com.docker.compose.project=' + project]).splitlines()

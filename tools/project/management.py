@@ -16,7 +16,7 @@ from runtime import ROOT
 MAX_OUTPUT = 65536
 TIMEOUT = 30
 DEVELOPMENT_ACTIONS = ('prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'doctor', 'knowledge-init', 'knowledge-status')
-TOOLS = ('doctor', 'quality', 'knowledge', 'security', 'project', 'xdebug', 'check', 'hook', 'format', 'lint', 'typecheck', 'analyse', 'test', 'production', 'deploy', 'backup', 'install')
+TOOLS = ('doctor', 'quality', 'knowledge', 'security', 'project', 'xdebug', 'check', 'hook', 'format', 'lint', 'typecheck', 'analyse', 'test', 'production', 'deploy', 'backup', 'install', 'host')
 OPERATIONS = {**{'development.' + action: action for action in DEVELOPMENT_ACTIONS},
               **{'tooling.' + tool: tool for tool in TOOLS}}
 
@@ -159,6 +159,8 @@ def execution_command(plan):
             return app_command(['php', 'artisan', 'runa:dev', action, *arguments])
         return ['python3', str(ROOT / 'tools/project/executors/dev.py'), action, *arguments]
     tool = OPERATIONS[operation]
+    if tool == 'host':
+        return ['python3', str(ROOT / 'tools/project/host_executor.py'), '--control', *arguments]
     if tool in ('production', 'quality', 'security', 'project'):
         return ['python3', str(ROOT / ('tools/project/executors/' + tool + '.py')), *arguments]
     if tool == 'install':

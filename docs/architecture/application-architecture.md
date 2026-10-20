@@ -253,3 +253,12 @@ Built-in Nginx TLS uses private runtime configuration/certificate mounts, and HT
 plus native SMTP acceptance precedes production success. The first-install state
 is scoped separately from the later update/integrity protocol. See
 [installation](../tooling/installation.md).
+
+Normal configured-environment php artisan host commands execute through the private
+workspace Unix executor; explicit --plan remains nonexecuting. The executor is
+operator-owned, authenticates local requests and revalidates them using the pinned
+Artisan registry before existing host mechanics run. The separate production
+operator context receives its transport mount; production HTTP/workers/scheduler
+never receive it. Host-only bin/artisan is setup/recovery. See
+[host executor](../tooling/host-executor.md) for lifecycle/trust and durable results
+when a command restarts its own invoking container.

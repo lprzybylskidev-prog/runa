@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Runa host plan v1",
-  "description": "Only an immediately returned plan bound to the host's current request ID is executable. A null request ID denotes a container-only preview.",
+  "description": "Only an immediately returned plan bound to the host's current request ID is executable. A null request ID denotes an explicit nonexecuting preview; normal host work uses the authenticated executor.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "request_id", "operation", "parameters"],
@@ -47,7 +47,8 @@
         "tooling.production",
         "tooling.deploy",
         "tooling.backup",
-        "tooling.install"
+        "tooling.install",
+        "tooling.host"
       ]
     },
     "parameters": {

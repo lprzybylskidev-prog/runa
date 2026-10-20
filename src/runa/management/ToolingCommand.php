@@ -20,7 +20,7 @@ abstract class ToolingCommand extends Command
         'project' => ['mark-production-deployed'], 'xdebug' => ['on', 'off', 'status'],
         'check' => ['debug-residue'], 'hook' => ['pre-commit', 'commit-msg'],
         'production' => ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation'],
-        'backup' => ['create', 'verify', 'restore'], 'install' => ['dev', 'prod', 'production'],
+        'backup' => ['create', 'verify', 'restore'], 'install' => ['dev', 'prod', 'production'], 'host' => ['status', 'stop'],
     ];
 
     public function __construct()
@@ -50,7 +50,7 @@ abstract class ToolingCommand extends Command
                 $operation = 'development.'.$arguments[0];
                 $parameters = count($arguments) === 1 ? new \stdClass : ['arguments' => array_slice($arguments, 1)];
             }
-            $host = in_array($this->tool, ['production', 'deploy', 'backup', 'install'], true)
+            $host = in_array($this->tool, ['production', 'deploy', 'backup', 'install', 'host'], true)
                 || ($this->tool === 'quality' && in_array($arguments[0], ['roadmap', 'final'], true))
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
@@ -63,7 +63,10 @@ abstract class ToolingCommand extends Command
 
                 return (new RunTool)->execute($this->tool, $arguments, $root, $this->output);
             }
-            // Without host transport, this is an inert preview. Only a bound host request executes it.
+            if ($host && ! $this->input->hasParameterOption('--plan') && $request === null) {
+                return (new HostBridge)->execute($root, 'runa:'.$this->tool, $arguments, $this->input->isInteractive() && defined('STDIN') && stream_isatty(STDIN), $this->output);
+            }
+            // Explicit preview or isolated host registry validation only.
             $this->line(json_encode(['schema_version' => 1, 'request_id' => $request,
                 'operation' => $operation, 'parameters' => $parameters], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
 

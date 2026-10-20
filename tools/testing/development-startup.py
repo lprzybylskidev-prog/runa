@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT / 'tools/project'))
 import ingest
 import store
 import runtime
+import host_executor
 
 
 def load(name, path):
@@ -35,6 +36,11 @@ startup = load('optional_startup_contract', 'tools/knowledge/startup.py')
 
 
 class StartupContracts(unittest.TestCase):
+    def setUp(self):
+        executor = patch.object(host_executor, 'ensure')
+        executor.start()
+        self.addCleanup(executor.stop)
+
     def test_pre_autoload_setup_bridge_does_not_require_artisan(self):
         original = Path.is_file
         def without_vendor(path):

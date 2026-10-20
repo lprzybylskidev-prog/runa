@@ -19,10 +19,14 @@ import installation as installer
 import operations as ops
 import production
 import management
+import host_executor
 
 
 class InstallationContracts(unittest.TestCase):
     def setUp(self):
+        executor = patch.object(host_executor, 'ensure')
+        executor.start()
+        self.addCleanup(executor.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)

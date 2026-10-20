@@ -3,6 +3,7 @@
 use Illuminate\Console\Command;
 use Runa\Management\BackupCommand;
 use Runa\Management\DeployCommand;
+use Runa\Management\HostCommand;
 use Runa\Management\InstallCommand;
 use Runa\Management\ProductionCommand;
 
@@ -13,6 +14,7 @@ $commands = [
     DeployCommand::class,
     BackupCommand::class,
     InstallCommand::class,
+    HostCommand::class,
 ];
 
 if (is_file(__DIR__.'/development.php')) {

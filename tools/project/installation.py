@@ -429,6 +429,9 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
             else:
                 owned_resume = resume_is_owned(journal) if resume else False
                 ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release))
+            if os.environ.get('RUNA_HOST_WORKER') != '1':
+                import host_executor
+                host_executor.ensure()
         journal.update(state='complete', completed_at=ops.stamp())
         ops.atomic(journal_path, journal)
         print('PASS: ' + mode + ' installation complete; application scaffold and generated credentials are preserved on repeat.')

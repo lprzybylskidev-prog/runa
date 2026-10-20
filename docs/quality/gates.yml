@@ -232,6 +232,18 @@ impact_areas:
       severity: hard_fail
 
   tooling:
+    - id: host-executor-contracts
+      depends_on: [repository-state]
+      command: python3 tools/testing/host-executor.py
+      severity: hard_fail
+
+    - id: host-executor-acceptance
+      execution_context: host
+      depends_on: [host-executor-contracts]
+      exclusive_group: production-simulation
+      command: python3 tools/testing/host-executor-host.py
+      severity: hard_fail
+
     - id: installation-contracts
       depends_on: [repository-state]
       command: python3 tools/testing/installation.py
