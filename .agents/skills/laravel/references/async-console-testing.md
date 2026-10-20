@@ -44,6 +44,8 @@ docs/tooling/installation.md for the implemented lifecycle and acceptance scope.
 19. Use framework fakes selectively and preserve meaningful integration behavior.
 20. Security/behavior regressions receive focused tests when reproducible.
 
+Test ownership is explicit: native `php artisan test` and customer `runa:test`, `runa:test:frontend`, `runa:test:e2e` use application configurations and `src/app/tests`. Shared `src/tests/TestCase.php` performs guarded application-only migrations; it must not require distribution or maintainer code. Owner `tools/maintainer/test-*` select private configurations under `src/runa/tests`, where platform migration preparation and fixture autoloading remain. Only owner E2E uses the synthetic platform harness; application E2E uses the real testing Nginx endpoint and keeps failure artifacts/reporting under `artifacts/playwright/application`. Preserve the shared suite lock and native child exit status. Customer delivery excludes all platform tests/harnesses.
+
 ## Additional framework checks
 
 Use single-server scheduling only when the deployment topology and task semantics require it; do not add it mechanically. Do not queue listeners solely because they can implement `ShouldQueue`.

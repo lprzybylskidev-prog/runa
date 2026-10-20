@@ -29,6 +29,7 @@
     "runa/resources/**/*.vue",
     "runa/tests/frontend/**/*.ts",
     "runa/tests/e2e/**/*.ts",
-    "app/tests/frontend/**/*.ts"
+    "app/tests/frontend/**/*.ts",
+    "app/tests/e2e/**/*.ts"
   ]
 }

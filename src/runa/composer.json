@@ -30,7 +30,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "runa/tests/",
+      "Tests\\": "tests/",
       "ApplicationTests\\": "app/tests/"
     }
   },

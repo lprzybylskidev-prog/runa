@@ -14,12 +14,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./app/resources/js', import.meta.url)),
     },
   },
+  server: { fs: { allow: [fileURLToPath(new URL('../', import.meta.url))] } },
   test: {
-    include: [
-      'runa/tests/frontend/**/*.test.ts',
-      'app/tests/frontend/**/*.test.ts',
-    ],
-    attachmentsDir: '../artifacts/playwright/vitest',
+    include: ['app/tests/frontend/**/*.test.ts'],
+    attachmentsDir: '../artifacts/playwright/application/vitest',
     restoreMocks: true,
     browser: {
       enabled: true,

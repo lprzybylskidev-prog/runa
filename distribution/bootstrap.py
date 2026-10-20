@@ -31,7 +31,7 @@ MIN_FREE = 5 * 1024 ** 3
 MAX_SOURCE = 512 * 1024 ** 2
 # Fixed release projection, not server-provided exclusions or customer config.
 OWNER_PATHS = ('distribution', 'tools/maintainer', 'bootstrap.py', 'bin/project', 'bin/install-prod',
-               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
+               'src/runa/tests', 'src/runa/tools', 'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
 
 
 class BootstrapError(Exception):

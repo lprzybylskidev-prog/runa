@@ -382,21 +382,21 @@
     "tool": "test",
     "prefix": [],
     "signature": "{arguments?*} {--parallel} {--processes=} {--filter=} {--compact}",
-    "description": "Run backend tests"
+    "description": "Run application backend tests"
   },
   {
     "name": "runa:test:frontend",
     "tool": "test",
     "prefix": ["frontend"],
     "signature": "{arguments?*}",
-    "description": "Run frontend unit tests"
+    "description": "Run application frontend unit tests"
   },
   {
     "name": "runa:test:e2e",
     "tool": "test",
     "prefix": ["e2e"],
     "signature": "{arguments?*} {--critical}",
-    "description": "Run browser tests"
+    "description": "Run application browser tests"
   },
   {
     "name": "runa:doctor:templates",

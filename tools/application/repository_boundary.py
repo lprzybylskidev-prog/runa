@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 OWNER_PATHS = ('distribution', 'tools/maintainer', 'bootstrap.py', 'bin/project', 'bin/install-prod',
-               'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
+               'src/runa/tests', 'src/runa/tools', 'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
 
 
 class RepositoryBoundaryError(ValueError):

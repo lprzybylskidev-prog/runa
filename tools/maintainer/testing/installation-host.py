@@ -105,7 +105,7 @@ def main():
     REPORTS.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex[:10]
     report = {'result': 'RUNNING', 'checks': [], 'preserved': ['active development/test services and data', 'rollback resources', 'Qdrant/model/shared dependency/build caches', 'backups', 'verification reports']}
-    report_path = REPORTS / 'RM-2026-005-point-9b-install-host-final.json'
+    report_path = REPORTS / ('installation-host-' + token + '.json')
     def check(condition, text):
         if not condition:
             raise RuntimeError(text)
@@ -127,7 +127,7 @@ def main():
         # optional AI proves the existing degradation boundary without model downloads.
         data = yaml_source('compose.yaml')
         data['name'] = dev_project
-        services = ('app', 'postgres', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit')
+        services = ('app', 'app-test', 'nginx-test', 'postgres', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit')
         data['services'] = {key: value for key, value in data['services'].items() if key in services}
         for key in ('qdrant', 'embeddings', 'knowledge-init'):
             data['services'][key] = {'image': 'runa-development:dev', 'pull_policy': 'never',
@@ -155,6 +155,18 @@ def main():
             call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', *generator_command, '--no-interaction'])
         check((dev / 'src/app/config/CustomerGeneratorProbe.php').is_file() and (dev / 'src/app/tests/Feature/CustomerGeneratorProbe.php').is_file(), 'standard config and test generators write only application roots')
         check((dev / 'src/app/Providers/CustomerGeneratorProbeProvider.php').is_file() and 'CustomerGeneratorProbeProvider' in (dev / 'src/app/providers.php').read_text() and (dev / 'src/bootstrap/providers.php').read_bytes() == bootstrap_providers, 'provider generation registers the application provider without editing platform bootstrap')
+
+        check(not (dev / 'src/runa/tests').exists() and not (dev / 'src/runa/tools').exists(), 'customer source excludes all platform tests and browser harnesses')
+        native_tests = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'test', '--list-tests'])
+        check('WelcomeTest' in native_tests and 'Runa\\tests' not in native_tests and 'ManagementTest' not in native_tests, 'native customer Artisan discovers application tests without owner autoloading')
+        for test_command in ('test', 'runa:test', 'runa:test:frontend'):
+            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', test_command])
+        call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
+        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
+        browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)
+        shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
+        report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
+        check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
 
         secrets = {name: (dev / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
         customer = dev / 'src/app/customer-sentinel.txt'

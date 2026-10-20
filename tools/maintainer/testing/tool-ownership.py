@@ -49,6 +49,16 @@ class ToolOwnership(unittest.TestCase):
         for retired in ('doctor', 'quality', 'test'):
             self.assertFalse((ROOT / 'tools/maintainer' / retired).exists())
 
+    def test_owner_test_runners_select_private_configurations(self):
+        import owner_tests
+        with tempfile.TemporaryDirectory() as folder, patch.object(owner_tests, 'ROOT', Path(folder)):
+            for suite, option, config in (('backend', '--configuration=', 'phpunit.xml'), ('frontend', '--config=', 'vitest.config.mjs'), ('e2e', '--config=', 'playwright.config.mjs')):
+                with self.subTest(suite=suite), patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)) as run:
+                    self.assertEqual(owner_tests.execute(suite, []), 0)
+                    self.assertIn(option + 'runa/tests/' + config, run.call_args_list[-1].args[0])
+                    if suite == 'backend':
+                        self.assertIn('--test-directory=runa/tests', run.call_args_list[-1].args[0])
+
     def test_customer_quality_does_not_require_a_runa_roadmap_or_maintainer_files(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'ROOT', Path(folder)), patch.object(quality, 'yaml', return_value={'base': [], 'impact_areas': {}, 'final': []}) as yaml:
             roadmap, nodes = quality.plan()

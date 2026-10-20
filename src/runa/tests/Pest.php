@@ -1,7 +1,7 @@
 <?php
 
-use Tests\TestCase;
+use Tests\PlatformTestCase;
 
-pest()->extend(TestCase::class)->in(__DIR__.'/Feature');
+require_once __DIR__.'/bootstrap.php';
 
-require __DIR__.'/../../app/tests/Pest.php';
+pest()->extend(PlatformTestCase::class)->in(__DIR__.'/Feature');

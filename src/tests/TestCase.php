@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Runa\Support\TestDatabaseGuard;
 use RuntimeException;
-use Symfony\Component\Process\Process;
 
 abstract class TestCase extends FrameworkTestCase
 {
@@ -36,8 +35,8 @@ abstract class TestCase extends FrameworkTestCase
         if (! preg_match('/\A(?:0|[1-9][0-9]{0,4})\z/D', $token)) {
             throw new RuntimeException('Test worker token must be a canonical integer from 0 to 99999.');
         }
-        $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
-        $storage = dirname(__DIR__, 3).'/.runtime/tests/worker-'.$token;
+        $app = require dirname(__DIR__).'/bootstrap/app.php';
+        $storage = dirname(__DIR__, 2).'/.runtime/tests/worker-'.$token;
         foreach (['framework/cache/data', 'framework/sessions', 'framework/views', 'logs', 'app/private'] as $directory) {
             if (! is_dir($storage.'/'.$directory)) {
                 mkdir($storage.'/'.$directory, 0775, true);
@@ -62,15 +61,17 @@ abstract class TestCase extends FrameworkTestCase
         config()->set('queue.default', 'sync');
         config()->set('mail.default', 'array');
         if (! isset(self::$migrated[$name])) {
-            $platform = new Process([PHP_BINARY, dirname(__DIR__, 3).'/distribution/platform-database.php', 'migrate', '--force', '--no-interaction'], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => $name, 'LARAVEL_STORAGE_PATH' => $storage]);
-            $platform->setTimeout(null);
-            $platform->mustRun();
-            if (Artisan::call('migrate', ['--force' => true, '--no-interaction' => true]) !== 0) {
-                throw new RuntimeException('Test database migration failed.');
-            }
+            $this->migrateTestDatabase($name, $storage);
             self::$migrated[$name] = true;
         }
 
         return $app;
+    }
+
+    protected function migrateTestDatabase(string $name, string $storage): void
+    {
+        if (Artisan::call('migrate', ['--force' => true, '--no-interaction' => true]) !== 0) {
+            throw new RuntimeException('Application test database migration failed.');
+        }
     }
 }

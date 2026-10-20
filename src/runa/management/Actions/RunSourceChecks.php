@@ -12,7 +12,7 @@ final class RunSourceChecks
     {
         $runner = new RunTool;
         $cwd = $root.'/src';
-        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'runa/tests/frontend', 'runa/tests/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
+        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'app/tests/frontend', 'app/tests/e2e', 'runa/tests/frontend', 'runa/tests/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
         if ($tool === 'format') {
             if (! in_array($arguments, [[], ['--check']], true)) {
                 throw new InvalidArgumentException('Format supports only --check.');
@@ -42,12 +42,12 @@ final class RunSourceChecks
         }
         try {
             if (($arguments[0] ?? null) === 'frontend') {
-                return $runner->process(['pnpm', 'exec', 'vitest', 'run', ...array_slice($arguments, 1)], $cwd, $output);
+                return $runner->process(['pnpm', 'exec', 'vitest', 'run', '--config=vitest.config.mjs', ...array_slice($arguments, 1)], $cwd, $output);
             }
             if (($arguments[0] ?? null) === 'e2e') {
                 $status = $runner->process([PHP_BINARY, 'runa/resources/errors/build.php'], $cwd, $output);
 
-                return $status !== 0 ? $status : $runner->process(['pnpm', 'exec', 'playwright', 'test', ...array_values(array_filter(array_slice($arguments, 1), static fn (string $argument): bool => $argument !== '--critical'))], $cwd, $output);
+                return $status !== 0 ? $status : $runner->process(['pnpm', 'exec', 'playwright', 'test', '--config=playwright.config.mjs', ...array_values(array_filter(array_slice($arguments, 1), static fn (string $argument): bool => $argument !== '--critical'))], $cwd, $output);
             }
             if (is_file($cwd.'/bootstrap/cache/config.php')) {
                 throw new InvalidArgumentException('Clear cached development config before testing: php artisan config:clear');

@@ -45,6 +45,14 @@ Unit tests are for isolated logic where a smaller test is clearer and valuable.
 
 Do not over-mock Laravel/application behavior merely to make a test "unit."
 
+## Application and platform suite ownership
+
+Customer defaults are application-only: `php artisan test` and `php artisan runa:test` use `src/phpunit.xml` with `src/app/tests/Feature` and `Unit`; `runa:test:frontend` uses `src/vitest.config.mjs` with `src/app/tests/frontend`; `runa:test:e2e` uses `src/playwright.config.mjs` with `src/app/tests/e2e`. The welcome scaffold includes one PHP, component and browser smoke test. Native `make:test` still writes application tests, including PHPUnit tests extending the reusable `Tests\TestCase` in `src/tests/TestCase.php`. `src/tests/Pest.php` loads only the application contribution.
+
+Owner commands `python3 tools/maintainer/test-backend`, `test-frontend` and `test-e2e` select private configurations under `src/runa/tests`. The owner backend uses `Tests\PlatformTestCase`, a private fixture autoloader and explicit platform migration preparation. The shared customer base performs only application migrations, preserving guarded worker storage/database/cache isolation. Customer test setup never invokes owner distribution tools. Platform suites and `src/runa/tools` harnesses are excluded from customer acquisition; production images exclude both owners' tests.
+
+The three `runa:test*` wrappers and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native `php artisan test` and direct Pest/Node runners retain framework behavior and bypass that wrapper lock; avoid concurrent diagnostic runs against shared test state. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
+
 ## Test database and isolation
 
 Initial test database:
@@ -78,7 +86,7 @@ Tests should be parallel-safe from the start:
 
 Canonical command:
 
-`./bin/artisan runa:test --parallel`
+`php artisan runa:test --parallel`
 
 If parallel execution reveals a concurrency/isolation defect:
 
@@ -226,20 +234,20 @@ The regression script deliberately resets only the guarded test database after v
 
 ## Local commands
 
-Run these from the host or development container:
+Run these inside the configured development container. The host recovery launcher delegates to that container:
 
-| Command                                                           | Purpose                                                                           |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `./bin/artisan runa:format` / `./bin/artisan runa:format --check` | Pint for project PHP; Prettier for frontend, frontend tests and root tool configs |
-| `./bin/artisan runa:lint`                                         | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
-| `./bin/artisan runa:typecheck`                                    | Strict Vue/TypeScript application and test checking                               |
-| `./bin/artisan runa:analyse`                                      | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
-| `./bin/artisan runa:test`                                         | Backend feature tests, serial                                                     |
-| `./bin/artisan runa:test --parallel`                              | Backend feature tests, `TEST_WORKERS` from the resource profile                   |
-| `./bin/artisan runa:test:frontend`                                | Vitest + Vue Test Utils in headless Chromium                                      |
-| `./bin/artisan runa:test:e2e --critical`                          | Current critical Playwright suite in Chromium, Firefox and mobile Chromium        |
+| Command                                                       | Purpose                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `php artisan runa:format` / `php artisan runa:format --check` | Pint for project PHP; Prettier for frontend, frontend tests and root tool configs |
+| `php artisan runa:lint`                                       | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
+| `php artisan runa:typecheck`                                  | Strict Vue/TypeScript application and test checking                               |
+| `php artisan runa:analyse`                                    | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
+| `php artisan runa:test`                                       | Application backend tests, serial                                                 |
+| `php artisan runa:test --parallel`                            | Application backend tests, `TEST_WORKERS` from the resource profile               |
+| `php artisan runa:test:frontend`                              | Application Vitest + Vue Test Utils in headless Chromium                          |
+| `php artisan runa:test:e2e --critical`                        | Application Playwright in Chromium, Firefox and mobile Chromium                   |
 
-Runner options can follow the test selector, for example `./bin/artisan runa:test --filter=Health` or `./bin/artisan runa:test:e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. `bin/check` is their shared dispatcher. Run `./bin/artisan runa:dev:prepare` and start the development environment first.
+Runner options can follow the test selector, for example `php artisan runa:test --filter=Welcome` or `php artisan runa:test:e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. Normal configured-environment commands use `php artisan`; `./bin/artisan` is the initial/recovery host transport. Run `php artisan runa:dev:prepare` and start the development environment first.
 
 Pint excludes the vendored `src/runa/lang/` snapshot and generated/runtime trees. Prettier also excludes localization data and lockfiles. Formatting establishes consistent source layout without changing the catalog's integrity hashes. ESLint owns correctness, Prettier owns layout; the core assignment rule is disabled only for Vue SFCs because template reads are invisible to that core rule. Other recommended rules remain active. PHPStan uses one analysis process to bound memory and avoid the native parallel-worker crash observed during toolchain verification.
 
@@ -247,7 +255,7 @@ The Vitest Playwright provider is a pinned integration adapter of the approved t
 
 ## Backend execution details
 
-`Tests\TestCase` bootstraps `.env.testing` and verifies the base database configuration and live identity before any worker database DDL. Pest/ParaTest supplies a `TEST_TOKEN`; only canonical integers from 0 to 99999 are accepted, and positive tokens become `runa_test_test_N`. Missing worker databases are created by the dedicated test role, then the selected live identity is guarded again before migrations. The owner test bootstrap explicitly runs the private platform migrator and then the application migrator, with separate histories; this is test preparation, never normal application startup. Worker databases persist for reuse; tests using database state must use transactions or an explicitly guarded reset. The queue-table smoke test demonstrates transaction rollback using existing technical tables, without adding permanent business tables. Ownership acceptance uses disposable application tables to verify reciprocal fresh/refresh/reset/rollback/wipe and seeding isolation, guarded option rejection, dependency failure, unknown-history refusal, platform table inventory, and atomic required-seed retry.
+`Tests\TestCase` bootstraps `.env.testing` and verifies the base database configuration and live identity before any worker database DDL. Pest/ParaTest supplies a `TEST_TOKEN`; only canonical integers from 0 to 99999 are accepted, and positive tokens become `runa_test_test_N`. Missing worker databases are created by the dedicated test role, then the selected live identity is guarded again before migrations. The shared base runs only the application migrator. The owner PlatformTestCase additionally runs the private platform migrator first, with separate histories; this is test preparation, never normal application startup. Worker databases persist for reuse; tests using database state must use transactions or an explicitly guarded reset. The queue-table smoke test demonstrates transaction rollback using existing technical tables, without adding permanent business tables. Ownership acceptance uses disposable application tables to verify reciprocal fresh/refresh/reset/rollback/wipe and seeding isolation, guarded option rejection, dependency failure, unknown-history refusal, platform table inventory, and atomic required-seed retry.
 
 Each worker receives `.runtime/tests/worker-N/` storage, an array cache with a worker prefix, synchronous queues and an array mailer. Test applications rebuild their configuration between cases. HTTP tests cover health, JSON errors and request IDs; database tests cover schema placement and unsafe configuration/live-identity rejection; localization tests cover native Polish validation. Cached application configuration is rejected by the test wrapper so development config cannot silently override `.env.testing`.
 
@@ -257,13 +265,13 @@ The test wrapper takes a nonblocking checkout-wide lock across backend, frontend
 
 The optional Compose `testing` profile starts `app-test` and `nginx-test`, using `.env.testing`, the dedicated PostgreSQL test role/database, native `LARAVEL_STORAGE_PATH=.runtime/tests/e2e`, synchronous queue and array mail. The PHP-FPM startup guard verifies its actual test database before serving. Nginx is reachable only on the internal Compose network at `http://nginx-test:8080`; no additional host port is published. Development remains at its own endpoint and database.
 
-From the host, `./bin/artisan runa:test:e2e --critical` starts the testing profile and waits for readiness. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
+From the host, `php artisan runa:test:e2e --critical` starts the testing profile and waits for readiness. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
 
 ```sh
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-This explicit host lifecycle keeps Docker sockets out of the devcontainer. E2E uses one worker because all browser projects share one testing endpoint. Each test gets a fresh browser context. Critical coverage checks independent API health, responsive overflow, compact PL/EN and system/light/dark controls, preference persistence, opaque loading-cover sequencing, focus restoration, tooltip dismissal and unexpected console/page errors. HTTP-client failure behavior remains covered by frontend unit contracts; the root intentionally has no connection/retry panel. Failure traces live in ignored `artifacts/playwright/results/`. `src/runa/tools/testing/frontend.mjs` remains the broader visual diagnostic and also targets the isolated testing endpoint.
+This explicit host lifecycle keeps Docker sockets out of the devcontainer. Application Playwright targets `http://nginx-test:8080` directly; `RUNA_E2E_BASE_URL` can select another already provisioned HTTP(S) application test endpoint. The runner does not start a PHP server, create synthetic routes or reset data. It finalizes emergency assets before execution and uses one worker because projects share the test endpoint. Each test gets a fresh browser context. The application welcome smoke runs in Chromium, Firefox and mobile Chromium; failures retain screenshots/traces and an HTML report under `artifacts/playwright/application/`. Build first with `pnpm --dir src run build`. Owner harness acceptance is separate below.
 
 ## UI foundations and isolated browser tests
 
@@ -273,12 +281,12 @@ Before browser checks, build the application/native error renderer:
 
 ```sh
 ./bin/pnpm run build
-./bin/artisan runa:test:e2e --critical
+python3 tools/maintainer/test-e2e --critical
 ```
 
-The normal E2E wrapper first finalizes static emergency documents with `php src/runa/resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The normal test command uses isolated testing Nginx/PHP-FPM. Playwright owns `src/runa/tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
+The owner E2E runner first finalizes static emergency documents with `php src/runa/resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The owner test command uses isolated testing Nginx/PHP-FPM. Its private Playwright configuration owns `src/runa/tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
 
-The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored artifacts/playwright; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `src/runa/tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against canonical VERSION.
+The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored artifacts/playwright/runa; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `src/runa/tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against canonical VERSION.
 
 ### Layouts, forms and interactions
 
@@ -314,4 +322,4 @@ Both tests are selected by tooling quality gates, with the real host acceptance 
 
 ## Backend composition acceptance
 
-`CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under src/runa/tests; src/app/tests has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. The protected src/tests/Pest.php entry composes the owner bootstraps for native Pest/Artisan discovery too.
+`CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under src/runa/tests; src/app/tests has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. The protected src/tests/Pest.php entry loads only the application contribution for native Pest/Artisan discovery. Owner bootstrap and fixture discovery are selected exclusively by the maintainer backend runner.
