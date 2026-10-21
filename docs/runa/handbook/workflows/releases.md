@@ -1,6 +1,6 @@
 # Application release workflow
 
-The application version in `src/app/application.json` is independent of Runa platform VERSION and src/runa/platform.json. Preserve platform versions/source. Application release notes belong in `docs/app/CHANGELOG.md`; do not inherit platform release history. Repository/tag/publication conventions refer to the configured customer repository, never the Runa source upstream.
+The application version in `src/app/application.json` is independent of protected src/runa/platform.json; root VERSION is customer scaffold outside the Runa owner checkout. Preserve platform versions/source. Application release notes belong in `docs/app/CHANGELOG.md`; do not inherit platform release history. Repository/tag/publication conventions refer to the configured customer repository, never the Runa source upstream.
 
 ## Version semantics
 

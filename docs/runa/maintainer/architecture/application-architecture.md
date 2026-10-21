@@ -108,159 +108,68 @@ Each request has a safe correlation ID for diagnostics, propagated to related wo
 
 ## Platform and customer ownership
 
-### Staged delivery and agreed target
+### Delivered composition
 
-RM-2026-005 point 1 establishes the following composition contract. The Laravel base path and backend now live under `src/`. Backend, frontend, tests, dependency composition and runtime paths now follow these boundaries. The owner approved the `src/`, `app/`, `runa/` and storage boundaries on 2026-10-20. The tree below describes delivered roots; application.json identity/compatibility is still point 5.
+One Laravel application lives under `src`, with one autoloader, container and composed dependency graph. Customer business code can remain ordinary PHP/Vue; module roots are reserved for RM-2026-006 and have no registry/runtime behavior here.
 
 ```text
 repository/
-  src/                           # one Laravel application base path
-    app/                         # customer source, scaffolded once
-      Http/Controllers/          # initially SpaController for named route spa
-      Providers/                 # thin application bindings/contributions
-      routes/                    # initially GET /
-      resources/                 # welcome App.vue, main.ts, index.html, custom assets
-      config/                    # application-owned overrides
-      database/                  # customer migrations/seeders/factories
-      lang/                      # application translations/overrides
-      tests/                     # customer tests
-      docs/                      # customer documentation
+  src/
+    app/                         # customer PHP, config, routes, lang, resources
+      providers.php              # application provider registrations
       application.json           # independent identity/version/compatibility
-    runa/                        # protected platform source
-      src/                       # Runa namespace; providers/HTTP/console/support
-      config/                    # platform defaults
-      routes/                    # health/readiness and future platform routes
-      database/                  # technical migrations/seeding
-      resources/                 # UI library, styles, images, fonts, views, errors, lang
-      tests/                     # platform PHP/frontend/browser tests and fixtures
-    tests/Pest.php               # protected native test-discovery entry only
-    bootstrap/                   # protected composition and generated cache
-    public/                      # protected front controller and published build/assets
+      database/                  # application migrations/explicit seeders/factories
+      tests/                     # application PHP/frontend/browser tests
+    runa/                        # protected platform namespace directories and resources
+      platform.json              # platform runtime/build identity
+      database/                  # isolated platform migrations/required seed root
+      management/                # cold commands; excluded from runtime images
+    tests/{TestCase.php,Pest.php} # guarded native application test support/discovery
+    bootstrap/                   # Laravel composition and generated cache
+    public/                      # front controller and published generated assets
     storage/
-      app/
-        application/{private,public}/
-        runa/{private,public}/
-      framework/                 # shared Laravel sessions/views/cache/health/maintenance
-      logs/                      # shared technical logs
+      app/{application,runa}/{private,public}/
+      framework/                 # shared sessions/cache/views/health/maintenance
+      logs/
     artisan
-    composer.json                # composed dependency inputs
-    composer.lock
-    package.json                 # composed dependency/build inputs
-    pnpm-lock.yaml
-    vendor/                      # generated, not release source
-    node_modules/                # generated development/build dependencies
-  bin/, tools/, docker/, docs/    # customer-controlled delivered scaffold and guidance
+    composer.json, composer.lock # composed dependency inputs and reviewed lock
+    package.json, pnpm-lock.yaml
+  docs/app/                      # application documentation and roadmaps
+  docs/runa/handbook/             # public Runa procedures/contracts
+  .agents/skills/                # supplied customer agent guidance
+  bin/, tools/application/, docker/, .devcontainer/
 ```
 
-Module roots `src/runa/modules/` and `src/app/modules/` are reserved for RM-2026-006, not registered or implemented by RM-005. Customer business code need not be modular. Only delivered src/runa is the updater integrity/replacement boundary. Compose, hooks, development/build/bootstrap configuration, shared tooling and root VERSION are customer-controlled scaffold. Owner-only source remains excluded.
+Both owner roots place namespace directories/config/database/lang/resources/routes directly under src/app or src/runa; there is no extra nested src directory. Only delivered src/runa is the external updater's integrity/replacement boundary. Compose, hooks, bootstrap/build/test configuration, shared tools and root VERSION are customer-controlled scaffold. Customer repositories version the same complete project for development and production; private settings, data, dependencies and runtime artifacts differ.
 
-### Source classification and initial scaffold
+The owner checkout additionally contains distribution, tools/maintainer, platform tests/browser harnesses and docs/runa/maintainer. The fixed shared exclusion map in tools/application/repository_boundary.py and standalone distribution/bootstrap.py keeps them out of customer delivery. Never infer a production host-source allowlist from the narrower runtime image contents. Platform test namespaces/autoloading are owner-only; native customer tests select src/app/tests. See [public tests](../../handbook/testing/strategy.md) and [owner testing](../testing/strategy.md).
 
-Owner roots use a parallel layout: PHP namespace directories and config, database, lang, resources, routes and tests sit directly under src/app or src/runa. Do not add another src directory inside either owner or nest only one owner’s translations under resources. Owner-specific capabilities do not require empty matching directories.
+### Public extension points and runtime
 
-Almost all current application source is platform behavior. Console commands, database guards, support, middleware, health/readiness controllers and provider behavior now live in `src/runa/` under `Runa\`. The existing base Controller is platform-owned. `RunaServiceProvider` owns guards, migration repository, mail namespace/branding, configuration validation and heartbeats; customer bindings retain a thin `App\Providers\AppServiceProvider`.
+RunaServiceProvider owns configuration/database guards, mail/identity integration and worker heartbeats. Application providers use src/app/providers.php; overrides, translations, routes and generators target application roots. The welcome application uses SpaController and named route spa at / and /build/index.html. Public health/readiness/identity APIs retain their named /api routes. Vue consumes the public @/runa facade with explicit Vite/Vitest/TypeScript aliases preceding application @; platform internals resolve inside Runa. See [public architecture](../../handbook/architecture/application-architecture.md) and [frontend contracts](../../handbook/architecture/frontend.md).
 
-The customer route/controller now live at `src/app/routes/web.php` and `src/app/Http/Controllers/SpaController.php`. The welcome-page frontend lives at `src/app/routes/web.php`, `src/app/Http/Controllers/SpaController.php`, `src/app/resources/js/{App.vue,main.ts}` and `src/app/resources/index.html`. Its controller can depend on a public Runa base controller contract. The named route remains `spa`, serving `/` and `/build/index.html`; no catch-all route is introduced. The welcome page consumes the platform MinimalLayout. Keep its page copy/application identity configurable without moving shared layouts or translation infrastructure into customer ownership.
+The workspace bind mount is repository .:/workspace, while Laravel's base path is /workspace/src. Root private env files are loaded explicitly. Nginx serves src/public; development uses PHP-FPM, never artisan serve. Production Dockerfiles copy explicit runtime directories, excluding management, tests, scanners, Boost, AI and build/development tools. Host production retains shared customer operational/development source, guarded by its local production role; runtime containers receive no operator executor mount or Docker access.
 
-All other existing resources, technical configuration, queue migrations, managed seeding, Polish validation snapshot, mail/error templates, supplied favicon and tests belong to Runa. Preserve attribution/license files with relocated assets. Application `DatabaseSeeder` selects only explicitly registered application seeders. Runa keeps its separate required seed root, invoked only by external owner installation/update; see [database ownership](../../handbook/architecture/database.md#platformapplication-source-ownership). Existing platform config is not silently reclassified as an editable customer config file.
-
-Generate application directories, manifests and thin registration inputs once; do not regenerate over an existing customer tree. Platform updates never delete, merge or replace customer files. Protected templates/default assets remain separately owned; application branding is supplied through configuration/public asset publication rather than editing protected originals. Publish customer assets through declared destinations that cannot collide with protected generated errors, platform assets or the front controller. Tests of either owner run only through the development/test graph.
+One src/storage tree separates durable application/platform disks and file cache namespaces. Framework state/logs remain technical shared state. Nginx mounts only public application/platform subtrees read-only at /storage/ and /runa-storage/. Operations preserve both durable trees, database history/data and private settings/journals. Backups/recovery are externally managed by the customer. Native application destructive/data commands preserve platform objects; the narrow fixed forward platform primitive coordinates explicit initialization, updates and deployment. See [database](../../handbook/architecture/database.md) and [seeding](../../handbook/data/seeding.md).
 
 ### Dependency and build composition
 
-The runtime-independent management bootstrap explicitly loads its command classes; exclude runa/management from Composer classmap scanning so its lowercase transport directory is not treated as a PSR-4 namespace root. Production images use explicit PHP directory copies, excluding development tests/tools/management; the host checkout retains the complete customer source.
+Platform src/runa/{composer.json,package.json} and optional application src/app/{composer.json,package.json} compose into src/{composer.json,package.json}. Application inputs accept dependency sections only; protected autoload/scripts/build metadata stays platform-composed. Duplicate declarations must match exactly in the same production/development section. Conflicts/unsupported fields fail. tools/application/dependencies.py never generates/replaces locks or upgrades dependencies; validate the Composer lock and frozen pnpm installation. New dependencies require explicit approval.
 
-Keep one Laravel container, one autoloader and one composed dependency graph. Map `Runa\` to `src/runa/` and `App\` to `src/app/`; give application and platform factories/seeders/tests distinct namespaces during relocation. Paths here are repository-relative; Composer paths in `src/composer.json` are relative to `src/`.
+Runtime-independent management explicitly loads command classes and stays outside Composer classmap scanning. The Compose setup helper prepares dependencies before Composer exists; knowledge-init is an independent optional Python path without PHP/vendor/application-kernel prerequisites. The PHP Artisan entrypoint and named commands remain the public interface; Python executors implement host/quality/scanner/Git/RAG mechanics without another domain-command registry. See [commands](../../handbook/tooling/commands.md) and [host transport](../../handbook/tooling/host-executor.md).
 
-Platform dependency declarations/build defaults belong in `src/runa/{composer.json,package.json}`. Optional application declarations live in `src/app/{composer.json,package.json}` and are preserved. Produce reviewed `src/composer.json`, `src/package.json` and their locks from both owners' declared inputs. Initial composition preserves all current pinned dependencies and scripts' semantics. Do not run a dependency upgrade as a side effect of relocation. Platform source retrieval supplies its declarations, not a replacement for customer/composed locks. Conflicting declarations or an unusable frozen lock block preparation before maintenance. Resolve deliberate dependency changes in the owning roadmap with the required approvals. Generated composition metadata is explicitly enumerated and validated against its inputs, not a blanket integrity exclusion.
+Vite builds src/app/resources/index.html into src/public/build. Platform error-renderer inputs live in src/runa; generated private shells live in src/.runtime/runa-errors, public emergency assets in src/public/runa-error. Production images contain generated documents/assets and required PHP views, outside persistent storage mounts. Browser reports and owner test harness output never enter production images.
 
-Platform error-renderer source remains inside src/runa. Supplied Vite, TypeScript, lint, format, test and analysis configuration is customer-controlled scaffold; manually reconcile release-required changes. Vite builds the customer entry in `src/app/resources/index.html`, consuming shared styles/assets from `src/runa/resources/`; output remains `src/public/build/`. Register `@/runa/ui` and its existing subpaths explicitly in Vite, Vitest and TypeScript before the application `@/` alias, so customer code cannot shadow platform facade imports. Platform internal imports must resolve inside Runa rather than accidentally through the application alias. Preserve the facade exports and all layout/provider/types/contracts; no router or layout becomes a prerequisite for standalone controls.
+### Identity and compatibility
 
-The Node error-renderer and PHP finalizer consume platform-owned resources and emit generated `src/.runtime/runa-errors` plus `src/public/runa-error` and ignored renderer output. They remain build-time operations; production contains only generated documents/assets and required PHP views. Test harness output stays outside src/public/production graphs. Update test discovery for both owners without loading test fixtures in HTTP routes.
+Customer src/app/application.json defines independent identity/version and supported platform range. Protected src/runa/platform.json defines platform identity for PHP, browser, error/mail and production builds. Root VERSION controls owner release arithmetic only; release checks synchronize the platform manifest without changing application version. The bundled Runa-named application is a placeholder at 0.0.0. The authoritative manifest/range/public DTO and branding contracts are in [configuration](../../handbook/architecture/configuration.md).
 
-### Runtime and infrastructure composition
+ApplicationManifest/VersionCompatibility validate before configuration and external update execution. runa:application:check checks installed platform identity or an explicit candidate version. Public /api/identity exposes only the identity DTO with no-store; Vue uses its bounded runtime projection and build-time fallback. Private paths, supported ranges, credentials and schema internals stay outside responses. Customer branding configuration cannot override canonical manifest identity.
 
-The bind mount remains repository `.:/workspace`, with editor workspace `/workspace`. Laravel's base path becomes `/workspace/src`; application commands and PHP-FPM/Nginx paths must use that base explicitly. Host wrappers still start from the verified repository checkout. Development shell/tool launchers must not confuse repository-relative `bin/` with application-relative `artisan`, autoloaders and lockfiles. Existing `.env` inputs stay private at repository root; wire Laravel's environment loading and test configuration explicitly before switching the base path. Preserve Compose project identities, volume identities and credentials.
+### Acquisition, update and deployment
 
-Update Docker build context allowlists/COPY instructions, Nginx roots, PHP entrypoints/health probes, Compose workdirs/mount subpaths, devcontainer post-create, wrappers, Boost launcher/config, knowledge allowlists, hooks, quality/source runners and deployment source selection together with their affected moves. Customer development/production host source sets agree, while runtime images still exclude tests, tooling, scanners, Boost and AI. Do not broadly copy `src/` into production as a shortcut. Root VERSION is owner release metadata; installed runtime/build identity uses protected src/runa/platform.json.
+External distribution/bootstrap.py obtains a verified Runa release for first development; distribution/initialize.py selects a complete customer branch/tag/SHA for teammates/production. Atomic publication refuses existing destinations and preserves customer remotes/history. Clones prepare their own local dev/prod role; another workstation's acquisition receipt/journal is unnecessary. Local role metadata is not a trusted source inventory or signature. See [acquisition](../tooling/bootstrap.md) and [installation](../tooling/installation.md).
 
-`src/storage/` is the single writable storage root, separate from both source owners. Use explicit application/platform filesystem disks rooted at `app/application/{private,public}` and `app/runa/{private,public}`; cache keys likewise include owner and application identity. Framework cache/sessions/views/health/maintenance and logs remain shared technical runtime state. Test workers retain their isolated storage and cache namespaces. Preserve the current default private-disk behavior until explicit application/platform disk configuration replaces it.
+The development-only external updater independently retrieves original/target releases, compares delivered src/runa, checks dependencies/compatibility and reviews customized infrastructure. Read-only preflight/plan is nonmutating. Apply/resume uses the existing operation lock and private pending journal, fences HTTP/writers, replaces only platform source, builds and executes platform forward migrations/required seeds. Resume revalidates source/tag/database identities and completed effects. It preserves customer scaffold/locks/infrastructure/application data; changed customization requires a new bound continue/abort decision. No automatic code/data rollback, customer commit/push or infrastructure engine exists. See [updates](../tooling/updates.md).
 
-Both durable storage trees and PostgreSQL must be preserved by operations. Any backup/restore strategy is externally managed by the customer. Nginx mounts only each public subtree read-only, with separate explicit URL mappings; it cannot traverse either private subtree. Startup creates missing directories without deleting data. Updates preserve storage and private operation journals; a source-tree switch is never a storage replacement.
-
-### Relocation and preservation acceptance
-
-Before the move, inventory every tracked path with its source digest, symlink identity, owner, target and generated/runtime classification. RM-005 point 1 records its dated snapshot under `.runtime/ownership/`; this evidence describes the audited commit, not a permanent integrity baseline for later releases. External update checks use original repository release inputs, never a customer-stored trusted baseline.
-
-Relocate by ownership: point 2 proves runtime-independent command transport against the existing layout; point 3 moves backend/framework/config/data and establishes the src base-path composition; point 4 completes frontend/tests/build/public paths. If that intermediate graph cannot remain runnable, extend the coherent relocation in point 3 only as far as needed for an operational bridge and finish/remove the bridge in point 4. No point may be committed complete with broken startup. Complete command caller migration in point 6 before retiring compatibility launchers.
-
-Existing mixed-ownership checkouts require an explicit old-to-new inventory comparison and a clean/collision-free destination. Preserve unrecognized customer additions; stop on ambiguous ownership, symlink escape, modified protected source or conflicting destination instead of overwriting. Existing `storage/app/private` and `storage/app/public` may contain customer data: determine provenance and migrate to the matching owner only after the exact scope is established. Ordinary reopen performs no relocation/reset.
-
-Inspect the actual database/data ownership before migration/reset work as required by [Database Architecture](../../handbook/architecture/database.md#migration-policy). Preserve `shared.migrations`, technical-table identity semantics and already-applied migration identity when only paths move. Relocation alone requires no schema reset or data deletion. Use the established scoped preproduction reset policy only if an actual need is demonstrated; never turn a source reorganization into an implicit volume rebuild.
-
-The durable customer preservation fixture is `src/runa/tests/Fixtures/ownership/customer-sentinels.json` until test relocation. It supplies distinct source/config/route/frontend/dependency/identity/private/public markers for both storage owners. Materialize it only in isolated acceptance installations, hash before each operation and require identical bytes afterward (except an explicitly requested customer edit). Include additional unknown customer files and collision cases when the update implementation is tested; this audit does not claim those future operations already pass.
-
-### Runtime-independent command composition (RM-005 point 2)
-
-After backend relocation, `src/runa/management/commands.php` constructs named command instances from operational `operations.json` plus optional `development.json` definitions to the normal local/testing Artisan registry and to the minimal `src/runa/management/bootstrap.php` selected internally by the single root `artisan` entrypoint. The bootstrap instantiates Laravel's Artisan console over its base container and event dispatcher only; it does not load the HTTP/application kernel, dotenv, package discovery or operational providers. This is a console bootstrap for the same application/tooling, not a second Laravel skeleton or command registry. Its Runa-owned source now shares the backend ownership boundary.
-
-The separately targeted management image reuses `production-runtime` and production-only locked vendor dependencies. It packages no customer application source and needs no checkout src/vendor/ or credentials at runtime. It is not included in the production Compose services or production application image. The host launcher validates a bounded versioned plan and delegates only fixed operations through the existing deployment lock. The detailed current surface and migration table live in [Tooling Commands](../../handbook/tooling/commands.md#runtime-independent-artisan-transport).
-
-### Delivered source and runtime composition
-
-All point-3 directory bridges have been removed, including repository-root app. The sole Laravel tree is src: customer-controlled bootstrap/public/artisan and app, with protected runa. Repository-root artisan remains a small PHP transport so `php artisan` works from either the checkout or src. Run host bin tools from the repository root; Composer/pnpm wrappers select src explicitly. Direct Composer, pnpm and vendor-bin commands run from src. Environment files remain private at repository root.
-
-Runa\Foundation\Application maps resourcePath to app/resources and the bootstrap provider list to app/providers.php. Protected bootstrap/providers.php supplies platform providers through the standard Laravel builder; native make:provider updates only the customer list. Standard make:config and make:test target app/config and app/tests; no runa:make:* aliases exist. Platform asset references use explicit runa/resources paths. Native App namespace discovery follows src/composer.json. Public/storage paths resolve inside src and LARAVEL_STORAGE_PATH retains isolated E2E storage. Provider/configuration composition stays in one Laravel container; migration/seeding execution isolation remains RM-005 point 9c.
-
-Vite/TypeScript/Vitest resolve the fixed public @/runa facade before the customer @ alias. @runa is an internal source alias; customer code imports the public facade. Shared Tailwind scans platform and customer resource roots. Node test/asset helpers live under src/runa/tools so they resolve the single src/node_modules graph; Python host executors remain under repository tools. Platform tests live under src/runa/tests, customer tests under src/app/tests with separate autoload namespaces. The protected src/tests/Pest.php entry loads only the customer Pest contribution; src/tests/TestCase.php supplies reusable guarded application test isolation. Native php artisan test and customer runa:test use the application-only src/phpunit.xml. Standalone maintainer runners select private PHPUnit/Vitest/Playwright configurations and the owner bootstrap under src/runa/tests; private fixtures are not Composer-autoloaded. Customer acquisition excludes src/runa/tests and src/runa/tools entirely.
-
-Views use customer app/resources/views before platform defaults. Mail/error namespaces are runa-mail and runa-errors; region overrides live in app/resources/views/{runa-mail,errors}. Markdown overrides live in app/resources/views/mail. Translation defaults live in runa/lang; app/lang supplies normal group/JSON overrides, application:: groups and vendor/runa overrides of runa:: groups. No application UI is rendered with Blade.
-
-Owner dependency inputs live at src/{runa,app}/{composer,package}.json. `python3 tools/application/dependencies.py` composes both outputs only after validating both graphs; --check verifies them without writes. Application inputs accept dependency sections only; protected autoload/build/scripts remain composed platform metadata. Duplicate declarations must agree exactly and stay in the same production/development section; conflicts and unsupported fields block. Locks are never generated or replaced by this helper. Validate Composer's lock and use frozen pnpm install before building. No dependency versions changed during relocation. New dependencies still require owner approval.
-
-Durable disks remain application_private/application_public/runa_private/runa_public; local aliases application-private. File caches use disjoint owner subdirectories. Production backs up both durable trees and mounts only their public subtrees in Nginx at /storage/ and /runa-storage/. No private tree is published. Existing legacy installations still require provenance/collision review; no generic startup data migration or reset was added.
-
-### Application identity and compatibility
-
-`src/app/application.json` is customer-owned source, preserved during platform updates. Schema 1 requires `id` (stable lowercase ASCII ID up to 64 characters), `name` (nonempty text), independent SemVer `version` and `runa` (supported platform range). Optional `branding.logo` has `src` and optional `accessible_name`. Only absolute same-origin asset paths and credential-free HTTPS URLs are allowed; remote hosts require an explicit CSP allowance. Unknown fields/schema versions, malformed JSON, symlinks, oversized files and unsupported constraint syntax fail validation. Keep secrets and private paths out of this manifest.
-
-The bundled application is a placeholder named Runa at independent version 0.0.0; it does not follow platform release versions. Its range `>=0.2.1 <0.4.0` permits the current and planned 0.3.0 platform. Application developers deliberately adapt their code and update their compatibility declaration before an incompatible platform update. Protected `src/runa/platform.json` separately records schema_version 1, fixed platform id/name (runa/Runa) and its stable X.Y.Z version. Runtime and browser consumers read this manifest; root VERSION remains canonical for platform release arithmetic. PlatformManifest, both Vite configs and release validation reject version drift. Release finalization synchronizes only the platform manifest version field with VERSION and preserves the customer application manifest.
-
-`VersionCompatibility` uses a documented subset for stable platform versions: full numeric X.Y.Z with components up to nine digits; exact or `=`; `>`, `>=`, `<`, `<=`; `^` and `~`; whitespace intersection and `||` union. Operators attach directly to full versions. Caret advances the first nonzero component (`^0.0.3` stops before 0.0.4); tilde advances the minor component. Wildcards, partial versions, hyphen ranges, comma syntax, prerelease/build platform targets and Composer stability flags are unsupported and rejected in every alternative, even after an earlier match. Application versions accept full SemVer including prerelease/build metadata. This is not a general Composer constraint parser: composer/semver is dev-only and no runtime dependency was added.
-
-`ApplicationManifest` provides a framework-independent, read-only validator/evaluator for later preflight/update orchestration. `php artisan runa:application:check --platform-version=0.3.0` checks a candidate before operations; the default checks installed VERSION. Normal config loading also validates the installed manifest. Release checks validate the calculated target independently of customer application version and never rewrite the manifest. Full updater integration remains in subsequent RM-005 points.
-
-Protected branding configuration projects the validated manifest into `ApplicationIdentity`. `GET /api/identity` (`api.identity`) returns only its public camelCase DTO under `data`: applicationId, applicationName, applicationVersion, platformVersion and optional logo with src/accessibleName. Schema/ranges, private file paths, configuration and credentials are excluded; responses are no-store. Normal Vue startup applies this runtime projection through the existing IdentityProvider; a bounded failed request keeps the build-time public ID/name/version and the platform VERSION, without delaying page mounting. Mail footers and native error pages consume the same DTO. Static emergency pages use the validated manifest at build time without booting Laravel. HTTPS manifest logos are also mail URL defaults; local browser paths need an explicit trusted mail_logo_path for email CID embedding. Existing mail presentation/footer settings remain configuration inputs; canonical identity fields belong in the manifest and are rejected in customer branding config.
-
-The RM-005 command consolidation uses PHP Actions for application/source-tool invocation and Xdebug, with mature host/quality/scanner/Git/RAG mechanics in internal tools/application/executors helpers. Thin bin aliases are compatibility transports. Production host source retains shared development registration/tooling, guarded by its local production role. Runtime images omit management/development/knowledge CLI source; the isolated operator management artifact remains separate. Quality graph, locks, background stop/no-poll semantics and production application isolation remain unchanged.
-
-Two pre-autoload service paths stay deliberately independent: the Compose setup job invokes the fixed private Python dependency/bootstrap helper before Composer is available. Compose knowledge-init invokes the Python startup/knowledge initializer directly, without PHP/vendor or the application kernel. These internal initialization/recovery paths introduce no additional public domain-command registry.
-
-Before any checkout exists, the owner-distributed standalone distribution/bootstrap.py is the
-explicit pre-Artisan source-acquisition exception. It uses host Python/Git and
-verified GitHub release identities, optionally with private credentials, and
-atomically publishes a new checkout before handing off to existing containerized
-commands. It never updates an installed customer tree. The source receipt is
-acquisition evidence, not application state or protected-source integrity;
-see [bootstrap](../tooling/bootstrap.md).
-
-The internal dev/prod installation library, invoked by owner delivery, reuses resource-profile/dev setup and
-locked production deployment mechanics. Delivered customer source is the initial
-scaffold; first installation creates only missing empty extension directories and
-a private once-only marker, preserving manifests, presentation configuration and
-customer files. Repeat/resume never resets data or rotates generated secrets.
-Built-in Nginx TLS uses private runtime configuration/certificate mounts, and HTTPS
-plus native SMTP acceptance precedes production success. The first-install state
-is scoped separately from the later update/integrity protocol. See
-[installation](../tooling/installation.md).
-
-Normal configured-environment php artisan host commands execute through the private
-workspace Unix executor; explicit --plan remains nonexecuting. The executor is
-operator-owned, authenticates local requests and revalidates them using the pinned
-Artisan registry before existing host mechanics run. The separate production
-operator context receives its transport mount; production HTTP/workers/scheduler
-never receive it. Host-only bin/artisan is setup/recovery. See
-[host executor](../../handbook/tooling/host-executor.md) for lifecycle/trust and durable results
-when a command restarts its own invoking container.
-
-No trusted installed-source baseline or customer integrity command is shipped. Repository-reference comparison is reserved for the external owner updater: read the installed platform version, obtain its original repository release, compare protected files and block on modifications. Development-only read-only preflight is delivered; execution/resume remains point 11. Production deploy selects the complete customer revision, accepts platform/scaffold/infrastructure changes and runs scoped forward Runa migrations/required seeds before application migrations/explicit DatabaseSeeder. Additional declared production services are supported; actual image/config/runtime/isolation failures remain hard stops.
+Customer developers manually reconcile release-required scaffold/container/env changes, verify and commit/push the complete project. Teammates pull and explicitly initialize pending local data; ordinary reopen/setup/up remains nondestructive. Production deploy fetches only the tested customer revision and runs forward platform migrations/required seeds before application migrations/explicit DatabaseSeeder. Additional declared services/volumes are supported, with actual config/image/runtime/AI isolation hard gates. Production never accesses owner releases or runs the owner updater. See [reconciliation](../../handbook/release/platform-reconciliation.md) and [deployment acceptance](../production/deployment.md).

@@ -21,7 +21,6 @@ import security
 
 class ReviewContracts(unittest.TestCase):
     def test_failed_repository_and_image_scans_collect_all_images_and_keep_failure(self):
-        import operations
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             binary = root / '.runtime/tools/trivy'
@@ -37,7 +36,7 @@ class ReviewContracts(unittest.TestCase):
                 if args[0] == str(binary):
                     raise subprocess.CalledProcessError(1, args)
                 return SimpleNamespace(stdout='')
-            with patch.object(security, 'ROOT', root), patch.object(security, 'inside', return_value=False), patch.object(security, 'run', side_effect=execute) as run, patch.object(operations, 'active_release', return_value=None), patch.object(operations, 'dc', return_value=SimpleNamespace(stdout='\n'.join(images))), patch.object(security, 'dependencies') as audits, contextlib.redirect_stdout(io.StringIO()):
+            with patch.object(security, 'ROOT', root), patch.object(security, 'inside', return_value=False), patch.object(security, 'run', side_effect=execute) as run, patch.object(security, 'production_images', return_value=images), patch.object(security, 'dependencies') as audits, contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, 'Security checks failed'):
                     security.trivy()
                 scans = [call.args[0] for call in run.call_args_list if call.args[0][0] == str(binary) and '--version' not in call.args[0]]
@@ -46,6 +45,39 @@ class ReviewContracts(unittest.TestCase):
                 audits.assert_called_once()
                 self.assertFalse((root / '.runtime/trivy-image.tar').exists())
                 self.assertEqual((reports / 'repository.json').read_text(), '')
+
+    def test_unknown_owner_and_dev_image_targets_are_rejected_before_scanning(self):
+        import repository_boundary as boundary
+        for mode in ('dev', None, 'unknown'):
+            with self.subTest(mode=mode), patch.object(boundary, 'assert_installation', return_value={'mode': mode}), patch.object(security.subprocess, 'run') as run:
+                with self.assertRaisesRegex(ValueError, 'require a production installation'):
+                    security.production_images(ROOT)
+                run.assert_not_called()
+        with tempfile.TemporaryDirectory() as folder, patch.object(security.subprocess, 'run') as run:
+            with self.assertRaisesRegex(ValueError, 'receipt'):
+                security.production_images(Path(folder))
+            run.assert_not_called()
+
+    def test_fixture_image_selection_uses_its_own_context_while_scanning_owner_source(self):
+        import repository_boundary as boundary
+        fixture = Path('/separate/customer-production')
+        selected = {'images': ['runa-production:exact', 'postgres:exact'], 'locks': {
+            name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ('src/composer.lock', 'src/pnpm-lock.yaml')}}
+        result = SimpleNamespace(stdout=json.dumps(selected))
+        with patch.object(boundary, 'assert_production_installation') as guard, patch.object(security.subprocess, 'run', return_value=result) as run:
+            self.assertEqual(security.production_images(fixture), ['runa-production:exact', 'postgres:exact'])
+            guard.assert_called_once_with(fixture)
+            self.assertEqual(run.call_args.kwargs['cwd'], fixture)
+            self.assertIn('assert_production_installation(operations.ROOT)', run.call_args.args[0][2])
+            selected['locks']['src/composer.lock'] = 'different'
+            result.stdout = json.dumps(selected)
+            with self.assertRaisesRegex(ValueError, 'dependency locks differ'):
+                security.production_images(fixture)
+            selected['locks']['src/composer.lock'] = hashlib.sha256((ROOT / 'src/composer.lock').read_bytes()).hexdigest()
+            selected['images'] = []
+            result.stdout = json.dumps(selected)
+            with self.assertRaisesRegex(ValueError, 'no runtime images'):
+                security.production_images(fixture)
 
     def test_isolated_audits_reject_different_locks_before_docker(self):
         with tempfile.TemporaryDirectory() as folder:

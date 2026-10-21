@@ -7,7 +7,6 @@ import subprocess
 import shutil
 import tempfile
 
-import production
 from runtime import ROOT, inside, run, app_command
 
 
@@ -31,7 +30,32 @@ def review():
     print('PASS: actual agent security review evidence matches the current changed surface.')
 
 
-def trivy():
+def production_images(root):
+    """Resolve images inside the selected customer's own prepared production context."""
+    from repository_boundary import assert_production_installation
+    assert_production_installation(root)
+    code = ('import sys,json,hashlib; from pathlib import Path; sys.path.insert(0,"tools/application"); import operations; '
+            'from repository_boundary import assert_production_installation; '
+            'assert_production_installation(operations.ROOT); '
+            'release=operations.active_release(); '
+            'print(json.dumps({"images":operations.dc(["config","--images"],release,capture_output=True,text=True).stdout.splitlines(),'
+            '"locks":{name:hashlib.sha256((Path(release or operations.ROOT)/name).read_bytes()).hexdigest() '
+            'for name in ("src/composer.lock","src/pnpm-lock.yaml")}}))')
+    selected = json.loads(subprocess.run(['python3', '-c', code], cwd=root, check=True, capture_output=True, text=True).stdout)
+    for name in ('src/composer.lock', 'src/pnpm-lock.yaml'):
+        if selected['locks'].get(name) != hashlib.sha256((ROOT / name).read_bytes()).hexdigest():
+            raise ValueError('Selected production dependency locks differ from the scanned/audited checkout.')
+    if not selected['images']:
+        raise ValueError('Selected production context contains no runtime images.')
+    return selected['images']
+
+
+def trivy(production_root=None):
+    if inside():
+        raise ValueError('Run repository and runtime-image scanning on the Docker host.')
+    # Owner acceptance scans the owner repository and a separate customer fixture's
+    # exact runtime images. Customer execution uses its own production context.
+    selected = production_images(production_root or ROOT)
     reports = ROOT / '.runtime/security'
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     reports.chmod(0o700)
@@ -70,11 +94,6 @@ def trivy():
     print('Private Trivy reports: ' + str(reports), flush=True)
     scan_command(prefix + ['fs', '--include-dev-deps', '--format', 'json', '--output', report('repository.json'), '--scanners', 'vuln,secret,misconfig', '--severity', 'HIGH,CRITICAL', '--exit-code', '1',
                   '--skip-dirs', '.git,.runtime,.pnpm-store,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
-    if inside():
-        raise ValueError('Repository scan finished; final runtime-image scanning still requires the Docker host.')
-    import operations
-    release = operations.active_release()
-    selected = operations.dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
     for image in sorted(set(selected)):
         # Feed an image archive; Docker socket never enters the scanner container.
         archive = ROOT / '.runtime' / 'trivy-image.tar'

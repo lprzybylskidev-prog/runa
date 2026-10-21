@@ -152,7 +152,7 @@ def boost():
         raise ValueError('Boost MCP registration missing canonical launcher.')
     if any((ROOT / '.agents/skills' / name).exists() for name in ('laravel-boost', 'pest-testing', 'tailwindcss-development')):
         raise ValueError('Boost-generated skills must be removed.')
-    print('PASS: Boost command/MCP registration and generated-skill cleanup; actual session docs acceptance is recorded in point 8.')
+    print('PASS: Boost command/MCP registration and generated-skill cleanup; live version-aware documentation access is verified separately.')
 
 
 def cleanliness():

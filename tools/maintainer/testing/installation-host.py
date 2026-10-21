@@ -323,6 +323,15 @@ def main():
         if '--updater-preflight' in sys.argv[1:]:
             runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['exercise'](
                 prod, fixture_directory, prod_project, check, report, call, output, commit)
+        for action in ('validate', 'self-test', 'verify-ai-isolation'):
+            call([str(prod / 'bin/artisan'), 'runa:production:' + action], cwd=prod)
+        check(True, 'public production validation, health and AI isolation gates run only against the dedicated customer production fixture')
+        if '--security-scan' in sys.argv[1:]:
+            import security
+            security.trivy(production_root=prod)
+            check(True, 'owner repository and exact customer production images pass Trivy and locked dependency audits')
+        # Failure acceptance deliberately ends with a fenced unhealthy deployment.
+        # Verify and scan the healthy selected revision before injecting failures.
         if '--customer-deployment' in sys.argv[1:]:
             runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-deployment-host.py'))['exercise'](
                 prod, fixture_directory, prod_project, check, report, call, output, commit)

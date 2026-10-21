@@ -121,7 +121,7 @@ Customer/backend/frontend/browser suites and database commands now select their 
 | `tools/maintainer/migrate`, `make-migration NAME`, `seed CLASS`               | Retained, no Artisan aliases                              | One platform migration execution, migration generation, or explicit platform seeder respectively. Platform-only paths/history/tables/seeds; no application reset or discovery.         |
 | Owner `tools/maintainer/testing/*`, localization and release assessment tools | Retained standalone                                       | Each named harness/assessment has its own acceptance purpose. No customer aliases; maintainer tree excluded from delivery.                                                             |
 | `distribution/bootstrap.py`                                                   | Retained external owner installer                         | Version selection/acquisition, environment preparation and installation form one agreed workflow. No customer entrypoint.                                                              |
-| Planned external updater                                                      | Separate owner distribution script, point 10/11           | Select version; compare installed protected files with independently acquired original source, then journal the approved update. No local baseline, repair override or customer alias. |
+| External development updater                                                  | Separate owner distribution/update.py                     | Select version; compare installed protected files with independently acquired original source, then journal the approved update. No local baseline, repair override or customer alias. |
 
 ## Transports and coherent workflows
 

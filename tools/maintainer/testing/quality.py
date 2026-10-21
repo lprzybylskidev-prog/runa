@@ -57,8 +57,10 @@ class QualityContracts(unittest.TestCase):
     def test_actual_host_production_gates_share_the_operation_group(self):
         definition = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
         nodes = quality.select(definition, ['production', 'security'])
-        for key in ('production-compose', 'production-build', 'production-health', 'production-ai-isolation', 'repository-container-scan'):
+        for key in ('production-acceptance', 'repository-container-scan'):
             self.assertEqual(nodes[key]['exclusive_group'], 'production-simulation', key)
+            self.assertIn('installation-host.py --production-only', nodes[key]['command'])
+            self.assertNotIn('./bin/artisan runa:production:', nodes[key]['command'])
 
     def test_repository_scan_waits_for_selected_artifact_builds(self):
         definition = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
@@ -68,7 +70,7 @@ class QualityContracts(unittest.TestCase):
                 dependencies = nodes['repository-container-scan']['depends_on']
                 self.assertEqual('frontend-build' in dependencies, 'frontend' in areas)
                 self.assertEqual('frontend-render-diagnostics' in dependencies, 'frontend' in areas)
-                self.assertEqual('production-build' in dependencies, 'production' in areas)
+                self.assertEqual('production-acceptance' in dependencies, 'production' in areas)
         with tempfile.TemporaryDirectory() as folder:
             build = node('frontend-build', 'false')
             scan = node('repository-container-scan', 'true')

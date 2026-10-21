@@ -68,6 +68,19 @@ class CustomerClones(unittest.TestCase):
         self.assertFalse((destination / '.runtime').exists())
         with self.assertRaises(ValueError): boundary.prepare_customer_context(destination, 'prod')
 
+    def test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields(self):
+        destination = self.base / 'operator'
+        self.git(self.base, 'clone', '--quiet', str(self.repository), str(destination))
+        before = self.git(destination, 'remote', '-v')
+        self.assertFalse((destination / '.git/runa-bootstrap.json').exists())
+        boundary.prepare_customer_context(destination, 'prod')
+        role = boundary.assert_production_installation(destination)
+        self.assertEqual(role['source'], 'customer-repository')
+        self.assertEqual(role['commit'], self.git(destination, 'rev-parse', 'HEAD'))
+        self.assertNotIn('tag_object', role)
+        self.assertEqual(self.git(destination, 'remote', '-v'), before)
+        self.assertEqual(self.git(destination, 'status', '--porcelain'), '')
+
     def test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication(self):
         for value in ('https://github.com/lprzybylskidev-prog/runa.git', 'https://user:secret@example.invalid/repo', '--upload-pack=evil'):
             with self.assertRaises(bootstrap.BootstrapError): initialize.customer_url(value)

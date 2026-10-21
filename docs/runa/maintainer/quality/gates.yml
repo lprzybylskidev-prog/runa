@@ -160,32 +160,12 @@ impact_areas:
       command: python3 tools/maintainer/testing/customer-deployment.py
       severity: hard_fail
 
-    - id: production-build
-      execution_context: host
-      depends_on: [production-compose]
-      exclusive_group: production-simulation
-      command: ./bin/artisan runa:production:build
-      severity: hard_fail
-
-    - id: production-compose
+    - id: production-acceptance
       execution_context: host
       depends_on: [configuration]
       exclusive_group: production-simulation
-      command: ./bin/artisan runa:production:validate
-      severity: hard_fail
-
-    - id: production-health
-      execution_context: host
-      depends_on: [production-build]
-      exclusive_group: production-simulation
-      command: ./bin/artisan runa:production:self-test
-      severity: hard_fail
-
-    - id: production-ai-isolation
-      execution_context: host
-      depends_on: [production-health]
-      exclusive_group: production-simulation
-      command: ./bin/artisan runa:production:verify-ai-isolation
+      description: Build and verify dedicated customer-repository production with real deployment/data/failure acceptance.
+      command: python3 tools/maintainer/testing/installation-host.py --production-only --customer-deployment
       severity: hard_fail
 
   development:
@@ -241,8 +221,8 @@ impact_areas:
       exclusive_group: production-simulation
       depends_on: [configuration]
       depends_on_if_selected:
-        [production-build, frontend-build, frontend-render-diagnostics]
-      command: ./bin/artisan runa:security:trivy
+        [production-acceptance, frontend-build, frontend-render-diagnostics]
+      command: python3 tools/maintainer/testing/installation-host.py --production-only --security-scan
       severity: hard_fail
 
     - id: expanded-security-review
