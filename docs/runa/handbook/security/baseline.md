@@ -328,3 +328,7 @@ A higher-risk roadmap may explicitly add deeper security work.
 ## Supplied scanner disposition
 
 The current exact-artifact PostgreSQL gosu disposition is delivered with the shared security scanner, together with [its public technical evidence](postgres-gosu-policy.md). It does not depend on owner maintenance reports. All original artifact/binary/finding/expiry binding checks remain mandatory, raw findings are retained, and changed or expired policy fails closed. Customer source never needs the owner's historical audit directory to run security checks.
+
+The current PostgreSQL guidance distinguishes the original 25-finding shared decision from the changed 2026-10-21 scan and pending-upstream parser advisory. Owner-only accepted risk never automatically applies to customer production. See [current applicability and customer decisions](postgres-gosu-policy.md#current-pending-upstream-findings-and-customer-decisions).
+
+Repository scans exclude generated root and src vendor/node_modules trees while retaining first-party source/configuration, Dockerfiles and the committed Composer/pnpm locks, including development dependencies. Excluding dependency implementation trees must not exclude the application or its lockfile audits.

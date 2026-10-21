@@ -20,6 +20,19 @@ import security
 
 
 class ReviewContracts(unittest.TestCase):
+    def test_custom_service_fixture_pulls_only_exact_digest_and_rejects_wrong_identity(self):
+        import service_fixtures
+        reference = service_fixtures.REDIS_IMAGE
+        metadata = json.dumps([{'RepoDigests': ['redis@' + reference.split('@')[1]]}])
+        missing = SimpleNamespace(returncode=1, stdout='')
+        present = SimpleNamespace(returncode=0, stdout=metadata)
+        with patch.object(service_fixtures.subprocess, 'run', side_effect=[missing, SimpleNamespace(returncode=0), present]) as run:
+            self.assertEqual(service_fixtures.redis_image(), reference)
+            self.assertEqual(run.call_args_list[1].args[0], ['docker', 'pull', reference])
+        with patch.object(service_fixtures.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout='[{"RepoDigests":["redis@sha256:other"]}]')):
+            with self.assertRaisesRegex(ValueError, 'pinned Redis artifact'):
+                service_fixtures.redis_image()
+
     def test_failed_repository_and_image_scans_collect_all_images_and_keep_failure(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -30,6 +43,7 @@ class ReviewContracts(unittest.TestCase):
             reports.mkdir()
             (reports / 'repository.json').write_text('{"stale": true}')
             images = ['postgres:18.6-bookworm', 'runa-production:' + 'a' * 40, 'runa-nginx:' + 'a' * 40]
+            fixture_image = 'redis:fixture@sha256:exact'
             def execute(args, **kwargs):
                 if '--version' in args:
                     return SimpleNamespace(stdout='Version: 0.76.0')
@@ -38,10 +52,17 @@ class ReviewContracts(unittest.TestCase):
                 return SimpleNamespace(stdout='')
             with patch.object(security, 'ROOT', root), patch.object(security, 'inside', return_value=False), patch.object(security, 'run', side_effect=execute) as run, patch.object(security, 'production_images', return_value=images), patch.object(security, 'dependencies') as audits, contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, 'Security checks failed'):
-                    security.trivy()
+                    security.trivy(additional_images=[fixture_image])
                 scans = [call.args[0] for call in run.call_args_list if call.args[0][0] == str(binary) and '--version' not in call.args[0]]
-                self.assertEqual(len(scans), 4)
+                self.assertEqual(len(scans), 5)
                 self.assertIn('--include-dev-deps', scans[0])
+                excluded = scans[0][scans[0].index('--skip-dirs') + 1].split(',')
+                self.assertIn('src/vendor', excluded)
+                self.assertIn('src/node_modules', excluded)
+                self.assertNotIn('src/app', excluded)
+                self.assertNotIn('src/composer.lock', excluded)
+                self.assertNotIn('src/pnpm-lock.yaml', excluded)
+                self.assertEqual(len({call.args[0][-1] for call in run.call_args_list if call.args[0][:3] == ['docker', 'image', 'save']}), 4)
                 audits.assert_called_once()
                 self.assertFalse((root / '.runtime/trivy-image.tar').exists())
                 self.assertEqual((reports / 'repository.json').read_text(), '')

@@ -3,6 +3,7 @@
 import contextlib
 import json
 import os
+import runpy
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'distribution'))
+sys.path.insert(0, str(ROOT / 'tools/maintainer'))
 import bootstrap
 import update
 import update_contracts as contracts
@@ -21,6 +23,38 @@ import update_customization
 
 
 class Updater(unittest.TestCase):
+    def test_native_update_uses_installed_source_tag_and_strictly_newer_target(self):
+        release_tags = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['release_tags']
+        for installed, expected in [('0.2.1', 'v0.2.2'), ('0.3.0', 'v0.3.1'), ('0.3.1', 'v0.3.2'), ('1.0.9', 'v1.0.10')]:
+            with self.subTest(installed=installed):
+                original, target = release_tags(installed)
+                self.assertEqual(original, 'v' + installed)
+                self.assertEqual(target, expected)
+                self.assertNotEqual(original, target)
+
+    def test_native_release_tags_bind_original_git_source_after_platform_release(self):
+        release_tags = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['release_tags']
+        for version in ('0.3.0', '0.3.1'):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                repository, installed, reference = [root / name for name in ('repository', 'installed', 'reference')]
+                (repository / 'src/runa').mkdir(parents=True)
+                manifest = repository / 'src/runa/platform.json'
+                manifest.write_text(json.dumps({'version': version}))
+                self.git(repository, 'init', '-q')
+                self.commit(repository)
+                original, target = release_tags(version)
+                self.git(repository, 'tag', original)
+                shutil.copytree(repository / 'src', installed / 'src')
+                manifest.write_text(json.dumps({'version': target.removeprefix('v')}))
+                (repository / 'src/runa/upgrade.php').write_text('<?php // synthetic target source')
+                self.commit(repository)
+                self.git(repository, 'tag', target)
+                subprocess.run(['git', 'clone', '--quiet', '--branch', original, str(repository), str(reference)], check=True, capture_output=True)
+                self.assertEqual(update.compare(installed, reference), [])
+                self.git(reference, 'checkout', '-q', target)
+                self.assertTrue(update.compare(installed, reference))
+
     def git(self, root, *args):
         return subprocess.check_output(['git', '-C', str(root), *args], stderr=subprocess.DEVNULL).decode().strip()
 

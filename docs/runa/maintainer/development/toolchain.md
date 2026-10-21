@@ -1,11 +1,11 @@
-# Initial toolchain selections
+# Current toolchain selections
 
-Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not permission to upgrade dependencies automatically. Composer and pnpm lockfiles will record the resolved transitive trees when the relevant roadmap points install them.
+The initial baseline was reviewed on 2026-10-17 for RM-2026-001. PHP was re-reviewed and updated to 8.4.27 on 2026-10-21 for RM-2026-008; other selections retain their existing review dates in the maintenance registry. These are implementation selections, not permission to upgrade dependencies automatically. Committed Composer and pnpm lockfiles record the resolved dependency trees.
 
 | Component                     | Selected version                                  | Primary source                                                               |
 | ----------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
-| PHP                           | 8.4.26                                            | https://www.php.net/releases/index.php?json&version=8.4                      |
-| PHP base                      | `php:8.4.26-fpm-bookworm`                         | https://hub.docker.com/_/php                                                 |
+| PHP                           | 8.4.27                                            | https://www.php.net/releases/index.php?json&version=8.4                      |
+| PHP base                      | `php:8.4.27-fpm-bookworm`                         | https://hub.docker.com/_/php                                                 |
 | Composer                      | 2.10.3                                            | https://getcomposer.org/versions                                             |
 | Node.js LTS                   | 24.22.0                                           | https://nodejs.org/dist/index.json                                           |
 | Node base                     | `node:24.22.0-bookworm-slim`                      | https://hub.docker.com/_/node                                                |
@@ -45,7 +45,7 @@ Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not
 
 ## Compatibility and dependency assessment
 
-Laravel 13 requires PHP 8.3 or later; PHP 8.4.26 is a supported security release and meets the preferred project line. Pest 5 requires PHP 8.4 and its Laravel plugin requires Laravel 13.23 or later; this selection satisfies both. Larastan 3.13 explicitly supports Laravel 13 and PHPStan 2.3. Boost 2.10 supports Laravel 13. These packages have distinct roles: testing, analysis and development MCP. They do not belong in production dependencies.
+Laravel 13 requires PHP 8.3 or later; PHP 8.4.27 is a supported security release and meets the preferred project line. Pest 5 requires PHP 8.4 and its Laravel plugin requires Laravel 13.23 or later; this selection satisfies both. Larastan 3.13 explicitly supports Laravel 13 and PHPStan 2.3. Boost 2.10 supports Laravel 13. These packages have distinct roles: testing, analysis and development MCP. They do not belong in production dependencies.
 
 Node 24.22 is the current LTS entry returned by the Node release index and satisfies Corepack, Vite, ESLint and Vitest engine requirements. TypeScript 7.0.2 was deliberately not selected: typescript-eslint 8.71.2 supports TypeScript below 6.1. TypeScript 6.0.3 remains inside that range. Vue 3.5 is the stable release; 3.6 prereleases are excluded. Tailwind's Vite adapter and the Vue Vite adapter explicitly support Vite 8.
 

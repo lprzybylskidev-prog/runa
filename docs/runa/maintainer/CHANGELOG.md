@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.3.1] - 2026-10-21
+
+Fix release — RM-2026-008.
+
+- Update development, production and management PHP to official digest-pinned 8.4.27 images for CVE-2026-109618 and CVE-2026-109619; synchronize runtime checks and rebuild/recreation guidance.
+- Correct relocated dependency-tree scanner exclusions while retaining first-party source, composed locks and development dependency audits. Pin and scan the maintained Redis fixture used only for real additional-service acceptance.
+- Bind the owner-approved PostgreSQL/gosu pending-upstream decision to exact current artifacts/findings/evidence/expiry; retain raw reports and fail-closed customer defaults. Track MT-2026-001 for reassessment by 2026-11-20 or earlier upstream/artifact/trust changes.
+- Repair native updater fixture version selection, restore recreated-container Boost registration through existing setup and pass all 45 selected final checks, including real customer update/team/deployment, security and strict AI gates.
+
+PostgreSQL/gosu remains an explicitly accepted owner-only pending-upstream risk, not a corrected binary or blanket customer production acceptance. No application version change, migration, database reset or real production deployment occurred. Task fixtures/images were scoped-cleaned; development/test data, rollback resources, model/shared caches, backups and verification evidence were preserved.
+
 ## [0.3.0] - 2026-10-21
 
 Feature release — RM-2026-005.

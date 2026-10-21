@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from service_fixtures import redis_image
 
 
 def exercise(prod, fixture, project, check, report, call, output, commit):
@@ -58,9 +59,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     (customer / 'VERSION').write_text('customer-controlled-scaffold\n')
     definitions = customer / 'compose.production.yaml'
     data = json.loads(definitions.read_text())
-    redis = output(['docker', 'image', 'inspect', '--format', '{{index .RepoDigests 0}}', 'redis:8.4.0-bookworm'])
-    if not redis.startswith('redis@sha256:'):
-        raise RuntimeError('Native custom-service acceptance requires the existing exact local Redis digest.')
+    redis = redis_image()
     data['services']['redis'] = {'image': redis, 'pull_policy': 'never', 'user': '1000:1000',
         'command': ['redis-server', '--save', '', '--appendonly', 'no'], 'read_only': True,
         'tmpfs': ['/data:rw,nosuid,nodev,size=16m,uid=1000,gid=1000'], 'cap_drop': ['ALL'],
