@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Tests\Fixtures\BrowserMailDocument;
 
-require __DIR__.'/../../../vendor/autoload.php';
+require __DIR__.'/../bootstrap.php';
 $app = require __DIR__.'/../../../bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();

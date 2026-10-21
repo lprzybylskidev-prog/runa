@@ -139,14 +139,14 @@ impact_areas:
     - id: database-constraints
       depends_on: [database-migrations]
       exclusive_group: testing-state
-      command: php artisan runa:doctor:database
+      command: python3 tools/maintainer/test-backend --filter=Database
       severity: hard_fail
 
     - id: seeding-contract
       depends_on: [database-constraints]
       exclusive_group: testing-state
       description: Validate category isolation, dependency graph, idempotence and relevant development scenario coverage.
-      command: php artisan runa:doctor:seeding
+      command: python3 tools/maintainer/test-backend --filter=Seeding
       severity: hard_fail
 
   production:

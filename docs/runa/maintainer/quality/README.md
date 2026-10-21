@@ -158,6 +158,10 @@ A stable OS file lock outside the latest-run directory prevents concurrent start
 
 `python3 tools/maintainer/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/maintainer/testing/quality.py`.
 
+## Owner test routing
+
+Owner database-constraints and seeding-contract gates use the dedicated maintainer backend runner with Database and Seeding filters. Customer runa:doctor:database/seeding commands continue to select application tests only. The standalone platform browser document process loads the private test bootstrap, including its fixture autoloader; it does not add private fixtures to customer Composer autoloading.
+
 ## Production fixture routing
 
 Owner production gates never target the maintenance checkout or customer development. production-acceptance runs the native installation harness with --production-only --customer-deployment; repository-container-scan runs --production-only --security-scan. Each creates a separate complete customer repository and locally prepared production role, builds exact images and tests actual health/AI isolation. Security scans retain the owner repository scope while resolving images from the customer fixture and auditing owner development locks. Fresh TLS/SMTP rejection/resume and scoped cleanup are part of both runs. Selected frontend artifact preparation precedes repository scanning. See [production acceptance](../production/deployment.md).
