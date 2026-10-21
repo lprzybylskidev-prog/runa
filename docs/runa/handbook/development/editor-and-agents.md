@@ -21,6 +21,8 @@ Do not export a connection containing a password to workspace files. Database po
 
 Run Docker lifecycle commands in a host terminal. If reopening fails because `setup` exits with a missing tool that exists in the current development image, run `./bin/artisan runa:dev:up`, then `./bin/artisan runa:doctor:development`. Compose recreates outdated containers; restarting alone retains their old images. VS Code may reuse existing containers with `--no-recreate`. Preserve named volumes and local credentials during recovery. If the current image itself is outdated, use `./bin/artisan runa:dev:build` before `./bin/artisan runa:dev:up`.
 
+After selective app recreation outside VS Code, run `python3 tools/application/executors/dev.py setup --if-needed` in the recreated app container before the host doctor. The dependency/build marker lives in the workspace while container-user MCP registration is ephemeral; the fast setup path restores registration without reinstalling current dependencies. Reopening in VS Code runs this same setup through postCreateCommand.
+
 After the host doctor passes:
 
 1. Select **Dev Containers: Reopen in Container** from the VS Code Command Palette. Confirm the workspace is `/workspace` and the terminal reports user `runa` with `whoami`.
