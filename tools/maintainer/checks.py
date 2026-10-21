@@ -114,7 +114,7 @@ def tooling():
     php = run(['php', '-r', 'echo json_encode([PHP_VERSION, get_loaded_extensions()]);'], capture_output=True, text=True)
     version, extensions = json.loads(php.stdout)
     required = {'pdo_pgsql', 'mbstring', 'intl', 'bcmath', 'Zend OPcache', 'pcntl', 'zip', 'curl', 'xml', 'xdebug'}
-    if version != '8.4.26' or not required.issubset(extensions):
+    if version != '8.4.27' or not required.issubset(extensions):
         raise ValueError('PHP version/extensions differ from the development toolchain.')
     for command, expected in [(['node', '--version'], 'v24.22.0'), (['pnpm', '--version'], '12.14.0'),
                               (['composer', '--version'], '2.10.3'), (['codex', '--version'], '0.163.0')]:

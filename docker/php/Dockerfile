@@ -2,7 +2,7 @@
 FROM composer:2.10.3 AS composer
 FROM node:24.22.0-bookworm-slim AS node
 
-FROM php:8.4.26-fpm-bookworm AS runtime
+FROM php:8.4.27-fpm-bookworm@sha256:6d2c08c2ce0548e9bc55e21aab68f5a2613e635e4225fdea84290459728995e7 AS runtime
 ARG RUNA_UID=1000
 ARG RUNA_GID=1000
 RUN apt-get update \
@@ -63,7 +63,7 @@ USER runa
 
 # Production keeps the same PHP version/capabilities on the approved Alpine candidate.
 # Development retains its browser-compatible Debian toolchain.
-FROM php:8.4.26-fpm-alpine3.24@sha256:78cd8de9970a9cd6ff4d98860a94eb5bf37dd2d5776b4785562dbfad01c29d5a AS production-runtime
+FROM php:8.4.27-fpm-alpine3.24@sha256:8193f7c711715c88452ebe51d4ee7769172a3fa917446a8820cf84192da2c555 AS production-runtime
 ARG RUNA_UID=1000
 ARG RUNA_GID=1000
 RUN apk add --no-cache libpq icu-libs icu-data-full libzip oniguruma fcgi tzdata \

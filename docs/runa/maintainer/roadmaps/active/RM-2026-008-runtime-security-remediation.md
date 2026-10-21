@@ -63,7 +63,7 @@ Sources checked on 2026-10-21:
 
 PHP identifies two critical unauthenticated remote-code-execution issues, CVE-2026-109618 and CVE-2026-109619. Its guidance includes PHP-FPM among affected web-serving deployments; Nginx/FPM is not an exemption. The announced fixed releases are 8.4.27, 8.5.12, 8.3.36 and 8.2.35. Refresh upstream advisories and vendor availability at implementation time. Do not equate a demonstrated mod_php exploit with proof of exploitation in this Runa installation.
 
-At draft creation docker/php/Dockerfile selects PHP 8.4.26 for development and production stages, and the maintenance registry records that version. Inventory exact running versions, image IDs/digests, inherited management/build/test stages and any deployed customer installations before choosing the update. Prefer a supported fix on the existing PHP branch; the owner also permits a justified compatible major/minor migration if needed. Verify actual official image availability and immutable artifacts rather than guessing a tag/digest. Upstream mitigations are not a substitute for a verified fixed runtime; do not apply speculative memory/request-limit changes while drafting.
+The draft baseline used PHP 8.4.26; point 2 now pins official PHP 8.4.27 for development and production stages and synchronizes maintenance metadata and runtime checks. Inventory exact running versions, image IDs/digests, inherited management/build/test stages and any deployed customer installations before choosing the update. Prefer a supported fix on the existing PHP branch; the owner also permits a justified compatible major/minor migration if needed. Verify actual official image availability and immutable artifacts rather than guessing a tag/digest. Upstream mitigations are not a substitute for a verified fixed runtime; do not apply speculative memory/request-limit changes while drafting.
 
 ### gosu and PostgreSQL assessment
 
@@ -102,7 +102,7 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 - [x] 1. Refresh the released baseline and security inventory.
   - Prerequisites: explicit owner activation from refreshed main; RM-005 is already closed/released.
   - Recheck advisories, exact running/build/management/runtime versions, affected paths and available fixed artifacts. Record the selected remedies and any significant unresolved assumptions before implementation.
-- [ ] 2. Update PHP to verified fixed artifacts on the supported branch.
+- [x] 2. Update PHP to verified fixed artifacts on the supported branch.
   - Requires 1. Synchronize development, production, management/build inheritance and maintenance metadata. Rebuild and verify actual versions/extensions, Laravel/configuration, HTTP/FPM, tests, image provenance and runtime isolation. Preserve configuration/data and document required recreation.
 - [ ] 3. Resolve PostgreSQL gosu findings with current reachability evidence.
   - Requires 1; verify against the candidate from 2. Select a fixed official artifact, evidenced not-affected disposition or the explicitly authorized pending-upstream arrangement above. Synchronize owner verification, customer-facing applicability guidance and tracking. Test recognition of the accepted unchanged set, rejection of finding/artifact/evidence drift and expired review, and PostgreSQL startup/privileges/data compatibility. Stop for discussion if newly discovered facts invalidate the agreed trust assumptions.
@@ -121,3 +121,19 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 - gosu upstream latest remains 1.19; official PostgreSQL 18.6 Alpine 3.24 source selects it. Retain exact PostgreSQL artifact/data and perform current finding/reachability assessment with the authorized owner-only pending-upstream option.
 - Official Redis library advertises maintained 8.4.7 Alpine 3.22 fixtures on the same 8.4 branch. Resolve and scan its immutable artifact before selection; no Redis product service is added.
 - Scanner currently excludes root vendor/node_modules only; point 4 will demonstrate relocated dependency-directory exclusions while preserving first-party/lock coverage. Original RM-005 reports remain untouched.
+
+### Point 2 — fixed PHP runtime
+
+- Official PHP 8.4.27 Bookworm development and Alpine production/management base images are pinned to the verified digests from point 1. Runtime checks, production probe, maintenance registry and current toolchain/production guidance are synchronized. No Composer/pnpm dependency changed.
+- Built the management and development targets and isolated runa-rm008-php-probe production image. Management reports 8.4.27. Production capability/isolation probe passes all extensions, Unicode/ICU/iconv, decimal/XML/ZIP/HTTPS/process, non-root user and absent development/AI material; fresh HIGH/CRITICAL vulnerability/secret scan has zero findings.
+- Recreated only app, app-test, queue and scheduler; restarted Nginx to refresh its FPM resolution. All four services report 8.4.27 and healthy; HTTP /api/health returns 200. PostgreSQL, model/Qdrant and mail services/data are preserved.
+- PASS: backend Health tests (4 tests, 15 assertions), owner tooling pins/extensions, development/configuration/templates/database/queue/scheduler/Nginx/Mailpit checks, docs and maintenance checks. Evidence: .runtime/ownership/RM-2026-008/php-*.log and php-development-runtime.json. Full application/native production acceptance remains point 5.
+- Knowledge query during changed documentation correctly reported staleness; focused authoritative source reads were used until the staged incremental refresh.
+
+## Execution handoff
+
+- Context: RM-008 point 2, host checkout /home/lprzybylski/Documents/php/runa, roadmap/RM-2026-008-runtime-security-remediation, base d175d7b, 2026-10-21. Host execution is owner-authorized; no editor transition is needed.
+- Scope: rebuild development app image from pinned PHP 8.4.27, recreate app/app-test/queue/scheduler, verify FPM/HTTP/extensions and management/production targets. Use canonical bin/artisan dev build/recreate wrappers with .env.dev.local and .devcontainer/compose.resources.yaml; Compose project runa-dev.
+- Preserve all current PostgreSQL/test/storage data, Qdrant/model/shared dependency/build caches and backups. Inventory before work: .runtime/ownership/RM-2026-008/inventory.json. No volume reset or database migration is planned.
+- Host outcome: PHP 8.4.27 build/recreation and point 2 checks passed; see evidence above. Workspace is usable from host or by reopening the rebuilt devcontainer (GUI switching was not performed). Temporary production probe image is retained until scoped cleanup.
+- Remaining: point 3 gosu assessment; point 4 scanner/fixture corrections; full final gate/release 0.3.1. Record check outcomes below before completion.
