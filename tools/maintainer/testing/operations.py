@@ -150,7 +150,7 @@ print('parent:' + sys.stdin.read())
     def test_failed_deploy_keeps_recovery_marker_when_schema_sources_change(self):
         self.check_failed_deploy(compatible=False)
 
-    def test_failed_deploy_returns_to_previous_compatible_images_but_still_fails(self):
+    def test_equal_source_hashes_do_not_prove_safe_data_rollback(self):
         self.check_failed_deploy(compatible=True)
 
     def check_failed_deploy(self, compatible):
@@ -165,16 +165,91 @@ print('parent:' + sys.stdin.read())
             def dc(args, release=None, **kwargs):
                 calls.append((args, release))
                 return subprocess.CompletedProcess(args, 0, stdout='')
-            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'resolve', return_value=sha), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'build_images'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
+            with patch.object(ops, 'ROOT', root), patch.object(ops, 'STATE', state), patch.object(ops, 'maintenance_active', return_value=False), patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'checkout', return_value=root / sha), patch.object(ops, 'dc', side_effect=dc), patch.object(ops.production, 'verify_images'), patch.object(ops, 'command', return_value=[]), patch.object(ops, 'validate'), patch.object(ops, 'build_images'), patch.object(ops, 'tree_hash', return_value='same'), patch.object(ops, 'health') as health, patch.object(ops, 'artisan', side_effect=ValueError('migration failed')), contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(ValueError, 'migration failed'):
-                    ops.deploy(sha, True)
-                self.assertEqual((state / 'in-progress.json').exists(), not compatible)
-                if compatible:
-                    health.assert_called_once_with('/previous', sparse=True)
-                    self.assertIn('RUNA_IMAGE_TAG=' + previous['sha'], config.read_text())
-                else:
-                    health.assert_not_called()
+                    ops.deploy_revision(sha, True)
+                self.assertTrue((state / 'in-progress.json').exists())
+                self.assertEqual(json.loads((state / 'in-progress.json').read_text())['phase'], 'application-migrations')
+                health.assert_not_called()
+                self.assertEqual(calls[-1][0], ['stop', 'queue', 'scheduler', 'app'])
                 self.assertFalse(any('migrate:rollback' in arg for args, _ in calls for arg in args))
+
+    def test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes(self):
+        previous = {'simulation': True, 'path': '/previous', 'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
+        with patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'read_env', return_value={'RUNA_PRODUCTION_MODE': 'simulation'}), patch.object(ops, 'maintenance_active', return_value=True), patch.object(ops, 'checkout') as checkout, patch.object(ops, 'set_tag') as tag:
+            with self.assertRaisesRegex(ValueError, 'Maintenance is already active'):
+                ops.deploy_revision('a' * 40, True)
+            checkout.assert_not_called()
+            tag.assert_not_called()
+
+    def test_default_customer_target_is_main_and_not_a_local_platform_ref(self):
+        import customer_source
+        with patch.object(customer_source, 'fetch') as fetch, patch.object(ops, 'read_state', return_value={'current': {'sha': 'b' * 40, 'path': '/installed'}}), patch.object(ops, 'deploy_revision') as deploy, patch.object(ops, 'resolve') as resolve:
+            fetch.return_value.__enter__.return_value = (Path('/customer'), 'a' * 40)
+            ops.deploy()
+            fetch.assert_called_once_with(ops.ROOT, ops.STATE, 'main', installed=Path('/installed'))
+            deploy.assert_called_once_with('a' * 40, False, source=Path('/customer'))
+            resolve.assert_not_called()
+
+    def test_acquired_but_uninstalled_source_cannot_replace_platform_installation(self):
+        import customer_source
+        with patch.object(ops, 'read_state', return_value={'current': None}), patch.object(customer_source, 'fetch') as fetch:
+            with self.assertRaisesRegex(ValueError, 'completed platform installation'):
+                ops.deploy()
+            fetch.assert_not_called()
+
+    def test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'STATE', Path(folder)), patch.object(ops, 'read_state', return_value={'current': {'database_tree': 'same', 'rollback_safe': False}, 'previous': {'database_tree': 'same'}}), patch.object(ops, 'set_tag') as tag:
+            with self.assertRaisesRegex(ValueError, 'Schema/data compatibility is unproven'):
+                ops.rollback()
+            tag.assert_not_called()
+
+    def test_build_seeding_and_health_failures_have_distinct_recovery_boundaries(self):
+        sha = 'a' * 40
+        previous = {'sha': 'b' * 40, 'path': '/previous', 'database_tree': 'same', 'simulation': True,
+                    'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
+        for failure in ('build', 'seed', 'health'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as folder, contextlib.ExitStack() as stack:
+                root = Path(folder)
+                state = root / 'state'
+                original = 'RUNA_IMAGE_TAG=' + previous['sha'] + '\nRUNA_PRODUCTION_MODE=simulation\n'
+                (root / '.env.prod.compose').write_text(original)
+                calls = []
+                stack.enter_context(patch.object(ops, 'ROOT', root))
+                stack.enter_context(patch.object(ops, 'STATE', state))
+                stack.enter_context(patch.object(ops, 'read_state', return_value={'current': previous}))
+                stack.enter_context(patch.object(ops, 'maintenance_active', return_value=False))
+                stack.enter_context(patch.object(ops, 'checkout', return_value=root / sha))
+                stack.enter_context(patch.object(ops, 'dc', side_effect=lambda args, *a, **kw: calls.append(args)))
+                stack.enter_context(patch.object(ops, 'validate'))
+                stack.enter_context(patch.object(ops, 'build_images', side_effect=ValueError('build failed') if failure == 'build' else None))
+                def artisan(args, release):
+                    if failure == 'seed' and args[0] == 'db:seed':
+                        raise ValueError('seed failed')
+                data = stack.enter_context(patch.object(ops, 'artisan', side_effect=artisan))
+                stack.enter_context(patch.object(ops, 'health', side_effect=ValueError('health failed')))
+                stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
+                with self.assertRaisesRegex(ValueError, failure + ' failed'):
+                    ops.deploy_revision(sha, True)
+                if failure == 'build':
+                    self.assertEqual((root / '.env.prod.compose').read_text(), original)
+                    self.assertFalse((state / 'in-progress.json').exists())
+                    data.assert_not_called()
+                else:
+                    pending = json.loads((state / 'in-progress.json').read_text())
+                    self.assertTrue(pending['data_steps_started'])
+                    self.assertEqual(pending['phase'], 'application-seeding' if failure == 'seed' else 'restart-and-health')
+                    self.assertEqual(calls[-1], ['stop', 'queue', 'scheduler', 'app'])
+                    self.assertEqual([call.args[0][0] for call in data.call_args_list], ['migrate', 'db:seed'])
+
+    def test_same_commit_verifies_health_without_replaying_data_steps(self):
+        previous = {'sha': 'a' * 40, 'path': '/previous', 'simulation': True,
+                    'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
+        with patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'read_env', return_value={'RUNA_PRODUCTION_MODE': 'simulation'}), patch.object(ops, 'maintenance_active', return_value=False), patch.object(ops, 'checkout') as checkout, patch.object(ops, 'artisan') as artisan, patch.object(ops, 'health') as health:
+            ops.deploy_revision('a' * 40, True)
+            health.assert_called_once_with('/previous', sparse=True)
+            checkout.assert_not_called()
+            artisan.assert_not_called()
 
     def test_exclusive_operation_lock(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(ops, 'STATE', Path(folder)):

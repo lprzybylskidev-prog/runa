@@ -8,7 +8,7 @@ php artisan runa:dev:logs app
 php artisan runa:test
 php artisan runa:quality:plan
 php artisan runa:production:status
-php artisan runa:deploy <exact-version>
+php artisan runa:deploy [customer-target]
 ```
 
 Local commands keep their PHP Actions. Host operations use the private workspace

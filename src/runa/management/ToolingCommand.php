@@ -158,9 +158,12 @@ abstract class ToolingCommand extends Command
             throw new InvalidArgumentException('Quality show/status take no execution options.');
         }
         if ($this->tool === 'deploy') {
-            $target = $arguments[0] ?? '';
-            if ($target !== 'rollback' && preg_match('/\A(?:v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)|[a-f0-9]{40})\z/D', $target) !== 1) {
-                throw new InvalidArgumentException('An exact vX.Y.Z release or full SHA is required.');
+            $targets = array_values(array_filter($arguments, static fn (string $value): bool => $value !== '--simulation'));
+            $target = $targets[0] ?? 'main';
+            if (count($targets) > 1 || strlen($target) > 255 || preg_match('/\A[A-Za-z0-9][A-Za-z0-9._\/-]*\z/D', $target) !== 1
+                || str_contains($target, '..') || str_contains($target, '//') || str_ends_with($target, '/') || str_ends_with($target, '.') || str_ends_with($target, '.lock')
+                || (str_starts_with($target, 'refs/') && ! str_starts_with($target, 'refs/heads/') && ! str_starts_with($target, 'refs/tags/'))) {
+                throw new InvalidArgumentException('Provide one customer branch, tag or full SHA; the default target is main.');
             }
         }
         if ($this->tool === 'dev') {

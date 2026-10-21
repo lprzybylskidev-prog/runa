@@ -32,3 +32,5 @@
 30. Production AI/RAG isolation rules remain mandatory regardless of generic Docker recommendations.
 
 Preproduction Runa dev/test database resets and accepted obsolete-volume retirements follow `docs/runa/handbook/architecture/database.md`. An active roadmap authorizes necessary identified resets while repository state and actual deployment evidence establish preproduction; this does not waive test guards or authorize unrelated deletion. Inspect labels, actual mounts and all running/stopped container references, show exact scope, and preserve resources outside that scope. Names and historical reports alone do not establish safe ownership. Stop on uncertain ownership or irreplaceable data. Ordinary editor reopen remains nondestructive.
+
+Customer deployment fetches only the explicitly configured customer repository into disposable staging, preserves protected platform source and builds exact-SHA images before runtime mutation. Keep real-Git source checks and native isolated production code/data/failure acceptance together. Deployment source/image rollback never proves schema/data recovery; follow docs/runa/handbook/production/deployment.md.

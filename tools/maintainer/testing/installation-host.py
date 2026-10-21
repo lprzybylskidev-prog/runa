@@ -6,6 +6,8 @@ Never reuses development data or production projects. Prints scoped cleanup firs
 """
 import json
 import os
+import runpy
+import re
 from pathlib import Path
 import shutil
 import socket
@@ -112,7 +114,9 @@ def main():
         report['checks'].append(text)
         print('PASS: ' + text, flush=True)
     active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev']).splitlines()
-    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project"}}', item]) == 'runa-dev']
+    # Devcontainer images may carry inherited Compose labels into standalone
+    # test helpers. Track actual containers belonging to this checkout.
+    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
     before = {item: output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) for item in active}
     dev_project = 'runa-dev-install-' + token
     prod_project = 'runa-prod-simulation-' + token
@@ -120,78 +124,83 @@ def main():
     smtp = network + '-server'
     fixture_directory = Path(tempfile.mkdtemp(prefix='runa-install-'))
     fixture_directory.chmod(0o700)
+    before_images = set(output(['docker', 'image', 'ls', '--format', '{{.Repository}}:{{.Tag}}']).splitlines())
+    task_images = set()
     try:
         dev, prod = fixture_directory / 'dev', fixture_directory / 'prod'
-        snapshot(dev)
-        # Real development services, isolated ports/project; deliberately unavailable
-        # optional AI proves the existing degradation boundary without model downloads.
-        data = yaml_source('compose.yaml')
-        data['name'] = dev_project
-        services = ('app', 'app-test', 'nginx-test', 'postgres', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit')
-        data['services'] = {key: value for key, value in data['services'].items() if key in services}
-        for key in ('qdrant', 'embeddings', 'knowledge-init'):
-            data['services'][key] = {'image': 'runa-development:dev', 'pull_policy': 'never',
-                                     'build': {'context': '.', 'dockerfile': 'docker/php/Dockerfile', 'target': 'development'},
-                                     'entrypoint': ['python3', '-c', 'raise SystemExit(1)'], 'restart': 'no', 'healthcheck': {'disable': True}}
-        data['volumes'] = {key: value for key, value in data['volumes'].items() if key in ('postgres-icu-data', 'composer-cache', 'mailpit-data')}
-        web_port, mail_port = port(), port()
-        data['services']['nginx']['ports'] = ['127.0.0.1:' + str(web_port) + ':8080']
-        data['services']['mailpit']['ports'] = ['127.0.0.1:' + str(mail_port) + ':8025']
-        (dev / 'compose.yaml').write_text(json.dumps(data, indent=2) + '\n')
-        dev_sha = commit(dev)
-        project_customer(dev, dev_sha)
-        env = dict(os.environ, COMPOSE_PROJECT_NAME=dev_project)
-        # Avoid GPU/model resources even on a CUDA-capable acceptance host.
-        (dev / '.env.dev.local').write_text('EMBEDDINGS_DEVICE=cpu\n')
-        (dev / '.env.dev.local').chmod(0o600)
-        command = installer(dev, 'dev', dev_sha) + ['--profile=low', '--non-interactive']
-        check(not (dev / 'src/vendor').exists() and not (dev / '.env').exists(), 'development starts with no vendor, application key or database settings')
-        call(command, cwd=dev, env=env)
-        with urllib.request.urlopen('http://127.0.0.1:' + str(web_port) + '/api/ready', timeout=10) as response:
-            check(json.load(response)['status'] == 'ok', 'fresh development installation serves real Laravel readiness')
-        check(not (dev / '.git/runa-ownership.json').exists(), 'development installation leaves no source baseline')
-        bootstrap_providers = (dev / 'src/bootstrap/providers.php').read_bytes()
-        for generator_command in (['make:config', 'CustomerGeneratorProbe'], ['make:test', 'CustomerGeneratorProbe', '--pest'], ['make:provider', 'CustomerGeneratorProbeProvider']):
-            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', *generator_command, '--no-interaction'])
-        check((dev / 'src/app/config/CustomerGeneratorProbe.php').is_file() and (dev / 'src/app/tests/Feature/CustomerGeneratorProbe.php').is_file(), 'standard config and test generators write only application roots')
-        check((dev / 'src/app/Providers/CustomerGeneratorProbeProvider.php').is_file() and 'CustomerGeneratorProbeProvider' in (dev / 'src/app/providers.php').read_text() and (dev / 'src/bootstrap/providers.php').read_bytes() == bootstrap_providers, 'provider generation registers the application provider without editing platform bootstrap')
+        dev_sha = None
+        if "--production-only" not in sys.argv[1:]:
+            snapshot(dev)
+            # Real development services, isolated ports/project; deliberately unavailable
+            # optional AI proves the existing degradation boundary without model downloads.
+            data = yaml_source('compose.yaml')
+            data['name'] = dev_project
+            services = ('app', 'app-test', 'nginx-test', 'postgres', 'setup', 'nginx', 'queue', 'scheduler', 'mailpit')
+            data['services'] = {key: value for key, value in data['services'].items() if key in services}
+            for key in ('qdrant', 'embeddings', 'knowledge-init'):
+                data['services'][key] = {'image': 'runa-development:dev', 'pull_policy': 'never',
+                                         'build': {'context': '.', 'dockerfile': 'docker/php/Dockerfile', 'target': 'development'},
+                                         'entrypoint': ['python3', '-c', 'raise SystemExit(1)'], 'restart': 'no', 'healthcheck': {'disable': True}}
+            data['volumes'] = {key: value for key, value in data['volumes'].items() if key in ('postgres-icu-data', 'composer-cache', 'mailpit-data')}
+            web_port, mail_port = port(), port()
+            data['services']['nginx']['ports'] = ['127.0.0.1:' + str(web_port) + ':8080']
+            data['services']['mailpit']['ports'] = ['127.0.0.1:' + str(mail_port) + ':8025']
+            (dev / 'compose.yaml').write_text(json.dumps(data, indent=2) + '\n')
+            dev_sha = commit(dev)
+            project_customer(dev, dev_sha)
+            env = dict(os.environ, COMPOSE_PROJECT_NAME=dev_project)
+            # Avoid GPU/model resources even on a CUDA-capable acceptance host.
+            (dev / '.env.dev.local').write_text('EMBEDDINGS_DEVICE=cpu\n')
+            (dev / '.env.dev.local').chmod(0o600)
+            command = installer(dev, 'dev', dev_sha) + ['--profile=low', '--non-interactive']
+            check(not (dev / 'src/vendor').exists() and not (dev / '.env').exists(), 'development starts with no vendor, application key or database settings')
+            call(command, cwd=dev, env=env)
+            with urllib.request.urlopen('http://127.0.0.1:' + str(web_port) + '/api/ready', timeout=10) as response:
+                check(json.load(response)['status'] == 'ok', 'fresh development installation serves real Laravel readiness')
+            check(not (dev / '.git/runa-ownership.json').exists(), 'development installation leaves no source baseline')
+            bootstrap_providers = (dev / 'src/bootstrap/providers.php').read_bytes()
+            for generator_command in (['make:config', 'CustomerGeneratorProbe'], ['make:test', 'CustomerGeneratorProbe', '--pest'], ['make:provider', 'CustomerGeneratorProbeProvider']):
+                call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', *generator_command, '--no-interaction'])
+            check((dev / 'src/app/config/CustomerGeneratorProbe.php').is_file() and (dev / 'src/app/tests/Feature/CustomerGeneratorProbe.php').is_file(), 'standard config and test generators write only application roots')
+            check((dev / 'src/app/Providers/CustomerGeneratorProbeProvider.php').is_file() and 'CustomerGeneratorProbeProvider' in (dev / 'src/app/providers.php').read_text() and (dev / 'src/bootstrap/providers.php').read_bytes() == bootstrap_providers, 'provider generation registers the application provider without editing platform bootstrap')
 
-        check(not (dev / 'src/runa/tests').exists() and not (dev / 'src/runa/tools').exists(), 'customer source excludes all platform tests and browser harnesses')
-        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:doctor:docs'])
-        check(not (dev / 'docs/runa/maintainer').exists() and all((dev / 'docs/app/roadmaps' / state).is_dir() and not list((dev / 'docs/app/roadmaps' / state).glob('*.md')) for state in ('draft', 'active', 'paused', 'closed')), 'customer documentation and empty application roadmaps contain no owner history')
-        plan = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:quality:plan'])
-        check('tools/maintainer' not in plan and 'runa:doctor:docs' in plan, 'customer quality plan retains public documentation/security checks without owner gates')
-        corpus = 'import sys; from pathlib import Path; sys.path.insert(0,"tools/application/knowledge"); from configuration import load; from corpus import sources; root=Path.cwd(); names=[p.relative_to(root).as_posix() for p in sources(root,load(root))]; assert "docs/app/README.md" in names; assert "docs/runa/handbook/security/baseline.md" in names; assert not any("/maintainer/" in p for p in names); print("PASS: delivered app/public corpus and skills; no owner sources.")'
-        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', '-c', corpus])
-        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', 'tools/application/testing/hooks.py'])
-        check(True, 'delivered customer hooks and knowledge source selection work without maintainer source')
-        native_tests = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'test', '--list-tests'])
-        check('WelcomeTest' in native_tests and 'Runa\\tests' not in native_tests and 'ManagementTest' not in native_tests, 'native customer Artisan discovers application tests without owner autoloading')
-        for test_command in ('test', 'runa:test', 'runa:test:frontend'):
-            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', test_command])
-        call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
-        call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
-        browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)
-        shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
-        report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
-        check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
+            check(not (dev / 'src/runa/tests').exists() and not (dev / 'src/runa/tools').exists(), 'customer source excludes all platform tests and browser harnesses')
+            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:doctor:docs'])
+            check(not (dev / 'docs/runa/maintainer').exists() and all((dev / 'docs/app/roadmaps' / state).is_dir() and not list((dev / 'docs/app/roadmaps' / state).glob('*.md')) for state in ('draft', 'active', 'paused', 'closed')), 'customer documentation and empty application roadmaps contain no owner history')
+            plan = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:quality:plan'])
+            check('tools/maintainer' not in plan and 'runa:doctor:docs' in plan, 'customer quality plan retains public documentation/security checks without owner gates')
+            corpus = 'import sys; from pathlib import Path; sys.path.insert(0,"tools/application/knowledge"); from configuration import load; from corpus import sources; root=Path.cwd(); names=[p.relative_to(root).as_posix() for p in sources(root,load(root))]; assert "docs/app/README.md" in names; assert "docs/runa/handbook/security/baseline.md" in names; assert not any("/maintainer/" in p for p in names); print("PASS: delivered app/public corpus and skills; no owner sources.")'
+            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', '-c', corpus])
+            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'python3', 'tools/application/testing/hooks.py'])
+            check(True, 'delivered customer hooks and knowledge source selection work without maintainer source')
+            native_tests = output(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'test', '--list-tests'])
+            check('WelcomeTest' in native_tests and 'Runa\\tests' not in native_tests and 'ManagementTest' not in native_tests, 'native customer Artisan discovers application tests without owner autoloading')
+            for test_command in ('test', 'runa:test', 'runa:test:frontend'):
+                call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', test_command])
+            call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
+            call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
+            browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)
+            shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
+            report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
+            check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
 
-        secrets = {name: (dev / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
-        customer = dev / 'src/app/customer-sentinel.txt'
-        customer.write_text('preserve customer source\n')
-        app = json.loads((dev / 'src/app/application.json').read_text())
-        app['version'] = '2.4.1'
-        (dev / 'src/app/application.json').write_text(json.dumps(app))
-        call(command, cwd=dev, env=env)
-        check(all((dev / name).read_bytes() == value for name, value in secrets.items()) and customer.read_text() == 'preserve customer source\n', 'repeated development installation preserves all credentials and customer source')
-        check(json.loads((dev / 'src/app/application.json').read_text())['version'] == '2.4.1', 'application version remains customer-owned on repeat')
-        check(not (dev / '.runtime/production/first-deploy.json').exists(), 'development never writes a real production marker')
-        remove_project(dev_project, report)
+            secrets = {name: (dev / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
+            customer = dev / 'src/app/customer-sentinel.txt'
+            customer.write_text('preserve customer source\n')
+            app = json.loads((dev / 'src/app/application.json').read_text())
+            app['version'] = '2.4.1'
+            (dev / 'src/app/application.json').write_text(json.dumps(app))
+            call(command, cwd=dev, env=env)
+            check(all((dev / name).read_bytes() == value for name, value in secrets.items()) and customer.read_text() == 'preserve customer source\n', 'repeated development installation preserves all credentials and customer source')
+            check(json.loads((dev / 'src/app/application.json').read_text())['version'] == '2.4.1', 'application version remains customer-owned on repeat')
+            check(not (dev / '.runtime/production/first-deploy.json').exists(), 'development never writes a real production marker')
+            remove_project(dev_project, report)
 
         snapshot(prod)
         certificates = fixture_directory / 'certificates'
         certificates.mkdir(mode=0o700)
         call(['docker', 'run', '--rm', '--network', 'none', '--user', str(os.getuid()) + ':' + str(os.getgid()),
+              '--label', 'com.docker.compose.project=runa-install-cert-' + token,
               '--mount', 'type=bind,src=' + str(certificates) + ',dst=/fixture', '--entrypoint', 'openssl', 'runa-development:dev',
               'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', '/fixture/private-key.pem', '-out', '/fixture/certificate.pem', '-days', '2',
               '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost,DNS:smtp', '-addext', 'basicConstraints=critical,CA:TRUE'])
@@ -201,6 +210,7 @@ def main():
         mail_reports.mkdir(mode=0o700)
         call(['docker', 'network', 'create', '--label', 'runa.task=RM-2026-005-point-8', network])
         call(['docker', 'run', '-d', '--name', smtp, '--network', network, '--network-alias', 'smtp', '--user', str(os.getuid()) + ':' + str(os.getgid()),
+              '--label', 'com.docker.compose.project=' + network, '--label', 'com.docker.compose.service=smtp-fixture',
               '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
               '--mount', 'type=bind,src=' + str(certificates) + ',dst=/fixture,readonly', '--mount', 'type=bind,src=' + str(mail_reports) + ',dst=/reports',
               '--entrypoint', 'python3', 'runa-development:dev', '/fixture/smtp.py'])
@@ -238,6 +248,9 @@ def main():
         check(not (prod / '.git/runa-ownership.json').exists(), 'production installation leaves no source baseline')
         report['dev_sha'], report['prod_sha'] = dev_sha, sha
         report['images'] = deployment['current']['images']
+        if '--customer-deployment' in sys.argv[1:]:
+            runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-deployment-host.py'))['exercise'](
+                prod, fixture_directory, prod_project, check, report, call, output, commit)
         report['result'] = 'PASS'
     except BaseException:
         report['result'] = 'FAIL'
@@ -245,23 +258,42 @@ def main():
     finally:
         for mode in ('dev', 'prod'):
             source = fixture_directory / mode
+            if (source / 'src/runa/management').is_dir():
+                identity = call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); import management; print(management.image_identity())'], cwd=source, capture=True, check=False)
+                if identity.returncode == 0 and re.fullmatch('[a-f0-9]{64}', identity.stdout.strip()):
+                    task_images.add('runa-management:' + identity.stdout.strip()[:24])
+            for release in (source / '.runtime/production/releases').glob('*'):
+                if re.fullmatch('[a-f0-9]{40}', release.name):
+                    task_images.update(prefix + release.name for prefix in ('runa-production:', 'runa-nginx:'))
             if (source / '.runtime/host/client.json').exists():
                 print('Scoped fixture executor shutdown: ' + str(source), flush=True)
                 call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); from host_executor import stop; stop()'], cwd=source, check=False)
         remove_project(dev_project, report)
         remove_project(prod_project, report)
+        existing_images = set(output(['docker', 'image', 'ls', '--format', '{{.Repository}}:{{.Tag}}']).splitlines())
+        removable = sorted(tag for tag in (task_images & existing_images) - before_images
+                           if not output(['docker', 'ps', '-a', '-q', '--filter', 'ancestor=' + tag]))
+        print('Scoped unused task image cleanup: ' + json.dumps(removable), flush=True)
+        if removable:
+            call(['docker', 'image', 'rm', *removable])
+        report['removed_images'] = removable
         if output(['docker', 'ps', '-a', '-q', '--filter', 'name=^/' + smtp + '$']):
             print('Scoped fixture container cleanup: ' + smtp, flush=True)
             call(['docker', 'rm', '--force', smtp])
         if output(['docker', 'network', 'ls', '-q', '--filter', 'name=^' + network + '$']):
             print('Scoped fixture network cleanup: ' + network, flush=True)
             call(['docker', 'network', 'rm', network])
-        check(all(output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) == value for item, value in before.items()), 'active development container identities/start times remain unchanged')
-        report['fixture_root'] = str(fixture_directory)
-        report_path.write_text(json.dumps(report, indent=2) + '\n')
-        # Preserve failed source context for diagnosis; successful source is disposable.
-        if report['result'] == 'PASS':
-            shutil.rmtree(fixture_directory)
+        try:
+            check(all(output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) == value for item, value in before.items()), 'active development container identities/start times remain unchanged')
+        except BaseException:
+            report['result'] = 'FAIL'
+            raise
+        finally:
+            report['fixture_root'] = str(fixture_directory)
+            report_path.write_text(json.dumps(report, indent=2) + '\n')
+            # Preserve failed source context for diagnosis; successful source is disposable.
+            if report['result'] == 'PASS':
+                shutil.rmtree(fixture_directory)
     print('Report: ' + str(report_path))
 
 

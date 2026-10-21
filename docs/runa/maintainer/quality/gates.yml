@@ -155,6 +155,11 @@ impact_areas:
       command: python3 tools/maintainer/testing/operations.py
       severity: hard_fail
 
+    - id: customer-deployment-source-contracts
+      depends_on: [configuration]
+      command: python3 tools/maintainer/testing/customer-deployment.py
+      severity: hard_fail
+
     - id: production-build
       execution_context: host
       depends_on: [production-compose]

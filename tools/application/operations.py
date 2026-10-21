@@ -22,7 +22,7 @@ SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Datab
           '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
           '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
           '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/application/runtime.py', '/tools/application/production.py', '/tools/application/operations.py', '/tools/application/dependencies.py', '/tools/application/repository_boundary.py',
+          '/tools/application/runtime.py', '/tools/application/production.py', '/tools/application/operations.py', '/tools/application/customer_source.py', '/tools/application/dependencies.py', '/tools/application/repository_boundary.py',
           '/bin/artisan', '/bin/command', '/tools/application/management.py', '/tools/application/executors/operations.py', '/tools/application/executors/production.py',
           '/src/runa/management/autoload.php',
           '/src/runa/management/bootstrap.php',
@@ -189,12 +189,12 @@ def resolve(target):
     return sha
 
 
-def tree_hash(sha):
+def tree_hash(sha, repository=None):
     # Conservatively block rollback on any migration or seeder implementation change.
-    return hashlib.sha256(run(['git', 'ls-tree', '-r', sha, 'database', 'app/Support/Seeding', 'app/Console/Commands/SeedProject.php', 'src/app/database', 'src/runa/database', 'src/runa/Support/Seeding', 'src/runa/Console/Commands/SeedProject.php'], capture_output=True).stdout).hexdigest()
+    return hashlib.sha256(run(['git', '-C', str(repository or ROOT), 'ls-tree', '-r', sha, 'src/app/database', 'src/app/Support/Seeding', 'src/runa/database', 'src/runa/Support/Seeding'], capture_output=True).stdout).hexdigest()
 
 
-def checkout(sha):
+def checkout(sha, source=None):
     from repository_boundary import receipt, write_staging_receipt
     data = receipt(ROOT)
     if not re.fullmatch('[a-f0-9]{40}', sha):
@@ -212,7 +212,7 @@ def checkout(sha):
             raise ValueError('Existing release staging ownership differs; no source is adopted or repaired.')
         return path
     path.parent.mkdir(parents=True, exist_ok=True)
-    run(['git', 'clone', '--no-checkout', '--no-hardlinks', str(ROOT), str(path)])
+    run(['git', '-c', 'core.hooksPath=/dev/null', 'clone', '--no-checkout', '--no-hardlinks', str(source or ROOT), str(path)])
     run(['git', '-C', str(path), 'sparse-checkout', 'init', '--no-cone'])
     run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
     run(['git', '-C', str(path), 'checkout', '--detach', sha])
@@ -220,6 +220,7 @@ def checkout(sha):
     # Acquisition digests identify the original download, not a different staged commit.
     staged.pop('source_sha256', None)
     write_staging_receipt(path, staged)
+    run(['git', '-C', str(path), 'remote', 'set-url', 'origin', 'https://github.com/' + data['repository'] + '.git'])
     run(['git', '-C', str(path), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
     return path
 
@@ -316,10 +317,28 @@ def build_images(release=None):
     production.verify_images(command(release), environment())
 
 
-def deploy(target, simulation, initial_resume=False, verification=None, database_setup=None):
+def deploy(target='main', simulation=False, initial_resume=False, verification=None, database_setup=None):
     from repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
-    sha = resolve(target)
+    if database_setup is not None:
+        # Private external installer callback; never selected by customer commands.
+        return deploy_revision(resolve(target), simulation, initial_resume, verification, database_setup)
+    installed = read_state()['current']
+    if not installed:
+        raise ValueError('Customer deployment requires a completed platform installation; use the external owner installer first.')
+    from customer_source import fetch
+    with fetch(ROOT, STATE, target, installed=Path(installed['path'])) as (source, sha):
+        return deploy_revision(sha, simulation, source=source)
+
+
+def maintenance_active(release):
+    result = dc(['run', '--rm', '--no-deps', '-T', '--entrypoint', 'php', 'app', '-r',
+                 'echo (is_file("/workspace/src/storage/framework/maintenance/enabled") || is_file("/workspace/src/storage/framework/down")) ? "active" : "clear";'],
+                release, capture_output=True, text=True)
+    return result.stdout.strip() != 'clear'
+
+
+def deploy_revision(sha, simulation, initial_resume=False, verification=None, database_setup=None, source=None):
     previous = read_state()['current']
     mode = read_env(ROOT / '.env.prod.compose').get('RUNA_PRODUCTION_MODE', 'real')
     if simulation != (mode == 'simulation'):
@@ -330,6 +349,12 @@ def deploy(target, simulation, initial_resume=False, verification=None, database
         raise ValueError('Previous deployment uses a different database baseline. Use a fresh dedicated installer simulation checkout; do not adopt the old cluster.')
     if previous and previous['simulation'] != simulation:
         raise ValueError('Cannot switch between real and simulation deployment contexts.')
+    if previous and maintenance_active(previous['path']):
+        raise ValueError('Maintenance is already active. Preserve operator ownership and resolve it before deployment.')
+    if previous and previous['sha'] == sha:
+        health(previous['path'], sparse=True)
+        print('PASS: requested customer revision is already deployed; no data steps repeated.')
+        return
     if not previous:
         existing = dc(['ps', '--all', '--quiet'], capture_output=True, text=True).stdout.strip()
         project_command = command()
@@ -339,46 +364,53 @@ def deploy(target, simulation, initial_resume=False, verification=None, database
             raise ValueError('Unmanaged production project already exists. Preserve it and choose a separate simulation context; do not adopt unknown data.')
         if verification is not None and not (STATE / 'install-resources.json').exists():
             atomic(STATE / 'install-resources.json', {'sha': sha, 'project': project, 'started_at': stamp()})
-    release = checkout(sha)
+    release = checkout(sha, source) if source is not None else checkout(sha)
     old_config = set_tag(sha)
     mutation_started = False
+    pending = {'target': sha, 'previous': previous, 'started_at': stamp(), 'phase': 'prepared', 'data_steps_started': False}
+    def phase(value):
+        pending['phase'] = value
+        atomic(STATE / 'in-progress.json', pending)
     try:
         dc(['config', '--quiet'], release)
         # Never overwrite an immutable image identity with a different source tree.
         build_images(release)
         validate(release)
-        atomic(STATE / 'in-progress.json', {'target': sha, 'previous': previous, 'started_at': stamp(), 'phase': 'startup-and-migrations'})
+        phase('startup-and-maintenance')
         mutation_started = True
         dc(['up', '-d', '--wait', '--no-build', 'postgres'], release)
         pause_http(release)
+        pending['data_steps_started'] = True
         if database_setup is not None:
+            phase('platform-installation')
             database_setup(release)
         else:
+            phase('application-migrations')
             artisan(['migrate', '--force'], release)
+            phase('application-seeding')
             artisan(['db:seed', '--force'], release)
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
+        phase('restart-and-health')
         resume_http(release, recreate=True)
         health(release, sparse=True)
         if verification is not None:
             verification(release)
         identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
-                    'database_tree': tree_hash(sha), 'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}
+                    'application_version': json.loads((release / 'src/app/application.json').read_text())['version'],
+                    'database_tree': tree_hash(sha, release), 'rollback_safe': False,
+                    'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}
         atomic(STATE / 'deployment.json', {'current': identity, 'previous': previous})
         (STATE / 'in-progress.json').unlink()
         print('PASS: deployed ' + sha + (' (simulation).' if simulation else '.'))
     except BaseException:
         if not mutation_started:
             (ROOT / '.env.prod.compose').write_text(old_config)
-        elif previous and previous['database_tree'] == tree_hash(sha):
-            http_maintenance(True, release)
-            set_tag(previous['sha'])
-            resume_http(previous['path'], recreate=True)
-            health(previous['path'], sparse=True)
-            (STATE / 'in-progress.json').unlink()
-            print('Deployment FAILED; safely returned to previous application ' + previous['sha'] + '. Database migrations were not reversed.')
         else:
-            http_maintenance(True, release)
-            print('Deployment FAILED after migrations may have started. Services may be stopped or unhealthy; inspect in-progress.json. No schema reversal was attempted.')
+            try:
+                pause_http(release)
+            except BaseException:
+                print('Recovery fencing failed; immediately stop production HTTP/writers through the operator environment.')
+            print('Deployment FAILED at ' + pending['phase'] + '. Maintenance/recovery state retained; inspect .runtime/production/in-progress.json before any retry. No schema/data reversal or automatic seeder replay was attempted.')
         raise
 
 
@@ -391,6 +423,10 @@ def rollback():
         raise ValueError('Rollback needs two successful deployments and no unresolved failed deployment.')
     if current['database_tree'] != previous['database_tree']:
         raise ValueError('Migration/seeder sources changed. Automatic rollback is blocked; use the documented recovery strategy.')
+    if not current.get('rollback_safe'):
+        raise ValueError('Schema/data compatibility is unproven after deployment data steps. Code rollback cannot reverse data; recover under operator review.')
+    if maintenance_active(current['path']):
+        raise ValueError('Maintenance is already active; preserve operator ownership before rollback.')
     old = set_tag(previous['sha'])
     try:
         if images(previous['path']) != previous['images']:
@@ -416,7 +452,7 @@ def main(name, args):
     if name != 'deploy':
         raise ValueError('Unsupported internal operation family.')
     parser = argparse.ArgumentParser(prog='./bin/' + name)
-    parser.add_argument('target', help='Exact vX.Y.Z/full SHA, or rollback')
+    parser.add_argument('target', nargs='?', default='main', help='Customer branch/tag/full SHA (default: main), or internal rollback')
     parser.add_argument('--simulation', action='store_true', help='Isolated local production simulation')
     options = parser.parse_args(args)
     if inside():

@@ -2,7 +2,10 @@
 import json
 import os
 from pathlib import Path
+import posixpath
+import re
 import subprocess
+from urllib.parse import unquote, urlsplit
 
 OWNER_PATHS = ('distribution', 'tools/maintainer', 'bootstrap.py', 'bin/project', 'bin/install-prod',
                'src/runa/tests', 'src/runa/tools', 'docs/runa/maintainer', 'src/runa/management/InstallCommand.php', 'src/runa/management/ProjectCommand.php')
@@ -35,6 +38,12 @@ def receipt(root):
 
 def assert_installation(root):
     data = receipt(root)
+    configured = subprocess.run(['git', '-C', str(root), 'config', '--local', '--get-all', 'runa.applicationRemote'], capture_output=True, text=True)
+    if configured.returncode == 0:
+        application_remote(root, data)
+        return data
+    if configured.returncode != 1:
+        raise RepositoryBoundaryError('Cannot read application repository configuration.')
     # Never replace or repoint a preexisting customer remote/history.
     origin = subprocess.run(['git', '-C', str(root), 'remote', 'get-url', '--all', 'origin'], capture_output=True, text=True, check=True).stdout.strip()
     expected = 'https://github.com/' + data['repository'] + '.git'
@@ -44,6 +53,37 @@ def assert_installation(root):
     if push != 'disabled://runa-read-only-upstream':
         raise RepositoryBoundaryError('Release upstream is not fenced against accidental writes.')
     return data
+
+
+def application_remote(root, data=None):
+    """Explicit customer selection; no remote repair, inference or upstream fetch."""
+    data = data or receipt(root)
+    def git(*args):
+        result = subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True)
+        if result.returncode:
+            raise RepositoryBoundaryError('Configure a customer remote with git config --local runa.applicationRemote <remote-name>.')
+        return result.stdout.strip()
+    name = git('config', '--local', '--get-all', 'runa.applicationRemote')
+    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,63}', name):
+        raise RepositoryBoundaryError('Select exactly one named customer application remote.')
+    url = git('remote', 'get-url', '--all', name)
+    if not url or any(char.isspace() or ord(char) < 32 for char in url) or url.startswith('-'):
+        raise RepositoryBoundaryError('Application remote must have one supported nonsecret URL.')
+    parsed = urlsplit(url)
+    if parsed.scheme in ('https', 'ssh'):
+        if not parsed.hostname or parsed.password or (parsed.scheme == 'https' and parsed.username) or parsed.query or parsed.fragment:
+            raise RepositoryBoundaryError('Use a credential-free HTTPS/SSH application remote and operator credential helpers.')
+        host, path = parsed.hostname, parsed.path
+    elif re.fullmatch(r'[A-Za-z0-9_.-]+@[A-Za-z0-9.-]+:[A-Za-z0-9_./-]+', url):
+        host, path = url.split('@', 1)[1].split(':', 1)
+    elif Path(url).is_absolute() and Path(url).resolve() != Path(root).resolve():
+        host, path = '', url
+    else:
+        raise RepositoryBoundaryError('Application remote must use HTTPS, SSH or an explicit separate local repository.')
+    repository = posixpath.normpath(unquote(path)).strip('/').lower().removesuffix('.git')
+    if host.rstrip('.').lower() in ('github.com', 'www.github.com', 'ssh.github.com') and repository == data['repository'].lower():
+        raise RepositoryBoundaryError('Application deployment cannot fetch the owner Runa repository; select the customer repository.')
+    return name, url
 
 
 def assert_production_installation(root):

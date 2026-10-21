@@ -2,7 +2,7 @@
 
 ## Repository and ownership
 
-Work in the configured customer repository with the owner's Git identity. Preserve existing remotes/history. Never push to the Runa release-source upstream; acquisition fences that upstream read-only. Application repository source and deployment conventions belong to the application owner.
+Work in the configured customer repository with the owner's Git identity. Preserve existing remotes/history. Never push to the Runa release-source upstream; acquisition fences that upstream read-only. Application repository source and deployment conventions belong to the application owner. Production deploy selects that repository explicitly through local Git `runa.applicationRemote`; it preserves existing remotes/refs/history and never fetches the owner release-source upstream. See [application deployment](../production/deployment.md).
 
 Customer hooks live under tools/application; configure them with `git config --local core.hooksPath .githooks`. Application implementation and documentation belong to src/app and docs/app. The supplied platform source and versions remain protected. Customer deployment evidence stays local; backups are externally managed.
 

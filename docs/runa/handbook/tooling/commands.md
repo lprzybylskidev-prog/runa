@@ -232,8 +232,8 @@ Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by d
 
 ## Production operations and security
 
-- `php artisan runa:deploy <vX.Y.Z|full-SHA> [--simulation]`: exact-version preflight/build/migrate/seed/recreate/health flow.
-- `php artisan runa:deploy:rollback`: previous immutable application images only, with migration/seeder compatibility checks; never automatic database reversal.
+- `php artisan runa:deploy [target] [--simulation]`: fetch the configured customer repository (default `main`, or branch/tag/full SHA), preserve protected platform source and run application build/migrate/seed/recreate/health. See [deployment](../production/deployment.md) for remote selection and recovery.
+- `php artisan runa:deploy:rollback`: previous immutable application images only, requiring proven schema/data compatibility; current data-changing deployments block automatic rollback. Never reverses database changes.
 - `php artisan runa:production:self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
 - `php artisan runa:production:self-test`: delegates to the same deep host self-test.
 - `php artisan runa:security:dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.

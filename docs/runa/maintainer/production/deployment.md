@@ -1,206 +1,29 @@
-# Production Deployment and Rollback
+# Owner installation and deployment acceptance
 
-Production operation guard: every `runa:production:*` execution, `runa:deploy` and `runa:deploy:rollback` requires the existing installer-selected acquisition mode `prod`. A development, missing or unknown installation mode is rejected before production locks/state, Docker/builds or deployment work. `APP_ENV=production`, production configuration files and `--simulation` do not bypass this restriction. Production simulations use separate production-mode fixture installations. Help, discovery and explicit nonexecuting `--plan` remain available from development. This uses acquisition context, not a first-production history flag or licensing mechanism.
+Customer deployment and recovery have one authority: [the public application deployment guide](../../handbook/production/deployment.md). It defines explicit customer remote selection, default `main`/branch/tag/SHA targeting, protected-source preservation, frozen builds, application-only data steps, maintenance ownership and recovery evidence. Application deployment never retrieves Runa releases or runs platform migrations/seeds. Owner platform installation/update remains external.
 
-## Production installer
+## Initial production installation
 
-For a new operator checkout, use the [standalone GitHub bootstrap](../tooling/bootstrap.md)
-to acquire and verify an exact published release without overwriting existing
-files. Public access requires no token; private access uses hidden input or a
-private credential file. Acquisition can be postponed before the existing
-containerized installer. Existing installed repositories still follow the
-deployment/update procedure below; bootstrap never replaces a customer checkout.
+Use the separately delivered [GitHub bootstrap](../tooling/bootstrap.md) and [installer](../tooling/installation.md) against a new dedicated checkout. Public acquisition needs no token; future private access uses hidden input/private credentials. Acquisition can be postponed, never overwrites customer source and leaves no owner launchers in the installation.
 
-A production installer is required.
+The installer selects an immutable platform release, provisions separate admin/runtime credentials and private settings once, projects production source, builds exact images and runs its private platform-only migration/required-seed callback. It validates supplied certificate-backed HTTPS or an explicitly selected trusted terminator, then submits an SMTP verification message. It runs no application migrations/seeds. An interrupted initial install uses its explicit `--resume`; successful repeats preserve source/settings/secrets/data. Bootstrap is not a customer deployment or platform-update command.
 
-It should guide/check:
+The sparse allowlist retains runtime/build/deploy inputs and excludes owner tools/tests/docs and development/AI content. Production runtime images exclude operational Python/Git tooling too. PHP/Composer/pnpm builds run in containers; no host PHP/Node, Docker-in-Docker or runtime Docker socket is required. Host prerequisites remain Linux, Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+.
 
-- host requirements,
-- repository access,
-- production secrets/settings,
-- sparse checkout,
-- exact application version,
-- image/build preparation,
-- service start,
-- migrations,
-- production seeders,
-- health checks,
-- AI/RAG isolation self-test.
+## Isolated acceptance
 
-The installer must not silently invent insecure defaults.
+Only dedicated acquired `mode=prod` fixtures may execute production gates. Development or unknown targets remain blocked regardless of caller `APP_ENV`. Keep production gate routing separate from the maintenance checkout; RM-2026-005 point 13 reconciles the remaining final-gate target preparation without weakening this boundary.
 
-## Sparse checkout
+Set `RUNA_PRODUCTION_MODE=simulation` and pass `--simulation`. Installer `simulation_project` selects a fresh `runa-prod-simulation-*` project with loopback TLS and disposable databases/storage. Real mode selects `runa-prod` and refuses custom simulation project names. Unknown existing containers/volumes cannot be adopted. Neither simulations nor real installation publish a production-history flag.
 
-Production checkout excludes development-only content when not needed at runtime, including the conceptual categories:
-
-- `.agents/`
-- `.devcontainer/`
-- development-only AI/RAG service definitions
-- Qdrant/embedding implementation/config
-- documentation that production runtime does not require
-- local development artifacts/tooling
-
-The exact sparse checkout must still include all runtime/deploy scripts/config required for deployment and operations.
-
-## Canonical deploy command
-
-`php artisan runa:deploy`
-
-Deployment is version-oriented, not "whatever happens to be in the working tree."
-
-Typical flow:
-
-1. validate production environment/config,
-2. resolve/check out the exact target version/commit,
-3. build/pull exact runtime images as designed,
-4. install Composer production dependencies from lockfile:
-   - no dev dependencies,
-   - prefer distribution packages,
-   - optimized/autoloader behavior appropriate to Laravel,
-5. build frontend assets from the locked pnpm graph,
-6. run application migrations,
-7. run application `DatabaseSeeder` (`db:seed`),
-8. ensure required persistent-storage/public-link setup such as `storage:link` is correct and idempotent,
-9. build Laravel production caches/optimization,
-10. restart/update required runtime services,
-11. run health checks,
-12. run production self-test including AI/RAG isolation,
-13. record deployment identity/state locally.
-
-Do not run development Compose commands from production scripts.
-
-## Migration safety
-
-Deployment failure during migrations or production seeders is a deployment failure.
-
-Do not pretend code rollback automatically reverses schema/data changes.
-
-When a roadmap introduces a migration that constrains rollback:
-
-- document it before deploy,
-- design compatible rollout/expand-contract when needed,
-- state whether the previous application version remains schema-compatible.
-
-## Rollback
-
-Canonical command:
-
-`php artisan runa:deploy:rollback`
-
-Deployment records the previous version/image/commit identity needed for rollback.
-
-Rollback covers application code/container version.
-
-Database migration reversal happens only when it is explicitly safe. Do not execute destructive `down()` automatically merely because rollback was requested.
-
-If schema/data changes prevent safe rollback:
-
-- stop,
-- report the constraint,
-- use the roadmap's documented recovery strategy.
-
-## Deployment identity
-
-A deployment should make it possible to identify:
-
-- semantic project version,
-- Git SHA,
-- relevant image/build identity,
-- deployment timestamp.
-
-## Production seeders
-
-Deploy order is application `migrate --force` then `db:seed --force`. The application `DatabaseSeeder` selects its explicit registered graph (production category by default); loose files and Runa seeders are never discovered. External first installation uses a private platform-only callback instead.
-
-Production seeders are idempotent.
-
-Production seeder failure blocks successful deployment.
-
-## Config
-
-Every production-critical config is validated before destructive/irreversible deployment work where possible.
-
-Detect development-only values in production, including:
-
-- debug modes,
-- local origins,
-- dev mail,
-- AI/RAG enablement,
-- unsafe CORS,
-- invalid secret/config state.
-
-## Pre-migration and simulation checks
-
-Validate the resolved production configuration, dependency installation and image/build readiness before running migrations. If an upgrade or post-update health check fails, stop and attempt only the safe rollback supported by the recorded version/schema compatibility; never report success after a failed step. Report the previous and resulting version.
-
-Local production acceptance uses an isolated Compose project, ports, secrets and persistent volumes. It cannot target a real deployment or set the irreversible production-ever-deployed flag. Host-side operations do not require the workspace container to receive Docker-socket access.
-
-Deployment journals record the successful source/image identity and pending failures; they do not publish a first-production flag or commit/push project state.
-
-## Implemented operator workflow
-
-Run host operations on Linux with Python 3.11+, Git 2.39+, Docker Engine 26+ and
-Compose 2.35+. No host PHP/Node or Docker socket in the devcontainer is required.
-Use a dedicated clean production checkout and run commands from its root, not
-`.runtime/production/releases/`. The [unified installer](../tooling/installation.md)
-is invoked by the separately supplied bootstrap, not a customer command. It accepts hidden interactive settings or a private
-JSON file, generates separate database/application credentials once, provisions
-standard Nginx TLS from supplied certificates (or verifies an explicitly selected
-existing terminator), checks HTTPS and submits an SMTP verification message.
-Existing settings without its own recovery state are refused. Use --resume for
-an interrupted initial installation; completed repeats preserve files/secrets/data.
-Raw env values stay unquoted single lines, including literal dollar signs.
-
-The real installer applies a non-cone sparse allowlist to the operator checkout and each immutable release checkout. Only application/build inputs, production Docker files, operation launchers/modules remain. Development AI files, knowledge CLI, agents, devcontainer and AI documentation are excluded. Simulation preserves the development operator checkout and checks the same sparse release allowlist. Runtime images exclude even the operational Python/Git scripts.
-
-For an existing acquired installation, use `php artisan runa:deploy <vX.Y.Z|full-SHA>`. Branch names, abbreviated hashes and arbitrary command forwarding are rejected. Fetch the intended trusted release into the operator repository before deployment; deploy never follows a mutable branch or fetches an unreviewed update automatically. A clean detached sparse clone is prepared under `.runtime/production/releases/<SHA>`. Build dependencies/frontend assets remain locked in the existing Docker stages. Existing complete exact-SHA image pairs are reused; an incomplete pair requires explicit operator inspection. Do not overwrite immutable image tags with diagnostic builds.
-
-Preflight validates Compose, images, private env permissions, separate admin/runtime credentials and Laravel configuration before stopping services or running migrations. Operations enable a dedicated shared HTTP-maintenance marker, keep Nginx serving static 503 while stopping application/workers/scheduler, run application migrations and its `DatabaseSeeder`, recreate the writers, reopen HTTP and check health/root/readiness/isolation. Laravel config optimization remains per-container in the production entrypoint; static storage uses the existing Nginx public-volume subpath and needs no public symlink. Maintenance returns branded HTML or English JSON 503 rather than requiring PHP to serve the notice. Nginx recreation during version switching/remounts can still cause a brief transport interruption; this baseline does not promise zero downtime.
-
-State lives in ignored, private `.runtime/production/`. `deployment.json` records current/previous SHA, semantic version, image IDs, UTC time, context and a fingerprint of migration/seeder sources. `in-progress.json` records operations that may have changed data. An interrupted or incompatible failed operation blocks further deploy/rollback until an operator inspects database/application state and follows the appropriate recovery procedure. Never delete that marker to turn a failed operation into a reported success. After recovery, preserve its evidence separately before deliberately clearing it. Preflight failure restores the original selected tag. Failure after migrations attempts application recovery only if previous migration/seeder sources are identical; the deploy still exits nonzero. Recovery failure leaves the marker in place.
-
-`php artisan runa:deploy:rollback` verifies recorded previous image IDs and unchanged migration/seeder fingerprints, validates settings, recreates the previous application and checks health. It never calls migration rollback/down. Changed migration/seeder sources block this automatic path, even when a human might establish compatibility. Such changes require a documented recovery strategy and deliberate operator execution.
-
-Production operations share one nonblocking lock, including lifecycle and deployment commands. Logs never print expanded environment/Compose configuration. Keep the entire operator `.runtime/production` directory and env files private; they contain operational identities and configuration. Preserve secrets separately with appropriate access controls; backup provisioning and recovery are externally managed by the customer.
-
-## Isolated local production acceptance
-
-Set `RUNA_PRODUCTION_MODE=simulation` in `.env.prod.compose` and pass `--simulation`
-to install/deploy. The default project remains `runa-prod-icu-simulation`; explicit
-installer setting `simulation_project` may select a fresh
-`runa-prod-simulation-*` project for isolated acceptance. Built-in simulation TLS
-binds to loopback. Real mode selects `runa-prod` and refuses custom simulation
-projects; a mode mismatch is rejected. A first managed deployment refuses existing
-unmanaged containers/volumes rather than adopting unknown data. Keep prior
-diagnostic stacks separate; stop a conflicting listener without deleting its data.
-
-When no production env files exist:
+Run native installation/customer deployment acceptance on the Docker host:
 
 ```bash
-# Use the exact postponed internal installer command printed by owner bootstrap,
-# with --simulation --settings-file=/private/simulation.json --non-interactive.
+python3 tools/maintainer/testing/installation-host.py --customer-deployment
 ```
 
-With existing synthetic operator settings: add the simulation mode to `.env.prod.compose`, make `.env.prod`, `.env.prod.database` and `.env.prod.compose` mode 600, then run:
+The harness snapshots current source into isolated fixtures, exercises fresh customer dev/prod, native tests/docs/hooks, TLS/SMTP rejection/resume and repeated installation. The deployment extension uses an actual separate customer Git repository and production images/PostgreSQL/HTTP. It proves default/explicit targets, application code/data changes, no duplicate seeds on no-op, protected source/data/storage preservation, lock/manual-maintenance ownership, failed fetch/build/migration/seeding/health and recovery fencing. Fixture-only reviewed recovery retains partial data and never reverses schema. Reports live under `.runtime/ownership`; the harness prints exact task-created containers/networks/volumes before cleanup and preserves active development/test data, caches, backups and evidence.
 
-```bash
-php artisan runa:deploy <full-SHA> --simulation
-php artisan runa:production:self-test
-php artisan runa:production:verify-ai-isolation
-```
+For focused production-only verification, add `--production-only`; it skips development installation/tests and retains fresh TLS/SMTP/platform setup and the full customer deployment extension. The harness also removes inspected unused image tags created by its own fixtures.
 
-Validate an upgrade/rollback using two committed, reviewed versions with identical database/seeder fingerprints; a single initial deployment has no previous release to roll back to. Do not manufacture a release tag or alter migrations merely to make that demonstration pass. Host execution evidence remains required; offline contract tests cannot prove Docker/image scanning success.
-
-## Gate execution context
-
-Run normal operational commands from the separately prepared PHP operator context;
-initial setup/recovery uses `./bin/artisan`, and `./bin/artisan --operator` enters
-that context without host PHP or a Docker socket. In the owner development
-workspace, `php artisan runa:quality:roadmap|final` forwards host work to the private
-executor, preserving the dependency graph and background/no-poll contract. The
-host coordinator executes host steps and delegates application checks to the
-configured development container. Scanners/quality/RAG are absent from production
-management/runtime artifacts. Production self-test/isolation requires a managed
-sparse deployment. No CI or Docker socket mount is introduced.
-
-Development operation guard: the entire optional development command catalog (dev lifecycle/profiles, tests, formatting/lint/type/static analysis, doctor/quality, hooks, security checks, Xdebug and knowledge/RAG) is blocked in a prod-mode installation, even if development source was copied there or the caller supplies APP_ENV=local. Existing invalid/unknown acquisition modes also fail closed. PHP checks before local Actions/host dispatch and the independent executor checks before locks, operation-state writes or Docker/tool execution. Production APP_ENV and the configured .env production value also block development tools. Owner development and cold bootstrap remain available before acquisition/environment initialization. Help/discovery and explicit nonexecuting --plan remain available. Production/deploy/host control stay operational; production runtime artifacts still omit development tooling. Native Laravel commands retain their framework safeguards; this guard concerns Runa's optional development catalog.
+Focused source and recovery contracts are `tools/maintainer/testing/customer-deployment.py` and `tools/maintainer/testing/operations.py`. Contract mocks do not replace native Docker/PostgreSQL acceptance or security/image scanning. Full production acceptance and final release gates remain required by the active roadmap.

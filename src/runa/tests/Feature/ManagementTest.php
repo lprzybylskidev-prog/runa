@@ -106,7 +106,21 @@ it('rejects invalid operational scopes before emitting an executable plan', func
     [['runa:dev:embeddings:set', 'unsafe']],
     [['runa:production:logs', 'app;false']],
     [['runa:knowledge:status', '--device=unsafe']],
+    [['runa:deploy', '../main']],
+    [['runa:deploy', 'main;false']],
+    [['runa:deploy', 'refs/remotes/origin/main']],
+    [['runa:deploy', 'feature//bad']],
+    [['runa:deploy', 'bad.lock']],
 ]);
+
+it('previews customer deployment with a default or explicit customer target', function (array $arguments): void {
+    foreach ([[], ['--management']] as $bootstrap) {
+        $process = new Process([PHP_BINARY, base_path('artisan'), ...$bootstrap, 'runa:deploy', ...$arguments, '--plan'], base_path());
+        $process->mustRun();
+        $plan = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+        expect($plan['operation'])->toBe('tooling.deploy')->and($plan['parameters']['arguments'])->toBe($arguments);
+    }
+})->with([[[]], [['main']], [['release/customer-v2']], [['customer-release-42']], [['refs/tags/release-42']], [['--simulation']]]);
 
 it('does not expose retired features through normal or cold Artisan', function (): void {
     foreach (['runa:backup', 'runa:integrity', 'runa:project', 'runa:install', 'runa:dev', 'runa:doctor', 'runa:quality', 'runa:knowledge', 'runa:security', 'runa:xdebug', 'runa:hook', 'runa:production', 'runa:host', 'runa:check'] as $name) {

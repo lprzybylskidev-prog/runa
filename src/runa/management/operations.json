@@ -66,8 +66,8 @@
     "name": "runa:deploy",
     "tool": "deploy",
     "prefix": [],
-    "signature": "{target} {--simulation}",
-    "description": "Deploy the selected application release and verify readiness"
+    "signature": "{target?} {--simulation}",
+    "description": "Fetch and deploy the customer application target (default: main)"
   },
   {
     "name": "runa:deploy:rollback",
