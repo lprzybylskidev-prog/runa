@@ -52,6 +52,8 @@ The explicit workflow selects the clone's customer origin, prepares private loca
 
 After pulling a customer commit with platform/application data changes, run the same explicit initialization/preparation workflow for pending local data steps. Required platform seeds and their exact-source completion record are transactional; application DatabaseSeeder must be repeatable and select its seeders explicitly. Inspect failed migration/seed state before retrying after partial application effects. Ordinary reopen, setup and runa:dev:up do not run migrations/seeds. Customer native migrate/fresh/wipe/seed commands remain application-only.
 
+Before preparation, follow the selected release's [manual environment reconciliation](../release/platform-reconciliation.md) for changed dependencies, Compose/devcontainer definitions and private environment values. Pulling source or restarting a container alone does not reconcile those prerequisites.
+
 Production is initialized from the same complete customer revision, with separately supplied production secrets and production-only services/images. Its host checkout may contain versioned development configuration without starting those services. Reconcile scaffold/container/env changes manually before committing/deploying them. See [production deployment](../production/deployment.md).
 
 ## HTTP runtime

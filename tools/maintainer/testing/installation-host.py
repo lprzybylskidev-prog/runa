@@ -122,6 +122,8 @@ def remove_project(project, report):
 def main():
     if Path('/.dockerenv').exists():
         raise SystemExit('Run this acceptance from the native Docker host.')
+    if '--team-propagation' in sys.argv[1:] and '--updater-preflight' not in sys.argv[1:]:
+        raise SystemExit('--team-propagation requires --updater-preflight.')
     REPORTS.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex[:10]
     report = {'result': 'RUNNING', 'checks': [], 'preserved': ['active development/test services and data', 'rollback resources', 'Qdrant/model/shared dependency/build caches', 'backups', 'verification reports']}
@@ -137,6 +139,8 @@ def main():
     active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
     observed_at = datetime.now(timezone.utc).isoformat()
     before = {item: json.loads(output(['docker', 'inspect', item]))[0] for item in active}
+    team = None
+    team_project = 'runa-dev-team-' + token
     dev_project = 'runa-dev-install-' + token
     prod_project = 'runa-prod-simulation-' + token
     network = 'runa-install-smtp-' + token
@@ -213,12 +217,18 @@ def main():
             check(all((dev / name).read_bytes() == value for name, value in secrets.items()) and customer.read_text() == 'preserve customer source\n', 'repeated development installation preserves all credentials and customer source')
             check(json.loads((dev / 'src/app/application.json').read_text())['version'] == '2.4.1', 'application version remains customer-owned on repeat')
             check(not (dev / '.runtime/production/first-deploy.json').exists(), 'development never writes a real production marker')
+            if '--team-propagation' in sys.argv[1:]:
+                team = runpy.run_path(str(ROOT / 'tools/maintainer/testing/team-update-host.py'))['Team'](dev, fixture_directory, team_project, check, report, call, output, commit, customer_snapshot)
             if '--updater-preflight' in sys.argv[1:]:
                 runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['exercise'](
                     dev, fixture_directory, dev_project, check, report, call, output, commit)
+            if team:
+                team.publish()
             remove_project(dev_project, report)
 
-        if dev.exists():
+        if team:
+            call(['git', 'clone', '--quiet', str(team.remote), str(prod)])
+        elif dev.exists():
             customer_snapshot(dev, prod)
         else:
             temporary_source = fixture_directory / 'owner-snapshot'
@@ -243,18 +253,32 @@ def main():
               '--mount', 'type=bind,src=' + str(certificates) + ',dst=/fixture,readonly', '--mount', 'type=bind,src=' + str(mail_reports) + ',dst=/reports',
               '--entrypoint', 'python3', 'runa-development:dev', '/fixture/smtp.py'])
         data = yaml_source('compose.production.yaml')
+        if team:
+            redis = json.loads((dev / 'compose.yaml').read_text())['services']['redis']
+            data['services']['redis'] = {**redis, 'env_file': [{'path': '.env.prod', 'format': 'raw'}]}
         data['networks'] = {'default': {'external': True, 'name': network}}
         for service in ('app', 'queue', 'scheduler'):
             data['services'][service]['environment']['SSL_CERT_FILE'] = '/run/fixture-ca.pem'
             data['services'][service]['volumes'].append({'type': 'bind', 'source': str(certificates / 'certificate.pem'), 'target': '/run/fixture-ca.pem', 'read_only': True})
         (prod / 'compose.production.yaml').write_text(json.dumps(data, indent=2) + '\n')
         sha = commit(prod)
+        updated_customer_sha = sha
+        if team:
+            call(['git', '-C', str(prod), 'push', 'origin', 'main'])
+            call(['git', '-C', str(prod), 'checkout', '-b', 'initial-production'])
+            call(['git', '-C', str(prod), 'restore', '--source', team.original, '--staged', '--worktree', '--', 'src/runa', 'src/app'])
+            sha = commit(prod)
         import initialize
         customer_repository = fixture_directory / 'customer-repository'
         prod.rename(customer_repository)
-        initialize.acquire(str(customer_repository), 'main', prod)
+        initialize.acquire(str(customer_repository), 'initial-production' if team else 'main', prod)
+        if team:
+            call(['git', '-C', str(customer_repository), 'checkout', 'main'])
         check(output(['git', '-C', str(prod), 'remote', 'get-url', 'origin']) == str(customer_repository), 'production initializes from the customer repository and preserves its origin/history')
-        if dev.exists():
+        if team:
+            team.pull(updated_customer_sha)
+            remove_project(team_project, report)
+        elif dev.exists():
             teammate = fixture_directory / 'teammate'
             call(['git', 'clone', '--quiet', str(customer_repository), str(teammate)])
             check(not (teammate / '.git/runa-bootstrap.json').exists(), 'teammate starts from an ordinary complete customer clone without inherited receipt/journals')
@@ -294,6 +318,8 @@ def main():
         check(not (prod / '.git/runa-ownership.json').exists(), 'production installation leaves no source baseline')
         report['dev_sha'], report['prod_sha'] = dev_sha, sha
         report['images'] = deployment['current']['images']
+        if team:
+            team.deploy(prod, prod_project, updated_customer_sha)
         if '--updater-preflight' in sys.argv[1:]:
             runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['exercise'](
                 prod, fixture_directory, prod_project, check, report, call, output, commit)
@@ -305,7 +331,7 @@ def main():
         report['result'] = 'FAIL'
         raise
     finally:
-        for mode in ('dev', 'prod'):
+        for mode in ('dev', 'prod', 'teammate'):
             source = fixture_directory / mode
             if (source / 'src/runa/management').is_dir():
                 identity = call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); import management; print(management.image_identity())'], cwd=source, capture=True, check=False)
@@ -318,6 +344,7 @@ def main():
                 print('Scoped fixture executor shutdown: ' + str(source), flush=True)
                 call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); from host_executor import stop; stop()'], cwd=source, check=False)
         remove_project(dev_project, report)
+        remove_project(team_project, report)
         remove_project(prod_project, report)
         existing_images = set(output(['docker', 'image', 'ls', '--format', '{{.Repository}}:{{.Tag}}']).splitlines())
         removable = sorted(tag for tag in (task_images & existing_images) - before_images

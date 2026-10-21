@@ -41,6 +41,26 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     seed.write_text("<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']); } }\n")
     commit(repository)
     git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'tag', '-a', 'v0.3.0', '-m', 'target')
+    workspace = prod / '.devcontainer/devcontainer.json'
+    value = json.loads(workspace.read_text()); value['name'] = 'Customer customized workspace'; workspace.write_text(json.dumps(value) + '\n')
+    definitions = prod / 'compose.yaml'
+    configuration = json.loads(definitions.read_text())
+    redis = output(['docker', 'image', 'inspect', '--format', '{{index .RepoDigests 0}}', 'redis:8.4.0-bookworm'])
+    if not redis.startswith('redis@sha256:'): raise RuntimeError('Custom-service fixture requires the existing local Redis digest.')
+    configuration['services']['redis'] = {'image': redis, 'pull_policy': 'never', 'user': '1000:1000',
+        'env_file': [{'path': '.env', 'format': 'raw'}],
+        'command': ['redis-server', '--save', '', '--appendonly', 'no'], 'read_only': True,
+        'tmpfs': ['/data:rw,nosuid,nodev,size=16m,uid=1000,gid=1000'], 'cap_drop': ['ALL'],
+        'security_opt': ['no-new-privileges:true'], 'cpus': .25, 'mem_limit': '64M',
+        'healthcheck': {'test': ['CMD', 'redis-cli', 'ping'], 'interval': '2s', 'timeout': '2s', 'retries': 10}}
+    definitions.write_text(json.dumps(configuration) + '\n')
+    with (prod / '.env').open('a') as stream:
+        stream.write('\nTEAM_RELEASE_MARKER=manually-prepared\n')
+    for name in ('.env.dev.example', '.env.prod.example'):
+        with (prod / name).open('a') as stream:
+            stream.write('\nTEAM_RELEASE_MARKER=\n')
+    infrastructure = {path: path.read_bytes() for path in (workspace, definitions)}
+    call([*update_runtime.compose(prod, 'dev', prod), 'up', '-d', '--wait', 'redis'], cwd=prod)
     client = bootstrap.GitHub('fixture/runa')
     def local_git(source, home, *args, **kwargs):
         if args[:3] == ('remote', 'add', 'origin'):
@@ -72,6 +92,10 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         check(result['plan']['platform_migrations'] == [migration.stem] and result['dry_run'] is True, 'read-only plan identifies platform-only migration/seeder steps without executing target PHP')
         check(before == {'files': files(), 'database': sql(), 'services': services()}, 'dry-run preserves actual database rows, config/locks/identity/source bytes and runtime container identities/start times')
         check(not (prod / '.runtime/production/in-progress.json').exists() and result['temporary_downloads_cleaned'] and all(not Path(p).exists() for p in result['temporary_downloads']), 'planning creates no installation journal/maintenance and removes all external source downloads')
+        check(result['customization_review']['required'] and 'redis' in result['customization_review']['services'] and result['customization_review']['devcontainer'], 'real customized Redis and workspace definitions require affected-name review')
+        missing = update_execution.execute(prod, client, 'v0.3.0')
+        aborted = update_execution.execute(prod, client, 'v0.3.0', choice='abort')
+        check(missing['checks'][-1]['id'] == 'customization-decision-required' and aborted['checks'][-1]['id'] == 'customization-aborted' and before == {'files': files(), 'database': sql(), 'services': services()}, 'noninteractive missing decision and explicit abort preserve actual source/data/settings/services')
         original = prod / 'src/runa/platform.json'
         content = original.read_bytes(); value = json.loads(content); value['name'] = 'tampered'; original.write_text(json.dumps(value))
         blocked = update.preflight(prod, client, 'v0.3.0')
@@ -105,6 +129,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         (ROOT / '.runtime/ownership' / ('update-execution-' + project + '.json')).write_text(json.dumps(resumed, indent=2) + '\n')
         check(resumed['status'] == 'completed', 'independently verified resume recovers the actual development runtime')
         check(query("SELECT count(*) FROM shared.platform_seed_runs WHERE release_sha='" + journal['target']['commit'] + "'") == seeds_before == '1', 'resume never blindly replays already committed required seeds')
+        check(all(path.read_bytes() == content for path, content in infrastructure.items()) and output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'explicit continue preserves real custom Redis and devcontainer definitions')
         check(private.read_text() == 'preserved' and app_pending.is_file() and output(['git', '-C', str(prod), 'rev-parse', 'HEAD']) == git_head, 'updater preserves application pending data/source, private storage and customer Git HEAD')
         after = files()
         check(all(after[name] == content for name, content in preserved.items() if not name.endswith('/src/runa/platform.json')), 'customer identity, dependency locks, settings and scaffold survive real update and recovery')

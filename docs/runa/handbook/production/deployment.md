@@ -2,6 +2,8 @@
 
 One customer repository versions the whole delivered project: Runa, application, scaffold and infrastructure. Production initializes from that repository and deploys a selected tested customer commit, including both owners' required forward data steps. Development and production retain the same versioned source set; private env/data/dependencies and runtime artifacts differ. Update Runa externally on development, verify and commit/push the project, then deploy that revision. Production never fetches a Runa release or runs a separate platform updater.
 
+Prepare changed private environment/service prerequisites using the selected release's [manual reconciliation procedure](../release/platform-reconciliation.md) before deployment. Customer container customizations stay in the reviewed complete project revision.
+
 Production commands require the clone's locally prepared production role (mode=prod); APP_ENV and --simulation cannot override it. Run from the installation root in the separately prepared PHP operator terminal; initial setup/recovery uses ./bin/artisan and ./bin/artisan --operator. Runtime containers have no deployment commands or Docker access. Help and explicit --plan are nonexecuting.
 
 ## Select the customer repository

@@ -58,12 +58,16 @@ python3 update.py --resume --installation /absolute/customer-development \
 
 Resume independently downloads both recorded releases and verifies tag objects/commits, source and database history before mutations. Completed migration/seed effects are confirmed from database records; completed seeds are not blindly replayed. Builds run again against current inputs. A changed infrastructure review requires fresh continue plus --review-fingerprint from the new report, or an interactive decision. Manual/foreign maintenance, changed protected source or missing history blocks recovery without an override. There is no automatic rollback, backup command or production update mode; review schema/data recovery with the customer. SIGKILL/power loss requires inspection of fencing and external temporary directories before resume.
 
+## Release instructions and propagation
+
+Publish concrete target release requirements for manual reconciliation of dependency composition/locks, bootstrap/build files, Docker/devcontainer/Compose, environment templates/private keys, service activation and data recovery. Use the public [release reconciliation procedure](../../handbook/release/platform-reconciliation.md); avoid automatic infrastructure transitions or module discovery. The customer explicitly commits/pushes the complete reviewed project. Teammates pull and initialize local data; production deploys the same customer revision.
+
 ## Verification
 
 ```sh
 python3 tools/maintainer/testing/update.py
 python3 tools/maintainer/testing/update-execution.py
-python3 tools/maintainer/testing/installation-host.py --updater-preflight
+python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation --customer-deployment
 ```
 
 Pure contracts cover independently verified Git acquisition, source ownership, dependency/compatibility failures, read-only preservation and customization decision binding. Run them inside the application toolchain for PHP grammar parity. Native disposable acceptance exercises real Docker Compose/Composer/pnpm/PostgreSQL, checks read-only development plans, real platform migration/seed execution, failure fencing/resume and production rejection, and preserves active development resources. Synthetic future release fixtures are not evidence of publication.
