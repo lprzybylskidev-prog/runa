@@ -3,6 +3,7 @@
 // Narrow forward-only primitive for explicit local preparation and deployment.
 // No Artisan registration, owner reset/rollback/seed selector or HTTP entrypoint.
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Runa\Database\DatabaseScope;
 use Runa\Database\RequiredSeeds;
@@ -25,8 +26,12 @@ try {
     $app->instance(DatabaseScope::class, new DatabaseScope($root, true));
     $kernel = $app->make(Kernel::class);
     $kernel->bootstrap();
-    if ($phase !== 'required-seeds' && $kernel->call('migrate', ['--force' => true, '--no-interaction' => true], new ConsoleOutput) !== 0) {
-        throw new RuntimeException('Forward platform migration failed.');
+    if ($phase !== 'required-seeds') {
+        $app->make(DatabaseManager::class)->connection('pgsql')->transaction(function () use ($kernel): void {
+            if ($kernel->call('migrate', ['--force' => true, '--no-interaction' => true], new ConsoleOutput) !== 0) {
+                throw new RuntimeException('Forward platform migration failed.');
+            }
+        });
     }
     if ($phase !== 'migrations') {
         RequiredSeeds::run($app, $argv[1]);

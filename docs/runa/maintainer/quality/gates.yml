@@ -285,6 +285,11 @@ impact_areas:
       command: python3 tools/maintainer/testing/update.py
       severity: hard_fail
 
+    - id: update-execution-contracts
+      depends_on: [repository-state]
+      command: python3 tools/maintainer/testing/update-execution.py
+      severity: hard_fail
+
     - id: bootstrap-source-contracts
       depends_on: [repository-state]
       command: python3 tools/maintainer/testing/bootstrap.py

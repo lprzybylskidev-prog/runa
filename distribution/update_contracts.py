@@ -80,10 +80,6 @@ def platform(root):
     return version
 
 
-def owner(path):
-    return any(path == prefix or path.startswith(prefix + '/') for prefix in OWNER_PATHS)
-
-
 def inventory(root):
     """Delivered platform source only, including every unexpected byte/type."""
     base = root / 'src/runa'
@@ -95,8 +91,6 @@ def inventory(root):
             name = path.relative_to(root).as_posix()
             if any(ord(char) < 32 or ord(char) == 127 for char in name) or '\\' in name:
                 raise Blocker('unsafe-platform', 'Platform contains an unsafe source path.')
-            if owner(name):
-                continue
             if path.is_symlink():
                 result[name] = ('120000', os.readlink(path).encode())
             elif path.is_dir():

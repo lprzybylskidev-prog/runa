@@ -87,7 +87,7 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['status'], 'ready', result)
         self.assertEqual(result['plan']['platform_migrations'], ['2026_01_02_000001_upgrade'])
         self.assertEqual(result['plan']['platform_seeder']['class'], 'Runa\\Database\\Seeders\\DatabaseSeeder')
-        self.assertFalse(result['execution_available'])
+        self.assertTrue(result['execution_available'])
         self.assertTrue(result['temporary_downloads_cleaned'])
         self.assertTrue(all(not Path(p).exists() for p in result['temporary_downloads']))
         self.assertEqual(self.snapshot(), before)
@@ -237,7 +237,7 @@ class Updater(unittest.TestCase):
 
     def test_external_tool_package_runs_without_the_maintenance_checkout(self):
         package = self.base / 'owner-tools'; package.mkdir()
-        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'bootstrap.py'):
+        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'bootstrap.py'):
             shutil.copyfile(ROOT / 'distribution' / name, package / name)
         result = subprocess.run([sys.executable, str(package / 'update.py'), '--help'], cwd='/', capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)

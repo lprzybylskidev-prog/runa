@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""External owner preflight/plan. Downloads outside the installation; never applies updates."""
+"""External development-only owner updater: read-only plans, execution and explicit recovery."""
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import fcntl
 import getpass
 import json
@@ -45,7 +45,7 @@ def operation_snapshot(root):
             stream.close()
 
 
-def installation(value):
+def installation(value, *, allow_pending=False):
     root = Path(value).absolute()
     if root.resolve() != root or not root.is_dir() or root.stat().st_uid != os.getuid() or root.stat().st_mode & 0o022:
         raise Blocker('installation-ownership', 'Select an existing operator-owned installation without symlinks or group/other write access.')
@@ -64,19 +64,19 @@ def installation(value):
     values = update_runtime.env_file(root, '.env')
     if values.get('APP_ENV', '').strip("\"'") != 'local':
         raise Blocker('development-only', 'Configure the customer development environment before updating.')
-    if (root / '.runtime/production/in-progress.json').exists() or (root / '.runtime/production/in-progress.json').is_symlink():
+    if not allow_pending and ((root / '.runtime/production/in-progress.json').exists() or (root / '.runtime/production/in-progress.json').is_symlink()):
         raise Blocker('unresolved-operation', 'Unresolved operation state blocks planning; preserve recovery evidence.')
     return root
 
 
-def candidate(root, target, directory):
+def candidate(root, target, directory, *, current_platform=None):
     destination = directory / 'candidate'
     (destination / 'src').mkdir(parents=True)
     for kind in ('composer', 'package'):
         app = document(root, 'src/app/' + kind + '.json')
         result = compose(document(target, 'src/runa/' + kind + '.json'), app, kind)
-        current = compose(document(root, 'src/runa/' + kind + '.json'), app, kind)
-        if document(root, 'src/' + kind + '.json') != current:
+        current = compose(document(current_platform or root, 'src/runa/' + kind + '.json'), app, kind)
+        if document(root, 'src/' + kind + '.json') not in (current, result):
             raise Blocker('dependency-composition', 'Installed composed dependency manifest is stale: ' + kind)
         (destination / 'src' / (kind + '.json')).write_text(json.dumps(result, indent=2) + '\n')
     for name in ('composer.lock', 'pnpm-lock.yaml'):
@@ -98,7 +98,7 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
             'platform_migrations': [name for name in migrations if name not in applied],
             'platform_seeder': {'class': seeder, 'release': target_identity['commit'], 'already_completed': seed_done},
             'customer_inputs': 'preserved; reconcile scaffold/infrastructure manually from release instructions',
-            'steps': ['preflight-passed', 'maintenance', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'switch', 'health/isolation', 'completed'],
+            'steps': ['planned', 'preflight-passed', 'customization-reviewed', 'maintenance', 'source-replaced', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'switch', 'health', 'completed'],
             'preserve': ['src/app', 'docs/app', 'application identity/version', 'application dependency declarations/locks',
                          'private environment inputs', 'both durable storage trees', 'customer Git remotes/history'],
             'uncertainties': ['Migration/seed bodies are not executed to predict effects.', 'Image build disk use is an estimate.', 'Offline lock consistency is not a supply-chain audit; real build/install policies must still pass.',
@@ -106,9 +106,9 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
 
 
 def preflight(value, client, tag, *, toolchain='runa-development:dev', download=bootstrap.acquire,
-              runtime_probe=update_runtime.probe, lock_probe=update_runtime.validate_locks, expected_commit=None):
+              runtime_probe=update_runtime.probe, lock_probe=update_runtime.validate_locks, expected_commit=None, lock_held=False):
     report = {'schema_version': 1, 'mode': 'preflight', 'dry_run': True, 'status': 'blocked', 'checks': [],
-              'execution_available': False, 'mismatches': [], 'temporary_downloads': [], 'temporary_downloads_cleaned': False}
+              'execution_available': True, 'mismatches': [], 'temporary_downloads': [], 'temporary_downloads_cleaned': False}
     def passed(name):
         report['checks'].append({'id': name, 'status': 'passed'})
     try:
@@ -123,7 +123,7 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
         if stable(tag[1:]) < stable(version):
             raise Blocker('downgrade-unsupported', 'A downgrade has unproven schema/data compatibility; use reviewed recovery rather than an update plan.')
         passed('installation-identity')
-        with operation_snapshot(root):
+        with nullcontext() if lock_held else operation_snapshot(root):
             temporary_parent = Path(os.environ.get('TMPDIR', '/tmp')).resolve(strict=True)
             if temporary_parent.is_relative_to(root):
                 raise Blocker('unsafe-staging', 'Temporary release downloads must stay outside the installation.')
@@ -188,6 +188,11 @@ def main(arguments=None):
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--preflight', action='store_true')
     mode.add_argument('--plan', action='store_true')
+    mode.add_argument('--apply', action='store_true')
+    mode.add_argument('--resume', action='store_true')
+    parser.add_argument('--customization-decision', choices=('continue', 'abort'))
+    parser.add_argument('--review-fingerprint', help='Exact reviewed infrastructure fingerprint, required for changed resume reviews')
+    parser.add_argument('--non-interactive', action='store_true')
     parser.add_argument('--installation', required=True)
     parser.add_argument('--target', required=True, help='Exact published stable vX.Y.Z release')
     parser.add_argument('--repository', default=bootstrap.REPOSITORY, help='Explicitly authorized GitHub owner/name')
@@ -198,6 +203,8 @@ def main(arguments=None):
     credentials.add_argument('--token-file')
     credentials.add_argument('--ask-token', action='store_true')
     args = parser.parse_args(arguments)
+    if (args.preflight or args.plan) and (args.customization_decision or args.review_fingerprint):
+        parser.error('Customization decisions apply only to --apply/--resume; read-only modes never request consent.')
     token = ''
     try:
         if args.ask_token and not sys.stdin.isatty():
@@ -206,25 +213,43 @@ def main(arguments=None):
         if args.expected_commit and not re.fullmatch(bootstrap.SHA, args.expected_commit):
             raise bootstrap.BootstrapError('Expected target commit requires a full lowercase SHA.')
         bootstrap.host_checks()
-        result = preflight(args.installation, bootstrap.GitHub(args.repository, token), args.target,
-                           toolchain=args.toolchain_image, expected_commit=args.expected_commit)
+        if args.review_fingerprint and not re.fullmatch('[a-f0-9]{64}', args.review_fingerprint):
+            raise bootstrap.BootstrapError('Review fingerprint requires a full lowercase SHA-256 value.')
+        client = bootstrap.GitHub(args.repository, token)
+        if args.apply or args.resume:
+            from update_execution import execute
+            def choose(review):
+                print('Customized services: ' + ', '.join(review['services']) + ('; devcontainer' if review['devcontainer'] else ''), file=sys.stderr)
+                print('Review fingerprint: ' + review['fingerprint'], file=sys.stderr)
+                return input('Preserve this infrastructure and continue, or abort [continue/abort]: ').strip().lower()
+            interactive = not args.non_interactive and not args.json and sys.stdin.isatty() and sys.stderr.isatty()
+            result = execute(args.installation, client, args.target, resume=args.resume, choice=args.customization_decision,
+                             fingerprint=args.review_fingerprint, toolchain=args.toolchain_image, expected_commit=args.expected_commit,
+                             choose=choose if interactive else None)
+        else:
+            result = preflight(args.installation, client, args.target, toolchain=args.toolchain_image, expected_commit=args.expected_commit)
     except bootstrap.BootstrapError as error:
-        result = {'schema_version': 1, 'dry_run': True, 'status': 'blocked', 'execution_available': False,
+        result = {'schema_version': 1, 'dry_run': not (args.apply or args.resume), 'status': 'blocked', 'execution_available': True,
                   'mismatches': [], 'temporary_downloads': [], 'temporary_downloads_cleaned': True,
                   'checks': [{'id': 'host-or-credentials', 'status': 'blocked', 'message': str(error)}]}
-    result['mode'] = 'plan' if args.plan else 'preflight'
+    result['mode'] = 'resume' if args.resume else 'apply' if args.apply else 'plan' if args.plan else 'preflight'
     if args.json:
         print(json.dumps(result, indent=2))
     else:
-        print('Runa update ' + result['mode'] + ': ' + result['status'].upper() + ' (read-only; execution is not available).')
+        print('Runa update ' + result['mode'] + ': ' + result['status'].upper() + (' (read-only).' if result.get('dry_run') else '.'))
         for check in result['checks']:
             print(check['status'].upper() + ': ' + check['id'] + (' — ' + check['message'] if 'message' in check else ''))
         for row in result.get('mismatches', []):
             print(row['kind'] + ': ' + row['path'])
         if 'plan' in result:
             print(json.dumps(result['plan'], indent=2))
-        print('Temporary release downloads outside installation: ' + ('cleaned.' if result['temporary_downloads_cleaned'] else 'cleanup requires operator inspection.'))
-    return 0 if result['status'] == 'ready' else 1
+        if 'customization_review' in result:
+            print('Infrastructure customization: ' + json.dumps(result['customization_review']))
+        if 'journal' in result:
+            print('Preserve ' + result['journal'] + '; inspect the failed phase before explicit --resume.')
+        if 'temporary_downloads_cleaned' in result:
+            print('Temporary release downloads outside installation: ' + ('cleaned.' if result['temporary_downloads_cleaned'] else 'cleanup requires operator inspection.'))
+    return 0 if result['status'] in ('ready', 'completed') else 1
 
 
 if __name__ == '__main__':
@@ -234,5 +259,5 @@ if __name__ == '__main__':
     try:
         raise SystemExit(main())
     except KeyboardInterrupt:
-        print('Preflight interrupted; temporary staging cleaned, installation unchanged.', file=sys.stderr)
+        print('Updater interrupted; temporary downloads cleaned. Preserve pending operation evidence and resume explicitly after inspection.', file=sys.stderr)
         raise SystemExit(130)

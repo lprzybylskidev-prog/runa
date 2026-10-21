@@ -1,4 +1,4 @@
-"""Read-only, bounded native Docker probes; no installed Python/PHP is imported."""
+"""Bounded native Docker transport and read-only probes; no installed code is imported."""
 import json
 import os
 from pathlib import Path
@@ -9,13 +9,13 @@ import uuid
 from update_contracts import Blocker, document, regular
 
 
-def command(arguments, cwd=None):
+def command(arguments, cwd=None, timeout=90):
     environment = {k: v for k, v in os.environ.items() if not k.startswith(('COMPOSE_', 'DOCKER_', 'RUNA_', 'GIT_'))}
     try:
         return subprocess.run(arguments, cwd=cwd, env=environment, stdin=subprocess.DEVNULL, capture_output=True,
-                              text=True, timeout=90, check=True).stdout
+                              text=True, timeout=timeout, check=True).stdout
     except (OSError, subprocess.SubprocessError):
-        raise Blocker('probe-failed', 'Read-only host/container check failed; inspect operator access and required runtime prerequisites.') from None
+        raise Blocker('probe-failed', 'Host/container operation failed; inspect the recorded phase, operator access and runtime prerequisites.') from None
 
 
 def env_file(root, name):
@@ -98,12 +98,17 @@ def probe(root, mode, operator):
         for mount in actual.get('Mounts', []):
             if 'docker.sock' in mount.get('Source', ''):
                 raise Blocker('production-isolation', 'Runtime exposes Docker transport.')
+    return {'project': config['name'], 'services': sorted(required), **metadata(root, args)}
+
+
+def metadata(root, args=None):
+    args = args or compose(root, 'dev', root)
     sql = "BEGIN READ ONLY; SELECT json_build_object('migrations',(SELECT coalesce(json_agg(migration ORDER BY id),'[]') FROM shared.migrations),'seed_runs',(SELECT coalesce(json_agg(json_build_object('release_sha',release_sha,'seeder',seeder)),'[]') FROM shared.platform_seed_runs)); ROLLBACK;"
     # Fixed shell program; password stays inside the existing PostgreSQL
     # environment, never host argv/output. SQL is a fixed positional argument.
     query = 'PGPASSWORD="$APP_DB_PASSWORD" exec psql -h 127.0.0.1 -X -qAt -U runa -d runa -v ON_ERROR_STOP=1 -c "$1"'
     database = json.loads(command(args + ['exec', '-T', 'postgres', 'sh', '-c', query, '--', sql], root))
-    return {'project': config['name'], 'services': sorted(required), **database}
+    return database
 
 
 def validate_locks(candidate, image):

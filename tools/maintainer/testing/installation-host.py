@@ -17,6 +17,7 @@ import tempfile
 import time
 import urllib.request
 import uuid
+from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[3]
 REPORTS = ROOT / '.runtime/ownership'
@@ -134,7 +135,8 @@ def main():
     # Devcontainer images may carry inherited Compose labels into standalone
     # test helpers. Track actual containers belonging to this checkout.
     active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
-    before = {item: output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) for item in active}
+    observed_at = datetime.now(timezone.utc).isoformat()
+    before = {item: json.loads(output(['docker', 'inspect', item]))[0] for item in active}
     dev_project = 'runa-dev-install-' + token
     prod_project = 'runa-prod-simulation-' + token
     network = 'runa-install-smtp-' + token
@@ -331,7 +333,23 @@ def main():
             print('Scoped fixture network cleanup: ' + network, flush=True)
             call(['docker', 'network', 'rm', network])
         try:
-            check(all(output(['docker', 'inspect', '--format', '{{.State.StartedAt}}', item]) == value for item, value in before.items()), 'active development container identities/start times remain unchanged')
+            rollovers = []
+            for item, original in before.items():
+                actual = json.loads(output(['docker', 'inspect', item]))[0]
+                if actual['State']['StartedAt'] == original['State']['StartedAt']:
+                    continue
+                # The development queue intentionally exits at --max-time=3600;
+                # an hourly daemon rollover can coincide with unrelated acceptance.
+                logs = call(['docker', 'logs', '--since', observed_at, item], capture=True).stdout
+                stops = [line for line in logs.splitlines() if 'Worker STOPPED' in line]
+                natural = (original['Config'].get('Labels', {}).get('com.docker.compose.service') == 'queue'
+                           and actual['RestartCount'] == original['RestartCount'] + 1
+                           and actual['State']['Running'] and actual['State'].get('Health', {}).get('Status') == 'healthy'
+                           and len(stops) == 1 and stops[0].endswith('Worker STOPPED Maximum run time exceeded'))
+                check(natural, 'changed active development start time must be a healthy scheduled queue lifetime rollover')
+                rollovers.append(actual['Name'])
+            report['natural_queue_rollovers'] = rollovers
+            check(True, 'active development container identities preserved; starts unchanged except recorded natural queue lifetime rollovers')
         except BaseException:
             report['result'] = 'FAIL'
             raise

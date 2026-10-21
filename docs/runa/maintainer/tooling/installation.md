@@ -120,8 +120,8 @@ Private `.runtime/production/install-dev.json` / `install-prod.json` records sou
 mode, simulation, selected profile and started/failed/complete state. Production
 settings are separately private in `install-settings.json`; never attach these
 files to a public issue. `scaffold-<mode>.json` records initial scaffold creation.
-These are first-install records; the full update journal remains later roadmap work.
-No trusted source baseline is stored in the installation. Repository-reference comparison belongs to the external owner updater, which remains pending in RM-005.
+These are first-install records. External development updates share the operation lock/pending path and archive their own exact-release completion journals; see [updates](updates.md).
+No trusted source baseline is stored in the installation. Repository-reference comparison belongs to the external development-only owner updater.
 Acquisition records the verified download digest; staged releases record their exact commit and operation ownership, without generating a trusted local file baseline.
 
 After failure, keep source, settings, volumes and deployment markers. Correct the
