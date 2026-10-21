@@ -1,6 +1,6 @@
-# Initial toolchain selections
+# Current toolchain selections
 
-Reviewed on 2026-10-17 for RM-2026-001. These are implementation selections, not permission to upgrade dependencies automatically. Composer and pnpm lockfiles will record the resolved transitive trees when the relevant roadmap points install them.
+The initial baseline was reviewed on 2026-10-17 for RM-2026-001. PHP was re-reviewed and updated to 8.4.27 on 2026-10-21 for RM-2026-008; other selections retain their existing review dates in the maintenance registry. These are implementation selections, not permission to upgrade dependencies automatically. Committed Composer and pnpm lockfiles record the resolved dependency trees.
 
 | Component                     | Selected version                                  | Primary source                                                               |
 | ----------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
