@@ -99,7 +99,7 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 
 ## Implementation plan
 
-- [ ] 1. Refresh the released baseline and security inventory.
+- [x] 1. Refresh the released baseline and security inventory.
   - Prerequisites: explicit owner activation from refreshed main; RM-005 is already closed/released.
   - Recheck advisories, exact running/build/management/runtime versions, affected paths and available fixed artifacts. Record the selected remedies and any significant unresolved assumptions before implementation.
 - [ ] 2. Update PHP to verified fixed artifacts on the supported branch.
@@ -110,3 +110,14 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
   - Requires 1–3. Verify source/lock/image coverage, choose scanned exact Redis fixture inputs and retain real custom-service/team/deployment acceptance. Confirm Redis remains absent from baseline product services. Synchronize scanner/policy contracts, quality tooling, maintenance records and current docs.
 - [ ] 5. Full verification, release finalization, merge and final report.
   - Requires all previous points. Run full applicable quality/security/AI/production gates, fresh native acceptance and current-state documentation review. No unassessed/unaccepted security hard failure or stale PASS; any pending-upstream gosu acceptance must meet the exact bounded arrangement above and remain explicit in release evidence. Follow release/merge/main sanity/tag/publication procedures and synchronize current remediation/dependency records without editing closed RM-005 or relabeling its earlier FAIL reports. Clean only scoped task resources and report preserved data/caches/backups.
+
+## Execution evidence
+
+### Point 1 — baseline and selected remedies
+
+- Activated from clean main d28a5bf, one planning commit ahead of origin/main; fetch confirmed no incoming/divergent remote commits. Target platform release is 0.3.1. No external deployment was reported.
+- Private inventory: .runtime/ownership/RM-2026-008/inventory.json records the current container identities, PHP versions/extensions and upstream responses. app, app-test, queue and scheduler use PHP 8.4.26. No Redis runs in baseline development. Existing PostgreSQL/data remain unchanged.
+- PHP upstream release metadata confirms security release 8.4.27 on 2026-10-21. Official registry manifests are available: Bookworm sha256:6d2c08c2ce0548e9bc55e21aab68f5a2613e635e4225fdea84290459728995e7 and Alpine 3.24 sha256:8193f7c711715c88452ebe51d4ee7769172a3fa917446a8820cf84192da2c555. Select these on the existing 8.4 branch for development and production/management inheritance.
+- gosu upstream latest remains 1.19; official PostgreSQL 18.6 Alpine 3.24 source selects it. Retain exact PostgreSQL artifact/data and perform current finding/reachability assessment with the authorized owner-only pending-upstream option.
+- Official Redis library advertises maintained 8.4.7 Alpine 3.22 fixtures on the same 8.4 branch. Resolve and scan its immutable artifact before selection; no Redis product service is added.
+- Scanner currently excludes root vendor/node_modules only; point 4 will demonstrate relocated dependency-directory exclusions while preserving first-party/lock coverage. Original RM-005 reports remain untouched.
