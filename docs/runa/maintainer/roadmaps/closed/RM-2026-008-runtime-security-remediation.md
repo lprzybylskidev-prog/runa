@@ -1,11 +1,11 @@
 ---
 id: RM-2026-008
 title: PHP security updates and runtime vulnerability remediation
-status: active
+status: closed
 branch: roadmap/RM-2026-008-runtime-security-remediation
 created_at: 2026-10-21
 activated_at: 2026-10-21
-closed_at: null
+closed_at: 2026-10-21
 release_type: fix
 impact_areas:
   - backend
@@ -25,11 +25,11 @@ impact_areas:
 
 Address the October 2026 PHP critical security release, reassess the PostgreSQL gosu findings, replace vulnerable custom-service test image inputs where needed, and correct scanner source paths after the src relocation. Keep this security work separate from RM-2026-005's platform ownership/install/update delivery.
 
-The owner explicitly authorized activation and execution on 2026-10-21, with target patch release 0.3.1. Runa is an early-stage reusable application foundation, including for customers who will expose their applications publicly. Local-only development is not a substitute for safe customer defaults. Determine the actual patch release version from VERSION at activation; the current released baseline is 0.3.0.
+The owner explicitly authorized activation and execution on 2026-10-21, with target patch release 0.3.1. Runa is an early-stage reusable application foundation, including for customers who will expose their applications publicly. Local-only development is not a substitute for safe customer defaults. Determine the actual patch release version from VERSION at activation; release 0.3.1 follows the verified 0.3.0 baseline.
 
 ### Execution order and release dependency
 
-RM-2026-005 is closed and merged into main as platform version 0.3.0 (observed main commit ecb113a). Its security results remain qualified by the owner-only [bounded exception record](../../security/RM-2026-005-deferred-findings.json), not a clean-security PASS. RM-008 is now the single active roadmap. Preserve its closed contents and original evidence.
+RM-2026-005 is closed and merged into main as platform version 0.3.0 (observed main commit ecb113a). Its security results remain qualified by the owner-only [bounded exception record](../../security/RM-2026-005-deferred-findings.json), not a clean-security PASS. RM-008 completes release 0.3.1 after fresh verification of its remediation and bounded pending-upstream decision. Preserve its closed contents and original evidence.
 
 Activated normally from refreshed main after explicit owner approval. No pause/resume, candidate-branch transfer or reopening of RM-005 is needed. This roadmap owns remediation, current policy synchronization and a new patch release. RM-006 remains a separate draft.
 
@@ -113,7 +113,7 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
   - Requires 1–4. The toolchain table already shows PHP 8.4.27 but its introductory review date still describes only the original 2026-10-17 baseline. Distinguish the 2026-10-21 PHP review and replace the obsolete future-tense lockfile-delivery claim. PASS: focused documentation/release metadata and formatting checks.
 - [x] 6. Repair native update fixture versioning and restore recreated-container Boost setup.
   - Final run at 62d06fc failed native update/team acceptance because fixed synthetic 0.2.1/0.3.0 tags no longer match installed 0.3.0 protected source; Boost registration was lost when app was recreated without rerunning its idempotent setup. Derive native release tags from the installed manifest, preserve real source-integrity rejection, run existing setup in the recreated app and document that prerequisite. Add regression coverage, refresh review/evidence, and rerun final verification from the beginning.
-- [ ] 7. Full verification, release finalization, merge and final report.
+- [x] 7. Full verification, release finalization, merge and final report.
   - Requires all previous points. Run full applicable quality/security/AI/production gates, fresh native acceptance and current-state documentation review. No unassessed/unaccepted security hard failure or stale PASS; any pending-upstream gosu acceptance must meet the exact bounded arrangement above and remain explicit in release evidence. Follow release/merge/main sanity/tag/publication procedures and synchronize current remediation/dependency records without editing closed RM-005 or relabeling its earlier FAIL reports. Clean only scoped task resources and report preserved data/caches/backups.
 
 ## Execution evidence
@@ -154,9 +154,9 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 
 - Reviewed README, owner README/current-state projections, AGENTS/maintainer contracts, current toolchain/registry/backlog, PHP Docker stages/checks, public production architecture and platform reconciliation, public scanner/applicability guidance, owner quality definitions/fixture routing and dated gosu evidence. Initial availability versus deferred risks, rebuild/recreation commands, customer/owner scope and production AI isolation agree with implementation. No automatic production rollout, application identity/version change, database migration or data reset is included.
 - Inserted fix point 5 corrects the remaining toolchain provenance/obsolete future delivery wording discovered in this source review. Earlier dated evidence and closed roadmaps remain untouched.
-- Local checks: repository/production PHP/Redis scans pass; exact owner PostgreSQL acceptance is qualified and retained separately from raw reports; focused runtime, policy, source-scope, docs and maintenance checks pass. Full native update/team/deployment, backend/analysis/security/strict AI and final release checks are now selected. The roadmap remains active and its final item open until results are reviewed.
+- Local checks: repository/production PHP/Redis scans pass; exact owner PostgreSQL acceptance is qualified and retained separately from raw reports; focused runtime, policy, source-scope, docs and maintenance checks pass. Full native update/team/deployment, backend/analysis/security/strict AI and final release checks are now selected. At gate preparation the roadmap remained active and its final item open; the completed result and closure are recorded below.
 - Before the final gate, the actual changed-surface security review is recorded at .runtime/ownership/RM-2026-008/security-review.md with content-bound .runtime/security-review.json. Accepted residual risk is MT-2026-001; no unrelated blocking finding was identified in the changed surface.
-- Cleanup so far: disposable PostgreSQL/Redis probes and saved archive removed; runa-rm008-php-probe tag removed after its final runtime/scan checks. Active development/test/PostgreSQL data, model/Qdrant/shared caches, backups and all reports are preserved. Redis fixture image is retained for the full gate and will receive scoped cleanup afterward if unused.
+- Cleanup so far: disposable PostgreSQL/Redis probes and saved archive removed; runa-rm008-php-probe tag removed after its final runtime/scan checks. Active development/test/PostgreSQL data, model/Qdrant/shared caches, backups and all reports are preserved. The Redis fixture image was retained through the full gate and removed by final scoped cleanup when no longer in use.
 
 ## Execution handoff
 
@@ -164,7 +164,7 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 - Scope: rebuild development app image from pinned PHP 8.4.27, recreate app/app-test/queue/scheduler, verify FPM/HTTP/extensions and management/production targets. Use canonical bin/artisan dev build/recreate wrappers with .env.dev.local and .devcontainer/compose.resources.yaml; Compose project runa-dev.
 - Preserve all current PostgreSQL/test/storage data, Qdrant/model/shared dependency/build caches and backups. Inventory before work: .runtime/ownership/RM-2026-008/inventory.json. No volume reset or database migration is planned.
 - Host outcome: PHP 8.4.27 build/recreation and point 2 checks passed; see evidence above. Workspace is usable from host or by reopening the rebuilt devcontainer (GUI switching was not performed). Temporary production probe image tag was removed after its final checks; cleanup evidence is retained.
-- Remaining: full final gate/release 0.3.1; points 1–6 are implemented and locally checked; final point 7 remains open. Record check outcomes below before completion.
+- Completed: points 1–7, full final PASS and release metadata for 0.3.1. Task resources were scoped-cleaned; development/test services and protected data/caches remain. Merge/tag/publication outcomes are reported after closure without rewriting this closed record.
 
 ### Failed final verification at 62d06fc
 
@@ -176,5 +176,19 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 
 - Native updater fixtures derive original and next-patch target tags from the installed platform manifest, including every plan/execute/abort/tamper/failure/resume invocation. Independent original-source verification and production rejection remain unchanged. This prevents the historical 0.2.1/0.3.0 fixture pair from treating installed 0.3.0 as the changed target.
 - Ran the existing idempotent application setup inside the recreated development app; it refreshed existing outputs and restored the ephemeral container-user laravel-boost registration. Boost diagnostic now passes. Public selective-recreation instructions explicitly require that setup before diagnostics; no Boost installation, global host configuration, generated skills, auth reset or production tooling was added. Official Codex MCP configuration documentation was checked; actual agent transport remains the prior closed session and no renewed real-session invocation is claimed.
-- PASS: 25 updater contracts with one existing intentional skip, including real Git original/target source binding for installed 0.3.0 and 0.3.1; 17 startup/idempotent setup contracts; real Boost registration/doctor, docs and canonical formatting checks. Evidence: .runtime/ownership/RM-2026-008/fix6-*.log and boost-setup-recovery.log. The complete update/team/native acceptance will rerun in the new full final graph, preserving the original failed evidence.
+- PASS: 25 updater contracts with one existing intentional skip, including real Git original/target source binding for installed 0.3.0 and 0.3.1; 17 startup/idempotent setup contracts; real Boost registration/doctor, docs and canonical formatting checks. Evidence: .runtime/ownership/RM-2026-008/fix6-*.log and boost-setup-recovery.log. The complete update/team/native acceptance reran successfully in the new full final graph, preserving the original failed evidence.
 - Re-reviewed the changed fixture/tag inputs and recovery instructions: no customer source-integrity, database, dependency, scanner or production safety check was relaxed. Refresh the content-bound security review before final restart.
+
+### Final verification and closure
+
+- Full final graph at ca6303915c560435846188b5316320dd5df88c1a passed all 45 selected checks. Backend: 169 tests/841 assertions. Native customer installation, external update/failure/resume, teammate propagation, complete customer deployment, TLS/SMTP and production isolation passed. Boost registration, knowledge doctor/evaluations and documentation ownership passed. Final release contracts and cleanliness passed.
+- Repository, built PHP/Nginx and Redis fixture scans have no unaccepted HIGH/CRITICAL/secret findings. PostgreSQL raw 26-finding results remain separate from the exact accepted_risk_pending_upstream sidecar and MT-2026-001. The scanner gate passes policy evaluation; this is not a claim of a clean raw PostgreSQL scan.
+- Evidence: .runtime/ownership/RM-2026-008/final-ca63039-passed/ contains the full graph/logs, raw scans, disposition records and changed-surface review. Native reports: installation-host-7246c6f785.json (update/team), installation-host-4b6ae2710d.json (production), installation-host-827e741147.json (security). Original failed evidence remains in final-62d06fc-failed/.
+- Current-state documentation review from preparation remains applicable; point 6 synchronized the recreated-container setup requirement. Closure changes only the permitted VERSION/platform manifest version, changelog, README state and roadmap closure/evidence. Focused docs/release checks and incremental knowledge refresh validate the transition; application identity/version is preserved.
+- Harnesses printed and removed their task containers/networks/volumes/image tags. Final scoped cleanup removed the disposable probe image, Redis fixture image and saved archive after their final checks. Active development/test/PostgreSQL data, rollback resources, preexisting images, Qdrant/model/shared dependency/build caches, backups and all verification evidence were preserved. See final-cleanup.json.
+
+## Final report
+
+RM-2026-008 delivers platform version 0.3.1: verified fixed PHP 8.4.27 development/production/management runtimes, corrected scan scope, secure exact additional-service fixtures and explicit owner-only PostgreSQL/gosu pending-upstream tracking. Fix points 5 and 6 corrected toolchain provenance and native fixture versioning/recreated-container Boost setup. All 45 final gates pass; no hard gate remains failed or unassessed.
+
+No migrations, application version change, database/storage reset or real production rollout. PostgreSQL/gosu remains qualified by MT-2026-001, with review by 2026-11-20 and drift/upstream triggers; customer production does not inherit owner acceptance. This closure prepares the required merge commit, main sanity, immutable annotated v0.3.1 tag and GitHub Release. Task-created disposable resources were removed and protected data/caches/backups/reports preserved. Merge/tag/publication results are reported in chat after execution.
