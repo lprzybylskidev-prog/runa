@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 PostgreSQL table-design/query guidance was adapted around the already-fixed Runa schema/identity/migration rules. Generic rules that demanded RLS, universal FK indexing, elimination of every sequential scan, early partitioning, stored database logic, or arbitrary latency targets were rejected.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

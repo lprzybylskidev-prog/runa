@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Qdrant's skills informed search-quality, model-migration, payload/filtering, and the principle that skills should answer when/why rather than duplicate docs. Runa deliberately keeps a smaller offline-pinned project skill instead of live Qdrant Advisor, and rejects cluster/sharding/quantization complexity for the development-only corpus until evidence demands it.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

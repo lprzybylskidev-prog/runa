@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Official Docker agent-skill guidance was the primary source for build strategy, cache/context hygiene, and container hardening. Community Compose guidance also informed readiness and operational safety. Runa rejected mandatory Alpine/distroless, Bake, multi-arch, signing pipelines, Docker Bench, custom seccomp/AppArmor, and orchestration beyond Compose.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

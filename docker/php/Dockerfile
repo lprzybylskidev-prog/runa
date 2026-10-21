@@ -88,34 +88,57 @@ FROM production-runtime AS php-dependencies
 USER root
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 RUN apk add --no-cache unzip \
-    && mkdir -p /tmp/runa-build && chown runa:runa /tmp/runa-build
+    && mkdir -p /tmp/runa-build/src && chown -R runa:runa /tmp/runa-build
 USER runa
 ENV COMPOSER_HOME=/tmp/composer
-WORKDIR /tmp/runa-build
-COPY --chown=runa:runa composer.json composer.lock ./
+WORKDIR /tmp/runa-build/src
+COPY --chown=runa:runa src/composer.json src/composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
-COPY --chown=runa:runa app/ app/
-COPY --chown=runa:runa database/ database/
-RUN composer dump-autoload --no-dev --no-scripts --optimize
-COPY --chown=runa:runa config/branding.php config/branding.php
-COPY --chown=runa:runa resources/errors/ resources/errors/
-COPY --chown=runa:runa resources/views/errors/ resources/views/errors/
-COPY --chown=runa:runa resources/css/light-palette.css resources/css/light-palette.css
-COPY --chown=runa:runa VERSION ./
+COPY --chown=runa:runa src/app/ app/
+COPY --chown=runa:runa src/runa/Console/ runa/Console/
+COPY --chown=runa:runa src/runa/Database/ runa/Database/
+COPY --chown=runa:runa src/runa/Foundation/ runa/Foundation/
+COPY --chown=runa:runa src/runa/Http/ runa/Http/
+COPY --chown=runa:runa src/runa/Providers/ runa/Providers/
+COPY --chown=runa:runa src/runa/Support/ runa/Support/
+COPY --chown=runa:runa src/runa/database/ runa/database/
+RUN composer dump-autoload --no-dev --no-scripts --optimize \
+    && rm -rf app/resources/js app/resources/css app/resources/index.html
+COPY --chown=runa:runa src/runa/config/branding.php runa/config/branding.php
+COPY --chown=runa:runa src/runa/resources/errors/ runa/resources/errors/
+COPY --chown=runa:runa src/runa/resources/views/errors/ runa/resources/views/errors/
+COPY --chown=runa:runa src/runa/resources/css/light-palette.css runa/resources/css/light-palette.css
+COPY --chown=runa:runa src/runa/platform.json runa/platform.json
+
+# A short-lived host management process, never a production application service.
+FROM production-runtime AS management
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /opt/runa/vendor/
+COPY --chown=runa:runa src/runa/management/autoload.php src/runa/management/bootstrap.php src/runa/management/commands.php src/runa/management/ToolingCommand.php src/runa/management/NamedToolCommand.php src/runa/management/operations.json src/runa/management/HostBridge.php /opt/runa/runa/management/
+COPY --chown=runa:runa src/artisan /opt/runa/artisan
+WORKDIR /opt/runa
+HEALTHCHECK NONE
+ENTRYPOINT ["php", "/opt/runa/artisan"]
+CMD ["--management", "list"]
+
+FROM management AS development-management
+COPY --chown=runa:runa src/runa/management/ /opt/runa/runa/management/
 
 FROM node AS frontend-build
-WORKDIR /build
+WORKDIR /build/src
 RUN npm install --global corepack@0.36.0 && corepack enable && corepack install --global pnpm@12.14.0
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY src/package.json src/pnpm-lock.yaml src/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
-COPY resources/ resources/
-COPY vite.config.mjs vite.errors.config.mjs tsconfig.json VERSION ./
+COPY src/runa/resources/ runa/resources/
+COPY src/app/resources/ app/resources/
+COPY src/app/application.json app/application.json
+COPY src/runa/platform.json runa/platform.json
+COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 RUN pnpm run build
 
 FROM php-dependencies AS error-pages-build
-COPY --chown=runa:runa --from=frontend-build /build/resources/views/errors/generated/ resources/views/errors/generated/
-COPY --chown=runa:runa --from=frontend-build /build/public/runa-error/ public/runa-error/
-RUN php resources/errors/build.php
+COPY --chown=runa:runa --from=frontend-build /build/src/.runtime/runa-errors/ .runtime/runa-errors/
+COPY --chown=runa:runa --from=frontend-build /build/src/public/runa-error/ public/runa-error/
+RUN php runa/resources/errors/build.php
 
 FROM production-runtime AS production
 COPY --from=production-runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
@@ -123,34 +146,40 @@ ENV APP_ENV=production APP_DEBUG=false KNOWLEDGE_ENABLED=false
 COPY --chmod=755 docker/php/production-entrypoint /usr/local/bin/runa-production-entrypoint
 ENTRYPOINT ["runa-production-entrypoint"]
 CMD ["php-fpm", "-F"]
-# Laravel command discovery reads the application namespace from this metadata.
-COPY --chown=runa:runa composer.json /workspace/composer.json
-COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/vendor/ /workspace/vendor/
-COPY --chown=runa:runa app/ /workspace/app/
-COPY --chown=runa:runa bootstrap/ /workspace/bootstrap/
-COPY --chown=runa:runa config/ /workspace/config/
-COPY --chown=runa:runa database/ /workspace/database/
-COPY --chown=runa:runa resources/css/light-palette.css /workspace/resources/css/light-palette.css
-COPY --chown=runa:runa resources/views/ /workspace/resources/views/
-COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/resources/views/errors/generated/ /workspace/resources/views/errors/generated/
-COPY --chown=runa:runa resources/errors/messages.json /workspace/resources/errors/messages.json
-COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
-COPY --chown=runa:runa resources/images/runa-mail-logo.png /workspace/resources/images/runa-mail-logo.png
-COPY --chown=runa:runa VERSION /workspace/VERSION
-COPY --chown=runa:runa routes/ /workspace/routes/
-COPY --chown=runa:runa lang/ /workspace/lang/
-COPY --chown=runa:runa public/index.php public/favicon.ico /workspace/public/
-COPY --chown=runa:runa --from=frontend-build /build/public/build/ /workspace/public/build/
-RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data \
-    storage/framework/sessions storage/framework/views storage/framework/health storage/framework/maintenance storage/logs
+COPY --chown=runa:runa src/composer.json /workspace/src/composer.json
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /workspace/src/vendor/
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/app/ /workspace/src/app/
+COPY --chown=runa:runa src/runa/Console/ /workspace/src/runa/Console/
+COPY --chown=runa:runa src/runa/Database/ /workspace/src/runa/Database/
+COPY --chown=runa:runa src/runa/Foundation/ /workspace/src/runa/Foundation/
+COPY --chown=runa:runa src/runa/Http/ /workspace/src/runa/Http/
+COPY --chown=runa:runa src/runa/Providers/ /workspace/src/runa/Providers/
+COPY --chown=runa:runa src/runa/Support/ /workspace/src/runa/Support/
+COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
+COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
+COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/
+COPY --chown=runa:runa src/runa/resources/css/light-palette.css /workspace/src/runa/resources/css/light-palette.css
+COPY --chown=runa:runa src/runa/resources/views/ /workspace/src/runa/resources/views/
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/.runtime/runa-errors/ /workspace/src/.runtime/runa-errors/
+COPY --chown=runa:runa src/runa/resources/errors/messages.json /workspace/src/runa/resources/errors/messages.json
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/
+COPY --chown=runa:runa src/runa/resources/images/runa-mail-logo.png /workspace/src/runa/resources/images/runa-mail-logo.png
+COPY --chown=runa:runa src/runa/platform.json /workspace/src/runa/platform.json
+COPY --chown=runa:runa src/runa/routes/ /workspace/src/runa/routes/
+COPY --chown=runa:runa src/runa/lang/ /workspace/src/runa/lang/
+COPY --chown=runa:runa src/public/index.php src/public/favicon.ico /workspace/src/public/
+COPY --chown=runa:runa --from=frontend-build /build/src/public/build/ /workspace/src/public/build/
+RUN mkdir -p src/storage/app/application/private src/storage/app/application/public src/storage/app/runa/private src/storage/app/runa/public src/storage/framework/cache/data \
+    src/storage/framework/sessions src/storage/framework/views src/storage/framework/health src/storage/framework/maintenance src/storage/logs
 COPY --chown=runa:runa artisan /workspace/artisan
+COPY --chown=runa:runa src/artisan /workspace/src/artisan
 
 FROM nginx:1.31.7-alpine-slim@sha256:ebd058041a732a2b2dc0b606e34572dd8e0034de6a4aa4d50d8c13a240ac6005 AS production-nginx
 COPY docker/nginx/production.conf /etc/nginx/nginx.conf
-COPY public/favicon.ico /workspace/public/favicon.ico
+COPY src/public/favicon.ico /workspace/src/public/favicon.ico
 COPY docker/nginx/security-headers.conf /etc/nginx/runa-security-headers.conf
-COPY --from=error-pages-build /tmp/runa-build/public/runa-error/ /workspace/public/runa-error/
-COPY --from=frontend-build /build/public/build/ /workspace/public/build/
+COPY --from=error-pages-build /tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/
+COPY --from=frontend-build /build/src/public/build/ /workspace/src/public/build/
 USER nginx
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
 HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD wget -qO- http://127.0.0.1:8080/api/ready || exit 1

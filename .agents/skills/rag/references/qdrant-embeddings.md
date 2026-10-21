@@ -17,9 +17,9 @@
 15. For a real Qdrant-specific problem, consult current official Qdrant docs/skills before guessing.
 16. Do not install the live Qdrant Advisor as a baseline dependency. Runa prefers pinned local guidance plus deliberate maintenance research.
 17. Load only the RAG reference needed for the current roadmap point.
-18. `./bin/knowledge search/index/status/rebuild/stale/doctor/eval` is the canonical interface.
+18. `./bin/artisan runa:knowledge:search/index/status/rebuild/stale/doctor/eval` is the canonical interface.
 19. `--explain` is an on-demand diagnostic mode.
-20. Pre-commit does not reindex automatically; stale knowledge sources block/instruct a deliberate `./bin/knowledge index`.
+20. Pre-commit does not reindex automatically; stale knowledge sources block/instruct a deliberate `./bin/artisan runa:knowledge:index`.
 21. The production environment hard-disables/omits knowledge CLI and all Qdrant/embedding runtime capability.
 
-Application setup/post-create never waits for knowledge. Independent `knowledge-init` retries bounded readiness and first-index initialization under the shared CLI lock; existing stale indexes require explicit `./bin/knowledge index`. Application diagnostics report optional degradation separately. Dedicated knowledge doctor/evals and final AI gates remain strict; see `docs/development/knowledge.md`.
+Application setup/post-create never waits for knowledge. Independent `knowledge-init` retries bounded readiness and first-index initialization under the shared CLI lock; existing stale indexes require explicit `./bin/artisan runa:knowledge:index`. Application diagnostics report optional degradation separately. Dedicated knowledge doctor/evals and final AI gates remain strict; see `docs/runa/handbook/development/knowledge.md`.

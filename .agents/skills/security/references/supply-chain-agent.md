@@ -28,3 +28,7 @@
 26. Deterministic checks should use deterministic scripts/tools rather than relying on the model to notice issues.
 27. Keep critical hard security rules in general project policy; load long security references on demand.
 28. Do not mount Docker socket or grant broad machine privileges merely to make a skill convenient.
+
+External owner update preflight runs only in development and compares only delivered src/runa with an independently downloaded original release, never local receipt hashes/Git HEAD. Infrastructure customization is reviewed separately by affected names and a bound explicit decision; preserve customer files and never waive source mismatches. Preflight must not import installed code, run mutation hooks or relax build/install security policy. Offline manifest/lock consistency is distinct from supply-chain audit approval; keep read-only checks/staging isolated and report uncertainty. See docs/runa/handbook/production/platform-updates.md.
+
+Development update execution revalidates under the shared exclusive operation lock, fences HTTP/writers and journals independently pinned original/target release identities. Resume verifies source staging and existing migration/seed history before mutation; platform source mismatch has no consent override. Preserve foreign/manual maintenance. Platform data steps are transactional, application data steps are excluded, and code rollback never establishes schema/data recovery.

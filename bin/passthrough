@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'tools/project'))
+sys.path.insert(0, str(ROOT / 'tools/application'))
 from runtime import app_command, compose, inside, run
 
 name = Path(sys.argv[0]).name
@@ -16,21 +16,13 @@ try:
             'artisan': 'Usage: ./bin/artisan <Artisan arguments>\nRun Laravel CLI inside the app container.',
             'composer': 'Usage: ./bin/composer <Composer arguments>\nRun the pinned Composer inside the app container.',
             'pnpm': 'Usage: ./bin/pnpm <pnpm arguments>\nRun the pinned pnpm inside the app container.',
-            'seed': 'Usage: ./bin/seed default|production|development|occasional <Seeder>|graph [--force]\nValidate and run semantic seeders. Production requires confirmation or explicit --force.',
             'logs': 'Usage: ./bin/logs [service]\nHost only. Show the last 100 development service log lines; logs must never contain secrets.',
-            'prod': 'Usage: ./bin/prod up|down|restart|status|logs\nHost only. Explicit production Compose context; down preserves volumes. Deploy/migrations remain separate.',
-            'passthrough': 'Usage: invoke artisan, composer, pnpm, seed, logs or prod wrapper.',
+            'passthrough': 'Usage: invoke artisan, composer, pnpm or logs wrapper.',
         }[name])
-    elif name == 'prod':
-        run([str(ROOT / 'bin/production'), *args])
     elif name == 'logs':
-        if inside():
-            raise ValueError('Run ./bin/logs in a host terminal outside the devcontainer.')
-        if len(args) > 1 or (args and args[0] not in ('app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu', 'setup')):
-            raise ValueError('Provide one known development service name.')
-        run(compose() + ['logs', '--tail', '100', *args])
+        run([str(ROOT / 'bin/artisan'), '--management', 'runa:dev:logs', *args])
     else:
-        commands = {'artisan': ['php', 'artisan'], 'composer': ['composer'], 'pnpm': ['pnpm'], 'seed': ['php', 'artisan', 'runa:seed']}
+        commands = {'artisan': ['php', 'artisan'], 'composer': ['composer', '--working-dir=src'], 'pnpm': ['pnpm', '--dir', 'src']}
         run(app_command(commands[name] + args))
 except (KeyError, ValueError, OSError, subprocess.CalledProcessError) as error:
     print(f'Error: child command failed (exit {error.returncode}).' if isinstance(error, subprocess.CalledProcessError) else f'Error: {error}', file=sys.stderr)

@@ -7,7 +7,6 @@
 - Adaptation date: `2026-10-17`
 - Update model: manual review; never auto-overwrite local skill from upstream `main`.
 
-
 ## Runa adaptation
 
 Current Vue-oriented public skill guidance was filtered against Runa's frontend rules. Options API as the standard, Pinia/VueUse/Pinia Colada day-one assumptions, Nuxt/SSR/hydration, JSX defaults, Vapor Mode, and validation/codegen dependencies were intentionally excluded.
@@ -22,4 +21,4 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
-See `docs/ai/skills-policy.md`.
+See `docs/runa/handbook/ai/skills-policy.md`.

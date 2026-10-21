@@ -7,7 +7,7 @@ description: 'Runa development-only knowledge/RAG guidance for ingestion, chunki
 
 Use this skill when changing or diagnosing the development-only project knowledge system.
 
-Read `docs/ai/knowledge-system.md`. For implemented commands, source allowlisting, image/model pins and hardware lifecycle, consult `docs/development/knowledge.md`; it documents search filters, RRF/BM25 configuration, golden evals, doctor, explicit rebuild and source-grounding workflow.
+Read `docs/runa/handbook/ai/knowledge-system.md`. For implemented commands, source allowlisting, image/model pins and hardware lifecycle, consult `docs/runa/handbook/development/knowledge.md`; it documents search filters, RRF/BM25 configuration, golden evals, doctor, explicit rebuild and source-grounding workflow.
 
 Load only:
 
@@ -16,3 +16,7 @@ Load only:
 - `references/qdrant-embeddings.md`
 
 The knowledge system never becomes a production application dependency.
+
+## Documentation placement
+
+Synchronize affected current guidance and domain/pattern references in the same point. Apply the reader/task placement and delivery rules in `docs/README.md` and `AGENTS.md`; validate public links and staged knowledge freshness. Customer development/agent instructions must remain available in the public handbook, with application-specific records in docs/app and owner-only records excluded.

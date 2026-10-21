@@ -1,6 +1,8 @@
-# Runa Agent Contract
+# Runa Application Agent Contract
 
-This is the compact operating contract for coding agents. Keep it short. Load detailed documentation and skills only when needed.
+This contract supports customer application development on Runa. Business code belongs in `src/app`; application documentation and roadmaps belong in `docs/app`. Use the public `docs/runa/handbook` and supplied `.agents/skills`. Preserve protected platform source and use configuration, public contracts and application extension points.
+
+In a Runa owner checkout, also read `docs/runa/maintainer/agent-contract.md` if present before platform maintenance. Its platform roadmap/release procedures apply to that checkout. Customer installations contain no maintainer directory or owner tooling. A customer acquisition receipt always retains application scope, even if owner files were accidentally copied.
 
 ## Authority and truth
 
@@ -29,9 +31,9 @@ If no roadmap is active and the user requests implementation:
 
 The agent cannot self-approve a roadmap.
 
-At most one roadmap may be active.
+Application roadmap lifecycle directories are `docs/app/roadmaps/{draft,active,paused,closed}`. At most one application roadmap may be active.
 
-Read `docs/workflows/roadmaps.md` before roadmap lifecycle work.
+Read `docs/runa/handbook/workflows/roadmaps.md` before roadmap lifecycle work.
 
 ## Roadmap execution
 
@@ -58,7 +60,7 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization, including the current-state documentation review in `docs/workflows/roadmaps.md` and closure synchronization in `docs/workflows/releases.md`.
+The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
 
 If verification finds work:
 
@@ -87,7 +89,7 @@ Do not merge with failed hard gates, open roadmap points, an unsafe dirty worktr
 - Delete roadmap branches after a successful merge.
 - Run a short sanity check on `main` after merge.
 
-Read `docs/workflows/git.md`.
+Read `docs/runa/handbook/workflows/git.md`.
 
 ## No CI policy
 
@@ -96,7 +98,7 @@ Do not add GitHub Actions or another CI pipeline unless the user explicitly chan
 Runa uses:
 
 - versioned local Git hooks,
-- `./bin/quality`,
+- `php artisan runa:quality:roadmap`,
 - explicit local verification,
 - release checks.
 
@@ -133,7 +135,7 @@ Prefer an internal implementation when reasonable. Keep lockfiles committed. Dep
 - No `env()` outside Laravel config.
 - No `php artisan serve`; development uses Nginx -> PHP-FPM -> Laravel.
 - Use Laravel Boost version-aware documentation/tools before guessing Laravel APIs.
-- Remove Boost-generated skills while preserving Runa guidance and functioning MCP; see `docs/ai/laravel-boost.md`.
+- Remove Boost-generated skills while preserving Runa guidance and functioning MCP; see `docs/runa/handbook/ai/laravel-boost.md`.
 
 Load `.agents/skills/laravel/SKILL.md` and `.agents/skills/backend/SKILL.md` when relevant.
 
@@ -157,11 +159,11 @@ PostgreSQL only.
 - No database views, stored procedures, stored functions, or business-logic triggers.
 - Indexes are query-driven, not mechanical.
 - Optimistic concurrency is the default for business edit forms.
-- After production has ever been deployed, never edit a committed migration that may have run there. See `docs/project/state.yml` and the database migration policy.
+- After production has ever been deployed, never edit a committed migration that may have run there. See the database migration policy.
 
-Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
+An active application roadmap authorizes necessary identified application-owned dev/test data resets under `docs/runa/handbook/architecture/database.md`, without repeated approval for hypothetical production data. Native application migrations and wipes preserve platform-owned objects; only the external Runa owner can manage platform migrations. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
 
-Load `.agents/skills/postgresql/SKILL.md` and `docs/architecture/database.md`.
+Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/database.md`.
 
 ## Frontend invariants
 
@@ -202,11 +204,11 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 ## Host execution
 
-Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/development/editor-and-agents.md` and `docs/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
+Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/handbook/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
 ## Temporary Docker resources
 
-After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
+After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/runa/handbook/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
 
 ## Production isolation
 
@@ -224,7 +226,7 @@ Production build/deploy verifies this isolation.
 
 ## Knowledge and skills
 
-Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/development/knowledge.md`. Strict final AI gates remain required.
+Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/runa/handbook/development/knowledge.md`. Strict final AI gates remain required.
 
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 
@@ -238,7 +240,17 @@ Adopt before invent: when adding durable agent guidance, adapt good upstream gui
 
 Do not create a new skill for task noise. Create one only for a distinct reusable workflow.
 
-Read `docs/ai/skills-policy.md` and `docs/ai/knowledge-system.md`.
+Read `docs/runa/handbook/ai/skills-policy.md` and `docs/runa/handbook/ai/knowledge-system.md`.
+
+## Documentation ownership
+
+Classify every new or changed document by reader and task:
+
+- `docs/app`: application-specific domain/architecture/operations, decisions, dependency notes and application roadmaps.
+- `docs/runa/handbook`: every customer-facing Runa procedure, including application development/testing, security, quality, agent workflows, Boost, knowledge, public contracts and supplied templates.
+- `docs/runa/maintainer`: owner-only platform engineering, Runa roadmaps/releases, internal quality definitions, maintenance and historical audit evidence. This directory is not delivered to customers or indexed in their corpus.
+
+Never create `src/app/docs`, duplicate owner guidance into public instructions, or link a customer procedure to undelivered owner files/commands. Split mixed documents by purpose while retaining one authority for each rule. Preserve closed roadmaps and dated evidence byte-for-byte when moving them. Maintain relevant existing skill/pattern references in the same point. Check placement/public links with `php artisan runa:doctor:docs`, and refresh staged durable knowledge incrementally before commit. See `docs/README.md`.
 
 ## Documentation maintenance
 
@@ -274,8 +286,8 @@ Naming:
 - API URLs: sensible plural/kebab-case resources
 - route names are always required
 
-See `docs/architecture/language-and-naming.md`.
+See `docs/runa/handbook/architecture/language-and-naming.md`.
 
 ## Release 1.0 trigger
 
-When preparing release `1.0.0` or a later update to the stable application, load `docs/release/1.0-readiness.md` and apply its release-scale validation requirements.
+When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/handbook/release/1.0-readiness.md` and apply its release-scale validation requirements.

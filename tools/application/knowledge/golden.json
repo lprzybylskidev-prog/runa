@@ -1,0 +1,33 @@
+[
+  {
+    "query": "knowledge production isolation Qdrant embeddings",
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md"
+  },
+  {
+    "query": "PostgreSQL bigint identity public_id UUIDv7",
+    "source_path": "docs/runa/handbook/architecture/database.md"
+  },
+  {
+    "query": "embedding model BGE CPU CUDA fallback",
+    "source_path": "docs/runa/handbook/development/knowledge.md"
+  },
+  {
+    "query": "query exact knowledge CLI golden retrieval evaluation",
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md"
+  },
+  {
+    "query": "production knowledge prohibition",
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md",
+    "section": "Production prohibition",
+    "filters": {
+      "source_path": "docs/runa/handbook/ai/knowledge-system.md"
+    }
+  },
+  {
+    "query": "application documentation independent application roadmap lifecycle",
+    "source_path": "docs/app/README.md",
+    "filters": {
+      "source_path": "docs/app/README.md"
+    }
+  }
+]

@@ -18,6 +18,18 @@
 
 ## Console commands
 
+Guard development execution before local Actions and independently before host locks/executors: a production acquisition receipt cannot be overridden by a caller's development APP_ENV. Preserve production artifact exclusion and inert discovery/previews. Production/deploy/host controls use their operational scope; do not add a public bypass. See docs/runa/handbook/tooling/commands.md for mode boundaries.
+
+Custom commands expose one fixed operation per discoverable name (for example `runa:dev:up`, `runa:knowledge:search`, `runa:test:frontend`). Do not add a public action selector or a flag that starts an unrelated task. Keep native framework combinations and explicitly named install/update/deploy/quality workflows. Use the shared versioned management definitions for normal/cold/host registration; owner `tools/maintainer/check-*`, `quality-*` and `test-*` entrypoints have no customer aliases. See docs/runa/handbook/tooling/commands.md.
+
+Runtime-independent host operations share the explicit management command registry with normal local/testing Artisan. Normal php artisan host commands execute through the authenticated private workspace executor; only explicit --plan is inert. Use `./bin/artisan --management list` for cold discovery and --recover-host/--operator for setup/recovery; application providers, dotenv, DB and keys are outside that bootstrap. Local development tooling runs PHP Actions/fixed local processes. Operational and optional development registries remain separate. Production runtime has no management commands, executor socket or credentials; only the separate operator environment receives transport access. Follow docs/runa/handbook/tooling/host-executor.md and the current command reference, including operation receipts after self-restart/disconnection and no blind mutation retry.
+
+Owner-delivered first installation uses internal dev/prod installation and existing dev/deploy mechanics,
+private settings and explicit initial-install resume. Preserve the scaffold and
+generated secrets; repeat is not an update/reset. Native SMTP verification is an
+application command and must redact provider failures. Follow
+docs/runa/handbook/production/deployment.md for the implemented lifecycle and acceptance scope.
+
 11. Console commands return meaningful exit codes.
 12. Output/help is concise, actionable, and English-only.
 13. Destructive commands require clear confirmation interactively.
@@ -32,6 +44,8 @@
 19. Use framework fakes selectively and preserve meaningful integration behavior.
 20. Security/behavior regressions receive focused tests when reproducible.
 
+Test ownership is explicit: native `php artisan test` and customer `runa:test`, `runa:test:frontend`, `runa:test:e2e` use application configurations and `src/app/tests`. Shared `src/tests/TestCase.php` performs guarded application-only migrations; it must not require distribution or maintainer code. Owner `tools/maintainer/test-*` select private configurations under `src/runa/tests`, where platform migration preparation and fixture autoloading remain. Only owner E2E uses the synthetic platform harness; application E2E uses the real testing Nginx endpoint and keeps failure artifacts/reporting under `artifacts/playwright/application`. Preserve the shared suite lock and native child exit status. Customer delivery excludes all platform tests/harnesses.
+
 ## Additional framework checks
 
 Use single-server scheduling only when the deployment topology and task semantics require it; do not add it mechanically. Do not queue listeners solely because they can implement `ShouldQueue`.
@@ -42,4 +56,6 @@ Use Laravel cache and filesystem abstractions where infrastructure changes shoul
 
 ## Project seeding
 
-Use the shared `ManagedSeeder` / `SeedGraph` foundation and `docs/data/seeding.md` for reference/demo/manual scenarios. Validate dependencies before execution and retain the direct development-environment guard. Keep scenario options in Laravel config and use each `SeedContext`'s independent generator; never seed global randomness or invent demo entities merely to populate the framework.
+Use the shared `ManagedSeeder` / `SeedGraph` foundation and `docs/runa/handbook/data/seeding.md` for reference/demo/manual scenarios. Validate dependencies before execution and retain the direct development-environment guard. Keep scenario options in Laravel config and use each `SeedContext`'s independent generator; never seed global randomness or invent demo entities merely to populate the framework.
+
+Database commands use `DatabaseScope`: native Artisan operations and `DatabaseSeeder` are app-only; owner `tools/maintainer` scripts use a private external bootstrap and no public scope selector. Use explicit application `seeding.register`, never folder discovery or delegation to Runa seeds. Ordinary startup performs no migrations/seeding. Explicit runa:dev:initialize prepares customer clones and pending local forward platform/application data after pulls through the narrow platform preparation primitive, without exposing owner reset/rollback/selectable-seeder commands. Protect the separate `shared.migrations` / `shared.application_migrations` histories, table inventory, and isolated-test reset guards; see docs/runa/handbook/architecture/database.md.
