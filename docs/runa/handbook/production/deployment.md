@@ -1,5 +1,7 @@
 # Application deployment
 
+A revised workflow has been approved for the next release: one customer repository versions the whole project; production initialization uses that repository, and deploy accepts Runa/infrastructure changes and runs required forward migrations/seeds for both Runa and the application. Development and production retain the same versioned source set, with separate local env, dependencies and runtime images/services. This workflow is pending implementation. The commands and restrictions below describe current tooling, which still rejects platform changes and runs only application data steps.
+
 Production commands require an installer-selected production installation (`mode=prod`). Development, missing or unknown acquisition modes are rejected before production work. `APP_ENV` and `--simulation` cannot override installation ownership. Help and explicit `--plan` remain nonexecuting. Run from the installation root in the separately prepared PHP operator terminal; initial setup/recovery uses `./bin/artisan`, and `./bin/artisan --operator` enters that terminal. Runtime containers do not expose deployment commands or Docker access.
 
 ## Select the customer repository

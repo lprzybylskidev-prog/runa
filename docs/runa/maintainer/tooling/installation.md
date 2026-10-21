@@ -1,5 +1,7 @@
 # First installation
 
+The owner approved a revised whole-project customer-repository workflow on 2026-10-21; implementation remains open in [RM-2026-005 points 10a–10c](../roadmaps/active/RM-2026-005-platform-installation-updates.md). The target is first-dev acquisition from Runa, teammate setup and production initialization from the customer repository, with identical versioned dev/prod source sets and different local env/runtime artifacts. The commands below describe the existing implementation, including its upstream production acquisition and sparse projection, until those points replace it.
+
 Use the host terminal and the verified checkout produced by
 [bootstrap](bootstrap.md). No host PHP, Composer, Node or pnpm is required.
 Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ with

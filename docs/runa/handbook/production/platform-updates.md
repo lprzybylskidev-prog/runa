@@ -1,5 +1,9 @@
 # Platform update planning
 
+The approved next-release workflow updates Runa only on one developer's machine. The customer tests and commits/pushes the whole project; teammates pull it and prepare their local environment/data, and production deploys that customer revision with required Runa and application migrations/seeds. Production has no separate platform updater. This workflow is pending implementation; the following description documents the existing read-only planner.
+
+Customers may modify devcontainer and development/production containers, including adding services. Such customization can complicate future updates and requires manual reconciliation. In the approved updater design, only changes inside delivered src/runa unconditionally block updates. Container/devcontainer differences produce an affected-name summary and require an explicit continue/abort decision; continuing preserves those customizations and never overrides src/runa mismatch. Required env/container/scaffold adjustments are documented per release and performed manually, with production secrets kept outside Git.
+
 Runa platform installation/update is performed externally by the Runa owner using separately supplied tooling. It is separate from customer application deployment; `runa:deploy` fetches only the configured customer repository and runs only application migrations/seeds.
 
 The current external updater can inspect an installation and produce a read-only preflight/plan. It retrieves the original installed and selected target releases independently, compares protected source, checks application compatibility and preserved dependency locks, and inspects the running services/database. Modified, missing or unexpected protected files block; there is no repair or consent override. Adapt customer behavior through application/configuration extension points.
