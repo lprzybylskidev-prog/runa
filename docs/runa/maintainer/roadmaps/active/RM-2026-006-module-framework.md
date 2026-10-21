@@ -1,10 +1,10 @@
 ---
 id: RM-2026-006
 title: Module framework, lifecycle and extension contracts
-status: draft
+status: active
 branch: roadmap/RM-2026-006-module-framework
 created_at: 2026-10-18
-activated_at: null
+activated_at: 2026-10-21
 closed_at: null
 release_type: feature
 impact_areas:
@@ -26,9 +26,9 @@ impact_areas:
 
 Deliver the modular infrastructure and developer contracts through which future Runa and business modules can register, communicate, operate safely and update. Keep ordinary application code and independent customer frontends fully supported.
 
-Planning-only draft. Requires [RM-2026-005](../closed/RM-2026-005-platform-installation-updates.md) closed, merged and released; that roadmap itself requires [RM-2026-004](../closed/RM-2026-004-ui-foundations.md). Do not activate concurrently or begin a consumer before its predecessor. Update links after predecessor lifecycle moves.
+Activated by explicit owner instruction on 2026-10-21 after [RM-2026-008](../closed/RM-2026-008-runtime-security-remediation.md) closed, merged and released as 0.3.1. Required predecessors [RM-2026-005](../closed/RM-2026-005-platform-installation-updates.md) and [RM-2026-004](../closed/RM-2026-004-ui-foundations.md) are closed and released. This is the single active roadmap; implementation begins with point 1.
 
-Planned release **0.4.0**, following planned 0.3.0. `release_type: feature` reflects new framework capability and follows the existing pre-1.0 minor-release rule. Independent module versions do not determine platform VERSION. No major bump or readiness claim is authorized. Recompute the projected version if actual main has intervening releases.
+Planned release **0.4.0**, following released 0.3.1. `release_type: feature` reflects new framework capability and follows the existing pre-1.0 minor-release rule. Independent module versions do not determine platform VERSION. No major bump or readiness claim is authorized. Recompute the projected version if actual main has intervening releases.
 
 ### Scope and exclusions
 
@@ -38,28 +38,30 @@ Do not implement or mock production Core modules. Future order is `runa.auth` �
 
 ### Audited sources and dependencies
 
-Audit baseline: `main` `725f75b`, VERSION 0.1.2, no active roadmap, closed RM-001/002/003 and production-ever-deployed false. Knowledge was current and retrieved significant rules were opened in source. The current source has no module registry/framework; existing technical support is not a set of modules. This roadmap consumes the future released results of RM-004/005, so refresh actual paths and contracts at activation rather than presuming those features already exist.
+Original planning audit: `main` `725f75b`, VERSION 0.1.2, with RM-001/002/003 closed. Activation baseline: released `main` `6ba27410bb30715491b952ca2443ba6ecb15e201`, VERSION/platform manifest 0.3.1, after RM-004/005/007/008 closure. The 0.3.1 final graph passed all 45 checks and main sanity passed. No real production deployment occurred. Knowledge was current and relevant ownership sources were opened. Delivered UI, src/runa/src/app composition, platform/application data separation, external development updater and complete customer deployment are available; no module framework is claimed. Point 1 still owns the detailed contract/design refresh before implementation.
 
-Read root/applicable nested AGENTS, roadmap/Git/release workflows, relevant backend/Laravel/PostgreSQL/security/Docker/frontend/Vue/Tailwind skills, `docs/runa/handbook/architecture/{application-architecture,database,api,configuration,frontend,deferred-module-concerns,language-and-naming}.md`, `docs/runa/handbook/data/seeding.md`, `docs/runa/handbook/security/baseline.md`, production deployment/architecture docs, quality gates, testing docs and RM-004/005 delivered contracts.
+Read root/applicable nested AGENTS, roadmap/Git/release workflows, relevant backend/Laravel/PostgreSQL/security/Docker/frontend/Vue/Tailwind skills, `docs/runa/handbook/architecture/{application-architecture,database,api,configuration,frontend,language-and-naming}.md`, `docs/runa/maintainer/architecture/deferred-module-concerns.md`, `docs/runa/handbook/data/seeding.md`, `docs/runa/handbook/security/baseline.md`, production deployment/architecture docs, quality gates, testing docs and RM-004/005 delivered contracts.
 
-| Existing source/mechanism                                                         | Reuse and extension                                                                                                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `app/Providers/AppServiceProvider.php`, bootstrap routing/commands/schedule       | RM-005 relocates these; extend provider-driven Laravel registration, not a second container/framework. Preserve technical scheduler pulse.                   |
-| `app/Support/Seeding/SeedGraph.php`, category/context/managed seeders             | Existing deterministic graph/category behavior can inform/reuse bounded ordering; dependency enablement is a separate graph, not a repurposed seeding state. |
-| `IdentityMigrationRepository`, guarded database commands, queue migrations        | Preserve shared technical schema, bigint identity and isolated test DB guarantees. Add module schemas/migration sources explicitly.                          |
-| `RuntimeHeartbeat`, health/readiness controllers                                  | Heartbeats describe process health, not per-module health. Reuse diagnostics/time abstractions but keep concepts distinct.                                   |
-| `config/logging.php`, `AssignRequestId`                                           | Current logging is stderr with request correlation; add bounded structured origin channels/files, not an imagined existing logs module.                      |
-| `config/filesystems.php`, Laravel Storage                                         | Add scoped module storage adapters supporting multiple drivers; no direct cross-module path traversal.                                                       |
-| RM-004 UI facade, route/navigation descriptors, preference adapter and slots      | Supply module metadata to existing interfaces. Framework cannot require customers to render the bundled shell.                                               |
-| RM-005 ownership map, manifest compatibility evaluator, update plan/journal hooks | Extend same installer/updater/Artisan surface; do not build a module package installer or a second update state store.                                       |
-| `docs/runa/maintainer/architecture/deferred-module-concerns.md`                   | Keep Auth/Audit/Files/Permissions business policies deferred; remove only entries actually resolved by framework implementation.                             |
+| Existing source/mechanism                                                                                                            | Reuse and extension                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/Providers/AppServiceProvider.php`, `src/runa/Providers/RunaServiceProvider.php`, `src/bootstrap/` routing/commands/schedule | Extend delivered provider-driven Laravel registration, not a second container/framework. Preserve technical scheduler pulse.                                 |
+| `src/runa/Support/Seeding/SeedGraph.php`, category/context/managed seeders                                                           | Existing deterministic graph/category behavior can inform/reuse bounded ordering; dependency enablement is a separate graph, not a repurposed seeding state. |
+| `IdentityMigrationRepository`, guarded database commands, queue migrations                                                           | Preserve shared technical schema, bigint identity and isolated test DB guarantees. Add module schemas/migration sources explicitly.                          |
+| `RuntimeHeartbeat`, health/readiness controllers                                                                                     | Heartbeats describe process health, not per-module health. Reuse diagnostics/time abstractions but keep concepts distinct.                                   |
+| `src/runa/config/logging.php`, `AssignRequestId`                                                                                     | Current logging is stderr with request correlation; add bounded structured origin channels/files, not an imagined existing logs module.                      |
+| `src/runa/config/filesystems.php`, Laravel Storage                                                                                   | Add scoped module storage adapters supporting multiple drivers; no direct cross-module path traversal.                                                       |
+| RM-004 UI facade, route/navigation descriptors, preference adapter and slots                                                         | Supply module metadata to existing interfaces. Framework cannot require customers to render the bundled shell.                                               |
+| RM-005 ownership map, manifest compatibility evaluator, update plan/journal hooks                                                    | Extend same installer/updater/Artisan surface; do not build a module package installer or a second update state store.                                       |
+| `docs/runa/maintainer/architecture/deferred-module-concerns.md`                                                                      | Keep Auth/Audit/Files/Permissions business policies deferred; remove only entries actually resolved by framework implementation.                             |
 
 ## Specification
 
 ### Decisions
 
+- 2026-10-21 — The owner explicitly authorizes activation after RM-008 release 0.3.1. Base main 6ba2741, target feature release 0.4.0. Refresh delivered ownership/UI/update seams in point 1; activation itself introduces no module code, runtime change, migration or dependency. Existing exact-bound PostgreSQL/gosu pending-upstream tracking MT-2026-001 remains in force; assess new findings/artifact/trust drift normally without re-requesting acceptance of the unchanged set.
+
 - 2026-10-18 — Ownership IDs are `runa.<code>` and `app.<code>`, with stable validated English snake_case short codes, unique namespaced IDs and collision-safe schema/storage derivation. Runa-owned modules cannot depend on app-owned modules. Application modules may depend on either. Customers may also use ordinary application code.
-- 2026-10-18 — Module source is self-contained: backend, public contracts, frontend, routes, models, migrations, seeders, translations, config, tests, docs, commands/jobs/schedules. Runa modules live under RM-005's protected `src/runa/modules/<code>/`; application modules use `modules/<code>/` in the customer-owned application root. Runa-supplied code ships with platform releases, not separately installed packages.
+- 2026-10-18 — Module source is self-contained: backend, public contracts, frontend, routes, models, migrations, seeders, translations, config, tests, docs, commands/jobs/schedules. Runa modules live under RM-005's protected `src/runa/modules/<code>/`; application modules use `src/app/modules/<code>/` in the customer-owned application root. Runa-supplied code ships with platform releases, not separately installed packages.
 - 2026-10-18 — Registration, administrative enabled state, source presence, own health, derived effective availability and installed data version are distinct fields/concepts. Technical recovery never changes enabled flags.
 - 2026-10-18 — Persist operational metadata in `shared` technical tables; each module's domain data owns its own schema. No cross-module foreign keys, direct models/relations/SQL or file traversal. Same-module FKs preserve `ON DELETE RESTRICT ON UPDATE RESTRICT`.
 - 2026-10-18 — Centralize enforcement in framework adapters, with fail-closed critical health. Do not claim PHP/SQL static analysis is a sandbox preventing deliberately malicious trusted code. Review contracts and runtime/static checks jointly.
@@ -231,7 +233,7 @@ Risks: false Core requirements could make a module-free foundation permanently u
 
 Acceptance: self-contained ownership-separated modules, valid registry/source/version state, deterministic atomic dependency transitions, independent health/automatic recovery, Core maintenance/manual reason isolation, centralized enforcement on every declared entrypoint, preserved missing/unregistered data, PostgreSQL/storage boundaries, public versioned APIs/events, encrypted settings/declarative Admin metadata, availability-aware optional frontend/slots, automatic commands/schedules, bounded structured logs, disabled-module migrations and resumable fail-stop updates, safe generators and reusable contracts. Development reference is excluded from production; no real business/Core modules or mock authorization shipped. Current docs/gates and independent module version rules are synchronized, full local verification/release complete.
 
-During execution inspect and display exact task resource identities before cleanup; delete only proven task-created disposable containers/networks/tags/volumes after final use, preserving development/test data, rollback resources, backups, knowledge/model caches and verification reports. This planning task itself does not alter runtime resources.
+During execution inspect and display exact task resource identities before cleanup; delete only proven task-created disposable containers/networks/tags/volumes after final use, preserving development/test data, rollback resources, backups, knowledge/model caches and verification reports. Activation itself does not alter runtime resources; implementation cleanup follows the scoped rules above.
 
 ## Cross-roadmap consistency review (2026-10-18)
 
@@ -245,8 +247,8 @@ During execution inspect and display exact task resource identities before clean
 | Quality and release governance                                     | Existing workflows → all three                                          | Local hooks/quality, no CI, user-controlled activation/platform major versions and agent-maintained module SemVer, closed history untouched. Visual approvals apply only to RM-004. |
 | Temporary examples                                                 | RM-004 catalog removal; RM-006 reference exclusion                      | UI demos removed after acceptance, reusable tests/docs preserved; module reference remains dev-only and absent from production.                                                     |
 
-No requirement is left architecturally unplanned. Execution-time dependency choices still require evidence/approval if new packages are needed. Actual email-client coverage, private GitHub access and production TLS/SMTP validation depend on available execution environments; their tests and failure criteria are specified rather than asserted as already passed. Missing REF-003 image does not prevent planning from its approved textual specification. All three documents remain drafts; no application implementation, activation, version bump, release publication or modification of closed roadmaps is authorized by creating them.
+No requirement is left architecturally unplanned. Execution-time dependency choices still require evidence/approval if new packages are needed. Actual email-client coverage, private GitHub access and production TLS/SMTP validation depend on available execution environments; their tests and failure criteria are specified rather than asserted as already passed. Missing REF-003 image does not prevent planning from its approved textual specification. That historical planning review did not itself authorize implementation or activation. RM-004/005 are now closed historical records, preserved unchanged; the owner explicitly activated RM-006 on 2026-10-21. No new dependency, platform major bump or modification of closed roadmaps is implied.
 
 ## RM-005 ownership dependency
 
-The owner approved a single Laravel project under `src/` on 2026-10-20. This roadmap consumes the delivered `src/runa/` platform and `src/app/` customer roots from RM-005, with reserved module roots `src/runa/modules/` and `src/app/modules/`. Durable files share `src/storage/app/{runa,application}` with separate private/public subtrees; module source must not introduce writable storage inside its source directory. Confirm the delivered ownership/composition contract at activation.
+The owner approved a single Laravel project under `src/` on 2026-10-20. This roadmap consumes the delivered `src/runa/` platform and `src/app/` customer roots from RM-005, with reserved module roots `src/runa/modules/` and `src/app/modules/`. Durable files share `src/storage/app/{runa,application}` with separate private/public subtrees; module source must not introduce writable storage inside its source directory. Activation refresh confirmed the delivered source/storage roots against current ownership guidance and provider/seeding sources; point 1 inspects their extension contracts in detail.
