@@ -52,7 +52,7 @@
 28. Post-create/setup scripts must be idempotent.
 29. Distinguish first bootstrap from normal reopen; do not repeat expensive setup needlessly.
 30. Never run `migrate:fresh` automatically on each rebuild/reopen.
-31. If the database is empty, initialize safely; otherwise run normal safe migrations/checks.
+31. Initialize data only through explicit acquisition/clone preparation/deploy. Ordinary reopen/setup never migrates or seeds; runa:dev:initialize prepares local forward platform/application data, preserves credentials/storage and requires a customer checkout.
 32. Do not require private absolute host paths; use ignored local overrides.
 33. GPU support for embeddings is optional and CPU-fallback-safe.
 34. Do not build multi-arch images before a real platform need.

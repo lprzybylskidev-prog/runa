@@ -23,7 +23,7 @@ python3 bootstrap.py
 
 It asks for the authorized GitHub owner/name (default: the canonical Runa
 repository), optional private access, an accessible published stable release,
-new destination, `dev`/`prod` and installation `now`/`later`. Release listing is
+new destination and development installation `now`/`later`. Release listing is
 bounded to 1000 entries; use an explicit tag for larger repositories.
 
 Automation must provide every selection and never prompts:
@@ -31,7 +31,7 @@ Automation must provide every selection and never prompts:
 ```sh
 python3 bootstrap.py --non-interactive \
   --repository lprzybylskidev-prog/runa --tag v0.2.1 \
-  --destination "$PWD/runa-source" --mode dev --install later
+  --destination "$PWD/runa-source" --install later
 ```
 
 Use an actually published tag; development branch changes are delivered only
@@ -98,6 +98,8 @@ never presented as an installed destination.
 
 ## Installation and resume
 
+Release acquisition initializes development only. Production uses distribution/initialize.py with the customer repository, not a Runa release. Teammates clone the customer project and use runa:dev:initialize; they do not reacquire upstream or copy .git metadata from another workstation. See [initialization](installation.md).
+
 Successful acquisition writes credential-free `.git/runa-bootstrap.json` with
 repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is clean and detached. This is acquisition evidence,
@@ -105,7 +107,7 @@ not an installation-success marker or trusted file baseline. No local ownership 
 
 The owner runs the external launcher personally; neither the launcher nor its adjacent installation helper is delivered as customer tooling. It is never installed into bin or customer source.
 After verifying the **complete** release, acquisition applies a fixed non-cone
-sparse projection before atomic publication. Both dev/prod and now/later exclude
+sparse projection before atomic publication. Both now/later exclude
 `distribution/`, `tools/maintainer/`, `src/runa/tests/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
 The credential-free receipt records the full source digest and projection version
 plus exact exclusions. Git remains clean and detached at the verified commit;

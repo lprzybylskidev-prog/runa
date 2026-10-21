@@ -55,9 +55,9 @@ def dispatch(args):
         import operations
         release = operations.active_release()
         if action == 'self-test':
-            operations.health(release, sparse=True)
+            operations.health(release, verify_source=True)
         else:
-            operations.isolation(release, sparse=True)
+            operations.isolation(release, verify_source=True)
         return
     if action not in ('validate', 'build', 'up', 'down', 'restart', 'status', 'logs'):
         raise ValueError('Unknown or not yet implemented production operation. Use php artisan list runa:production and help <exact-command>.')

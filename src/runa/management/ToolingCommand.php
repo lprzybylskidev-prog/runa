@@ -15,7 +15,7 @@ abstract class ToolingCommand extends Command
     protected array $prefix = [];
 
     private const ACTIONS = [
-        'dev' => ['prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status'],
+        'dev' => ['initialize', 'prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status'],
         'doctor' => ['templates', 'repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production'],
         'quality' => ['show', 'roadmap', 'final', 'status'],
         'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
@@ -170,7 +170,7 @@ abstract class ToolingCommand extends Command
             $action = $arguments[0];
             $tail = array_slice($arguments, 1);
             $services = ['app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit', 'qdrant', 'embeddings', 'embeddings-gpu', 'setup', 'knowledge-init'];
-            if (in_array($action, ['prepare', 'up', 'down', 'config', 'shell', 'status', 'knowledge-init', 'knowledge-status'], true) && $tail !== []) {
+            if (in_array($action, ['initialize', 'prepare', 'up', 'down', 'config', 'shell', 'status', 'knowledge-init', 'knowledge-status'], true) && $tail !== []) {
                 throw new InvalidArgumentException('This development action takes no additional arguments.');
             }
             if ($action === 'setup' && ! in_array($tail, [[], ['--if-needed']], true)) {

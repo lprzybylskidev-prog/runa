@@ -348,16 +348,17 @@ def development_context():
 
 
 def platform_database(release_sha, mode, release=None):
-    program = Path(__file__).with_name('platform-database.php').read_text()
-    if not program.startswith('<?php'):
-        raise InstallationError('Invalid external platform database entrypoint.')
-    program = program.removeprefix('<?php')
-    steps = [('migrate', '--force', '--no-interaction'), ('install-seeds', release_sha)]
-    for arguments in steps:
-        if mode == 'dev':
-            run(dev_compose() + ['exec', '-T', 'app', 'php', '-r', program, '--', *arguments])
-        else:
-            ops.dc(['run', '--rm', '--no-deps', '-T', 'app', 'php', '-r', program, '--', *arguments], release)
+    arguments = ['php', 'src/runa/database/prepare.php', release_sha]
+    if mode == 'dev':
+        run(dev_compose() + ['exec', '-T', 'app', *arguments])
+    else:
+        ops.dc(['run', '--rm', '--no-deps', '-T', 'app', *arguments], release)
+
+
+def initialize_database(sha, release):
+    platform_database(sha, 'prod', release)
+    ops.artisan(['migrate', '--force'], release)
+    ops.artisan(['db:seed', '--force'], release)
 
 
 def dev_compose():
@@ -368,7 +369,6 @@ def dev_compose():
 def install(mode, target, simulation=False, settings_file=None, profile=None, resume=False, non_interactive=False):
     from repository_boundary import assert_installation
     assert_installation(ROOT)
-    mode = 'prod' if mode == 'production' else mode
     sha = ops.resolve(target)
     head = run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
     if sha != head:
@@ -428,23 +428,21 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
             # setup is a one-shot service; container health does not mean Composer finished.
             run(dev_compose() + ['wait', 'setup'])
             platform_database(sha, 'dev')
+            for arguments in (['migrate', '--force'], ['db:seed', '--force']):
+                run(dev_compose() + ['exec', '-T', 'app', 'php', 'artisan', *arguments, '--no-interaction'])
             run(['python3', str(helper), 'up'])
         else:
             settings = resume_settings(settings_file if resume else None, simulation)
-            if not simulation:
-                run(['git', 'sparse-checkout', 'init', '--no-cone'])
-                run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(ops.SPARSE) + '\n', text=True)
-                ops.assert_sparse(ROOT)
             if settings['tls']['mode'] == 'builtin':
                 provision_tls(settings)
             provision(settings, sha, simulation)
             current = ops.read_state()['current']
             if current and current['sha'] == sha and not (ops.STATE / 'in-progress.json').exists():
-                ops.health(Path(current['path']), sparse=True)
+                ops.health(Path(current['path']), verify_source=True)
                 verify_endpoints(settings, Path(current['path']))
             else:
                 owned_resume = resume_is_owned(journal) if resume else False
-                ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release), database_setup=lambda release: platform_database(sha, 'prod', release))
+                ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release), database_setup=lambda release: initialize_database(sha, release))
             if os.environ.get('RUNA_HOST_WORKER') != '1':
                 import host_executor
                 host_executor.ensure()
@@ -460,7 +458,7 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
 
 def main(arguments):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode', choices=('dev', 'prod', 'production'))
+    parser.add_argument('mode', choices=('dev', 'prod'))
     parser.add_argument('target')
     parser.add_argument('--settings-file')
     parser.add_argument('--profile', choices=('low', 'standard', 'high'))

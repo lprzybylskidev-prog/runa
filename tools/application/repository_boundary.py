@@ -58,14 +58,20 @@ def assert_installation(root):
 def application_remote(root, data=None):
     """Explicit customer selection; no remote repair, inference or upstream fetch."""
     data = data or receipt(root)
+    result = subprocess.run(['git', '-C', str(root), 'config', '--local', '--get-all', 'runa.applicationRemote'], capture_output=True, text=True)
+    if result.returncode:
+        raise RepositoryBoundaryError('Configure a customer remote with git config --local runa.applicationRemote <remote-name>.')
+    return named_application_remote(root, result.stdout.strip(), data)
+
+
+def named_application_remote(root, name, data):
+    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,63}', name):
+        raise RepositoryBoundaryError('Select exactly one named customer application remote.')
     def git(*args):
         result = subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True)
         if result.returncode:
-            raise RepositoryBoundaryError('Configure a customer remote with git config --local runa.applicationRemote <remote-name>.')
+            raise RepositoryBoundaryError('Customer repository remote is unavailable.')
         return result.stdout.strip()
-    name = git('config', '--local', '--get-all', 'runa.applicationRemote')
-    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,63}', name):
-        raise RepositoryBoundaryError('Select exactly one named customer application remote.')
     url = git('remote', 'get-url', '--all', name)
     if not url or any(char.isspace() or ord(char) < 32 for char in url) or url.startswith('-'):
         raise RepositoryBoundaryError('Application remote must have one supported nonsecret URL.')
@@ -118,3 +124,30 @@ def write_staging_receipt(root, data):
     if path.is_symlink():
         raise RepositoryBoundaryError('Staging acquisition receipt must not be a symlink.')
     path.write_text(json.dumps(data, indent=2) + '\n')
+    path.chmod(0o600)
+
+
+def prepare_customer_context(root, mode, remote='origin'):
+    """Record this clone's local role; never require another workstation's receipt."""
+    root = Path(root).absolute()
+    if mode not in ('dev', 'prod') or root.stat().st_uid != os.getuid() or root.resolve() != root or (root / '.git').is_symlink() or not (root / '.git').is_dir():
+        raise RepositoryBoundaryError('Preparation requires a real customer Git checkout and explicit dev/prod role.')
+    if any(key.startswith('GIT_') and key != 'GIT_PAGER' for key in os.environ):
+        raise RepositoryBoundaryError('Inherited Git overrides are not a customer preparation context.')
+    if any((root / name).exists() or (root / name).is_symlink() for name in OWNER_PATHS):
+        raise RepositoryBoundaryError('Customer preparation refuses materialized owner source.')
+    marker = root / '.git/runa-bootstrap.json'
+    data = receipt(root) if marker.exists() or marker.is_symlink() else {
+        'schema_version': 1, 'repository': 'lprzybylskidev-prog/runa', 'mode': mode,
+        'source': 'customer-repository', 'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}}
+    if data.get('mode') != mode:
+        raise RepositoryBoundaryError('Preparation cannot change an existing installation role.')
+    named_application_remote(root, remote, data)
+    head = subprocess.run(['git', '-C', str(root), 'rev-parse', '--verify', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()
+    if not re.fullmatch('[a-f0-9]{40}', head):
+        raise RepositoryBoundaryError('Customer checkout has no exact source identity.')
+    subprocess.run(['git', '-C', str(root), 'config', '--local', 'runa.applicationRemote', remote], check=True)
+    root.chmod(0o700)
+    if not marker.exists():
+        write_staging_receipt(root, {**data, 'commit': head})
+    return data

@@ -69,13 +69,27 @@ def commit(root):
     return output(['git', '-C', str(root), 'rev-parse', 'HEAD'])
 
 
+def customer_snapshot(source, destination):
+    destination.mkdir()
+    names = output(['git', '-C', str(source), 'ls-files', '--cached', '--others', '--exclude-standard', '-z']).split('\0')
+    for name in names:
+        if not name or any(name == item or name.startswith(item + '/') for item in OWNER_PATHS):
+            continue
+        path, target = source / name, destination / name
+        if path.is_file() or path.is_symlink():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if path.is_symlink(): target.symlink_to(os.readlink(path))
+            else: shutil.copy2(path, target)
+    call(['git', 'init', '--quiet', '-b', 'main', str(destination)])
+
+
 def project_customer(root, sha):
     patterns = '/*\n' + ''.join('!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') + '\n' for name in OWNER_PATHS)
     call(['git', '-C', str(root), 'sparse-checkout', 'init', '--no-cone'])
     subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
     call(['git', '-C', str(root), 'remote', 'set-url', 'origin', 'https://github.com/fixture/runa.git'])
     call(['git', '-C', str(root), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
-    write_staging_receipt(root, {'mode': 'prod' if root.name == 'prod' else 'dev', 'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
+    write_staging_receipt(root, {'mode': 'dev', 'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
                                'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
     assert all(not (root / name).exists() for name in OWNER_PATHS)
     assert not output(['git', '-C', str(root), 'status', '--porcelain'])
@@ -93,6 +107,9 @@ def remove_project(project, report):
     resources = {'project': project, 'containers': containers, 'networks': ids('network'), 'volumes': ids('volume')}
     print('Scoped disposable installation cleanup: ' + json.dumps(resources), flush=True)
     if containers:
+        names = [output(['docker', 'inspect', '--format', '{{.Name}}', item]) for item in containers]
+        if any('runa' not in name.lower() for name in names):
+            raise RuntimeError('Cleanup refuses a container without runa in its name.')
         call(['docker', 'rm', '--force', *containers])
     if resources['networks']:
         call(['docker', 'network', 'rm', *resources['networks']])
@@ -199,10 +216,16 @@ def main():
                     dev, fixture_directory, dev_project, check, report, call, output, commit)
             remove_project(dev_project, report)
 
-        snapshot(prod)
+        if dev.exists():
+            customer_snapshot(dev, prod)
+        else:
+            temporary_source = fixture_directory / 'owner-snapshot'
+            snapshot(temporary_source)
+            customer_snapshot(temporary_source, prod)
+            shutil.rmtree(temporary_source)
         certificates = fixture_directory / 'certificates'
         certificates.mkdir(mode=0o700)
-        call(['docker', 'run', '--rm', '--network', 'none', '--user', str(os.getuid()) + ':' + str(os.getgid()),
+        call(['docker', 'run', '--rm', '--name', 'runa-install-cert-' + token, '--network', 'none', '--user', str(os.getuid()) + ':' + str(os.getgid()),
               '--label', 'com.docker.compose.project=runa-install-cert-' + token,
               '--mount', 'type=bind,src=' + str(certificates) + ',dst=/fixture', '--entrypoint', 'openssl', 'runa-development:dev',
               'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', '/fixture/private-key.pem', '-out', '/fixture/certificate.pem', '-days', '2',
@@ -224,7 +247,25 @@ def main():
             data['services'][service]['volumes'].append({'type': 'bind', 'source': str(certificates / 'certificate.pem'), 'target': '/run/fixture-ca.pem', 'read_only': True})
         (prod / 'compose.production.yaml').write_text(json.dumps(data, indent=2) + '\n')
         sha = commit(prod)
-        project_customer(prod, sha)
+        import initialize
+        customer_repository = fixture_directory / 'customer-repository'
+        prod.rename(customer_repository)
+        initialize.acquire(str(customer_repository), 'main', prod)
+        check(output(['git', '-C', str(prod), 'remote', 'get-url', 'origin']) == str(customer_repository), 'production initializes from the customer repository and preserves its origin/history')
+        if dev.exists():
+            teammate = fixture_directory / 'teammate'
+            call(['git', 'clone', '--quiet', str(customer_repository), str(teammate)])
+            check(not (teammate / '.git/runa-bootstrap.json').exists(), 'teammate starts from an ordinary complete customer clone without inherited receipt/journals')
+            teammate_env = {**env, 'RUNA_HOST_WORKER': '1'}
+            call([sys.executable, 'tools/application/executors/dev.py', 'embeddings', 'cpu'], cwd=teammate, env=teammate_env)
+            call([sys.executable, 'tools/application/executors/dev.py', 'initialize'], cwd=teammate, env=teammate_env)
+            check((teammate / '.env').is_file() and (teammate / 'src/vendor/autoload.php').is_file(), 'teammate initializes real dependencies, local credentials, platform/application data and services without upstream acquisition')
+            teammate_secrets = {name: (teammate / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
+            call([sys.executable, 'tools/application/executors/dev.py', 'initialize'], cwd=teammate, env=teammate_env)
+            check(all((teammate / name).read_bytes() == value for name, value in teammate_secrets.items()), 'repeated teammate preparation preserves generated credentials and existing data')
+            names = output(['git', '-C', str(customer_repository), 'ls-files', '-z']).split('\0')
+            check(all((teammate / name).read_bytes() == (prod / name).read_bytes() for name in names if name and not (prod / name).is_symlink()), 'teammate and production have equal complete versioned source at the same customer commit')
+            remove_project(dev_project, report)
         https_port, http_port = port(), port()
         settings = {'app_url': 'https://localhost:' + str(https_port), 'http_port': http_port, 'simulation_project': prod_project,
                     'tls': {'mode': 'builtin', 'certificate': str(certificates / 'certificate.pem'), 'private_key': str(certificates / 'private-key.pem'), 'ca_file': str(certificates / 'certificate.pem'), 'https_port': https_port, 'bind': '127.0.0.1'},

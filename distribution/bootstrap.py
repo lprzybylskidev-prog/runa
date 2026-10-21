@@ -256,6 +256,8 @@ def publish(source, destination):
 
 
 def acquire(client, tag, destination, mode, expected_commit=None, expected_digest=None):
+    if mode != 'dev':
+        raise BootstrapError('Runa release acquisition is development-only; initialize production from the customer repository.')
     identity = client.resolve(tag)
     repository_id = client.verify_repository()
     if expected_commit and identity['commit'] != expected_commit:
@@ -308,14 +310,12 @@ def install_command(destination, mode, commit):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Download a verified GitHub release to a new directory; optionally install using containers.')
+    parser = argparse.ArgumentParser(description='Acquire a verified Runa release for first development; production initializes from the customer repository.')
     parser.add_argument('--repository', help='Authorized GitHub owner/name (public access needs no token)')
     parser.add_argument('--tag', help='Exact published annotated vX.Y.Z release')
     parser.add_argument('--destination', help='New directory under an existing owned parent')
-    parser.add_argument('--mode', choices=('dev', 'prod'))
     parser.add_argument('--install', choices=('now', 'later'))
     parser.add_argument('--non-interactive', action='store_true', help='Require every selection; never prompt')
-    parser.add_argument('--settings-file', help='Private host JSON settings for the unified production installer')
     parser.add_argument('--profile', choices=('low', 'standard', 'high'), help='Unified development install resource profile')
     credentials = parser.add_mutually_exclusive_group()
     credentials.add_argument('--token-file', help='Private GitHub read credential file (never pass a token as an argument)')
@@ -324,8 +324,8 @@ def main(argv=None):
     parser.add_argument('--expected-digest', help='Independently delivered SHA-256 source digest')
     args = parser.parse_args(argv)
     interactive = not args.non_interactive and sys.stdin.isatty() and sys.stderr.isatty()
-    if not interactive and (args.ask_token or not all((args.repository, args.tag, args.destination, args.mode, args.install))):
-        raise BootstrapError('Automation requires --repository, --tag, --destination, --mode and --install; use --token-file for private access.')
+    if not interactive and (args.ask_token or not all((args.repository, args.tag, args.destination, args.install))):
+        raise BootstrapError('Automation requires --repository, --tag, --destination and --install; use --token-file for private access.')
     for value, pattern in ((args.expected_commit, SHA), (args.expected_digest, r'[a-f0-9]{64}')):
         if value is not None and not re.fullmatch(pattern, value):
             raise BootstrapError('Expected commit/digest must be a full lowercase hexadecimal identity.')
@@ -340,27 +340,21 @@ def main(argv=None):
         print('Accessible stable releases: ' + ', '.join(client.releases()))
         args.tag = input('Exact release tag: ').strip()
     args.destination = args.destination or input('New destination directory: ').strip()
-    args.mode = args.mode or input('Installation mode (dev/prod): ').strip()
     args.install = args.install or input('Install now or later (now/later): ').strip()
-    if args.mode not in ('dev', 'prod') or args.install not in ('now', 'later'):
-        raise BootstrapError('Choose mode dev/prod and installation now/later.')
+    if args.install not in ('now', 'later'):
+        raise BootstrapError('Choose installation now/later.')
     destination = destination_path(args.destination)
-    receipt = acquire(client, args.tag, destination, args.mode, args.expected_commit, args.expected_digest)
-    command = install_command(destination, args.mode, receipt['commit'])
-    if '-c' in command:
-        if args.settings_file:
-            command += ['--settings-file=' + str(Path(args.settings_file).resolve())]
-        if args.profile:
-            command += ['--profile=' + args.profile]
-        if not interactive:
-            command.append('--non-interactive')
-    elif args.settings_file or args.profile:
-        raise BootstrapError('Selected older release has no unified installer options. Source is ready; use its legacy command.')
+    receipt = acquire(client, args.tag, destination, 'dev', args.expected_commit, args.expected_digest)
+    command = install_command(destination, 'dev', receipt['commit'])
+    if args.profile:
+        command += ['--profile=' + args.profile]
+    if not interactive:
+        command.append('--non-interactive')
     print('Source verified and published. Installation has not run. Receipt: .git/runa-bootstrap.json')
     print('Source SHA-256: ' + receipt['source_sha256'])
     print('From the destination directory run: ' + shlex.join(command))
     if args.install == 'now':
-        print('Starting containerized installer; production settings may require interactive input.', flush=True)
+        print('Starting containerized development installation.', flush=True)
         try:
             result = subprocess.run(command, cwd=destination, stdin=None if interactive else subprocess.DEVNULL, check=False)
         except OSError:

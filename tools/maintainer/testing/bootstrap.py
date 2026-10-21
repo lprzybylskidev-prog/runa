@@ -28,7 +28,7 @@ class BootstrapContracts(unittest.TestCase):
             shutil.copyfile(ROOT / 'distribution/bootstrap.py', launcher)
             result = subprocess.run([sys.executable, '-I', str(launcher), '--help'], cwd=folder, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-            for option in ('--mode', '--install', '--expected-commit', '--expected-digest'):
+            for option in ('--install', '--expected-commit', '--expected-digest'):
                 self.assertIn(option, result.stdout)
             self.assertEqual(sorted(path.name for path in Path(folder).iterdir()), ['customer-installer.py'])
 
@@ -204,7 +204,7 @@ class BootstrapContracts(unittest.TestCase):
             self.assertTrue(all(not (destination / name).exists() for name in bootstrap.OWNER_PATHS))
             self.assertEqual(subprocess.check_output(['git', '-C', str(destination), 'remote', 'get-url', '--push', 'origin']).strip(), b'disabled://runa-read-only-upstream')
             second = Path(folder) / 'second'
-            self.assertEqual(bootstrap.acquire(client, 'v1.0.0', second, 'prod', expected_digest=receipt['source_sha256'])['source_sha256'], receipt['source_sha256'])
+            self.assertEqual(bootstrap.acquire(client, 'v1.0.0', second, 'dev', expected_digest=receipt['source_sha256'])['source_sha256'], receipt['source_sha256'])
             self.assertTrue(all(not (second / name).exists() for name in bootstrap.OWNER_PATHS))
 
     def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self):
@@ -281,10 +281,10 @@ class BootstrapContracts(unittest.TestCase):
         with self.assertRaisesRegex(bootstrap.BootstrapError, 'timed out'):
             bootstrap.process([sys.executable, '-c', 'import time; time.sleep(10)'], timeout=0.05)
 
-    def test_interactive_lists_releases_and_asks_mode_and_postponement(self):
+    def test_interactive_lists_releases_and_asks_postponement(self):
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / 'download'
-            answers = ['owner/repository', 'n', 'v1.0.0', str(destination), 'dev', 'later']
+            answers = ['owner/repository', 'n', 'v1.0.0', str(destination), 'later']
             with patch.object(sys.stdin, 'isatty', return_value=True), patch.object(sys.stderr, 'isatty', return_value=True), patch('builtins.input', side_effect=answers), patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap.GitHub, 'releases', return_value=['v1.0.0']), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), contextlib.redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(bootstrap.main([]), 0)
             self.assertIn('Accessible stable releases: v1.0.0', output.getvalue())
@@ -294,17 +294,16 @@ class BootstrapContracts(unittest.TestCase):
             destination = Path(folder) / 'download'
             output = io.StringIO()
             with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), patch.object(bootstrap.subprocess, 'run') as run, contextlib.redirect_stdout(output):
-                self.assertEqual(bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'dev', '--install', 'later']), 0)
+                self.assertEqual(bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--install', 'later']), 0)
             run.assert_not_called()
             self.assertIn('Installation has not run', output.getvalue())
             self.assertIn('installation.py', output.getvalue())
 
-    def test_management_and_legacy_handoffs_use_existing_literal_commands(self):
+    def test_external_handoffs_ignore_customer_bin_and_installer_files(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / 'bin').mkdir()
             (root / 'bin/artisan').touch()
-            # An older bin/artisan alone does not imply a management command registry.
             self.assertIn(str(ROOT / 'distribution/installation.py'), bootstrap.install_command(root, 'dev', 'a' * 40))
             marker = root / 'distribution/installation.py'
             marker.parent.mkdir(parents=True)
@@ -312,26 +311,13 @@ class BootstrapContracts(unittest.TestCase):
             self.assertEqual(bootstrap.install_command(root, 'dev', 'a' * 40)[-2:], ['dev', 'a' * 40])
             self.assertEqual(bootstrap.install_command(root, 'prod', 'a' * 40)[-2:], ['prod', 'a' * 40])
 
-    def test_postponed_unified_handoff_preserves_private_settings_path_without_shell_interpretation(self):
-        with tempfile.TemporaryDirectory() as folder:
-            destination = Path(folder) / 'download'
-            private_path = Path(folder) / 'private settings $(literal).json'
-            def acquire(*args):
-                marker = destination / 'distribution/installation.py'
-                marker.parent.mkdir(parents=True)
-                marker.touch()
-                (destination / 'bin').mkdir()
-                (destination / 'bin/artisan').touch()
-                return {'commit': 'a' * 40, 'source_sha256': 'b' * 64}
-            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', side_effect=acquire), patch.object(bootstrap.subprocess, 'run') as run, contextlib.redirect_stdout(io.StringIO()) as output:
-                bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'prod', '--install', 'later', '--settings-file=' + str(private_path)])
-            line = next(line for line in output.getvalue().splitlines() if line.startswith('From the destination'))
-            self.assertEqual(shlex.split(line.split('run: ', 1)[1])[-4:], ['prod', 'a' * 40, '--settings-file=' + str(private_path), '--non-interactive'])
-            run.assert_not_called()
+    def test_release_acquisition_cannot_initialize_production(self):
+        with self.assertRaisesRegex(bootstrap.BootstrapError, 'development-only'):
+            bootstrap.acquire(None, 'v1.0.0', Path('/unused'), 'prod')
 
     def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self):
         with tempfile.TemporaryDirectory() as folder:
-            args = ['--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(Path(folder) / 'download'), '--mode', 'dev', '--install', 'later', '--ask-token']
+            args = ['--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(Path(folder) / 'download'), '--install', 'later', '--ask-token']
             with patch.object(sys.stdin, 'isatty', return_value=True), patch.object(sys.stderr, 'isatty', return_value=True), patch.object(bootstrap.getpass, 'getpass', return_value='synthetic_not_a_real_token') as hidden, patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}) as acquire, contextlib.redirect_stdout(io.StringIO()) as output:
                 bootstrap.main(args)
             hidden.assert_called_once()
@@ -341,10 +327,10 @@ class BootstrapContracts(unittest.TestCase):
     def test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download(self):
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / 'download'
-            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap, 'install_command', return_value=[sys.executable, '-c', 'fixture', 'prod', 'a' * 40]), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), patch.object(bootstrap.subprocess, 'run', return_value=Mock(returncode=17)) as run, contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(bootstrap.BootstrapError, 'Source is ready; installation failed'):
-                bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--mode', 'prod', '--install', 'now'])
+            with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap, 'install_command', return_value=[sys.executable, '-c', 'fixture', 'dev', 'a' * 40]), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), patch.object(bootstrap.subprocess, 'run', return_value=Mock(returncode=17)) as run, contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(bootstrap.BootstrapError, 'Source is ready; installation failed'):
+                bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(destination), '--install', 'now'])
             self.assertIs(run.call_args.kwargs['stdin'], subprocess.DEVNULL)
-            self.assertEqual(run.call_args.args[0][-3:-1], ['prod', 'a' * 40])
+            self.assertEqual(run.call_args.args[0][-3:-1], ['dev', 'a' * 40])
 
 
 if __name__ == '__main__':

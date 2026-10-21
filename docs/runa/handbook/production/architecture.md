@@ -37,7 +37,7 @@ Enforce isolation at multiple layers:
 1. production Compose has no AI services,
 2. production environment hard-disables knowledge CLI,
 3. production image/build excludes AI/dev files where not needed,
-4. production checkout uses sparse checkout to avoid `.agents`, `.devcontainer`, AI/RAG docs/services and other development-only material,
+4. the production host checkout contains the same complete customer revision as development, with common owner-only exclusions; versioned development configuration/knowledge source is not started or copied into runtime images,
 5. production installer/self-test verifies no AI services/ports/volumes/knowledge CLI/AI directories are present.
 
 Production scripts explicitly use production Compose/project context and never accidentally use development Compose.

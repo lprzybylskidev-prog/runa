@@ -1,19 +1,18 @@
 # First installation
 
-The owner approved a revised whole-project customer-repository workflow on 2026-10-21; implementation remains open in [RM-2026-005 points 10a–10c](../roadmaps/active/RM-2026-005-platform-installation-updates.md). The target is first-dev acquisition from Runa, teammate setup and production initialization from the customer repository, with identical versioned dev/prod source sets and different local env/runtime artifacts. The commands below describe the existing implementation, including its upstream production acquisition and sparse projection, until those points replace it.
+First development acquisition uses the separately supplied distribution/bootstrap.py and a published Runa release. Production initialization uses distribution/initialize.py and a complete customer repository. Both launch the adjacent external installation.py helper; none of these files are delivered to customer source. Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ are required; application toolchains stay in containers.
 
-Use the host terminal and the verified checkout produced by
-[bootstrap](bootstrap.md). No host PHP, Composer, Node or pnpm is required.
-Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ with
-daemon access are required. The target is an exact annotated release tag or full
-lowercase commit SHA matching the checked-out source; branches are rejected.
+```sh
+python3 bootstrap.py --repository lprzybylskidev-prog/runa --tag v0.3.0 \
+  --destination /absolute/first-development --install later --non-interactive
+python3 initialize.py --repository https://github.com/customer/application.git \
+  --destination /absolute/production --target main --install later \
+  --settings-file /private/production-settings.json
+```
 
-Installation is initiated by the separately supplied `distribution/bootstrap.py`
-(keep its adjacent distribution/installation.py helper outside the destination), with `--mode dev|prod` and
-`--install now|later`. It verifies and projects source before handing off to a fixed
-external owner helper. The postponed command is printed with the exact acquired commit.
-Keep it for an explicit `--resume` after failure. Neither `runa:install` nor
-`bin/install-prod` is installed as a customer entrypoint. No Artisan registry, including the owner checkout, registers installation. The external helper requires an explicitly acquired installation target.
+Use an actually published release; 0.3.0 remains planned until finalization. Production initialization accepts a customer branch/tag/full SHA, verifies safe source paths/files and rejects owner-only tracked material and the Runa release remote. Origin/history remain the customer's; the local role is prepared independently of first-dev acquisition evidence. Default target is main; ambiguous branch/tag names require explicit refs. New destination publication never overwrites existing files. Keep the printed exact-commit helper command for postponed install and explicit --resume. Teammates use [public local initialization](../../handbook/development/environment.md#customer-repository-and-local-initialization).
+
+Development and production host checkouts contain the same complete versioned customer source. Common owner exclusions remain; there is no production-only sparse reduction. Production images/services still exclude development/AI tooling and never start Qdrant/embeddings/devcontainer. No customer runa:install alias or production platform updater exists.
 
 `--profile=low|standard|high` is dev-only;
 omitting it preserves the existing/default resource selection. `--simulation` is
@@ -113,8 +112,7 @@ Success requires actual HTTPS root/readiness and SMTP acceptance after the
 existing exact-image/config/migration/seeding/health/isolation sequence. A failed
 verification cannot complete the installation journal. Production still uses
 only PHP-FPM/Nginx/PostgreSQL/queue/scheduler and two durable storage/database
-volumes. Operational installation helpers are sparse-checkout inputs, never
-application-image content; AI/RAG/development tooling remains excluded.
+volumes. Shared operational helpers remain host source, never application-image content; AI/RAG/development tooling remains excluded from runtime.
 
 ## Repeat, failure and recovery
 

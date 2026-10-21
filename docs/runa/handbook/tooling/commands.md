@@ -47,6 +47,8 @@ Internal Python process engines live under `tools/application/executors/` with n
 
 ## Development
 
+`php artisan runa:dev:initialize` (cold host transport: `./bin/artisan runa:dev:initialize`) explicitly prepares a complete customer clone, local credentials/dependencies, forward platform data and then application migrations/DatabaseSeeder. It also prepares pending local data after pulling a customer update. Ordinary prepare/setup/up and editor reopen do not run data steps. See [development initialization](../development/environment.md#customer-repository-and-local-initialization).
+
 Development operation guard: the entire optional development command catalog (dev lifecycle/profiles, tests, formatting/lint/type/static analysis, doctor/quality, hooks, security checks, Xdebug and knowledge/RAG) is blocked in a prod-mode installation, even if development source was copied there or the caller supplies APP_ENV=local. Existing invalid/unknown acquisition modes also fail closed. PHP checks before local Actions/host dispatch and the independent executor checks before locks, operation-state writes or Docker/tool execution. Production APP_ENV and the configured .env production value also block development tools. Owner development and cold bootstrap remain available before acquisition/environment initialization. Help/discovery and explicit nonexecuting --plan remain available. Production/deploy/host control stay operational; production runtime artifacts still omit development tooling. Native Laravel commands retain their framework safeguards; this guard concerns Runa's optional development catalog.
 
 ### `php artisan runa:dev:profile`
@@ -157,7 +159,7 @@ Underlying tools include:
 
 ## Production
 
-Production operation guard: every `runa:production:*` execution, `runa:deploy` and `runa:deploy:rollback` requires the existing installer-selected acquisition mode `prod`. A development, missing or unknown installation mode is rejected before production locks/state, Docker/builds or deployment work. `APP_ENV=production`, production configuration files and `--simulation` do not bypass this restriction. Production simulations use separate production-mode fixture installations. Help, discovery and explicit nonexecuting `--plan` remain available from development. This uses acquisition context, not a first-production history flag or licensing mechanism.
+Production operation guard: every `runa:production:*` execution, `runa:deploy` and `runa:deploy:rollback` requires the locally prepared installation role `prod`. A development, missing or unknown installation mode is rejected before production locks/state, Docker/builds or deployment work. `APP_ENV=production`, production configuration files and `--simulation` do not bypass this restriction. Production simulations use separate production-mode fixture installations. Help, discovery and explicit nonexecuting `--plan` remain available from development. This uses local installation context, not a first-production history flag or licensing mechanism.
 
 Implemented helper surface:
 
@@ -234,7 +236,7 @@ Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by d
 
 - `php artisan runa:deploy [target] [--simulation]`: fetch the configured customer repository (default `main`, or branch/tag/full SHA), preserve protected platform source and run application build/migrate/seed/recreate/health. See [deployment](../production/deployment.md) for remote selection and recovery.
 - `php artisan runa:deploy:rollback`: previous immutable application images only, requiring proven schema/data compatibility; current data-changing deployments block automatic rollback. Never reverses database changes.
-- `php artisan runa:production:self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and sparse checkout.
+- `php artisan runa:production:self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and common customer-source exclusions.
 - `php artisan runa:production:self-test`: delegates to the same deep host self-test.
 - `php artisan runa:security:dependencies|secrets|trivy|review-changed-surface`: lock audits, redacted history/current-source scanning, repository plus exact production image scanning, and content-bound actual agent review evidence.
 

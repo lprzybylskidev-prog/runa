@@ -2,9 +2,8 @@
 
 // External owner bootstrap. Never registered in customer Artisan or copied into runtime images.
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Database\DatabaseManager;
 use Runa\Database\DatabaseScope;
-use Runa\Database\Seeders\DatabaseSeeder;
+use Runa\Database\RequiredSeeds;
 use Symfony\Component\Console\Input\ArgvInput;
 
 $root = getcwd();
@@ -26,14 +25,7 @@ try {
             throw new RuntimeException('Platform seed initialization requires an exact release commit.');
         }
         $app->make(Kernel::class)->bootstrap();
-        $database = $app->make(DatabaseManager::class)->connection('pgsql');
-        $database->transaction(function () use ($app, $database, $release): void {
-            $seeder = DatabaseSeeder::class;
-            $inserted = $database->table('shared.platform_seed_runs')->insertOrIgnore(['release_sha' => $release, 'seeder' => $seeder]);
-            if ($inserted === 1) {
-                $app->make($seeder)->setContainer($app)->__invoke();
-            }
-        });
+        RequiredSeeds::run($app, $release);
         fwrite(STDOUT, "PASS: required platform seeds recorded atomically.\n");
         exit(0);
     }

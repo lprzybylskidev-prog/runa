@@ -23,7 +23,7 @@ Explicitly configure maintenance hooks with `git config --local core.hooksPath .
 Customer installation mode never authorizes Runa Git writes. Customer deployment
 evidence stays local; backups are externally managed by the customer.
 Verified acquisition records a fixed sparse projection and disables upstream pushes;
-unknown targets are refused without repair/repointing. Explicit local `runa.applicationRemote` selection permits an existing customer origin; deployment validates that customer URL and preserves all remotes/history. Without selection, the original read-only acquisition upstream boundary remains mandatory.
+unknown targets are refused without repair/repointing. Customer clones prepare their own local dev/prod role and select their existing customer remote; they do not inherit an acquisition receipt. Explicit local `runa.applicationRemote` selection permits an existing customer origin; deployment validates that customer URL and preserves all remotes/history. Without selection, the original read-only acquisition upstream boundary remains mandatory.
 See [bootstrap](../tooling/bootstrap.md) for the receipt and delivery boundary.
 
 ## Branching

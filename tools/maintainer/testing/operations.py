@@ -89,7 +89,7 @@ print('parent:' + sys.stdin.read())
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
             self.assertFalse(path.with_suffix('.tmp').exists())
 
-    def test_actual_sparse_checkout_preserves_operations_and_excludes_knowledge(self):
+    def test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / 'repository'
             root.mkdir()
@@ -114,19 +114,21 @@ print('parent:' + sys.stdin.read())
             subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'init', '--no-cone'], check=True)
             subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
             repository_boundary.write_staging_receipt(root, {'schema_version': 1, 'repository': 'fixture/runa', 'projection': {'version': 1, 'excluded': list(repository_boundary.OWNER_PATHS)}})
+            subprocess.run(['git', '-C', str(root), 'remote', 'add', 'origin', 'https://github.com/customer/application.git'], check=True)
+            subprocess.run(['git', '-C', str(root), 'config', '--local', 'runa.applicationRemote', 'origin'], check=True)
             import runtime
             with patch.object(ops, 'ROOT', root), patch.object(runtime, 'ROOT', root), patch.object(ops, 'STATE', Path(folder) / 'state'):
                 release = ops.checkout(sha)
-                ops.assert_sparse(release)
+                ops.assert_delivery(release)
                 self.assertTrue((release / 'src/app/example.php').is_file())
                 self.assertTrue((release / 'src/runa/Http/Controllers/HealthController.php').is_file())
                 self.assertTrue((release / 'src/runa/lang/pl/validation.php').is_file())
                 self.assertTrue((release / 'src/runa/platform.json').is_file())
                 self.assertTrue((release / 'src/runa/management/commands.php').is_file())
                 self.assertTrue((release / 'tools/application/executors/operations.py').is_file())
-                self.assertFalse((release / 'src/runa/management/development.json').exists())
-                self.assertFalse((release / 'src/runa/management/development.php').exists())
-                self.assertFalse((release / 'tools/application/executors/knowledge.py').exists())
+                self.assertTrue((release / 'src/runa/management/development.json').exists())
+                self.assertTrue((release / 'src/runa/management/development.php').exists())
+                self.assertTrue((release / 'tools/application/executors/knowledge.py').exists())
                 for excluded in ('tools', 'tests'):
                     self.assertFalse((release / 'src/runa' / excluded).exists())
                 self.assertTrue((release / 'bin/operations').is_file())
@@ -247,7 +249,7 @@ print('parent:' + sys.stdin.read())
                     'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
         with patch.object(ops, 'read_state', return_value={'current': previous}), patch.object(ops, 'read_env', return_value={'RUNA_PRODUCTION_MODE': 'simulation'}), patch.object(ops, 'maintenance_active', return_value=False), patch.object(ops, 'checkout') as checkout, patch.object(ops, 'artisan') as artisan, patch.object(ops, 'health') as health:
             ops.deploy_revision('a' * 40, True)
-            health.assert_called_once_with('/previous', sparse=True)
+            health.assert_called_once_with('/previous', verify_source=True)
             checkout.assert_not_called()
             artisan.assert_not_called()
 

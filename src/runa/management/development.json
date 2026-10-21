@@ -1,5 +1,12 @@
 [
   {
+    "name": "runa:dev:initialize",
+    "tool": "dev",
+    "prefix": ["initialize"],
+    "signature": "",
+    "description": "Explicitly prepare a customer clone and its local forward platform/application data"
+  },
+  {
     "name": "runa:dev:prepare",
     "tool": "dev",
     "prefix": ["prepare"],

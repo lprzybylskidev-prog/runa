@@ -229,7 +229,7 @@ def main():
     args = sys.argv[1:]
     if not args or args[0] in ('--help', '-h'):
         print('Usage: ./bin/artisan runa:dev:profile [low|standard|high|custom KEY=VALUE ...]\n'
-              '       ./bin/artisan runa:dev:prepare|up|down|config|shell|status|doctor\n'
+              '       ./bin/artisan runa:dev:initialize|prepare|up|down|config|shell|status|doctor\n'
               '       ./bin/artisan runa:dev:build [service ...] | recreate service [service ...] (host only)\n'
               '       ./bin/artisan runa:dev:restart|logs [service] (host only)\n'
               '       ./bin/artisan runa:dev:embeddings:set auto|cpu|cuda (host only)\n'
@@ -242,6 +242,26 @@ def main():
     assert_development_context(ROOT)
     values = load()
     command = args.pop(0)
+    if command == 'initialize':
+        if args or Path('/.dockerenv').exists():
+            raise ValueError('Initialize the customer development clone through the host transport without extra arguments.')
+        from repository_boundary import prepare_customer_context
+        if (ROOT / '.env.prod').exists() or (ROOT / '.env.prod.compose').exists():
+            raise ValueError('Development initialization requires a dedicated clone without production settings.')
+        prepare_customer_context(ROOT, 'dev')
+        helper = ROOT / 'tools/application/executors/dev.py'
+        subprocess.run([sys.executable, str(helper), 'prepare'], cwd=ROOT, check=True)
+        from runtime import compose
+        context = compose()
+        subprocess.run([*context, 'up', '-d', '--wait', 'postgres', 'app', 'setup'], cwd=ROOT, check=True)
+        subprocess.run([*context, 'wait', 'setup'], cwd=ROOT, check=True)
+        sha = subprocess.check_output(['git', 'rev-parse', '--verify', 'HEAD'], cwd=ROOT).decode().strip()
+        subprocess.run([*context, 'exec', '-T', 'app', 'php', 'src/runa/database/prepare.php', sha], cwd=ROOT, check=True)
+        for command in (['migrate', '--force'], ['db:seed', '--force']):
+            subprocess.run([*context, 'exec', '-T', 'app', 'php', 'artisan', *command, '--no-interaction'], cwd=ROOT, check=True)
+        subprocess.run([sys.executable, str(helper), 'up'], cwd=ROOT, check=True)
+        print('PASS: customer development clone prepared; source, secrets and both data owners preserved.')
+        return 0
     if command == 'embeddings':
         if Path('/.dockerenv').exists() or len(args) != 1 or args[0] not in ('auto', 'cpu', 'cuda'):
             raise ValueError('Run ./bin/artisan runa:dev:embeddings:set auto|cpu|cuda on the host.')

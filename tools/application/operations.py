@@ -17,23 +17,8 @@ from runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
-SPARSE = ['/src/app/', '/src/bootstrap/', '/src/runa/Console/', '/src/runa/Database/', '/src/runa/Foundation/', '/src/runa/Http/', '/src/runa/Providers/', '/src/runa/Support/', '/src/runa/config/', '/src/runa/database/', '/src/runa/routes/',
-          '/src/runa/resources/', '/src/runa/lang/', '/src/runa/platform.json', '/src/runa/composer.json', '/src/runa/package.json', '/src/public/',
-          '/src/artisan', '/src/composer.json', '/src/composer.lock', '/src/package.json', '/src/pnpm-lock.yaml',
-          '/src/pnpm-workspace.yaml', '/src/tsconfig.json', '/src/vite.config.mjs', '/src/vite.errors.config.mjs', '/VERSION',
-          '/artisan', '/docker/php/', '/docker/nginx/', '/docker/postgres/', '/compose.production.yaml', '/.dockerignore',
-          '/tools/application/runtime.py', '/tools/application/production.py', '/tools/application/operations.py', '/tools/application/customer_source.py', '/tools/application/dependencies.py', '/tools/application/repository_boundary.py',
-          '/bin/artisan', '/bin/command', '/tools/application/management.py', '/tools/application/executors/operations.py', '/tools/application/executors/production.py',
-          '/src/runa/management/autoload.php',
-          '/src/runa/management/bootstrap.php',
-          '/src/runa/management/commands.php',
-          '/src/runa/management/ToolingCommand.php',
-          '/src/runa/management/NamedToolCommand.php',
-          '/src/runa/management/operations.json', '/src/runa/management/HostBridge.php', '/tools/application/host_executor.py',
-          '/tools/application/testing/production-runtime.php',
-          '/bin/passthrough', '/bin/deploy', '/bin/operations',
-          '/compose.production.yaml', '/.dockerignore', '/.gitignore', '/.env.prod.example',
-          '/.env.prod.database.example', '/.env.prod.compose.example']
+from repository_boundary import OWNER_PATHS
+DELIVERY = ['/*', *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
 
 
 def stamp():
@@ -214,14 +199,16 @@ def checkout(sha, source=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     run(['git', '-c', 'core.hooksPath=/dev/null', 'clone', '--no-checkout', '--no-hardlinks', str(source or ROOT), str(path)])
     run(['git', '-C', str(path), 'sparse-checkout', 'init', '--no-cone'])
-    run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(SPARSE) + '\n', text=True)
+    run(['git', '-C', str(path), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(DELIVERY) + '\n', text=True)
     run(['git', '-C', str(path), 'checkout', '--detach', sha])
     staged = {**data, 'staging': staging, 'commit': sha, 'mode': 'prod'}
     # Acquisition digests identify the original download, not a different staged commit.
     staged.pop('source_sha256', None)
     write_staging_receipt(path, staged)
-    run(['git', '-C', str(path), 'remote', 'set-url', 'origin', 'https://github.com/' + data['repository'] + '.git'])
-    run(['git', '-C', str(path), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
+    from repository_boundary import application_remote
+    _, url = application_remote(ROOT, data)
+    run(['git', '-C', str(path), 'remote', 'set-url', 'origin', url])
+    run(['git', '-C', str(path), 'config', '--local', 'runa.applicationRemote', 'origin'])
     return path
 
 
@@ -241,7 +228,7 @@ def images(release):
             for name in sorted(set(names))}
 
 
-def health(release=None, sparse=False):
+def health(release=None, verify_source=False):
     current = read_state()['current']
     if current and str(release) == current['path'] and images(release) != current['images']:
         raise ValueError('Selected image IDs differ from the recorded successful deployment.')
@@ -255,11 +242,11 @@ def health(release=None, sparse=False):
             raise ValueError('Production service is not healthy: ' + service)
     dc(['exec', '-T', 'nginx', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:8080/'], release)
     dc(['exec', '-T', 'nginx', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:8080/api/ready'], release)
-    isolation(release, sparse)
+    isolation(release, verify_source)
     print('PASS: production services, root page, readiness and isolation.')
 
 
-def isolation(release=None, sparse=False):
+def isolation(release=None, verify_source=False):
     config = json.loads(dc(['config', '--format', 'json'], release, capture_output=True, text=True).stdout)
     if set(config['services']) != set(production.SERVICES) or set(config.get('volumes', {})) != {'postgres-icu-data', 'application-storage'}:
         raise ValueError('Unexpected production services or volumes.')
@@ -288,20 +275,16 @@ def isolation(release=None, sparse=False):
             raise ValueError('Unexpected actual production port binding.')
         if name in ('app', 'queue', 'scheduler') and 'KNOWLEDGE_ENABLED=false' not in actual['Config']['Env']:
             raise ValueError('Knowledge is not disabled in the running container.')
-    if sparse:
+    if verify_source:
         if not release:
-            raise ValueError('Sparse isolation requires a managed release checkout.')
-        assert_sparse(Path(release))
-    print('PASS: production Compose/environment/image' + ('/sparse-checkout' if sparse else '') + ' isolation.')
+            raise ValueError('Source isolation requires a managed release checkout.')
+        assert_delivery(Path(release))
+    print('PASS: production Compose/environment/image' + ('/customer-source' if verify_source else '') + ' isolation.')
 
 
-def assert_sparse(path):
-    from repository_boundary import OWNER_PATHS
+def assert_delivery(path):
     if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
-        raise ValueError('Owner distribution/maintenance tools are present in production source.')
-    for forbidden in ('.agents', '.devcontainer', 'bin/knowledge', 'tools/application/knowledge', 'docker/embeddings', 'docker/qdrant', 'docs/runa/handbook/ai', 'docs/runa/maintainer', 'src/runa/management/development.json', 'src/runa/management/development.php', 'tools/application/executors/knowledge.py', '.env', '.env.dev.local'):
-        if (path / forbidden).exists():
-            raise ValueError('Development material in production checkout: ' + forbidden)
+        raise ValueError('Owner-only source is present in the customer project.')
 
 
 def build_images(release=None):
@@ -344,7 +327,7 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
     if simulation != (mode == 'simulation'):
         raise ValueError('The simulation flag must match RUNA_PRODUCTION_MODE in the private Compose settings.')
     if not simulation:
-        assert_sparse(ROOT)
+        assert_delivery(ROOT)
     if previous and 'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873' not in previous.get('images', {}):
         raise ValueError('Previous deployment uses a different database baseline. Use a fresh dedicated installer simulation checkout; do not adopt the old cluster.')
     if previous and previous['simulation'] != simulation:
@@ -352,7 +335,7 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
     if previous and maintenance_active(previous['path']):
         raise ValueError('Maintenance is already active. Preserve operator ownership and resolve it before deployment.')
     if previous and previous['sha'] == sha:
-        health(previous['path'], sparse=True)
+        health(previous['path'], verify_source=True)
         print('PASS: requested customer revision is already deployed; no data steps repeated.')
         return
     if not previous:
@@ -392,7 +375,7 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
         # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
         phase('restart-and-health')
         resume_http(release, recreate=True)
-        health(release, sparse=True)
+        health(release, verify_source=True)
         if verification is not None:
             verification(release)
         identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
@@ -439,7 +422,7 @@ def rollback():
     pause_http(current['path'])
     try:
         resume_http(previous['path'], recreate=True)
-        health(previous['path'], sparse=True)
+        health(previous['path'], verify_source=True)
     except BaseException:
         http_maintenance(True, previous['path'])
         raise

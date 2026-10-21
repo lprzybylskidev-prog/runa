@@ -130,11 +130,10 @@ class InstallationContracts(unittest.TestCase):
             self.assertTrue(any(call.args[0][-2:] == ['profile', 'low'] for call in process.call_args_list))
             calls = [call.args[0] for call in process.call_args_list]
             wait = next(i for i, call in enumerate(calls) if call[-2:] == ['wait', 'setup'])
-            database = [i for i, call in enumerate(calls) if '-r' in call]
-            self.assertEqual(len(database), 2)
-            self.assertTrue(all(i > wait for i in database))
-            self.assertEqual(calls[database[0]][-3:], ['migrate', '--force', '--no-interaction'])
-            self.assertEqual(calls[database[1]][-2:], ['install-seeds', self.sha])
+            database = [i for i, call in enumerate(calls) if 'src/runa/database/prepare.php' in call]
+            self.assertEqual(len(database), 1)
+            self.assertGreater(database[0], wait)
+            self.assertEqual(calls[database[0]][-2:], ['src/runa/database/prepare.php', self.sha])
             count = len(process.call_args_list)
             installer.install('dev', self.sha)
             # Repeat reads source identity but never launches setup/services again.

@@ -41,7 +41,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     def recover_fixture():
         # Fixture-only reviewed recovery: migrations failed before changes or seed
         # effects were inspected. Restore known previous code; never undo data.
-        code = 'import sys; sys.path.insert(0,"tools/application"); import operations as o; old=o.read_state()["current"]; o.set_tag(old["sha"]); o.resume_http(old["path"],recreate=True); o.health(old["path"],sparse=True); (o.STATE/"in-progress.json").unlink()'
+        code = 'import sys; sys.path.insert(0,"tools/application"); import operations as o; old=o.read_state()["current"]; o.set_tag(old["sha"]); o.resume_http(old["path"],recreate=True); o.health(old["path"],verify_source=True); (o.STATE/"in-progress.json").unlink()'
         call([sys.executable, '-c', code], cwd=prod)
     sql("INSERT INTO shared.jobs(queue,payload,attempts,available_at,created_at) VALUES ('deployment-sentinel','preserved-platform-data',0,0,0)")
     before_platform = platform()

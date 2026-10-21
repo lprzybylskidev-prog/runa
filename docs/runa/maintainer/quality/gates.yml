@@ -290,6 +290,11 @@ impact_areas:
       command: python3 tools/maintainer/testing/bootstrap.py
       severity: hard_fail
 
+    - id: customer-initialization-contracts
+      depends_on: [repository-state]
+      command: python3 tools/maintainer/testing/customer-initialization.py
+      severity: hard_fail
+
     - id: repository-boundary-contracts
       depends_on: [repository-state]
       command: python3 tools/maintainer/testing/repository-boundary.py

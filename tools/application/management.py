@@ -15,7 +15,7 @@ from runtime import ROOT
 
 MAX_OUTPUT = 65536
 TIMEOUT = 30
-DEVELOPMENT_ACTIONS = ('prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status')
+DEVELOPMENT_ACTIONS = ('initialize', 'prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status')
 TOOLS = ('doctor', 'quality', 'knowledge', 'security', 'xdebug', 'check', 'hook', 'format', 'lint', 'typecheck', 'analyse', 'test', 'production', 'deploy', 'host')
 OPERATIONS = {**{'development.' + action: action for action in DEVELOPMENT_ACTIONS},
               **{'tooling.' + tool: tool for tool in TOOLS}}

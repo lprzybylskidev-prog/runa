@@ -38,6 +38,22 @@ Future Redis or Meilisearch is added only by a roadmap with a real use case.
 
 All meaningful services have real health checks.
 
+## Customer repository and local initialization
+
+The first developer receives a verified Runa release through external owner acquisition. Create one customer repository containing the complete delivered project: src/runa, src/app, framework/build scaffold, Docker/Compose, devcontainer, shared tooling and public documentation. Owner distribution/maintenance source and private tests/history are excluded. Keep environment files, credentials, data, dependencies and generated output outside Git. Import the delivered files as an initial commit in a new customer repository, excluding the acquisition checkout's .git metadata/history. Do not push the Runa acquisition repository or its private Git objects. The customer repository is the team's source authority.
+
+Teammates clone that repository and run from the clone's host directory:
+
+```sh
+./bin/artisan runa:dev:initialize
+```
+
+The explicit workflow selects the clone's customer origin, prepares private local configuration, installs locked dependencies/builds, initializes forward platform migrations/required seeds and then application migrations/explicit DatabaseSeeder, and starts development services. It creates this workstation's local role metadata; no acquisition receipt/journal from another developer or upstream Runa download is required. Existing application source, Git remotes/history, credentials and data are preserved. Use a separate checkout/project when another environment already owns the selected Compose project. Optional knowledge services remain independent.
+
+After pulling a customer commit with platform/application data changes, run the same explicit initialization/preparation workflow for pending local data steps. Required platform seeds and their exact-source completion record are transactional; application DatabaseSeeder must be repeatable and select its seeders explicitly. Inspect failed migration/seed state before retrying after partial application effects. Ordinary reopen, setup and runa:dev:up do not run migrations/seeds. Customer native migrate/fresh/wipe/seed commands remain application-only.
+
+Production is initialized from the same complete customer revision, with separately supplied production secrets and production-only services/images. Its host checkout may contain versioned development configuration without starting those services. Reconcile scaffold/container/env changes manually before committing/deploying them. See [production deployment](../production/deployment.md).
+
 ## HTTP runtime
 
 Do not use `php artisan serve`.

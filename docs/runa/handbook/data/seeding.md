@@ -22,7 +22,7 @@ User-managed records may only have required initial existence ensured. Productio
 
 Deletion is prohibited by default. Destructive reference-data change belongs in an explicit roadmap/migration/data operation.
 
-Application seeders remain idempotent and have no run-once registry. The external platform installer separately journals required seed steps transactionally for safe resume; this does not replace seeder idempotence.
+Application seeders remain idempotent and have no run-once registry. Explicit platform data preparation journals required seed steps transactionally for safe resume; this does not replace seeder idempotence.
 
 A one-time non-idempotent data transformation is a data migration/dedicated operation, not a production seeder.
 
@@ -157,4 +157,4 @@ Production seeders must still enforce idempotent upserts and preserve user-manag
 
 ## Platform ownership
 
-Only external owner installation/update automatically executes platform migrations and that required seed root. Its `shared.platform_seed_runs` record and seed data share one transaction per exact release commit/root. Successful retries skip the completed step; exceptions roll back the record and its data. Keep required seed effects transactional; external/nontransactional side effects need a separately designed recovery operation. Manual owner seed execution deliberately has no run-once record. Ordinary startup/reopen does neither owner's migrations or seeding. Application deployment uses application `migrate` then `db:seed`, never loose platform files. See [database ownership](../architecture/database.md#platformapplication-source-ownership).
+Explicit first installation and customer runa:dev:initialize execute the narrow forward platform primitive and that required seed root before application data preparation. Owner update uses the same platform primitive; native application commands cannot select it. Its `shared.platform_seed_runs` record and seed data share one transaction per exact release commit/root. Successful retries skip the completed step; exceptions roll back the record and its data. Keep required seed effects transactional; external/nontransactional side effects need a separately designed recovery operation. Manual owner seed execution deliberately has no run-once record. Ordinary startup/reopen does neither owner's migrations or seeding. Application deployment uses application `migrate` then `db:seed`, never loose platform files. See [database ownership](../architecture/database.md#platformapplication-source-ownership).
