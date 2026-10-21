@@ -2,6 +2,19 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.3.0] - 2026-10-21
+
+Feature release — RM-2026-005.
+
+- Separate protected platform code, customer application code, commands, migrations/seeds, tests and documentation; retain independent application/platform manifests and versions.
+- Deliver verified external acquisition, resumable development/production initialization, restricted host command transport and journaled development-only platform updates with customization review and recovery.
+- Deploy complete customer repository revisions with ordered forward data steps for both owners; verify teammate propagation, custom services, TLS/SMTP, failure fencing and production AI isolation.
+- Complete functional, security-review and release contracts, including dedicated customer production fixtures and repaired owner test routing.
+
+Known security risk: the owner explicitly accepted only the recorded RM-008 deferrals for local/non-public use. Raw security scan FAIL is retained: nested dependency/scanner findings and PostgreSQL gosu findings remain unresolved; PHP advisories and Redis fixture remediation also remain RM-008. This release does not establish external production readiness. Remediation and fresh verification are required before external exposure. No runtime vulnerability suppression or dependency/image update was introduced to obtain acceptance.
+
+No real production deployment occurred. Task fixtures were scoped-cleaned; development/test data, existing images, rollback resources, Qdrant/model/build caches, backups and verification reports were preserved.
+
 ## [0.2.1] - 2026-10-20
 
 Fix release — RM-2026-007.
