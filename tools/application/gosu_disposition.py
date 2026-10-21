@@ -7,9 +7,16 @@ from pathlib import Path
 from runtime import ROOT, run
 
 
-def validate_report(report, policy, today=None):
+def finding_signature(result, finding):
+    return {'target': result.get('Target', '').removeprefix('/'),
+            'id': finding.get('VulnerabilityID'), 'package': finding.get('PkgName'),
+            'version': finding.get('InstalledVersion'), 'severity': finding.get('Severity'),
+            'fixed_version': finding.get('FixedVersion')}
+
+
+def validate_report(report, policy, today=None, *, allowed_statuses=('not_affected',)):
     today = today or date.today()
-    if policy.get('status') != 'not_affected' or today > date.fromisoformat(policy['review_by']):
+    if policy.get('status') not in allowed_statuses or today > date.fromisoformat(policy['review_by']):
         raise ValueError('gosu decision expired or is not approved.')
     results = report.get('Results')
     if not isinstance(results, list):
@@ -22,6 +29,7 @@ def validate_report(report, policy, today=None):
     if 'postgres@' + digest not in metadata.get('RepoDigests', []):
         raise ValueError('Scanner image digest changed.')
     seen = set()
+    signatures = []
     for result in results:
         if any(result.get(key) for key in ('Secrets', 'Misconfigurations', 'CustomResources')):
             raise ValueError('Non-CVE findings cannot be dispositioned.')
@@ -30,8 +38,11 @@ def validate_report(report, policy, today=None):
             if result.get('Target', '').removeprefix('/') != policy['path'] or finding.get('PkgName') != 'stdlib' or finding.get('InstalledVersion') != policy['go_version'] or cve not in policy['cves']:
                 raise ValueError('New or changed finding requires assessment.')
             seen.add(cve)
+            signatures.append(finding_signature(result, finding))
     if seen != set(policy['cves']):
         raise ValueError('Finding set changed; reassess even removed findings.')
+    if 'findings' in policy and sorted(map(lambda row: json.dumps(row, sort_keys=True), signatures)) != sorted(map(lambda row: json.dumps(row, sort_keys=True), policy['findings'])):
+        raise ValueError('Finding details changed; reassess severity, package and fix drift.')
 
 
 
@@ -56,8 +67,8 @@ def bind_report(report, installed, policy, config_id):
         raise ValueError('Report contains a conflicting repository digest.')
     return dict(report, Metadata=dict(metadata, RepoDigests=[digest]))
 
-def apply(image, report_path, archive_path):
-    policy_path = ROOT / 'tools/application/security/postgres-gosu-not-affected.json'
+def apply(image, report_path, archive_path, *, policy_path=None, allowed_statuses=('not_affected',)):
+    policy_path = policy_path or ROOT / 'tools/application/security/postgres-gosu-not-affected.json'
     policy = json.loads(policy_path.read_text())
     if image != policy['image']:
         return False
@@ -67,15 +78,15 @@ def apply(image, report_path, archive_path):
     identity = run(['docker', 'image', 'inspect', image], capture_output=True, text=True).stdout
     installed = json.loads(identity)[0]
     config_id = archive_config_id(archive_path)
-    validate_report(bind_report(data, installed, policy, config_id), policy)
+    validate_report(bind_report(data, installed, policy, config_id), policy, allowed_statuses=allowed_statuses)
     binary_hash = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sha256sum', installed['Id'], '/usr/local/bin/gosu'], capture_output=True, text=True).stdout.split()[0]
     version = run(['docker', 'run', '--rm', '--read-only', '--network', 'none', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', '/usr/local/bin/gosu', installed['Id'], '--version'], capture_output=True, text=True).stdout.strip()
     expected = policy['gosu_version'] + ' (' + policy['go_version'].replace('v', 'go', 1) + ' on linux/amd64; gc)'
     if binary_hash != policy['binary_sha256'] or version != expected:
         raise ValueError('gosu binary/version drift.')
-    evidence = {'status':'not_affected', 'image':image, 'image_id':installed['Id'], 'config_id':config_id, 'policy_sha256':hashlib.sha256(policy_path.read_bytes()).hexdigest(), 'report_sha256':hashlib.sha256(Path(report_path).read_bytes()).hexdigest(), 'cves':policy['cves'], 'review_by':policy['review_by']}
+    evidence = {'status':policy['status'], 'image':image, 'image_id':installed['Id'], 'config_id':config_id, 'policy_sha256':hashlib.sha256(policy_path.read_bytes()).hexdigest(), 'report_sha256':hashlib.sha256(Path(report_path).read_bytes()).hexdigest(), 'cves':policy['cves'], 'review_by':policy['review_by']}
     path = Path(report_path).with_suffix('.disposition.json')
     path.write_text(json.dumps(evidence, indent=2) + '\n')
     path.chmod(0o600)
-    print('NOT AFFECTED: exact 25 assessed gosu findings; raw report retained, review by ' + policy['review_by'], flush=True)
+    print(policy['status'].upper() + ': exact ' + str(len(policy['cves'])) + ' assessed gosu findings; raw report retained, review by ' + policy['review_by'], flush=True)
     return True

@@ -216,6 +216,11 @@ impact_areas:
       command: python3 tools/maintainer/testing/security.py
       severity: hard_fail
 
+    - id: gosu-disposition-contracts
+      depends_on: [configuration]
+      command: python3 tools/maintainer/testing/gosu-disposition.py
+      severity: hard_fail
+
     - id: repository-container-scan
       execution_context: host
       exclusive_group: production-simulation

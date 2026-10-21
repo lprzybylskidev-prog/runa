@@ -50,7 +50,7 @@ def production_images(root):
     return selected['images']
 
 
-def trivy(production_root=None):
+def trivy(production_root=None, *, image_disposition=None):
     if inside():
         raise ValueError('Run repository and runtime-image scanning on the Docker host.')
     # Owner acceptance scans the owner repository and a separate customer fixture's
@@ -68,7 +68,7 @@ def trivy(production_root=None):
             if error.returncode == 1 and report_path is not None:
                 import gosu_disposition
                 try:
-                    if gosu_disposition.apply(label, report_path, archive_path):
+                    if (image_disposition or gosu_disposition.apply)(label, report_path, archive_path):
                         return
                 except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as disposition_error:
                     print('Disposition rejected; finding remains blocking: ' + type(disposition_error).__name__, flush=True)

@@ -9,7 +9,7 @@
   "path": "usr/local/bin/gosu",
   "binary_sha256": "52c8749d0142edd234e9d6bd5237dff2d81e71f43537e2f4f66f75dd4b243dd0",
   "evidence": "docs/runa/handbook/security/postgres-gosu-policy.md",
-  "evidence_sha256": "5952c545245ba45a61858b0151dd243c86af3052ce591d94a03f165428baa647",
+  "evidence_sha256": "99b99b64a5f727eb16d988640a0256dc760c8e707c9f7980eeefdf5c279048bd",
   "cves": [
     "CVE-2025-61726",
     "CVE-2025-61729",

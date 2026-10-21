@@ -1,2 +1,10 @@
 version: 1
-items: []
+items:
+  - id: MT-2026-001
+    description: Replace the exact accepted PostgreSQL/gosu artifact when a corrected official image is available; reassess unchanged findings by 2026-11-20.
+    source: docs/runa/maintainer/security/RM-2026-008-gosu-assessment.md
+    priority: high
+    created_at: 2026-10-21
+    status: open
+    roadmap: RM-2026-008
+    closure_condition: Verified corrected official artifact, fresh reachability/scans and compatibility tests replace pending-upstream acceptance in a future maintenance roadmap.
