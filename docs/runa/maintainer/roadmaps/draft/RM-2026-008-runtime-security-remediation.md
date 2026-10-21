@@ -28,9 +28,9 @@ This is a planning-only draft, requested by the owner on 2026-10-21. It is not a
 
 ### Execution order and release dependency
 
-RM-2026-005 remains the single active roadmap, with unresolved security findings and incomplete final verification. Moving remediation here does not waive its hard gates, mark point 13 complete or authorize an unsafe release. RM-2026-006 module work must not bypass unresolved release/security gates either.
+RM-2026-005 remains the single active roadmap, with unresolved security findings and incomplete final verification. Point 13 functional acceptance has passed. On 2026-10-21 the owner explicitly authorized RM-005 finalization while deferring only these known security errors in the reported local/non-public context; see its owner-only [bounded exception record](../../security/RM-2026-005-deferred-findings.json). Fresh/new findings and unrelated hard failures remain blocking. This is not a clean-security or external-production-readiness claim; complete this remediation before external exposure.
 
-Before activation, agree how this security roadmap will integrate with the unreleased RM-005 candidate: explicit pause/resume if necessary, branch/base and transfer of fixes, verification and release ownership. Follow the existing workflow; do not silently introduce an exception to branch-from-main or merge an unfinished roadmap. Do not make closing RM-005 with failed checks a prerequisite for this security work. The owner must explicitly approve the activation/execution arrangement.
+Before activation, agree how this security roadmap will integrate with the unreleased RM-005 candidate: explicit pause/resume if necessary, branch/base and transfer of fixes, verification and release ownership. Follow the existing workflow; do not silently introduce an exception to branch-from-main or merge an unfinished roadmap. If RM-005 closes under its explicit owner exception, refresh this roadmap against that released main before normal activation. Without successful completion of the bounded verification arrangement, do not treat RM-005 as closed. The owner must explicitly approve the activation/execution arrangement.
 
 ### Exclusions
 
@@ -39,6 +39,8 @@ No module framework, unrelated application features, broad dependency upgrades, 
 ## Specification
 
 ### Decisions
+
+- 2026-10-21 — The owner authorizes RM-005 point 14 with an exception limited to the findings assigned here. This roadmap stays draft; it owns their remediation before external exposure. The dated RM-005 exception does not authorize additional findings, a general weakened security policy or automatic activation here.
 
 - 2026-10-21 — The owner requested a separate roadmap for the security findings discovered during RM-005 acceptance and the linked NCSC PHP alert. Do not expand RM-005 with their remediation. Keep a dependency/disposition link there and retain its original evidence.
 - 2026-10-21 — Draft creation does not activate this roadmap, pause RM-005, change runtime configuration or approve a new not-affected decision. Resolve execution order explicitly before implementation.
