@@ -14,6 +14,7 @@ impact_areas:
   - tooling
   - security
   - documentation
+  - ai_environment
 ---
 
 # RM-2026-008 — PHP security updates and runtime vulnerability remediation
@@ -106,7 +107,7 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
   - Requires 1. Synchronize development, production, management/build inheritance and maintenance metadata. Rebuild and verify actual versions/extensions, Laravel/configuration, HTTP/FPM, tests, image provenance and runtime isolation. Preserve configuration/data and document required recreation.
 - [x] 3. Resolve PostgreSQL gosu findings with current reachability evidence.
   - Requires 1; verify against the candidate from 2. Select a fixed official artifact, evidenced not-affected disposition or the explicitly authorized pending-upstream arrangement above. Synchronize owner verification, customer-facing applicability guidance and tracking. Test recognition of the accepted unchanged set, rejection of finding/artifact/evidence drift and expired review, and PostgreSQL startup/privileges/data compatibility. Stop for discussion if newly discovered facts invalidate the agreed trust assumptions.
-- [ ] 4. Correct repository scan paths and secure custom-service test inputs.
+- [x] 4. Correct repository scan paths and secure custom-service test inputs.
   - Requires 1–3. Verify source/lock/image coverage, choose scanned exact Redis fixture inputs and retain real custom-service/team/deployment acceptance. Confirm Redis remains absent from baseline product services. Synchronize scanner/policy contracts, quality tooling, maintenance records and current docs.
 - [ ] 5. Full verification, release finalization, merge and final report.
   - Requires all previous points. Run full applicable quality/security/AI/production gates, fresh native acceptance and current-state documentation review. No unassessed/unaccepted security hard failure or stale PASS; any pending-upstream gosu acceptance must meet the exact bounded arrangement above and remain explicit in release evidence. Follow release/merge/main sanity/tag/publication procedures and synchronize current remediation/dependency records without editing closed RM-005 or relabeling its earlier FAIL reports. Clean only scoped task resources and report preserved data/caches/backups.
@@ -137,10 +138,18 @@ Record source/registry provenance, exact artifacts, raw scan results, reachabili
 - Tracking MT-2026-001 is open. Dated owner evidence and prepared upstream inquiry: docs/runa/maintainer/security/RM-2026-008-gosu-assessment.md. Upstream search found no matching public gosu issue for CVE-2026-61801; no external message was posted.
 - PASS: 7 gosu policy contracts (including drift/expiry/evidence/binary/customer-boundary rejection), 5 security contracts, 10 quality-runner contracts in the application container, real saved-image scanner/config/digest/binary binding, isolated PostgreSQL startup/ICU/index compatibility, docs/maintenance checks. A direct-image report was correctly rejected when paired with a saved archive; rescanning that archive passed. Host quality fixture paths were inaccessible to the container; the intended container execution passed without changing the test. Evidence: .runtime/ownership/RM-2026-008/{govulncheck,postgres*,gosu-*}.
 
+### Point 4 — relocated scan scope and secured acceptance fixture
+
+- Shared scanner now excludes generated src/vendor and src/node_modules alongside root generated trees, without excluding src/app, configuration or committed locks/dev dependencies. A real Trivy path probe detects an intentional HIGH root-user finding in src/app/Dockerfile while excluding identical dependency fixtures. Fresh repository scan passes with both src/composer.lock and src/pnpm-lock.yaml represented and no HIGH/CRITICAL findings.
+- Selected Redis 8.4.7 Alpine 3.22 at exact digest 0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4 from official library/registry provenance, staying on the existing 8.4 fixture branch. Fresh exact-image scan has zero HIGH/CRITICAL/secret findings. One owner helper supplies the same verified/fetchable immutable input to update/team/customer-deployment acceptance; final owner security scanning includes that fixture explicitly.
+- Native Redis PONG probe passed with UID 1000, read-only filesystem, dropped capabilities, no network/host port and bounded tmpfs/memory. Its named task container was printed and removed; all preexisting resources remain. Baseline development and production Compose remain Redis-free.
+- PASS: 6 security/fixture contracts including signature/path/lock coverage, exact pull/digest rejection and independent scan failure collection; real repository and fixture scans; real first-party/dependency exclusion probe; docs/maintenance checks. Evidence: .runtime/ownership/RM-2026-008/{repository-scan,scan-path-probe,redis-*}. Full real custom-service update/team/deployment acceptance runs in final verification.
+- Current security/quality/maintenance guidance is synchronized. ai_environment impact is explicitly selected for strict knowledge doctor/evaluation/freshness checks at final verification.
+
 ## Execution handoff
 
 - Context: RM-008 point 2, host checkout /home/lprzybylski/Documents/php/runa, roadmap/RM-2026-008-runtime-security-remediation, base d175d7b, 2026-10-21. Host execution is owner-authorized; no editor transition is needed.
 - Scope: rebuild development app image from pinned PHP 8.4.27, recreate app/app-test/queue/scheduler, verify FPM/HTTP/extensions and management/production targets. Use canonical bin/artisan dev build/recreate wrappers with .env.dev.local and .devcontainer/compose.resources.yaml; Compose project runa-dev.
 - Preserve all current PostgreSQL/test/storage data, Qdrant/model/shared dependency/build caches and backups. Inventory before work: .runtime/ownership/RM-2026-008/inventory.json. No volume reset or database migration is planned.
 - Host outcome: PHP 8.4.27 build/recreation and point 2 checks passed; see evidence above. Workspace is usable from host or by reopening the rebuilt devcontainer (GUI switching was not performed). Temporary production probe image is retained until scoped cleanup.
-- Remaining: point 4 scanner/fixture corrections; full final gate/release 0.3.1. Record check outcomes below before completion.
+- Remaining: full final gate/release 0.3.1; points 1–4 are implemented and locally checked. Record check outcomes below before completion.

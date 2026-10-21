@@ -50,12 +50,12 @@ def production_images(root):
     return selected['images']
 
 
-def trivy(production_root=None, *, image_disposition=None):
+def trivy(production_root=None, *, image_disposition=None, additional_images=()):
     if inside():
         raise ValueError('Run repository and runtime-image scanning on the Docker host.')
     # Owner acceptance scans the owner repository and a separate customer fixture's
     # exact runtime images. Customer execution uses its own production context.
-    selected = production_images(production_root or ROOT)
+    selected = production_images(production_root or ROOT) + list(additional_images)
     reports = ROOT / '.runtime/security'
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     reports.chmod(0o700)
@@ -93,7 +93,7 @@ def trivy(production_root=None, *, image_disposition=None):
         raise ValueError('Trivy version must be exactly 0.76.0.')
     print('Private Trivy reports: ' + str(reports), flush=True)
     scan_command(prefix + ['fs', '--include-dev-deps', '--format', 'json', '--output', report('repository.json'), '--scanners', 'vuln,secret,misconfig', '--severity', 'HIGH,CRITICAL', '--exit-code', '1',
-                  '--skip-dirs', '.git,.runtime,.pnpm-store,node_modules,vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
+                  '--skip-dirs', '.git,.runtime,.pnpm-store,node_modules,vendor,src/node_modules,src/vendor', '--skip-files', '**/.env,**/.env.*,**/storage/**', str(ROOT) if scanner.is_file() else '/scan'], 'repository')
     for image in sorted(set(selected)):
         # Feed an image archive; Docker socket never enters the scanner container.
         archive = ROOT / '.runtime' / 'trivy-image.tar'
@@ -116,7 +116,7 @@ def trivy(production_root=None, *, image_disposition=None):
         failures.append('dependency audit (exit ' + str(error.returncode) + ')')
     if failures:
         raise ValueError('Security checks failed: ' + '; '.join(failures) + '. Inspect the private JSON reports.')
-    print('PASS: repository, exact production images and locked dependency audits.')
+    print('PASS: repository/image security policy and locked dependency audits; raw reports and any dispositions are retained.')
 
 
 AUDIT_ROOT = None

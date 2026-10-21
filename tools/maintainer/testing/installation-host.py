@@ -329,7 +329,8 @@ def main():
         if '--security-scan' in sys.argv[1:]:
             import security
             import owner_gosu_disposition
-            security.trivy(production_root=prod, image_disposition=owner_gosu_disposition.apply)
+            from service_fixtures import redis_image
+            security.trivy(production_root=prod, image_disposition=owner_gosu_disposition.apply, additional_images=[redis_image()])
             check(True, 'owner repository and exact customer images satisfy security policy and dependency audits; raw scans and any bounded disposition are retained')
         # Failure acceptance deliberately ends with a fenced unhealthy deployment.
         # Verify and scan the healthy selected revision before injecting failures.

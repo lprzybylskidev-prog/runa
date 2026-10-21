@@ -527,3 +527,13 @@ entries:
     last_reviewed: 2026-10-19
     review_every_days: 90
     source: src/runa/resources/licenses/export-dependencies.txt
+
+  - id: redis-acceptance-fixture
+    type: security_runtime
+    name: Isolated customer-added-service acceptance fixture (not a product service)
+    version: 8.4.7-alpine3.22
+    pinned_revision: sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4
+    source: docs/runa/maintainer/quality/README.md
+    url: https://github.com/docker-library/official-images/blob/master/library/redis
+    last_reviewed: 2026-10-21
+    review_every_days: 30

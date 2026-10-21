@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+from service_fixtures import redis_image
 import sys
 from unittest.mock import patch
 
@@ -45,8 +46,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     value = json.loads(workspace.read_text()); value['name'] = 'Customer customized workspace'; workspace.write_text(json.dumps(value) + '\n')
     definitions = prod / 'compose.yaml'
     configuration = json.loads(definitions.read_text())
-    redis = output(['docker', 'image', 'inspect', '--format', '{{index .RepoDigests 0}}', 'redis:8.4.0-bookworm'])
-    if not redis.startswith('redis@sha256:'): raise RuntimeError('Custom-service fixture requires the existing local Redis digest.')
+    redis = redis_image()
     configuration['services']['redis'] = {'image': redis, 'pull_policy': 'never', 'user': '1000:1000',
         'env_file': [{'path': '.env', 'format': 'raw'}],
         'command': ['redis-server', '--save', '', '--appendonly', 'no'], 'read_only': True,

@@ -1,4 +1,4 @@
-"""Exact-artifact, expiry-bound not-affected decision. Raw scanner reports stay unfiltered."""
+"""Exact-artifact, expiry-bound dispositions; customer default remains not affected. Raw reports stay unfiltered."""
 from datetime import date
 import hashlib
 import json
