@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real Git customer fetch/staging and protected-source contracts; no production data."""
+"""Real Git customer fetch/staging and complete-source and safe-path contracts; no production data."""
 import json
 import os
 from pathlib import Path
@@ -70,16 +70,16 @@ class CustomerDeployment(unittest.TestCase):
             self.assertEqual(sha, self.target)
         self.assertEqual(before, (self.root / '.git/config').read_bytes())
 
-    def test_committing_protected_drift_in_operator_and_customer_repos_cannot_upgrade_platform(self):
-        installed = Path(self.directory.name) / 'previous-release'
-        self.git(self.root, 'clone', '-q', str(self.root), str(installed))
-        boundary.write_staging_receipt(installed, boundary.receipt(self.root))
+    def test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source(self):
         for repository in (self.root, self.remote):
-            (repository / 'VERSION').write_text('committed-platform-drift')
+            (repository / 'VERSION').write_text('customer-scaffold-version')
             self.commit(repository)
-        with self.assertRaisesRegex(ValueError, 'successfully installed protected source'):
-            with source.fetch(self.root, self.state, installed=installed):
-                self.fail('committed platform drift accepted')
+        (self.remote / 'src/runa/platform.json').write_text('{"version":"0.3.0"}')
+        (self.remote / 'compose.production.yaml').write_text('custom services')
+        target = self.commit(self.remote)
+        with source.fetch(self.root, self.state) as (download, sha):
+            self.assertEqual(sha, target)
+            self.assertTrue('src/runa/platform.json' in source.tree(download, sha))
 
     def test_modified_successful_release_is_rejected_before_compose_can_use_it(self):
         installed = Path(self.directory.name) / 'previous-release'
@@ -115,25 +115,20 @@ class CustomerDeployment(unittest.TestCase):
             self.assertEqual(sha, self.target)
         self.assertEqual(list(self.state.iterdir()), [])
 
-    def test_protected_modification_addition_deletion_and_mode_changes_block(self):
+    def test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content(self):
         for mutation in ('change', 'add', 'delete', 'mode'):
             self.git(self.remote, 'reset', '--hard', self.target)
             path = self.remote / 'src/runa/platform.json'
-            if mutation == 'change':
-                path.write_text('changed')
-            elif mutation == 'add':
-                (self.remote / 'src/runa/unknown.php').write_text('<?php')
-            elif mutation == 'delete':
-                path.unlink()
-            else:
-                path.chmod(0o755)
-            self.commit(self.remote)
-            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, 'protected platform source'):
-                with source.fetch(self.root, self.state):
-                    self.fail('protected source changed')
+            if mutation == 'change': path.write_text('selected version')
+            elif mutation == 'add': (self.remote / 'src/runa/new.php').write_text('<?php')
+            elif mutation == 'delete': path.unlink()
+            else: path.chmod(0o755)
+            target = self.commit(self.remote)
+            with self.subTest(mutation=mutation), source.fetch(self.root, self.state) as (_, sha):
+                self.assertEqual(sha, target)
         self.assertEqual(list(self.state.iterdir()), [])
 
-    def test_application_symlinks_dirty_protected_source_and_failed_fetch_block(self):
+    def test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate(self):
         (self.remote / 'src/app/escape').symlink_to('/etc/passwd')
         self.commit(self.remote)
         with self.assertRaisesRegex(ValueError, 'symlinks'):
@@ -141,9 +136,8 @@ class CustomerDeployment(unittest.TestCase):
                 pass
         self.git(self.remote, 'reset', '--hard', self.target)
         (self.root / 'VERSION').write_text('dirty')
-        with self.assertRaisesRegex(ValueError, 'modified/untracked protected'):
-            with source.fetch(self.root, self.state):
-                pass
+        with source.fetch(self.root, self.state) as (_, sha):
+            self.assertEqual(sha, self.target)
         self.git(self.root, 'remote', 'set-url', 'customer', str(self.remote / 'missing'))
         with self.assertRaisesRegex(ValueError, 'Git operation failed'):
             with source.fetch(self.root, self.state):

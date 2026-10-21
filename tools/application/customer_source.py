@@ -1,6 +1,7 @@
 """Fetch customer Git into disposable staging; never alter installation Git history."""
 from contextlib import contextmanager
 import os
+import posixpath
 from pathlib import Path
 import re
 import subprocess
@@ -47,39 +48,41 @@ def tree(root, ref):
         if row:
             metadata, name = row.split(b'\t', 1)
             path = name.decode('utf-8')
-            if any(part in ('', '.', '..') for part in path.split('/')) or any(ord(char) < 32 for char in path):
+            if any(part in ('', '.', '..') or part.lower() == '.git' for part in path.split('/')) or '\\' in path or any(ord(char) < 32 or ord(char) == 127 for char in path):
                 raise ValueError('Unsafe source path in customer revision.')
             mode, kind, identity = metadata.decode('ascii').split()
-            if kind != 'blob' or (application_path(path) and mode not in ('100644', '100755')):
+            if excluded(path):
+                raise ValueError('Owner-only source is not part of a customer revision.')
+            if mode not in ('100644', '100755', '120000') or kind != 'blob' or (application_path(path) and mode not in ('100644', '100755')):
                 raise ValueError('Submodules and application symlinks are unsupported: ' + path)
             entries[path] = (mode, identity)
+            if len(entries) > 50000:
+                raise ValueError('Customer source exceeds 50000 files.')
+    for name, (mode, _) in entries.items():
+        if mode != '120000':
+            continue
+        visited = set()
+        current = name
+        while entries[current][0] == '120000':
+            if current in visited or len(visited) >= 32:
+                raise ValueError('Cyclic/oversized customer symlink chain.')
+            visited.add(current)
+            target = git(root, 'cat-file', 'blob', entries[current][1]).decode('utf-8')
+            if target.startswith('/') or '\\' in target or any(ord(c) < 32 or ord(c) == 127 for c in target):
+                raise ValueError('Unsafe customer symlink target.')
+            current = posixpath.normpath(posixpath.join(posixpath.dirname(current), target))
+            if current not in entries:
+                raise ValueError('Customer symlink escapes source or has no tracked file target.')
     return entries
 
 
-def verify_platform(root, source, sha, installed=None):
-    """Compare against the installed source; deployment never upgrades platform files."""
-    expected, selected = tree(root, 'HEAD'), tree(source, sha)
-    protected = lambda entries: {name: identity for name, identity in entries.items()
-                                 if not application_path(name) and not excluded(name)}
-    baseline, candidate = protected(expected), protected(selected)
-    if installed is not None:
-        from repository_boundary import receipt
-        recorded = receipt(installed)
-        if (git(installed, 'rev-parse', 'HEAD').decode().strip() != recorded.get('commit')
-                or git(installed, 'status', '--porcelain=v1', '--untracked-files=all').strip()):
-            raise ValueError('Successful release checkout is modified; inspect its source/evidence before deployment.')
-        if protected(tree(installed, 'HEAD')) != baseline:
-            raise ValueError('Operator checkout differs from the successfully installed protected source; application deployment cannot upgrade the platform.')
-    differences = sorted(name for name in baseline.keys() | candidate.keys() if baseline.get(name) != candidate.get(name))
-    if differences:
-        raise ValueError('Customer revision changes protected platform source: ' + ', '.join(differences[:10]))
-    # A dirty installation must not supply different runtime/build helpers from Git.
-    changed = git(root, 'status', '--porcelain=v1', '-z', '--untracked-files=all').split(b'\0')
-    for row in changed:
-        if row:
-            name = row[3:].decode('utf-8')
-            if not application_path(name) and not excluded(name):
-                raise ValueError('Installation has modified/untracked protected source; inspect before deployment.')
+def validate_release(installed):
+    """A recorded immutable deployment must remain its own exact commit."""
+    from repository_boundary import receipt
+    recorded = receipt(installed)
+    if (git(installed, 'rev-parse', 'HEAD').decode().strip() != recorded.get('commit')
+            or git(installed, 'status', '--porcelain=v1', '--untracked-files=all').strip()):
+        raise ValueError('Successful release checkout is modified; inspect its source/evidence before deployment.')
 
 
 @contextmanager
@@ -102,5 +105,9 @@ def fetch(root, state, target='main', installed=None):
         sha = git(source, 'rev-parse', '--verify', 'FETCH_HEAD^{commit}').decode().strip()
         if not re.fullmatch('[a-f0-9]{40}', sha) or (re.fullmatch('[a-f0-9]{40}', target) and sha != target):
             raise ValueError('Fetched customer commit identity differs from the requested target.')
-        verify_platform(root, source, sha, installed)
+        tree(source, sha)
+        if installed is not None:
+            validate_release(installed)
+        git(source, 'update-ref', 'refs/heads/selected', sha)
+        git(source, 'symbolic-ref', 'HEAD', 'refs/heads/selected')
         yield source, sha

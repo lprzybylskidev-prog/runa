@@ -1,6 +1,7 @@
 """Explicit host-only production image and Compose operations; never use dev context."""
 import re
 import os
+import uuid
 from runtime import ROOT, inside, run
 
 SERVICES = ('app', 'nginx', 'postgres', 'queue', 'scheduler')
@@ -94,7 +95,7 @@ def dispatch(args):
     print('PASS: production ' + action + '.')
 
 
-def verify_images(command, environment):
+def verify_images(command, environment, source=None):
     """Inspect the exact images selected by Compose, without starting a deployment."""
     images = run(command + ['config', '--images'], env=environment, capture_output=True, text=True).stdout.splitlines()
     php = next(image for image in images if image.startswith('runa-production:'))
@@ -103,11 +104,11 @@ def verify_images(command, environment):
         actual = run(['docker', 'image', 'inspect', '--format', '{{.Config.User}}', image], capture_output=True, text=True).stdout.strip()
         if actual != user:
             raise ValueError('Unexpected runtime image user.')
-    code = (ROOT / 'tools/application/testing/production-runtime.php').read_text().removeprefix('<?php').lstrip()
-    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php', php, '-r', code])
-    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-c', 'for tool in composer node npm pnpm codex python3 git gcc g++; do if command -v "$tool" >/dev/null 2>&1; then echo "Development tool in runtime: $tool" >&2; exit 1; fi; done'])
-    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php-fpm', php, '-tt'])
-    run(['docker', 'run', '--rm', '--read-only', '--tmpfs', '/tmp', '--add-host', 'app:127.0.0.1', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', nginx, '-t'])
+    code = ((source or ROOT) / 'tools/application/testing/production-runtime.php').read_text().removeprefix('<?php').lstrip()
+    run(['docker', 'run', '--rm', '--name', 'runa-production-probe-' + uuid.uuid4().hex[:12], '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php', php, '-r', code])
+    run(['docker', 'run', '--rm', '--name', 'runa-production-probe-' + uuid.uuid4().hex[:12], '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'sh', php, '-c', 'for tool in composer node npm pnpm codex python3 git gcc g++; do if command -v "$tool" >/dev/null 2>&1; then echo "Development tool in runtime: $tool" >&2; exit 1; fi; done'])
+    run(['docker', 'run', '--rm', '--name', 'runa-production-probe-' + uuid.uuid4().hex[:12], '--read-only', '--tmpfs', '/tmp', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--entrypoint', 'php-fpm', php, '-tt'])
+    run(['docker', 'run', '--rm', '--name', 'runa-production-probe-' + uuid.uuid4().hex[:12], '--read-only', '--tmpfs', '/tmp', '--add-host', 'app:127.0.0.1', '--cap-drop=ALL', '--security-opt=no-new-privileges:true', nginx, '-t'])
 
 
 def main(args):

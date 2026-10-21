@@ -125,7 +125,7 @@ def pause_http(release=None):
 
 def resume_http(release=None, recreate=False):
     dc(['up', '-d', '--wait', '--no-build', *(['--force-recreate'] if recreate else []),
-        'postgres', 'app', 'queue', 'scheduler'], release)
+        *[name for name, value in resolved(release)['services'].items() if name != 'nginx' and not value.get('profiles')]], release)
     # Refresh Nginx's public-storage subpath mount when recreating the stack.
     dc(['up', '-d', '--no-build', '--no-deps', *(['--force-recreate'] if recreate else []), 'nginx'], release)
     http_maintenance(False, release)
@@ -222,24 +222,37 @@ def set_tag(sha):
     return old
 
 
+def resolved(release=None):
+    return json.loads(dc(['config', '--format', 'json'], release, capture_output=True, text=True).stdout)
+
+
+def platform_data(sha, phase, release=None):
+    dc(['run', '--rm', '--no-deps', '-T', 'app', 'php', 'src/runa/database/prepare.php', sha, phase], release)
+
+
 def images(release):
-    names = dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
+    config = resolved(release)
+    names = {service['image'] for service in config['services'].values() if not service.get('profiles')}
     return {name: run(['docker', 'image', 'inspect', '--format', '{{.Id}}', name], capture_output=True, text=True).stdout.strip()
-            for name in sorted(set(names))}
+            for name in sorted(names)}
 
 
 def health(release=None, verify_source=False):
     current = read_state()['current']
     if current and str(release) == current['path'] and images(release) != current['images']:
         raise ValueError('Selected image IDs differ from the recorded successful deployment.')
+    config = resolved(release)
     rows = dc(['ps', '--all', '--format', 'json'], release, capture_output=True, text=True).stdout.strip()
     rows = json.loads(rows) if rows.startswith('[') else [json.loads(line) for line in rows.splitlines() if line]
     services = {row['Service']: row for row in rows}
-    if set(services) != set(production.SERVICES):
-        raise ValueError('Unexpected/missing service in the production project.')
+    required = {name for name, value in config['services'].items() if not value.get('profiles')}
+    if not required <= services.keys() or services.keys() - config['services'].keys():
+        raise ValueError('Missing selected services or undeclared running/stopped services; reconcile the production project explicitly.')
     for service, row in services.items():
-        if row.get('State') != 'running' or row.get('Health') != 'healthy':
-            raise ValueError('Production service is not healthy: ' + service)
+        definition = config['services'][service]
+        needs_health = service in production.SERVICES or bool(definition.get('healthcheck'))
+        if row.get('State') != 'running' or (needs_health and row.get('Health') != 'healthy'):
+            raise ValueError('Production service is not healthy/running: ' + service)
     dc(['exec', '-T', 'nginx', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:8080/'], release)
     dc(['exec', '-T', 'nginx', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:8080/api/ready'], release)
     isolation(release, verify_source)
@@ -247,32 +260,31 @@ def health(release=None, verify_source=False):
 
 
 def isolation(release=None, verify_source=False):
-    config = json.loads(dc(['config', '--format', 'json'], release, capture_output=True, text=True).stdout)
-    if set(config['services']) != set(production.SERVICES) or set(config.get('volumes', {})) != {'postgres-icu-data', 'application-storage'}:
-        raise ValueError('Unexpected production services or volumes.')
+    config = resolved(release)
+    if not set(production.SERVICES) <= config['services'].keys():
+        raise ValueError('Required production runtime services are missing.')
+    forbidden = {'qdrant', 'embeddings', 'embeddings-gpu', 'knowledge-init', 'setup', 'mailpit', 'app-test', 'nginx-test'}
     for name, service in config['services'].items():
-        if service.get('privileged') or any('docker.sock' in str(mount) for mount in service.get('volumes', [])):
-            raise ValueError('Unsafe production privileges/mount.')
-        if name != 'nginx' and service.get('ports'):
-            raise ValueError('Unexpected published production port.')
-        if name in ('app', 'queue', 'scheduler') and service['environment'].get('KNOWLEDGE_ENABLED') != 'false':
+        if name in forbidden or any(part in service.get('image', '').lower() for part in ('qdrant', 'text-embeddings-inference', 'runa-embeddings')):
+            raise ValueError('AI/development services cannot run in production.')
+        if (service.get('privileged') or service.get('network_mode') == 'host' or service.get('cap_add')
+                or any('docker.sock' in str(mount) for mount in service.get('volumes', []))):
+            raise ValueError('Unsafe production privileges/mount/network.')
+        if name in ('app', 'queue', 'scheduler') and service.get('environment', {}).get('KNOWLEDGE_ENABLED') != 'false':
             raise ValueError('Knowledge must be disabled.')
-    production.verify_images(command(release), environment())
-    project = config['name']
-    allowed_volumes = {volume['name'] for volume in config.get('volumes', {}).values()}
-    volumes = set(run(['docker', 'volume', 'ls', '--filter', 'label=com.docker.compose.project=' + project, '--format', '{{.Name}}'], capture_output=True, text=True).stdout.splitlines())
-    if volumes - allowed_volumes:
-        raise ValueError('Unexpected project volume; production may contain development data.')
-    for name in production.SERVICES:
+    production.verify_images(command(release), environment(), source=Path(release) if release else ROOT)
+    for name, service in config['services'].items():
         container = dc(['ps', '--quiet', name], release, capture_output=True, text=True).stdout.strip()
+        if not container and service.get('profiles'):
+            continue
         if not container:
             raise ValueError('Missing production container: ' + name)
         actual = json.loads(run(['docker', 'inspect', container], capture_output=True, text=True).stdout)[0]
-        expected_image = run(['docker', 'image', 'inspect', '--format', '{{.Id}}', config['services'][name]['image']], capture_output=True, text=True).stdout.strip()
+        expected_image = run(['docker', 'image', 'inspect', '--format', '{{.Id}}', service['image']], capture_output=True, text=True).stdout.strip()
         if actual['Image'] != expected_image:
             raise ValueError('Running image differs from the selected production identity: ' + name)
-        if name != 'nginx' and actual['HostConfig'].get('PortBindings'):
-            raise ValueError('Unexpected actual production port binding.')
+        if actual['HostConfig'].get('Privileged') or actual['HostConfig'].get('CapAdd') or actual['HostConfig'].get('NetworkMode') == 'host' or any('docker.sock' in mount.get('Source', '') for mount in actual.get('Mounts', [])):
+            raise ValueError('Running production privileges/mount/network violate isolation.')
         if name in ('app', 'queue', 'scheduler') and 'KNOWLEDGE_ENABLED=false' not in actual['Config']['Env']:
             raise ValueError('Knowledge is not disabled in the running container.')
     if verify_source:
@@ -297,7 +309,7 @@ def build_images(release=None):
         raise ValueError('Incomplete immutable image pair; inspect/remove the failed build explicitly before retrying.')
     if not any(present):
         dc(['build', 'app', 'nginx'], release)
-    production.verify_images(command(release), environment())
+    production.verify_images(command(release), environment(), source=Path(release) if release else ROOT)
 
 
 def deploy(target='main', simulation=False, initial_resume=False, verification=None, database_setup=None):
@@ -328,8 +340,6 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
         raise ValueError('The simulation flag must match RUNA_PRODUCTION_MODE in the private Compose settings.')
     if not simulation:
         assert_delivery(ROOT)
-    if previous and 'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873' not in previous.get('images', {}):
-        raise ValueError('Previous deployment uses a different database baseline. Use a fresh dedicated installer simulation checkout; do not adopt the old cluster.')
     if previous and previous['simulation'] != simulation:
         raise ValueError('Cannot switch between real and simulation deployment contexts.')
     if previous and maintenance_active(previous['path']):
@@ -368,6 +378,10 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
             phase('platform-installation')
             database_setup(release)
         else:
+            phase('platform-migrations')
+            platform_data(sha, 'migrations', release)
+            phase('platform-seeding')
+            platform_data(sha, 'required-seeds', release)
             phase('application-migrations')
             artisan(['migrate', '--force'], release)
             phase('application-seeding')
@@ -378,7 +392,7 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
         health(release, verify_source=True)
         if verification is not None:
             verification(release)
-        identity = {'sha': sha, 'version': (release / 'VERSION').read_text().strip(), 'path': str(release),
+        identity = {'sha': sha, 'version': json.loads((release / 'src/runa/platform.json').read_text())['version'], 'path': str(release),
                     'application_version': json.loads((release / 'src/app/application.json').read_text())['version'],
                     'database_tree': tree_hash(sha, release), 'rollback_safe': False,
                     'deployed_at': stamp(), 'simulation': simulation, 'images': images(release)}

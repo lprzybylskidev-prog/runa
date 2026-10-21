@@ -8,10 +8,9 @@ import sys
 
 def exercise(prod, fixture, project, check, report, call, output, commit):
     customer = fixture / 'customer-repository'
-    call(['git', 'clone', '--quiet', '--no-hardlinks', str(prod), str(customer)])
+    if not (customer / '.git').is_dir():
+        raise RuntimeError('Native deployment needs the customer repository created by initialization.')
     call(['git', '-C', str(customer), 'checkout', '-B', 'main'])
-    call(['git', '-C', str(prod), 'remote', 'add', 'customer', str(customer)])
-    call(['git', '-C', str(prod), 'config', '--local', 'runa.applicationRemote', 'customer'])
     git_config = (prod / '.git/config').read_bytes()
     head = output(['git', '-C', str(prod), 'rev-parse', 'HEAD'])
     state = prod / '.runtime/production'
@@ -19,8 +18,6 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         return json.loads((state / 'deployment.json').read_text())
     def sql(statement):
         return output(['docker', 'exec', project + '-postgres-1', 'psql', '-U', 'runa', '-d', 'runa', '-At', '-v', 'ON_ERROR_STOP=1', '-c', statement])
-    def platform():
-        return sql("SELECT json_build_array((SELECT json_agg(t ORDER BY id) FROM shared.migrations t), (SELECT json_agg(t ORDER BY id) FROM shared.platform_seed_runs t), (SELECT payload FROM shared.jobs WHERE queue='deployment-sentinel'))")
     def execute(*args, success=True):
         # First deploy also traverses real cold PHP
         # parsing and the fixed host recovery executor, rather than a mocked plan.
@@ -44,11 +41,32 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         code = 'import sys; sys.path.insert(0,"tools/application"); import operations as o; old=o.read_state()["current"]; o.set_tag(old["sha"]); o.resume_http(old["path"],recreate=True); o.health(old["path"],verify_source=True); (o.STATE/"in-progress.json").unlink()'
         call([sys.executable, '-c', code], cwd=prod)
     sql("INSERT INTO shared.jobs(queue,payload,attempts,available_at,created_at) VALUES ('deployment-sentinel','preserved-platform-data',0,0,0)")
-    before_platform = platform()
-    before_source = {name: (prod / name).read_bytes() for name in ('VERSION', 'src/runa/platform.json', 'compose.production.yaml')}
+    before_migrations = sql("SELECT string_agg(migration,',' ORDER BY id) FROM shared.migrations")
     private_settings = {name: (prod / name).read_bytes() for name in ('.env.prod', '.env.prod.database')}
     storage = 'foreach (["application", "runa"] as $owner) { file_put_contents("/workspace/src/storage/app/".$owner."/private/deployment-sentinel", $owner); }'
     call(['docker', 'exec', project + '-app-1', 'php', '-r', storage])
+
+    # Synthetic next Runa release plus customer-owned infrastructure in one commit.
+    platform_migration = customer / 'src/runa/database/migrations/2099_01_01_000001_platform_deploy_probe.php'
+    platform_migration.write_text("<?php return new class extends \\Illuminate\\Database\\Migrations\\Migration { public function up(): void { \\Illuminate\\Support\\Facades\\DB::statement('CREATE TABLE shared.deploy_reference (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, code text NOT NULL UNIQUE, label text NOT NULL UNIQUE)'); } };\n")
+    scope = customer / 'src/runa/Database/DatabaseScope.php'
+    scope.write_text(scope.read_text().replace("'shared.platform_seed_runs'", "'shared.platform_seed_runs', 'shared.deploy_reference'", 1))
+    platform_seed = customer / 'src/runa/database/seeders/DatabaseSeeder.php'
+    platform_seed.write_text("<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.deploy_reference')->upsert([['code'=>'baseline','label'=>'first-reference']], ['code'], ['label']); } }\n")
+    platform_manifest = customer / 'src/runa/platform.json'
+    identity = json.loads(platform_manifest.read_text()); identity['version'] = '0.3.0'; platform_manifest.write_text(json.dumps(identity) + '\n')
+    (customer / 'VERSION').write_text('customer-controlled-scaffold\n')
+    definitions = customer / 'compose.production.yaml'
+    data = json.loads(definitions.read_text())
+    redis = output(['docker', 'image', 'inspect', '--format', '{{index .RepoDigests 0}}', 'redis:8.4.0-bookworm'])
+    if not redis.startswith('redis@sha256:'):
+        raise RuntimeError('Native custom-service acceptance requires the existing exact local Redis digest.')
+    data['services']['redis'] = {'image': redis, 'pull_policy': 'never', 'user': '1000:1000',
+        'command': ['redis-server', '--save', '', '--appendonly', 'no'], 'read_only': True,
+        'tmpfs': ['/data:rw,nosuid,nodev,size=16m,uid=1000,gid=1000'], 'cap_drop': ['ALL'],
+        'security_opt': ['no-new-privileges:true'], 'cpus': .25, 'mem_limit': '64M',
+        'healthcheck': {'test': ['CMD', 'redis-cli', 'ping'], 'interval': '2s', 'timeout': '2s', 'retries': 10}}
+    definitions.write_text(json.dumps(data) + '\n')
 
     migration = customer / 'src/app/database/migrations/2099_01_01_000001_deploy_probe.php'
     migration.write_text('''<?php
@@ -57,7 +75,7 @@ use Illuminate\\Support\\Facades\\DB;
 return new class extends Migration {
     public function up(): void {
         DB::statement('CREATE SCHEMA deploy_probe');
-        DB::statement('CREATE TABLE deploy_probe.records (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, label text NOT NULL)');
+        DB::statement('CREATE TABLE deploy_probe.records (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, label text NOT NULL UNIQUE)');
     }
     public function down(): void { throw new RuntimeException('Fixture rollback must never run'); }
 };
@@ -68,7 +86,7 @@ namespace Database\\Seeders;
 use Illuminate\\Database\\Seeder;
 use Illuminate\\Support\\Facades\\DB;
 final class DatabaseSeeder extends Seeder {
-    public function run(): void { DB::table('deploy_probe.records')->insert(['label' => 'LABEL']); EXTRA }
+    public function run(): void { DB::table('deploy_probe.records')->updateOrInsert(['label' => 'LABEL'], []); EXTRA }
 }
 '''
     seed.write_text(seed_template.replace('LABEL', 'first').replace('EXTRA', ''))
@@ -84,19 +102,22 @@ final class DatabaseSeeder extends Seeder {
     execute()
     check(deployment()['current']['sha'] == first and sql('SELECT string_agg(label,\',\' ORDER BY id) FROM deploy_probe.records') == 'first', 'default main builds customer code, runs application migration and only its explicit DatabaseSeeder')
     check(deployment()['current']['application_version'] == '7.4.2'
-          and deployment()['current']['version'] == before_source['VERSION'].decode().strip(),
+          and deployment()['current']['version'] == '0.3.0',
           'deployment records independent customer and platform versions without rewriting either manifest')
     check(output(['docker', 'exec', project + '-nginx-1', 'wget', '-qO-', 'http://127.0.0.1:8080/api/deploy-probe']) == '{"count":1}', 'running production HTTP serves the customer code/data transition')
     execute()
     check(sql('SELECT count(*) FROM deploy_probe.records') == '1', 'same deployed revision does not replay application seeds')
 
     seed.write_text(seed_template.replace('LABEL', 'second').replace('EXTRA', ''))
+    platform_seed.write_text(platform_seed.read_text().replace('first-reference', 'second-reference'))
     second = commit(customer)
     call(['git', '-C', str(customer), 'tag', 'customer-release-42'])
     execute('customer-release-42')
     check(deployment()['current']['sha'] == second and sql('SELECT string_agg(label,\',\' ORDER BY id) FROM deploy_probe.records') == 'first,second', 'arbitrary explicit customer tag preserves existing application data and migration history')
     execute(second)
-    check(platform() == before_platform and all((Path(deployment()['current']['path']) / name).read_bytes() == content for name, content in before_source.items()), 'platform migration/seed histories, sentinel data and protected source remain unchanged')
+    check(sql("SELECT count(*) FROM shared.deploy_reference") == '1' and sql("SELECT label FROM shared.deploy_reference WHERE code='baseline'") == 'second-reference', 'whole customer deploy applies real platform schema/reference-data updates and idempotent required seeds')
+    check(all(name in sql("SELECT string_agg(migration,',' ORDER BY id) FROM shared.migrations").split(',') for name in before_migrations.split(',')) and sql("SELECT payload FROM shared.jobs WHERE queue='deployment-sentinel'") == 'preserved-platform-data', 'existing platform history/data survive forward platform and application steps')
+    check(output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'selected customer Compose starts an additional real Redis service without stock-topology rejection')
     durable = 'foreach (["application", "runa"] as $owner) { if (file_get_contents("/workspace/src/storage/app/".$owner."/private/deployment-sentinel") !== $owner) { exit(1); } }'
     call(['docker', 'exec', project + '-app-1', 'php', '-r', durable])
     check(all((prod / name).read_bytes() == content for name, content in private_settings.items()), 'both durable storage owners and production credentials survive deployment')
@@ -109,15 +130,11 @@ final class DatabaseSeeder extends Seeder {
     execute(success=False)
     check(maintenance() == 'active', 'preexisting manual maintenance is preserved without being claimed or cleared')
     call(['docker', 'exec', project + '-app-1', 'php', '-r', 'unlink("/workspace/src/storage/framework/maintenance/enabled");'])
-    call(['git', '-C', str(customer), 'checkout', '-B', 'bad-protected'])
-    (customer / 'VERSION').write_text('unauthorized-platform-change\n')
-    commit(customer)
-    execute('bad-protected', success=False)
     call(['git', '-C', str(customer), 'checkout', '-B', 'bad-build', second])
     (customer / 'src/composer.lock').write_text('broken lock\n')
     commit(customer)
     execute('bad-build', success=False)
-    check((state / 'deployment.json').read_bytes() == stable and not (state / 'in-progress.json').exists() and maintenance() == 'clear', 'fetch, lock, protected-source and build failures leave the running deployment/state untouched')
+    check((state / 'deployment.json').read_bytes() == stable and not (state / 'in-progress.json').exists() and maintenance() == 'clear', 'fetch, lock and build failures leave the running deployment/state untouched')
 
     call(['git', '-C', str(customer), 'checkout', '-B', 'bad-migration', second])
     (migration.parent / '2099_01_01_000002_failure.php').write_text("<?php return new class extends \\Illuminate\\Database\\Migrations\\Migration { public function up(): void { throw new \\RuntimeException('Synthetic migration failure before mutation'); } };\n")
@@ -141,7 +158,7 @@ final class DatabaseSeeder extends Seeder {
     commit(customer)
     execute('bad-health', success=False)
     assert_fenced('restart-and-health')
-    check(platform() == before_platform and sql('SELECT count(*) FROM deploy_probe.records') == '4', 'health failure fences HTTP/writers while preserving completed app changes and platform data')
+    check(sql("SELECT payload FROM shared.jobs WHERE queue='deployment-sentinel'") == 'preserved-platform-data' and sql('SELECT count(*) FROM deploy_probe.records') == '4', 'health failure fences HTTP/writers while preserving completed app changes and platform data')
     check((prod / '.git/config').read_bytes() == git_config and output(['git', '-C', str(prod), 'rev-parse', 'HEAD']) == head, 'customer remotes/config/history are unchanged by all deployments and failures')
     check(not list(state.glob('customer-source-*')), 'all disposable customer fetch staging is removed after success and failure')
     report['customer_deployment'] = {'first': first, 'second': second, 'successful_images': deployment()['current']['images'],

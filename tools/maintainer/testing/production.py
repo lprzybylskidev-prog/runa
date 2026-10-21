@@ -2,6 +2,8 @@
 """Production topology and command-boundary contracts without Docker privileges."""
 import contextlib
 import io
+import json
+import subprocess
 import os
 from pathlib import Path
 import sys
@@ -38,6 +40,22 @@ class ProductionContracts(unittest.TestCase):
                         compose.assert_not_called()
                         lock.assert_not_called()
                         active.assert_not_called()
+
+    def test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden(self):
+        import operations
+        config = {'services': {name: {'image': 'fixture', 'environment': {'KNOWLEDGE_ENABLED': 'false'}} for name in (*production.SERVICES, 'redis')}}
+        def dc(arguments, *args, **kwargs):
+            return subprocess.CompletedProcess(arguments, 0, arguments[-1])
+        def run(arguments, **kwargs):
+            actual = {'Image': 'exact', 'HostConfig': {}, 'Config': {'Env': ['KNOWLEDGE_ENABLED=false']}, 'Mounts': []}
+            return subprocess.CompletedProcess(arguments, 0, json.dumps([actual]) if arguments[1] == 'inspect' else 'exact')
+        with patch.object(operations, 'resolved', return_value=config), patch.object(operations, 'dc', side_effect=dc), patch.object(operations, 'run', side_effect=run), patch.object(operations, 'command', return_value=['compose']), patch.object(production, 'verify_images'), contextlib.redirect_stdout(io.StringIO()):
+            operations.isolation()
+            config['services']['redis']['privileged'] = True
+            with self.assertRaisesRegex(ValueError, 'privileges'): operations.isolation()
+            config['services']['redis'].pop('privileged')
+            config['services']['qdrant'] = {'image': 'qdrant/qdrant:fixture'}
+            with self.assertRaisesRegex(ValueError, 'AI/development'): operations.isolation()
 
     def test_dev_block_preserves_files_even_with_production_settings_present(self):
         import operations
@@ -99,7 +117,7 @@ class ProductionContracts(unittest.TestCase):
 
     def test_native_mail_runtime_inputs_are_shipped_without_review_fixtures(self):
         stage = (ROOT / 'docker/php/Dockerfile').read_text().split('FROM production-runtime AS production\n')[1].split('FROM nginx:')[0]
-        for source in ('src/runa/resources/views/', 'src/runa/resources/images/runa-mail-logo.png', 'src/runa/resources/css/light-palette.css', 'VERSION'):
+        for source in ('src/runa/resources/views/', 'src/runa/resources/images/runa-mail-logo.png', 'src/runa/resources/css/light-palette.css', 'src/runa/platform.json'):
             self.assertTrue((ROOT / source).exists())
             self.assertIn('COPY --chown=runa:runa ' + source + ' /workspace/' + source, stage)
         self.assertNotIn('src/runa/resources/review', stage)

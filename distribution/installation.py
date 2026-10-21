@@ -20,6 +20,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 
 sys.path.insert(0, str(Path.cwd() / 'tools/application'))
 
@@ -179,7 +180,7 @@ def provision_tls(settings):
     image = management.ensure_image()
     # Certificate parsing/key validation uses the same pinned container PHP runtime.
     code = '$c=openssl_x509_read(file_get_contents("/inputs/cert")); $k=openssl_pkey_get_private(file_get_contents("/inputs/key")); $d=$c ? openssl_x509_parse($c) : false; exit($c && $k && openssl_x509_check_private_key($c,$k) && $d["validFrom_time_t"]<=time() && $d["validTo_time_t"]>time()+86400 ? 0 : 1);'
-    command = ['docker', 'run', '--rm', '--network', 'none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
+    command = ['docker', 'run', '--rm', '--name', 'runa-install-tls-' + uuid.uuid4().hex[:12], '--network', 'none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
                '--user', str(os.getuid()) + ':' + str(os.getgid()),
                '--mount', 'type=bind,src=' + str(regular_file(tls['certificate'])) + ',dst=/inputs/cert,readonly',
                '--mount', 'type=bind,src=' + str(regular_file(tls['private_key'], True)) + ',dst=/inputs/key,readonly',

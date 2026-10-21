@@ -53,11 +53,12 @@ class OperationContracts(unittest.TestCase):
             events.append(('compose', args))
             if args == ['up', '-d', '--wait', '--no-build', '--no-deps', 'nginx']:
                 raise ValueError('nginx health failed')
-        with patch.object(ops, 'http_maintenance', side_effect=lambda enabled, release: events.append(('marker', enabled))), patch.object(ops, 'dc', side_effect=dc):
+        with patch.object(ops, 'resolved', return_value={'services': {name: {} for name in ('postgres', 'app', 'queue', 'scheduler', 'redis')}}), patch.object(ops, 'http_maintenance', side_effect=lambda enabled, release: events.append(('marker', enabled))), patch.object(ops, 'dc', side_effect=dc):
             with self.assertRaisesRegex(ValueError, 'nginx health failed'):
                 ops.resume_http('/release', recreate=True)
         self.assertIn('--wait', events[0][1])
         self.assertNotIn('nginx', events[0][1])
+        self.assertIn('redis', events[0][1])
         self.assertEqual(events[2], ('marker', False))
         self.assertEqual(events[-1], ('marker', True))
 
@@ -210,7 +211,7 @@ print('parent:' + sys.stdin.read())
         sha = 'a' * 40
         previous = {'sha': 'b' * 40, 'path': '/previous', 'database_tree': 'same', 'simulation': True,
                     'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
-        for failure in ('build', 'seed', 'health'):
+        for failure in ('build', 'platform-migration', 'platform-seed', 'seed', 'health'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as folder, contextlib.ExitStack() as stack:
                 root = Path(folder)
                 state = root / 'state'
@@ -223,12 +224,17 @@ print('parent:' + sys.stdin.read())
                 stack.enter_context(patch.object(ops, 'maintenance_active', return_value=False))
                 stack.enter_context(patch.object(ops, 'checkout', return_value=root / sha))
                 stack.enter_context(patch.object(ops, 'dc', side_effect=lambda args, *a, **kw: calls.append(args)))
+                stack.enter_context(patch.object(ops, 'resolved', return_value={'services': {name: {} for name in ('postgres', 'app', 'queue', 'scheduler')}}))
                 stack.enter_context(patch.object(ops, 'validate'))
                 stack.enter_context(patch.object(ops, 'build_images', side_effect=ValueError('build failed') if failure == 'build' else None))
                 def artisan(args, release):
                     if failure == 'seed' and args[0] == 'db:seed':
                         raise ValueError('seed failed')
                 data = stack.enter_context(patch.object(ops, 'artisan', side_effect=artisan))
+                def platform_data(sha, phase, release):
+                    if (failure == 'platform-migration' and phase == 'migrations') or (failure == 'platform-seed' and phase == 'required-seeds'):
+                        raise ValueError(failure + ' failed')
+                platform = stack.enter_context(patch.object(ops, 'platform_data', side_effect=platform_data))
                 stack.enter_context(patch.object(ops, 'health', side_effect=ValueError('health failed')))
                 stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
                 with self.assertRaisesRegex(ValueError, failure + ' failed'):
@@ -240,9 +246,10 @@ print('parent:' + sys.stdin.read())
                 else:
                     pending = json.loads((state / 'in-progress.json').read_text())
                     self.assertTrue(pending['data_steps_started'])
-                    self.assertEqual(pending['phase'], 'application-seeding' if failure == 'seed' else 'restart-and-health')
+                    phases = {'platform-migration': 'platform-migrations', 'platform-seed': 'platform-seeding', 'seed': 'application-seeding', 'health': 'restart-and-health'}
+                    self.assertEqual(pending['phase'], phases[failure])
                     self.assertEqual(calls[-1], ['stop', 'queue', 'scheduler', 'app'])
-                    self.assertEqual([call.args[0][0] for call in data.call_args_list], ['migrate', 'db:seed'])
+                    self.assertEqual([call.args[0][0] for call in data.call_args_list], [] if failure.startswith('platform-') else ['migrate', 'db:seed'])
 
     def test_same_commit_verifies_health_without_replaying_data_steps(self):
         previous = {'sha': 'a' * 40, 'path': '/previous', 'simulation': True,

@@ -25,3 +25,5 @@
 21. Technical exceptions are logged internally; user/API contracts receive stable safe error information.
 
 Production deployment records each mutating phase and retains HTTP/writer fencing after migration, seeding or health failure. Arbitrary application seeders may commit partial effects; matching source fingerprints do not prove schema/data compatibility or authorize automatic rollback/replay. Preserve manual maintenance and unresolved-operation ownership. See docs/runa/handbook/production/deployment.md for the current recovery contract.
+
+Complete customer-repository deployment orders scoped forward platform migrations/required transactional idempotent seeds before application migrate/explicit DatabaseSeeder. Record the exact failed phase and preserve maintenance/writer fencing; no blind retry after uncertain data effects and no claim that code rollback reverses data. Ordinary local startup remains independent of explicit data preparation.
