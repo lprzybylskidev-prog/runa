@@ -277,7 +277,12 @@ impact_areas:
       execution_context: host
       depends_on: [installation-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/installation-host.py
+      command: python3 tools/maintainer/testing/installation-host.py --updater-preflight
+      severity: hard_fail
+
+    - id: update-preflight-contracts
+      depends_on: [repository-state]
+      command: python3 tools/maintainer/testing/update.py
       severity: hard_fail
 
     - id: bootstrap-source-contracts

@@ -101,7 +101,7 @@ never presented as an installed destination.
 Successful acquisition writes credential-free `.git/runa-bootstrap.json` with
 repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is clean and detached. This is acquisition evidence,
-not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The planned external owner updater will obtain original release source from the repository for comparison.
+not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The external owner updater obtains original release source from the repository for read-only preflight comparison; applying updates remains pending.
 
 The owner runs the external launcher personally; neither the launcher nor its adjacent installation helper is delivered as customer tooling. It is never installed into bin or customer source.
 After verifying the **complete** release, acquisition applies a fixed non-cone
@@ -128,7 +128,7 @@ the destination; retain its adjacent installation.py helper for postponed instal
 Optional profile/settings/noninteractive options are forwarded. After a failed
 install preserve source/settings and rerun the printed command with `--resume`;
 do not reacquire into that directory. Ordinary lifecycle/recovery uses
-`php artisan` and the restricted host executor. The future updater is not yet delivered.
+`php artisan` and the restricted host executor. Read-only updater preflight/plan is delivered; applying updates/resume remains pending. See [owner update planning](updates.md).
 See [installation](installation.md) for settings, preservation and recovery.
 
 Offline acceptance: `python3 tools/maintainer/testing/bootstrap.py`. The local quality graph

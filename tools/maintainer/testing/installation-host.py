@@ -194,6 +194,9 @@ def main():
             check(all((dev / name).read_bytes() == value for name, value in secrets.items()) and customer.read_text() == 'preserve customer source\n', 'repeated development installation preserves all credentials and customer source')
             check(json.loads((dev / 'src/app/application.json').read_text())['version'] == '2.4.1', 'application version remains customer-owned on repeat')
             check(not (dev / '.runtime/production/first-deploy.json').exists(), 'development never writes a real production marker')
+            if '--updater-preflight' in sys.argv[1:]:
+                runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['exercise'](
+                    dev, fixture_directory, dev_project, check, report, call, output, commit)
             remove_project(dev_project, report)
 
         snapshot(prod)
@@ -248,6 +251,9 @@ def main():
         check(not (prod / '.git/runa-ownership.json').exists(), 'production installation leaves no source baseline')
         report['dev_sha'], report['prod_sha'] = dev_sha, sha
         report['images'] = deployment['current']['images']
+        if '--updater-preflight' in sys.argv[1:]:
+            runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['exercise'](
+                prod, fixture_directory, prod_project, check, report, call, output, commit)
         if '--customer-deployment' in sys.argv[1:]:
             runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-deployment-host.py'))['exercise'](
                 prod, fixture_directory, prod_project, check, report, call, output, commit)

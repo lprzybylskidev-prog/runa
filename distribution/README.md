@@ -8,14 +8,11 @@ as part of the ready-to-use environment. No automated entitlement/license servic
 is implemented. Public Git history remains public until repository access changes.
 
 bootstrap.py is the self-contained initial source acquisition/installation launcher.
-The future standalone updater belongs here when its roadmap point is implemented.
-Do not create a placeholder updater or copy these tools into bin or an installation.
+update.py with update_contracts.py, update_runtime.py and bootstrap.py provides external read-only preflight/plan. Applying updates/resume remains the next roadmap point. Keep this reviewed standard-library tool package together outside the customer installation; it needs no maintenance checkout. Never copy these tools into bin or installed source.
 Internal system actions needed for operation/recovery remain in the platform;
 they are not an installed owner distribution command surface.
 
-maintenance contains owner-only command registration/state/release helpers and
-the maintainer hook transport. It is omitted from customer registration even if
-accidentally restored alongside an installation receipt. The Runa maintainer
+Owner maintenance/quality/release entrypoints live under tools/maintainer and are omitted from customer registration/delivery, even if accidentally restored alongside an installation receipt. The Runa maintainer
 checkout retains its own workflow, with explicit local runa.maintenance=true
 and canonical Runa fetch/push identity before project-state publishing; customer deployment evidence never commits or
 pushes to the Runa repository.
