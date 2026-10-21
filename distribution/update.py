@@ -18,6 +18,7 @@ import bootstrap
 from update_contracts import (Blocker, OWNER_PATHS, SEMVER, compare, changes, compose, document,
                               platform, regular, stable, supports)
 import update_runtime
+import update_customization
 
 
 @contextmanager
@@ -44,45 +45,28 @@ def operation_snapshot(root):
             stream.close()
 
 
-def installation(value, repository):
+def installation(value):
     root = Path(value).absolute()
     if root.resolve() != root or not root.is_dir() or root.stat().st_uid != os.getuid() or root.stat().st_mode & 0o022:
         raise Blocker('installation-ownership', 'Select an existing operator-owned installation without symlinks or group/other write access.')
-    receipt = document(root, '.git/runa-bootstrap.json', 32768)
-    if (type(receipt.get('schema_version')) is not int or receipt.get('schema_version') != 1 or receipt.get('repository', '').lower() != repository.lower()
-            or receipt.get('mode') not in ('dev', 'prod') or receipt.get('projection') != {'version': 1, 'excluded': list(OWNER_PATHS)}):
-        raise Blocker('installation-identity', 'Acquisition repository, mode or source projection is unknown/inconsistent. Owner checkouts are not update targets.')
+    if not (root / '.git').is_dir() or (root / '.git').is_symlink():
+        raise Blocker('installation-identity', 'Select a customer Git checkout with real local metadata.')
     for name in OWNER_PATHS:
         if (root / name).exists() or (root / name).is_symlink():
             raise Blocker('owner-source-present', 'Owner-only source is materialized in the installation: ' + name)
-    return root, receipt
-
-
-def source_profile(root, mode):
-    if mode == 'dev':
-        return 'source'
-    settings = update_runtime.env_file(root, '.env.prod.compose')
-    return 'source' if settings.get('RUNA_PRODUCTION_MODE') == 'simulation' else 'prod'
-
-
-def installed_runtime(root, mode):
-    state = root / '.runtime/production'
-    for name in ('in-progress.json',):
-        if (state / name).exists() or (state / name).is_symlink():
-            raise Blocker('unresolved-operation', 'Unresolved operation state blocks planning; inspect recovery evidence without deleting it.')
-    journal = document(root, '.runtime/production/install-' + mode + '.json')
-    if journal.get('state') != 'complete':
-        raise Blocker('installation-incomplete', 'Complete or recover initial installation before planning an update.')
-    if mode == 'dev':
-        return root
-    current = document(root, '.runtime/production/deployment.json').get('current')
-    if not isinstance(current, dict) or not re.fullmatch(bootstrap.SHA, current.get('sha', '')):
-        raise Blocker('deployment-identity', 'Production has no successful exact source identity.')
-    expected = state / 'releases' / current['sha']
-    if current.get('path') != str(expected) or expected.resolve() != expected:
-        raise Blocker('deployment-identity', 'Successful production source has an unsafe or unexpected path.')
-    regular(expected, '.git/runa-bootstrap.json')
-    return expected
+    marker = root / '.git/runa-bootstrap.json'
+    if marker.exists() or marker.is_symlink():
+        receipt = document(root, '.git/runa-bootstrap.json', 32768)
+        if receipt.get('mode') != 'dev':
+            raise Blocker('development-only', 'The Runa updater operates exclusively on development checkouts; deploy customer commits to production.')
+    if (root / '.env.prod.compose').exists() or (root / '.env.prod.compose').is_symlink():
+        raise Blocker('development-only', 'Production configuration cannot be an updater target.')
+    values = update_runtime.env_file(root, '.env')
+    if values.get('APP_ENV', '').strip("\"'") != 'local':
+        raise Blocker('development-only', 'Configure the customer development environment before updating.')
+    if (root / '.runtime/production/in-progress.json').exists() or (root / '.runtime/production/in-progress.json').is_symlink():
+        raise Blocker('unresolved-operation', 'Unresolved operation state blocks planning; preserve recovery evidence.')
+    return root
 
 
 def candidate(root, target, directory):
@@ -97,7 +81,7 @@ def candidate(root, target, directory):
         (destination / 'src' / (kind + '.json')).write_text(json.dumps(result, indent=2) + '\n')
     for name in ('composer.lock', 'pnpm-lock.yaml'):
         (destination / 'src' / name).write_bytes(regular(root, 'src/' + name, 32 * 1024 ** 2))
-    (destination / 'src/pnpm-workspace.yaml').write_bytes(regular(target, 'src/pnpm-workspace.yaml'))
+    (destination / 'src/pnpm-workspace.yaml').write_bytes(regular(root, 'src/pnpm-workspace.yaml'))
     return destination
 
 
@@ -110,11 +94,10 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
         raise Blocker('applied-migration-changed', 'Target changes/removes applied platform migrations: ' + ', '.join(changed_applied[:10]))
     seeder = 'Runa\\Database\\Seeders\\DatabaseSeeder'
     seed_done = any(row.get('release_sha') == target_identity['commit'] and row.get('seeder') == seeder for row in runtime['seed_runs'])
-    infra = [row for row in delta if row['path'].startswith(('docker/', '.devcontainer/', 'compose.'))]
     return {'no_op': target_identity['commit'] == installed_identity['commit'] and not (set(migrations) - applied) and seed_done, 'source_changes': delta,
             'platform_migrations': [name for name in migrations if name not in applied],
             'platform_seeder': {'class': seeder, 'release': target_identity['commit'], 'already_completed': seed_done},
-            'infrastructure_changes': infra, 'customer_inputs': 'preserved; concrete transition consent is never a protected-source override',
+            'customer_inputs': 'preserved; reconcile scaffold/infrastructure manually from release instructions',
             'steps': ['preflight-passed', 'maintenance', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'switch', 'health/isolation', 'completed'],
             'preserve': ['src/app', 'docs/app', 'application identity/version', 'application dependency declarations/locks',
                          'private environment inputs', 'both durable storage trees', 'customer Git remotes/history'],
@@ -129,7 +112,7 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
     def passed(name):
         report['checks'].append({'id': name, 'status': 'passed'})
     try:
-        root, receipt = installation(value, client.repository)
+        root = installation(value)
         if Path(__file__).resolve().is_relative_to(root):
             raise Blocker('owner-tool-location', 'Run the separately supplied owner updater outside the customer installation.')
         version = platform(root)
@@ -141,8 +124,6 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
             raise Blocker('downgrade-unsupported', 'A downgrade has unproven schema/data compatibility; use reviewed recovery rather than an update plan.')
         passed('installation-identity')
         with operation_snapshot(root):
-            active = installed_runtime(root, receipt['mode'])
-            profile = source_profile(root, receipt['mode'])
             temporary_parent = Path(os.environ.get('TMPDIR', '/tmp')).resolve(strict=True)
             if temporary_parent.is_relative_to(root):
                 raise Blocker('unsafe-staging', 'Temporary release downloads must stay outside the installation.')
@@ -152,25 +133,21 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
                     raise Blocker('unsafe-staging', 'Temporary release downloads must stay outside the installation.')
                 report['temporary_downloads'] = [str(staging / 'original'), str(staging / 'target')]
                 original, target = staging / 'original', staging / 'target'
-                installed_identity = download(client, 'v' + version, original, receipt['mode'])
+                installed_identity = download(client, 'v' + version, original, 'dev')
                 if platform(original) != version:
                     raise Blocker('original-release', 'Original release platform identity does not match the installed version.')
                 report['installed_release'] = {key: installed_identity[key] for key in ('tag', 'commit', 'tag_object')}
                 passed('original-release')
-                report['mismatches'] = compare(root, original, profile)
-                if active != root:
-                    if platform(active) != version:
-                        raise Blocker('active-version', 'Active production source and operator platform versions differ.')
-                    report['mismatches'] += [dict(row, location='active-release') for row in compare(active, original, 'prod')]
+                report['mismatches'] = compare(root, original)
                 if report['mismatches']:
                     raise Blocker('protected-source-mismatch', 'Protected source differs from the independently downloaded installed release; no repair or consent override exists.')
                 passed('protected-source')
-                target_identity = download(client, tag, target, receipt['mode'], expected_commit=expected_commit)
+                target_identity = download(client, tag, target, 'dev', expected_commit=expected_commit)
                 if platform(target) != tag[1:]:
                     raise Blocker('target-release', 'Target release platform identity does not match its tag.')
                 report['target_release'] = {key: target_identity[key] for key in ('tag', 'commit', 'tag_object')}
                 passed('target-release')
-                applications = [('operator', root)] + ([('active-release', active)] if active != root else [])
+                applications = [('development', root)]
                 for location, source in applications:
                     application = document(source, 'src/app/application.json', 16384)
                     if (type(application.get('schema_version')) is not int or application.get('schema_version') != 1
@@ -188,13 +165,12 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
                     report['toolchain_image'] = lock_probe(candidate(source, target, staging / location), toolchain)
                     report['dependency_checks'].append(location)
                 passed('preserved-dependency-locks')
-                runtime = runtime_probe(active, receipt['mode'], root)
+                runtime = runtime_probe(root, 'dev', root)
                 report['runtime'] = {'project': runtime['project'], 'services': runtime['services']}
                 passed('runtime-and-database')
                 report['plan'] = plan(root, target, original, target_identity, installed_identity, runtime)
-                if report['plan']['infrastructure_changes']:
-                    raise Blocker('infrastructure-transition-required', 'Target changes standard infrastructure. A reviewed release-declared transition is required; no topology change is implicitly accepted.')
-                passed('infrastructure')
+                report['customization_review'] = update_customization.review(root, original)
+                passed('infrastructure-review')
                 report['status'] = 'ready'
     except Blocker as error:
         report['checks'].append({'id': error.code, 'status': 'blocked', 'message': str(error)})

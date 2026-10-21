@@ -77,7 +77,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Source: `src/runa/resources/js/components/AppFooter.vue`.
 - `poweredByLabel` defaults to English `Powered by` for standalone use. MinimalLayout passes the current translation (`Oparte na` in Polish), reusing its existing locale state.
-- Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; both bundled versions default to actual root VERSION.
+- Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; versions default to the independent application and platform manifests.
 - `options: FooterOptions` independently controls visible/application/platform/copyright/repository; optional copyrightText/repositoryUrl/repositoryLabel customize content. URL validation rejects unsafe links. Copyright and GitHub remain default supplemental elements. Removed obsolete versionLabel prop.
 - Layout footer slots can replace the footer; layout footer.visible hides the entire region. Canonical use: MinimalLayout.
 
@@ -229,4 +229,4 @@ const name = ref('');
 
 Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Keep application composition coverage under src/app/tests; test scenarios are test assets, never application demo routes.
 
-IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version (synchronized with VERSION). See docs/runa/handbook/architecture/application-architecture.md for canonical metadata and compatibility, and docs/runa/handbook/architecture/frontend.md for consumer behavior.
+IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version; customer scaffold VERSION is not a runtime identity input. See docs/runa/handbook/architecture/application-architecture.md for canonical metadata and compatibility, and docs/runa/handbook/architecture/frontend.md for consumer behavior.

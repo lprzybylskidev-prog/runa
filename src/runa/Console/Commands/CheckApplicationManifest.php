@@ -18,7 +18,7 @@ final class CheckApplicationManifest extends Command
         $target = $this->option('platform-version');
         try {
             $manifest = ApplicationManifest::load(app_path('application.json'));
-            $platform = PlatformManifest::load(base_path('runa/platform.json'), trim((string) file_get_contents(base_path('../VERSION'))));
+            $platform = PlatformManifest::load(base_path('runa/platform.json'));
             $version = is_string($target) && $target !== '' ? $target : $platform->version;
             $manifest->assertCompatible($version);
         } catch (InvalidArgumentException $error) {

@@ -46,7 +46,7 @@ def check_application(root, target):
         return
     from runtime import ROOT, app_command
     loader = ROOT / 'src/vendor/autoload.php'
-    script = 'require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); Runa\\Support\\PlatformManifest::load($argv[4], trim(file_get_contents($argv[5])));'
+    script = 'require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); if (Runa\\Support\\PlatformManifest::load($argv[4])->version !== trim(file_get_contents($argv[5]))) { exit(1); }'
     result = subprocess.run(app_command(['php', '-r', script, str(loader), str(root / 'src/app/application.json'), target, str(root / 'src/runa/platform.json'), str(root / 'VERSION')]),
                             capture_output=True, text=True)
     if result.returncode:

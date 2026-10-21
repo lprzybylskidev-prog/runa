@@ -40,3 +40,5 @@
 33. Choose restart policy by process type. Long-running services and one-shot jobs have different semantics.
 34. One-shot init/migration jobs exit 0/non-zero clearly.
 35. Do not allow multiple app replicas/processes to race the same migration step; deploy has one controlled migration point.
+
+Customer container/devcontainer definitions are editable scaffold. External development updates review affected names separately from src/runa integrity, preserve customized files and require manual release reconciliation. Generated build output stays outside src/runa; private error shells use src/.runtime/runa-errors, copied into production images outside persistent storage mounts.

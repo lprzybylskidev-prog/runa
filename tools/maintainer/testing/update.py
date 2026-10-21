@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """External updater failure-first source/plan contracts, real Git reference downloads."""
 import contextlib
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -18,6 +17,7 @@ import bootstrap
 import update
 import update_contracts as contracts
 import update_runtime
+import update_customization
 
 
 class Updater(unittest.TestCase):
@@ -30,6 +30,10 @@ class Updater(unittest.TestCase):
         return self.git(root, 'rev-parse', 'HEAD')
 
     def setUp(self):
+        # Pure review contracts use JSON Compose data; native host acceptance exercises Docker's parser.
+        self.native_configuration = update_customization.configuration
+        parser = patch.object(update_customization, 'configuration', side_effect=lambda root, name: json.loads((root / name).read_text())['services'])
+        parser.start(); self.addCleanup(parser.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.base = Path(self.temporary.name)
@@ -39,7 +43,7 @@ class Updater(unittest.TestCase):
                  'src/app/application.json': json.dumps({'schema_version': 1, 'version': '7.4.2', 'runa': '>=0.2.1 <0.4.0'}),
                  'src/app/composer.json': '{}', 'src/app/package.json': '{}', 'src/runa/composer.json': '{}', 'src/runa/package.json': '{}',
                  'src/composer.json': '{}', 'src/package.json': '{}', 'src/composer.lock': '{}', 'src/pnpm-lock.yaml': 'lock', 'src/pnpm-workspace.yaml': '{}',
-                 'src/runa/Support/example.php': '<?php // protected', 'compose.yaml': 'protected infrastructure',
+                 'src/runa/Support/example.php': '<?php // protected', 'compose.yaml': '{"services": {"app": {"image": "fixture"}}}',
                  'src/runa/database/migrations/2026_01_01_000001_initial.php': '<?php // initial', 'src/runa/database/seeders/DatabaseSeeder.php': '<?php // default',
                  'tools/application/operations.py': 'SPARSE = ["/VERSION", "/src/", "/tools/application/"]\n', 'docs/app/README.md': 'customer'}
         for name, content in files.items():
@@ -60,6 +64,8 @@ class Updater(unittest.TestCase):
         (self.installed / '.git/runa-bootstrap.json').write_text(json.dumps({'schema_version': 1, 'repository': 'fixture/runa', 'mode': 'dev', 'projection': {'version': 1, 'excluded': list(bootstrap.OWNER_PATHS)}}))
         (self.installed / '.runtime/production').mkdir(parents=True)
         (self.installed / '.runtime/production/install-dev.json').write_text('{"state":"complete"}')
+        (self.installed / '.env').write_text('APP_ENV=local\n')
+        (self.installed / '.env').chmod(0o600)
         self.client = bootstrap.GitHub('fixture/runa')
         self.runtime = {'project': 'fixture', 'services': ['app', 'postgres'], 'migrations': ['2026_01_01_000001_initial'], 'seed_runs': []}
 
@@ -101,7 +107,7 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'protected-source-mismatch')
 
     def test_missing_unexpected_mode_and_unsafe_symlink_diagnostics(self):
-        for mutation in ('missing', 'unexpected', 'mode', 'symlink', 'storage-php', 'cache-php'):
+        for mutation in ('missing', 'unexpected', 'mode', 'symlink', 'generated-php'):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as folder:
                 root = Path(folder) / 'copy'
                 shutil.copytree(self.installed, root)
@@ -110,10 +116,10 @@ class Updater(unittest.TestCase):
                 if mutation == 'unexpected': (root / 'src/runa/Support/unexpected.php').write_text('<?php')
                 if mutation == 'mode': path.chmod(0o755)
                 if mutation == 'symlink': path.unlink(); path.symlink_to('/etc/passwd')
-                if mutation in ('storage-php', 'cache-php'):
-                    path = root / ('src/storage/app/runa/private/escape.php' if mutation == 'storage-php' else 'src/bootstrap/cache/escape.php')
-                    path.parent.mkdir(parents=True, exist_ok=True); path.write_text('<?php')
-                self.assertTrue(contracts.compare(root, self.original, 'source'))
+                if mutation == 'generated-php':
+                    path = root / 'src/runa/resources/views/errors/generated/escape.php'
+                    path.parent.mkdir(parents=True); path.write_text('<?php')
+                self.assertTrue(contracts.compare(root, self.original))
 
     def test_application_storage_and_known_cache_are_preserved_without_hiding_source(self):
         for name in ('src/app/new.php', 'docs/app/custom.md', 'src/storage/app/application/private/data.bin', 'src/bootstrap/cache/config.php'):
@@ -132,9 +138,9 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'release-acquisition')
         self.assertTrue(result['temporary_downloads_cleaned'])
         self.manifest(self.installed, '0.2.2')
-        self.assertEqual(self.run_plan()['checks'][-1]['id'], 'platform-identity')
+        self.assertEqual(self.run_plan()['checks'][-1]['id'], 'original-release')
 
-    def test_dependency_conflict_applied_migration_edit_and_custom_infra_block(self):
+    def test_dependency_conflict_and_applied_migration_edit_block_but_infra_is_manual(self):
         (self.installed / 'src/app/composer.json').write_text('{"require":{"test/package":"2"}}')
         (self.installed / 'src/composer.json').write_text('{"require":{"test/package":"2"}}')
         (self.target / 'src/runa/composer.json').write_text('{"require":{"test/package":"1"}}')
@@ -144,10 +150,10 @@ class Updater(unittest.TestCase):
         migration.write_text('changed applied migration')
         self.assertEqual(self.run_plan()['checks'][-1]['id'], 'applied-migration-changed')
         migration.write_bytes((self.original / migration.relative_to(self.target)).read_bytes())
-        (self.target / 'compose.yaml').write_text('new topology')
+        (self.target / 'compose.yaml').write_text('{"services": {"redis": {"image": "redis"}}}')
         result = self.run_plan()
-        self.assertEqual(result['checks'][-1]['id'], 'infrastructure-transition-required')
-        self.assertEqual(result['plan']['infrastructure_changes'][0]['path'], 'compose.yaml')
+        self.assertEqual(result['status'], 'ready', result)
+        self.assertFalse(result['customization_review']['required'])
 
     def test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed(self):
         lock = self.installed / '.runtime/production/operation.lock'
@@ -160,8 +166,9 @@ class Updater(unittest.TestCase):
         self.assertEqual(self.run_plan()['checks'][-1]['id'], 'unresolved-operation')
         alias = self.base / 'alias'; alias.symlink_to(self.installed)
         self.assertEqual(update.preflight(alias, self.client, 'v0.3.0')['checks'][-1]['id'], 'installation-ownership')
+        (lock.parent / 'in-progress.json').unlink()
         (self.installed / '.git/runa-bootstrap.json').unlink()
-        self.assertEqual(self.run_plan()['status'], 'blocked')
+        self.assertEqual(self.run_plan()['status'], 'ready')
 
     def test_actual_verified_git_download_checks_tag_and_content_without_install_mutation(self):
         # Only transport is adapted to local Git; acquisition still resolves,
@@ -214,16 +221,23 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'disk-permissions')
         self.assertEqual(before, self.snapshot())
 
-    def test_known_symlink_replaced_by_regular_file_is_a_type_mismatch(self):
-        for root in (self.original, self.installed):
-            path = root / 'launcher'; path.symlink_to('VERSION')
-        (self.installed / 'launcher').unlink()
-        (self.installed / 'launcher').write_text('VERSION')
-        self.assertIn({'path': 'launcher', 'kind': 'type-or-mode'}, contracts.compare(self.installed, self.original, 'source'))
+    def test_scaffold_edits_and_teammate_clones_need_no_original_receipt(self):
+        (self.installed / '.git/runa-bootstrap.json').unlink()
+        (self.installed / 'VERSION').write_text('customer version')
+        (self.installed / 'src/bootstrap/custom.php').parent.mkdir(exist_ok=True)
+        (self.installed / 'src/bootstrap/custom.php').write_text('<?php')
+        self.assertEqual(self.run_plan()['status'], 'ready')
+
+    def test_production_rejected_before_download_or_probes(self):
+        marker = self.installed / '.git/runa-bootstrap.json'
+        value = json.loads(marker.read_text()); value['mode'] = 'prod'; marker.write_text(json.dumps(value))
+        result = self.run_plan()
+        self.assertEqual(result['checks'][-1]['id'], 'development-only')
+        self.assertEqual(result['temporary_downloads'], [])
 
     def test_external_tool_package_runs_without_the_maintenance_checkout(self):
         package = self.base / 'owner-tools'; package.mkdir()
-        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'bootstrap.py'):
+        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'bootstrap.py'):
             shutil.copyfile(ROOT / 'distribution' / name, package / name)
         result = subprocess.run([sys.executable, str(package / 'update.py'), '--help'], cwd='/', capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -246,23 +260,11 @@ class Updater(unittest.TestCase):
         self.assertEqual(contracts.OWNER_PATHS, bootstrap.OWNER_PATHS)
 
 
-    def test_runtime_probe_blocks_unsafe_or_orphaned_topology_without_mutating_commands(self):
-        def configuration():
-            return {'name':'fixture', 'services':{name:{'image':'fixture', 'environment':{'KNOWLEDGE_ENABLED':'false'}}
-                    for name in ('app','nginx','postgres','queue','scheduler')},
-                    'volumes':{'postgres-icu-data':{},'application-storage':{}}}
-        for kind in ('privilege','knowledge','port','extra','missing'):
-            config=configuration()
-            if kind=='privilege': config['services']['app']['privileged']=True
-            if kind=='knowledge': config['services']['app']['environment']['KNOWLEDGE_ENABLED']='true'
-            if kind=='port': config['services']['postgres']['ports']=[{'published':'5432'}]
-            if kind=='extra': config['services']['unexpected']={'image':'fixture'}
-            def read(arguments, *args):
-                if 'config' in arguments: return json.dumps(config)
-                if 'ps' in arguments: return '[]'
-                raise AssertionError('Unexpected/mutating probe command: '+repr(arguments))
-            with self.subTest(kind=kind), patch.object(update_runtime,'compose',return_value=['compose']), patch.object(update_runtime,'command',side_effect=read):
-                with self.assertRaises(contracts.Blocker): update_runtime.probe(self.installed,'prod',self.installed)
+    def test_runtime_probe_blocks_missing_services_without_mutation(self):
+        with patch.object(update_runtime, 'compose', return_value=['compose']), patch.object(update_runtime, 'command', return_value='{"services":{}}'):
+            with self.assertRaises(contracts.Blocker) as error:
+                update_runtime.probe(self.installed, 'dev', self.installed)
+        self.assertEqual(error.exception.code, 'runtime-unavailable')
 
     def test_true_noop_requires_already_completed_exact_release_data_steps(self):
         self.runtime['seed_runs']=[{'release_sha':self.before,'seeder':'Runa\\Database\\Seeders\\DatabaseSeeder'}]
@@ -277,57 +279,55 @@ class Updater(unittest.TestCase):
             (self.installed/'src/app/application.json').write_text(json.dumps({'schema_version':schema,'version':version,'runa':'>=0.2.1'}))
             self.assertEqual(self.run_plan()['checks'][-1]['id'],'application-incompatible')
 
-    def test_gpu_profile_is_literal_data_matching_trusted_generator(self):
-        spec = importlib.util.spec_from_file_location('trusted_owner_dev', ROOT / 'tools/application/executors/dev.py')
-        dev = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(dev)
-        values = {**dict(zip(dev.KEYS, dev.PRESETS['standard'])), 'DEV_PROFILE': 'standard', 'RUNA_UID': '1000', 'RUNA_GID': '1000',
-                  'EMBEDDINGS_DEVICE': 'cuda', 'EMBEDDINGS_CUDA': '1'}
-        overlay = self.base / 'resources.json'
-        with patch.object(dev, 'LOCAL', self.base / 'private.env'), patch.object(dev, 'OVERRIDE', overlay):
-            dev.persist(values)
-        self.assertEqual(update_runtime.gpu_descriptor(ROOT, values), json.loads(overlay.read_text())['services']['embeddings-gpu'])
-        source = self.installed / 'tools/application/executors/dev.py'
-        source.parent.mkdir(parents=True, exist_ok=True)
-        source.write_text("siblings['embeddings-gpu'] = __import__('os').system('false')\n")
-        config = self.installed / 'tools/application/knowledge/config.json'
-        config.parent.mkdir(parents=True, exist_ok=True)
-        config.write_text('{}')
-        with self.assertRaises(contracts.Blocker):
-            update_runtime.gpu_descriptor(self.installed, values)
+    def test_customization_reports_added_removed_services_without_secret_values(self):
+        (self.installed / 'compose.yaml').write_text('{"services": {"redis": {"image": "redis", "environment": {"PASSWORD": "secret-value"}}}}')
+        before = self.snapshot()
+        result = self.run_plan()
+        self.assertEqual(result['status'], 'ready', result)
+        review = result['customization_review']
+        self.assertTrue(review['required'])
+        self.assertEqual(review['services'], ['app', 'redis'])
+        self.assertNotIn('secret-value', json.dumps(result))
+        self.assertEqual(self.snapshot(), before)
+        with self.assertRaises(contracts.Blocker): update_customization.decision(review, None)
+        with self.assertRaises(contracts.Blocker): update_customization.decision(review, 'abort')
+        self.assertEqual(update_customization.decision(review, 'continue'), review['fingerprint'])
+        with self.assertRaises(contracts.Blocker): update_customization.decision(review, 'continue', 'old-review')
+        (self.installed / 'src/runa/Support/example.php').write_text('tampered')
+        self.assertEqual(self.run_plan()['checks'][-1]['id'], 'protected-source-mismatch')
 
-    def test_standard_uid_overlay_normalization_preserves_topology_checks(self):
-        base = {'services': {'qdrant': {'build': {'context': '.', 'dockerfile': 'Dockerfile'}}}}
-        for unsafe in (False, True):
-            resolved = json.loads(json.dumps(base))
-            resolved['services']['qdrant']['build']['args'] = {'RUNA_UID': '1000', 'RUNA_GID': '1000'}
-            if unsafe:
-                resolved['services']['qdrant']['command'] = ['unreviewed']
-            def read(arguments, *args):
-                if 'config' in arguments:
-                    return json.dumps(resolved if 'overlay' in arguments else base)
-                if 'ps' in arguments:
-                    return '[]'
-                raise AssertionError('Unexpected command')
-            with patch.object(update_runtime, 'compose', return_value=['compose', '-f', 'overlay']), patch.object(update_runtime, 'document', return_value={}), patch.object(update_runtime, 'command', side_effect=read):
-                with self.assertRaises(contracts.Blocker) as blocked:
-                    update_runtime.probe(self.installed, 'dev', self.installed)
-                self.assertEqual(blocked.exception.code, 'custom-infrastructure' if unsafe else 'runtime-unavailable')
+    def test_multiple_devcontainer_compose_files_and_override_services_are_reviewed(self):
+        (self.installed / '.devcontainer').mkdir()
+        (self.installed / 'containers').mkdir()
+        (self.installed / '.devcontainer/devcontainer.json').write_text(json.dumps({'dockerComposeFile': ['../compose.yaml', '../containers/extra.yml']}))
+        (self.installed / 'containers/extra.yml').write_text('{"services":{"redis":{"image":"redis"}}}')
+        (self.installed / 'compose.override.yaml').write_text('{"services":{"worker":{"image":"worker"}}}')
+        review = self.run_plan()['customization_review']
+        self.assertEqual(review['services'], ['redis', 'worker'])
+        self.assertTrue(review['devcontainer'])
 
-    def test_active_application_has_independent_compatibility_and_lock_checks(self):
-        active = self.base / 'active'
-        shutil.copytree(self.installed, active)
-        (active / 'compose.yaml').unlink()
-        with patch.object(update, 'installed_runtime', return_value=active):
-            result = self.run_plan()
-            self.assertEqual(result['status'], 'ready', result)
-            self.assertEqual(result['dependency_checks'], ['operator', 'active-release'])
-            application = active / 'src/app/application.json'
-            value = json.loads(application.read_text()); value['runa'] = '<0.3.0'
-            application.write_text(json.dumps(value))
-            result = self.run_plan()
-            self.assertEqual(result['checks'][-1]['id'], 'application-incompatible')
-            self.assertIn('active-release', result['checks'][-1]['message'])
+    @unittest.skipUnless(shutil.which('docker'), 'Native host Compose parser acceptance')
+    def test_native_compose_parser_preserves_literal_env_and_reports_custom_services(self):
+        self.installed.joinpath('compose.yaml').write_text('services: {redis: {image: redis, environment: {PASSWORD: "${CUSTOM_SECRET:-private-value}"}}}')
+        with patch.object(update_customization, 'configuration', self.native_configuration):
+            result = update_customization.review(self.installed, self.original)
+        self.assertEqual(result['services'], ['app', 'redis'])
+        self.assertNotIn('private-value', json.dumps(result))
+
+    def test_shared_dockerfile_and_workspace_only_changes_are_reviewed(self):
+        for root in (self.original, self.installed):
+            (root / 'docker').mkdir()
+            (root / 'docker/Dockerfile').write_text('FROM scratch')
+            (root / 'compose.yaml').write_text(json.dumps({'services': {name: {'build': {'context': '.', 'dockerfile': 'docker/Dockerfile'}} for name in ('app', 'queue')}}))
+        (self.installed / 'docker/Dockerfile').write_text('FROM scratch\nLABEL changed=yes')
+        review = self.run_plan()['customization_review']
+        self.assertEqual(review['services'], ['app', 'queue'])
+        (self.installed / 'docker/Dockerfile').write_text('FROM scratch')
+        (self.installed / '.devcontainer').mkdir()
+        (self.installed / '.devcontainer/devcontainer.json').write_text('{"workspaceFolder":"/custom"}')
+        review = self.run_plan()['customization_review']
+        self.assertTrue(review['devcontainer'])
+        self.assertEqual(review['services'], [])
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 
 ## Canonical version
 
-The root `VERSION` file is the canonical platform version. The protected code manifest `src/runa/platform.json` must carry the same version; runtime, browser builds and release validation reject drift. The customer application version in `src/app/application.json` is independent and is never bumped by a platform release.
+The root `VERSION` file is the canonical platform version. The protected code manifest `src/runa/platform.json` must carry the same version; owner release validation rejects drift. Installed runtime and browser builds use src/runa/platform.json independently of customer scaffold VERSION. The customer application version in `src/app/application.json` is independent and is never bumped by a platform release.
 
 Initial version:
 

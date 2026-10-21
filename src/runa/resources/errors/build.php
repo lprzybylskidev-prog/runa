@@ -10,7 +10,7 @@ $output = $argv[1] ?? $root.'/public/runa-error';
 if (! is_dir($output.'/pages') && ! mkdir($output.'/pages', 0775, true) && ! is_dir($output.'/pages')) {
     throw new RuntimeException('Cannot create error assets directory.');
 }
-if (! is_file($output.'/styles.css') || ! is_dir($root.'/runa/resources/views/errors/generated')) {
+if (! is_file($output.'/styles.css') || ! is_dir($root.'/.runtime/runa-errors')) {
     throw new RuntimeException('Build the shared MinimalLayout error shells with pnpm run build:errors first.');
 }
 $branding = require $root.'/runa/config/branding.php';

@@ -9,7 +9,7 @@ final readonly class PlatformManifest
 {
     private function __construct(public string $id, public string $name, public string $version) {}
 
-    public static function load(string $path, string $releaseVersion): self
+    public static function load(string $path): self
     {
         if (is_link($path) || ! is_file($path) || filesize($path) > 16384) {
             throw new InvalidArgumentException('Platform manifest must be a regular JSON file up to 16 KiB.');
@@ -28,9 +28,6 @@ final readonly class PlatformManifest
             || ! is_string($data['version'] ?? null)
             || preg_match('/\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\z/D', $data['version']) !== 1) {
             throw new InvalidArgumentException('Invalid platform manifest schema or identity/version.');
-        }
-        if ($data['version'] !== $releaseVersion) {
-            throw new InvalidArgumentException('Platform manifest version must match repository VERSION.');
         }
 
         return new self($data['id'], $data['name'], $data['version']);

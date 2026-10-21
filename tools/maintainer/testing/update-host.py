@@ -1,4 +1,4 @@
-"""Exercise real read-only updater probes in the installer's disposable prod fixture."""
+"""Exercise real read-only updater probes in disposable customer development/production fixtures."""
 import hashlib
 import json
 import os
@@ -18,6 +18,10 @@ import update_runtime
 def exercise(prod, fixture, project, check, report, call, output, commit):
     mode = json.loads((prod / '.git/runa-bootstrap.json').read_text())['mode']
     prod.chmod(0o700)
+    if mode == 'prod':
+        result = update.preflight(prod, bootstrap.GitHub('fixture/runa'), 'v0.3.0')
+        check(result['checks'][-1]['id'] == 'development-only' and not result['temporary_downloads'], 'production updater rejects before release acquisition or runtime mutation')
+        return
     repository = fixture / ('reference-releases-' + mode)
     call(['git', 'clone', '--quiet', '--no-hardlinks', str(prod), str(repository)])
     def git(*args):
@@ -63,17 +67,6 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         check(result['plan']['platform_migrations'] == [migration.stem] and result['execution_available'] is False, 'read-only plan identifies platform-only migration/seeder steps without executing target PHP')
         check(before == {'files': files(), 'database': sql(), 'services': services()}, 'dry-run preserves actual database rows, config/locks/identity/source bytes and runtime container identities/start times')
         check(not (prod / '.runtime/production/in-progress.json').exists() and result['temporary_downloads_cleaned'] and all(not Path(p).exists() for p in result['temporary_downloads']), 'planning creates no installation journal/maintenance and removes all external source downloads')
-        if mode == 'prod':
-            active = Path(json.loads((prod / '.runtime/production/deployment.json').read_text())['current']['path'])
-            application = active / 'src/app/application.json'
-            content = application.read_bytes()
-            value = json.loads(content); value['runa'] = '<0.3.0'
-            try:
-                application.write_text(json.dumps(value))
-                blocked = update.preflight(prod, client, 'v0.3.0')
-                check(blocked['checks'][-1]['id'] == 'application-incompatible', 'active application compatibility is checked independently of the operator checkout')
-            finally:
-                application.write_bytes(content)
         original = prod / 'src/runa/platform.json'
         content = original.read_bytes(); value = json.loads(content); value['name'] = 'tampered'; original.write_text(json.dumps(value))
         blocked = update.preflight(prod, client, 'v0.3.0')

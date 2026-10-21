@@ -11,7 +11,7 @@
 <body>
 <?php
 $variant = $name === 'Runa' ? 'runa' : 'custom';
-$template = file_get_contents(__DIR__.'/generated/'.$status.'-'.$locale.'-'.$theme.'-'.$variant.'.html');
+$template = file_get_contents(base_path('.runtime/runa-errors/').$status.'-'.$locale.'-'.$theme.'-'.$variant.'.html');
 if ($template === false) {
     throw new RuntimeException('Pre-rendered MinimalLayout error template is missing.');
 }

@@ -16,7 +16,7 @@ import copy from './messages.json';
 import '../css/app.css';
 
 const codes = copy.codes;
-const templates = resolve('runa/resources/views/errors/generated');
+const templates = resolve('.runtime/runa-errors');
 const assets = resolve('public/runa-error');
 await rm(templates, { recursive: true, force: true });
 await rm(assets, { recursive: true, force: true });

@@ -7,17 +7,13 @@ import tailwindcss from '@tailwindcss/vite';
 const platform = JSON.parse(
   readFileSync(new URL('./runa/platform.json', import.meta.url), 'utf8'),
 );
-const releaseVersion = readFileSync(
-  new URL('../VERSION', import.meta.url),
-  'utf8',
-).trim();
 if (
   platform.schema_version !== 1 ||
   platform.id !== 'runa' ||
   platform.name !== 'Runa' ||
-  platform.version !== releaseVersion
+  !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(platform.version)
 )
-  throw new Error('Platform manifest must match repository VERSION.');
+  throw new Error('Invalid platform manifest identity/version.');
 
 export default defineConfig({
   root: 'app/resources',
