@@ -39,3 +39,7 @@ Use the existing architecture before inventing another layer:
 Do not add a repository layer over Eloquent by default.
 
 Do not introduce a new abstraction because one method is long. First identify whether the responsibility itself is wrong.
+
+## Module framework design boundary
+
+For module framework work, consult the [public module contracts](../../../../docs/runa/handbook/architecture/module-framework.md) and active roadmap. Modules supply health and transition/work decision policies; the base enforces the shared protocol, fences and state revisions without guessing business behavior. The contract document distinguishes the design baseline from delivered runtime capabilities.
