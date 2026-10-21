@@ -1,10 +1,10 @@
 ---
 id: RM-2026-008
 title: PHP security updates and runtime vulnerability remediation
-status: draft
+status: active
 branch: roadmap/RM-2026-008-runtime-security-remediation
 created_at: 2026-10-21
-activated_at: null
+activated_at: 2026-10-21
 closed_at: null
 release_type: fix
 impact_areas:
@@ -24,13 +24,13 @@ impact_areas:
 
 Address the October 2026 PHP critical security release, reassess the PostgreSQL gosu findings, replace vulnerable custom-service test image inputs where needed, and correct scanner source paths after the src relocation. Keep this security work separate from RM-2026-005's platform ownership/install/update delivery.
 
-This is a planning-only draft, requested by the owner on 2026-10-21. The owner has supplied the planning decisions below; explicit activation is still required before implementation. Runa is an early-stage reusable application foundation, including for customers who will expose their applications publicly. Local-only development is not a substitute for safe customer defaults. Determine the actual patch release version from VERSION at activation; the current released baseline is 0.3.0.
+The owner explicitly authorized activation and execution on 2026-10-21, with target patch release 0.3.1. Runa is an early-stage reusable application foundation, including for customers who will expose their applications publicly. Local-only development is not a substitute for safe customer defaults. Determine the actual patch release version from VERSION at activation; the current released baseline is 0.3.0.
 
 ### Execution order and release dependency
 
-RM-2026-005 is closed and merged into main as platform version 0.3.0 (observed main commit ecb113a). Its security results remain qualified by the owner-only [bounded exception record](../../security/RM-2026-005-deferred-findings.json), not a clean-security PASS. No roadmap is currently active. Preserve its closed contents and original evidence.
+RM-2026-005 is closed and merged into main as platform version 0.3.0 (observed main commit ecb113a). Its security results remain qualified by the owner-only [bounded exception record](../../security/RM-2026-005-deferred-findings.json), not a clean-security PASS. RM-008 is now the single active roadmap. Preserve its closed contents and original evidence.
 
-Activate normally from refreshed main after explicit owner approval. No pause/resume, candidate-branch transfer or reopening of RM-005 is needed. This roadmap owns remediation, current policy synchronization and a new patch release. RM-006 remains a separate draft.
+Activated normally from refreshed main after explicit owner approval. No pause/resume, candidate-branch transfer or reopening of RM-005 is needed. This roadmap owns remediation, current policy synchronization and a new patch release. RM-006 remains a separate draft.
 
 ### Exclusions
 
@@ -39,6 +39,8 @@ No module framework, unrelated application features, unrelated broad dependency 
 ## Specification
 
 ### Decisions
+
+- 2026-10-21 — The owner authorizes execution through release 0.3.1, including closure with the bounded pending-upstream PostgreSQL/gosu arrangement if no fixed official artifact is available.
 
 - 2026-10-21 — The owner confirms Runa is a reusable foundation whose customer applications may be public. No external installation was reported; inventory must verify local context without assuming a particular future customer's trust model.
 - 2026-10-21 — Work currently runs from the host checkout. The owner permits local container interruption, recreation and rebuilds as needed. Keep application tools containerized and preserve development/test data, rollback resources, backups and model/shared caches.
