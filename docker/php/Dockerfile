@@ -101,6 +101,7 @@ COPY --chown=runa:runa src/runa/Foundation/ runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ runa/Http/
 COPY --chown=runa:runa src/runa/Providers/ runa/Providers/
 COPY --chown=runa:runa src/runa/Support/ runa/Support/
+COPY --chown=runa:runa src/runa/modules/ runa/modules/
 COPY --chown=runa:runa src/runa/database/ runa/database/
 RUN composer dump-autoload --no-dev --no-scripts --optimize \
     && rm -rf app/resources/js app/resources/css app/resources/index.html
@@ -129,7 +130,10 @@ RUN npm install --global corepack@0.36.0 && corepack enable && corepack install 
 COPY src/package.json src/pnpm-lock.yaml src/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY src/runa/resources/ runa/resources/
+COPY src/runa/frontend/ runa/frontend/
+COPY src/runa/modules/ runa/modules/
 COPY src/app/resources/ app/resources/
+COPY src/app/modules/ app/modules/
 COPY src/app/application.json app/application.json
 COPY src/runa/platform.json runa/platform.json
 COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
@@ -155,6 +159,7 @@ COPY --chown=runa:runa src/runa/Foundation/ /workspace/src/runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ /workspace/src/runa/Http/
 COPY --chown=runa:runa src/runa/Providers/ /workspace/src/runa/Providers/
 COPY --chown=runa:runa src/runa/Support/ /workspace/src/runa/Support/
+COPY --chown=runa:runa src/runa/modules/ /workspace/src/runa/modules/
 COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
 COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
 COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/

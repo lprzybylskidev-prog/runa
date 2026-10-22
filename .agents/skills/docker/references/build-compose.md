@@ -21,6 +21,8 @@
 17. Do not optimize image MB at the expense of maintainability.
 18. A production image must build correctly from a clean state; cache accelerates but is not required for correctness.
 
+Module builds copy the Vite discovery plugin and both owners' module roots into the frontend stage, and module PHP source into the dependency/runtime stages. Keep empty source roots tracked; development reference/probe and test exclusions apply before COPY. Verify actual isolated customer builds rather than relying on a workspace frontend build.
+
 ## Compose
 
 19. `depends_on` is not readiness. Use health-based conditions or job-completion semantics where dependency readiness matters.
