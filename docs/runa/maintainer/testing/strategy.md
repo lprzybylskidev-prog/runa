@@ -215,7 +215,7 @@ Browser tests use a separately configured testing application endpoint through N
 
 Use `.playwright/scratch/` for temporary browser scripts and `tools/scratch/` for other diagnostic scripts. Neither source directory is gitignored. Keep scripts until no longer needed within the current work, then remove them or promote them to durable tests before closure; generated artifacts remain ignored.
 
-During ordinary roadmap points, run only proportionate focused checks or visual diagnostics needed for the change. Full suites, static analysis and scanner pipelines belong to final verification. Test code and safe parallel design are still implemented with the feature.
+During implementation points, write code, tests and documentation without routinely running checks. Run only small, fast, focused checks or visual diagnostics needed to resolve a concrete uncertainty. Full suites, broad integration/installation acceptance, static analysis, image builds/scanner pipelines and full quality gates belong to final verification after all implementation, followed by fixes and repeated final verification. Mandatory commit hooks remain in force. During roadmap creation/review or execution, stop and notify the owner if any supplied plan requires broad verification earlier, regardless of its author; follow the [roadmap workflow](../workflows/roadmaps.md#roadmap-points) before proceeding. Test code and safe parallel design are still implemented with the feature.
 
 ## Implemented PostgreSQL safety foundation
 

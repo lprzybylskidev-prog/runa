@@ -53,11 +53,15 @@ Before each roadmap point:
 
 Do not load the whole repository or all skills by default.
 
+Implementation points produce code, tests and documentation. Do not routinely run checks during them; only small, fast, focused checks needed to resolve a specific uncertainty are appropriate. Full suites, broad integration/installation acceptance, static analysis, image builds/scanner pipelines and full quality gates belong to final verification after all implementation points, followed by fixes and repeated final verification. Mandatory commit hooks remain in force.
+
+When creating, importing, reviewing or executing a roadmap, reject earlier full-verification requirements. If any roadmap (including one supplied by ChatGPT or another author/tool) requires broad checks before implementation is complete, stop and tell the user about the conflict before activation or further execution. Do not silently execute it, reinterpret it as a small check or infer an exception from roadmap precedence. Wait for the user to resolve the conflicting plan.
+
 A point is complete only when:
 
 - its implementation is complete,
 - local dependencies are satisfied,
-- proportionate lightweight checks pass,
+- any necessary small, fast, focused checks pass; no broad verification is required at this stage,
 - affected current-state documentation is synchronized in the same point (including removal of obsolete delivery claims),
 - the change is committed,
 - the roadmap checklist is updated.

@@ -147,6 +147,12 @@ Each implementation point should be a coherent, self-contained chunk that can re
 
 Before finalizing the roadmap, sanity-check point dependencies and order.
 
+Implementation points deliver code, test code and synchronized documentation. Do not schedule routine test runs or verification after every point. Only a small, fast, focused check needed to answer a concrete implementation question belongs there; no check is needed merely because a point ends. Mandatory commit hooks remain in force.
+
+Schedule full test suites, broad integration/concurrency/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI gates in the final verification point, after all implementation work. Implement their test harnesses and scenarios earlier without running the broad acceptance. Then perform full verification, insert fixes if needed and repeat final verification under the existing failure procedure. Do not create an earlier acceptance point that duplicates the final gate or makes later implementation depend on its PASS.
+
+Apply this check when creating, importing, reviewing, activating and executing roadmaps, regardless of whether the author is the user, ChatGPT, another agent or an external tool. If a supplied or existing roadmap requires broad verification earlier, stop and identify the conflicting point and this rule to the user before activation or further execution. Wait for the user to resolve the plan; do not silently run the checks, relabel them as lightweight, rearrange an agreed plan or treat normal roadmap precedence as approval of an exception.
+
 Do not mechanically create one point per file/class. Design points around outcomes.
 
 ## Starting a point
@@ -171,7 +177,7 @@ A point is complete when:
 
 - implementation is complete,
 - local point dependencies are satisfied,
-- proportionate lightweight checks pass,
+- any necessary small, fast, focused checks pass; no broad verification is required at this stage,
 - affected current-state documentation and relevant durable docs/skills are updated in the same point, including removal of superseded claims,
 - a logical commit is created,
 - the roadmap checklist reflects completion.
