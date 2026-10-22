@@ -29,6 +29,7 @@ use Illuminate\Queue\Events\WorkerIdle;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use NunoMaduro\Collision\Adapters\Laravel\Commands\TestCommand;
 use Psr\Log\LoggerInterface;
 use Runa\Console\Commands\CheckApplicationManifest;
 use Runa\Console\Commands\CheckConfigurationTemplates;
@@ -100,6 +101,7 @@ use Runa\Support\Modules\Work\ModuleWork;
 use Runa\Support\Modules\Work\WorkDefinitions;
 use Runa\Support\PlatformManifest;
 use Runa\Support\RuntimeHeartbeat;
+use Runa\Testing\ApplicationTestCommand;
 use RuntimeException;
 
 final class RunaServiceProvider extends ServiceProvider
@@ -128,6 +130,10 @@ final class RunaServiceProvider extends ServiceProvider
             fn ($command, Application $app) => $app->make(ApplicationConfigMakeCommand::class));
         $this->app->extend(TestMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
+        if ($this->app->environment(['local', 'testing']) && class_exists(TestCommand::class)) {
+            $this->app->extend(TestCommand::class,
+                fn ($command, Application $app) => $app->make(ApplicationTestCommand::class));
+        }
         $this->app->singletonIf(DatabaseScope::class, fn () => new DatabaseScope(base_path()));
         $this->app->singleton(ModuleUpdates::class, fn () => new ModuleUpdates($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), base_path(), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleDiscovery::class, fn () => new ModuleDiscovery(base_path(), $this->app->environment(['local', 'testing'])));

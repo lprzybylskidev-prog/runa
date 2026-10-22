@@ -49,7 +49,7 @@ src/runa/resources/views/errors/generated
 
 src/.runtime
 
-src/tests
+src/runa/Testing
 
 .pnpm-store/
 

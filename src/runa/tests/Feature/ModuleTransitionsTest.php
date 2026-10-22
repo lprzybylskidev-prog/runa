@@ -329,7 +329,7 @@ $transitions = new Runa\Support\Modules\ModuleTransitions($db, $registry, $polic
 Tests\Fixtures\TransitionPolicy::$prepare[$argv[2]] = static function () { exit(23); };
 $transitions->apply($transitions->preview('enable', $argv[2]));
 WORKER;
-    $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $id], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => 'runa_test', 'LARAVEL_STORAGE_PATH' => storage_path()]);
+    $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $id], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
     expect($process->run())->toBe(23, $process->getErrorOutput());
     $operation = DB::table('shared.module_transitions')->where('target', $id)->first();
     expect($operation->status)->toBe('preparing');

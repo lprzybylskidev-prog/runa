@@ -56,7 +56,7 @@ final class RunSourceChecks
                 $arguments[] = '--processes='.(getenv('TEST_WORKERS') ?: '4');
             }
 
-            return $runner->process(['vendor/bin/pest', ...$arguments], $cwd, $output, ['APP_ENV' => 'testing']);
+            return $runner->process(['vendor/bin/pest', '--configuration=phpunit.xml', '--test-directory=app/tests', ...$arguments], $cwd, $output, ['APP_ENV' => 'testing']);
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);

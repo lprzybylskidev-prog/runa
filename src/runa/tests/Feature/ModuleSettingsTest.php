@@ -182,7 +182,7 @@ Tests\Fixtures\SettingsCalls::$apply = static function () { exit(23); };
 $view = $settings->read($argv[2]);
 $settings->update($argv[2], ['label' => 'interrupted'], $view['revision'], $view['generation']);
 WORKER;
-    $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $this->module], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => 'runa_test', 'LARAVEL_STORAGE_PATH' => storage_path()]);
+    $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $this->module], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
     expect($process->run())->toBe(23, $process->getErrorOutput());
     $operation = DB::table('shared.module_transitions')->where('target', $this->module)->first();
     expect($operation->status)->toBe('preparing')->and($this->registry->snapshot()->fenced)->toBe([$this->module]);

@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Process\Process;
+use Tests\TestCase;
 
 it('keeps native application test discovery independent of private owner bootstraps', function (): void {
     $native = new Process([PHP_BINARY, 'artisan', 'test', '--list-tests'], base_path());
@@ -12,4 +13,10 @@ it('keeps native application test discovery independent of private owner bootstr
     $owner->mustRun();
     expect($owner->getOutput())->toContain('ManagementTest', 'DatabaseOwnershipTest')
         ->not->toContain('WelcomeTest');
+
+    $pest = new Process([PHP_BINARY, 'vendor/bin/pest', '--test-directory=app/tests', '--list-tests'], base_path());
+    $pest->mustRun();
+    expect($pest->getOutput())->toContain('WelcomeTest')->not->toContain('ManagementTest');
+    expect(is_dir(base_path('tests')))->toBeFalse()
+        ->and((new ReflectionClass(TestCase::class))->getFileName())->toBe(base_path('runa/Testing/TestCase.php'));
 });

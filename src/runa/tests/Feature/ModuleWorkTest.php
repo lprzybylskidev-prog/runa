@@ -246,7 +246,7 @@ it('rejects invalid payloads and queue visibility bounds without writing work', 
 
 it('runs an independent worker process and preserves crash evidence across process death', function (string $mode): void {
     $id = $this->work->dispatch($this->id, 'process', []);
-    $process = new Process([PHP_BINARY, 'runa/tests/Fixtures/work-worker.php', $this->sources->root, $this->queue, $mode], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => 'runa_test', 'LARAVEL_STORAGE_PATH' => storage_path()]);
+    $process = new Process([PHP_BINARY, 'runa/tests/Fixtures/work-worker.php', $this->sources->root, $this->queue, $mode], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
     $process->setTimeout(20);
     expect($process->run())->toBe($mode === 'crash' ? 23 : 0, $process->getErrorOutput().$process->getOutput());
     if ($mode === 'crash') {

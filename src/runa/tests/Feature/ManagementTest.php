@@ -76,7 +76,7 @@ it('preserves literal runner arguments, nonzero exits and test suite exclusion i
         $arguments = ['--filter=literal $(false); value', '--compact'];
         $action = new RunSourceChecks;
         expect($action->execute('test', $arguments, $root, $output))->toBe(7)
-            ->and(json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR))->toBe($arguments);
+            ->and(json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR))->toBe(['--configuration=phpunit.xml', '--test-directory=app/tests', ...$arguments]);
         $lock = fopen($root.'/.runtime/tests/suite.lock', 'c');
         flock($lock, LOCK_EX);
         try {
