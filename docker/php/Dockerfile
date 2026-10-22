@@ -96,6 +96,7 @@ COPY --chown=runa:runa src/composer.json src/composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 COPY --chown=runa:runa src/app/ app/
 COPY --chown=runa:runa src/runa/Console/ runa/Console/
+COPY --chown=runa:runa src/runa/Contracts/ runa/Contracts/
 COPY --chown=runa:runa src/runa/Database/ runa/Database/
 COPY --chown=runa:runa src/runa/Foundation/ runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ runa/Http/
@@ -154,6 +155,7 @@ COPY --chown=runa:runa src/composer.json /workspace/src/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /workspace/src/vendor/
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/app/ /workspace/src/app/
 COPY --chown=runa:runa src/runa/Console/ /workspace/src/runa/Console/
+COPY --chown=runa:runa src/runa/Contracts/ /workspace/src/runa/Contracts/
 COPY --chown=runa:runa src/runa/Database/ /workspace/src/runa/Database/
 COPY --chown=runa:runa src/runa/Foundation/ /workspace/src/runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ /workspace/src/runa/Http/

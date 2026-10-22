@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 use Illuminate\Support\Str;
+use Runa\Contracts\Modules\OperationAuthorizer;
+use Runa\Contracts\Modules\SettingsObserver;
+use Runa\Support\Modules\Api\DenyProtectedOperations;
 
 require '/workspace/src/vendor/autoload.php';
 
@@ -19,6 +22,10 @@ foreach (['pdo_pgsql', 'mbstring', 'intl', 'bcmath', 'Zend OPcache', 'pcntl', 'z
 }
 $expect(! extension_loaded('xdebug'), 'Development extension in runtime.');
 $expect(in_array('pgsql', PDO::getAvailableDrivers(), true), 'Missing PDO PostgreSQL driver.');
+foreach ([OperationAuthorizer::class, SettingsObserver::class] as $contract) {
+    $expect(interface_exists($contract), 'Missing public module runtime contract: '.$contract);
+}
+$expect(class_exists(DenyProtectedOperations::class), 'Module authorization adapter cannot load.');
 $expect(mb_strtolower('ZAŻÓŁĆ GĘŚLĄ JAŹŃ', 'UTF-8') === 'zażółć gęślą jaźń', 'Polish multibyte conversion failed.');
 $text = 'Zażółć gęślą jaźń';
 $encoded = iconv('UTF-8', 'UTF-16LE', $text);
