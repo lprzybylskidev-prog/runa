@@ -301,3 +301,31 @@ it('loads the unwrapped public resource through the shared HTTP client', async (
   expect(await loadModuleFrontend(new AbortController().signal)).toEqual(data);
   expect(fetch.mock.calls[0]![0]).toBe('/api/modules/frontend');
 });
+
+it('renders the retained reference and reads its public endpoint with the shared client', async () => {
+  const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(
+    new Response(JSON.stringify({ message: 'reference' }), {
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
+  const loaded = await loaders['app.reference.panel']!.load();
+  const panel = mount(loaded.default);
+  expect(panel.text()).toContain('Moduł referencyjny');
+  await panel.get('button').trigger('click');
+  await flushPromises();
+  expect(panel.text()).toContain('reference');
+  expect(fetch.mock.calls[0]![0]).toBe('/api/app/reference/ping');
+  panel.unmount();
+});
+
+it('shows English retry feedback after a reference request fails', async () => {
+  vi.spyOn(window, 'fetch').mockRejectedValue(new Error('offline'));
+  const loaded = await loaders['app.reference.panel']!.load();
+  const panel = mount(loaded.default, { props: { locale: 'en' } });
+  expect(panel.text()).toContain('Reference module');
+  await panel.get('button').trigger('click');
+  await flushPromises();
+  expect(panel.get('[role="status"]').text()).toContain('Try again');
+  expect(panel.get('button').attributes('disabled')).toBeUndefined();
+  panel.unmount();
+});

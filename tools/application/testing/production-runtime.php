@@ -62,7 +62,7 @@ if ($pid === 0) {
 $expect(pcntl_waitpid($pid, $status) === $pid && pcntl_wifexited($status) && pcntl_wexitstatus($status) === 0, 'Process wait failed.');
 $process = proc_open([PHP_BINARY, '-r', 'exit(42);'], [], $pipes);
 $expect(is_resource($process) && proc_close($process) === 42, 'Application child-process execution failed.');
-foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'src/tests', 'src/runa/tests', 'src/app/tests', 'src/runa/tools', 'src/runa/management', 'src/node_modules', 'src/vendor/laravel/boost', 'src/vendor/pestphp', 'src/vendor/phpstan'] as $path) {
+foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'src/tests', 'src/runa/tests', 'src/app/modules/reference', 'src/app/modules/module_probe', 'src/app/tests', 'src/runa/tools', 'src/runa/management', 'src/node_modules', 'src/vendor/laravel/boost', 'src/vendor/pestphp', 'src/vendor/phpstan'] as $path) {
     $expect(! file_exists('/workspace/'.$path), 'Development material in runtime: '.$path);
 }
 $installed = json_decode(file_get_contents('/workspace/src/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);

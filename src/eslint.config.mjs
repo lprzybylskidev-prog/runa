@@ -26,6 +26,7 @@ export default ts.config(
   {
     files: [
       '{app,runa}/resources/**/*.{ts,vue}',
+      '{app,runa}/modules/**/*.{ts,vue}',
       '{app,runa}/tests/frontend/**/*.{ts,vue}',
     ],
     languageOptions: {

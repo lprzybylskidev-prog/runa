@@ -43,8 +43,8 @@ final readonly class ModuleDiscovery
             if (! is_dir($path)) {
                 throw new InvalidArgumentException('Module source roots must be directories.');
             }
-            if ($code === 'module_probe' && ! $this->development) {
-                throw new InvalidArgumentException('Development module probe must not be present in production.');
+            if (in_array($code, ['module_probe', 'reference'], true) && ! $this->development) {
+                throw new InvalidArgumentException('Development example modules must not be present in production.');
             }
             $manifest = ModuleManifest::load($path.'/module.json', $owner, $code, $this->development);
             // Reject nested symlinks before any class or declaration can be loaded.

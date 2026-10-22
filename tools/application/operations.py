@@ -18,7 +18,8 @@ from runtime import ROOT, inside, run
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
 from repository_boundary import OWNER_PATHS
-DELIVERY = ['/*', *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
+DEVELOPMENT_MODULES = ('src/app/modules/module_probe', 'src/app/modules/reference')
+DELIVERY = ['/*', *['!/' + name + '/' for name in DEVELOPMENT_MODULES], *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
 
 
 def stamp():
@@ -295,8 +296,8 @@ def isolation(release=None, verify_source=False):
 
 
 def assert_delivery(path):
-    if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
-        raise ValueError('Owner-only source is present in the customer project.')
+    if any((path / name).exists() or (path / name).is_symlink() for name in (*OWNER_PATHS, *DEVELOPMENT_MODULES)):
+        raise ValueError('Owner-only or development example source is present in the production project.')
 
 
 def build_images(release=None):

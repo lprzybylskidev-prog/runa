@@ -156,9 +156,11 @@ class Updater(unittest.TestCase):
                 self.assertTrue(contracts.compare(root, self.original))
 
     def test_application_storage_and_known_cache_are_preserved_without_hiding_source(self):
-        for name in ('src/app/new.php', 'docs/app/custom.md', 'src/storage/app/application/private/data.bin', 'src/bootstrap/cache/config.php'):
+        for name in ('src/app/new.php', 'src/app/modules/reference/module.json', 'docs/app/modules/reference/README.md', 'docs/app/custom.md', 'src/storage/app/application/private/data.bin', 'src/bootstrap/cache/config.php'):
             path = self.installed / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text('customer/generated content')
+        before = self.snapshot()
         self.assertEqual(self.run_plan()['status'], 'ready')
+        self.assertEqual(before, self.snapshot())
 
     def test_incompatible_and_unsupported_ranges_block(self):
         for constraint in ('>=0.4.0', '*', '>=0.2.1 || *', '>=0.2.1 ||'):

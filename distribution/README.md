@@ -16,3 +16,7 @@ Owner maintenance/quality/release entrypoints live under tools/maintainer and ar
 checkout retains its own workflow, with explicit local runa.maintenance=true
 and canonical Runa fetch/push identity before project-state publishing; customer deployment evidence never commits or
 pushes to the Runa repository.
+
+## Development reference selection
+
+First-development acquisition accepts `--reference-module=include|exclude`. Interactive acquisition asks whether to include the working `app.reference` example; unattended calls default to exclude. The receipt records the choice and the fixed sparse projection excludes the temporary probe in both variants. Clean source also excludes the reference source and its central application guide. Reopen preserves the projection; platform updates never add example code or replace customer-owned example changes. Production staging excludes both development modules even from a customer commit, and image/runtime checks reject their presence.

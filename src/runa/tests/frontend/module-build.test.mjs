@@ -16,7 +16,7 @@ import {
 test('deterministic owned build keys, production development exclusion and opt-in loading', () => {
   const root = mkdtempSync(join(tmpdir(), 'runa-frontend-build-'));
   try {
-    for (const code of ['zeta', 'alpha', 'module_probe']) {
+    for (const code of ['zeta', 'alpha', 'module_probe', 'reference']) {
       const path = join(root, 'app/modules', code);
       mkdirSync(join(path, 'frontend/components'), { recursive: true });
       writeFileSync(
@@ -32,7 +32,7 @@ test('deterministic owned build keys, production development exclusion and opt-i
       discoverModuleComponents(root).map(([key]) => key),
       ['app.alpha.panel', 'app.zeta.panel'],
     );
-    assert.equal(discoverModuleComponents(root, true).length, 3);
+    assert.equal(discoverModuleComponents(root, true).length, 4);
     const plugin = moduleComponentsPlugin(root);
     plugin.configResolved({ command: 'build', mode: 'production' });
     assert.equal(plugin.load('unrelated'), undefined);
