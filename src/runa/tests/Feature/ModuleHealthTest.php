@@ -3,6 +3,7 @@
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Runa\Contracts\Modules\Preparation;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
@@ -15,6 +16,7 @@ use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
 use Tests\Fixtures\HealthPolicy;
 use Tests\Fixtures\ModuleSources;
+use Tests\Fixtures\TransitionPolicy;
 
 beforeEach(function (): void {
     $this->sources = new ModuleSources;
@@ -81,6 +83,34 @@ it('honors applicability and fails closed before the first scheduled critical ob
     expect($status->available)->toBeFalse()->and($status->ownHealth)->toBe('unknown');
     $this->health->recover();
     expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue();
+});
+
+it('keeps refused ingress from evaluating a fenced modules healthy required dependencies', function (): void {
+    $dependency = ($this->add)();
+    $consumer = ($this->add)(required: [$dependency => '^0.1.0']);
+    ($this->sync)();
+    TransitionPolicy::$prepare[$consumer] = fn () => new Preparation('waiting');
+    $transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->lifecycle, app(Encrypter::class), '0.4.0', $this->health);
+    $pending = null;
+    try {
+        $pending = $transitions->apply($transitions->preview('disable', $consumer));
+        expect($pending->status)->toBe('pending');
+        $before = $this->registry->snapshot();
+        $calls = HealthPolicy::$calls;
+        $status = $this->availability->statuses($consumer, 'read')[$consumer];
+        expect($status->available)->toBeFalse()
+            ->and(array_column($status->reasons, 'code'))->toContain('transition_fenced')
+            ->and(HealthPolicy::$calls)->toBe($calls)
+            ->and($this->registry->snapshot()->generation)->toBe($before->generation);
+        unset(TransitionPolicy::$prepare[$consumer]);
+        expect($transitions->resume($pending->operationId)->status)->toBe('succeeded')
+            ->and($this->registry->snapshot()->modules[$dependency]->enabled)->toBeTrue();
+    } finally {
+        unset(TransitionPolicy::$prepare[$consumer]);
+        if ($pending !== null) {
+            DB::table('shared.module_transitions')->where('public_id', $pending->operationId)->delete();
+        }
+    }
 });
 
 it('keeps warning failure and expiry nonblocking while stale critical becomes unknown then recovers automatically', function (string $severity): void {

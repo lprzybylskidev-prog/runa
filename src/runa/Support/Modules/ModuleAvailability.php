@@ -47,12 +47,14 @@ final readonly class ModuleAvailability
                     array_push($reasons, ...$health['reasons']);
                 }
             } else {
-                $health = $this->health->inspect($record, $operation === '*' ? null : $operation, $operation === null ? 'cached' : 'use');
+                // Refused ingress must not publish on-use observations over an active reservation.
+                $fenced = in_array($id, $snapshot->fenced, true);
+                $health = $this->health->inspect($record, $operation === '*' ? null : $operation, $operation === null || $fenced ? 'cached' : 'use');
                 $observed[$id] = $health['observations'];
                 $own = $health['state'];
                 $blocked = $health['blocked'];
                 $reasons = $health['reasons'];
-                if (in_array($id, $snapshot->fenced, true)) {
+                if ($fenced) {
                     $blocked = true;
                     $reasons[] = new GraphBlocker('transition_fenced', [$id]);
                 }
@@ -71,7 +73,7 @@ final readonly class ModuleAvailability
                     $blocked = true;
                     $reasons[] = new GraphBlocker('lifecycle_policy_unavailable', [$id]);
                 }
-                foreach ($record->required as $dependency => $constraint) {
+                foreach ($fenced ? [] : $record->required as $dependency => $constraint) {
                     $status = $visit($dependency);
                     if ((str_starts_with($id, 'runa.') && ! str_starts_with($dependency, 'runa.')) || $status->sourceVersion === null || ! (new VersionCompatibility)->supports($constraint, $status->sourceVersion)) {
                         $blocked = true;

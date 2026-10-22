@@ -284,11 +284,9 @@ it('blocks stale build hashes for pages and slot contributions before importing 
   expect(loader).not.toHaveBeenCalled();
 });
 
-it('discovers the actual development probe through the opt-in owned Vite registry', async () => {
-  expect(Object.keys(loaders)).toContain('app.module_probe.panel');
-  const loaded = await loaders['app.module_probe.panel']!.load();
-  const panel = mount(loaded.default);
-  expect(panel.text()).toBe('Sonda modułów');
+it('keeps the retired probe out of the development registry while retaining the reference', () => {
+  expect(Object.keys(loaders)).not.toContain('app.module_probe.panel');
+  expect(Object.keys(loaders)).toContain('app.reference.panel');
 });
 
 it('loads the unwrapped public resource through the shared HTTP client', async () => {

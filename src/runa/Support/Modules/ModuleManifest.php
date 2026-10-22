@@ -29,7 +29,7 @@ final readonly class ModuleManifest
         self::uniqueKeys($json);
         $data = self::object($object, ['schema_version', 'id', 'kind', 'version', 'platform', 'framework_api', 'name', 'description', 'dependencies', 'providers', 'declarations', 'docs', 'tests']);
         if (! in_array($owner, ['runa', 'app'], true) || ! self::validCode($code)
-            || (in_array($code, ['platform', 'application', 'shared', 'public', 'system', 'reference', 'module_probe'], true) && ! ($probe && $owner === 'app' && in_array($code, ['module_probe', 'reference'], true)))
+            || (in_array($code, ['platform', 'application', 'shared', 'public', 'system', 'reference', 'module_probe'], true) && ! ($probe && $owner === 'app' && $code === 'reference'))
             || $data['schema_version'] !== 1 || $data['id'] !== $owner.'.'.$code || ! in_array($data['kind'], ['core', 'optional'], true)) {
             throw new InvalidArgumentException('Invalid module identity, kind or schema version.');
         }

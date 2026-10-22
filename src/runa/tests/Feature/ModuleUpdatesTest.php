@@ -111,6 +111,38 @@ it('applies skipped-version chains and retains completed transactional steps acr
         ->and($this->registry->snapshot()->fenced)->toBe([]);
 });
 
+it('resumes committed module steps after an independent updater process exits during transactional work', function (): void {
+    $id = ($this->add)('runa', '0.3.0', [['0.1.0', '0.2.0', true, false], ['0.2.0', '0.3.0', true, false]]);
+    $this->registry->synchronize('runa');
+    DB::table('shared.modules')->where('module_id', $id)->update(['installed_version' => '0.1.0']);
+    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    $script = <<<'PHP'
+require 'runa/tests/bootstrap.php';
+$app = require 'bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Runa\Support\TestDatabaseGuard::class)->assertSafe();
+Tests\Fixtures\UpgradeCalls::$interrupt = $argv[2].':step_b';
+$connection = Illuminate\Support\Facades\DB::connection();
+$registry = new Runa\Support\Modules\ModuleRegistry($connection, new Runa\Support\Modules\ModuleDiscovery($argv[1]));
+$updates = new Runa\Support\Modules\Updates\ModuleUpdates($connection, $registry, $argv[1], '0.4.0');
+$updates->apply('runa', $argv[3], static function (): void {});
+PHP;
+    $process = new Process([PHP_BINARY, '-r', $script, $this->sources->root, $id, $this->operation], base_path(), [
+        'APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path(),
+    ]);
+    $process->setTimeout(30);
+    $process->run();
+    expect($process->getExitCode())->toBe(23, $process->getErrorOutput())
+        ->and(DB::table($this->codes[$id].'.records')->pluck('value')->all())->toBe(['step_a'])
+        ->and($this->registry->snapshot()->modules[$id]->installedVersion)->toBe('0.1.0')
+        ->and($this->registry->snapshot()->fenced)->toContain($id);
+    $this->updates->apply('runa', $this->operation, $this->recordProgress);
+    expect(UpgradeCalls::$calls)->toBe([$id.':step_b'])
+        ->and(DB::table($this->codes[$id].'.records')->pluck('value')->all())->toBe(['step_a', 'step_b'])
+        ->and($this->registry->snapshot()->modules[$id]->installedVersion)->toBe('0.3.0')
+        ->and($this->registry->snapshot()->fenced)->toBe([]);
+});
+
 it('refuses missing paths downgrades and incompatible required or reverse application contracts before writes', function (): void {
     $id = ($this->add)('runa', '0.3.0');
     $this->registry->synchronize('runa');

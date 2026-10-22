@@ -6,4 +6,4 @@ Application roadmap lifecycle directories are `roadmaps/draft`, `roadmaps/active
 
 Application code lives in `src/app`. Application version and identity live in `src/app/application.json`; platform versions are independent. Add application release notes and dependency decisions here when work establishes them.
 
-Application module guides live under `modules/<code>/`, alongside application documentation rather than inside module source. The temporary development-only [module probe](modules/module_probe/README.md) records framework acceptance while RM-2026-006 remains active.
+Application module guides live under `modules/<code>/`, alongside application documentation rather than inside module source. When selected at installation, the retained development-only reference example supplies its guide under `modules/reference/`. Clean installations omit the example and its guide.

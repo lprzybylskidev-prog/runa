@@ -26,7 +26,7 @@ export function discoverModuleComponents(root, development = false) {
         !/^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/.test(code)
       )
         throw new Error('Invalid module build identity.');
-      if (['module_probe', 'reference'].includes(code) && !development)
+      if (code === 'module_probe' || (code === 'reference' && !development))
         continue;
       const frontend = resolve(path, 'frontend');
       if (!existsSync(frontend)) continue;

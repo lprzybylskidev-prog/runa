@@ -142,15 +142,15 @@ it('rejects namespace collisions and every symlink boundary before source execut
     expect(fn () => $this->discovery->discover('app'))->toThrow(InvalidArgumentException::class);
 });
 
-it('accepts an empty module-free foundation and rejects the probe outside development', function (): void {
+it('accepts an empty module-free foundation and rejects the retired probe in every context', function (): void {
     expect($this->discovery->discover('runa'))->toBe([]);
     $this->sources->add('app', 'module_probe');
     expect(fn () => $this->discovery->discover('app'))->toThrow(InvalidArgumentException::class);
     $development = new ModuleDiscovery($this->sources->root, true);
-    expect($development->discover('app')[0]->manifest->id)->toBe('app.module_probe');
-    $probe = new ModuleDiscovery(base_path(), true);
-    expect(array_column(array_map(fn ($source) => ['id' => $source->manifest->id], $probe->discover('app')), 'id'))->toContain('app.module_probe');
-    expect(fn () => (new ModuleDiscovery(base_path()))->discover('app'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $development->discover('app'))->toThrow(InvalidArgumentException::class);
+    $sources = (new ModuleDiscovery(base_path(), true))->discover('app');
+    expect(array_map(fn ($source) => $source->manifest->id, $sources))->toContain('app.reference')->not->toContain('app.module_probe');
+    expect(is_dir(base_path('app/modules/module_probe')))->toBeFalse();
     expect(file_get_contents(dirname(base_path()).'/.dockerignore'))->toContain('src/app/modules/module_probe');
 });
 

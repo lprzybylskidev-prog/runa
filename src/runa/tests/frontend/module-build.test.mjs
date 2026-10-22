@@ -32,7 +32,12 @@ test('deterministic owned build keys, production development exclusion and opt-i
       discoverModuleComponents(root).map(([key]) => key),
       ['app.alpha.panel', 'app.zeta.panel'],
     );
-    assert.equal(discoverModuleComponents(root, true).length, 4);
+    assert.equal(discoverModuleComponents(root, true).length, 3);
+    assert.ok(
+      !discoverModuleComponents(root, true).some(([key]) =>
+        key.startsWith('app.module_probe.'),
+      ),
+    );
     const plugin = moduleComponentsPlugin(root);
     plugin.configResolved({ command: 'build', mode: 'production' });
     assert.equal(plugin.load('unrelated'), undefined);
