@@ -110,6 +110,8 @@ The agent cannot self-approve.
 
 Draft roadmaps are planning documents and may be edited/committed on `main`.
 
+If work on an active roadmap produces an agreed substantial follow-up scope deserving a separate roadmap, create or update its draft in `docs/app/roadmaps/draft/` immediately in the current checkout. Commit the draft as a separate planning commit on the current roadmap branch before ending that planning task, without another user reminder. Use the active roadmap ID as the commit scope and name the future roadmap in the subject. Preserve existing unrelated changes. The draft travels with the current branch into its normal merge; do not defer recording it until its own implementation or release. Record agreed dependencies/order, but leave it in draft: activation requires explicit user approval, and implementation and eventual release version are independent of the release carrying the planning document. Refresh predecessor links when their roadmaps close, without editing closed records. An unresolved idea is not an agreed specification.
+
 Activation:
 
 1. inspect worktree/remote state, then safely update `main` without overwriting local work,

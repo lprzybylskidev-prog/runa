@@ -35,6 +35,8 @@ Application roadmap lifecycle directories are `docs/app/roadmaps/{draft,active,p
 
 Read `docs/runa/handbook/workflows/roadmaps.md` before roadmap lifecycle work.
 
+When work on an active roadmap produces an agreed substantial follow-up scope requiring its own roadmap, create or update its draft immediately in the current checkout and commit it separately before ending that planning task, without waiting for another commit request. Carry the draft with the current development changes; activation, implementation and the eventual release version remain separate decisions. Follow the roadmap workflow; do not activate a second roadmap or implement the follow-up scope through its draft.
+
 ## Roadmap execution
 
 Before each roadmap point:

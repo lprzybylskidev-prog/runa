@@ -33,6 +33,8 @@ At most one roadmap may be active.
 
 Read `docs/runa/maintainer/workflows/roadmaps.md` before roadmap lifecycle work.
 
+When active platform work produces an agreed substantial follow-up scope requiring its own roadmap, immediately create or update its draft under `docs/runa/maintainer/roadmaps/draft/` and commit it separately on the current roadmap branch before ending that planning task, without waiting for another commit request. Include the draft in the current development history; its activation, implementation and eventual release version are separate decisions. Do not activate a second roadmap or implement future scope through a draft.
+
 ## Roadmap execution
 
 Before each roadmap point:
