@@ -11,6 +11,7 @@ use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\ModuleHttpGuard;
 use Runa\Support\Modules\Console\ModuleConsole;
+use Runa\Support\Modules\Frontend\ModuleFrontendRoutes;
 
 /** @var list<class-string> $platformProviders */
 $platformProviders = require __DIR__.'/providers.php';
@@ -20,6 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(api: __DIR__.'/../runa/routes/api.php', then: function (): void {
         require __DIR__.'/../app/routes/web.php';
         app(ModuleHttp::class)->register();
+        app(ModuleFrontendRoutes::class)->register();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->preventRequestsDuringMaintenance(except: ['api/health', 'api/ready']);

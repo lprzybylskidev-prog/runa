@@ -1,0 +1,20 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+use Runa\Contracts\Modules\{FrontendProvider, FrontendPage, SlotProvider, SlotHost, SlotContribution};
+final class Descriptor implements FrontendProvider, SlotProvider
+{
+    public static int $version = 1;
+    public static string $propType = 'string';
+    public static ?string $slotPermission = null;
+    public static ?string $permission = null;
+    public static ?\Closure $duringRead = null;
+    public function pages(): array {
+        if (self::$duringRead !== null) (self::$duringRead)();
+        return [new FrontendPage('index', 'MODULE_ID.index', ['pl' => 'Moduł', 'en' => 'Module'], self::$permission)];
+    }
+    public function hosts(): array { return [new SlotHost('MODULE_ID.panel', 'panel', 1, ['label' => 'string'])]; }
+    public function contributions(): array {
+        return [new SlotContribution('MODULE_ID.b', new SlotHost('MODULE_ID.panel', 'panel', self::$version, ['label' => self::$propType]), 'MODULE_ID.index', permission: self::$slotPermission),
+            new SlotContribution('MODULE_ID.a', new SlotHost('MODULE_ID.panel', 'panel', self::$version, ['label' => self::$propType]), 'MODULE_ID.index', permission: self::$slotPermission)];
+    }
+}

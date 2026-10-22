@@ -67,6 +67,8 @@ use Runa\Support\Modules\Events\EventDefinitions;
 use Runa\Support\Modules\Events\EventSubscriptions;
 use Runa\Support\Modules\Events\ModuleEvents;
 use Runa\Support\Modules\Events\ModuleIntegrations;
+use Runa\Support\Modules\Frontend\ModuleFrontend;
+use Runa\Support\Modules\Frontend\ModuleFrontendRoutes;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
 use Runa\Support\Modules\LifecyclePolicies;
@@ -136,6 +138,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsDefinitions::class);
         $this->app->singleton(ManagementRenderers::class);
         $this->app->singleton(ModuleManagement::class);
+        $this->app->singleton(ModuleFrontend::class, fn () => new ModuleFrontend($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(ModuleAvailability::class), $this->app->make(OperationAuthorizer::class)));
+        $this->app->singleton(ModuleFrontendRoutes::class, fn () => new ModuleFrontendRoutes($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleFrontend::class), $this->app->make('router')));
         $this->app->bindIf(SettingsObserver::class, IgnoreSettingsChanges::class);
         $this->app->singleton(ModuleSettings::class, fn () => new ModuleSettings($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(SettingsDefinitions::class), $this->app->make(Encrypter::class), $this->app->make(SettingsObserver::class)));
         $this->app->singleton(ModuleApis::class);

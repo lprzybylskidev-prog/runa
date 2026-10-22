@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "app.module_probe",
   "kind": "optional",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "platform": ">=0.3.1 <1.0.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -29,8 +29,8 @@
     "jobs": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeJobs"],
     "schedules": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeSchedules"],
     "events": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeEvents"],
-    "frontend": [],
-    "slots": [],
+    "frontend": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeFrontend"],
+    "slots": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeFrontend"],
     "management": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeManagement"],
     "upgrades": []
   },

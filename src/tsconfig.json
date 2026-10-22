@@ -24,6 +24,10 @@
   },
   "include": [
     "app/resources/**/*.ts",
+    "app/modules/**/*.ts",
+    "app/modules/**/*.vue",
+    "runa/modules/**/*.ts",
+    "runa/modules/**/*.vue",
     "app/resources/**/*.vue",
     "runa/resources/**/*.ts",
     "runa/resources/**/*.vue",

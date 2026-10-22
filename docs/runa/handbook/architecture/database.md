@@ -285,3 +285,7 @@ Ordinary setup/reopen never runs migrations or seeds. Explicit customer clone in
 ## Module settings persistence
 
 The protected `shared.modules` row retains encrypted operational settings and a monotonic nonnegative settings revision across disable/missing/unregister. Null encrypted storage selects validated source defaults. Settings recovery reuses `shared.module_transitions` and its single active-operation constraint, registry generation and availability fence; terminal operations discard private recovery snapshots. Application-owned wipes preserve these platform objects. See [declarative settings](module-framework.md#delivered-declarative-settings); infrastructure credentials/key configuration remain external.
+
+## Module slot ordering
+
+The existing protected `shared.module_registry_state` singleton stores bounded JSON-object `slot_order` metadata; no application domain table or additional public management entity is introduced. Trusted order writes use its row lock and expected generation, then increment generation atomically. Missing/disabled/unregistered contribution IDs remain inactive and retain compatible restoration order. Only explicit reset or an incompatible migration prunes them. Native application wipes preserve the platform row and its metadata. See [module frontend contracts](module-framework.md#delivered-frontend-pages-and-named-slots).

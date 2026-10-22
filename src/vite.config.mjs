@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import vue from '@vitejs/plugin-vue';
+import { moduleComponentsPlugin } from './runa/frontend/module-components.mjs';
 import tailwindcss from '@tailwindcss/vite';
 
 const platform = JSON.parse(
@@ -30,6 +31,7 @@ export default defineConfig({
   publicDir: false,
   plugins: [
     vue(),
+    moduleComponentsPlugin(fileURLToPath(new URL('.', import.meta.url))),
     tailwindcss(),
     {
       name: 'runa-export-notices',

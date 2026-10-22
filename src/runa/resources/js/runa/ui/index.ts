@@ -148,3 +148,5 @@ export {
 } from '../../lib/serverExports';
 
 export { loadApplicationIdentity } from './loadIdentity';
+
+export { ModulePage, ModuleSlot } from '../modules';

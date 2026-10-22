@@ -1,10 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+import { moduleComponentsPlugin } from '../frontend/module-components.mjs';
 import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    moduleComponentsPlugin(fileURLToPath(new URL('../../', import.meta.url))),
+  ],
   resolve: {
     alias: {
       '@/runa': fileURLToPath(
