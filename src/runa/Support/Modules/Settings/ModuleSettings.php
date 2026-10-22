@@ -350,6 +350,9 @@ final class ModuleSettings
     private function lock(): void
     {
         $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+        if ($this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_operation') !== null) {
+            throw new RuntimeException('A module update requires completion or recovery.');
+        }
     }
 
     private function bump(): void

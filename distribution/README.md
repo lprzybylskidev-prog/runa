@@ -8,7 +8,7 @@ as part of the ready-to-use environment. No automated entitlement/license servic
 is implemented. Public Git history remains public until repository access changes.
 
 bootstrap.py acquires a verified Runa release for first development. initialize.py selects a complete customer repository revision for production; teammate clones use the delivered runa:dev:initialize workflow.
-update.py with update_contracts.py, update_runtime.py, update_customization.py, update_execution.py and bootstrap.py provides development-only read-only preflight/plan, explicit apply and independently verified journaled resume. Production receives the complete tested customer revision through deployment. Keep this reviewed standard-library tool package together outside the customer installation; it needs no maintenance checkout. Never copy these tools into bin or installed source.
+update.py with update_contracts.py, update_runtime.py, update_customization.py, update_execution.py, update_modules.py, module-plan.php and bootstrap.py provides development-only read-only preflight/plan, explicit apply and independently verified journaled resume. Production receives the complete tested customer revision through deployment. Keep this reviewed standard-library tool package together outside the customer installation; it needs no maintenance checkout. Never copy these tools into bin or installed source.
 Internal system actions needed for operation/recovery remain in the platform;
 they are not an installed owner distribution command surface.
 

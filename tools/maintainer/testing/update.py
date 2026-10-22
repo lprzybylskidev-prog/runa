@@ -269,9 +269,26 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'development-only')
         self.assertEqual(result['temporary_downloads'], [])
 
+    def test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application(self):
+        import update_modules
+        directory = self.target / 'src/runa/modules/example'
+        directory.mkdir(parents=True)
+        (directory / 'module.json').write_text('{}')
+        from unittest.mock import patch
+        result = subprocess.CompletedProcess([], 0, stdout='[]', stderr='')
+        with patch.object(update_modules.subprocess, 'run', return_value=result) as execute:
+            self.assertEqual(update_modules.plan(self.installed, self.target, self.runtime, 'sha256:' + 'a' * 64), [])
+        command = execute.call_args_list[0].args[0]
+        self.assertIn('--read-only', command)
+        self.assertEqual(command[command.index('--network') + 1], 'none')
+        mounts = [command[i + 1] for i, value in enumerate(command) if value == '--mount']
+        self.assertIn('type=bind,src=' + str(self.installed / 'src/vendor') + ',dst=/installed/vendor,readonly', mounts)
+        self.assertFalse(any(str(self.installed / 'src') + ',dst=' in value for value in mounts))
+        self.assertNotIn('artisan', command)
+
     def test_external_tool_package_runs_without_the_maintenance_checkout(self):
         package = self.base / 'owner-tools'; package.mkdir()
-        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'bootstrap.py'):
+        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'update_modules.py', 'module-plan.php', 'bootstrap.py'):
             shutil.copyfile(ROOT / 'distribution' / name, package / name)
         result = subprocess.run([sys.executable, str(package / 'update.py'), '--help'], cwd='/', capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)

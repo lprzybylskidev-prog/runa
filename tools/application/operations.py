@@ -175,8 +175,8 @@ def resolve(target):
 
 
 def tree_hash(sha, repository=None):
-    # Conservatively block rollback on any migration or seeder implementation change.
-    return hashlib.sha256(run(['git', '-C', str(repository or ROOT), 'ls-tree', '-r', sha, 'src/app/database', 'src/app/Support/Seeding', 'src/runa/database', 'src/runa/Support/Seeding'], capture_output=True).stdout).hexdigest()
+    # Conservatively include module migrations/upgrades and their owned helper implementations.
+    return hashlib.sha256(run(['git', '-C', str(repository or ROOT), 'ls-tree', '-r', sha, 'src/app/database', 'src/app/Support/Seeding', 'src/runa/database', 'src/runa/Support/Seeding', 'src/runa/modules', 'src/app/modules', 'src/runa/Support/Modules/Updates'], capture_output=True).stdout).hexdigest()
 
 
 def checkout(sha, source=None):
@@ -382,6 +382,9 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
             platform_data(sha, 'migrations', release)
             phase('platform-seeding')
             platform_data(sha, 'required-seeds', release)
+            if (release / 'src/runa/Support/Modules/Updates/ModuleUpdates.php').is_file():
+                phase('platform-modules')
+                platform_data(sha, 'modules', release)
             phase('application-migrations')
             artisan(['migrate', '--force'], release)
             phase('application-seeding')

@@ -1,6 +1,6 @@
 # Seeding Strategy
 
-Framework module seed source lives inside its owner root at `database/seeders/`. `ModuleDataPaths::seeders()` validates and returns sorted regular PHP files without executing them. Module-aware seeder loading/install/update orchestration remains planned; native application/platform seed commands keep their existing owner boundaries. Module seeders must not read foreign-module tables or write outside their claimed schema. See [module data boundaries](../architecture/module-framework.md#delivered-postgresql-boundaries).
+Framework module seed source lives inside its owner root at `database/seeders/`. `ModuleDataPaths::seeders()` validates and returns sorted regular PHP files without executing them. Loose module seeders are never automatically loaded. Explicit UpgradeHandler initialization can invoke owned required seed logic through the delivered ModuleUpdates contract; native application/platform seed commands keep their existing owner boundaries. Runa updates select only supplied Runa modules, while app-module installation is explicitly wired into customer deployment. Module seeders must not read foreign-module tables or write outside their claimed schema. See [module data boundaries](../architecture/module-framework.md#delivered-postgresql-boundaries).
 
 Runa has three seed categories with distinct intent.
 

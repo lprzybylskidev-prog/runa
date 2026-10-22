@@ -27,3 +27,7 @@
 Production deployment records each mutating phase and retains HTTP/writer fencing after migration, seeding or health failure. Arbitrary application seeders may commit partial effects; matching source fingerprints do not prove schema/data compatibility or authorize automatic rollback/replay. Preserve manual maintenance and unresolved-operation ownership. See docs/runa/handbook/production/deployment.md for the current recovery contract.
 
 Complete customer-repository deployment orders scoped forward platform migrations/required transactional idempotent seeds before application migrate/explicit DatabaseSeeder. Record the exact failed phase and preserve maintenance/writer fencing; no blind retry after uncertain data effects and no claim that code rollback reverses data. Ordinary local startup remains independent of explicit data preparation.
+
+## Module installation boundaries
+
+Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle toggles or request boot. Pure upgrade descriptors/preflight declare forward version paths; schema migrations and transactional upgrade completion records commit atomically. Nontransactional retry requires explicit idempotency, otherwise retain the source/owner/fingerprint fence and follow documented operator recovery. Reuse the caller's installation/deployment journal/lock/maintenance; the platform updater selects only Runa modules. App-module invocation and ordering stay explicit in the customer deployment. See docs/runa/handbook/architecture/module-framework.md for the delivered contract.

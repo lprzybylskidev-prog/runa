@@ -48,7 +48,7 @@ Teammates clone that repository and run from the clone's host directory:
 ./bin/artisan runa:dev:initialize
 ```
 
-The explicit workflow selects the clone's customer origin, prepares private local configuration, installs locked dependencies/builds, initializes forward platform migrations/required seeds and then application migrations/explicit DatabaseSeeder, and starts development services. It creates this workstation's local role metadata; no acquisition receipt/journal from another developer or upstream Runa download is required. Existing application source, Git remotes/history, credentials and data are preserved. Use a separate checkout/project when another environment already owns the selected Compose project. Optional knowledge services remain independent.
+The explicit workflow selects the clone's customer origin, prepares private local configuration, installs locked dependencies/builds, initializes forward platform migrations/required seeds/supplied-module upgrades and then application migrations/explicit DatabaseSeeder, and starts development services. It creates this workstation's local role metadata; no acquisition receipt/journal from another developer or upstream Runa download is required. Existing application source, Git remotes/history, credentials and data are preserved. Use a separate checkout/project when another environment already owns the selected Compose project. Optional knowledge services remain independent.
 
 After pulling a customer commit with platform/application data changes, run the same explicit initialization/preparation workflow for pending local data steps. Required platform seeds and their exact-source completion record are transactional; application DatabaseSeeder must be repeatable and select its seeders explicitly. Inspect failed migration/seed state before retrying after partial application effects. Ordinary reopen, setup and runa:dev:up do not run migrations/seeds. Customer native migrate/fresh/wipe/seed commands remain application-only.
 
@@ -271,7 +271,7 @@ Rebuild/reopen must not:
 - redownload large model data unnecessarily,
 - reinstall unstable global tools needlessly.
 
-The external installer initializes platform migrations and required seeds once. Application developers explicitly run application migrations/seeds when needed. Development setup/reopen never migrates or seeds either owner.
+The external installer initializes platform migrations, required seeds and supplied Runa-module migrations/upgrades, including disabled modules. Application-module installation uses an explicit customer-owned ModuleUpdates invocation; native application migrations/seeds do not automatically install modules. Application developers explicitly run application migrations/seeds when needed. Development setup/reopen never migrates or seeds either owner.
 
 Distinguish first bootstrap work from normal reopen behavior.
 

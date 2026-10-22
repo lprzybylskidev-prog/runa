@@ -92,6 +92,7 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Settings\SettingsDefinitions;
 use Runa\Support\Modules\Settings\SettingTypes;
 use Runa\Support\Modules\Storage\ModuleStorage;
+use Runa\Support\Modules\Updates\ModuleUpdates;
 use Runa\Support\Modules\Work\ModuleQueueGuard;
 use Runa\Support\Modules\Work\ModuleWork;
 use Runa\Support\Modules\Work\WorkDefinitions;
@@ -126,6 +127,7 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->extend(TestMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
         $this->app->singletonIf(DatabaseScope::class, fn () => new DatabaseScope(base_path()));
+        $this->app->singleton(ModuleUpdates::class, fn () => new ModuleUpdates($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), base_path(), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleDiscovery::class, fn () => new ModuleDiscovery(base_path(), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleDataPaths::class, fn () => new ModuleDataPaths(base_path(), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleStorage::class);

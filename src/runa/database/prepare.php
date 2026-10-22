@@ -7,6 +7,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Runa\Database\DatabaseScope;
 use Runa\Database\RequiredSeeds;
+use Runa\Support\Modules\Updates\ModuleUpdates;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 try {
@@ -14,7 +15,7 @@ try {
         throw new RuntimeException('Forward data preparation requires one exact source commit.');
     }
     $phase = $argv[2] ?? 'all';
-    if (! in_array($phase, ['all', 'migrations', 'required-seeds'], true)) {
+    if (! in_array($phase, ['all', 'migrations', 'required-seeds', 'modules'], true)) {
         throw new RuntimeException('Unsupported forward preparation phase.');
     }
     $root = dirname(__DIR__, 2);
@@ -26,15 +27,20 @@ try {
     $app->instance(DatabaseScope::class, new DatabaseScope($root, true));
     $kernel = $app->make(Kernel::class);
     $kernel->bootstrap();
-    if ($phase !== 'required-seeds') {
+    if (in_array($phase, ['all', 'migrations'], true)) {
         $app->make(DatabaseManager::class)->connection('pgsql')->transaction(function () use ($kernel): void {
             if ($kernel->call('migrate', ['--force' => true, '--no-interaction' => true], new ConsoleOutput) !== 0) {
                 throw new RuntimeException('Forward platform migration failed.');
             }
         });
     }
-    if ($phase !== 'migrations') {
+    if (in_array($phase, ['all', 'required-seeds'], true)) {
         RequiredSeeds::run($app, $argv[1]);
+    }
+    if (in_array($phase, ['all', 'modules'], true)) {
+        $app->make(ModuleUpdates::class)->apply('runa', $argv[1], static function (string $module, string $step): void {
+            fwrite(STDOUT, json_encode(['module' => $module, 'step' => $step], JSON_THROW_ON_ERROR)."\n");
+        });
     }
     fwrite(STDOUT, "PASS: forward platform data preparation completed.\n");
 } catch (Throwable) {

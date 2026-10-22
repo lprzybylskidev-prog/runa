@@ -15,15 +15,16 @@ final class ModuleRegistry
     public function __construct(private readonly Connection $connection, private readonly ModuleDiscovery $discovery) {}
 
     /** Explicit installation/deployment operation, never called during request boot. */
-    public function synchronize(string $owner): RegistrySnapshot
+    public function synchronize(string $owner, ?string $operation = null): RegistrySnapshot
     {
-        $this->connection->transaction(function () use ($owner): void {
+        $this->connection->transaction(function () use ($owner, $operation): void {
             // One existing singleton serializes discovery publication across both owners.
             $generation = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->value('generation');
             if ($generation === null) {
                 throw new RuntimeException('Module registry migration is required.');
             }
-            if ($this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
+            $updating = $this->connection->table('shared.module_registry_state')->where('id', 1)->first()->update_operation ?? null;
+            if (($updating !== null && $updating !== $operation) || $this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
                 throw new RuntimeException('Complete or recover the module transition before synchronizing source.');
             }
             $sources = $this->discovery->discover($owner);
@@ -77,7 +78,7 @@ final class ModuleRegistry
     {
         $this->connection->transaction(function () use ($id): void {
             $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
-            if ($this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
+            if (($this->connection->table('shared.module_registry_state')->where('id', 1)->first()->update_operation ?? null) !== null || $this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
                 throw new RuntimeException('A module transition requires completion or recovery.');
             }
             /** @var object{owner: string, registered: bool, kind: string}|null $row */
@@ -145,6 +146,9 @@ final class ModuleRegistry
                 foreach ($ids as $id) {
                     $fenced[$id] = true;
                 }
+            }
+            if (($this->connection->table('shared.module_registry_state')->where('id', 1)->first()->update_operation ?? null) !== null) {
+                $fenced += array_fill_keys(array_keys($modules), true);
             }
             $snapshot = new RegistrySnapshot($generation, $modules, array_keys($fenced));
             // A caller-owned transaction can still roll back and reuse a generation.
