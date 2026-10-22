@@ -6,6 +6,8 @@ Tests protect behavior and meaningful regressions. Use feature tests for Laravel
 
 Native `php artisan test` and `php artisan runa:test` select src/phpunit.xml and src/app/tests/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes application tests; Tests\TestCase in src/tests/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in src/app/tests/Pest.php. Customer test setup never invokes platform migration tools or discovers platform tests.
 
+Development installation and `runa:dev:initialize` explicitly prepare platform data in both the development database and the isolated base `runa_test` database through the forward-only platform preparation primitive. Application test execution then applies only application-owned migrations. After platform updates, refresh the development clone through initialization before running native application tests.
+
 Run `php artisan runa:test --parallel`; TEST_WORKERS defaults to the selected resource profile. Each worker validates APP_ENV=testing, PostgreSQL test host/role/database and actual connection identity before any destructive DDL; only explicit isolated test database names are accepted. Worker database/storage/cache namespaces are isolated. Application migrations run only for application-owned objects and preserve Runa data/history. Use transactions or guarded resets for database mutation and deterministic fixtures. Never reset development/production data for tests. The test base uses synchronous queues and array mail.
 
 ## Frontend
