@@ -93,7 +93,7 @@ final readonly class ModuleHttp
     }
 
     /** @return list<HttpEndpoint> */
-    private function endpoints(ModuleRecord $record): array
+    public function endpoints(ModuleRecord $record): array
     {
         $result = [];
         $names = [];

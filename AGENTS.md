@@ -271,6 +271,10 @@ Do not persist:
 
 Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
 
+## Module development
+
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. The agent owns assessing and updating each changed module's independent PATCH/MINOR/MAJOR manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
+
 ## Language and naming
 
 Repository and technical language: English only.

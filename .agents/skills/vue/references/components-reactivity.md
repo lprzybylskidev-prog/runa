@@ -36,3 +36,7 @@
 34. Prefer positive boolean prop names and avoid double negatives.
 35. Do not relay the same event through many component levels blindly; reassess state/component structure.
 36. Name state/composables in a way that remains understandable in Vue Devtools.
+
+## Module component skeletons
+
+`runa:make:module owner.code component ComponentName` previews an unregistered `resources/js/ComponentName.vue` with TypeScript script setup and a static slot wrapper. Use the existing component catalogue when implementing it; add owned frontend/slot declarations separately and verify rendered states. Generation supplies no page registration, styling or visual acceptance. See docs/runa/handbook/development/modules.md.

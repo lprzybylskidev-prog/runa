@@ -1,0 +1,10 @@
+<?php
+
+use Runa\Support\Modules\Development\ModuleContractSuite;
+
+uses(\{{testcase}}::class);
+
+it('{{id}} satisfies source ownership and manifest contracts', function (): void {
+    $suite = new ModuleContractSuite(base_path(), true);
+    expect($suite->source('{{id}}'))->toBe([]);
+});

@@ -30,3 +30,7 @@ Module HTTP routes use source-owned `HttpProvider` descriptors and the framework
 ## Module installation boundaries
 
 Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle toggles or request boot. Pure upgrade descriptors/preflight declare forward version paths; schema migrations and transactional upgrade completion records commit atomically. Nontransactional retry requires explicit idempotency, otherwise retain the source/owner/fingerprint fence and follow documented operator recovery. Reuse the caller's installation/deployment journal/lock/maintenance; the platform updater selects only Runa modules. App-module invocation and ordering stay explicit in the customer deployment. See docs/runa/handbook/architecture/module-framework.md for the delivered contract.
+
+## Module generators
+
+Use `runa:make:module owner.code [type] [name]` for module-local generation, following docs/runa/handbook/development/modules.md. Native `make:*` retains ordinary application paths. Generated controllers use owned HttpProvider declarations and named centrally guarded routes; public APIs use GuardedApi proxies. Run reusable ModuleContractSuite source checks, module tests and synchronized runtime checks; generator success is not implementation acceptance.

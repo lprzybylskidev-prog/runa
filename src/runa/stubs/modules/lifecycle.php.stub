@@ -1,0 +1,18 @@
+<?php
+
+namespace {{namespace}}\Definitions;
+
+use Runa\Contracts\Modules\{LifecyclePlan, LifecyclePolicy, Preparation, TransitionContext};
+
+/** Stateless skeleton only: replace the policy before introducing data or active work. */
+final class Lifecycle implements LifecyclePolicy
+{
+    public function schemaVersion(): int { return 1; }
+    public function plan(string $intent): LifecyclePlan { return new LifecyclePlan('stateless-v1'); }
+    public function acceptsDataVersion(?string $installedVersion, string $sourceVersion): bool
+    {
+        return $installedVersion === null || $installedVersion === $sourceVersion;
+    }
+    public function prepare(TransitionContext $context, ?string $token): Preparation { return new Preparation('ready'); }
+    public function compensate(TransitionContext $context, ?string $token): bool { return true; }
+}

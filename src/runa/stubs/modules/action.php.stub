@@ -1,0 +1,11 @@
+<?php
+
+namespace {{namespace}}\Actions;
+
+final class {{name}}
+{
+    public function execute(): never
+    {
+        throw new \LogicException('Implement the owned use case before declaring an entrypoint.');
+    }
+}

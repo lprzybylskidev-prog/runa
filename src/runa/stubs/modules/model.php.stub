@@ -1,0 +1,12 @@
+<?php
+
+namespace {{namespace}}\Models;
+
+use Runa\Support\Modules\Data\ModuleModel;
+
+final class {{name}} extends ModuleModel
+{
+    protected $table = '{{schema}}.{{table}}';
+
+    public static function moduleId(): string { return '{{id}}'; }
+}

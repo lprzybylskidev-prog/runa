@@ -32,6 +32,7 @@ use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
 use Runa\Console\Commands\CheckApplicationManifest;
 use Runa\Console\Commands\CheckConfigurationTemplates;
+use Runa\Console\Commands\CheckModules;
 use Runa\Console\Commands\CheckRuntimeHealth;
 use Runa\Console\Commands\CheckTestDatabase;
 use Runa\Console\Commands\Database\GuardedFreshCommand;
@@ -45,6 +46,7 @@ use Runa\Console\Commands\Database\ScopedStatusCommand;
 use Runa\Console\Commands\DescribeModuleManagement;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
+use Runa\Console\Commands\MakeModule;
 use Runa\Console\Commands\ManageModuleSettings;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\RecoverModuleHealth;
@@ -170,6 +172,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->commands([
             CheckApplicationManifest::class,
             SynchronizeModules::class,
+            MakeModule::class,
+            CheckModules::class,
             RecoverModuleHealth::class,
             ManageModuleSettings::class,
             DescribeModuleManagement::class,

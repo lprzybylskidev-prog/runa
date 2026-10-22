@@ -276,3 +276,11 @@ Trusted redacted settings read. `--write --revision=N --generation=N` accepts a 
 ### `php artisan runa:modules:management <module>`
 
 Trusted versioned combined management metadata: localized identity, status/root causes/dependencies, redacted settings, integrations, bounded active work and declared permissions/actions/component keys. Exit 1 means missing/incomplete metadata or a concurrent generation change; disabled/unhealthy state remains inspectable. No action is executed and no management HTTP endpoint is exposed. See the [management descriptor contract](../architecture/module-framework.md#delivered-management-descriptors).
+
+### `php artisan runa:make:module <owner.code> [type] [name]`
+
+Development-only owned source generator. Defaults to a complete nonmutating JSON Lines preview. `--write` applies; repeated `--overwrite=repository/path=SHA256` explicitly authorizes each existing target, including changed manifest declarations. Types: module, controller, model, migration, service, action, api, component and test. Central owner docs/test scaffold and safe refusing stubs follow the [module development guide](../development/modules.md). No registry/migration/activation side effect; Runa generation additionally requires a receipt-free owner checkout.
+
+### `php artisan runa:modules:check <runa|app>`
+
+Development source ownership/manifest/required graph checks without executing module source. `--runtime` adds synchronized trusted descriptor validation through existing resolvers without running operations, health checks or lifecycle/settings/update hooks. Failures exit 1. Reusable test suite, literal-analysis limitations and independent `python3 tools/application/module_versions.py --owner app --base main` version/changelog checks are documented in the [module development guide](../development/modules.md).

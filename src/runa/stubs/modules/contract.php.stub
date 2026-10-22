@@ -1,0 +1,8 @@
+<?php
+
+namespace {{namespace}}\Contracts;
+
+interface {{name}}
+{
+    public function read(): string;
+}
