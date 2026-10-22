@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Runa\Foundation\Application;
 use Runa\Http\Middleware\AssignRequestId;
+use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 
 /** @var list<class-string> $platformProviders */
 $platformProviders = require __DIR__.'/providers.php';
@@ -16,10 +17,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         require __DIR__.'/../app/routes/web.php';
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->preventRequestsDuringMaintenance(except: ['api/health', 'api/ready']);
         $middleware->append(AssignRequestId::class);
+        $middleware->append(EnforceEffectiveMaintenance::class);
     })
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('runa:runtime:pulse')->everyMinute();
+        $schedule->command('runa:runtime:pulse')->everyMinute()->evenInMaintenanceMode();
+        $schedule->command('runa:modules:health')->everyMinute()->evenInMaintenanceMode();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

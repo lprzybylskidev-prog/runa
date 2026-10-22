@@ -67,6 +67,9 @@ final readonly class ModuleManifest
             if ($key === 'lifecycle' && count($classes) !== 1) {
                 throw new InvalidArgumentException('A module must declare exactly one lifecycle policy.');
             }
+            if ($key === 'health' && count($classes) > 1) {
+                throw new InvalidArgumentException('A module may declare at most one health policy.');
+            }
             foreach ($classes as $class) {
                 if (! str_starts_with($class, $prefix) || preg_match('/\A[A-Za-z_][A-Za-z0-9_]*(?:\\\\[A-Za-z_][A-Za-z0-9_]*)+\z/D', $class) !== 1) {
                     throw new InvalidArgumentException('Module classes must use their owning namespace.');

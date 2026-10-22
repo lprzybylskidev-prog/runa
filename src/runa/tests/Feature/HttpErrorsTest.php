@@ -30,19 +30,19 @@ it('keeps JSON exception contracts on API paths and negotiated requests', functi
         ->assertDontSee('<html', false);
 })->with([403, 404, 419, 429, 500, 503]);
 
-it('renders a real missing path without build assets or a database', function () {
+it('renders runtime maintenance safely without build assets or a database', function () {
     config(['app.debug' => false, 'database.connections.pgsql.host' => '127.0.0.1', 'database.connections.pgsql.port' => 1]);
     DB::purge('pgsql');
     $this->app->usePublicPath(storage_path('absent-public-error-test'));
-    $this->get('/not-a-real-path', ['Accept-Language' => 'en'])->assertNotFound()
-        ->assertSee('Page not found')->assertSee('/runa-error/styles.css', false)->assertDontSee('<script', false);
+    $this->get('/not-a-real-path', ['Accept-Language' => 'en'])->assertStatus(503)
+        ->assertSee('HTTP 503')->assertSee('/runa-error/styles.css', false)->assertDontSee('<script', false);
 });
 
 it('hides database exception details and preserves an independent liveness contract', function () {
     config(['app.debug' => false, 'database.connections.pgsql.host' => '127.0.0.1', 'database.connections.pgsql.port' => 1]);
     DB::purge('pgsql');
     Route::get('/error-db-fixture', fn () => DB::selectOne('select 1'))->name('test.error.database');
-    $this->get('/error-db-fixture?lang=en')->assertStatus(500)->assertSee('Server error')
+    $this->get('/error-db-fixture?lang=en')->assertStatus(503)->assertSee('HTTP 503')
         ->assertDontSee('SQLSTATE')->assertDontSee('127.0.0.1')->assertDontSee('select 1')->assertDontSee('PDOException');
     $this->get('/api/health')->assertOk()->assertExactJson(['status' => 'ok']);
 });

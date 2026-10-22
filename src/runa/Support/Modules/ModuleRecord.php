@@ -7,6 +7,8 @@ final readonly class ModuleRecord
 {
     /** @param array<string, string> $required
      * @param  array<string, string>  $optional
+     * @param  array<string, mixed>  $healthOverrides
+     * @param  array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>  $healthObservations
      */
     public function __construct(
         public string $publicId,
@@ -23,5 +25,8 @@ final readonly class ModuleRecord
         public array $optional,
         public string $platformConstraint,
         public string $frameworkApiConstraint,
+        public array $healthOverrides = [],
+        public int $healthRevision = 0,
+        public array $healthObservations = [],
     ) {}
 }

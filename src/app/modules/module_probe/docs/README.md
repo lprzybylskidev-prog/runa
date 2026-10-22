@@ -19,8 +19,20 @@ A trusted development consumer can now exercise the administrative lifecycle:
 
 ```php
 $transitions = app(\Runa\Support\Modules\ModuleTransitions::class);
+app(\Runa\Support\Modules\ModuleHealth::class)->diagnose('app.module_probe');
 $enabled = $transitions->apply($transitions->preview('enable', 'app.module_probe'));
 $disabled = $transitions->apply($transitions->preview('disable', 'app.module_probe'));
 ```
 
-Both return `succeeded`; enable/disable preserve the null installed version and final disabled state. Snapshot generation advances for reservation/fence publication and atomic completion. This demonstrates administrative transitions only; health checks and operational gateways remain planned. Failure, waiting, process-exit recovery, concurrency and Core rejection use isolated test fixtures. Do not unregister this probe during ordinary acceptance, as a tombstone requires explicit re-registration.
+Both return `succeeded`; enable/disable preserve the null installed version and final disabled state. Snapshot generation advances for reservation/fence publication and atomic completion. Diagnose the probe before enabling it, as shown below. The probe now demonstrates administrative transitions and module-owned health; operational gateways remain planned. Failure, waiting, process-exit recovery, concurrency and Core rejection use isolated test fixtures. Do not unregister this probe during ordinary acceptance, as a tombstone requires explicit re-registration.
+
+The source-owned `ProbeHealthPolicy` uses a critical `writable_runtime` check in hybrid mode (1-second timeout, 60-second interval, 120-second expiry). It returns only whether the runtime framework directory is writable. Its only permitted DB override is a supported health mode. Observe health through a trusted development consumer:
+
+```php
+$health = app(\Runa\Support\Modules\ModuleHealth::class);
+$health->diagnose('app.module_probe'); // Also valid while disabled, before enable preview.
+$availability = app(\Runa\Support\Modules\ModuleAvailability::class);
+$status = $availability->statuses('app.module_probe', 'probe.read')['app.module_probe'];
+```
+
+While disabled, status preserves `enabled=false` and `available=false`. After explicit enable, the check is healthy and availability true on a writable runtime. Repeat public-operation evaluation to exercise hybrid per-use checks even with fresh observations, then explicitly disable again. `php artisan runa:modules:health app.module_probe` provides explicit CLI diagnosis; the no-argument command polls enabled scheduled/hybrid checks. No operational API, business storage, Core registration or public diagnostic endpoint is added. Mode overrides use `ModuleHealth::configure` with a current snapshot generation and never change enabled flags.

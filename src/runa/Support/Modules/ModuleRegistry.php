@@ -124,12 +124,16 @@ final class ModuleRegistry
             /** @var int $generation */
             $generation = $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->value('generation');
             $modules = [];
-            /** @var list<object{public_id: string, module_id: string, kind: string, registered: bool, source_present: bool, enabled: bool, source_version: string, installed_version: ?string, source_path: string, manifest_hash: string, manifest: string}> $rows */
+            /** @var list<object{public_id: string, module_id: string, kind: string, registered: bool, source_present: bool, enabled: bool, source_version: string, installed_version: ?string, source_path: string, manifest_hash: string, manifest: string, health_overrides: string, health_revision: int, health_observations: string}> $rows */
             $rows = $this->connection->table('shared.modules')->orderBy('module_id')->get()->all();
             foreach ($rows as $row) {
                 /** @var array{dependencies: array{required: array<string, string>, optional: array<string, string>}, platform: string, framework_api: string} $manifest Validated during explicit synchronization. */
                 $manifest = json_decode($row->manifest, true, 16, JSON_THROW_ON_ERROR);
-                $modules[$row->module_id] = new ModuleRecord($row->public_id, $row->module_id, $row->kind, $row->registered, $row->source_present, $row->kind === 'core' || $row->enabled, $row->source_version, $row->installed_version, $row->source_path, $row->manifest_hash, $manifest['dependencies']['required'], $manifest['dependencies']['optional'], $manifest['platform'], $manifest['framework_api']);
+                /** @var array<string, mixed> $overrides */
+                $overrides = json_decode($row->health_overrides, true, 16, JSON_THROW_ON_ERROR);
+                /** @var array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}> $observations */
+                $observations = json_decode($row->health_observations, true, 16, JSON_THROW_ON_ERROR);
+                $modules[$row->module_id] = new ModuleRecord($row->public_id, $row->module_id, $row->kind, $row->registered, $row->source_present, $row->kind === 'core' || $row->enabled, $row->source_version, $row->installed_version, $row->source_path, $row->manifest_hash, $manifest['dependencies']['required'], $manifest['dependencies']['optional'], $manifest['platform'], $manifest['framework_api'], $overrides, (int) $row->health_revision, $observations);
             }
 
             $fenced = [];

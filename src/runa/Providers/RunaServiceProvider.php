@@ -37,6 +37,7 @@ use Runa\Console\Commands\Database\ScopedStatusCommand;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\PulseScheduler;
+use Runa\Console\Commands\RecoverModuleHealth;
 use Runa\Console\Commands\SeedProject;
 use Runa\Console\Commands\SynchronizeModules;
 use Runa\Console\Commands\TestMail;
@@ -45,9 +46,14 @@ use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
+use Runa\Support\MaintenanceState;
+use Runa\Support\Modules\HealthDeadline;
+use Runa\Support\Modules\HealthPolicies;
 use Runa\Support\Modules\LifecyclePolicies;
 use Runa\Support\Modules\ModuleAutoloader;
+use Runa\Support\Modules\ModuleAvailability;
 use Runa\Support\Modules\ModuleDiscovery;
+use Runa\Support\Modules\ModuleHealth;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
 use Runa\Support\PlatformManifest;
@@ -85,7 +91,11 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleRegistry::class, fn () => new ModuleRegistry($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleDiscovery::class)));
         $this->app->singleton(ModuleAutoloader::class, fn () => new ModuleAutoloader(base_path(), $this->app->make(ModuleRegistry::class), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(LifecyclePolicies::class, fn () => new LifecyclePolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
-        $this->app->singleton(ModuleTransitions::class, fn () => new ModuleTransitions($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(LifecyclePolicies::class), $this->app->make(Encrypter::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
+        $this->app->singleton(ModuleTransitions::class, fn () => new ModuleTransitions($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(LifecyclePolicies::class), $this->app->make(Encrypter::class), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->make(ModuleHealth::class)));
+        $this->app->singleton(HealthPolicies::class, fn () => new HealthPolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
+        $this->app->singleton(ModuleHealth::class, fn () => new ModuleHealth($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(HealthPolicies::class), new HealthDeadline));
+        $this->app->singleton(ModuleAvailability::class, fn () => new ModuleAvailability($this->app->make(ModuleRegistry::class), $this->app->make(ModuleHealth::class), $this->app->make(LifecyclePolicies::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
+        $this->app->singleton(MaintenanceState::class, fn () => new MaintenanceState($this->app, $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class)));
         ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
             $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
@@ -93,6 +103,7 @@ final class RunaServiceProvider extends ServiceProvider
         $this->commands([
             CheckApplicationManifest::class,
             SynchronizeModules::class,
+            RecoverModuleHealth::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,

@@ -20,7 +20,7 @@
   "providers": [],
   "declarations": {
     "apis": [],
-    "health": [],
+    "health": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeHealthPolicy"],
     "lifecycle": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeWorkPolicy"],
     "settings": [],
     "integrations": [],

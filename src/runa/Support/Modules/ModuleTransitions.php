@@ -30,6 +30,7 @@ final class ModuleTransitions
         private readonly LifecyclePolicies $policies,
         private readonly Encrypter $encrypter,
         private readonly string $platformVersion,
+        private readonly ModuleHealth $health,
     ) {}
 
     public function preview(string $intent, string $target): AdministrativePreview
@@ -59,6 +60,9 @@ final class ModuleTransitions
         // Unchanged required dependencies must also have compatible installed data.
         if ($intent === 'enable') {
             foreach ($graph->affected as $id) {
+                if ($this->health->inspect($snapshot->modules[$id])['blocked']) {
+                    $blockers[$id] ??= 'health_unavailable';
+                }
                 if (isset($graph->changes[$id])) {
                     continue;
                 }

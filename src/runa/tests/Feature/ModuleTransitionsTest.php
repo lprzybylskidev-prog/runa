@@ -6,9 +6,12 @@ use Illuminate\Support\Facades\DB;
 use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\LifecyclePlan;
 use Runa\Contracts\Modules\Preparation;
+use Runa\Support\Modules\HealthDeadline;
+use Runa\Support\Modules\HealthPolicies;
 use Runa\Support\Modules\LifecyclePolicies;
 use Runa\Support\Modules\ModuleAutoloader;
 use Runa\Support\Modules\ModuleDiscovery;
+use Runa\Support\Modules\ModuleHealth;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
 use Symfony\Component\Process\Process;
@@ -22,7 +25,8 @@ beforeEach(function (): void {
     $this->sources = new ModuleSources;
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $this->policies = new LifecyclePolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true);
-    $this->transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0');
+    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true), new HealthDeadline);
+    $this->transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0', $this->health);
     $this->ids = [];
     $this->add = function (array $required = [], string $kind = 'optional'): string {
         $code = 'transition'.bin2hex(random_bytes(6));
@@ -120,7 +124,7 @@ it('persists waiting tokens and resumes with a new service instance while reject
 
         return new Preparation('ready');
     };
-    $worker = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0');
+    $worker = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0', $this->health);
     expect($worker->resume($result->operationId)->status)->toBe('succeeded');
     expect($this->registry->snapshot()->modules[$id]->enabled)->toBeTrue();
 });
@@ -285,7 +289,7 @@ $app->make(Runa\Support\TestDatabaseGuard::class)->assertSafe();
 $db = Illuminate\Support\Facades\DB::connection();
 $registry = new Runa\Support\Modules\ModuleRegistry($db, new Runa\Support\Modules\ModuleDiscovery($argv[1]));
 $policies = new Runa\Support\Modules\LifecyclePolicies($argv[1], $app, new Runa\Support\Modules\ModuleAutoloader($argv[1], $registry, true), true);
-$transitions = new Runa\Support\Modules\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0');
+$transitions = new Runa\Support\Modules\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0', new Runa\Support\Modules\ModuleHealth($db, $registry, new Runa\Support\Modules\HealthPolicies($argv[1], $app, new Runa\Support\Modules\ModuleAutoloader($argv[1], $registry, true), true), new Runa\Support\Modules\HealthDeadline));
 Tests\Fixtures\TransitionPolicy::$prepare[$argv[2]] = static function () { exit(23); };
 $transitions->apply($transitions->preview('enable', $argv[2]));
 WORKER;
