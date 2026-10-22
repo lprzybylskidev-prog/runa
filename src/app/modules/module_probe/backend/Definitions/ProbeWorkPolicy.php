@@ -2,8 +2,36 @@
 
 namespace App\Modules\ModuleProbe\Definitions;
 
-/** Identity-only probe; the lifecycle protocol is implemented in its owning roadmap point. */
-final readonly class ProbeWorkPolicy
+use Runa\Contracts\Modules\LifecyclePlan;
+use Runa\Contracts\Modules\LifecyclePolicy;
+use Runa\Contracts\Modules\Preparation;
+use Runa\Contracts\Modules\TransitionContext;
+
+/** Explicit stateless, no-work policy for the removable development probe. */
+final readonly class ProbeWorkPolicy implements LifecyclePolicy
 {
-    public const SCHEMA_VERSION = 1;
+    public function schemaVersion(): int
+    {
+        return 1;
+    }
+
+    public function plan(string $intent): LifecyclePlan
+    {
+        return new LifecyclePlan('stateless:1');
+    }
+
+    public function acceptsDataVersion(?string $installedVersion, string $sourceVersion): bool
+    {
+        return $installedVersion === null || $installedVersion === $sourceVersion;
+    }
+
+    public function prepare(TransitionContext $context, ?string $token): Preparation
+    {
+        return new Preparation('ready');
+    }
+
+    public function compensate(TransitionContext $context, ?string $token): bool
+    {
+        return true;
+    }
 }

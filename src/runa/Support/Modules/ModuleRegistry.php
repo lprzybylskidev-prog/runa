@@ -8,6 +8,8 @@ use RuntimeException;
 
 final class ModuleRegistry
 {
+    public const ACTIVE_TRANSITIONS = ['preparing', 'pending', 'compensating', 'recovery_required'];
+
     private ?RegistrySnapshot $cached = null;
 
     public function __construct(private readonly Connection $connection, private readonly ModuleDiscovery $discovery) {}
@@ -20,6 +22,9 @@ final class ModuleRegistry
             $generation = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->value('generation');
             if ($generation === null) {
                 throw new RuntimeException('Module registry migration is required.');
+            }
+            if ($this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
+                throw new RuntimeException('Complete or recover the module transition before synchronizing source.');
             }
             $sources = $this->discovery->discover($owner);
             $changed = false;
@@ -67,6 +72,41 @@ final class ModuleRegistry
         return $this->snapshot();
     }
 
+    /** Explicit new registration over a tombstone; preserves installed upgrade provenance. */
+    public function registerAgain(string $id): RegistrySnapshot
+    {
+        $this->connection->transaction(function () use ($id): void {
+            $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+            if ($this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->exists()) {
+                throw new RuntimeException('A module transition requires completion or recovery.');
+            }
+            /** @var object{owner: string, registered: bool, kind: string}|null $row */
+            $row = $this->connection->table('shared.modules')->where('module_id', $id)->first();
+            if ($row === null || $row->registered) {
+                throw new RuntimeException('An unregistered module provenance record is required.');
+            }
+            foreach ($this->discovery->discover($row->owner) as $source) {
+                if ($source->manifest->id !== $id) {
+                    continue;
+                }
+                if ($source->manifest->kind !== $row->kind || $row->kind === 'core') {
+                    throw new RuntimeException('Retained module identity cannot change.');
+                }
+                $this->connection->table('shared.modules')->where('module_id', $id)->update([
+                    'public_id' => (string) Str::uuid7(), 'registered' => true, 'source_present' => true, 'enabled' => false,
+                    'source_version' => $source->manifest->version, 'manifest_hash' => $source->manifestHash,
+                    'manifest' => json_encode((object) $source->manifest->definition, JSON_THROW_ON_ERROR), 'updated_at' => now(),
+                ]);
+                $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
+
+                return;
+            }
+            throw new RuntimeException('Compatible owned module source is required.');
+        });
+
+        return $this->snapshot();
+    }
+
     public function snapshot(): RegistrySnapshot
     {
         $cacheable = $this->connection->transactionLevel() === 0;
@@ -92,7 +132,17 @@ final class ModuleRegistry
                 $modules[$row->module_id] = new ModuleRecord($row->public_id, $row->module_id, $row->kind, $row->registered, $row->source_present, $row->kind === 'core' || $row->enabled, $row->source_version, $row->installed_version, $row->source_path, $row->manifest_hash, $manifest['dependencies']['required'], $manifest['dependencies']['optional'], $manifest['platform'], $manifest['framework_api']);
             }
 
-            $snapshot = new RegistrySnapshot($generation, $modules);
+            $fenced = [];
+            /** @var list<string> $active */
+            $active = $this->connection->table('shared.module_transitions')->whereIn('status', self::ACTIVE_TRANSITIONS)->pluck('affected')->all();
+            foreach ($active as $affected) {
+                /** @var list<string> $ids */
+                $ids = json_decode($affected, true, 16, JSON_THROW_ON_ERROR);
+                foreach ($ids as $id) {
+                    $fenced[$id] = true;
+                }
+            }
+            $snapshot = new RegistrySnapshot($generation, $modules, array_keys($fenced));
             // A caller-owned transaction can still roll back and reuse a generation.
             // Never retain its uncommitted rows in a worker's process cache.
             if ($cacheable) {

@@ -19,7 +19,7 @@ final readonly class ModuleGraph
 
     public function preview(string $intent, string $target): LifecyclePreview
     {
-        if (! in_array($intent, ['enable', 'disable'], true)) {
+        if (! in_array($intent, ['enable', 'disable', 'unregister'], true)) {
             throw new InvalidArgumentException('Unknown module lifecycle intent.');
         }
         $blockers = [];
@@ -71,6 +71,18 @@ final readonly class ModuleGraph
                         }
                         $visit($dependency, $path);
                     }
+                } elseif ($intent === 'unregister') {
+                    if ($record->kind === 'core') {
+                        $blockers[] = new GraphBlocker('core_unregister', $path);
+                    }
+                    if ($record->enabled) {
+                        $blockers[] = new GraphBlocker('disable_before_unregister', $path);
+                    }
+                    foreach ($this->snapshot->modules as $consumer) {
+                        if ($consumer->registered && isset($consumer->required[$id])) {
+                            $blockers[] = new GraphBlocker('registered_required_dependent', [$id, $consumer->id]);
+                        }
+                    }
                 } else {
                     if ($record->kind === 'core') {
                         $blockers[] = new GraphBlocker('core_disable', $path);
@@ -88,7 +100,7 @@ final readonly class ModuleGraph
         $visit($target, []);
         $changes = [];
         foreach ($affected as $id) {
-            if ($this->snapshot->modules[$id]->enabled !== ($intent === 'enable')) {
+            if ($intent === 'unregister' || $this->snapshot->modules[$id]->enabled !== ($intent === 'enable')) {
                 $changes[$id] = $intent === 'enable';
             }
         }

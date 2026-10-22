@@ -3,6 +3,7 @@
 namespace Runa\Providers;
 
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Console\Migrations\FreshCommand;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
@@ -44,9 +45,12 @@ use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
+use Runa\Support\Modules\LifecyclePolicies;
 use Runa\Support\Modules\ModuleAutoloader;
 use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleRegistry;
+use Runa\Support\Modules\ModuleTransitions;
+use Runa\Support\PlatformManifest;
 use Runa\Support\RuntimeHeartbeat;
 use RuntimeException;
 
@@ -80,6 +84,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleDiscovery::class, fn () => new ModuleDiscovery(base_path(), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleRegistry::class, fn () => new ModuleRegistry($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleDiscovery::class)));
         $this->app->singleton(ModuleAutoloader::class, fn () => new ModuleAutoloader(base_path(), $this->app->make(ModuleRegistry::class), $this->app->environment(['local', 'testing'])));
+        $this->app->singleton(LifecyclePolicies::class, fn () => new LifecyclePolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
+        $this->app->singleton(ModuleTransitions::class, fn () => new ModuleTransitions($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(LifecyclePolicies::class), $this->app->make(Encrypter::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
         ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
             $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
