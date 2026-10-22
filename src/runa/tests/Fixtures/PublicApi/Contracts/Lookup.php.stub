@@ -1,0 +1,7 @@
+<?php
+namespace MODULE_NAMESPACE\Contracts;
+interface Lookup extends \Runa\Contracts\Modules\PublicReferenceLookup
+{
+    public function describe(string $publicId): Entry;
+    public function invalid(): array;
+}

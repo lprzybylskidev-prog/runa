@@ -1,0 +1,9 @@
+<?php
+namespace MODULE_NAMESPACE;
+final class LookupHandler implements Contracts\Lookup
+{
+    public function __construct() { \Tests\Fixtures\ApiCalls::$constructed++; }
+    public function exists(string $publicId): bool { \Tests\Fixtures\ApiCalls::$executed++; return true; }
+    public function describe(string $publicId): Contracts\Entry { return new Contracts\Entry($publicId); }
+    public function invalid(): array { return ['nested' => new \stdClass]; }
+}

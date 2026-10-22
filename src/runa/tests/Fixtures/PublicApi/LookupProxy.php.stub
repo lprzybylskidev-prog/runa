@@ -1,0 +1,8 @@
+<?php
+namespace MODULE_NAMESPACE;
+final class LookupProxy extends \Runa\Support\Modules\Api\GuardedApi implements Contracts\Lookup
+{
+    public function exists(string $publicId): bool { return $this->invoke(__FUNCTION__, [$publicId]); }
+    public function describe(string $publicId): Contracts\Entry { return $this->invoke(__FUNCTION__, [$publicId]); }
+    public function invalid(): array { return $this->invoke(__FUNCTION__, []); }
+}

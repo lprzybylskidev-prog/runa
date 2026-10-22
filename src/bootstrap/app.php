@@ -4,9 +4,12 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Runa\Foundation\Application;
 use Runa\Http\Middleware\AssignRequestId;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
+use Runa\Support\Modules\Api\ModuleHttp;
+use Runa\Support\Modules\Api\ModuleHttpGuard;
 
 /** @var list<class-string> $platformProviders */
 $platformProviders = require __DIR__.'/providers.php';
@@ -15,9 +18,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withProviders($platformProviders)
     ->withRouting(api: __DIR__.'/../runa/routes/api.php', then: function (): void {
         require __DIR__.'/../app/routes/web.php';
+        app(ModuleHttp::class)->register();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->preventRequestsDuringMaintenance(except: ['api/health', 'api/ready']);
+        $middleware->prependToPriorityList(SubstituteBindings::class, ModuleHttpGuard::class);
         $middleware->append(AssignRequestId::class);
         $middleware->append(EnforceEffectiveMaintenance::class);
     })

@@ -185,3 +185,7 @@ The optional UI facade provides typed explicit/all-matching selections, export s
 ## Platform/application route ownership
 
 Platform health/readiness routes are registered from `src/runa/routes/api.php`, with Runa namespace controllers. The customer `src/app/routes/web.php` owns only the named `/` welcome entry (`spa`), served by App namespace SpaController. API URLs/names, JSON negotiation, status codes and request IDs are unchanged by RM-005 backend relocation. Unknown paths remain real 404s.
+
+## Module APIs
+
+Module interfaces and immutable DTOs live under their owning `Contracts` namespace. Resolve them through `ModuleApis`; every typed proxy method rechecks current availability, even for retained references. `PublicReferenceLookup` can be implemented by such a guarded contract, without foreign SQL. HTTP descriptors register named `/api/<owner>/<code>/...` routes behind the same operation identity and a framework dispatcher; check availability/authorization before constructing module controllers or resolving Form Requests. Protected operations default to denial through the future authorization seam. Management writes remain trusted CLI-only. Exact versions, supported controller signatures, safe availability errors, cache/recovery behavior and concurrency limits are defined by the [module public boundary](module-framework.md#delivered-typed-php-gateway).
