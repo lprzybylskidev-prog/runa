@@ -2,7 +2,7 @@
 
 ## Delivery status and scope
 
-The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading, graph-only lifecycle previews, durable atomic administrative transitions, module-owned health observations, effective availability and independent maintenance reasons are delivered. Public PHP/HTTP operation gateways, module queue/command adapters and generators remain planned; modules cannot yet run managed business operations. Ordinary application PHP/Vue and independent frontends remain supported.
+The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading, graph-only lifecycle previews, durable atomic administrative transitions, module-owned health observations, effective availability, independent maintenance reasons and PostgreSQL/storage boundary primitives are delivered. Public PHP/HTTP operation gateways, module queue/command adapters, installation orchestration and generators remain planned; modules cannot yet run managed business operations. Ordinary application PHP/Vue and independent frontends remain supported.
 
 Modules share the existing Laravel application and container. They are trusted local code, not sandboxed plugins or independently downloaded Composer packages. The framework enforces declared boundaries; static checks and PostgreSQL schema conventions cannot sandbox deliberately malicious code.
 
@@ -251,7 +251,43 @@ Public events carry contract version, module ID, stable event/correlation IDs an
 
 The delivered updater currently has fixed migration/seeder phases, not a generic module contribution registry. Extend those phases and their existing journal in the update point; do not assume a callable hook API already exists or create a second operation state store. Migrate all Runa-supplied modules including disabled ones. App-module discovery/upgrade contracts are reusable but explicitly invoked by the customer installation/deployment workflow, never silently installed by the platform updater.
 
-Database schema prefixes and prohibition of cross-module FKs here are target module rules. The existing database guide still describes delivered ordinary application behavior; synchronize its schema/ownership sections when module schema enforcement is implemented. Retained data and upgrade provenance survive missing source and unregister; incompatible restoration blocks instead of resetting data.
+### Delivered PostgreSQL boundaries
+
+`ModuleIdentity` derives the schema, qualified table and storage prefix from the stable owner/code ID. Identifiers are validated before SQL construction; the longest Runa schema is exactly 63 bytes. Module schemas use `runa_<code>` and `app_<code>`; ordinary application code retains its conventions outside claimed module namespaces.
+
+Use `Runa\Support\Modules\Data\ModuleSchema($connection, $identity)` in explicit migrations. `create($table, $columns, $exposed = true)` supplies a bigint `GENERATED ALWAYS AS IDENTITY` primary key and, for exposed entities, unique non-null UUIDv7 `public_id` with a database version/variant constraint. Add business columns, `timestampsTz()` and `softDeletesTz()` in the Blueprint callback. Set `exposed: false` for technical/pivot rows without external identity. The generated public-ID index has a bounded identity-derived name even with maximum-length schemas/tables; give other long index/FK names explicit short names.
+
+```php
+$identity = new \Runa\Support\Modules\ModuleIdentity('app.orders');
+$schema = new \Runa\Support\Modules\Data\ModuleSchema(DB::connection('pgsql'), $identity);
+$schema->create('orders', function (\Illuminate\Database\Schema\Blueprint $table): void {
+    $table->text('description');
+    $table->timestampsTz();
+    $table->softDeletesTz();
+});
+```
+
+Creation and `table($name, $columns)` alterations run transactionally. A registered, source-present identity is required regardless of its enabled flag. Schema claims serialize with a transaction advisory lock. New schemas receive comment `runa.module.v1:<module-id>`; an existing schema without that exact marker is a collision, including an ordinary application schema of the same name. Never adopt it automatically. Comment plus retained registry identity establishes ownership without another technical table. Claims never run on enable/disable or ordinary boot.
+
+Both schema primitives inspect actual PostgreSQL FK metadata before commit. An FK crossing the module boundary, or using anything except `ON DELETE RESTRICT ON UPDATE RESTRICT`, rejects and rolls back the DDL. Same-module FKs use bigint internal IDs. Ordinary application code must also consume public contracts rather than introduce FKs into module schemas. Arbitrary raw SQL remains trusted code subject to the planned contract checks; these adapters are not a SQL sandbox.
+
+`Data\ModuleModel` is the base for exposed domain models. Implement static `moduleId()` and explicit schema-qualified `$table`. It generates UUIDv7 on create, binds routes through `public_id`, hides internal IDs in default serialization and includes soft deletion. Related/through models must use the same base, identity and connection; explicit pivot tables must use the same schema. Open `morphTo` is unsupported because eager loading can instantiate database-selected foreign classes; use explicit owned relations. Custom queries/joins and ordinary models still require boundary review. Non-trivial APIs still use JsonResource rather than raw serialization.
+
+Resolve `Data\ModuleDataPaths` for sorted regular PHP files under current source `database/migrations/` and `database/seeders/`. It revalidates manifest identity/hash, canonical ancestry and every file without executing them or filtering disabled modules. Migration names are `YYYY_MM_DD_HHMMSS_<owner>_<code>_<description>.php`, avoiding shared owner-history collisions. Missing directories mean no files; symlinks, nested directories, foreign names and stale/missing/unregistered sources fail. These are reusable installation inputs: native commands still select the existing application/platform migration roots. Module-aware execution, seeder loading and upgrade journals belong to the install/update point. Do not add request-time migration registration or a second repository.
+
+Native application wipe/fresh preserves claimed Runa-module tables, including disabled, missing and tombstoned registrations; app-module tables remain application-owned. Marker/registry disagreement and unclaimed `runa_` tables block destructive work for inspection. Existing isolated-test-database guards and transactional `DROP TABLE ... RESTRICT` remain mandatory. Wipe retains schemas/claims and registration metadata: explicitly reconcile a domain data reset with retained installed-version provenance before reuse. Disable, missing source and unregister preserve schemas, files, configuration and installed versions; incompatible restoration never resets them.
+
+### Driver-independent storage and public references
+
+Resolve `Storage\ModuleStorage`, then `disk('app.orders', 'private'|'public')`. The factory selects existing owner disks (`application_private/public` or `runa_private/public`); infrastructure configuration can supply a compatible local or remote Flysystem driver. A `ModuleDisk` exposes string/stream reads/writes, exists, copy, move, delete, sorted relative file listing and scoped subdirectory deletion. Every operation prefixes `modules/<owner>/<code>/`. No raw adapter/disk, absolute file path, URL generation or arbitrary per-call driver/options are exposed. Uploads and public delivery policy remain the future Filesystem module's responsibility.
+
+Paths must be canonical relative names. Reject absolute/drive/stream paths, controls, backslashes, percent encodings, query/fragment syntax, empty/dot/parent segments and surrounding segment whitespace. Empty paths only list the module root; root deletion is unavailable. Local roots are checked before adapter construction; all existing ancestors/files are rechecked before each operation, including dangling symlinks. Recursive list/delete rejects symlinks anywhere below the directory. Returned driver listings must remain inside the prefix. Owner disks use direct drivers: indirect scoped/read-through disks and additional local driver prefixes are rejected. Custom local wrappers need explicit boundary support; never disguise them as remote drivers.
+
+These checks prevent accidental traversal and existing symlink escapes. They cannot prevent hostile trusted code/drivers or another process swapping filesystem entries after inspection. Restrict directory writes to trusted application processes; this is not an OS filesystem sandbox. Nonlocal prefix behavior is interface-contract tested without adding a remote-driver dependency; verify the actual deployment driver's credentials, prefix and visibility behavior separately. Low-level data/storage helpers do not enforce operational availability or authorization; later entrypoint adapters own those gates.
+
+Store foreign-module references as UUIDv7 without an FK. `Contracts\Modules\PublicReferenceLookup::exists($publicId)` is implemented by the target module's versioned public API, never a foreign model/query. `Data\PublicReferenceRule` rejects malformed/non-v7 IDs before lookup and passes canonical lowercase UUIDs. Add `required`/nullable validation explicitly. API failure propagates rather than pretending a resource is absent; guarded availability dispatch arrives with the public API gateway point.
+
+Existence validation is a point-in-time check: another transaction can delete/change the target before caller commit. A caller transaction cannot lock foreign rows through this contract. Stronger guarantees require an owner-side command, revision token or explicit reservation/compensation protocol appropriate to the domain. Do not reintroduce FKs/direct reads to hide that race.
 
 ## Development fixtures and guide outline
 

@@ -1,5 +1,7 @@
 # PostgreSQL Schema, Types, Constraints, and Indexes
 
+For framework module data, use the [module boundary contract](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-postgresql-boundaries): derive `runa_<code>`/`app_<code>` ownership through ModuleIdentity, migrate through transactional ModuleSchema and use ModuleModel for exposed domain entities. Validate real identity/FK DDL; only same-module bigint FKs with RESTRICT actions are allowed. Keep foreign-module UUIDv7 references free of FKs and validate through public APIs, with explicit handling of the validation/deletion race. Preserve retained schema claims and registry provenance; never adopt an existing unclaimed schema or infer wipe ownership from a name alone.
+
 1. Normalize first; denormalize only after measurement demonstrates a concrete benefit.
 2. Prefer `text` over arbitrary `varchar(255)` unless a real length invariant exists.
 3. Use `timestamptz` for real moments in time.

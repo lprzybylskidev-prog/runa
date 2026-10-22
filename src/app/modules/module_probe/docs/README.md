@@ -36,3 +36,19 @@ $status = $availability->statuses('app.module_probe', 'probe.read')['app.module_
 ```
 
 While disabled, status preserves `enabled=false` and `available=false`. After explicit enable, the check is healthy and availability true on a writable runtime. Repeat public-operation evaluation to exercise hybrid per-use checks even with fresh observations, then explicitly disable again. `php artisan runa:modules:health app.module_probe` provides explicit CLI diagnosis; the no-argument command polls enabled scheduled/hybrid checks. No operational API, business storage, Core registration or public diagnostic endpoint is added. Mode overrides use `ModuleHealth::configure` with a current snapshot generation and never change enabled flags.
+
+The probe can also observe the delivered storage/data boundaries from a trusted development consumer, without installing domain data:
+
+```php
+$identity = new \Runa\Support\Modules\ModuleIdentity('app.module_probe');
+$disk = app(\Runa\Support\Modules\Storage\ModuleStorage::class)->disk($identity->id);
+$path = 'diagnostics/'.bin2hex(random_bytes(8)).'.txt';
+try {
+    $disk->put($path, 'probe');
+    $ok = $disk->get($path) === 'probe';
+} finally {
+    $disk->delete($path);
+}
+```
+
+The file belongs under the application private disk's `modules/app/module_probe/` prefix. Delete only the diagnostic's unique file, preserving other content. Reject `../other/file`, absolute/stream paths and symlinks. The low-level disk remains accessible to trusted diagnostics while the probe is disabled; it is not an operational availability gate. ModuleDataPaths returns empty migration/seed lists for this stateless probe. Identity derives `app_module_probe`, but no development schema or installed version is created. Real DDL, collision/FK/UUID constraints, storage escape and disable/unregister retention are exercised by isolated module fixtures. Module-aware install/update orchestration remains planned.

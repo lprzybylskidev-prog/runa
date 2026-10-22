@@ -2,18 +2,25 @@
 
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\LifecyclePlan;
 use Runa\Contracts\Modules\Preparation;
+use Runa\Support\Modules\Data\ModuleSchema;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
 use Runa\Support\Modules\LifecyclePolicies;
 use Runa\Support\Modules\ModuleAutoloader;
 use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleHealth;
+use Runa\Support\Modules\ModuleIdentity;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
+use Runa\Support\Modules\Storage\ModuleStorage;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\ModuleSources;
 use Tests\Fixtures\TransitionPolicy;
@@ -49,6 +56,14 @@ afterEach(function (): void {
     if (isset($this->retainedSchema)) {
         DB::statement('DROP TABLE app_transition_retention.marker');
         DB::statement('DROP SCHEMA app_transition_retention');
+    }
+    if (isset($this->ownedSchema)) {
+        DB::statement('DROP TABLE '.$this->ownedSchema.'.records');
+        DB::statement('DROP SCHEMA '.$this->ownedSchema);
+    }
+    if (isset($this->ownedStorage)) {
+        File::deleteDirectory($this->ownedStorage);
+        Storage::forgetDisk('application_private');
     }
     $this->sources->remove();
 });
@@ -211,6 +226,27 @@ it('preserves missing metadata and retained files through unregister and explici
     expect($new->enabled)->toBeFalse()->and($new->installedVersion)->toBe('0.1.0')->and($new->publicId)->not->toBe($tombstone->publicId);
     expect($this->transitions->preview('enable', $id)->blockers)->toBe([$id => 'installed_data_incompatible']);
     expect(file_get_contents($this->sources->root.'/retained-data'))->toBe('business data');
+});
+
+it('retains owned schema and scoped disk data through enable disable unregister and restoration', function (): void {
+    $id = ($this->add)();
+    $this->registry->synchronize('app');
+    $module = new ModuleIdentity($id);
+    $schema = new ModuleSchema(DB::connection(), $module);
+    $this->ownedSchema = $module->schema();
+    $schema->create('records', fn (Blueprint $table) => $table->text('name'));
+    DB::table($module->table('records'))->insert(['public_id' => (string) Str::uuid7(), 'name' => 'retained']);
+    $this->ownedStorage = $this->sources->root.'/owned-storage';
+    config(['filesystems.disks.application_private.root' => $this->ownedStorage]);
+    Storage::forgetDisk('application_private');
+    $disk = app(ModuleStorage::class)->disk($id);
+    $disk->put('records/retained.txt', 'retained');
+    foreach (['enable', 'disable', 'unregister'] as $intent) {
+        expect($this->transitions->apply($this->transitions->preview($intent, $id))->status)->toBe('succeeded');
+        expect(DB::table($module->table('records'))->value('name'))->toBe('retained')->and($disk->get('records/retained.txt'))->toBe('retained');
+    }
+    $this->registry->registerAgain($id);
+    expect(DB::table($module->table('records'))->value('name'))->toBe('retained')->and($disk->get('records/retained.txt'))->toBe('retained');
 });
 
 it('serializes independent PostgreSQL runners without long transactions or nested runner entry', function (): void {
