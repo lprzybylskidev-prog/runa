@@ -1,0 +1,7 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class Integrations implements \Runa\Contracts\Modules\IntegrationProvider
+{
+    public function integrations(): array { return [new \Runa\Contracts\Modules\IntegrationDefinition('audit', 'PUBLISHER_ID', true, ['pl' => 'Audyt', 'en' => 'Audit'], ['format' => 'compact'])]; }
+    public function validConfiguration(string $key, array $config): bool { return array_keys($config) === ['format'] && in_array($config['format'], ['compact', 'full'], true); }
+}

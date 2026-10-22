@@ -8,6 +8,11 @@ final readonly class WorkContext
 {
     public function __construct(public string $workId, private string $token, private ModuleWork $work) {}
 
+    public function deliveryKey(): ?string
+    {
+        return $this->work->deliveryKey($this->workId);
+    }
+
     /** Call outside atomic units, before the next side effect. May stop this attempt. */
     public function checkpoint(string $progress): WorkStatus
     {

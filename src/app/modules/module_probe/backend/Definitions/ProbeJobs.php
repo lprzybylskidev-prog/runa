@@ -9,6 +9,6 @@ final readonly class ProbeJobs implements JobProvider
 {
     public function jobs(): array
     {
-        return [new JobDefinition('probe.work', ProbeJobHandler::class, ProbeJobPolicy::class, 3, 5, 30, true, 'safe_checkpoints_only')];
+        return [new JobDefinition('probe.work', ProbeJobHandler::class, ProbeJobPolicy::class, 3, 5, 30, true, 'safe_checkpoints_only'), new JobDefinition('probe.event', ProbeEventHandler::class, ProbeJobPolicy::class, 3, 5, 30, true, 'effect_free_subscriber')];
     }
 }

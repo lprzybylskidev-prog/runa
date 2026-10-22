@@ -12,24 +12,25 @@ use Illuminate\Support\Str;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\JobDefinition;
 use Runa\Contracts\Modules\OperationContext;
+use Runa\Contracts\Modules\PublicEvent;
 use Runa\Contracts\Modules\WorkDecision;
 use Runa\Contracts\Modules\WorkStatus;
 use Runa\Support\Modules\Api\BoundaryValues;
 use Runa\Support\Modules\Api\OperationGuard;
-use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\OperationScope;
+use Runa\Support\Modules\Events\EventSubscriptions;
 use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 use Throwable;
 
 /** Durable execution protocol, never a business cancellation/compensation policy.
- * @phpstan-type WorkRow object{public_id: string, module_key: string, operation: string, manifest_hash: string, correlation_id: string, origin_module: ?string, generation: int, payload: string, status: string, attempts: int, cancel_requested: bool, lease_token: ?string, lease_until: ?string, available_at: string, progress: string}
+ * @phpstan-type WorkRow object{public_id: string, module_key: string, operation: string, manifest_hash: string, correlation_id: string, origin_module: ?string, generation: int, payload: string, status: string, attempts: int, cancel_requested: bool, lease_token: ?string, lease_until: ?string, available_at: string, progress: string, event_listener: ?string, delivery_key: ?string}
  */
 final readonly class ModuleWork
 {
     public const ACTIVE = ['pending', 'running', 'failed', 'recovery_required'];
 
-    public function __construct(private Connection $connection, private ModuleRegistry $registry, private WorkDefinitions $definitions, private OperationGuard $guard, private OperationScope $scope, private Encrypter $encrypter, private Factory $queues) {}
+    public function __construct(private Connection $connection, private ModuleRegistry $registry, private WorkDefinitions $definitions, private OperationGuard $guard, private OperationScope $scope, private Encrypter $encrypter, private Factory $queues, private ?EventSubscriptions $subscriptions = null) {}
 
     /** Database queue is the managed durable transport. Insert work and envelope atomically.
      * @param  array<array-key, mixed>  $payload
@@ -43,10 +44,26 @@ final readonly class ModuleWork
      * @param  array<array-key, mixed>  $payload
      * @return Closure(): string
      */
-    public function prepareDispatch(string $module, string $operation, array $payload): Closure
+    public function prepareDispatch(string $module, string $operation, array $payload, ?string $eventListener = null): Closure
     {
+        if ($eventListener === null) {
+            $this->subscriptions?->assertOrdinaryJob($module, $operation);
+        }
+        $event = $eventListener === null ? null : PublicEvent::fromArray($payload);
+        $deliveryKey = null;
+        if ($event !== null) {
+            $listener = $this->subscriptions?->resolve($module, $eventListener, $event);
+            if ($listener === null || $listener->mode !== 'async' || $listener->target !== $operation) {
+                throw new RuntimeException('Invalid async event binding.');
+            }
+            $deliveryKey = EventSubscriptions::key($module, $eventListener, $event);
+        }
         [$record, $definition] = $this->definitions->resolve($module, $operation);
         $context = $this->guard->enter($module, new ApiOperation($operation, $definition->permission));
+        if ($event !== null && $this->subscriptions->resolve($module, $eventListener, $event, false) != $listener) {
+            throw new RuntimeException('Event admission changed.');
+        }
+        $this->guard->assertCurrent($context);
         BoundaryValues::check($payload, "\0");
         $json = json_encode($payload, JSON_THROW_ON_ERROR);
         if (strlen($json) > 65536 || config('queue.default') !== 'database' || config('queue.connections.database.driver') !== 'database'
@@ -56,24 +73,72 @@ final readonly class ModuleWork
         }
         $id = (string) Str::uuid7();
 
-        return function () use ($id, $module, $operation, $json, $context, $record, $definition): string {
-            $this->connection->transaction(function () use ($id, $module, $operation, $json, $context, $record, $definition): void {
+        return function () use ($id, $module, $operation, $json, $context, $record, $definition, $eventListener, $deliveryKey, $event): string {
+            return $this->connection->transaction(function () use ($id, $module, $operation, $json, $context, $record, $definition, $eventListener, $deliveryKey, $event): string {
                 $this->lock();
                 $this->guard->assertCurrent($context);
+                if ($deliveryKey !== null) {
+                    $existing = $this->connection->table('shared.module_work')->where('delivery_key', $deliveryKey)->value('public_id');
+                    if (is_string($existing)) {
+                        if ($this->payload($this->row($existing)) !== json_decode($json, true, 64, JSON_THROW_ON_ERROR)) {
+                            throw new RuntimeException('Event identity reused with a different envelope.');
+                        }
+
+                        return $existing;
+                    }
+                }
                 $this->connection->table('shared.module_work')->insert([
                     'public_id' => $id, 'module_id' => $this->connection->table('shared.modules')->where('module_id', $module)->value('id'),
                     'operation' => $operation, 'manifest_hash' => $record->manifestHash, 'generation' => $context->generation,
-                    'payload' => $this->encrypter->encrypt($json, false), 'correlation_id' => $context->correlationId, 'origin_module' => $context->originModule,
+                    'payload' => $this->encrypter->encrypt($json, false), 'correlation_id' => $event->correlationId ?? $context->correlationId, 'origin_module' => $event->module ?? $context->originModule,
+                    'event_listener' => $eventListener, 'delivery_key' => $deliveryKey,
                     'status' => 'pending', 'available_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
                 // queue.database after_commit delays this callback, so enqueue explicitly within this transaction.
                 $queue = $this->queues->connection('database');
                 $job = new ModuleJob($id, $definition->leaseSeconds - 5);
                 $queue->push($job);
-            });
 
-            return $id;
+                return $id;
+            });
         };
+    }
+
+    public function dispatchEvent(string $module, string $listener, PublicEvent $event): string
+    {
+        $definition = $this->subscriptions?->resolve($module, $listener, $event) ?? throw new RuntimeException('Event transport unavailable.');
+
+        return $this->prepareDispatch($module, $definition->target, $event->toArray(), $listener)();
+    }
+
+    /** @param WorkRow $row
+     * @return array<array-key, mixed>
+     */
+    private function payload(object $row): array
+    {
+        $json = $this->encrypter->decrypt($row->payload, false);
+        if (! is_string($json)) {
+            throw new RuntimeException('Invalid encrypted work payload.');
+        }
+        $payload = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
+        if (! is_array($payload)) {
+            throw new RuntimeException('Invalid work payload.');
+        }
+
+        return $payload;
+    }
+
+    /** @param WorkRow $row */
+    private function eventAdmission(object $row, bool $checkAvailability = true): void
+    {
+        if ($row->event_listener === null) {
+            return;
+        }
+        $event = PublicEvent::fromArray($this->payload($row));
+        $listener = $this->subscriptions?->resolve($row->module_key, $row->event_listener, $event, $checkAvailability);
+        if ($listener === null || $listener->mode !== 'async' || $listener->target !== $row->operation || $row->delivery_key !== EventSubscriptions::key($row->module_key, $row->event_listener, $event)) {
+            throw new RuntimeException('Event delivery binding changed.');
+        }
     }
 
     /** Return a bounded release delay, or null when this delivery is finished. */
@@ -102,9 +167,12 @@ final readonly class ModuleWork
             $context = null;
             try {
                 if (! $row->cancel_requested) {
+                    $this->eventAdmission($row);
                     $context = $this->guard->enter($row->module_key, new ApiOperation($row->operation, $definition->permission));
+                    $this->eventAdmission($row, false);
+                    $this->guard->assertCurrent($context);
                 }
-            } catch (OperationRejected) {
+            } catch (Throwable) {
                 // Availability is input to the module policy, never an inferred business retry policy.
             }
             $decision = $this->definitions->policy($record, $definition)->pending($this->status($id), $context !== null);
@@ -139,14 +207,7 @@ final readonly class ModuleWork
                         $this->finish($id, $token, 'refused', 'admission_changed');
                         throw new WorkStopped('Admission changed before handler invocation.');
                     }
-                    $json = $this->encrypter->decrypt($row->payload, false);
-                    if (! is_string($json)) {
-                        throw new RuntimeException('Invalid encrypted work payload.');
-                    }
-                    $payload = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
-                    if (! is_array($payload)) {
-                        throw new RuntimeException('Invalid work payload.');
-                    }
+                    $payload = $this->payload($row);
                     $handler->handle(new WorkContext($id, $token, $this), $payload);
                 });
                 $this->finish($id, $token, 'succeeded', 'completed');
@@ -168,6 +229,12 @@ final readonly class ModuleWork
 
             return null;
         }
+    }
+
+    /** Stable subscriber key, retained across duplicate envelopes and explicit reconciliation retries. */
+    public function deliveryKey(string $id): ?string
+    {
+        return $this->row($id)->delivery_key;
     }
 
     /** Only called at module-declared safe boundaries, outside database transactions. */
