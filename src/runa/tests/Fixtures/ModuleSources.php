@@ -20,7 +20,6 @@ final class ModuleSources
     {
         $root = $this->root.'/'.$owner.'/modules/'.$code;
         mkdir($root.'/backend/Definitions', 0775, true);
-        mkdir($root.'/docs', 0775, true);
         mkdir($root.'/tests', 0775, true);
         $prefix = ($owner === 'app' ? 'App' : 'Runa').'\\Modules\\'.str_replace(' ', '', ucwords(str_replace('_', ' ', $code)));
         $definition = [
@@ -29,11 +28,10 @@ final class ModuleSources
             'name' => (object) ['pl' => 'Moduł', 'en' => 'Module'], 'description' => (object) ['pl' => 'Opis', 'en' => 'Description'],
             'dependencies' => (object) ['required' => new \stdClass, 'optional' => new \stdClass],
             'providers' => [], 'declarations' => (object) array_fill_keys(ModuleManifest::CATEGORIES, []),
-            'docs' => ['docs/README.md'], 'tests' => ['tests'],
+            'docs' => [($owner === 'app' ? 'docs/app/modules/' : 'docs/runa/handbook/modules/').$code.'/README.md'], 'tests' => ['tests'],
         ];
         $definition['declarations']->lifecycle = [$prefix.'\\Definitions\\WorkPolicy'];
         file_put_contents($root.'/backend/Definitions/WorkPolicy.php', '<?php namespace '.$prefix.'\\Definitions; final class WorkPolicy {}');
-        file_put_contents($root.'/docs/README.md', '# Fixture');
         $this->write($owner, $code, $definition);
 
         return $definition;

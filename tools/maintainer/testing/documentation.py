@@ -120,6 +120,14 @@ class DocumentationOwnership(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'symlink'):
             self.validate()
 
+    def test_module_local_documentation_is_rejected(self):
+        for owner in ('app', 'runa'):
+            local = self.root / ('src/' + owner + '/modules/example/docs')
+            local.mkdir(parents=True)
+            with self.assertRaisesRegex(ValueError, 'central docs'):
+                self.validate()
+            local.rmdir()
+
     def test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable(self):
         text = '---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n'
         app = self.write('docs/app/roadmaps/active/RM-2026-099-test.md', text)

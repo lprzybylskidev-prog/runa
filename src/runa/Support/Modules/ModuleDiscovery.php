@@ -72,8 +72,8 @@ final readonly class ModuleDiscovery
             }
             foreach ($manifest->paths as $relative) {
                 $target = self::ownedPath($path, $path.'/'.$relative);
-                if (str_starts_with($relative, 'docs/') ? ! is_file($target) : ! is_dir($target)) {
-                    throw new InvalidArgumentException('Module documentation must be files and test paths must be directories.');
+                if (! is_dir($target)) {
+                    throw new InvalidArgumentException('Module test paths must be directories.');
                 }
             }
             $prefixes[$prefix] = true;

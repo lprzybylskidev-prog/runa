@@ -77,15 +77,26 @@ final readonly class ModuleManifest
                 $ownedClasses[] = $class;
             }
         }
-        $paths = [];
-        foreach (['docs', 'tests'] as $key) {
-            $list = $data[$key];
-            self::stringList($list);
-            foreach ($list as $path) {
-                if (($path !== $key && ! str_starts_with($path, $key.'/')) || ($key === 'docs' && ! str_ends_with($path, '.md'))) {
-                    throw new InvalidArgumentException('Invalid module documentation or test path.');
+        // Documentation is repository-root metadata, never a runtime source dependency.
+        $docs = $data['docs'];
+        self::stringList($docs);
+        $documentationRoot = $owner === 'app' ? 'docs/app/modules/' : 'docs/runa/handbook/modules/';
+        $documentationPrefix = $documentationRoot.$code.'/';
+        foreach ($docs as $path) {
+            if (! str_starts_with($path, $documentationPrefix) || ! str_ends_with($path, '.md')) {
+                throw new InvalidArgumentException('Module documentation belongs in its central owner documentation directory.');
+            }
+            foreach (explode('/', substr($path, strlen($documentationPrefix))) as $segment) {
+                if (preg_match('/\A[A-Za-z0-9][A-Za-z0-9_.-]*\z/D', $segment) !== 1) {
+                    throw new InvalidArgumentException('Invalid module documentation path.');
                 }
-                $paths[] = $path;
+            }
+        }
+        $paths = $data['tests'];
+        self::stringList($paths);
+        foreach ($paths as $path) {
+            if ($path !== 'tests' && ! str_starts_with($path, 'tests/')) {
+                throw new InvalidArgumentException('Invalid module test path.');
             }
         }
 

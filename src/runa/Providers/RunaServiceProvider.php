@@ -40,6 +40,7 @@ use Runa\Console\Commands\Database\ScopedSeedCommand;
 use Runa\Console\Commands\Database\ScopedStatusCommand;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
+use Runa\Console\Commands\ManageModuleSettings;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\RecoverModuleHealth;
 use Runa\Console\Commands\SeedProject;
@@ -47,6 +48,7 @@ use Runa\Console\Commands\SynchronizeModules;
 use Runa\Console\Commands\TestMail;
 use Runa\Console\Commands\ValidateConfiguration;
 use Runa\Contracts\Modules\OperationAuthorizer;
+use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
@@ -73,6 +75,10 @@ use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleHealth;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
+use Runa\Support\Modules\Settings\IgnoreSettingsChanges;
+use Runa\Support\Modules\Settings\ModuleSettings;
+use Runa\Support\Modules\Settings\SettingsDefinitions;
+use Runa\Support\Modules\Settings\SettingTypes;
 use Runa\Support\Modules\Storage\ModuleStorage;
 use Runa\Support\Modules\Work\ModuleQueueGuard;
 use Runa\Support\Modules\Work\ModuleWork;
@@ -123,6 +129,10 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->bindIf(OperationAuthorizer::class, DenyProtectedOperations::class);
         $this->app->singleton(ModuleDeclarations::class, fn () => new ModuleDeclarations(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(OperationGuard::class, fn () => new OperationGuard($this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class), $this->app->make(MaintenanceState::class), $this->app->make(OperationAuthorizer::class), $this->app, $this->app->make(OperationScope::class)));
+        $this->app->singleton(SettingTypes::class);
+        $this->app->singleton(SettingsDefinitions::class);
+        $this->app->bindIf(SettingsObserver::class, IgnoreSettingsChanges::class);
+        $this->app->singleton(ModuleSettings::class, fn () => new ModuleSettings($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(SettingsDefinitions::class), $this->app->make(Encrypter::class), $this->app->make(SettingsObserver::class)));
         $this->app->singleton(ModuleApis::class);
         $this->app->singleton(WorkDefinitions::class);
         $this->app->singleton(EventDefinitions::class);
@@ -140,6 +150,7 @@ final class RunaServiceProvider extends ServiceProvider
             CheckApplicationManifest::class,
             SynchronizeModules::class,
             RecoverModuleHealth::class,
+            ManageModuleSettings::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,

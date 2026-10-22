@@ -48,7 +48,7 @@ Do not commit secrets.
 
 Simple technical global flags may use config/environment.
 
-Business, user, tenant, or module enablement belongs in a future application feature mechanism.
+Module enablement and declared operational settings use the delivered DB-backed [module contracts](module-framework.md). User/tenant feature policy remains future application scope.
 
 Do not scatter raw `if (env(...))` checks.
 
@@ -83,3 +83,7 @@ Platform range syntax accepts full numeric X.Y.Z (components up to nine digits),
 php artisan runa:application:check validates installed identity/compatibility; --platform-version=0.3.0 checks a candidate before an external update. Normal configuration also validates manifests. A developer deliberately adapts application behavior and compatibility before an incompatible update; the updater never rewrites that declaration.
 
 GET /api/identity (api.identity) returns a no-store public DTO under data: applicationId, applicationName, applicationVersion, platformVersion and optional logo with src/accessibleName. Schema/ranges/private paths/configuration/credentials remain private. Vue IdentityProvider applies the bounded runtime response and retains build-time identity if it fails, without delaying page mounting. Native mail/error pages consume the same projection; static emergency documents use build-time validation. HTTPS manifest logos are mail URL defaults; local browser paths need a trusted mail_logo_path for email CID embedding. Canonical identity fields cannot be overridden in customer branding configuration.
+
+## Module operational settings
+
+Source-owned typed/localized descriptors and backend validation define module settings; runtime values persist encrypted in the database with optimistic revisions. Trusted CLI management and reversible immediate/reinitialize handlers are delivered; the real Admin UI and Audit history remain future roadmaps. Use the [settings contract](module-framework.md#delivered-declarative-settings) for redacted reads, secret-safe hooks, external-key recovery and unresolved compensation fences. No environment-specific automatic overwrite/default subsystem is provided.

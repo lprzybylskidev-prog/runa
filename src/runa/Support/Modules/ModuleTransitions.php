@@ -284,7 +284,7 @@ final class ModuleTransitions
     private function operation(string $id): object
     {
         /** @var Operation|null $row */
-        $row = $this->connection->table('shared.module_transitions')->where('public_id', $id)->first();
+        $row = $this->connection->table('shared.module_transitions')->where('public_id', $id)->where('intent', '<>', 'settings')->first();
         if ($row === null) {
             throw new RuntimeException('Unknown module transition.');
         }

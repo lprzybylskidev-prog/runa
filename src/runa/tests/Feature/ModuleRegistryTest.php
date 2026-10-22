@@ -134,7 +134,7 @@ it('rejects namespace collisions and every symlink boundary before source execut
     mkdir($this->sources->root.'/app/Modules/Filesystem', 0775, true);
     expect(fn () => $this->discovery->discover('app'))->toThrow(InvalidArgumentException::class);
     File::deleteDirectory($this->sources->root.'/app/Modules');
-    symlink($this->sources->root.'/app/modules/filesystem/docs', $this->sources->root.'/app/modules/filesystem/backend/escape');
+    symlink($this->sources->root.'/app/modules/filesystem/tests', $this->sources->root.'/app/modules/filesystem/backend/escape');
     expect(fn () => $this->discovery->discover('app'))->toThrow(InvalidArgumentException::class);
     unlink($this->sources->root.'/app/modules/filesystem/backend/escape');
     rename($this->sources->root.'/app/modules/filesystem/module.json', $this->sources->root.'/manifest.json');
@@ -230,4 +230,18 @@ it('rejects symlinked owners even with no module directory and rejects declarati
     unlink($file);
     mkdir($file);
     expect(fn () => $this->discovery->discover('app'))->toThrow(InvalidArgumentException::class);
+});
+
+it('uses central owner documentation metadata without requiring documentation at runtime', function (): void {
+    foreach (['app', 'runa'] as $owner) {
+        $manifest = $this->sources->add($owner, 'documented');
+        $module = $this->discovery->discover($owner)[0];
+        expect($module->manifest->definition['docs'])->toBe([($owner === 'app' ? 'docs/app/modules/' : 'docs/runa/handbook/modules/').'documented/README.md']);
+        expect(is_dir($this->sources->root.'/'.$owner.'/modules/documented/docs'))->toBeFalse();
+        foreach (['docs/README.md', 'docs/app/modules/other/README.md', 'docs/app/modules/documented/../README.md', 'docs/runa/maintainer/private.md'] as $invalid) {
+            $manifest['docs'] = [$invalid];
+            $this->sources->write($owner, 'documented', $manifest);
+            expect(fn () => $this->discovery->discover($owner))->toThrow(InvalidArgumentException::class);
+        }
+    }
 });
