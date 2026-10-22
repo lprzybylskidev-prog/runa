@@ -18,6 +18,8 @@ Module jobs use the [managed work protocol](../../../../docs/runa/handbook/archi
 9. Add overlap/concurrency protection when a scheduled task would be unsafe to run concurrently.
 10. Do not apply overlap locks mechanically to tasks that are naturally safe.
 
+Module schedules use source-owned ScheduleProvider/ScheduleDefinition targeting classified CommandProvider entries. Operational entries dispatch managed ModuleWork jobs; diagnostics use owned DiagnosticHandler. Preserve callback-time and worker-time checks, UTC cron, optional callback overlap expiry and maintenance-exempt technical pulse/health recovery. A schedule mutex ends after enqueue; work-level idempotency/coordination belongs to the module. Test cached schedules across lifecycle/source changes and real worker start.
+
 ## Console commands
 
 Guard development execution before local Actions and independently before host locks/executors: a production acquisition receipt cannot be overridden by a caller's development APP_ENV. Preserve production artifact exclusion and inert discovery/previews. Production/deploy/host controls use their operational scope; do not add a public bypass. See docs/runa/handbook/tooling/commands.md for mode boundaries.

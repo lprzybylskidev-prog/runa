@@ -57,6 +57,7 @@ use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationScope;
+use Runa\Support\Modules\Console\ModuleConsole;
 use Runa\Support\Modules\Data\ModuleDataPaths;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
@@ -121,6 +122,7 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(WorkDefinitions::class);
         $this->app->singleton(ModuleWork::class, fn () => new ModuleWork($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(WorkDefinitions::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(Encrypter::class), $this->app->make(Factory::class)));
         $this->app->singleton(ModuleHttp::class, fn () => new ModuleHttp($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make('router'), $this->app->make(DatabaseManager::class)->connection()));
+        $this->app->singleton(ModuleConsole::class, fn () => new ModuleConsole($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(WorkDefinitions::class), $this->app->make(ModuleWork::class), $this->app->make(DatabaseManager::class)->connection()));
         ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
             $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
@@ -173,6 +175,15 @@ final class RunaServiceProvider extends ServiceProvider
         $this->loadJsonTranslationsFrom(app_path('lang'));
 
         Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
+        \Illuminate\Console\Application::starting(function ($artisan): void {
+            try {
+                $modules = $this->app->make(ModuleConsole::class);
+            } catch (\Throwable) {
+                // Unconfigured/cold database must not mask native setup and safety diagnostics.
+                return;
+            }
+            $modules->registerCommands($artisan);
+        });
         Queue::createPayloadUsing(ModuleQueueGuard::payload(...));
         Event::listen(JobProcessing::class, ModuleQueueGuard::before(...));
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));

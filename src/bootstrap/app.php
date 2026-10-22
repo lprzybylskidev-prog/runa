@@ -10,6 +10,7 @@ use Runa\Http\Middleware\AssignRequestId;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\ModuleHttpGuard;
+use Runa\Support\Modules\Console\ModuleConsole;
 
 /** @var list<class-string> $platformProviders */
 $platformProviders = require __DIR__.'/providers.php';
@@ -27,6 +28,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->append(EnforceEffectiveMaintenance::class);
     })
     ->withSchedule(function (Schedule $schedule): void {
+        app(ModuleConsole::class)->registerSchedules($schedule);
         $schedule->command('runa:runtime:pulse')->everyMinute()->evenInMaintenanceMode();
         $schedule->command('runa:modules:health')->everyMinute()->evenInMaintenanceMode();
     })

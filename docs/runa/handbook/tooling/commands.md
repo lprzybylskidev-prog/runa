@@ -86,6 +86,10 @@ Alias for `php artisan runa:doctor:development`. From the host, first validates 
 
 Trusted installation/deployment operation that discovers exactly one source owner and atomically synchronizes module registration metadata. It preserves administrative flags and installed versions, defaults new Optional modules to disabled and records missing source without deleting data. It does not install module data or load operational providers. Normal requests never invoke it. See [module discovery and registry](../architecture/module-framework.md#delivered-discovery-and-registry-operations) for migration prerequisites, snapshot semantics and current delivery limits.
 
+### Module-owned commands and schedules
+
+Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded JSON through `--payload`. Diagnostic handlers remain available while disabled/unhealthy. Operational commands enqueue a managed owned job and return its work ID; a zero exit reports admission, not completion. Module schedules target the same classified entries, run in UTC and recheck at dispatch and worker execution. Use `php artisan schedule:list` to inspect them. See [module Artisan and schedules](../architecture/module-framework.md#delivered-module-artisan-and-schedules) for trusted recovery, overlap and retry boundaries. No module-specific global registration edits or cold host-management aliases are provided.
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`
