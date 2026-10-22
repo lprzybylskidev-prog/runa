@@ -522,7 +522,7 @@ The external updater embeds the module plan and phase in its existing `.runtime/
 
 The [module development guide](../development/modules.md) owns generator usage, explicit per-file hash overwrite review, module test execution, reusable source/runtime contract checks and module SemVer/changelog policy. Use `runa:make:module` to preview/generate a skeleton or an element in an existing module; use `runa:modules:check <owner>` for source checks and `--runtime` for synchronized trusted descriptor checks. Generation never registers, enables, migrates or publishes installed versions. Production generation is refused and Runa generation requires owner context.
 
-The agent assesses PATCH/MINOR/MAJOR independently for each changed module and checks dependent contracts. Backend-impact local quality graphs check source ownership and module version/changelog updates; static checks cannot infer all semantic breaks or sandbox trusted PHP/SQL. The development reference module remains the next roadmap point.
+The agent assesses PATCH/MINOR/MAJOR independently for each changed module and checks dependent contracts. Backend-impact local quality graphs check source ownership and module version/changelog updates; static checks cannot infer all semantic breaks or sandbox trusted PHP/SQL. The optional development reference and its customer source-selection contract are delivered below.
 
 ## Delivered development reference
 
