@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "app.module_probe",
   "kind": "optional",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "platform": ">=0.3.1 <1.0.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -31,7 +31,7 @@
     "events": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeEvents"],
     "frontend": [],
     "slots": [],
-    "management": [],
+    "management": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeManagement"],
     "upgrades": []
   },
   "docs": ["docs/app/modules/module_probe/README.md"],

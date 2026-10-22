@@ -38,6 +38,7 @@ use Runa\Console\Commands\Database\GuardedWipeCommand;
 use Runa\Console\Commands\Database\ScopedMigrateCommand;
 use Runa\Console\Commands\Database\ScopedSeedCommand;
 use Runa\Console\Commands\Database\ScopedStatusCommand;
+use Runa\Console\Commands\DescribeModuleManagement;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\ManageModuleSettings;
@@ -69,6 +70,8 @@ use Runa\Support\Modules\Events\ModuleIntegrations;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
 use Runa\Support\Modules\LifecyclePolicies;
+use Runa\Support\Modules\Management\ManagementRenderers;
+use Runa\Support\Modules\Management\ModuleManagement;
 use Runa\Support\Modules\ModuleAutoloader;
 use Runa\Support\Modules\ModuleAvailability;
 use Runa\Support\Modules\ModuleDiscovery;
@@ -131,6 +134,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(OperationGuard::class, fn () => new OperationGuard($this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class), $this->app->make(MaintenanceState::class), $this->app->make(OperationAuthorizer::class), $this->app, $this->app->make(OperationScope::class)));
         $this->app->singleton(SettingTypes::class);
         $this->app->singleton(SettingsDefinitions::class);
+        $this->app->singleton(ManagementRenderers::class);
+        $this->app->singleton(ModuleManagement::class);
         $this->app->bindIf(SettingsObserver::class, IgnoreSettingsChanges::class);
         $this->app->singleton(ModuleSettings::class, fn () => new ModuleSettings($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(SettingsDefinitions::class), $this->app->make(Encrypter::class), $this->app->make(SettingsObserver::class)));
         $this->app->singleton(ModuleApis::class);
@@ -151,6 +156,7 @@ final class RunaServiceProvider extends ServiceProvider
             SynchronizeModules::class,
             RecoverModuleHealth::class,
             ManageModuleSettings::class,
+            DescribeModuleManagement::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,

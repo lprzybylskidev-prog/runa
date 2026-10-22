@@ -272,3 +272,7 @@ Standard make:* commands generate application artifacts. make:controller, make:m
 ### `php artisan runa:modules:settings [module]`
 
 Trusted redacted settings read. `--write --revision=N --generation=N` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. No management HTTP endpoint or Admin UI is supplied.
+
+### `php artisan runa:modules:management <module>`
+
+Trusted versioned combined management metadata: localized identity, status/root causes/dependencies, redacted settings, integrations, bounded active work and declared permissions/actions/component keys. Exit 1 means missing/incomplete metadata or a concurrent generation change; disabled/unhealthy state remains inspectable. No action is executed and no management HTTP endpoint is exposed. See the [management descriptor contract](../architecture/module-framework.md#delivered-management-descriptors).
