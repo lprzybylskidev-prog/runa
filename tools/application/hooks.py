@@ -12,6 +12,27 @@ def git(root, *args, data=None):
     return subprocess.run(['git', *args], cwd=root, input=data, check=True, capture_output=True).stdout
 
 
+def approved_version_backfill(root, name, before, after):
+    """Exact owner-approved 2026-10-22 metadata migration; no general history override."""
+    from documentation import maintainer_checkout
+    if not maintainer_checkout(root) or not re.fullmatch(r'docs/runa/maintainer/roadmaps/closed/RM-2026-\d{3}-[^/]+\.md', name):
+        return False
+    mapping = root / 'docs/runa/maintainer/documentation-map.json'
+    if mapping.is_symlink() or not mapping.is_file():
+        return False
+    record = json.loads(mapping.read_text()).get('proposed_version_backfill_2026_10_22', {}).get(name)
+    if not record or hashlib.sha256(before).hexdigest() != record['before_sha256'] or hashlib.sha256(after).hexdigest() != record['after_sha256']:
+        return False
+    value = record['proposed_version']
+    if not re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)', value):
+        return False
+    front, boundary, body = after.partition(b'\n---\n')
+    field = b'\nproposed_version: ' + value.encode()
+    return (before.startswith(b'---\n') and boundary == b'\n---\n'
+            and b'\nproposed_version:' not in before.partition(b'\n---\n')[0]
+            and front.count(field) == 1 and front.replace(field, b'', 1) + boundary + body == before)
+
+
 def commit_message(root, path):
     first = Path(path).read_text().splitlines()[0]
     match = re.fullmatch(r'(feat|fix|docs|style|refactor|perf|test|build|chore|revert|merge)(?:\(([A-Za-z0-9_.-]+)\))?!?: [^\s].*', first)
@@ -65,7 +86,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
                         historical = True
             if historical:
                 previous = subprocess.run(['git', 'show', 'HEAD:' + name], cwd=root, capture_output=True)
-                if previous.returncode == 0 and previous.stdout != data:
+                if previous.returncode == 0 and previous.stdout != data and not approved_version_backfill(root, name, previous.stdout, data):
                     raise ValueError('Immutable historical source changed: ' + name)
                 # Preserve archived source bytes while still scanning staged content for secrets.
                 continue

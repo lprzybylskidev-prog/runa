@@ -33,6 +33,10 @@ The agent cannot self-approve a roadmap.
 
 Application roadmap lifecycle directories are `docs/app/roadmaps/{draft,active,paused,closed}`. At most one application roadmap may be active.
 
+Every roadmap records `proposed_version: X.Y.Z` alongside `release_type`: the projected application version after implementation, not the version carrying the draft. Refresh it when release order or baseline changes and reconcile it with the actual release at closure. It does not bump a manifest, authorize activation or approve a major release.
+
+During roadmap agreement, explicitly ask the user to confirm `release_type` and `proposed_version`, explaining the proposed increment. Do not silently approve them. If the user already explicitly supplied or confirmed these values, record that decision without asking again.
+
 Read `docs/runa/handbook/workflows/roadmaps.md` before roadmap lifecycle work.
 
 When work on an active roadmap produces an agreed substantial follow-up scope requiring its own roadmap, create or update its draft immediately in the current checkout and commit it separately before ending that planning task, without waiting for another commit request. Carry the draft with the current development changes; activation, implementation and the eventual release version remain separate decisions. Follow the roadmap workflow; do not activate a second roadmap or implement the follow-up scope through its draft.

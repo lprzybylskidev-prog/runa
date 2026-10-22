@@ -7,6 +7,7 @@ created_at: 2026-10-18
 activated_at: 2026-10-18
 closed_at: 2026-10-18
 release_type: fix
+proposed_version: 0.1.1
 impact_areas:
   - documentation
   - tooling

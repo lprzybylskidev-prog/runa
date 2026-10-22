@@ -53,6 +53,7 @@ created_at: 2026-10-17
 activated_at: null
 closed_at: null
 release_type: feature
+proposed_version: 0.1.0
 impact_areas:
   - backend
   - frontend
@@ -81,6 +82,8 @@ Impact areas are a short explicit list such as:
 
 Impact areas drive local quality-gate selection.
 
+`proposed_version` is a required canonical `X.Y.Z` projection of the application version after this roadmap is implemented. Set it from the expected predecessor release and `release_type`, including agreed roadmap order; drafts may target a later version than the next active release. Refresh it when that order or baseline changes, verify it at activation and reconcile it with the actual version at closure before the roadmap becomes immutable. It is not the version shipping the draft, a version bump, activation approval or permission for a major release. An explicit `target_version` required by a release policy remains a separate approved release target.
+
 ## Required structure
 
 Every roadmap contains:
@@ -98,6 +101,8 @@ Every roadmap contains:
    - final checklist item is always full verification/release/merge/report.
 
 ## Discussion and activation
+
+While agreeing the roadmap, explicitly ask the user which `release_type` and `proposed_version` to use. Offer a reasoned proposal based on scope, current version and agreed predecessor order, but obtain confirmation instead of silently treating it as accepted. Record the answer in frontmatter and Decisions. If the user has already explicitly supplied or confirmed both values in the same planning discussion, use that decision without repeating the question. Unconfirmed agent suggestions remain provisional; confirmation of release metadata is not activation approval. Reconfirm a changed proposal if later scope/order changes require a different classification or projected version.
 
 If no roadmap is active and implementation is requested:
 

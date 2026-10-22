@@ -6,7 +6,8 @@ branch: roadmap/RM-2026-009-customer-agent-delivery-and-update-review
 created_at: 2026-10-22
 activated_at: null
 closed_at: null
-release_type: feature
+release_type: fix
+proposed_version: 0.4.1
 impact_areas:
   - development
   - production
@@ -24,7 +25,7 @@ impact_areas:
 
 Deliver distinct owner and customer AI instruction sets, maintain both while developing Runa, and give the customer a self-contained agent environment for building applications on Runa. Extend development updates with a complete review of delivered project files and explicit consent to replace customized non-platform files. Review environment-file responsibilities and operation guidance.
 
-Execute immediately after [RM-2026-006](../active/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 remains the only active roadmap. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. Reconcile the actual released baseline at activation. Determine the feature release version from that baseline; no platform version or release is changed by this draft.
+Execute immediately after [RM-2026-006](../active/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 remains the only active roadmap. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. The owner classifies this as corrective work: planned fix release **0.4.1** after RM-006's projected 0.4.0. Reconcile the actual released baseline at activation; no platform version or release is changed by this draft.
 
 ### Scope
 
@@ -50,6 +51,8 @@ Observed gaps: customer-facing frontend guidance currently directs reusable comp
 ## Specification
 
 ### Decisions
+
+- 2026-10-22 — Owner specifies `release_type: fix` and `proposed_version: 0.4.1`, following RM-006 at 0.4.0. Treat this as correction of existing delivery/workflow/update behavior, not a feature release; refresh the projection if the actual release baseline changes.
 
 - 2026-10-22 — Owner accepts this work as a separate roadmap immediately following module-framework delivery, rather than an inserted point in RM-006. Creation is authorized now; activation remains a separate lifecycle action after the predecessor completes.
 - 2026-10-22 — Root `AGENTS.md` and `.agents/skills/` become owner instructions for writing Runa. Customer AGENTS/skills are authored under `docs/runa/maintainer/`, rewritten for application work, and substituted into customer delivery. The customer bundle is maintained as a product, not adopted as authority by the owner agent.

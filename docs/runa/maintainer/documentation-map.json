@@ -68,14 +68,53 @@
   "immutable_sha256": {
     "docs/runa/maintainer/production/postgresql-alpine-assessment.md": "257a19a4edceed2ff0f2cab49bb0164e93d9a75d8ec4c50dfc8e0c5948f8c592",
     "docs/runa/maintainer/roadmaps/closed/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md": "bb57c3eaab9906e65c4f84f0b33b5488506092c8c2d99ac234ae38cc9fea9764",
-    "docs/runa/maintainer/roadmaps/closed/RM-2026-002-documentation-consistency.md": "941ba997cab31b65c349845ad107335fc135da52471ae2c988e44fb3ed314e4c",
-    "docs/runa/maintainer/roadmaps/closed/RM-2026-003-development-infrastructure-improvements.md": "78082972da2086940c87438c262a9d06f9d6dc105181dc75bdfa638c74c0c5bb",
-    "docs/runa/maintainer/roadmaps/closed/RM-2026-004-ui-foundations.md": "8f92886f12b837da0440fa82b0d7ed5fa4b7d93a443567f6e38422dbb0466b7d",
-    "docs/runa/maintainer/roadmaps/closed/RM-2026-007-devcontainer-setup-readiness.md": "0a6c4c323857410239163f248ca135a0c7467721e44a4fcfef9606109fd64c4c",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md": "03dc90806a8bdcabae2425d4736f0667d57f59ffcd83d0b2b207dd44eca70d4e",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-002-documentation-consistency.md": "2a7d94293036448521b93652edbd908bbe9eeb21925f99142b6c29be2805817c",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-003-development-infrastructure-improvements.md": "1a43c65ecc1a10b08e8a417f0750e6cfc4179d410683b128e4702d06fe5d4097",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-004-ui-foundations.md": "1dc72bd23ff22fa00262ab73677ffa99e8076681c9aa2af1c638978332aee65a",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-007-devcontainer-setup-readiness.md": "4c38e8e04d8b0e22b6990d093efff7e3bf78232dd1f4785340297922a39c065e",
     "docs/runa/maintainer/security/RM-2026-001-final-review.md": "8d562674b67f4790bbacf75473cc7b733737b958947ecd90b42574912f0fa390",
     "docs/runa/maintainer/security/RM-2026-001-point14-review.md": "d6bbbdc0562a28a4f6a61344358be5105f1f8bfa245b66b917cababcc5c2d3e2",
     "docs/runa/maintainer/security/gosu-assessment.md": "fd941612c2bccc629baf6be397b599deafe1e947c5742bbe0e86f9b05a39d122",
-    "docs/runa/maintainer/security/postgres-gosu-not-affected.json": "64901a6a9f7b71cfb23646867e4b69d6c0f6393ac3ee7e38d65ef0a0992cb78b"
+    "docs/runa/maintainer/security/postgres-gosu-not-affected.json": "64901a6a9f7b71cfb23646867e4b69d6c0f6393ac3ee7e38d65ef0a0992cb78b",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md": "2360483776dac45e1db6f1c3cde6e497d346f552d048d19e576523e36df20d33",
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-008-runtime-security-remediation.md": "2aec0d40fca21b3079eff6a384ba6ab4a26e147df5b6edd81a55d3b54c67f0ad"
+  },
+  "proposed_version_backfill_2026_10_22": {
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md": {
+      "proposed_version": "0.1.0",
+      "before_sha256": "bb57c3eaab9906e65c4f84f0b33b5488506092c8c2d99ac234ae38cc9fea9764",
+      "after_sha256": "03dc90806a8bdcabae2425d4736f0667d57f59ffcd83d0b2b207dd44eca70d4e"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-002-documentation-consistency.md": {
+      "proposed_version": "0.1.1",
+      "before_sha256": "941ba997cab31b65c349845ad107335fc135da52471ae2c988e44fb3ed314e4c",
+      "after_sha256": "2a7d94293036448521b93652edbd908bbe9eeb21925f99142b6c29be2805817c"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-003-development-infrastructure-improvements.md": {
+      "proposed_version": "0.1.2",
+      "before_sha256": "78082972da2086940c87438c262a9d06f9d6dc105181dc75bdfa638c74c0c5bb",
+      "after_sha256": "1a43c65ecc1a10b08e8a417f0750e6cfc4179d410683b128e4702d06fe5d4097"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-004-ui-foundations.md": {
+      "proposed_version": "0.2.0",
+      "before_sha256": "8f92886f12b837da0440fa82b0d7ed5fa4b7d93a443567f6e38422dbb0466b7d",
+      "after_sha256": "1dc72bd23ff22fa00262ab73677ffa99e8076681c9aa2af1c638978332aee65a"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md": {
+      "proposed_version": "0.3.0",
+      "before_sha256": "b2e406919d80e52c11201515ed7ffaf789165f54fb744b8bdcf86a2ac1e626e5",
+      "after_sha256": "2360483776dac45e1db6f1c3cde6e497d346f552d048d19e576523e36df20d33"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-007-devcontainer-setup-readiness.md": {
+      "proposed_version": "0.2.1",
+      "before_sha256": "0a6c4c323857410239163f248ca135a0c7467721e44a4fcfef9606109fd64c4c",
+      "after_sha256": "4c38e8e04d8b0e22b6990d093efff7e3bf78232dd1f4785340297922a39c065e"
+    },
+    "docs/runa/maintainer/roadmaps/closed/RM-2026-008-runtime-security-remediation.md": {
+      "proposed_version": "0.3.1",
+      "before_sha256": "f930eccf0fbc7752368251bbce01d8c645e98ed20e5276312fccb0dbad3b6f74",
+      "after_sha256": "2aec0d40fca21b3079eff6a384ba6ab4a26e147df5b6edd81a55d3b54c67f0ad"
+    }
   }
 }

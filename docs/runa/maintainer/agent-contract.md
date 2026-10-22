@@ -31,6 +31,10 @@ The agent cannot self-approve a roadmap.
 
 At most one roadmap may be active.
 
+Every platform roadmap records `proposed_version: X.Y.Z` alongside `release_type`: the projected platform version after implementation, not the version carrying the draft. Refresh it when release order or baseline changes and reconcile it with the actual release at closure. It does not change VERSION, authorize activation or approve a major release.
+
+During roadmap agreement, explicitly ask the owner to confirm `release_type` and `proposed_version`, explaining the proposed increment. Do not silently approve them. If the owner already explicitly supplied or confirmed these values, record that decision without asking again.
+
 Read `docs/runa/maintainer/workflows/roadmaps.md` before roadmap lifecycle work.
 
 When active platform work produces an agreed substantial follow-up scope requiring its own roadmap, immediately create or update its draft under `docs/runa/maintainer/roadmaps/draft/` and commit it separately on the current roadmap branch before ending that planning task, without waiting for another commit request. Include the draft in the current development history; its activation, implementation and eventual release version are separate decisions. Do not activate a second roadmap or implement future scope through a draft.

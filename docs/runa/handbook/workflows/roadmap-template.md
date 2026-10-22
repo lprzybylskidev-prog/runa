@@ -7,6 +7,7 @@ created_at: YYYY-MM-DD
 activated_at: null
 closed_at: null
 release_type: feature
+proposed_version: 0.1.0
 impact_areas:
   - documentation
 ---

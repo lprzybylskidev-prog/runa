@@ -7,6 +7,7 @@ created_at: 2026-10-18
 activated_at: 2026-10-21
 closed_at: null
 release_type: feature
+proposed_version: 0.4.0
 impact_areas:
   - backend
   - frontend
@@ -57,6 +58,8 @@ Read root/applicable nested AGENTS, roadmap/Git/release workflows, relevant back
 ## Specification
 
 ### Decisions
+
+- 2026-10-22 — Owner requires `proposed_version` beside `release_type` and explicit discussion/confirmation of both during roadmap agreement. RM-006 remains feature 0.4.0; the owner classifies follow-up RM-009 as fix 0.4.1. Record future drafts immediately in current development history independently of the eventual implementation release. Owner explicitly authorizes adding only the missing version field to the seven closed roadmaps from actual release evidence; exact before/after hashes and a narrowly constrained hook transition preserve all other historical bytes. No VERSION, published tag or release record changes. Public/owner contracts, workflows and template are synchronized; this metadata work does not complete point 18 or run final quality.
 
 - 2026-10-22 — Owner extends point 17 with an installer choice for customer development: a clean system without reference-module code, or a project including the development-only reference module as a working code example. Make the choice available interactively and through an explicit unattended installation option. Preserve it across normal reopen/update flows; do not silently add a declined example or overwrite customer edits. Both variants retain complete production source/build/discovery exclusion of the reference module. This updates the specification only; installer implementation remains point 17.
 
