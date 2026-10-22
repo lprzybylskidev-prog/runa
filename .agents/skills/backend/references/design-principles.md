@@ -42,4 +42,4 @@ Do not introduce a new abstraction because one method is long. First identify wh
 
 ## Module framework design boundary
 
-For module framework work, consult the [public module contracts](../../../../docs/runa/handbook/architecture/module-framework.md) and active roadmap. Modules supply health and transition/work decision policies; the base enforces the shared protocol, fences and state revisions without guessing business behavior. The contract document distinguishes the design baseline from delivered runtime capabilities.
+For module framework work, consult the [public module contracts](../../../../docs/runa/handbook/architecture/module-framework.md) and active roadmap. Use explicit owner-scoped registry synchronization during installation/deployment; request boot and snapshot reads never discover or mutate registrations. Source version is not installed data version. Modules supply health and transition/work decision policies; the base enforces the shared protocol, fences and state revisions without guessing business behavior. The contract document distinguishes delivered registry/discovery from planned lifecycle/operational adapters.

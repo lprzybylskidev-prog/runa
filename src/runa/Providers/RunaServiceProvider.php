@@ -37,12 +37,16 @@ use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\SeedProject;
+use Runa\Console\Commands\SynchronizeModules;
 use Runa\Console\Commands\TestMail;
 use Runa\Console\Commands\ValidateConfiguration;
 use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\MailBranding;
+use Runa\Support\Modules\ModuleAutoloader;
+use Runa\Support\Modules\ModuleDiscovery;
+use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\RuntimeHeartbeat;
 use RuntimeException;
 
@@ -73,11 +77,16 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->extend(TestMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
         $this->app->singletonIf(DatabaseScope::class, fn () => new DatabaseScope(base_path()));
+        $this->app->singleton(ModuleDiscovery::class, fn () => new ModuleDiscovery(base_path(), $this->app->environment(['local', 'testing'])));
+        $this->app->singleton(ModuleRegistry::class, fn () => new ModuleRegistry($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleDiscovery::class)));
+        $this->app->singleton(ModuleAutoloader::class, fn () => new ModuleAutoloader(base_path(), $this->app->make(ModuleRegistry::class), $this->app->environment(['local', 'testing'])));
+        ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
             $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
         }
         $this->commands([
             CheckApplicationManifest::class,
+            SynchronizeModules::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,

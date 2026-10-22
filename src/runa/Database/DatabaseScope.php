@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 final readonly class DatabaseScope
 {
     // Protected source inventory; update alongside each new platform-owned table.
-    public const PLATFORM_TABLES = ['shared.migrations', 'shared.jobs', 'shared.failed_jobs', 'shared.platform_seed_runs'];
+    public const PLATFORM_TABLES = ['shared.migrations', 'shared.jobs', 'shared.failed_jobs', 'shared.platform_seed_runs', 'shared.module_registry_state', 'shared.modules'];
 
     public function __construct(public string $root, public bool $platform = false) {}
 

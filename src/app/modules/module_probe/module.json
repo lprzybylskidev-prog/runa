@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "app.module_probe",
+  "kind": "optional",
+  "version": "0.1.0",
+  "platform": ">=0.3.1 <1.0.0",
+  "framework_api": "^1.0.0",
+  "name": {
+    "pl": "Sonda modułów",
+    "en": "Module probe"
+  },
+  "description": {
+    "pl": "Tymczasowa sonda infrastruktury modułów.",
+    "en": "Temporary development-only module infrastructure probe."
+  },
+  "dependencies": {
+    "required": {},
+    "optional": {}
+  },
+  "providers": [],
+  "declarations": {
+    "apis": [],
+    "health": [],
+    "lifecycle": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeWorkPolicy"],
+    "settings": [],
+    "integrations": [],
+    "http": [],
+    "commands": [],
+    "jobs": [],
+    "schedules": [],
+    "events": [],
+    "frontend": [],
+    "slots": [],
+    "management": [],
+    "upgrades": []
+  },
+  "docs": ["docs/README.md"],
+  "tests": ["tests"]
+}

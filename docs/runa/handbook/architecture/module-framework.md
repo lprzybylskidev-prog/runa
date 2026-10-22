@@ -2,7 +2,7 @@
 
 ## Delivery status and scope
 
-This is the schema-version-1 design baseline for the module framework. Registry persistence, discovery, lifecycle adapters and generators are not yet delivered. Do not use the examples as working commands or register production modules until those capabilities are implemented. Ordinary application PHP/Vue and independent frontends remain supported.
+The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots and local module autoloading are delivered. Lifecycle/dependency enforcement, operational adapters and generators remain planned; modules cannot yet run managed business operations. Ordinary application PHP/Vue and independent frontends remain supported.
 
 Modules share the existing Laravel application and container. They are trusted local code, not sandboxed plugins or independently downloaded Composer packages. The framework enforces declared boundaries; static checks and PostgreSQL schema conventions cannot sandbox deliberately malicious code.
 
@@ -20,7 +20,7 @@ The public module ID is `<owner>.<code>`, where owner is exactly `runa` or `app`
 
 Each root contains `module.json`, `backend/`, `resources/`, `routes/`, `database/`, `config/`, `lang/`, `tests/` and `docs/` as needed. Public PHP interfaces/DTOs/events live in `backend/Contracts/`; Actions, models, jobs, providers and other implementation classes live under `backend/`. Frontend code lives in `resources/js/`; migrations and seeders in `database/`. Writable files never live in module source.
 
-Derive PascalCode by capitalizing and joining code segments. Reject case-insensitive PHP prefix collisions, including collisions with ordinary application/platform classes, rather than silently renaming a prefix. A generated local autoload map must explicitly map these prefixes to each `backend/` directory: the current broad `App\`/`Runa\` mappings do not handle the lowercase module roots. No per-module dependency or Composer autoload edit is required from application developers. Loading this map is a later discovery implementation responsibility.
+Derive PascalCode by capitalizing and joining code segments. Reject case-insensitive PHP prefix collisions, including collisions with ordinary application/platform classes, rather than silently renaming a prefix. The local autoloader derives an explicit prefix-to-`backend/` mapping from the synchronized registry snapshot: broad `App\`/`Runa\` Composer mappings alone do not handle lowercase module roots. No per-module dependency or Composer autoload edit is required. It checks the source manifest hash and canonical owned class path before loading; loading a class does not instantiate descriptors or activate a module.
 
 Source roots, manifest files and referenced files must remain inside the owning real directory without symlink traversal. Reject reserved codes `platform`, `application`, `shared`, `public`, `system`, `reference` and `module_probe`; the last two are reserved for controlled development fixtures. A module's owner, code and kind cannot be changed in place to reinterpret retained data.
 
@@ -111,6 +111,25 @@ The registry snapshot separates `registered`, `source_present`, administrative `
 Own health is `healthy`, `degraded`, `unhealthy` or `unknown`. Effective availability is `available` or `blocked` with independent structured reasons: disabled, missing source, incompatible contract/data, transition/recovery fence, own critical check, required dependency or platform maintenance. Warning observations may degrade an available module. Root causes contain safe codes, module/check IDs, timestamps and dependency paths; no raw exception, secret or business payload.
 
 New Optional registrations are disabled; Core registrations are mandatory. No future Core is registered or required merely because its name is reserved in platform planning. Empty production registry is valid. Missing previously registered Core remains a maintenance reason. Recovery never changes enabled flags; enabling a dependency never restores cascade-disabled dependents.
+
+### Delivered discovery and registry operations
+
+After forward platform migrations, installation/deployment code can call `Runa\Support\Modules\ModuleRegistry::synchronize('runa')` or `synchronize('app')`, or invoke the trusted CLI equivalent:
+
+```sh
+php artisan runa:modules:sync runa
+php artisan runa:modules:sync app
+```
+
+Each call scans exactly one owner and validates all of its manifests before publication. Missing module roots represent an empty inventory; invalid roots, manifests, declaration source paths, ordinary `Modules` namespace collisions and any nested symlink fail the complete operation. `.gitignore` and `.gitkeep` are allowed root metadata files. Source validation checks declaration names and owned files without executing providers or descriptors; each feature's future adapter validates its own descriptor interface/revision before instantiation. Dependency range syntax/direction is validated now; graph compatibility/resolution belongs to the next delivery point.
+
+`shared.modules` persists bigint identity, unique UUIDv7 management ID, owner-local/full identity, source-owned kind, registration/source-presence flags, administrative enabled flag, last source version, nullable installed version and validated manifest metadata/hash. `shared.module_registry_state` holds one generation row. Both are platform-owned technical tables, including when the record describes an application module; native application wipes preserve them. Database constraints reject invalid owner/ID/path/version combinations and disabled Core records. No module-domain FK or domain schema is introduced.
+
+Synchronization locks the existing singleton row, validates/discovers trusted local files and atomically publishes the selected owner's metadata plus generation. Optional records start disabled; Core records start enabled. Repeated identical synchronization changes neither timestamps nor generation. Existing enabled flags, public IDs and installed versions survive source updates and disappearance/restoration. Missing records retain their last validated source metadata. A kind change fails instead of reinterpreting retained data. Sync does not migrate module data, infer installed versions or activate modules. Unregister/restoration of retained unregistered provenance is reserved for the lifecycle point.
+
+`ModuleRegistry::snapshot()` returns immutable `RegistrySnapshot`/`ModuleRecord` values ordered by full ID. It checks the persisted generation on each call, reuses unchanged cached records and takes a read lock while rebuilding so records and generation remain consistent. Callers must reacquire a snapshot to observe changes; a retained immutable value describes its original generation. Snapshot reads and normal application/request boot never synchronize or write registration. The module autoloader consults this snapshot only for a module namespace; registry migrations and synchronization must precede use of module classes. It rejects a source hash change pending explicit synchronization. Availability-aware public-operation enforcement is still pending and class loading alone is not an operational API.
+
+The updater and customer deployment integration point will call these reusable operations in their planned phases. The platform updater does not currently install application modules implicitly. The only actual module source is the temporary development probe; there are no production Core registrations.
 
 Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. No real Auth, Permissions, Audit or Admin implementation is included.
 

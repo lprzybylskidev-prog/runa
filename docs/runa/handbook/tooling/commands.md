@@ -80,6 +80,12 @@ Executed on the host through the private executor: `build [service ...]` builds 
 
 Alias for `php artisan runa:doctor:development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `php artisan runa:knowledge:doctor` and `php artisan runa:knowledge:eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
 
+## Module discovery
+
+### `php artisan runa:modules:sync runa|app`
+
+Trusted installation/deployment operation that discovers exactly one source owner and atomically synchronizes module registration metadata. It preserves administrative flags and installed versions, defaults new Optional modules to disabled and records missing source without deleting data. It does not install module data or load operational providers. Normal requests never invoke it. See [module discovery and registry](../architecture/module-framework.md#delivered-discovery-and-registry-operations) for migration prerequisites, snapshot semantics and current delivery limits.
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`

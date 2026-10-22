@@ -37,6 +37,7 @@ public/ui-review
 src/storage
 src/bootstrap/cache/*.php
 src/app/tests
+src/app/modules/module_probe
 src/app/docs
 
 src/runa/tests
