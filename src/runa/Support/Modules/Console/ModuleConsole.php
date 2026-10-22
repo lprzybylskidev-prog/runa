@@ -5,11 +5,13 @@ namespace Runa\Support\Modules\Console;
 use Illuminate\Console\Application;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Str;
 use Runa\Contracts\Modules\CommandDefinition;
 use Runa\Contracts\Modules\CommandProvider;
 use Runa\Contracts\Modules\DiagnosticHandler;
 use Runa\Contracts\Modules\ScheduleDefinition;
 use Runa\Contracts\Modules\ScheduleProvider;
+use Runa\Support\Logging\LogContext;
 use Runa\Support\Modules\Api\BoundaryValues;
 use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\ModuleRecord;
@@ -22,7 +24,7 @@ use Throwable;
 /** Store only identities in wrappers; reacquire trusted source and classification at invocation. */
 final readonly class ModuleConsole
 {
-    public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations, private WorkDefinitions $jobs, private ModuleWork $work, private Connection $connection) {}
+    public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations, private WorkDefinitions $jobs, private ModuleWork $work, private Connection $connection, private LogContext $logs) {}
 
     /** @return array<string, CommandDefinition> */
     public function commands(ModuleRecord $record): array
@@ -56,6 +58,17 @@ final readonly class ModuleConsole
      * @return array<array-key, mixed>
      */
     public function execute(string $module, string $key, array $payload = []): array
+    {
+        $id = (string) Str::uuid7();
+
+        return $this->logs->run(['origin' => $module, 'operation_id' => $id,
+            'correlation_id' => $this->logs->current()['correlation_id'] ?? $id], fn (): array => $this->invoke($module, $key, $payload));
+    }
+
+    /** @param array<array-key, mixed> $payload
+     * @return array<array-key, mixed>
+     */
+    private function invoke(string $module, string $key, array $payload): array
     {
         BoundaryValues::check($payload, "\0");
         if (strlen(json_encode($payload, JSON_THROW_ON_ERROR)) > 65536) {

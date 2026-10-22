@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ModuleHttpGuard
 {
-    public function __construct(private ModuleHttp $http, private OperationGuard $guard) {}
+    public function __construct(private ModuleHttp $http, private OperationGuard $guard, private OperationScope $scope) {}
 
     /** @param Closure(Request): Response $next
      * Guards before route binding, Form Request resolution or controller construction. */
@@ -46,6 +46,6 @@ final readonly class ModuleHttpGuard
             throw new OperationRejected('http_contract_unavailable', $module, $operation);
         }
 
-        return $next($request);
+        return $this->scope->run($context, fn (): Response => $next($request));
     }
 }

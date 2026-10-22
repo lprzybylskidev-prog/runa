@@ -5,7 +5,9 @@ use Illuminate\Contracts\Queue\Factory;
 use Illuminate\Database\QueryException;
 use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\EventDefinition;
 use Runa\Contracts\Modules\PublicEvent;
 use Runa\Support\MaintenanceState;
@@ -322,4 +324,28 @@ it('fails closed on malformed persisted toggle values', function (): void {
     $this->events->dispatch($this->publisher, 'changed', 1, []);
     expect(EventCalls::$constructed)->toBe(0)->and(($this->workId)())->toBeNull();
     expect($this->registry->snapshot()->modules[$this->subscriber]->enabled)->toBeTrue();
+});
+
+it('attributes sync and queued subscriber logs to their owner with event correlation and no payload', function (): void {
+    $sink = new TestHandler;
+    Log::channel()->getLogger()->setHandlers([$sink]);
+    EventCalls::$sync = fn () => Log::info('Subscriber handled.', ['payload' => ['secret' => 'private_sync']]);
+    EventCalls::$async = fn () => Log::info('Subscriber handled.', ['payload' => ['secret' => 'private_async']]);
+    $event = $this->events->dispatch($this->publisher, 'changed', 1, ['secret' => 'private_event']);
+    $id = ($this->workId)();
+    ($this->worker)();
+    $records = $sink->getRecords();
+    expect($records)->toHaveCount(3);
+    foreach ($records as $record) {
+        expect($record->extra['origin'])->toBe($this->subscriber)
+            ->and($record->extra['origin_module'])->toBe($this->publisher)
+            ->and($record->extra['correlation_id'])->toBe($event->correlationId)
+            ->and($record->extra['event_id'])->toBe($event->id)
+            ->and($record->context['payload'])->toBe('[redacted]');
+    }
+    expect($records[2]->extra['work_id'])->toBe($id)
+        ->and($records[2]->extra['operation_id'])->toBe($id)
+        ->and($this->scope->current())->toBeNull()->and($this->scope->diagnostics())->toBe([]);
+    Log::info('Worker restored.');
+    expect($sink->getRecords()[3]->extra)->toBe(['schema_version' => 1, 'origin' => 'platform']);
 });

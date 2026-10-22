@@ -2,6 +2,8 @@
 
 namespace Runa\Providers;
 
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Foundation\Application;
@@ -19,6 +21,8 @@ use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Foundation\Console\ConfigMakeCommand;
 use Illuminate\Foundation\Console\TestMakeCommand;
 use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\WorkerIdle;
@@ -53,6 +57,9 @@ use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
 use Runa\Support\ConfigurationValidator;
+use Runa\Support\Logging\ConsoleLogContext;
+use Runa\Support\Logging\LogContext;
+use Runa\Support\Logging\QueueLogContext;
 use Runa\Support\MailBranding;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\Api\DenyProtectedOperations;
@@ -130,6 +137,9 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleHealth::class, fn () => new ModuleHealth($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(HealthPolicies::class), new HealthDeadline));
         $this->app->singleton(ModuleAvailability::class, fn () => new ModuleAvailability($this->app->make(ModuleRegistry::class), $this->app->make(ModuleHealth::class), $this->app->make(LifecyclePolicies::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
         $this->app->singleton(MaintenanceState::class, fn () => new MaintenanceState($this->app, $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class)));
+        $this->app->singleton(LogContext::class);
+        $this->app->singleton(ConsoleLogContext::class);
+        $this->app->singleton(QueueLogContext::class);
         $this->app->singleton(OperationScope::class);
         $this->app->bindIf(OperationAuthorizer::class, DenyProtectedOperations::class);
         $this->app->singleton(ModuleDeclarations::class, fn () => new ModuleDeclarations(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
@@ -150,7 +160,7 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleEvents::class, fn () => new ModuleEvents($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(EventDefinitions::class), $this->app->make(EventSubscriptions::class), $this->app->make(ModuleDeclarations::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(ModuleWork::class), $this->app->make(LoggerInterface::class)));
         $this->app->singleton(ModuleWork::class, fn () => new ModuleWork($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(WorkDefinitions::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(Encrypter::class), $this->app->make(Factory::class), $this->app->make(EventSubscriptions::class)));
         $this->app->singleton(ModuleHttp::class, fn () => new ModuleHttp($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make('router'), $this->app->make(DatabaseManager::class)->connection()));
-        $this->app->singleton(ModuleConsole::class, fn () => new ModuleConsole($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(WorkDefinitions::class), $this->app->make(ModuleWork::class), $this->app->make(DatabaseManager::class)->connection()));
+        $this->app->singleton(ModuleConsole::class, fn () => new ModuleConsole($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(WorkDefinitions::class), $this->app->make(ModuleWork::class), $this->app->make(DatabaseManager::class)->connection(), $this->app->make(LogContext::class)));
         ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
             $this->app->extend($native, fn ($command, Application $app) => $app->make($scoped));
@@ -204,6 +214,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(app_path('lang'));
         $this->loadJsonTranslationsFrom(app_path('lang'));
 
+        Event::listen(CommandStarting::class, [ConsoleLogContext::class, 'starting']);
+        Event::listen(CommandFinished::class, [ConsoleLogContext::class, 'finished']);
         Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
         \Illuminate\Console\Application::starting(function ($artisan): void {
             try {
@@ -214,7 +226,12 @@ final class RunaServiceProvider extends ServiceProvider
             }
             $modules->registerCommands($artisan);
         });
+        Queue::createPayloadUsing(static fn () => app(QueueLogContext::class)->payload());
         Queue::createPayloadUsing(ModuleQueueGuard::payload(...));
+        Event::listen(JobProcessing::class, [QueueLogContext::class, 'before']);
+        Event::listen(JobProcessed::class, [QueueLogContext::class, 'after']);
+        Event::listen(JobExceptionOccurred::class, [QueueLogContext::class, 'after']);
+        Event::listen(JobFailed::class, [QueueLogContext::class, 'after']);
         Event::listen(JobProcessing::class, ModuleQueueGuard::before(...));
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
         Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));

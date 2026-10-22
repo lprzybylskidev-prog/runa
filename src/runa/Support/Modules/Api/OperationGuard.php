@@ -3,11 +3,11 @@
 namespace Runa\Support\Modules\Api;
 
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
+use Runa\Support\Logging\LogContext;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\ModuleAvailability;
 use Runa\Support\Modules\ModuleRegistry;
@@ -29,8 +29,7 @@ final readonly class OperationGuard
             }
             $id = (string) Str::uuid7();
             $parent = $this->scope->current();
-            $request = $this->app->bound('request') ? $this->app->make('request') : null;
-            $candidate = $request instanceof Request ? $request->attributes->get('request_id') : null;
+            $candidate = $this->app->make(LogContext::class)->current()['correlation_id'] ?? null;
             $correlation = is_string($candidate) && preg_match('/\A[a-zA-Z0-9_-]{1,64}\z/D', $candidate) === 1 ? $candidate : $id;
             $context = new OperationContext($module, $operation->key, $id, $parent !== null ? $parent->correlationId : $correlation, $status->generation, $parent?->moduleId);
             if ($operation->permission !== null && ! $this->authorizer->allows($context, $operation->permission)) {

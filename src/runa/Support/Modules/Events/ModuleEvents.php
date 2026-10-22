@@ -100,7 +100,7 @@ final readonly class ModuleEvents
                         }
                         $this->guard->assertCurrent($context);
                         $handler->handle($event, EventSubscriptions::key($record->id, $current->key, $event));
-                    });
+                    }, ['event_id' => $event->id]);
                 } catch (Throwable) {
                     $this->failure($event, $record->id, 'listener_refused_or_failed', $listener->key);
                 }

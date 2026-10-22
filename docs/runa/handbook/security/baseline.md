@@ -172,7 +172,7 @@ Do not log secrets or sensitive payloads.
 
 Do not dump entire requests by default.
 
-Use centralized redaction for sensitive keys/context rather than relying on every call site to remember.
+Use the supplied [structured logging/redaction contract](../architecture/module-framework.md#delivered-structured-logging-and-future-logs-read-boundary): bounded allowlisted technical context, private fixed rotating files and stderr, static messages and trusted origin/correlation scopes. Unknown context/objects/payloads are redacted, exception-bearing messages are replaced, and credentials/URLs are masked. Approved identifier fields must still contain only technical identities; never put sensitive data into free-text messages or broaden the catalogue to dump requests. Custom channels must preserve equivalent protection.
 
 Stack traces may exist in development/test and internal logs, not production API responses.
 

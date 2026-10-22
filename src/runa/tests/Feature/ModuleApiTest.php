@@ -2,7 +2,9 @@
 
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
@@ -333,3 +335,32 @@ it('rejects invalid descriptor interfaces before their constructors run', functi
     }
     expect(ApiCalls::$constructed)->toBe(0);
 })->with([['apis', 'PublicApi', 'ApiProvider'], ['http', 'Routes', 'HttpProvider']]);
+
+it('attributes HTTP controller construction and invocation to the guarded module request', function (): void {
+    $path = $this->directory.'/backend/Http/ReadEntry.php';
+    file_put_contents($path, str_replace(
+        ['\\Tests\\Fixtures\\ApiCalls::$constructed++;', '\\Tests\\Fixtures\\ApiCalls::$executed++;'],
+        ['\\Tests\\Fixtures\\ApiCalls::$constructed++; \\Illuminate\\Support\\Facades\\Log::info("Controller constructed.");', '\\Tests\\Fixtures\\ApiCalls::$executed++; \\Illuminate\\Support\\Facades\\Log::info("Controller invoked.");'],
+        file_get_contents($path),
+    ));
+    $sink = new TestHandler;
+    Log::channel()->getLogger()->setHandlers([$sink]);
+    $this->http->register();
+    app()->instance(OperationAuthorizer::class, new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return true;
+        }
+    });
+    $this->guard = new OperationGuard($this->registry, $this->availability, $this->maintenance, app(OperationAuthorizer::class), app(), $this->scope);
+    app()->instance(OperationGuard::class, $this->guard);
+    $this->getJson($this->url, ['X-Request-ID' => 'module-http-123'])->assertOk();
+    expect($sink->getRecords())->toHaveCount(2);
+    foreach ($sink->getRecords() as $record) {
+        expect($record->extra['origin'])->toBe($this->id)
+            ->and($record->extra['request_id'])->toBe('module-http-123')
+            ->and($record->extra['correlation_id'])->toBe('module-http-123');
+    }
+    expect($this->scope->current())->toBeNull();
+});

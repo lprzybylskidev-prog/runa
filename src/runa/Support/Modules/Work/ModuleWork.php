@@ -209,7 +209,7 @@ final readonly class ModuleWork
                     }
                     $payload = $this->payload($row);
                     $handler->handle(new WorkContext($id, $token, $this), $payload);
-                });
+                }, ['work_id' => $id, ...($row->event_listener === null ? [] : ['event_id' => PublicEvent::fromArray($this->payload($row))->id])]);
                 $this->finish($id, $token, 'succeeded', 'completed');
 
                 return null;

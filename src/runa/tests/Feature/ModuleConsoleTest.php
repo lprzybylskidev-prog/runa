@@ -6,8 +6,11 @@ use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Queue\Factory;
 use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\CommandDefinition;
 use Runa\Contracts\Modules\ScheduleDefinition;
+use Runa\Support\Logging\LogContext;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\Api\DenyProtectedOperations;
 use Runa\Support\Modules\Api\ModuleDeclarations;
@@ -63,7 +66,7 @@ beforeEach(function (): void {
     $this->definitions = new WorkDefinitions($this->registry, new ModuleDeclarations($this->sources->root, app(), $loader, true));
     $this->work = new ModuleWork(DB::connection(), $this->registry, $this->definitions, $this->guard, $this->scope, app(Encrypter::class), app(Factory::class));
     app()->instance(ModuleWork::class, $this->work);
-    $this->console = new ModuleConsole($this->registry, new ModuleDeclarations($this->sources->root, app(), $loader, true), $this->definitions, $this->work, DB::connection());
+    $this->console = new ModuleConsole($this->registry, new ModuleDeclarations($this->sources->root, app(), $loader, true), $this->definitions, $this->work, DB::connection(), app(LogContext::class));
     $this->transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->lifecycle, app(Encrypter::class), '0.4.0', $this->health);
     $this->queue = 'work-test-'.bin2hex(random_bytes(6));
     config(['queue.default' => 'database', 'queue.connections.database.queue' => $this->queue]);
@@ -196,4 +199,23 @@ it('honors the scheduler callback overlap mutex and releases it after admission'
     $event->run(app());
     expect(DB::table('shared.jobs')->where('queue', $this->queue)->count())->toBe(1);
     expect($event->mutex->exists($event))->toBeFalse();
+});
+
+it('attributes diagnostic commands and queued work without passing CLI scope to the next job', function (): void {
+    app()->instance(OperationScope::class, $this->scope);
+    $sink = new TestHandler;
+    Log::channel()->getLogger()->setHandlers([$sink]);
+    file_put_contents($this->directory.'/backend/Definitions/Diagnostic.php', '<?php namespace '.$this->namespace.'\\Definitions; final class Diagnostic implements \\Runa\\Contracts\\Modules\\DiagnosticHandler { public function diagnose(array $payload): array { \\Illuminate\\Support\\Facades\\Log::info("Diagnostic handled.", ["payload" => $payload]); return ["status" => "inspected"]; } }');
+    $this->console->execute($this->id, 'inspect', ['password' => 'private_cli']);
+    expect($sink->getRecords()[0]->extra['origin'])->toBe($this->id)
+        ->and($sink->getRecords()[0]->context['payload'])->toBe('[redacted]');
+    WorkCalls::$handle = fn () => Log::info('Work handled.', ['payload' => 'private_work']);
+    $id = $this->console->execute($this->id, 'run')['work_id'];
+    $correlation = $this->work->status($id)->correlationId;
+    ($this->worker)();
+    $record = $sink->getRecords()[1];
+    expect($record->extra['origin'])->toBe($this->id)
+        ->and($record->extra['correlation_id'])->toBe($correlation)
+        ->and($record->extra['work_id'])->toBe($id)->and($record->extra['operation_id'])->toBe($id)
+        ->and(app(LogContext::class)->current())->toBe([]);
 });
