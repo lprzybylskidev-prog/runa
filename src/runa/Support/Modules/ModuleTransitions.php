@@ -10,6 +10,7 @@ use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\LifecyclePlan;
 use Runa\Contracts\Modules\TransitionContext;
 use Runa\Contracts\Modules\TransitionResult;
+use Runa\Support\Modules\Work\ModuleWork;
 use RuntimeException;
 use Throwable;
 
@@ -77,7 +78,16 @@ final class ModuleTransitions
             }
         }
 
-        return new AdministrativePreview($graph, $plans, $blockers);
+        $activeWork = [];
+        /** @var list<object{module_key: string, status: string, total: int}> $workCounts */
+        $workCounts = $this->connection->table('shared.module_work as w')->join('shared.modules as m', 'm.id', '=', 'w.module_id')
+            ->whereIn('m.module_id', $graph->affected)->whereIn('w.status', ModuleWork::ACTIVE)
+            ->selectRaw('m.module_id as module_key, w.status, count(*) as total')->groupBy('m.module_id', 'w.status')->get()->all();
+        foreach ($workCounts as $count) {
+            $activeWork[$count->module_key][$count->status] = $count->total;
+        }
+
+        return new AdministrativePreview($graph, $plans, $blockers, $activeWork);
     }
 
     public function apply(AdministrativePreview $preview): TransitionResult
@@ -97,7 +107,11 @@ final class ModuleTransitions
                     'payload' => $this->encode(['plans' => array_map(self::planState(...), $preview->plans), 'changes' => $preview->graph->changes, 'progress' => [], 'terminal' => 'failed']),
                     'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
                 ]);
-                $this->bump(); // Publish the ingress fence independently of unchanged flags.
+                if (in_array($preview->graph->intent, ['disable', 'unregister'], true)) {
+                    $this->connection->table('shared.module_work')->whereIn('module_id', $this->connection->table('shared.modules')->whereIn('module_id', $preview->graph->affected)->select('id'))
+                        ->whereIn('status', ModuleWork::ACTIVE)->update(['cancel_requested' => true, 'updated_at' => now()]);
+                }
+                $this->bump(); // Publish fence and cooperative work signals with unchanged flags.
             });
 
             return $this->advance($id);

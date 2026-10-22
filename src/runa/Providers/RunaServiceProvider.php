@@ -5,6 +5,7 @@ namespace Runa\Providers;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Queue\Factory;
 use Illuminate\Database\Console\Migrations\FreshCommand;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
 use Illuminate\Database\Console\Migrations\RefreshCommand;
@@ -19,8 +20,10 @@ use Illuminate\Foundation\Console\ConfigMakeCommand;
 use Illuminate\Foundation\Console\TestMakeCommand;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\WorkerIdle;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 use Runa\Console\Commands\CheckApplicationManifest;
 use Runa\Console\Commands\CheckConfigurationTemplates;
@@ -65,6 +68,9 @@ use Runa\Support\Modules\ModuleHealth;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\ModuleTransitions;
 use Runa\Support\Modules\Storage\ModuleStorage;
+use Runa\Support\Modules\Work\ModuleQueueGuard;
+use Runa\Support\Modules\Work\ModuleWork;
+use Runa\Support\Modules\Work\WorkDefinitions;
 use Runa\Support\PlatformManifest;
 use Runa\Support\RuntimeHeartbeat;
 use RuntimeException;
@@ -112,6 +118,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleDeclarations::class, fn () => new ModuleDeclarations(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(OperationGuard::class, fn () => new OperationGuard($this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class), $this->app->make(MaintenanceState::class), $this->app->make(OperationAuthorizer::class), $this->app, $this->app->make(OperationScope::class)));
         $this->app->singleton(ModuleApis::class);
+        $this->app->singleton(WorkDefinitions::class);
+        $this->app->singleton(ModuleWork::class, fn () => new ModuleWork($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(WorkDefinitions::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(Encrypter::class), $this->app->make(Factory::class)));
         $this->app->singleton(ModuleHttp::class, fn () => new ModuleHttp($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make('router'), $this->app->make(DatabaseManager::class)->connection()));
         ModuleAutoloader::register();
         foreach ([MigrateCommand::class => ScopedMigrateCommand::class, StatusCommand::class => ScopedStatusCommand::class, SeedCommand::class => ScopedSeedCommand::class] as $native => $scoped) {
@@ -165,6 +173,8 @@ final class RunaServiceProvider extends ServiceProvider
         $this->loadJsonTranslationsFrom(app_path('lang'));
 
         Event::listen(MessageSending::class, [MailBranding::class, 'attachLogo']);
+        Queue::createPayloadUsing(ModuleQueueGuard::payload(...));
+        Event::listen(JobProcessing::class, ModuleQueueGuard::before(...));
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
         Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));
         if (! $this->app->runningInConsole() && ($errors = $validator->errors()) !== []) {

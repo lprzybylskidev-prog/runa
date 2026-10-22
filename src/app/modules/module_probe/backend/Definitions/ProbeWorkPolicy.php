@@ -6,8 +6,9 @@ use Runa\Contracts\Modules\LifecyclePlan;
 use Runa\Contracts\Modules\LifecyclePolicy;
 use Runa\Contracts\Modules\Preparation;
 use Runa\Contracts\Modules\TransitionContext;
+use Runa\Support\Modules\Work\ModuleWork;
 
-/** Explicit stateless, no-work policy for the removable development probe. */
+/** Stateless probe drains its declared work before administrative publication. */
 final readonly class ProbeWorkPolicy implements LifecyclePolicy
 {
     public function schemaVersion(): int
@@ -17,7 +18,7 @@ final readonly class ProbeWorkPolicy implements LifecyclePolicy
 
     public function plan(string $intent): LifecyclePlan
     {
-        return new LifecyclePlan('stateless:1');
+        return new LifecyclePlan('stateless:2');
     }
 
     public function acceptsDataVersion(?string $installedVersion, string $sourceVersion): bool
@@ -27,7 +28,7 @@ final readonly class ProbeWorkPolicy implements LifecyclePolicy
 
     public function prepare(TransitionContext $context, ?string $token): Preparation
     {
-        return new Preparation('ready');
+        return new Preparation(app(ModuleWork::class)->active($context->moduleId) === [] ? 'ready' : 'waiting', code: 'probe_draining');
     }
 
     public function compensate(TransitionContext $context, ?string $token): bool

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "app.module_probe",
   "kind": "optional",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "platform": ">=0.3.1 <1.0.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -26,7 +26,7 @@
     "integrations": [],
     "http": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeHttp"],
     "commands": [],
-    "jobs": [],
+    "jobs": ["App\\Modules\\ModuleProbe\\Definitions\\ProbeJobs"],
     "schedules": [],
     "events": [],
     "frontend": [],

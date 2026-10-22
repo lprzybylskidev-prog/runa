@@ -9,6 +9,8 @@
 5. Dispatch after commit when the job depends on committed database state.
 6. Failed jobs use standard Laravel failure mechanisms plus safe actionable context.
 
+Module jobs use the [managed work protocol](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-queue-and-active-work-protocol): source-owned JobProvider/JobDefinition, WorkHandler and WorkPolicy, dispatched through ModuleWork rather than raw Bus/Queue. Work row/envelope share the registry's database transaction; keep queue retry_after above the lease and atomic units below the fixed lease-minus-five timeout. Test real worker start/deserialization, releases, generation races and independent process death; fakes cannot prove fences or crash recovery. Policy code owns retry/cancel/compensation; failed/expired work requires explicit reconciliation and must never replay automatically. Ordinary application jobs retain Laravel's normal behavior.
+
 ## Scheduler
 
 7. Declare scheduled behavior using the current supported Laravel scheduler mechanism.
