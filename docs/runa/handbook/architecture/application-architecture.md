@@ -118,4 +118,4 @@ The application manifest src/app/application.json defines independent identity/v
 
 ## Module framework design
 
-The [module framework contracts](module-framework.md) describe delivered strict manifest validation, owner-scoped discovery, persistent registry snapshots and module autoloading, alongside planned module-owned health/work decisions and enforcement boundaries. Lifecycle, operational adapters and managed module business operations are not delivered yet. Ordinary application code remains supported.
+The [module framework contracts](module-framework.md) describe delivered strict manifest validation, owner-scoped discovery, persistent registry snapshots, module autoloading and graph-only lifecycle previews, alongside planned module-owned health/work decisions and enforcement boundaries. Administrative transitions, operational adapters and managed module business operations are not delivered yet. Ordinary application code remains supported.

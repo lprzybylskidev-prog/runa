@@ -2,7 +2,7 @@
 
 ## Delivery status and scope
 
-The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots and local module autoloading are delivered. Lifecycle/dependency enforcement, operational adapters and generators remain planned; modules cannot yet run managed business operations. Ordinary application PHP/Vue and independent frontends remain supported.
+The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading and graph-only lifecycle previews are delivered. Administrative transitions, health/dependency enforcement at operational boundaries, adapters and generators remain planned; modules cannot yet run managed business operations. Ordinary application PHP/Vue and independent frontends remain supported.
 
 Modules share the existing Laravel application and container. They are trusted local code, not sandboxed plugins or independently downloaded Composer packages. The framework enforces declared boundaries; static checks and PostgreSQL schema conventions cannot sandbox deliberately malicious code.
 
@@ -121,7 +121,7 @@ php artisan runa:modules:sync runa
 php artisan runa:modules:sync app
 ```
 
-Each call scans exactly one owner and validates all of its manifests before publication. Missing module roots represent an empty inventory; invalid roots, manifests, declaration source paths, ordinary `Modules` namespace collisions and any nested symlink fail the complete operation. `.gitignore` and `.gitkeep` are allowed root metadata files. Source validation checks declaration names and owned files without executing providers or descriptors; each feature's future adapter validates its own descriptor interface/revision before instantiation. Dependency range syntax/direction is validated now; graph compatibility/resolution belongs to the next delivery point.
+Each call scans exactly one owner and validates all of its manifests before publication. Missing module roots represent an empty inventory; invalid roots, manifests, declaration source paths, ordinary `Modules` namespace collisions and any nested symlink fail the complete operation. `.gitignore` and `.gitkeep` are allowed root metadata files. Source validation checks declaration names and owned files without executing providers or descriptors; each feature's future adapter validates its own descriptor interface/revision before instantiation. Dependency range syntax/direction is validated before publication; graph compatibility and lifecycle cascades are evaluated over the resulting immutable snapshot as described below.
 
 `shared.modules` persists bigint identity, unique UUIDv7 management ID, owner-local/full identity, source-owned kind, registration/source-presence flags, administrative enabled flag, last source version, nullable installed version and validated manifest metadata/hash. `shared.module_registry_state` holds one generation row. Both are platform-owned technical tables, including when the record describes an application module; native application wipes preserve them. Database constraints reject invalid owner/ID/path/version combinations and disabled Core records. No module-domain FK or domain schema is introduced.
 
@@ -132,6 +132,23 @@ Synchronization locks the existing singleton row, validates/discovers trusted lo
 The updater and customer deployment integration point will call these reusable operations in their planned phases. The platform updater does not currently install application modules implicitly. The only actual module source is the temporary development probe; there are no production Core registrations.
 
 Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. No real Auth, Permissions, Audit or Admin implementation is included.
+
+### Delivered dependency graph and lifecycle previews
+
+`Runa\Support\Modules\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
+
+```php
+$graph = new ModuleGraph($registry->snapshot(), $platformVersion);
+$preview = $graph->preview('enable', 'app.documents');
+```
+
+`Runa\Contracts\Modules\LifecyclePreview` has schema version 1, intent, target, generation, ordered `affected` IDs, proposed `changes` (`module ID => enabled`) and immutable `GraphBlocker` values. Enable traverses required edges in lexical order and emits dependencies before consumers, once per module. Already enabled modules remain in the affected graph for validation but need no flag change. Disable traverses enabled registered required dependents and emits consumers before dependencies. Disabled consumers and optional edges never join that cascade. Missing source retains its last validated edges for safe disable planning. Enabling a dependency never includes its previously disabled consumers.
+
+Blockers contain only a stable code, complete root-to-failure path and optional expected constraint/actual version. Codes are `not_registered`, `source_missing`, `dependency_version`, `platform_version`, `framework_api_version`, `ownership_direction`, `required_cycle` and `core_disable`. Cycle paths include the closing repeated ID. Errors in another disconnected graph do not block the requested preview. Direct Core disable and any cascade containing Core are blocked. A blocked preview may describe proposed changes for diagnostics; it never authorizes their publication.
+
+`optionalBlockers($consumer, $dependency)` inspects one declared optional edge's presence/source/version compatibility without recursive activation, including when optional references form cycles. An undeclared edge returns `optional_not_declared`. These diagnostics do not change the consumer's required graph. Both-side operational availability and integration toggles belong to the health/integration adapters; an empty optional blocker list does not establish operational readiness.
+
+A future transition publisher must construct a new graph from a fresh snapshot under the registry publication lock and call `assertCurrent($preview)`. This recomputes and compares the complete DTO, rejecting changed generations, altered cascades and blocked graphs. Calling it on a retained old graph only validates that old generation and cannot certify freshness. Later lifecycle/health/work adapters add their own policy/settings revisions, installed-data compatibility, readiness and fence gates before flags can change. `graphReady()` reports graph validity alone; null installed versions do not become installed data through a preview. No transition execution or management HTTP endpoint is delivered here.
 
 ## Module-owned health policy
 

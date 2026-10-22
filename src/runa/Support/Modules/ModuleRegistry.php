@@ -84,10 +84,12 @@ final class ModuleRegistry
             /** @var int $generation */
             $generation = $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->value('generation');
             $modules = [];
-            /** @var list<object{public_id: string, module_id: string, kind: string, registered: bool, source_present: bool, enabled: bool, source_version: string, installed_version: ?string, source_path: string, manifest_hash: string}> $rows */
+            /** @var list<object{public_id: string, module_id: string, kind: string, registered: bool, source_present: bool, enabled: bool, source_version: string, installed_version: ?string, source_path: string, manifest_hash: string, manifest: string}> $rows */
             $rows = $this->connection->table('shared.modules')->orderBy('module_id')->get()->all();
             foreach ($rows as $row) {
-                $modules[$row->module_id] = new ModuleRecord($row->public_id, $row->module_id, $row->kind, $row->registered, $row->source_present, $row->kind === 'core' || $row->enabled, $row->source_version, $row->installed_version, $row->source_path, $row->manifest_hash);
+                /** @var array{dependencies: array{required: array<string, string>, optional: array<string, string>}, platform: string, framework_api: string} $manifest Validated during explicit synchronization. */
+                $manifest = json_decode($row->manifest, true, 16, JSON_THROW_ON_ERROR);
+                $modules[$row->module_id] = new ModuleRecord($row->public_id, $row->module_id, $row->kind, $row->registered, $row->source_present, $row->kind === 'core' || $row->enabled, $row->source_version, $row->installed_version, $row->source_path, $row->manifest_hash, $manifest['dependencies']['required'], $manifest['dependencies']['optional'], $manifest['platform'], $manifest['framework_api']);
             }
 
             $snapshot = new RegistrySnapshot($generation, $modules);

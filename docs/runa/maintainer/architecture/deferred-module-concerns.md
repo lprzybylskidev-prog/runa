@@ -13,7 +13,7 @@ Remove an entry when the responsible module is implemented and move its durable 
 
 Generic secure coding, transaction, API, and dependency rules continue to apply. Do not invent module-specific policy merely because a generic skill mentions it.
 
-The audit module will also define audited physical deletion/anonymization. Do not implement that mechanism during environment setup. Broader module activation/dependency architecture and the future application log module are likewise deferred; the baseline uses ordinary Laravel/container logging. Authentication implementation and its exact package choice remain deferred alongside authorization; no starter auth stack is implicitly approved.
+The audit module will also define audited physical deletion/anonymization. Do not implement that mechanism during environment setup. Module identity/discovery and dependency/cascade planning are defined in the public [module framework contracts](../../handbook/architecture/module-framework.md); administrative transition execution and operational enforcement remain under the active module-framework roadmap. The future application log module remains deferred; the baseline uses ordinary Laravel/container logging. Authentication implementation and its exact package choice remain deferred alongside authorization; no starter auth stack is implicitly approved.
 
 ## Auth-owned user preferences
 
