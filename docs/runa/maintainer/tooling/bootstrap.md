@@ -36,7 +36,7 @@ python3 bootstrap.py --non-interactive \
 
 Use an actually published tag; development branch changes are delivered only
 after their release. The example downloads the existing 0.2.1 release and does
-not assert that its source contains the unfinished RM-2026-005 features.
+not assert that its source contains capabilities added in later releases.
 
 ## Private access
 

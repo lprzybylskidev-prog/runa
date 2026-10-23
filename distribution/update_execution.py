@@ -316,8 +316,7 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
                     raise Blocker('customization-changed', 'Delivered files changed since review; inspect the reported names and explicitly continue with the new review fingerprint.')
                 if any(row['state'] == 'replacing' for row in journal.get('file_actions', [])):
                     raise Blocker('project-transition-changed', 'Finish or inspect interrupted file transitions before accepting a different plan.')
-                journal.setdefault('file_action_history', []).extend(journal.get('file_actions', []))
-                journal['file_actions'] = update_files.actions(reviewed)
+                update_files.renew_actions(reviewed, journal)
                 journal['decision'] = update_customization.decision(reviewed, choice)
                 journal['review'] = reviewed
                 atomic(pending, journal)

@@ -8,7 +8,7 @@ import subprocess
 
 from update_contracts import Blocker, OWNER_PATHS
 
-PRESERVED_FILES = {'src/composer.json', 'src/composer.lock', 'src/package.json', 'src/pnpm-lock.yaml'}
+PRESERVED_FILES = {'src/composer.json', 'src/composer.lock', 'src/package.json', 'src/pnpm-lock.yaml', 'src/pnpm-workspace.yaml'}
 GENERATED = {'.devcontainer/compose.resources.yaml'}
 PRIVATE_PARTS = {'vendor', 'node_modules', '.git', '.runtime', 'storage', 'artifacts', 'coverage', 'backups', 'cache'}
 
@@ -130,6 +130,21 @@ def actions(reviewed):
     import uuid
     return [{**row, 'id': uuid.uuid4().hex, 'state': 'planned'} for row in reviewed['files']
             if row['action'] in ('add', 'update', 'remove')]
+
+
+def renew_actions(reviewed, journal):
+    """Keep normalized completed actions; renew only actual new local differences."""
+    prior = {row['path']: row for row in journal.get('file_actions', [])}
+    current = []
+    for row in actions(reviewed):
+        old = prior.get(row['path'])
+        if old and all(old[key] == row[key] for key in ('action', 'original', 'current', 'target')):
+            current.append(old)
+            prior.pop(row['path'])
+        else:
+            current.append(row)
+    journal.setdefault('file_action_history', []).extend(prior.values())
+    journal['file_actions'] = current
 
 
 def validate_staging(root, operation, original, target, journal):
