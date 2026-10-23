@@ -245,5 +245,39 @@ class CustomerHookSetup(unittest.TestCase):
                 self.assertEqual(subprocess.check_output(['git', 'config', '--local', '--get', 'core.hooksPath'], cwd=root, text=True).strip(), 'custom-hooks')
 
 
+
+
+
+class EnvironmentOwnership(unittest.TestCase):
+    def test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ('.env.dev.example', '.env.test.example'):
+                (root / name).write_text('DB_PASSWORD=\nAPP_KEY=\n')
+            with patch.object(dev, 'ROOT', root):
+                dev.environment_files()
+                before = {p.name: p.read_bytes() for p in root.glob('.env*')}
+                dev.environment_files()
+                self.assertEqual(before, {p.name: p.read_bytes() for p in root.glob('.env*')})
+                (root / '.env.testing').write_text('DB_PASSWORD=synthetic-mismatch\n')
+                with self.assertRaisesRegex(ValueError, 'Testing and database initialization credentials differ') as failure:
+                    dev.environment_files()
+                self.assertNotIn('synthetic-mismatch', str(failure.exception))
+                self.assertEqual((root / '.env.dev.database').read_bytes(), before['.env.dev.database'])
+                (root / '.env.testing').chmod(0o644)
+                with self.assertRaisesRegex(ValueError, 'private owned regular'):
+                    dev.environment_files()
+
+    def test_linked_secret_files_are_preserved_and_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / '.env.dev.example').write_text('DB_PASSWORD=\n')
+            outside = root / 'unrelated'
+            outside.write_text('DB_PASSWORD=preserved\n')
+            (root / '.env').symlink_to(outside)
+            with patch.object(dev, 'ROOT', root), self.assertRaisesRegex(ValueError, 'symlinks'):
+                dev.environment_files()
+            self.assertEqual(outside.read_text(), 'DB_PASSWORD=preserved\n')
+
 if __name__ == '__main__':
     unittest.main()
