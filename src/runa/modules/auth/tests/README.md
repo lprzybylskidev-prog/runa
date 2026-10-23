@@ -9,3 +9,10 @@ AuthEntryTest additionally prepares operational session proof/deadline/activity,
 concurrency-cap eviction, remembered persistence, scoped revocation/Audit rollback,
 account/source windows and cleanup regressions. Full acceptance remains the final
 roadmap gate. See docs/runa/handbook/modules/auth/sessions.md.
+
+AuthEntryTest also prepares credential-policy/history/expiry, reset replay and
+mandatory-TOTP preservation, factor enrollment/recovery/Audit rollback, cross-worker
+proof locking, session-bound expiring email OTP, real private trust cookies and
+step-up action/session/principal/TTL/single-commit consumption regressions. See
+`docs/runa/handbook/modules/auth/security.md`. Full browser, concurrent and delivery
+acceptance remains final verification. No production mail is sent by these fixtures.

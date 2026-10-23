@@ -53,7 +53,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $schedule->command('runa:modules:health')->everyMinute()->evenInMaintenanceMode();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'token', 'identifier', 'email']);
+        $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'token', 'identifier', 'email', 'code', 'enrollment_code', 'recovery_code', 'secret']);
         $exceptions->render(function (ValidationException $error, Request $request) {
             if ($request->is('api/runa/auth/*')) {
                 $fields = array_fill_keys(array_keys($error->errors()), ['Invalid input.']);

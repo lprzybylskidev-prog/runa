@@ -18,6 +18,21 @@ final class EntryHttp implements HttpProvider
     public function endpoints(): array
     {
         return [
+            new HttpEndpoint('POST', 'security/challenge', new ApiOperation('security.challenge'), Http\ChallengeController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/email-send', new ApiOperation('security.email_send'), Http\EmailSendController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/totp-begin', new ApiOperation('security.totp_begin'), Http\TotpBeginController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/totp-confirm', new ApiOperation('security.totp_confirm'), Http\TotpConfirmController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/email-enable', new ApiOperation('security.email_enable'), Http\EmailEnableController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/disable', new ApiOperation('security.disable'), Http\DisableController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'security/recovery-rotate', new ApiOperation('security.recovery_rotate'), Http\RecoveryRotateController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'password/change', new ApiOperation('password.change'), Http\PasswordChangeController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'password/reset', new ApiOperation('password.reset'), Http\PasswordResetController::class, HttpAccess::Public),
+            new HttpEndpoint('POST', 'password/forgot', new ApiOperation('password.forgot'), Http\PasswordForgotController::class, HttpAccess::Public),
+            new HttpEndpoint('POST', 'step-up', new ApiOperation('step_up.confirm'), Http\StepUpController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('POST', 'trusted-devices', new ApiOperation('trust.issue'), Http\TrustIssueController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'security', new ApiOperation('security.status'), Http\SecurityStatusController::class, HttpAccess::Restricted),
+            new HttpEndpoint('GET', 'trusted-devices', new ApiOperation('trust.list'), Http\TrustListController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('POST', 'trusted-devices/revoke', new ApiOperation('trust.revoke'), Http\TrustRevokeController::class, HttpAccess::Authenticated),
             new HttpEndpoint('GET', 'sessions', new ApiOperation('sessions.list'), Http\SessionsController::class, HttpAccess::Restricted),
             new HttpEndpoint('POST', 'sessions/revoke', new ApiOperation('sessions.revoke'), Http\RevokeSessionController::class, HttpAccess::Restricted),
             new HttpEndpoint('POST', 'session/activity', new ApiOperation('session.activity'), Http\ActivityController::class, HttpAccess::Restricted),

@@ -1,16 +1,17 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.3.0`, requiring
+Core `runa.auth` ships at independent version `0.4.0`, requiring
 `runa.audit ^0.2.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
 Permissions dependency or cross-module SQL, model, relationship or foreign key.
 
-RM-2026-011 points 4–6 supply identity/lifecycle foundations and
+RM-2026-011 points 4–7 supply identity/lifecycle foundations and
 [Fortify cookie/session/CSRF transport, registration and invitations](transport.md).
 [Operational sessions, remembered persistence and abuse defenses](sessions.md) are
-also available. Trust issuance, password recovery/2FA, private profile/preferences,
+also available. [Password policy/recovery, 2FA, trusted devices and step-up](security.md)
+are delivered. Private profile/preferences,
 Permissions and Auth screens follow in later points.
 There is no management UI. Protected administrative contracts still deny by default.
 
@@ -89,8 +90,8 @@ blockers separately: deleted, approval_required, before_activation/inactive,
 deactivated, expired, security_locked and attempt_locked. Email verification and
 password change remain distinct restricted-flow requirements. `mayAuthenticate()`
 requires no blockers; `mayOperate()` additionally requires no restrictions.
-Transport now checks session revocation generation and current restrictions; 2FA
-and step-up are separate upcoming flows.
+Transport checks session revocation generation, password age and session-specific
+factor restrictions; sensitive consumers use the separate step-up contract.
 
 Activation before activate_at is denied even when the active flag is true. At
 activate_at, scheduled activation becomes effective independently of the stored
@@ -126,8 +127,7 @@ inactive account's activation schedule, so changing dates cannot revive old acce
 Operational sessions and trusted-device rows bind that generation and are revoked
 in the same lifecycle transaction. Reactivation never restores them. The
 [session/abuse contract](sessions.md) defines proof binding, deadlines, own/admin
-revocation, remembered-cookie persistence, heartbeat and cleanup. Trust issuance
-follows with 2FA. Scheduled deadlines also require current-time ingress checks;
+revocation, remembered-cookie persistence, heartbeat and cleanup. Trust issuance and 2FA follow the [credential contract](security.md). Scheduled deadlines also require current-time ingress checks;
 future lifecycle orchestration does not replace those checks. Temporary locks and
 account expiry stay independent.
 

@@ -1,5 +1,17 @@
 # Auth module changelog
 
+## 0.4.0
+
+Add shared password complexity/history/expiry/change/recovery, TOTP with transactional
+replay counters and hashed single-use recovery, optional session-bound email OTP,
+required-method enforcement, revocable device trust and AuthStepUp 1.0.0 with
+session/action-bound TTL or every-action proofs. Add protected AuthSecurity 1.0.0
+for email-only administrative reset, privileged factor recovery and device reads/
+revocation. Reset requires current authority plus every-action both-factor step-up;
+ordinary administrative access remains denied until Permissions. Add the forward
+credential migration and reserved 0.3.0 -> 0.4.0 settings upgrade. Existing public
+identity/lifecycle/invitation/session signatures and framework API stay compatible.
+
 ## 0.3.0
 
 Add transactional tracked session admission, unlimited/default or capped concurrency

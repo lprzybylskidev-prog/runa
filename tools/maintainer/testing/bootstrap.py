@@ -265,6 +265,7 @@ class BootstrapContracts(unittest.TestCase):
                     self.assertIn('docs/runa/handbook/modules/auth/README.md', guidance.read_text())
                     self.assertIn('docs/runa/handbook/modules/auth/transport.md', guidance.read_text())
                     self.assertIn('docs/runa/handbook/modules/auth/sessions.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/security.md', guidance.read_text())
                 self.assertEqual(len(list((destination / '.agents/skills').glob('*/SKILL.md'))), 9)
                 self.assertIn('AGENTS.md', receipt['customer_agent']['files'])
                 self.assertFalse((destination / 'docs/runa/maintainer').exists())
@@ -284,6 +285,7 @@ class BootstrapContracts(unittest.TestCase):
                     self.assertIn('docs/runa/handbook/modules/auth/README.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
                     self.assertIn('docs/runa/handbook/modules/auth/transport.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
                     self.assertIn('docs/runa/handbook/modules/auth/sessions.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/security.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
                 self.assertFalse((clone / '.git/runa-bootstrap.json').exists())
                 self.assertFalse((clone / 'docs/runa/maintainer').exists())
 

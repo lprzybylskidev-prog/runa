@@ -9,12 +9,14 @@ use Illuminate\Support\Facades\Mail;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 
 /** At most one SMTP attempt per token. Ambiguous delivery requires an explicit resend. */
 final readonly class DeliverEntryMail
 {
-    public function __construct(private EntryTransaction $transactions, private LookupIdentity $identities) {}
+    public function __construct(private EntryTransaction $transactions, private LookupIdentity $identities,
+        private CredentialPolicy $policy, private SessionStore $sessions) {}
 
     public function deliver(string $publicId): void
     {
@@ -53,13 +55,18 @@ final readonly class DeliverEntryMail
                 || (app()->environment('production') && $parts['scheme'] !== 'https')) {
                 throw new \RuntimeException('Invalid Auth mail origin.');
             }
-            $path = $token->purpose === 'invitation' ? '/auth/invitation' : '/auth/verify-email';
+            $path = match ($token->purpose) {
+                'invitation' => '/auth/invitation', 'reset' => '/auth/reset-password', default => '/auth/verify-email'
+            };
             $url = $origin.$path.'#token='.$secret;
-            $subject = $token->purpose === 'invitation' ? 'Zaproszenie do aplikacji' : 'Potwierdź adres e-mail';
+            $subject = match ($token->purpose) {
+                'invitation' => 'Zaproszenie do aplikacji', 'reset' => 'Zresetuj hasło', 'email_otp' => 'Kod uwierzytelniania', default => 'Potwierdź adres e-mail'
+            };
+            $body = $token->purpose === 'email_otp' ? 'Kod uwierzytelniania: '.$secret : "Otwórz odnośnik, aby kontynuować:\n".$url."\nJeśli nie oczekujesz tej wiadomości, zignoruj ją.";
             // User locks remain held through SMTP handoff to serialize lifecycle/invalidation.
             // No token retry is permitted even if SMTP succeeds and the final DB commit fails.
             try {
-                $sent = Mail::raw("Otwórz odnośnik, aby kontynuować:\n".$url."\nJeśli nie oczekujesz tej wiadomości, zignoruj ją.",
+                $sent = Mail::raw($body,
                     static fn ($message) => $message->to($token->recipient)->subject($subject));
                 if ($sent === null) {
                     throw new \RuntimeException('Auth mail cancelled.');
@@ -81,6 +88,14 @@ final readonly class DeliverEntryMail
         return [$user, $token];
     }
 
+    private function liveEmailSession(User $user, object $token): bool
+    {
+        $row = app('db')->connection()->table('runa_auth.sessions')->where('user_id', $user->id)
+            ->where('session_hash', $token->session_hash)->where('security_version', $user->security_version)->whereNull('revoked_at')->first();
+
+        return $row !== null && $this->sessions->live($row);
+    }
+
     private function valid(?User $user, ?object $token): bool
     {
         return $user !== null && $token !== null && $token->consumed_at === null && $token->invalidated_at === null
@@ -88,6 +103,9 @@ final readonly class DeliverEntryMail
             && $token->recipient === $user->email && $token->security_version === $user->security_version
             && ($token->purpose !== 'invitation' || $user->password === null)
             && ($token->purpose !== 'verification' || $user->email_verified_at === null)
+            && ($token->purpose !== 'reset' || $user->password !== null)
+            && ($token->purpose !== 'email_otp' || ($user->email_factor && $user->email_verified_at !== null
+                && $this->policy->permitted('email') && $this->liveEmailSession($user, $token)))
             && $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate();
     }
 }

@@ -8,13 +8,14 @@ use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\Eligibility;
 use Runa\Modules\Auth\Contracts\Identity;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\Identifiers;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Owning private reads do not enter protected APIs recursively. Never cache eligibility. */
 final readonly class LookupIdentity implements AuthIdentities
 {
-    public function __construct(private ModuleSettings $settings) {}
+    public function __construct(private ModuleSettings $settings, private CredentialPolicy $credentials) {}
 
     public function identity(string $publicId): ?Identity
     {
@@ -79,7 +80,7 @@ final readonly class LookupIdentity implements AuthIdentities
         if ($user->email_verified_at === null) {
             $restrictions[] = 'email_verification_required';
         }
-        if ($user->password_change_required) {
+        if ($user->password_change_required || $this->credentials->passwordExpired($user)) {
             $restrictions[] = 'password_change_required';
         }
 

@@ -17,6 +17,8 @@ final readonly class CleanupSessions
         $this->transactions->run(function (Connection $connection): void {
             $this->transactions->lockAuthority($connection);
             $now = CarbonImmutable::now('UTC');
+            $proofIds = $connection->table('runa_auth.step_up_proofs')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
+            $connection->table('runa_auth.step_up_proofs')->whereIn('id', $proofIds)->delete();
             foreach (['sessions', 'trusted_devices', 'login_windows'] as $table) {
                 $query = $connection->table('runa_auth.'.$table);
                 $query->where(function ($query) use ($table, $now): void {

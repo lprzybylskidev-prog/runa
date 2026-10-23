@@ -28,7 +28,9 @@ final class User extends ModuleModel implements AuthenticatableContract, MustVer
             'password_change_required' => 'boolean', 'version' => 'integer', 'security_version' => 'integer',
             'activate_at' => 'immutable_datetime', 'deactivate_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime', 'attempt_locked_until' => 'immutable_datetime',
-            'email_verified_at' => 'immutable_datetime',
+            'email_verified_at' => 'immutable_datetime', 'password_changed_at' => 'immutable_datetime',
+            'totp_pending_until' => 'immutable_datetime', 'totp_counter' => 'integer',
+            'email_factor' => 'boolean', 'recovery_hashes' => 'array',
         ];
     }
 

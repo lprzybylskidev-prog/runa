@@ -38,6 +38,11 @@ final readonly class EntryTransaction
         $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.auth', 'login.refused', 'refused'));
     }
 
+    public function securityRefused(): void
+    {
+        $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.auth', 'security.refused', 'refused'));
+    }
+
     public function record(string $action, User $user): void
     {
         $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.auth', $action,

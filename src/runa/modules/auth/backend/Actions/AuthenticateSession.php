@@ -11,6 +11,7 @@ use Laravel\Fortify\Fortify;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\PrincipalScope;
@@ -18,7 +19,8 @@ use Runa\Support\Modules\Api\PrincipalScope;
 final readonly class AuthenticateSession
 {
     public function __construct(private EntryTransaction $transactions, private PrepareAuthenticatedSession $prepare,
-        private PrincipalScope $principals, private SessionStore $sessions, private LoginAbuse $abuse, private LookupIdentity $identities) {}
+        private PrincipalScope $principals, private SessionStore $sessions, private LoginAbuse $abuse, private LookupIdentity $identities, private TrustedDevices $devices,
+        private CredentialPolicy $credentials) {}
 
     public function login(Request $request): User
     {
@@ -51,9 +53,10 @@ final readonly class AuthenticateSession
                 $id = $this->sessions->admit($connection, $user, $request->session()->getId(), $request->boolean('remember'));
                 $request->session()->put('auth.security_version', $user->security_version);
                 $request->session()->put('auth.session_id', $id);
+                $this->devices->apply($connection, $user, $id, $request);
                 $row = $this->sessions->current($request, $user);
                 $request->session()->put('auth.remember', $row?->remembered === true);
-                $this->principals->run(new TrustedPrincipal($user->public_id), fn () => $this->transactions->record('login.succeeded', $user));
+                $this->principals->run(new TrustedPrincipal($user->public_id), fn () => $this->transactions->record($this->credentials->restrictions($user, $row) === [] ? 'login.succeeded' : 'login.credentials_accepted', $user));
 
                 return $user;
             });

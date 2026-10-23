@@ -16,3 +16,8 @@ Polling never renews activity; remember persistence cannot restore a revoked ses
 or move its captured absolute deadline. Technical cleanup preserves Audit history.
 Do not add a recaller or attacker-triggered permanent account lock. Consume delivered
 public contracts; protected platform source remains read-only.
+
+Use `docs/runa/handbook/modules/auth/security.md` for shared password policy/recovery,
+mandatory factors, trusted devices and AuthStepUp. Keep server-chosen step-up and
+its every-action consumption inside the business transaction. Trust/recent login
+never substitutes for required fresh proof; keep credentials/OTP/history private.

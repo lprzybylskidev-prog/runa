@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Own-session projection only; credentials and internal IDs never serialize. */
@@ -21,7 +22,8 @@ final class SessionResource extends JsonResource
         }
         $eligibility = app(LookupIdentity::class)->evaluate($user, CarbonImmutable::now('UTC'));
 
-        return ['public_id' => $user->public_id, 'display_name' => $user->identity()->displayName, 'restrictions' => $eligibility->restrictions,
+        return ['public_id' => $user->public_id, 'display_name' => $user->identity()->displayName, 'restrictions' => array_values(array_unique(array_merge($eligibility->restrictions,
+            app(CredentialPolicy::class)->restrictions($user, app(SessionStore::class)->current($request, $user))))),
             'session' => app(SessionStore::class)->projection(
                 app(SessionStore::class)->current($request, $user) ?? throw new \LogicException('Session unavailable.'), true),
             'activity' => ['heartbeat_seconds' => app(ModuleSettings::class)->value('runa.auth', 'session_heartbeat_seconds'),

@@ -627,7 +627,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
   - Acceptance/tests: concurrent login caps, stale cookie/remember replay, next-request
     lifecycle lockout, cleanup preserves Audit, polling cannot prolong idle and
     absolute deadline survives extension. Publish endpoint/policy/failure contracts.
-- [ ] 7. Deliver passwords, 2FA, trusted devices and reusable step-up.
+- [x] 7. Deliver passwords, 2FA, trusted devices and reusable step-up.
   - Requires 6. Implement password complexity/history/expiry/forced-change and reset,
     session-revocation policies, restricted password flow, TOTP/recovery/email OTP,
     required-method enforcement, enrollment and trust lifecycle.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–6 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport and tracked operational sessions with deadlines, revocation and standalone login abuse defenses. Point 7 is next: passwords, 2FA, trusted-device issuance and reusable step-up. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–7 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices and reusable step-up. Point 8 is next: email changes, private profile, avatar and own-history contracts. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1127,3 +1127,66 @@ architectural premise requires discussion before dependent work.
   only their absent-before-use Auth/Audit schemas and matching registry/work/queue
   evidence. Existing development/test databases, Qdrant/model caches, backups,
   verification reports and shared builder caches remain preserved.
+
+## Point 7 delivery
+
+- Auth advances independently 0.3.0 -> 0.4.0 for additive credential capabilities;
+  existing identity/lifecycle/invitation/session contracts stay compatible. Add
+  AuthSecurity and AuthStepUp APIs 1.0.0, a reserved settings-default upgrade and
+  owned forward credential migration. Audit/framework API versions remain unchanged.
+  Permissions must select the then-current compatible Auth baseline. No dependency,
+  service, UI or production installation change is introduced.
+- Shared new-password validation covers registration, invitation setup, change and
+  reset: configurable complexity, native hashing, bounded private previous hashes,
+  expiry and forced-change restriction. Own change verifies the current password
+  and optional fresh factor, supports keep-all/revoke-others/default/revoke-all and
+  always invalidates trust, step-up and pending tokens. Reset is expiring/single-use,
+  email-only, generic for anonymous callers and revokes all sessions/trust without
+  authenticating, verifying an email or removing mandatory/enrolled 2FA. Existing
+  password age starts at upgrade; hashes do not claim retrospective complexity.
+- TOTP uses Fortify's already installed engine and encrypted expiring enrollment;
+  exact accepted counters persist under the user lock, with atomic rollback/replay
+  protection. One-time recovery codes persist only as hashes and are shown once.
+  Optional email OTP uses encrypted pending delivery and token-bound keyed equality,
+  short expiry, current recipient/generation and exact native-session binding.
+  Independent enablement/required choices preserve mandatory TOTP against email,
+  password and recovery-flow bypass. Account-wide bounded security attempt windows
+  supplement the source cap; failures never create permanent account locks.
+- Trust issuance requires a fresh factor and uses a private encrypted host-only
+  HttpOnly cookie with only hashed/revocable bounded technical storage. Current
+  enrollment/method policy, captured/current lifetime and generation gate its use.
+  It may satisfy ordinary login factors, never fresh step-up or session deadlines.
+  Factor changes/recovery invalidate affected sessions/trust and old proofs.
+- Step-up binds identity, session hash, action, requirement, factor method and TTL;
+  assertion rechecks current account/session/method policy inside the business
+  transaction. Every-action consumption and Audit commit or roll back with the
+  protected mutation. Privileged reset requires dedicated permission, neutral
+  authority and every-action both-factor proof; before Permissions these protected
+  APIs remain denied. No callbacks, models or secrets cross public module APIs.
+- Local knowledge was current (163 documents/2246 chunks); focused retrieval,
+  original sources and Boost Laravel 13 Fortify/password/hash guidance informed the
+  work. Seventeen distinct focused regressions passed across named native transport,
+  mandatory enrollment/replay/recovery, factor/password Audit rollback, history/
+  session policy, reset preserving TOTP, scoped step-up consumption/TTL/principal/
+  method-policy changes, private trust-cookie admission, email OTP binding/expiry/
+  attempts, password age/current policy, worker lock arbitration, privileged recovery,
+  real updater/default upgrade and private single-attempt reset/OTP delivery.
+  The installed engine's first-verification boolean required a non-null initial
+  replay counter; ingress now refreshes the owned user before projections so a
+  reused guard cannot return stale password restrictions. Module source and independent
+  version/changelog checks passed. Broad concurrent/browser/installation/security
+  acceptance remains point 19; mandatory hooks remain enabled.
+- Public Auth/API/database/cleanup guidance, module changelog and owner architecture
+  are synchronized. Owner/customer backend/Laravel/PostgreSQL/security references
+  route to the shared credential guide; acquisition/clone/reviewed-update fixtures
+  assert its delivery while preserving customer extensions. Root/customer AGENTS
+  already require guarded APIs, current server authority and transactional Audit;
+  no new constitution rule or duplicated procedure is needed. CLAUDE stays a pointer.
+  Frontend instruction products are unaffected because this point adds no screens.
+- Knowledge status built the absent cached management-helper image; this is not a
+  final image/scanner gate. Scoped cleanup targets only this task-created
+  runa-management:2a709b7923c92afbb4bbef20 (no container references). No task service,
+  network or volume was created. Guarded fixtures removed only absent-before-use
+  Auth/Audit schemas and their registry/work/queue evidence. Development/test data,
+  Qdrant/model caches, backups, verification reports and shared builder caches are
+  preserved. No actual mail or production database migration was performed.

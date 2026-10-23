@@ -194,9 +194,10 @@ Point 4 delivers the [Auth identity contract](../../handbook/modules/auth/README
 owned Authenticatable ModuleModel, exclusive naming, normalized email/login claims,
 independent current-time eligibility, optimistic audited lifecycle operations and
 monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0; initial
-The initial identity edge remains 0.1.0; Auth now targets 0.3.0, requiring Audit ^0.2.0. Default administrative authority remains
+The initial identity edge remains 0.1.0; Auth now targets 0.4.0, requiring Audit ^0.2.0. Default administrative authority remains
 denied. No Permissions dependency, is_admin flag, foreign data access or user seed.
 Identifier-reuse settings govern subsequent deletions without reclaiming ownership;
-operational session/trust revocation is delivered in point 6; trust issuance follows with 2FA. Root/customer
+operational session/trust revocation is delivered in point 6; point 7 delivers
+[passwords, second factors, trust issuance and step-up](../../handbook/modules/auth/security.md). Root/customer
 AGENTS already require guarded module access, UUIDv7 and transactional history;
 both domain reference products link this guide rather than duplicate procedures.

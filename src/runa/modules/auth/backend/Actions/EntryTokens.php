@@ -5,7 +5,6 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
@@ -60,26 +59,29 @@ final readonly class EntryTokens implements AuthInvitations
     }
 
     /** Internal only: owning registry/authority/user locks are already held. */
-    public function issueLocked(Connection $connection, User $user, string $purpose, int $reminders = 0): bool
+    public function issueLocked(Connection $connection, User $user, string $purpose, int $reminders = 0, ?string $sessionHash = null): bool
     {
         if ($connection !== app('db')->connection() || $connection->transactionLevel() < 1
-            || ! in_array($purpose, ['invitation', 'verification'], true)) {
+            || ! in_array($purpose, ['invitation', 'verification', 'reset', 'email_otp'], true)) {
             throw new \LogicException('Invalid Auth token transaction.');
         }
         if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
             || ($purpose === 'invitation' && $user->password !== null)
-            || ($purpose === 'verification' && $user->email_verified_at !== null)) {
+            || ($purpose === 'verification' && $user->email_verified_at !== null)
+            || ($purpose === 'reset' && $user->password === null)
+            || ($purpose === 'email_otp' && (! $user->email_factor || $user->email_verified_at === null || $sessionHash === null))) {
             return false;
         }
         $minutes = $this->settings->value('runa.auth', $purpose.'_minutes');
         $interval = $this->settings->value('runa.auth', 'invitation_reminder_minutes');
         $id = (string) Str::uuid7();
-        $secret = bin2hex(random_bytes(32));
+        $secret = $purpose === 'email_otp' ? str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT) : bin2hex(random_bytes(32));
         $enqueue = $this->work->prepareDispatch('runa.auth', 'entry.deliver', ['token_id' => $id]);
         $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', $purpose)
             ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
         $connection->table('runa_auth.entry_tokens')->insert([
-            'public_id' => $id, 'user_id' => $user->id, 'purpose' => $purpose, 'token_hash' => hash('sha256', $secret),
+            'public_id' => $id, 'user_id' => $user->id, 'purpose' => $purpose, 'token_hash' => $purpose === 'email_otp' ? hash_hmac('sha256', $id.':'.$secret, config('app.key')) : hash('sha256', $secret),
+            'session_hash' => $sessionHash,
             'recipient' => $user->email, 'delivery_secret' => Crypt::encryptString($secret), 'security_version' => $user->security_version,
             'expires_at' => now()->addMinutes($minutes), 'reminders' => $reminders,
             'remind_at' => $purpose === 'invitation' && $interval > 0 ? now()->addMinutes($interval) : null,
@@ -106,8 +108,10 @@ final readonly class EntryTokens implements AuthInvitations
     public function consume(#[\SensitiveParameter] string $secret, string $purpose, #[\SensitiveParameter] ?string $password = null): void
     {
         $hash = hash('sha256', $secret);
-        $passwordHash = $password === null ? null : Hash::make($password);
-        $this->transactions->run(function (Connection $connection) use ($hash, $purpose, $passwordHash): void {
+        if (! in_array($purpose, ['invitation', 'verification'], true)) {
+            throw new \InvalidArgumentException('Invalid entry purpose.');
+        }
+        $this->transactions->run(function (Connection $connection) use ($hash, $purpose, $password): void {
             $this->transactions->lockAuthority($connection);
             $candidate = $connection->table('runa_auth.entry_tokens')->where('token_hash', $hash)->where('purpose', $purpose)->first();
             $user = $candidate === null ? null : User::where('id', $candidate->user_id)->lockForUpdate()->first();
@@ -116,17 +120,18 @@ final readonly class EntryTokens implements AuthInvitations
                 || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC'))
                 || $token->recipient !== $user->email || $token->security_version !== $user->security_version
                 || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
-                || ($purpose === 'invitation' && ($user->password !== null || $passwordHash === null))) {
+                || ($purpose === 'invitation' && ($user->password !== null || $password === null))) {
                 throw new OperationRejected('entry_token_invalid', 'runa.auth', 'entry.complete', 422);
             }
             if ($purpose === 'invitation') {
-                $user->password = $passwordHash;
-                $user->password_change_required = false;
+                app(Passwords::class)->replaceLocked($connection, $user, $password);
                 $user->security_version++;
                 $user->remember_token = null;
             }
             $user->email_verified_at = CarbonImmutable::now('UTC');
-            $user->version++;
+            if ($purpose !== 'invitation') {
+                $user->version++;
+            }
             $user->save();
             $connection->table('runa_auth.entry_tokens')->where('id', $token->id)->update(['consumed_at' => now(), 'delivery_secret' => null]);
             $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('id', '<>', $token->id)

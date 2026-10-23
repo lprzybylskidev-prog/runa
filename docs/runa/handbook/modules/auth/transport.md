@@ -35,8 +35,8 @@ cookie settings live in platform config, with normal application override rules;
 registration/token policy belongs to encrypted module settings, not environment
 credentials. Auth 0.3.0 supplies [operational session controls](sessions.md): bounded concurrency,
 activity/absolute deadlines, optional remembered-cookie persistence, own list/revoke,
-protected administrative contracts, technical trust storage and cleanup. Trust
-issuance and remaining password/2FA flows follow in their owning points.
+protected administrative contracts, technical trust storage and cleanup.
+Auth 0.4.0 adds [password recovery/2FA, trust issuance and step-up](security.md).
 
 Login verifies hashes before evaluating all independent account blockers, including
 scheduled activation. Unknown, incorrect, pending approval, inactive, deleted,
@@ -52,8 +52,9 @@ invalidates session and regenerates CSRF. No remember token is created or rotate
 Every supplied authenticated session is checked against its tracked session proof,
 activity/absolute deadlines, fresh eligibility and revocation generation before module controllers/FormRequests and ordinary app APIs.
 A mismatch/blocker yields 401 `authentication_required`. Pending verification or
-forced password change yields 403 `account_restricted` on ordinary operations.
-Only Auth's explicit restricted session/read/resend allowlist is admitted; marking
+forced/expired password or pending second factor yields 403 `account_restricted`
+on ordinary operations.
+Only Auth's explicit restricted supporting-operation allowlist is admitted; marking
 another module endpoint Restricted cannot bypass this boundary. Verification can
 remove only its own restriction; other blockers/password restrictions still apply.
 The same checks immediately restrict sessions after an authorized reverification
@@ -83,9 +84,9 @@ Names are `runa.auth.<operation>`; paths below are under `/api/runa/auth/`.
 | POST   | verification/resend   | verification.resend   | Restricted; own primary only, generic accepted response      |
 
 Input supports exactly the existing complete exclusive naming alternatives and
-identifier normalization. Registration and initial invitation passwords currently
-require 12 characters and at most 72 UTF-8 bytes without NUL, protecting native
-bcrypt's input boundary. Later password policy adds configurable complexity/history.
+identifier normalization. Registration and initial invitation passwords use the shared configurable
+[credential policy](security.md), defaulting to at least 12 characters and at most 72 UTF-8 bytes without NUL, protecting native
+bcrypt's input boundary. The shared policy also enforces configured complexity/history.
 Explicitly supplied activation/approval/verification flags are prohibited; unknown
 fields are never mass assigned. Known frontend validation and UI arrive with the
 owning screen points. No management HTTP endpoints or placeholder pages are added.
@@ -126,7 +127,7 @@ before token, checks expiry/recipient/security generation/current eligibility an
 consumes it atomically with password setup or verification and Audit. Concurrent
 replay loses; failure rolls everything back. Initial password setup clears the
 password-change restriction and revokes older generations; completion never logs
-in or bypasses future 2FA. There is no administrator-visible temporary password.
+in or bypasses required 2FA. There is no administrator-visible temporary password.
 
 ## Queue, mail and reminders
 

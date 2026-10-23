@@ -4,14 +4,15 @@ Auth 0.3.0 adds the explicit `0.2.0 -> 0.3.0` settings-default upgrade and owned
 `sessions`, `trusted_devices` and `login_windows` migrations. Upgrade through the
 normal fenced ModuleUpdates transport. Existing untracked 0.2.0 sessions require
 login again. No dependency, new service or native Laravel recaller is introduced.
-Trust issuance and second-factor verification follow with the password/2FA flow;
-the technical trust store is available for revocation and cleanup only.
+Auth 0.4.0 adds [trust issuance, second factors and reusable step-up](security.md),
+with a forward credential migration; session signatures remain compatible.
 
 ## Admission, deadlines and revocation
 
 Native web guard and Fortify regeneration remain in use. A successful root admission
 locks registry, authority and user, inserts the operational session and writes
-`login.succeeded` Audit on the default PostgreSQL transaction. Store only the SHA-256
+`login.succeeded` Audit (or `login.credentials_accepted` while 2FA is pending)
+on the default PostgreSQL transaction. Store only the SHA-256
 session-ID equality hash, UUIDv7 public reference, user FK, security generation,
 remember choice, authentication/activity timestamps, captured absolute deadline and
 revocation timestamp. Never return the session-ID hash, internal keys or credentials.
@@ -75,7 +76,7 @@ permission denial remains until Permissions integration; no admin HTTP page or
 bypass is supplied. Mutation Audit is synchronous, scoped to the subject, and
 rolls back revocation on persistence failure. Already revoked/foreign/absent IDs
 are harmless no-ops. Session revocation alone does not revoke trusted devices;
-account lifecycle and future password/2FA policies govern both stores explicitly.
+account lifecycle and [password/2FA policies](security.md) govern both stores explicitly.
 
 ## Settings
 

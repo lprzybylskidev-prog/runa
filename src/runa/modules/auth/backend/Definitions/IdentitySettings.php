@@ -13,6 +13,24 @@ final class IdentitySettings implements SettingsHandler, SettingsProvider
     public function settings(): array
     {
         return [
+            new SettingDefinition('password_min_length', 'integer', 12, ['pl' => 'Minimalna długość hasła', 'en' => 'Password min length'], ['pl' => 'Minimalna długość hasła.', 'en' => 'Password min length.'], rules: ['min:12', 'max:72']),
+            new SettingDefinition('password_mixed_case', 'boolean', false, ['pl' => 'Wielkie i małe litery w haśle', 'en' => 'Password mixed case'], ['pl' => 'Wielkie i małe litery w haśle.', 'en' => 'Password mixed case.']),
+            new SettingDefinition('password_numbers', 'boolean', false, ['pl' => 'Cyfry w haśle', 'en' => 'Password numbers'], ['pl' => 'Cyfry w haśle.', 'en' => 'Password numbers.']),
+            new SettingDefinition('password_symbols', 'boolean', false, ['pl' => 'Symbole w haśle', 'en' => 'Password symbols'], ['pl' => 'Symbole w haśle.', 'en' => 'Password symbols.']),
+            new SettingDefinition('password_history', 'integer', 5, ['pl' => 'Historia haseł', 'en' => 'Password history'], ['pl' => 'Historia haseł.', 'en' => 'Password history.'], rules: ['min:0', 'max:24']),
+            new SettingDefinition('password_expiry_days', 'integer', 0, ['pl' => 'Ważność hasła w dniach', 'en' => 'Password expiry days'], ['pl' => 'Ważność hasła w dniach.', 'en' => 'Password expiry days.'], rules: ['min:0', 'max:3650']),
+            new SettingDefinition('password_change_factor', 'boolean', false, ['pl' => 'Drugi składnik przy zmianie hasła', 'en' => 'Password change factor'], ['pl' => 'Drugi składnik przy zmianie hasła.', 'en' => 'Password change factor.']),
+            new SettingDefinition('password_session_policy', 'string', 'revoke_others', ['pl' => 'Sesje po zmianie hasła', 'en' => 'Password session policy'], ['pl' => 'Sesje po zmianie hasła.', 'en' => 'Password session policy.'], rules: ['in:keep_all,revoke_others,revoke_all']),
+            new SettingDefinition('reset_minutes', 'integer', 30, ['pl' => 'Ważność resetu hasła', 'en' => 'Reset minutes'], ['pl' => 'Ważność resetu hasła.', 'en' => 'Reset minutes.'], rules: ['min:5', 'max:60']),
+            new SettingDefinition('totp_enabled', 'boolean', true, ['pl' => 'TOTP', 'en' => 'Totp enabled'], ['pl' => 'TOTP.', 'en' => 'Totp enabled.']),
+            new SettingDefinition('recovery_codes_enabled', 'boolean', true, ['pl' => 'Kody odzyskiwania', 'en' => 'Recovery codes enabled'], ['pl' => 'Kody odzyskiwania.', 'en' => 'Recovery codes enabled.']),
+            new SettingDefinition('email_otp_enabled', 'boolean', false, ['pl' => 'Kod e-mail', 'en' => 'Email otp enabled'], ['pl' => 'Kod e-mail.', 'en' => 'Email otp enabled.']),
+            new SettingDefinition('email_otp_minutes', 'integer', 5, ['pl' => 'Ważność kodu e-mail', 'en' => 'Email otp minutes'], ['pl' => 'Ważność kodu e-mail.', 'en' => 'Email otp minutes.'], rules: ['min:1', 'max:10']),
+            new SettingDefinition('two_factor_required', 'string', 'optional', ['pl' => 'Wymagany drugi składnik', 'en' => 'Two factor required'], ['pl' => 'Wymagany drugi składnik.', 'en' => 'Two factor required.'], rules: ['in:optional,any,totp,email']),
+            new SettingDefinition('trusted_devices_enabled', 'boolean', false, ['pl' => 'Zaufane urządzenia', 'en' => 'Trusted devices enabled'], ['pl' => 'Zaufane urządzenia.', 'en' => 'Trusted devices enabled.']),
+            new SettingDefinition('trusted_device_days', 'integer', 30, ['pl' => 'Ważność zaufania w dniach', 'en' => 'Trusted device days'], ['pl' => 'Ważność zaufania w dniach.', 'en' => 'Trusted device days.'], rules: ['min:1', 'max:90']),
+            new SettingDefinition('step_up_seconds', 'integer', 300, ['pl' => 'Ważność ponownego potwierdzenia', 'en' => 'Step up seconds'], ['pl' => 'Ważność ponownego potwierdzenia.', 'en' => 'Step up seconds.'], rules: ['min:1', 'max:900']),
+            new SettingDefinition('security_attempt_limit', 'integer', 10, ['pl' => 'Limit prób potwierdzenia', 'en' => 'Security attempt limit'], ['pl' => 'Limit prób potwierdzenia.', 'en' => 'Security attempt limit.'], rules: ['min:1', 'max:30']),
             new SettingDefinition('session_limit', 'integer', 0, ['pl' => 'Limit równoczesnych sesji', 'en' => 'Concurrent session limit'], ['pl' => 'Limit równoczesnych sesji.', 'en' => 'Concurrent session limit.'], rules: ['min:0', 'max:100']),
             new SettingDefinition('session_idle_minutes', 'integer', 120, ['pl' => 'Limit bezczynności sesji', 'en' => 'Session inactivity timeout'], ['pl' => 'Limit bezczynności sesji.', 'en' => 'Session inactivity timeout.'], rules: ['min:1', 'max:43200']),
             new SettingDefinition('session_absolute_minutes', 'integer', 720, ['pl' => 'Bezwzględna ważność sesji', 'en' => 'Absolute session lifetime'], ['pl' => 'Bezwzględna ważność sesji.', 'en' => 'Absolute session lifetime.'], rules: ['min:1', 'max:43200']),
@@ -40,7 +58,9 @@ final class IdentitySettings implements SettingsHandler, SettingsProvider
 
     public function valid(array $values): bool
     {
-        return true;
+        return ($values['two_factor_required'] !== 'totp' || $values['totp_enabled'])
+            && ($values['two_factor_required'] !== 'email' || $values['email_otp_enabled'])
+            && ($values['two_factor_required'] !== 'any' || $values['totp_enabled'] || $values['email_otp_enabled']);
     }
 
     public function handler(): string
