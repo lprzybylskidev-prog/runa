@@ -369,6 +369,7 @@ class Updater(unittest.TestCase):
             relative = '.agents/skills/' + area + '/references/application.md'
             self.assertEqual(rows[relative]['action'], 'manual-reconciliation')
             self.assertIn('docs/runa/handbook/modules/auth/README.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/transport.md', (self.target / relative).read_text())
             self.assertEqual((self.installed / relative).read_text(), 'customer domain extension')
         self.assertEqual(rows['obsolete.txt']['action'], 'remove')
         self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')

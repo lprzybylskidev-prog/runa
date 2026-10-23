@@ -38,3 +38,9 @@ Use `runa:make:module owner.code [type] [name]` for module-local generation, fol
 HttpEndpoint may declare Public/Authenticated/Restricted access. The shared pre-controller HttpAccountPolicy resolves current identity without recursive protected API calls; PrincipalScope unwinds at the server root. Keep session/CSRF wiring explicit. Use SettingsParticipant for required in-transaction persistence. See [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); these interfaces alone do not supply authentication.
 
 Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Operational
+session controls and remaining Auth security flows have separate owning points.

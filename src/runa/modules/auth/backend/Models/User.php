@@ -4,11 +4,13 @@ namespace Runa\Modules\Auth\Models;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Runa\Modules\Auth\Actions\EntryTokens;
 use Runa\Modules\Auth\Contracts\Identity;
 use Runa\Support\Modules\Data\ModuleModel;
 
 /** Auth-owned persistence. Mutations belong to audited lifecycle/credential Actions. */
-final class User extends ModuleModel implements AuthenticatableContract
+final class User extends ModuleModel implements AuthenticatableContract, MustVerifyEmail
 {
     use Authenticatable;
 
@@ -38,6 +40,31 @@ final class User extends ModuleModel implements AuthenticatableContract
     public function getAuthIdentifierName(): string
     {
         return 'public_id';
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
+    public function getEmailForVerification(): string
+    {
+        return $this->email;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        app(EntryTokens::class)->resendVerification($this->public_id);
+    }
+
+    public function markEmailAsUnverified(): bool
+    {
+        throw new \LogicException('Reverification requires an authorized owning Action.');
+    }
+
+    public function markEmailAsVerified(): bool
+    {
+        throw new \LogicException('Verification requires the owning single-use token Action.');
     }
 
     public function identity(): Identity

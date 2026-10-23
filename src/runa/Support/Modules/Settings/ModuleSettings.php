@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
+use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
@@ -36,6 +37,49 @@ final class ModuleSettings
         private readonly SettingsObserver $observer,
         private readonly SettingsParticipant $participant = new NoSettingsParticipation,
     ) {}
+
+    /** Add source defaults during a transactional reserved module upgrade, preserving existing values.
+     * Existing immediate definitions only: changed/removed keys need a separately designed migration.
+     */
+    public function upgradeDefaults(UpgradeContext $context): void
+    {
+        if ($context->connection !== $this->connection || $this->connection->transactionLevel() < 1) {
+            throw new RuntimeException('Settings upgrade requires the reserved default transaction.');
+        }
+        $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+        $record = $this->registry->snapshot()->modules[$context->module] ?? null;
+        if ($state === null || $state->update_operation !== $context->operation
+            || $state->update_owner !== explode('.', $context->module)[0]
+            || $record === null || ! $record->registered || ! $record->sourcePresent
+            || version_compare($context->to, $record->sourceVersion, '>')) {
+            throw new RuntimeException('Settings upgrade reservation changed.');
+        }
+        [$definitions, $provider] = $this->definitions->for($record);
+        $stored = $this->state($context->module);
+        if ($stored->settings_values === null) {
+            return;
+        }
+        $old = $this->decode($stored->settings_values);
+        $candidate = $old;
+        $changes = [];
+        foreach ($definitions as $key => $definition) {
+            if (! array_key_exists($key, $old)) {
+                if ($definition->application !== 'immediate') {
+                    throw new RuntimeException('Reinitializing defaults need an explicit upgrade workflow.');
+                }
+                $candidate[$key] = $definition->default;
+                $changes[$key] = $definition->sensitive ? ['replaced' => true] : ['old' => null, 'new' => $definition->default];
+            }
+        }
+        $this->definitions->validate($definitions, $provider, $candidate);
+        if ($changes === []) {
+            return;
+        }
+        $revision = $stored->settings_revision + 1;
+        $this->write($context->module, $this->encode($candidate), $revision);
+        $publication = new SettingsContext($context->operation, $context->module, $revision, 'immediate', $changes, null, now()->utc()->toIso8601String());
+        $this->participant->publishing($this->connection, new SettingsPublication($publication, $revision, 'upgrade', $changes));
+    }
 
     /** Safe management projection. Sensitive values expose set-state only, never ciphertext.
      * @return array{generation: int, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}

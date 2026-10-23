@@ -5,7 +5,7 @@
 The [foundation contracts](module-foundations.md) define transactional settings
 participation, reserved installation Audit participation, pre-controller account
 policy/trusted principal scopes, neutral authority guards and bounded management
-entity metadata. The [Audit store, events, automatic capture and authorized reads](../modules/audit/README.md) are delivered; the [Auth identity/lifecycle store](../modules/auth/README.md) is also delivered; Permissions and authentication transport remain pending their owning implementation points.
+entity metadata. The [Audit store, events, automatic capture and authorized reads](../modules/audit/README.md) are delivered; the [Auth identity/lifecycle store](../modules/auth/README.md) is also delivered; [Auth entry transport](../modules/auth/transport.md) is delivered; operational session controls and Permissions remain pending their owning implementation points.
 
 ## Delivery status and scope
 
@@ -138,7 +138,7 @@ Synchronization locks the existing singleton row, validates/discovers trusted lo
 
 The forward Runa preparation primitive and external updater explicitly invoke the Runa-owned update contract below. Application deployment code explicitly invokes the same contract for app modules; the platform updater never installs them implicitly. The retained development-only `app.reference` example is the only supplied module source; there are no production Core registrations.
 
-Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. Audit supplies the store, automatic/manual event and authorized read contracts; Auth supplies its identity/lifecycle foundation; Permissions, Admin and authentication transport remain undelivered.
+Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. Audit supplies the store, automatic/manual event and authorized read contracts; Auth supplies identity/lifecycle and cookie/CSRF entry transport; operational session controls, Permissions and Admin remain undelivered.
 
 ### Delivered dependency graph and lifecycle previews
 
@@ -420,6 +420,15 @@ Declare one owned `SettingsProvider` under `declarations.settings` when a module
 Built-in types are strict `string`, `integer`, `decimal`, `boolean`, `enum` and `array`; no coercion occurs. Exact decimal values are canonical decimal strings, never binary floats. Enum `options.choices` is a nonempty list with strict value comparison. Laravel rules enforce additional constraints; integer/decimal min/max use numeric semantics. Defaults and every complete candidate/stored value pass the same type, rule and cross-field checks. JSON values are bounded to 32 KiB with no objects/resources or nonfinite numbers. Register additional trusted `SettingType` implementations through `Settings\SettingTypes::register(key, implementation)` at application bootstrap; built-ins cannot be replaced. This extends backend acceptance; future Admin supplies renderers separately. Infrastructure connections and the encryption key remain Laravel environment/config inputs.
 
 Sensitive definitions require a nullable null default. Supply real secrets through trusted writes, never manifests/defaults/options, source or command arguments. `Settings\ModuleSettings::read(module)` returns registry generation, settings revision and localized definitions with non-sensitive values or sensitive `set` booleans only. It never returns plaintext or ciphertext for sensitive values. `value(module, key)` is an explicit private backend read for trusted owning-module code, including initialization/compensation. Never expose or log its result; operational consumers still require the normal availability gateway. These helpers are not a PHP sandbox against hostile trusted code.
+
+`ModuleSettings::upgradeDefaults(UpgradeContext)` deliberately adds missing immediate
+source defaults to a stored complete value set during a reserved transactional
+module upgrade. It validates the exact default connection/owner/operation, retains
+existing values, rejects removed/invalid keys and reinitializing additions, advances
+revision once and invokes mandatory participation with phase `upgrade`. Null storage
+continues using source defaults; repeated no-op calls publish nothing. It does not
+silently fill missing keys during ordinary reads or authorize changed-value policy
+migration. The updater fence remains in force; no external effects run here.
 
 The existing `shared.modules` row stores a Laravel-encrypted JSON value set and monotonic settings revision. Null storage means declared defaults. All values are encrypted, including non-sensitive settings, to prevent mixed plaintext storage and preserve one recoverable snapshot. The externally managed Laravel key/key-rotation configuration is required to read stored values and recovery operations. Wrong/missing keys or corrupt ciphertext fail closed with fixed safe errors; restore the correct external key before recovery. Never regenerate a lost key as a settings repair. Validation/provider exceptions are not chained into diagnostics.
 

@@ -1,19 +1,19 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Fortify integration and user interfaces remain assigned to later roadmap points;
-Manual/automatic business auditing and Auth identity/lifecycle foundations are available; authentication transport remains pending.
+RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Operational session controls, remaining Auth flows, Permissions and user interfaces remain assigned to later roadmap points.
+See the [Auth transport contract](../../handbook/modules/auth/transport.md).
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.2.0` for capture/reads; Auth now delivers its initial 0.1.0 identity/lifecycle foundation; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.2.0` for capture/reads; Auth advances to 0.2.0 for its entry transport; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
 0.5.0, not a claim that the predecessor contains these capabilities.
 
-Auth requires Audit `^0.2.0`; Permissions requires Auth `^0.1.0` and Audit `^0.2.0`.
+Auth requires Audit `^0.2.0`; Permissions must require the current compatible Auth baseline (now `^0.2.0`) and Audit `^0.2.0`.
 There is no reverse Auth dependency. Each manifest uses the normal source-owned
 lifecycle, upgrade and public adapter declarations. First installation declares an
 explicit transactional `null -> 0.1.0` initialization step. A matching installed
@@ -60,7 +60,7 @@ never label an unpersisted refusal as audited. No queue/afterCommit success hist
 
 `SettingsParticipant::publishing(Connection, SettingsPublication): void` runs after
 the stored write, before committing each actual publication/restoration. It sees
-safe SettingsContext, actual new revision, phase `publish`/`restore` and directional
+safe SettingsContext, actual new revision, phase `publish`/`restore`/`upgrade` and directional
 changes. Sensitive fields expose only replaced=true. The observer remains
 independent and best effort. Auth's participant composes policy history with Audit
 on that exact Connection, without ModuleApis ingress behind the reservation fence.
@@ -96,8 +96,10 @@ suppression remain owned finally-unwound domain scopes in their respective point
 EnforceAccountPolicy applies the same provider to ordinary API routes. Module
 routes use their dedicated adapter; health/ready remain independent. Public
 application identity/frontend discovery remains reachable before Auth exists.
-Auth must add session/CSRF middleware and secure cookies deliberately in point 5;
-no session/authentication claim follows merely from this policy interface.
+Point 5 deliberately wires session/CSRF middleware and secure cookies through the
+Auth transport provider and lazy account-policy bridge. The generic policy interface
+alone does not supply authentication. Anonymous independent module ingress does not
+require Auth readiness; supplied authenticated sessions do.
 DenyProtectedOperations and DenyAuthorityChanges remain the default bindings.
 
 ## Reserved preparation and bootstrap

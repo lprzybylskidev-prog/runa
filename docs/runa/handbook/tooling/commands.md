@@ -291,3 +291,12 @@ Development source ownership/manifest/required graph checks without executing mo
 `--group=NAME` or standalone `--all`. Background remains limited to roadmap/final;
 status takes no flags. See [quality groups and examples](../quality/README.md).
 The native Artisan registry and host transport preserve and validate these options.
+
+### Auth invitation reminders
+
+Installed Auth declares `php artisan runa:auth:entry.remind` as an operational
+ModuleWork command and a minute schedule with overlap protection. Reminders are
+disabled by default and bounded by encrypted module settings; see the
+[Auth transport procedure](../modules/auth/transport.md). Administrative invitation
+issue/resend/invalidation uses the protected typed contract, not credentials or raw
+tokens in CLI arguments. No Auth UI/operator-bootstrap command is delivered yet.

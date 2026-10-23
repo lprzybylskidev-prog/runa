@@ -48,3 +48,9 @@ Durable dictionaries use code/name_pl/name_en/description_pl/description_en, pro
 Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
 
 Auth identifier ownership uses normalized unique claims, with retention by default and explicit release on future deletions. Restore must reacquire claims atomically without stealing a newer identity or transferring history; expiry, activation, approval, deletion and locks remain independent. Follow the [Auth identity/lifecycle guide](../../../../docs/runa/handbook/modules/auth/README.md) for the authoritative procedure.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Operational
+session controls and remaining Auth security flows have separate owning points.

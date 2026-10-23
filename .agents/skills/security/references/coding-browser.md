@@ -43,3 +43,9 @@ Module account policy runs before controller/FormRequest resolution; Public/Auth
 Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
 
 Auth eligibility must be evaluated from current account state/time at each relevant ingress. Keep lifecycle blockers distinct from restricted flows, session revocation, permissions and step-up; do not expose account-existence/lifecycle reasons anonymously or reactivate old session/trust generations. Follow the [Auth identity/lifecycle guide](../../../../docs/runa/handbook/modules/auth/README.md) for the authoritative procedure.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Operational
+session controls and remaining Auth security flows have separate owning points.

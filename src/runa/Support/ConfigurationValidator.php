@@ -98,6 +98,11 @@ final class ConfigurationValidator
             if ($this->config->get('app.debug') !== false || $this->config->get('runa.knowledge_enabled') !== false) {
                 $errors[] = 'Production requires debug and knowledge tooling to be disabled.';
             }
+            if ($this->config->get('session.secure') !== true || $this->config->get('session.http_only') !== true
+                || $this->config->get('session.same_site') !== 'lax' || $this->config->get('session.domain') !== null
+                || $this->config->get('session.driver') !== 'file' || $this->config->get('session.serialization') !== 'json') {
+                $errors[] = 'Production requires secure host-only HTTP-only SameSite=Lax server sessions with JSON serialization.';
+            }
             if (! is_string($url) || parse_url($url, PHP_URL_SCHEME) !== 'https') {
                 $errors[] = 'Production requires an HTTPS app.url.';
             }

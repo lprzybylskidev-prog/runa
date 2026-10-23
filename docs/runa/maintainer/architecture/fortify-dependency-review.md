@@ -1,8 +1,9 @@
 # Fortify dependency evaluation
 
-Reviewed 2026-10-23 for RM-2026-011 point 1. This evaluation installs nothing and
-changes no Composer manifests/locks. The approved specification mandates Fortify;
-point 5 owns its actual installation and exact resolved dependency review.
+Reviewed 2026-10-23 for RM-2026-011 points 1 and 5. The mandated package is now
+installed as exact 1.36.2 through src/runa/composer.json, the composed src/composer.json
+and src/composer.lock. The solver added exactly the five versions below, with no
+updates/removals to existing packages and no additional direct dependency.
 
 ## Compatibility, maintenance and overlap
 
@@ -72,3 +73,23 @@ of general ModuleApis payloads. Do not publish default users migrations, starter
 UI, duplicate public auth routes, passkey endpoints or unrelated providers.
 Exact package source and route suppression behavior must be reviewed again at
 installation against the selected release.
+
+## Point 5 resolved review
+
+The final production subtree matches the candidate table: Fortify v1.36.2,
+BaconQrCode v3.1.1, Enum 1.0.7, Google2FA v9.1.0 and constant_time_encoding v3.1.3.
+The application-container solver accepted its PHP/extension/platform constraints.
+A fresh 2026-10-23 Packagist security-advisory query for all five packages found
+only Fortify PKSA-d885-j9vg-vvzx (<1.11.1); none of the resolved versions matched.
+That targeted dependency decision is not a claim that final Composer/image/security
+gates ran. Production extension/image acceptance remains final verification.
+
+Installed source confirms ignoreRoutes before route boot, custom authentication
+callback, CreatesNewUsers binding and native PrepareAuthenticatedSession regeneration.
+The adapter suppresses credential-bearing Failed events, supplies bounded source and
+Fortify login limits, and uses no package views/routes/passkeys. Exact version pinning
+prevents an incidental passkeys subtree. Deliberate future security updates require
+the same review; do not unpin to avoid evaluating dependency changes.
+
+[Packagist advisory API](https://packagist.org/api/security-advisories/?packages[]=laravel/fortify)
+and the primary package sources above support the review.

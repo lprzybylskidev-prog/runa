@@ -1,6 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; authentication/session transport and administration screens remain undelivered.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; operational session controls and administration screens remain undelivered.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -8,7 +8,7 @@ Use the existing [module framework](module-framework.md) and
 
 `SettingsParticipant::publishing(Connection, SettingsPublication): void` is for
 required synchronous persistence inside the exact settings write transaction.
-Publication contains safe context, actual revision, publish/restore phase and
+Publication contains safe context, actual revision, publish/restore/upgrade phase and
 changes in the direction actually written; sensitive fields expose replaced=true.
 Exceptions roll back the publication. Failed restoration retains the recovery
 fence until successfully retried. SettingsObserver keeps its independent best-effort
@@ -31,8 +31,9 @@ consumers), Authenticated or Restricted. The shared guard evaluates current modu
 availability, trusted HttpAccountPolicy and permissions before constructing the
 controller or resolving its FormRequest. Cached descriptor access is rechecked.
 Restricted requires the Auth flow allowlist; it does not bypass authorization.
-Non-public endpoints require a trusted principal. Future Auth supplies actual
-session/eligibility/flow enforcement; the default provider rejects non-public access.
+Non-public endpoints require a trusted principal. Installed Auth supplies current
+session/eligibility/restricted-flow enforcement; before installation, the default
+boundary rejects non-public access.
 
 Ordinary API routes use the same account provider through EnforceAccountPolicy;
 health/ready stay independent. Declare routes through supported named adapters.

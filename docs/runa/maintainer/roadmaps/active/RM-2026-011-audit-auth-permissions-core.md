@@ -607,7 +607,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
   - Acceptance/tests: naming alternatives, lookup normalization, uniqueness races,
     eligibility combinations, reuse preserves identity/history, restore conflicts
     and revoke-not-restore sessions/trust. Synchronize identity/database guidance.
-- [ ] 5. Integrate Fortify, session/CSRF transport and registration/invitation flows.
+- [x] 5. Integrate Fortify, session/CSRF transport and registration/invitation flows.
   - Requires 4. Deliberately add reviewed mandated Fortify through platform composed
     manifests/locks. Wire native guard, cookie/session middleware, named module HTTP
     routes/FormRequests/Actions/resources and central safe response envelopes.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–4 deliver framework foundations, manual/automatic Audit storage, transaction participation, suppression, authorized reads and Auth identity/eligibility/lifecycle foundations. Point 5 is next: Fortify, cookie/session/CSRF transport and registration/invitation flows. Operational sessions, remaining Auth flows and Permissions remain assigned to subsequent points.
+Active on the roadmap branch. Points 1–5 deliver framework foundations, Audit, Auth identities/eligibility/lifecycle and Fortify cookie/session/CSRF entry transport with registration/invitations and verification. Point 6 is next: operational session limits, deadlines, revocation and abuse defenses. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -985,3 +985,76 @@ architectural premise requires discussion before dependent work.
   exact RESTRICT teardown. Audit fixtures now prepare real Auth storage rather than
   fabricate Core readiness. Development/test data outside those fixtures, existing
   services, Qdrant/model caches, backups and verification reports are preserved.
+
+## Point 5 delivery
+
+- Added mandated exact Fortify 1.36.2 through the platform/composed Composer manifests
+  and lock. The solver added only the five reviewed packages, with no unrelated
+  updates/removals. Fresh Packagist advisory lookup matched none of their resolved
+  versions. Native/custom authentication, CreatesNewUsers and regenerated sessions
+  are integrated; package routes/views remain disabled from provider registration.
+  Final Composer audits, image/extension/scanner acceptance remain point 19.
+- Auth advances independently 0.1.0 -> 0.2.0 for additive entry capabilities;
+  existing identity/lifecycle API signatures remain compatible. New protected
+  AuthInvitations 1.0.0 exposes bounded resend/invalidation without secrets. Audit
+  and framework API versions remain unchanged; Permissions is not implemented and
+  its future manifest must select the then-current compatible Auth baseline.
+- Added native web guard, encrypted JSON server-side file sessions and explicit
+  same-origin CSRF/cookie middleware. Production validates host-only Secure,
+  HttpOnly, SameSite=Lax defaults. Login/logout rotate IDs and CSRF; fresh eligibility
+  and revocation generation protect ordinary and module ingress, including explicit
+  verification-only restrictions. Health/ready and anonymous independent modules do
+  not acquire a reverse Auth availability dependency. Remember input is prohibited;
+  operational session controls/deadlines/trust stay in their owning points.
+- Public registration defaults disabled. Enabled creation preserves exclusive names,
+  normalized unique claims, independent automatic/admin approval and verification,
+  native hashes and transactional Audit. Duplicate valid submissions have a generic
+  accepted response and create no session. Credential refusals expose no existence
+  or lifecycle status; login refusal records no identifier/secret. Initial password
+  setup never immediately forces another password change or authenticates the user.
+- Owned additive entry_tokens migration supplies hashed expiring single-use proofs,
+  same-module RESTRICT references and private encrypted pending mail. Token mutation,
+  queue work/envelope and Audit commit together. Consumption and Audit failure roll
+  back together. Source jobs/schedules recheck current eligibility/recipient/security
+  generation, suppress stale mail, rotate manual resends and bound optional reminder
+  chains. Delivery claims/purges secrets before one SMTP attempt and does not replay
+  ambiguous outcomes; explicit resend is the recovery. Mail fragments avoid server
+  query strings; UI consumption is assigned to point 11. No actual email was sent
+  during checks (the guarded harness used the array transport).
+- Added reserved ModuleSettings::upgradeDefaults for immediate additive defaults:
+  preserve stored values, validate complete source keys, advance once and persist
+  settings.upgrade through mandatory transaction participation. Ordinary reads never
+  fill missing values silently. No changed-value/reinitialize migration authority
+  or public preparation bypass is introduced. Registry (stronger row lock), authority,
+  user, token order preserves shared lock coordination; SMTP handoff uses the same
+  narrow bounded locks after a separately committed at-most-once claim.
+- Local knowledge was current (161 sources/2208 chunks); focused retrieval/original
+  sources and Boost Laravel 13 Fortify/session/CSRF documentation informed the work.
+  Six distinct focused regressions passed for actual named route suppression/session
+  rotation, real CSRF, atomic token consumption/Audit rollback, encrypted settings
+  upgrades, registration/approval/enumeration and idempotent/stale delivery/reminders.
+  CSRF initially returned Laravel's transformed HTTP exception envelope; its safe
+  419 renderer was corrected. The upgrade fixture initially lacked real migration
+  history; it now establishes it through the actual updater before modeling 0.1.0.
+  A focused follow-up caught Laravel 13's additional markEmailAsUnverified interface
+  method; both direct verification mutators now refuse the unaudited shortcut.
+  Its interrupted empty fixture was inspected and removed through an isolated guarded
+  recovery diagnostic, then the login/rotation check passed again. Competing-token
+  connection arbitration and broader cookie/concurrency/delivery acceptance are
+  prepared for final verification. Module source/version checks passed.
+- Current public Auth/API/database/module/command guidance, dependency review and
+  owner architecture are synchronized. Owner and customer backend/Laravel/security/
+  PostgreSQL references share the new transport procedure; acquisition/clone/update
+  fixtures assert it while preserving local extensions. Root/customer AGENTS already
+  require protected APIs, transactional Audit and server authority; no constitution
+  change or procedure duplication is needed. CLAUDE remains a pointer. Frontend
+  instruction products need no update: no browser UI component was delivered.
+- The host module source-check wrapper unexpectedly built its missing disposable
+  management helper image before running the source check. An attempted interruption
+  arrived after the build completed. This was not planned final image acceptance and
+  is not credited as a quality gate. Scoped cleanup removed only its newly created
+  runa-management:2a709b7923c92afbb4bbef20 tag/image after checking container references.
+  No service/network/volume was created, no production migration ran, and active
+  development/test data, Qdrant/model caches, backups, reports and shared builder
+  caches remain preserved. Guarded fixtures removed only their absent-before-use
+  Auth/Audit schemas and matching registry/update/work/queue records.

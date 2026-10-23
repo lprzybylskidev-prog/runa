@@ -1,5 +1,16 @@
 # Auth module changelog
 
+## 0.2.0
+
+Add pinned Fortify integration, guarded named cookie/session/CSRF entry transport,
+registration with independent approval/verification, single-use hashed invitations
+and verification, protected invitation resend/invalidation API 1.0.0 and queued
+eligibility-aware single-attempt mail with bounded optional reminders. Add owned
+entry-token migration and explicit 0.1.0 -> 0.2.0 settings-default upgrade with
+transactional Audit. Preserve existing identity/lifecycle API signatures; add native
+verification interface without an unaudited mark-verified shortcut. No Auth UI,
+operational session controls, remember-me, password recovery/2FA or Permissions yet.
+
 ## 0.1.0
 
 Initial Core identity/lifecycle foundations requiring Audit ^0.2.0. Owned PostgreSQL

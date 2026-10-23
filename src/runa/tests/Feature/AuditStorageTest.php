@@ -39,8 +39,9 @@ beforeEach(function (): void {
     // The newly supplied Core must be genuinely ready, not a fabricated installed flag.
     $authMigration = require base_path('runa/modules/auth/database/migrations/2026_10_23_000001_runa_auth_identities.php');
     $authMigration->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     $this->authFixtureCreated = true;
-    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0']);
+    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.2.0']);
     $migration = require base_path('runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php');
     $migration->up();
     $this->auditFixtureCreated = true;
@@ -53,6 +54,7 @@ afterEach(function (): void {
         DB::connection()->rollBack();
     }
     if ($this->authFixtureCreated ?? false) {
+        DB::statement('DROP TABLE runa_auth.entry_tokens RESTRICT');
         DB::statement('DROP TABLE runa_auth.users RESTRICT');
         DB::statement('DROP SCHEMA runa_auth RESTRICT');
         $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');

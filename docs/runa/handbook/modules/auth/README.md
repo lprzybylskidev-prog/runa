@@ -1,16 +1,17 @@
-# Auth identities and lifecycle
+# Auth identities, lifecycle and entry transport
 
-Core `runa.auth` initially ships at independent version `0.1.0`, requiring
+Core `runa.auth` ships at independent version `0.2.0`, requiring
 `runa.audit ^0.2.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
 Permissions dependency or cross-module SQL, model, relationship or foreign key.
 
-RM-2026-011 point 4 supplies identity/lifecycle foundations. Cookie/CSRF/Fortify
-transport, registration/invitations, operational sessions/trusted devices, 2FA,
-private profile/preferences, Permissions and Auth screens follow in later points.
-There is no usable login endpoint or management UI in this delivery.
+RM-2026-011 points 4–5 supply identity/lifecycle foundations and
+[Fortify cookie/session/CSRF transport, registration and invitations](transport.md).
+Operational session limits/deadlines/trusted devices, password recovery/2FA, private
+profile/preferences, Permissions and Auth screens follow in later points.
+There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access
 
@@ -39,7 +40,7 @@ Default authorization denies these operations until Permissions is integrated.
 requiring `runa.auth.users.manage`. These are administrative backend contracts,
 without HTTP routes. A permission does not substitute for the separate authority
 invariant participant; the supplied default `AuthorityGuard` refuses mutations.
-Owning private identity lookup is independent of protected APIs, so future account
+Owning private identity lookup is independent of protected APIs, so account
 policy/permission resolution need not authorize its own identity recursively.
 
 ## Names, identifiers and reservation
@@ -57,7 +58,8 @@ hyphens, beginning with a letter or digit. An at sign is excluded from login, so
 There are no provider-specific dot/plus email rewrites. Model serialization exposes
 only public_id; default mass assignment is refused. Auth is a ModuleModel with
 Laravel's Authenticatable contract/trait and a public_id authentication identifier.
-Credential/verification adapters are added with their audited flows later.
+The model also implements MustVerifyEmail. Verification writes require the owning
+single-use token Action; native direct markEmailAsVerified is deliberately refused.
 
 Auth declares immediate settings through normal encrypted module settings:
 
@@ -86,7 +88,8 @@ blockers separately: deleted, approval_required, before_activation/inactive,
 deactivated, expired, security_locked and attempt_locked. Email verification and
 password change remain distinct restricted-flow requirements. `mayAuthenticate()`
 requires no blockers; `mayOperate()` additionally requires no restrictions.
-Transport must also apply its own current session, 2FA and step-up checks.
+Transport now checks session revocation generation and current restrictions; 2FA
+and step-up are separate upcoming flows.
 
 Activation before activate_at is denied even when the active flag is true. At
 activate_at, scheduled activation becomes effective independently of the stored
@@ -121,9 +124,8 @@ already reached deactivation also advances that generation, as does changing an
 inactive account's activation schedule, so changing dates cannot revive old access.
 Future operational sessions
 and trusted-device records must bind that generation and reject a mismatch;
-reactivation never restores old credentials. This point supplies that persistent
-revocation contract; it does not claim operational session/trust storage already
-exists. Scheduled deadlines also require current-time ingress checks and later
+reactivation never restores old credentials. Cookie transport binds that persistent generation on login and rejects mismatches
+on subsequent ingress; operational session/trust metadata is still deferred. Scheduled deadlines also require current-time ingress checks and later
 lifecycle/session orchestration. Temporary locks and expiry stay independent.
 
 Root conflicts and invariant refusals are recorded through Audit's independent

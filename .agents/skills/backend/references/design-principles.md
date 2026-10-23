@@ -77,3 +77,9 @@ Assess module-local PATCH/MINOR/MAJOR and update its manifest plus central CHANG
 Use SettingsParticipant for mandatory transactional history; SettingsObserver stays best effort. Shared account policy, trusted principal scopes, reserved preparation participation and bounded management entities are defined in the [foundation contract](../../../../docs/runa/handbook/architecture/module-foundations.md). These adapters alone do not implement Audit/Auth/Permissions. Never turn trusted preparation into a public availability bypass.
 
 Use guarded Auth identity/lifecycle contracts rather than foreign account models or tables. Keep independent eligibility, permission, session and step-up decisions separate; resolve current eligibility rather than caching login success. Follow the [Auth identity/lifecycle guide](../../../../docs/runa/handbook/modules/auth/README.md) for the authoritative procedure.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Operational
+session controls and remaining Auth security flows have separate owning points.

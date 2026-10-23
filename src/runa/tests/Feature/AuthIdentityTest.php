@@ -40,8 +40,9 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'audit' ? '0.2.0' : '0.1.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => '0.2.0']);
     }
+    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.
     app()->bind(AuthorityGuard::class, fn () => new class implements AuthorityGuard
@@ -61,7 +62,7 @@ afterEach(function (): void {
     }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
-        foreach ($schema === 'runa_auth' ? ['users'] : ['entities', 'events'] as $table) {
+        foreach ($schema === 'runa_auth' ? ['entry_tokens', 'users'] : ['entities', 'events'] as $table) {
             DB::statement('DROP TABLE '.$schema.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
@@ -233,6 +234,7 @@ it('arbitrates competing Auth identifier claims in PostgreSQL and preserves immu
 });
 
 it('initializes Audit then Auth exactly once through the real fenced module updater with current runtime declarations', function (): void {
+    DB::statement('DROP TABLE runa_auth.entry_tokens RESTRICT');
     DB::statement('DROP TABLE runa_auth.users RESTRICT');
     DB::statement('DROP SCHEMA runa_auth RESTRICT');
     DB::statement('DROP TABLE runa_audit.entities RESTRICT');
@@ -246,5 +248,5 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $updates->apply('runa', str_repeat('a', 40), static function (): void {});
     expect(DB::table('runa_audit.events')->count())->toBe($events)->and(DB::table('runa_auth.users')->count())->toBe(0);
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
-    expect($record->installedVersion)->toBe('0.1.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
+    expect($record->installedVersion)->toBe('0.2.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });
