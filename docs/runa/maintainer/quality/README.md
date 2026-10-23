@@ -148,6 +148,14 @@ Before final verification, commit implementation/cleanup so the gate checks a co
 
 `doctor docs` checks documented public command names and the bounded README state contract defined in the release workflow. `doctor release` includes the same checks in every final gate, regardless of selected impact areas. Offline documentation/release/knowledge contracts run in the final contract step. These checks do not interpret capability prose, prove a real deployment or establish remote publication. The recorded source review in the roadmap workflow covers semantic consistency and historical context.
 
+## Selection coordinator
+
+The shared coordinator now supports deterministic explicit group resolution internally.
+It expands required dependencies, reports inclusion reasons and excluded groups, and
+stores the resolved scope and graph fingerprint alongside results. Public flags and
+the approved owner/customer catalogues are wired in RM-010 point 3; do not invoke
+internal runners as a substitute for supported commands. Legacy selection is retained.
+
 ## Runner implementation
 
 The runner executes at most four ready nodes concurrently, preserving definition order for scheduling. `exclusive_group` serializes all members; frontend unit tests also share the test wrapper's lock and therefore belong to `testing-state`. Dependencies are selected as a union, deduplicated by ID and validated for missing nodes, conflicts and cycles before execution. Optional dependencies apply only when both steps are selected. The repository/container scan waits for selected production/frontend builds and frontend render diagnostics (which depend on browser tests): frontend builds replace generated native-error output, and browser tests replace prior report output. Scanning these writers concurrently can encounter disappearing files. Generated output remains scanned; no vulnerability or secret check is excluded. Final nodes wait for every selected base/impact node.

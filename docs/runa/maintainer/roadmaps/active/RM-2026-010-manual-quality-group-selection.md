@@ -290,7 +290,7 @@ final verification point, after implementation is complete.
     actual baseline, local knowledge and owner/customer graph/transport contracts.
     Produce a concrete group-to-step/prerequisite matrix and resolve policy changes
     with the owner before implementation. Record compatibility/default behavior.
-- [ ] 2. Implement explicit group selection in the existing quality coordinator.
+- [x] 2. Implement explicit group selection in the existing quality coordinator.
   - Requires 1. Add deterministic validation, unions, prerequisite expansion,
     planning/evidence/status scope and focused regression scenarios. Keep current
     locking/interruption/exit/resource semantics; no change classifier or new runner.
@@ -317,3 +317,13 @@ final verification point, after implementation is complete.
 Activated with owner execution authorization on 2026-10-23, from clean main at
 58c159f (0.4.1). Owner approved the point-1 catalogue, baseline, CLI, compatibility
 and closure contract on 2026-10-23. Implementation points 2–3 are authorized. Release metadata remains maintenance 0.4.2 as previously confirmed.
+
+## Point 2 outcome
+
+Implemented explicit resolver, validation, prerequisite inclusion reasons, scope
+evidence/status and graph fingerprint in the existing coordinator. Added isolated
+regressions for exclusion, deduplication, legacy/all scopes and invalid graphs.
+Public transports and catalogues follow in point 3. No broad verification ran.
+Owner quality guide reflects the internal availability boundary. Both instruction
+products are assessed: public invocation policy is synchronized in point 3 when
+flags become supported; neither product exposes internal runners.

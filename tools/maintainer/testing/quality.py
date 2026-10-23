@@ -26,6 +26,59 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def grouped_definition(self):
+        return {'base': [node('baseline', 'true'), node('runtime', 'true', ['baseline'])],
+                'impact_areas': {'tooling': [node('cheap', 'true'), node('expensive', 'false')]},
+                'final': [node('closure', 'true')], 'mandatory': ['baseline', 'closure'],
+                'groups': {'docs': ['cheap'], 'backend': ['runtime'], 'containers': ['expensive']}}
+
+    def test_explicit_selection_expands_only_dependencies_and_never_spawns_exclusions(self):
+        definition = self.grouped_definition()
+        nodes, scope = quality.resolve(definition, ['tooling'], groups=['docs', 'docs', 'backend'])
+        self.assertEqual(list(nodes), ['baseline', 'runtime', 'cheap', 'closure'])
+        self.assertEqual(scope['requested_groups'], ['backend', 'docs'])
+        self.assertEqual(scope['excluded_groups'], ['containers'])
+        self.assertIn('prerequisite of runtime', scope['reasons']['baseline'])
+        self.assertEqual(nodes['closure']['depends_on'], ['baseline', 'runtime', 'cheap'])
+        for final in (False, True):
+            self.assertEqual(quality.resolve(definition, ['tooling'], final, ['docs', 'backend']), (nodes, scope))
+        with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=True):
+            state = {'status': 'running', 'selection': scope, 'steps': {k: dict(n, status='pending') for k, n in nodes.items()}}
+            self.assertEqual(quality.execute(Path(folder), state), 0)
+            self.assertFalse((Path(folder) / 'expensive.log').exists())
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                quality.status(Path(folder), False)
+            self.assertIn('Excluded groups (not run): containers', output.getvalue())
+
+    def test_explicit_all_and_legacy_keep_distinct_honest_scope(self):
+        definition = self.grouped_definition()
+        nodes, scope = quality.resolve(definition, [], all_groups=True)
+        self.assertIn('expensive', nodes)
+        self.assertEqual(scope['mode'], 'all')
+        self.assertEqual(scope['excluded_groups'], [])
+        legacy, scope = quality.resolve(definition, ['tooling'])
+        self.assertEqual(legacy, quality.select(definition, ['tooling']))
+        self.assertEqual(scope['mode'], 'legacy')
+
+    def test_group_validation_rejects_invalid_and_cyclic_selections(self):
+        for args in (['show', '--group='], ['status', '--all'], ['show', '--background'],
+                     ['final', '--all', '--group=docs'], ['final', '--all', '--all'],
+                     ['final', '--group=../command'], ['final', 'docs'], ['final', '--group']):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                quality.arguments(args)
+        self.assertEqual(quality.arguments(['final', '--group=docs', '--group=docs', '--background']), (['docs'], False, True))
+        for groups in (['unknown'], []):
+            with self.assertRaises(ValueError):
+                quality.resolve(self.grouped_definition(), [], groups=groups)
+        definition = self.grouped_definition()
+        definition['base'][0]['depends_on'] = ['runtime']
+        with self.assertRaisesRegex(ValueError, 'cycle'):
+            quality.resolve(definition, [], groups=['backend'])
+        definition['groups']['broken'] = ['missing']
+        with self.assertRaisesRegex(ValueError, 'Missing'):
+            quality.resolve(definition, [], groups=['broken'])
+
     def test_records_stage_durations_and_shows_them_through_shared_status(self):
         with tempfile.TemporaryDirectory() as folder:
             directory = Path(folder)

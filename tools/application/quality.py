@@ -1,5 +1,6 @@
 """Dependency-driven local verification with durable latest-run evidence."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -40,18 +41,101 @@ def select(definition, areas, final=False):
     return nodes
 
 
-def plan(final=False, roadmap_root=None, definition_path=None):
+def arguments(args):
+    """Validate transport arguments before touching locks, logs or run evidence."""
+    if not args or args[0] not in ('show', 'roadmap', 'final', 'status'):
+        raise ValueError('Invalid quality action.')
+    groups = []
+    all_groups = background = False
+    for arg in args[1:]:
+        if arg == '--all' and not all_groups:
+            all_groups = True
+        elif arg == '--background' and not background and args[0] in ('roadmap', 'final'):
+            background = True
+        elif arg.startswith('--group=') and re.fullmatch(r'[a-z][a-z0-9-]*', arg[8:]):
+            groups.append(arg[8:])
+        else:
+            raise ValueError('Invalid quality argument: ' + arg)
+    if (all_groups and groups) or (args[0] == 'status' and args[1:]):
+        raise ValueError('Use either --all or repeated --group=NAME; status takes no options.')
+    return sorted(set(groups)) or None, all_groups, background
+
+
+def resolve(definition, areas, final=False, groups=None, all_groups=False):
+    if groups is None and not all_groups:
+        return select(definition, areas, final), {'mode': 'legacy', 'impact_areas': areas, 'final': final}
+    catalogue = definition['groups']
+    if (all_groups and groups) or (groups is not None and not groups):
+        raise ValueError('Provide named groups or --all.')
+    requested = sorted(catalogue if all_groups else set(groups))
+    if any(group not in catalogue for group in requested):
+        raise ValueError('Unknown or unavailable quality group. Available: ' + ', '.join(catalogue))
+    inventory = {}
+    for node in definition['base'] + [n for values in definition['impact_areas'].values() for n in values] + definition['final'] + definition.get('group_steps', []):
+        key = node['id']
+        if key in inventory and inventory[key] != node:
+            raise ValueError('Conflicting step: ' + key)
+        inventory[key] = node
+    reasons = {}
+
+    def include(key, reason):
+        if key not in inventory:
+            raise ValueError('Missing dependency or group step: ' + key)
+        if key in reasons:
+            if reason not in reasons[key]:
+                reasons[key].append(reason)
+            return
+        reasons[key] = [reason]
+        for dependency in inventory[key]['depends_on']:
+            include(dependency, 'prerequisite of ' + key)
+
+    for key in definition['mandatory']:
+        include(key, 'mandatory baseline')
+    for group in requested:
+        for key in catalogue[group]:
+            include(key, 'group ' + group)
+    # Preserve definition order and validate the expanded graph through the same scheduler contract.
+    chosen = [dict(node) for key, node in inventory.items() if key in reasons]
+    final_ids = {node['id'] for node in definition['final']}
+    nodes = select({'base': [node for node in chosen if node['id'] not in final_ids],
+                    'impact_areas': {}, 'final': [node for node in chosen if node['id'] in final_ids]}, [], True)
+    scope = {'mode': 'all' if all_groups else 'groups', 'requested_groups': requested,
+             'excluded_groups': sorted(set(catalogue) - set(requested)),
+             'mandatory': definition['mandatory'], 'reasons': reasons,
+             'graph_hash': graph_hash(nodes)}
+    return nodes, scope
+
+
+def graph_hash(nodes):
+    return hashlib.sha256(json.dumps(nodes, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def show_scope(scope):
+    if scope.get('mode', 'legacy') == 'legacy':
+        print('Scope: legacy impact-area selection (no explicit groups).')
+        return
+    print('Scope: ' + scope['mode'] + '; requested groups: ' + ', '.join(scope['requested_groups']))
+    print('Mandatory baseline: ' + ', '.join(scope['mandatory']))
+    print('Excluded groups (not run): ' + (', '.join(scope['excluded_groups']) or 'none'))
+    for key, reasons in scope['reasons'].items():
+        print('Included ' + key + ': ' + '; '.join(reasons))
+
+
+def plan(final=False, roadmap_root=None, definition_path=None, groups=None, all_groups=False):
     active = sorted((roadmap_root or ROOT / 'docs/app/roadmaps/active').glob('*.md'))
     definition = definition_path or ROOT / 'tools/application/quality.yml'
     if not active and roadmap_root is None:
-        return {'id': 'application', 'impact_areas': []}, select(yaml(definition), [], final)
+        nodes, scope = resolve(yaml(definition), [], final, groups, all_groups)
+        return {'id': 'application', 'impact_areas': [], 'quality_selection': scope}, nodes
     if len(active) != 1:
         raise ValueError('Exactly one active roadmap is required.')
     header = active[0].read_text().split('---', 2)[1]
     # Use the existing Symfony YAML parser without introducing Python dependencies.
     result = subprocess.run(app_command(['php', '-r', 'require "src/vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
     roadmap = json.loads(result.stdout)
-    return roadmap, select(yaml(definition), roadmap['impact_areas'], final)
+    nodes, scope = resolve(yaml(definition), roadmap['impact_areas'], final, groups, all_groups)
+    roadmap['quality_selection'] = scope
+    return roadmap, nodes
 
 
 def save(directory, state):
@@ -144,6 +228,7 @@ def status(directory, active):
         print('No quality run recorded.')
         return
     state = json.loads(path.read_text())
+    show_scope(state.get('selection', {}))
     if state['status'] == 'running' and not active:
         state['status'] = 'interrupted'
         for node in state['steps'].values():
