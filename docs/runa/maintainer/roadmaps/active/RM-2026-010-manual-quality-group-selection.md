@@ -70,6 +70,13 @@ resource ownership, cleanup, lock and production-isolation contracts stay in for
 
 ### Decisions
 
+- 2026-10-23 — Owner now explicitly authorizes another complete --all final run
+  after fix point 4, revoking the prior no-rerun restriction. Resume the standard
+  background workflow and intentionally replace latest-run evidence; retain the
+  prior failure summary here. Future roadmaps use manually chosen proportionate
+  groups and mandatory/prerequisite checks, as already agreed; --all is the
+  deliberate verification scope for this selector/transport roadmap.
+
 - 2026-10-23 — After the first final run (50 passed, 2 failed, 3 blocked), owner
   authorizes fixing the two failures but explicitly forbids another full run.
   Perform focused checks only and preserve the failed full-run evidence. This does
@@ -399,7 +406,8 @@ post-acceptance resource cleanup are pending the supported final background gate
 ## Fix point 4 — first final verification findings
 
 Full --all run on 4f30ddb finished after 2094 seconds: 50 passed, 2 failed and 3
-blocked. Evidence remains in .runtime/quality; do not overwrite or edit its state.
+blocked. Evidence was preserved in .runtime/quality during the focused fix; the
+subsequently authorized full rerun replaces it through the normal coordinator.
 Owner tool-ownership contracts rejected the numeric exit result introduced by
 shared validation instead of the original textual SystemExit diagnostic. Move
 syntactic argument validation before owner runner configuration; invalid invocations
@@ -423,5 +431,18 @@ Observed focused results:
 Knowledge was current at point start; a concurrent search reported staleness after
 these source edits. Original sources governed the fix; refresh staged sources
 incrementally before the required commit hooks.
-Full verification, version/tag/release and merge remain pending; no broad rerun is
-authorized by this fix task.
+The focused fix did not authorize a broad rerun. The subsequent owner decision
+above now authorizes full --all verification; version/tag/release and merge remain
+pending PASS and release finalization.
+
+## Final rerun preparation after fix point 4
+
+Reviewed d116af1's owner-entrypoint validation and regression changes: syntactic
+validation now runs before runner configuration and preserves early rejection
+without subprocess execution. Existing selection policy, customer transport,
+configuration and Docker topology are unchanged. Rechecked the corrected RM-011
+predecessor navigation and point-4 focused PASS evidence. The prior current-state
+source review remains applicable to the unchanged implementation and guidance.
+Refresh content-bound security review for this fixed candidate before rerun.
+The final checklist remains open; launch the supported --all background workflow
+and end the turn. No runtime PASS is claimed in advance.
