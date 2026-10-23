@@ -130,3 +130,5 @@ Every relevant domain skill routes documentation by reader/task using docs/READM
 ## Customer application guidance
 
 Installed root AGENTS/CLAUDE and .agents/skills guide application development using delivered public capabilities. Ordinary Laravel App code and optional app modules are both supported. Repeated application components belong in src/app/resources/js/components; protected src/runa is read-only. Maintain local application patterns and docs/app domain guidance in the owning point. Upstream guidance updates require reviewed reconciliation of local extensions, never directory replacement.
+
+First acquisition stages the supplied customer instruction defaults in Git. Include those changes in the customer repository so teammate clones retain the same application guidance. Reopen preserves them; existing local extensions require reviewed update reconciliation.

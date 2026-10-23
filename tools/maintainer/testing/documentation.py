@@ -31,6 +31,10 @@ class DocumentationOwnership(unittest.TestCase):
             self.copy(name)
         for name in ('docs/app', 'docs/runa/handbook', '.agents', 'tools/application/knowledge'):
             shutil.copytree(ROOT / name, self.root / name, ignore=shutil.ignore_patterns('__pycache__'))
+        product = ROOT / 'docs/runa/maintainer/customer-agent'
+        shutil.copy2(product / 'AGENTS.md', self.root / 'AGENTS.md')
+        shutil.rmtree(self.root / '.agents/skills')
+        shutil.copytree(product / 'skills', self.root / '.agents/skills')
         self.copy('tools/application/quality.yml')
         self.receipt = self.root / '.git/runa-bootstrap.json'
         self.receipt.write_text('{}\n')

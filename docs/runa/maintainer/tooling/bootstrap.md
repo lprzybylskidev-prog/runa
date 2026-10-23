@@ -102,7 +102,7 @@ Release acquisition initializes development only. Production uses distribution/i
 
 Successful acquisition writes credential-free `.git/runa-bootstrap.json` with
 repository ID/name, tag object, commit, source digest, mode, trust and state
-`downloaded`. The checkout is clean and detached. This is acquisition evidence,
+`downloaded`. The checkout is detached. Releases with a customer instruction product stage its reviewed substitutions; these expected changes must be committed into the customer repository. Historical releases without the product retain a clean projection. This is acquisition evidence,
 not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The external development updater independently obtains original/target release source for preflight, apply and verified journaled resume.
 
 The owner runs the external launcher personally; neither the launcher nor its adjacent installation helper is delivered as customer tooling. It is never installed into bin or customer source.
@@ -110,7 +110,7 @@ After verifying the **complete** release, acquisition applies a fixed non-cone
 sparse projection before atomic publication. Both now/later exclude
 `distribution/`, `tools/maintainer/`, `src/runa/tests/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
 The credential-free receipt records the full source digest and projection version
-plus exact exclusions. Git remains clean and detached at the verified commit;
+plus exact exclusions. Git remains detached at the verified commit with customer instruction substitutions staged where supplied;
 subsequent checkouts retain the sparse projection. Git objects/history may contain
 excluded sources: this is delivery layout, not confidentiality or purchase enforcement.
 
@@ -144,3 +144,7 @@ checks the real API/ref/file identities without provisioning services. See
 ## Development reference selection
 
 First-development acquisition accepts `--reference-module=include|exclude`. Interactive acquisition asks whether to include the working `app.reference` example; unattended calls default to exclude. The receipt records the choice and the fixed sparse projection excludes the temporary probe in both variants. Clean source also excludes the reference source and its central application guide. Reopen preserves the projection; platform updates never add example code or replace customer-owned example changes. Production staging excludes both development modules even from a customer commit, and image/runtime checks reject their presence.
+
+## Customer agent substitution
+
+After complete release verification, acquisition captures the customer instruction product, excludes maintainer sources, replaces owner AGENTS/CLAUDE/skills and stages those exact substitutions. Receipt customer_agent hashes describe the customer projection, while source_sha256 still describes the complete upstream release. Reapply/reopen preserves the staged files. Commit them with the customer project so teammate clones need no acquisition receipt or owner authoring directory. Old releases without a product retain their historical projection. Existing projects adopt new guidance only through reviewed update reconciliation, preserving local rules.

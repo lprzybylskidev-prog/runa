@@ -237,6 +237,44 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertFalse((production / 'src/app/modules/reference').exists())
                 self.assertFalse((production / 'src/app/modules/module_probe').exists())
 
+    def test_customer_agent_projection_survives_reapply_and_teammate_clone(self):
+        for include in (False, True):
+            with self.subTest(include=include), tempfile.TemporaryDirectory() as folder, self.local_git():
+                client, _ = self.fixture(folder)
+                repo = Path(client.url)
+                # Replace the synthetic owner marker with the actual authored product.
+                marker = repo / 'docs/runa/maintainer'
+                marker.unlink()
+                shutil.copytree(ROOT / 'docs/runa/maintainer/customer-agent', marker / 'customer-agent')
+                (repo / 'AGENTS.md').write_text('OWNER ONLY SENTINEL')
+                subprocess.run(['git', '-C', str(repo), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'customer bundle'], check=True)
+                subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'tag', '-fa', 'v1.0.0', '-m', 'customer bundle'], check=True, capture_output=True)
+                identity = {**client.resolve.return_value,
+                            'commit': subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD']).decode().strip(),
+                            'tag_object': subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'v1.0.0']).decode().strip()}
+                client.resolve.return_value = identity
+                destination = Path(folder) / 'customer'
+                receipt = bootstrap.acquire(client, 'v1.0.0', destination, 'dev', reference_module=include)
+                expected = (ROOT / 'docs/runa/maintainer/customer-agent/AGENTS.md').read_bytes()
+                self.assertEqual((destination / 'AGENTS.md').read_bytes(), expected)
+                self.assertEqual(len(list((destination / '.agents/skills').glob('*/SKILL.md'))), 9)
+                self.assertIn('AGENTS.md', receipt['customer_agent']['files'])
+                self.assertFalse((destination / 'docs/runa/maintainer').exists())
+                subprocess.run(['git', '-C', str(destination), 'sparse-checkout', 'reapply'], check=True, capture_output=True)
+                self.assertEqual((destination / 'AGENTS.md').read_bytes(), expected)
+                # Customer repository commits its projected working tree, never owner files.
+                exported = Path(folder) / 'exported'
+                shutil.copytree(destination, exported, ignore=shutil.ignore_patterns('.git'))
+                subprocess.run(['git', 'init', '-q', str(exported)], check=True)
+                subprocess.run(['git', '-C', str(exported), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(exported), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'application'], check=True)
+                clone = Path(folder) / 'teammate'
+                subprocess.run(['git', 'clone', '-q', str(exported), str(clone)], check=True)
+                self.assertEqual((clone / 'AGENTS.md').read_bytes(), expected)
+                self.assertFalse((clone / '.git/runa-bootstrap.json').exists())
+                self.assertFalse((clone / 'docs/runa/maintainer').exists())
+
     def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self):
         for failure in ('commit', 'digest', 'changed-ref', 'fetched-ref'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as folder, self.local_git():
