@@ -43,7 +43,7 @@ activation without editing the predecessor once closed.
 RM-009 is closed and merged on main at 58c159f; VERSION and published tag
 v0.4.1 establish the released baseline. On 2026-10-23 the owner requests execution
 of this next roadmap. Activation is authorized; the concrete policy proposal below
-remains subject to the point-1 agreement before runtime implementation.
+was approved in the point-1 agreement before runtime implementation.
 
 ### Scope
 
@@ -67,6 +67,10 @@ resource ownership, cleanup, lock and production-isolation contracts stay in for
 ## Specification
 
 ### Decisions
+
+- 2026-10-23 — Owner accepts the complete point-1 contract and authorizes
+  implementation, including selection-scoped security/AI policy and --all final
+  verification for RM-010.
 
 - 2026-10-23 — Owner requests execution of the next roadmap in one continuous
   effort. Activate RM-010 after confirming RM-009 closure and the clean, updated
@@ -103,7 +107,7 @@ final AI/security/release requirements in both contracts and workflows; stop on 
 unresolved constitutional decision instead of treating this draft as permission
 to bypass it. No test-selection policy changes during RM-009.
 
-### Point-1 proposal awaiting owner agreement
+### Agreed point-1 contract
 
 Inspected sources: tools/application/quality.py, quality.yml and executors/quality.py;
 tools/maintainer/entrypoint (quality-plan launcher); owner quality/gates.yml;
@@ -111,8 +115,8 @@ src/runa/management/development.json and ToolingCommand.php; owner quality,
 roadmap/release workflows and public command catalogue. Local knowledge status was
 current on main; retrieval corroborated these source contracts. No broad checks ran.
 
-This is a proposed policy, not available command behavior. Implementation waits for
-owner agreement; point 1 remains open.
+Owner approved this complete contract on 2026-10-23 ("akceptuje działaj").
+Implementation is authorized. Flags become available only when implemented.
 
 CLI and compatibility:
 
@@ -174,7 +178,7 @@ updates retain the full current installation-host acceptance, including updater,
 team propagation and customer-knowledge scenarios. Production keeps its real data,
 deployment and isolation acceptance. Do not split these into cheaper imitations.
 
-Policy reconciliation requiring owner approval:
+Approved policy reconciliation:
 
 - Explicit docs/tooling/backend selections may exclude image scans, full dependency
   audits, AI doctor/evals and installation acceptance unless selected transitively.
@@ -281,7 +285,7 @@ final verification point, after implementation is complete.
 
 ## Implementation plan
 
-- [ ] 1. Agree the group catalogue, mandatory baseline, CLI and closure contract.
+- [x] 1. Agree the group catalogue, mandatory baseline, CLI and closure contract.
   - Requires explicit activation after RM-009 closure/merge/release. Refresh the
     actual baseline, local knowledge and owner/customer graph/transport contracts.
     Produce a concrete group-to-step/prerequisite matrix and resolve policy changes
@@ -311,6 +315,5 @@ final verification point, after implementation is complete.
 ## Planning status
 
 Activated with owner execution authorization on 2026-10-23, from clean main at
-58c159f (0.4.1). Point 1 contains a concrete proposal awaiting owner agreement.
-Runtime implementation and gate-policy changes have not started; no new CLI option
-exists yet. Release metadata remains maintenance 0.4.2 as previously confirmed.
+58c159f (0.4.1). Owner approved the point-1 catalogue, baseline, CLI, compatibility
+and closure contract on 2026-10-23. Implementation points 2–3 are authorized. Release metadata remains maintenance 0.4.2 as previously confirmed.
