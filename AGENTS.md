@@ -228,6 +228,17 @@ Development supports native Linux with Docker Engine/Compose, without distributi
 
 After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/runa/handbook/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
 
+## Production responsibility boundary
+
+Runa supplies a minimal working production baseline with application security.
+The customer owns host/infrastructure hardening and protection of operator/CLI
+access. Treat authorized execution of dedicated operator commands as trusted;
+do not add a separate infrastructure authority system merely to defend against
+someone who already controls that access. Keep application authorization,
+validation, Audit and secret-safe handling. Extend infrastructure security only
+for an explicitly agreed requirement. See
+`docs/runa/handbook/production/architecture.md` for the supplied baseline and boundary.
+
 ## Production isolation
 
 AI/RAG tooling is development-only.

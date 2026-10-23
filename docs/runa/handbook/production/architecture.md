@@ -6,6 +6,23 @@ Production baseline is complete but deliberately simple. Do not pre-build enterp
 
 No Kubernetes, blue/green platform, ELK stack, Redis/Horizon, or similar infrastructure is part of the baseline unless a future roadmap introduces a real need.
 
+## Responsibility boundary
+
+Runa supplies a minimal working production baseline with application security and
+supported installation/deployment operations. The customer operates and protects
+the host, infrastructure and access to operator commands, including SSH/Docker/CLI
+permissions, network exposure, TLS termination and externally managed backups.
+Additional infrastructure hardening is customer-owned unless explicitly agreed.
+
+Authorized access to execute a dedicated operator command is a trusted boundary.
+An Auth emergency-recovery command does not need an additional recovery container,
+separate database credential or infrastructure authority service solely to prove
+that the operator may execute it. Application authorization, input validation,
+secret-safe handling and Audit remain required. This boundary does not remove the
+supplied container/runtime safeguards described below. The recovery command's
+behavior and acceptance remain defined by its owning Auth specification; this
+responsibility rule does not claim the command is already delivered.
+
 ## Runtime services
 
 Baseline production services:

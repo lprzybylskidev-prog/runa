@@ -62,6 +62,19 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-23 — Owner corrected the production responsibility boundary and emergency
+  recovery requirements before point 10 implementation. Runa supplies a minimal
+  working production baseline with application security; the customer owns host,
+  infrastructure and operator-access protection. Authorized access to run the
+  dedicated Artisan recovery command is the operator trust boundary. No additional
+  recovery container, infrastructure capability or separate database credential is
+  required. Retain explicit confirmation, disablement, single-use expiring recovery
+  material, no secret logging, session/trust revocation, Audit and required
+  credential/2FA enrollment before ordinary access. This supersedes the earlier
+  application-process isolation requirement, including its acceptance criteria.
+  Synchronized owner/customer agent contracts and the public production architecture;
+  existing domain skills already route to those sources and need no duplicate rule.
+
 - 2026-10-23 — Owner explicitly requested activation and execution of point 1.
   Baseline main and origin/main match at 0616673; RM-010 is closed, v0.4.2 exists,
   and no other roadmap is active. Confirmed feature 0.5.0 remains appropriate.
@@ -421,15 +434,17 @@ choices do not require reopening functional requirements.
   password. Persist a concurrency-safe installation initialization state; repeated
   normal initialization cannot grant unlimited superadmins. Final grant is an
   actual Permissions system-role assignment, never a users.is_admin flag.
-- Emergency CLI recovery supports lost 2FA, inactive admin and broken policy. No
-  public emergency endpoint/browser bypass. Require explicit operator confirmation,
-  trusted infrastructure capability unavailable to ordinary app/worker processes,
-  short-lived single-use recovery link/token, no logging of credentials and a complete
-  disable switch. Environment labels, an ordinary app UID or a caller flag alone do
-  not establish infrastructure authority. Integrate with supported host transport
-  and audit CLI origin. Recovery redemption remains narrow and policy-bound, with
-  required enrollment/credential setup before ordinary access; do not bypass mandatory
-  TOTP by turning email/password into a full session.
+- Emergency CLI recovery supports lost 2FA, inactive admin and broken policy through
+  a dedicated supported Artisan command. Access to execute that command is trusted
+  operator access; the customer protects infrastructure and CLI access. No additional
+  recovery container, infrastructure capability or separate database credential is
+  required. Require explicit operator confirmation, a short-lived single-use recovery
+  link/token, no logging of credentials and a complete disable switch. Revoke existing
+  sessions/trusted devices and audit CLI origin. Preserve supported command transport
+  without persisting recovery secrets in transport logs. Recovery redemption remains
+  narrow and policy-bound, with required enrollment/credential setup before ordinary
+  access; do not bypass mandatory TOTP by turning email/password into a full session.
+  No public emergency-issuance endpoint or general browser bypass is supplied.
 
 ### Permissions requirements
 
@@ -539,7 +554,7 @@ only in the final point. Required coverage includes every requirement above and:
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Audit                | Eloquent create/update/delete/restore; event toggles; diff/snapshot; redaction including nested secrets; manual multi-entity and relationships; nested suppression/exception cleanup and worker reuse; real same-connection outer rollback/savepoints; audit failure prevents mutation; refusal survives rollback; no unauthenticated event spoofing; immutable read-only APIs; bounded filtering/pagination/large payloads.                                           |
 | Auth identity/mail   | Both naming representations; all identifier modes; normalized race-safe uniqueness/reuse/restore conflicts; independent lifecycle predicates; scheduled activation/deactivation and expiry; registration approval; single-use invitation/resend/reminder/retry; verification/reverification immediately restricts existing sessions; primary change and secondary routing/sharing; no account enumeration.                                                             |
-| Auth security        | Concurrent session limits/revocation/absolute and idle deadlines, remember-me; real activity versus polling; reset/password history and forced restricted flow; TOTP/email OTP/recovery code replay; mandatory TOTP cannot be bypassed; trusted-device and step-up freshness; abuse locks; concurrent credential/link redemption; emergency capability isolation/disablement; no secret logging.                                                                       |
+| Auth security        | Concurrent session limits/revocation/absolute and idle deadlines, remember-me; real activity versus polling; reset/password history and forced restricted flow; TOTP/email OTP/recovery code replay; mandatory TOTP cannot be bypassed; trusted-device and step-up freshness; abuse locks; concurrent credential/link redemption; trusted CLI recovery confirmation/disablement; no secret logging.                                                                    |
 | Auth state           | Policy history/restore/new revision/critical preview, stale changes/exceptions; profile/avatars/own histories; preference adoption/defaults/resets, races and late responses across account switches; idempotent notifications suppress obsolete/mandatory-routing violations; no operational in-app delivery claims.                                                                                                                                                  |
 | Permissions          | Union/direct/role derivation, no denies; source ownership/idempotent declarations and removed definition preservation; read-only module/system roles; add/replace preset and direct copy, preview staleness and later independence; next-request cross-worker invalidation; disabled/re-enabled Optional module preservation; force-delete RESTRICT; dedicated superadmin grants and simultaneous last-admin account/assignment/scheduler mutations.                   |
 | Integration/delivery | No Auth↔Permissions required cycle, default deny before integration, availability before controller/validation, all transport routes protected, bootstrapping once under concurrency, interrupted first install/update resume and exact source, synchronous policy Audit failure fences publication, no duplicate aggregate history, public reference-only boundaries, customer fresh acquisition/update/clone receives Audit guidance, dev corpus rejects production. |
@@ -663,12 +678,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     security config preview/publish/restore, per-user allowlisted exceptions and
     revision checking; scheduled activation/deactivation uses current predicates.
   - Implement backend bulk revocation previews and safe limits, first-admin setup
-    command/installer contract and restricted infrastructure emergency recovery.
+    command/installer contract and trusted-operator CLI emergency recovery.
     Prepare Permissions role bootstrap integration, keeping incomplete web admin
     operations denied; never substitute a temporary admin boolean or general bypass.
   - Acceptance/tests: history/Audit failure prevents publication; restore is a new
-    version; exception expiry/revalidation; guarded CLI confirmation/disablement and
-    application-process refusal; idempotent bootstrap ownership and no secret logs.
+    version; exception expiry/revalidation; trusted CLI confirmation/disablement and
+    public emergency-issuance refusal; idempotent bootstrap ownership and no secret logs.
     Document operational recovery and policy consequences without an admin UI.
 - [ ] 11. Deliver Auth entry and restricted-flow Vue screens.
   - Requires 10. Use MinimalLayout/current components for login, enabled registration,
@@ -731,7 +746,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     source compatibility and recovery for all three Core modules.
   - Acceptance scenarios prepared: fresh install/existing customer upgrade/clone,
     exact source and repeat resume, all security events without duplicate histories,
-    broken Auth/Permissions emergency recovery with capability isolation, unavailable
+    broken Auth/Permissions trusted CLI emergency recovery, unavailable
     dependency handling and no foreign SQL/models/FKs. Synchronize delivery/operator docs.
 - [ ] 17. Deliver extensible development-only manual-testing corpus.
   - Requires 16. Extend owner-scoped ManagedSeeder/SeedGraph adapters/contributors;
