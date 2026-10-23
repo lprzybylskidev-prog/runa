@@ -70,6 +70,13 @@ resource ownership, cleanup, lock and production-isolation contracts stay in for
 
 ### Decisions
 
+- 2026-10-23 — After 55/55 final checks passed on 17a68e7, owner explicitly
+  approves the narrowly scoped closure-link validator correction, regression tests
+  and closure after focused checks without another --all run. This one-time RM-010
+  exception covers only tools/application/quality.py and its owner regression file,
+  bound to the direct post-gate fix commit and exact reviewed bytes. It does not
+  change future roadmap gate policy or permit general post-gate source changes.
+
 - 2026-10-23 — Owner now explicitly authorizes another complete --all final run
   after fix point 4, revoking the prior no-rerun restriction. Resume the standard
   background workflow and intentionally replace latest-run evidence; retain the
@@ -321,8 +328,14 @@ final verification point, after implementation is complete.
     Cover malformed selection options and quality-final with focused regressions.
     Correct RM-011's predecessor link after RM-010 activation. Run only focused
     ownership-contract and documentation checks, as explicitly directed by owner.
-- [ ] 5. Full verification, release finalization, merge and final report.
-  - Requires 1–4 implemented and committed. Review current-state docs and both
+- [x] 5. Permit exact predecessor-link closure metadata and verify the exception.
+  - Owner explicitly authorizes focused verification instead of another --all run
+    for this correction. Accept only exact active-to-closed Markdown predecessor
+    link changes in existing drafts. Bind RM-010's one-time validator/test exception
+    to its direct post-gate fix commit and exact source bytes; reject other edits.
+    Three focused link/exception/closure regressions passed.
+- [ ] 6. Full verification, release finalization, merge and final report.
+  - Requires 1–5 implemented and committed. Review current-state docs and both
     instruction products. Run all applicable selection/coordinator/transport/
     owner/customer acceptance, security and isolation checks through the supported
     final workflow; do not validate this implementation solely with a narrow group
@@ -446,3 +459,28 @@ source review remains applicable to the unchanged implementation and guidance.
 Refresh content-bound security review for this fixed candidate before rerun.
 The final checklist remains open; launch the supported --all background workflow
 and end the turn. No runtime PASS is claimed in advance.
+
+## Fix point 5 — closure metadata correction and approved exception
+
+The second --all final run passed all 55 checks on
+17a68e73787f11999c54c13126252850b3b09cdb in 2101.639 seconds. Stored state/results
+remain unchanged. The closure source review found that RM-011's predecessor link
+must follow RM-010 into closed, but the new validator treated this link-only edit
+as substantive. Correct this metadata classification with an exact byte comparison:
+only existing draft Markdown links from ../active/current-ID-slug.md to the matching
+../closed path qualify; changed prose, unrelated IDs, new files and foreign scopes
+do not qualify.
+
+Owner explicitly approved focused checks for this post-gate correction. A narrowly
+scoped RM-010-only exception records the direct fix commit in closure metadata,
+verifies its parent is the complete verified candidate, constrains its changed files
+to the validator, regression tests and this roadmap, and checks exact source bytes.
+The graph, selected steps and their results are unchanged. No generic skip flag,
+result rewriting or global relaxed release policy is introduced.
+
+Observed focused verification: three isolated regression methods for link-only
+metadata, commit-bound exception rejection and existing closure integrity passed.
+Current instructions/skills need no procedural change: this fixes existing closure
+metadata behavior; the customer product gains the same exact-link classification,
+while the explicitly approved source exception remains owner RM-010-only. No new
+dependency, migration, infrastructure change or Docker test resource was introduced.

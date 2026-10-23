@@ -137,6 +137,42 @@ def validate_declared(roadmap, scope):
         raise ValueError('Final quality selection differs from the roadmap quality_groups agreement.')
 
 
+def closure_link_update(root, name, candidate, identifier, docs):
+    if not re.fullmatch(re.escape(docs) + r'/roadmaps/draft/[^/]+\.md', name):
+        return False
+    path = root / name
+    if not path.is_file() or path.is_symlink():
+        return False
+    original = subprocess.run(['git', 'show', candidate + ':' + name], cwd=root, capture_output=True)
+    if original.returncode:
+        return False
+    pattern = rb'(?<=\]\()\.\./active/(' + re.escape(identifier.encode()) + rb'-[a-z0-9-]+\.md)(?=\))'
+    expected, count = re.subn(pattern, rb'../closed/\1', original.stdout)
+    return count > 0 and path.read_bytes() == expected
+
+
+def approved_rm010_closure_fix(root, data, candidate):
+    """Owner-approved, commit-bound exception for RM-010's first closure only."""
+    commit = data.get('quality_closure_fix_commit', '')
+    if data['id'] != 'RM-2026-010' or not commit:
+        return set()
+    if not re.fullmatch('[a-f0-9]{40}', commit):
+        raise ValueError('Invalid RM-010 closure-fix commit.')
+    parent = subprocess.check_output(['git', 'rev-parse', commit + '^'], cwd=root, text=True).strip()
+    if parent != candidate or subprocess.run(['git', 'merge-base', '--is-ancestor', commit, 'HEAD'], cwd=root, capture_output=True).returncode:
+        raise ValueError('RM-010 closure fix must directly follow its verified candidate.')
+    paths = {'tools/application/quality.py', 'tools/maintainer/testing/quality.py'}
+    changed = set(subprocess.check_output(['git', 'diff', '--name-only', candidate, commit], cwd=root, text=True).splitlines())
+    roadmap = 'docs/runa/maintainer/roadmaps/active/RM-2026-010-manual-quality-group-selection.md'
+    if changed != paths | {roadmap}:
+        raise ValueError('RM-010 closure-fix scope differs from the owner-approved files.')
+    for name in paths:
+        expected = subprocess.check_output(['git', 'show', commit + ':' + name], cwd=root)
+        if (root / name).is_symlink() or (root / name).read_bytes() != expected:
+            raise ValueError('RM-010 closure-fix source changed after focused verification.')
+    return paths
+
+
 def check_evidence(root, data, definition_path, directory, owner=False):
     """Bind selected-scope closure to actual complete results on the verified candidate."""
     if 'quality_groups' not in data:
@@ -167,10 +203,13 @@ def check_evidence(root, data, definition_path, directory, owner=False):
     docs = 'docs/runa/maintainer' if owner else 'docs/app'
     allowed = ({'VERSION', 'src/runa/platform.json', docs + '/CHANGELOG.md', docs + '/README.md'} if owner
                else {'src/app/application.json', docs + '/CHANGELOG.md'})
+    if owner:
+        allowed |= approved_rm010_closure_fix(root, data, candidate)
     prefixes = [docs + '/roadmaps/' + status + '/' + data['id'] + '-' for status in ('active', 'closed')]
     changed = subprocess.check_output(['git', 'diff', '--no-renames', '--name-only', candidate], cwd=root, text=True).splitlines()
     changed += subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=root, text=True).splitlines()
-    if any(name not in allowed and not any(name.startswith(prefix) and name.endswith('.md') for prefix in prefixes) for name in changed):
+    if any(name not in allowed and not any(name.startswith(prefix) and name.endswith('.md') for prefix in prefixes)
+           and not closure_link_update(root, name, candidate, data['id'], docs) for name in changed):
         raise ValueError('Substantive changes after the final quality candidate require a complete rerun.')
 
 

@@ -26,6 +26,60 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_closure_allows_only_exact_predecessor_link_updates_in_existing_drafts(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            name = 'docs/runa/maintainer/roadmaps/draft/RM-2026-011-next.md'
+            path = root / name
+            path.parent.mkdir(parents=True)
+            before = '[RM-2026-010](../active/RM-2026-010-manual-quality-group-selection.md)\n'
+            path.write_text(before)
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'fixture'], check=True)
+            after = before.replace('../active/', '../closed/')
+            path.write_text(after)
+            self.assertTrue(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+            for content in (before, after + 'unrelated change\n', after.replace('010', '009')):
+                path.write_text(content)
+                self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+            path.write_text(after)
+            self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-009', 'docs/runa/maintainer'))
+            self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/app'))
+            new = path.with_name('RM-2026-012-new.md')
+            new.write_text(after)
+            self.assertFalse(quality.closure_link_update(root, new.relative_to(root).as_posix(), 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+
+    def test_rm010_one_time_exception_is_bound_to_exact_fix_commit_and_source(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            def commit():
+                subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'fixture'], check=True)
+                return subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+            paths = {'tools/application/quality.py', 'tools/maintainer/testing/quality.py'}
+            roadmap = 'docs/runa/maintainer/roadmaps/active/RM-2026-010-manual-quality-group-selection.md'
+            for name in paths | {roadmap}:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('before')
+            candidate = commit()
+            for name in paths | {roadmap}:
+                (root / name).write_text('approved fix')
+            approved = commit()
+            data = {'id': 'RM-2026-010', 'quality_closure_fix_commit': approved}
+            self.assertEqual(quality.approved_rm010_closure_fix(root, data, candidate), paths)
+            self.assertEqual(quality.approved_rm010_closure_fix(root, data | {'id': 'RM-2026-011'}, candidate), set())
+            (root / 'tools/application/quality.py').write_text('unreviewed follow-up')
+            with self.assertRaisesRegex(ValueError, 'source changed'):
+                quality.approved_rm010_closure_fix(root, data, candidate)
+            (root / 'tools/application/quality.py').write_text('approved fix')
+            (root / 'unrelated.py').write_text('extra')
+            extra = commit()
+            with self.assertRaises(ValueError):
+                quality.approved_rm010_closure_fix(root, data | {'quality_closure_fix_commit': extra}, candidate)
+
     def grouped_definition(self):
         return {'base': [node('baseline', 'true'), node('runtime', 'true', ['baseline'])],
                 'impact_areas': {'tooling': [node('cheap', 'true'), node('expensive', 'false')]},
