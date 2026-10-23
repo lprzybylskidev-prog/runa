@@ -72,4 +72,16 @@ def validate(root):
             if not path.relative_to(root).as_posix().startswith('docs/app/roadmaps/closed/'):
                 paths.append(path)
     links(root, paths)
+    # Selected-scope application closure is checked on its owning branch. Existing
+    # historical releases and unrelated branches retain immutable documentation.
+    for path in (root / 'docs/app/roadmaps/closed').glob('*.md'):
+        text = path.read_text()
+        if text.startswith('---\n') and '\n---\n' in text[4:]:
+            front = dict(re.findall(r'^([a-z_]+): ([^\n]+)$', text.split('\n---\n', 1)[0][4:], re.M))
+            if 'quality_groups' in front:
+                import subprocess
+                branch = subprocess.check_output(['git', 'branch', '--show-current'], cwd=root, text=True).strip()
+                if branch == front.get('branch'):
+                    from quality import check_evidence, roadmap_metadata
+                    check_evidence(root, roadmap_metadata(path), root / 'tools/application/quality.yml', root / '.runtime/application-quality')
     print('PASS: application documentation, roadmap directories, placement and public local links.')

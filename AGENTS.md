@@ -234,7 +234,7 @@ Production build/deploy verifies this isolation.
 
 ## Knowledge and skills
 
-Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/runa/handbook/development/knowledge.md`. Strict final AI gates remain required.
+Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/runa/handbook/development/knowledge.md`. Selected final AI gates remain strict; mandatory knowledge freshness is retained.
 
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 
@@ -303,6 +303,14 @@ This root owner contract governs receipt-free Runa maintenance; customer applica
 For every reusable rule or delivered capability change, assess root AGENTS/.agents/skills and the customer bundle under docs/runa/maintainer/customer-agent. Update affected products and their references in the same implementation point; record why an unaffected product needs no change. Customer guidance supports ordinary Laravel plus optional app modules and never authorizes protected platform edits. Customer authors maintain their local application guidance independently. Authoring templates are excluded from owner retrieval. Do not duplicate handbook procedures in skills.
 
 ## Supported commands and check completion
+
+The agent manually selects proportionate quality groups with repeated `--group=NAME`
+or `--all`, records final `quality_groups` and `quality_rationale` in the roadmap,
+and previews the exact graph before final execution. Mandatory baseline/hooks and
+real prerequisites always apply. Selected security/AI checks stay strict; excluded
+groups are not passing tests. Flag-free calls retain legacy behavior. No automatic
+change classifier is authorized. See docs/runa/maintainer/quality/README.md for the catalogue and evidence
+contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner tests use `python3 tools/maintainer/test-backend`, `test-frontend`, `test-e2e`; application tests use Artisan runa:test commands. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.
 

@@ -13,7 +13,7 @@ Quality is enforced locally through:
 
 ### `php artisan runa:quality:plan`
 
-Show the checks selected for the active roadmap based on its `impact_areas`.
+Preview explicit groups, or the legacy impact-area selection without flags.
 
 Do not execute the full gate.
 
@@ -23,7 +23,7 @@ Run the complete gate required for the current roadmap.
 
 ### `php artisan runa:quality:final`
 
-Run final closure verification. Semantically equivalent to the strictest applicable roadmap gate and release consistency checks.
+Run final closure verification. Validate and run the complete agreed final scope and its mandatory checks.
 
 ### `php artisan runa:quality:status`
 
@@ -39,6 +39,65 @@ When finished or interrupted:
 - show the last 30 lines from each relevant log,
 - show full log paths,
 - finish with the overall status.
+
+## Manual group selection
+
+The agent normally chooses proportionate groups using the roadmap, changed behavior
+and relevant dependencies; the owner may steer it. No source-diff classifier chooses
+tests. Use repeated `--group=NAME` or standalone `--all` on plan/roadmap/final.
+Combining them, malformed arguments and unavailable groups fail before execution.
+`--background` is supported only on roadmap/final. Status accepts no selection flags.
+Flag-free calls retain their legacy base/impact/final behavior for compatibility.
+Explicit plan/roadmap/final resolve the same mandatory checks and dependency graph.
+
+| Group       | Delivered application checks                                                       |
+| ----------- | ---------------------------------------------------------------------------------- |
+| docs        | Documentation consistency (also mandatory)                                         |
+| tooling     | Tooling diagnostics                                                                |
+| backend     | App tests, PHP analysis, module source/version contracts, formatting/lint          |
+| frontend    | Frontend build, types, tests, formatting/lint                                      |
+| e2e         | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
+| database    | Application tests and database/migration/seeding diagnostics                       |
+| development | Development and hook diagnostics                                                   |
+| containers  | Existing Trivy container/repository security contract                              |
+| security    | Dependency audits and Trivy                                                        |
+| knowledge   | Knowledge doctor/evals and Boost                                                   |
+
+The exact step matrix is in `tools/application/quality.yml`. Every explicit selection
+includes configuration/templates, repository/roadmap state, documentation, secrets,
+debug-residue and knowledge freshness. Commit hooks and protected-source safeguards
+remain mandatory. Selected prerequisites are deduplicated and shown with inclusion
+reasons. Heavy audits/scans and AI doctor/evals are strict when selected directly or
+transitively. Excluded groups mean not run, never PASS. A selected-scope PASS differs
+from all-group verification. Security/data-loss/production-isolation failures block.
+
+Platform acquisition/updater/host-transport acceptance and production-fixture groups
+are unavailable in customer projects. Do not substitute private platform harnesses;
+use delivered application/deployment workflows for customer operations.
+
+Host examples (inside the devcontainer use `php artisan`):
+
+```sh
+./bin/artisan runa:quality:plan --group=docs
+./bin/artisan runa:quality:plan --group=docs --group=tooling
+./bin/artisan runa:quality:plan --group=backend
+./bin/artisan runa:quality:plan --group=frontend --group=e2e
+./bin/artisan runa:quality:plan --group=containers
+./bin/artisan runa:quality:plan --all
+./bin/artisan runa:quality:final --all --background
+./bin/artisan runa:quality:status
+```
+
+Before final verification, record `quality_groups: docs,backend` (comma-separated,
+no spaces) or `quality_groups: all` and a nonempty `quality_rationale` string in the
+application roadmap frontmatter. New roadmaps require this agreement. Final refuses
+a mismatching selection; plan remains a nonexecuting preview. Closure on the roadmap
+branch checks stored scope, graph/commands, complete results, branch and candidate
+commit. Only reviewed application release metadata may follow PASS. An exploratory
+run cannot replace the agreed final plan. Change the plan before changing scope,
+then rerun its complete graph; no stale result reuse. State/status show the same
+scope, exclusions, reasons, timings and logs. Final background execution ends the
+agent turn; use the built-in status command later.
 
 ## Latest run only
 
@@ -146,8 +205,8 @@ Commit coherent implementation/cleanup before final verification. The final chec
 
 `php artisan runa:doctor:docs` validates required public documentation, application roadmap directories, placement and local links, including rejection of links to undelivered owner material. This supplements semantic source review and does not prove real deployment or remote release publication.
 
-The gate selects application roadmaps under docs/app/roadmaps. Run runa:quality:plan before execution. Dependency/container scans and knowledge doctor/evaluation are strict final checks; failures block closure.
+The gate selects application roadmaps under docs/app/roadmaps. Run runa:quality:plan before execution. Dependency/container scans and knowledge doctor/evaluation are strict when selected directly or as prerequisites; failures block closure.
 
 ## Stage timings
 
-The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. No test-selection or Playwright skip flag is added.
+The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual groups do not change test bodies or add Playwright skip flags.

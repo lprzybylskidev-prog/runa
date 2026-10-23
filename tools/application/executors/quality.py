@@ -24,6 +24,8 @@ try:
     if args[0] != 'status':
         roadmap, nodes = quality.plan(args[0] == 'final', **({'groups': groups, 'all_groups': all_groups} if groups or all_groups else {}))
         selection = roadmap.get('quality_selection', {'mode': 'legacy'})
+        if args[0] == 'final':
+            quality.validate_declared(roadmap, selection)
         if args[0] == 'show':
             quality.show_scope(selection)
             for key, node in nodes.items():
@@ -55,6 +57,7 @@ try:
         directory.mkdir()
         state = {'status': 'running', 'mode': args[0], 'roadmap': roadmap['id'], 'impact_areas': roadmap['impact_areas'], 'branch': subprocess.check_output(['git', 'branch', '--show-current'], cwd=ROOT, text=True).strip(), 'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), 'steps': {k: dict(n, status='pending') for k, n in nodes.items()}}
         state['selection'] = selection
+        state['rationale'] = roadmap.get('quality_rationale')
         quality.save(directory, state)
         if background:
             pid = os.fork()

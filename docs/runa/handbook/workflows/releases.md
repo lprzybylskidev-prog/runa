@@ -52,10 +52,21 @@ Roadmap IDs are independent from version numbers.
 
 Reconcile the roadmap's `proposed_version` with the release computed from the actual baseline and `release_type` before closing the roadmap. A draft's projection does not change the installed application version.
 
-Finish all implementation and documentation points, review current-state application/public guidance, and run the complete applicable local quality/security/AI gates. Failed verification requires an inserted fix point and a fresh full run. Security, data-loss and production-isolation failures cannot be warnings. Long background final gates end the agent turn; inspect status later without polling.
+Finish all implementation and documentation points, review current-state application/public guidance, and run the complete agreed manual quality selection and its mandatory/prerequisite gates. Selected security/AI checks remain strict; exclusions are not PASS. Failed verification requires an inserted fix point and a fresh full run. Security, data-loss and production-isolation failures cannot be warnings. Long background final gates end the agent turn; inspect status later without polling.
 
 Compute the application version from the current application manifest and the accepted roadmap release_type. Only the user approves a major change. Update the application manifest and application changelog, complete the final checklist/evidence, move the roadmap from docs/app/roadmaps/active to closed and set closed_at. Refresh the knowledge index and validate docs, manifest compatibility and release metadata before committing. Runtime or substantive procedure changes after PASS invalidate that result; reviewed release-only metadata edits receive focused checks.
 
 Merge with a merge commit, sanity-check main, create an immutable annotated application tag and publish the application release to its configured repository, then delete the roadmap branch. Never rewrite a published tag or a closed roadmap. Preserve exact Git/build identities and significant verification evidence in the final report. Platform maintenance/release commands are not available in customer installations.
 
 Before application 1.0 or subsequent stable updates, apply [release-scale verification](../release/1.0-readiness.md). See [roadmaps](roadmaps.md) and [Git](git.md).
+
+## Selected-scope evidence
+
+New roadmaps record `quality_groups` (comma-separated names or `all`) and a nonempty
+`quality_rationale` before final execution. Preview through the supported quality
+plan command. Final and closure must match this declaration, graph/commands, actual
+complete PASS and candidate commit. An exploratory/narrower or stale run cannot
+close the roadmap. After failures or scope changes, rerun the complete agreed plan
+from the beginning. Only reviewed release-only metadata may follow PASS. Legacy
+flag-free workflows retain existing behavior; the agent normally chooses groups
+without asking the owner on every invocation. See the quality guide.

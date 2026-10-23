@@ -138,6 +138,13 @@ abstract class ToolingCommand extends Command
                 $result[] = '--'.$name;
             } elseif (is_string($value)) {
                 $result[] = '--'.$name.'='.$value;
+            } elseif (is_array($value)) {
+                foreach ($value as $item) {
+                    if (! is_string($item)) {
+                        throw new InvalidArgumentException('Command option values must be strings.');
+                    }
+                    $result[] = '--'.$name.'='.$item;
+                }
             }
         }
 
@@ -154,8 +161,28 @@ abstract class ToolingCommand extends Command
         if (count($arguments) > 128 || array_any($arguments, static fn (string $value): bool => strlen($value) > 4096 || str_contains($value, "\0"))) {
             throw new InvalidArgumentException('Command arguments exceed transport bounds.');
         }
-        if ($this->tool === 'quality' && in_array($arguments[0], ['show', 'status'], true) && count($arguments) !== 1) {
-            throw new InvalidArgumentException('Quality show/status take no execution options.');
+        if ($this->tool === 'quality') {
+            $all = false;
+            $background = false;
+            $groups = [];
+            $catalogue = json_decode(file_get_contents(__DIR__.'/quality-groups.json') ?: '', true, flags: JSON_THROW_ON_ERROR);
+            if (! is_array($catalogue)) {
+                throw new InvalidArgumentException('Quality group catalogue is unavailable.');
+            }
+            foreach (array_slice($arguments, 1) as $argument) {
+                if ($argument === '--all' && ! $all) {
+                    $all = true;
+                } elseif ($argument === '--background' && ! $background && in_array($arguments[0], ['roadmap', 'final'], true)) {
+                    $background = true;
+                } elseif (preg_match('/\A--group=([a-z][a-z0-9-]*)\z/D', $argument, $match) === 1 && in_array($match[1], $catalogue, true)) {
+                    $groups[] = $match[1];
+                } else {
+                    throw new InvalidArgumentException('Invalid or unavailable quality selection option.');
+                }
+            }
+            if (($all && $groups !== []) || ($arguments[0] === 'status' && count($arguments) !== 1)) {
+                throw new InvalidArgumentException('Use either --all or repeated --group=NAME; status takes no options.');
+            }
         }
         if ($this->tool === 'deploy') {
             $targets = array_values(array_filter($arguments, static fn (string $value): bool => $value !== '--simulation'));

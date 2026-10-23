@@ -27,7 +27,7 @@ base:
     severity: hard_fail
 
   - id: configuration
-    depends_on: [repository-state]
+    depends_on: [repository-state, configuration-templates]
     description: Validate application and environment configuration contracts.
     command: php artisan runa:doctor:config
     severity: hard_fail
@@ -345,3 +345,83 @@ execution:
   production_simulation: isolated_from_real_deployments
   trivy_images: scan_actual_built_images_when_selected
   security_review: agent_review_evidence_required
+
+# Explicit selection is independent of legacy base/impact/final selection.
+mandatory:
+  [
+    repository-state,
+    secret-scan,
+    debug-residue,
+    maintenance-consistency,
+    documentation-consistency,
+    tool-ownership-contracts,
+    repository-boundary-contracts,
+    source-tree-cleanliness,
+    release-metadata-contract,
+    version-changelog-roadmap,
+    knowledge-freshness,
+  ]
+groups:
+  docs: [documentation-ownership-contracts]
+  tooling: [quality-runner-contract, tooling-help]
+  backend:
+    [
+      backend-tests,
+      php-static-analysis,
+      module-development-contracts,
+      formatting,
+      lint,
+    ]
+  frontend:
+    [frontend-build, frontend-typecheck, frontend-tests, formatting, lint]
+  e2e: [frontend-browser, frontend-render-diagnostics]
+  database: [database-migrations, database-constraints, seeding-contract]
+  development:
+    [
+      dependency-composition-contracts,
+      development-startup-contract,
+      development-stack,
+      hook-contract,
+    ]
+  containers: [repository-container-scan, gosu-disposition-contracts]
+  installation:
+    [
+      installation-contracts,
+      installation-host-acceptance,
+      bootstrap-source-contracts,
+      customer-initialization-contracts,
+    ]
+  updates:
+    [
+      update-preflight-contracts,
+      update-execution-contracts,
+      installation-host-acceptance,
+    ]
+  transport:
+    [
+      host-executor-contracts,
+      host-executor-acceptance,
+      management-transport-contracts,
+      management-host-acceptance,
+    ]
+  production:
+    [
+      production-operation-contracts,
+      customer-deployment-source-contracts,
+      production-acceptance,
+    ]
+  security:
+    [
+      dependency-audit,
+      security-review-contracts,
+      expanded-security-review,
+      gosu-disposition-contracts,
+    ]
+  knowledge:
+    [documentation-ownership-live, knowledge-doctor, knowledge-evals, boost-mcp]
+
+group_steps:
+  - id: knowledge-freshness
+    depends_on: [repository-state]
+    command: php artisan runa:knowledge:stale
+    severity: hard_fail

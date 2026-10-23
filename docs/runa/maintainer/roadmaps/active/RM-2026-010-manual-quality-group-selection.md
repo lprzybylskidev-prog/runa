@@ -8,6 +8,8 @@ activated_at: 2026-10-23
 closed_at: null
 release_type: maintenance
 proposed_version: 0.4.2
+quality_groups: all
+quality_rationale: Coordinator and both command products require complete owner and customer acceptance.
 impact_areas:
   - tooling
   - development
@@ -195,9 +197,8 @@ Approved policy reconciliation:
   validated only by its own narrow selection. Final verification remains the sole
   broad execution point and uses the supported background handoff.
 
-Owner/customer instruction products are intentionally unchanged during this
-planning point: no reusable runtime capability or approved gate policy has changed.
-Both products will be synchronized in implementation points 2–3.
+Point 1 changed planning only. Both owner/customer instruction products and their
+relevant references are synchronized in implementation point 3.
 
 ### Manual flags and group catalogue
 
@@ -295,7 +296,7 @@ final verification point, after implementation is complete.
     planning/evidence/status scope and focused regression scenarios. Keep current
     locking/interruption/exit/resource semantics; no change classifier or new runner.
     Synchronize affected current documentation in this point.
-- [ ] 3. Wire both supported command products and synchronize policy/guidance.
+- [x] 3. Wire both supported command products and synchronize policy/guidance.
   - Requires 2. Propagate allowed flags through owner and customer Artisan/host
     registration/transports; preserve production and ownership guards. Apply the
     agreed baseline/final matrix, closure evidence and compatibility transition.
@@ -312,11 +313,12 @@ final verification point, after implementation is complete.
     merge commit, sanity-check main, tag/push/publish and remove the branch under
     the established release workflow.
 
-## Planning status
+## Execution status
 
 Activated with owner execution authorization on 2026-10-23, from clean main at
 58c159f (0.4.1). Owner approved the point-1 catalogue, baseline, CLI, compatibility
-and closure contract on 2026-10-23. Implementation points 2–3 are authorized. Release metadata remains maintenance 0.4.2 as previously confirmed.
+and closure contract on 2026-10-23. Implementation points 2–3 are complete; final
+verification/release remains open. Release metadata remains maintenance 0.4.2 as previously confirmed.
 
 ## Point 2 outcome
 
@@ -327,3 +329,57 @@ Public transports and catalogues follow in point 3. No broad verification ran.
 Owner quality guide reflects the internal availability boundary. Both instruction
 products are assessed: public invocation policy is synchronized in point 3 when
 flags become supported; neither product exposes internal runners.
+
+## Point 3 outcome
+
+Implemented owner/customer catalogues, mandatory baseline and public group flags;
+Artisan's repeated-option forwarding and cold/native host validation preserve the
+same arguments. A management-packaged customer name allowlist is checked against
+the delivered quality catalogue by regression tests. Customer plans use delivered
+commands only; unavailable platform fixture groups fail closed.
+
+The existing coordinator records selection, rationale and graph fingerprint. Final
+checks the roadmap declaration; owner release and customer closure diagnostics
+validate complete matching evidence and allow only reviewed release-only changes
+after the candidate. Quoted YAML selection metadata uses the existing Symfony
+parser. Added selector/evidence/real registry/native transport and fresh-customer
+preview regression scenarios. Lock, interruption, subprocess exit and cleanup
+mechanisms remain the existing implementations.
+
+Synchronized owner/customer AGENTS and backend/Laravel/security/RAG skills, public
+and owner quality guides, command documentation, roadmap/release policies and the
+shared authoring template. Removed obsolete unconditional final AI/security and
+no-selection claims. No module source changed; independent module versions and
+contracts are unaffected. No dependencies, migrations, topology or production
+configuration changes were introduced.
+
+Two small isolated checks resolved argument/cyclic-graph validation and closure
+candidate/evidence rejection. Both passed after correcting the fixture to ignore
+its disposable runtime evidence, matching the real repository. Supported owner quality-plan --all also resolved the complete graph without
+executing checks; the preview is retained at .runtime/RM-2026-010-quality-plan.txt.
+No broad test suite, static analysis, runtime-image acceptance or scanner ran
+before final verification. Mandatory staged-source indexing refreshed the isolated
+management transport image after its source changed; this is supported command
+transport, not runtime-image acceptance. The live management tag
+runa-management:234a44b6e9198d387ddfed44 is retained for normal development commands.
+
+## Final verification preparation
+
+Agreed selection: --all, as approved in point 1 and recorded in frontmatter. The
+coordinator/transport/evidence changes affect both products and the selection
+mechanism itself; include every existing owner gate plus freshness, all real
+installation/update/production/security/knowledge prerequisites and customer clone
+acceptance. Do not substitute a narrow selection for this roadmap.
+
+Current-state source review: root/customer AGENTS; relevant owner/customer skills
+and security/RAG references; public/owner quality guides and step definitions;
+public command catalogue and management signatures; both roadmap/release workflows
+and the shared template; knowledge-system availability/isolation guidance; owner
+README version/active-roadmap projection. Findings: legacy impact-area descriptions,
+unconditional final security/AI statements and obsolete no-selection wording were
+replaced with the approved explicit policy; historical evidence/closed roadmaps
+were preserved. Customer instructions remain product data and public links target
+delivered sources. Availability claims now match supported flags and catalogues.
+
+The final point remains open. Runtime PASS, release 0.4.2, merge/tag/publication and
+post-acceptance resource cleanup are pending the supported final background gate.

@@ -236,7 +236,7 @@ Production build/deploy verifies this isolation.
 
 ## Knowledge and skills
 
-Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/runa/handbook/development/knowledge.md`. Strict final AI gates remain required.
+Use local RAG before broad file loading when the knowledge stack is available. Check availability/freshness once for context; on failure, timeout, indexing lock or staleness, report the reason and use focused source searches. Recheck after recovery or at the next relevant point; do not bootstrap RAG merely to navigate. Application setup/startup and runtime remain independent of optional AI tooling; independent initialization/recovery is documented in `docs/runa/handbook/development/knowledge.md`. Selected final AI gates remain strict; mandatory knowledge freshness is retained.
 
 For significant rules retrieved from RAG, open the original source file before acting. Retrieval output is context, not authority.
 
@@ -307,6 +307,14 @@ See `docs/runa/handbook/architecture/language-and-naming.md`.
 When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/handbook/release/1.0-readiness.md` and apply its release-scale validation requirements.
 
 ## Supported commands and check completion
+
+The agent manually selects proportionate quality groups with repeated `--group=NAME`
+or `--all`, records final `quality_groups` and `quality_rationale` in the roadmap,
+and previews the exact graph before final execution. Mandatory baseline/hooks and
+real prerequisites always apply. Selected security/AI checks stay strict; excluded
+groups are not passing tests. Flag-free calls retain legacy behavior. No automatic
+change classifier is authorized. See docs/runa/handbook/quality/README.md for the catalogue and evidence
+contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported operation in `docs/runa/handbook/tooling/commands.md` and Artisan list/help before choosing a runner. Use its documented host/container transport (`./bin/artisan` from the host). Preserve command guards, locks, reporting and exit codes. Application tests use `runa:test`, `runa:test:frontend`, `runa:test:e2e`; owner commands are unavailable. Do not substitute internal runners or detached log-only processes for supported tests/acceptance/quality. A direct runner is allowed only as a documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result before completing the point. Propose a missing command only for a reusable operational need.
 

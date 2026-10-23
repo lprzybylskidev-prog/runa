@@ -35,6 +35,10 @@ def metadata(path):
         raise ValueError('Missing roadmap frontmatter.')
     front = text.split('\n---\n', 1)[0][4:]
     result = dict(re.findall(r'^([a-z_]+): ([^\n]+)$', front, re.M))
+    if 'quality_groups' in result:
+        from quality import roadmap_metadata
+        parsed = roadmap_metadata(path)
+        result.update({key: parsed.get(key) for key in ('quality_groups', 'quality_rationale')})
     if not re.fullmatch(r'RM-\d{4}-\d{3}', result.get('id', '')) or not path.name.startswith(result['id'] + '-'):
         raise ValueError('Invalid roadmap ID/path.')
     return result, text
@@ -51,6 +55,12 @@ def check_application(root, target):
                             capture_output=True, text=True)
     if result.returncode:
         raise ValueError('Application manifest must be valid and compatible with the release target; platform manifest must match VERSION.')
+
+
+def check_quality_evidence(root, data):
+    from quality import check_evidence
+    check_evidence(root, data, root / 'docs/runa/maintainer/quality/gates.yml',
+                   root / '.runtime/quality', owner=True)
 
 
 def validate(root):
@@ -120,6 +130,10 @@ def validate(root):
         base = git(root, 'show', 'main:VERSION')
         if current != expected(base, data['release_type'], data.get('target_version')):
             raise ValueError('Final version does not match roadmap release_type.')
+    # Check before publication on the roadmap branch; main retains the same local
+    # evidence for its immediate post-merge sanity. Later clones use immutable tags.
+    if branch != 'main' or not git(root, 'tag', '--list', 'v' + current):
+        check_quality_evidence(root, data)
     from docs_checks import validate as validate_docs
     validate_docs(root)
     if git(root, 'tag', '--list', 'v' + current):

@@ -32,6 +32,12 @@ def exercise(root, project, data, env, check, report, call, output, yaml_source)
     check(not status['stale'] and status['documents'] > 0, 'real first-start initialization indexes delivered customer sources')
     app('php', 'artisan', 'runa:knowledge:doctor')
     app('php', 'artisan', 'runa:knowledge:eval')
+    selected = app('php', 'artisan', 'runa:quality:plan', '--group=docs', '--group=tooling')
+    check('Excluded groups (not run):' in selected and 'runa:security:trivy' not in selected,
+          'real customer group preview excludes image acceptance without maintainer tooling')
+    all_groups = app('php', 'artisan', 'runa:quality:plan', '--all')
+    check('Excluded groups (not run): none' in all_groups and 'tools/maintainer' not in all_groups,
+          'real customer all-group preview uses delivered application commands only')
     probe = '''import json,sys
 from pathlib import Path
 sys.path.insert(0,"tools/application/knowledge")

@@ -121,6 +121,66 @@ def show_scope(scope):
         print('Included ' + key + ': ' + '; '.join(reasons))
 
 
+def validate_declared(roadmap, scope):
+    declared = roadmap.get('quality_groups')
+    if declared is None:
+        return
+    if not isinstance(declared, str) or not isinstance(roadmap.get('quality_rationale'), str) or not roadmap['quality_rationale'].strip():
+        raise ValueError('Final selection requires quality_groups and quality_rationale strings.')
+    if declared == 'all':
+        matches = scope.get('mode') == 'all'
+    else:
+        groups = declared.split(',')
+        matches = (all(re.fullmatch(r'[a-z][a-z0-9-]*', group) for group in groups)
+                   and scope.get('mode') == 'groups' and sorted(set(groups)) == scope.get('requested_groups'))
+    if not matches:
+        raise ValueError('Final quality selection differs from the roadmap quality_groups agreement.')
+
+
+def check_evidence(root, data, definition_path, directory, owner=False):
+    """Bind selected-scope closure to actual complete results on the verified candidate."""
+    if 'quality_groups' not in data:
+        return  # Immutable older releases predate explicit selection evidence.
+    path = directory / 'state.json'
+    if not path.is_file():
+        raise ValueError('Missing final quality evidence.')
+    state = json.loads(path.read_text())
+    scope = state.get('selection', {})
+    validate_declared(data, scope)
+    if (state.get('status') != 'passed' or state.get('mode') not in ('roadmap', 'final')
+            or state.get('roadmap') != data['id'] or state.get('branch') != data['branch']
+            or state.get('rationale') != data.get('quality_rationale')):
+        raise ValueError('Final quality evidence does not match the closed roadmap.')
+    definition = yaml(definition_path)
+    nodes, resolved = resolve(definition, [], groups=scope.get('requested_groups') if scope.get('mode') == 'groups' else None,
+                                      all_groups=scope.get('mode') == 'all')
+    steps = state.get('steps', {})
+    if (scope != resolved or set(steps) != set(nodes) or any(steps[key].get('status') != 'passed' or steps[key].get('exit_code') != 0 for key in nodes)):
+        raise ValueError('Incomplete or stale selected quality graph/results.')
+    fields = ('status', 'pid', 'started_at', 'finished_at', 'duration_seconds', 'exit_code')
+    recorded = {key: {field: value for field, value in step.items() if field not in fields} for key, step in steps.items()}
+    if graph_hash(recorded) != scope['graph_hash']:
+        raise ValueError('Quality result commands differ from the agreed graph.')
+    candidate = state.get('commit', '')
+    if not re.fullmatch('[a-f0-9]{40}', candidate) or subprocess.run(['git', 'merge-base', '--is-ancestor', candidate, 'HEAD'], cwd=root, capture_output=True).returncode:
+        raise ValueError('Quality candidate is not an ancestor of this release.')
+    docs = 'docs/runa/maintainer' if owner else 'docs/app'
+    allowed = ({'VERSION', 'src/runa/platform.json', docs + '/CHANGELOG.md', docs + '/README.md'} if owner
+               else {'src/app/application.json', docs + '/CHANGELOG.md'})
+    prefixes = [docs + '/roadmaps/' + status + '/' + data['id'] + '-' for status in ('active', 'closed')]
+    changed = subprocess.check_output(['git', 'diff', '--no-renames', '--name-only', candidate], cwd=root, text=True).splitlines()
+    changed += subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=root, text=True).splitlines()
+    if any(name not in allowed and not any(name.startswith(prefix) and name.endswith('.md') for prefix in prefixes) for name in changed):
+        raise ValueError('Substantive changes after the final quality candidate require a complete rerun.')
+
+
+def roadmap_metadata(path):
+    header = path.read_text().split('---', 2)[1]
+    # Use the existing Symfony YAML parser without introducing Python dependencies.
+    result = subprocess.run(app_command(['php', '-r', 'require "src/vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
+    return json.loads(result.stdout)
+
+
 def plan(final=False, roadmap_root=None, definition_path=None, groups=None, all_groups=False):
     active = sorted((roadmap_root or ROOT / 'docs/app/roadmaps/active').glob('*.md'))
     definition = definition_path or ROOT / 'tools/application/quality.yml'
@@ -129,10 +189,7 @@ def plan(final=False, roadmap_root=None, definition_path=None, groups=None, all_
         return {'id': 'application', 'impact_areas': [], 'quality_selection': scope}, nodes
     if len(active) != 1:
         raise ValueError('Exactly one active roadmap is required.')
-    header = active[0].read_text().split('---', 2)[1]
-    # Use the existing Symfony YAML parser without introducing Python dependencies.
-    result = subprocess.run(app_command(['php', '-r', 'require "src/vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parse(stream_get_contents(STDIN)));']), input=header, text=True, capture_output=True, check=True, cwd=ROOT)
-    roadmap = json.loads(result.stdout)
+    roadmap = roadmap_metadata(active[0])
     nodes, scope = resolve(yaml(definition), roadmap['impact_areas'], final, groups, all_groups)
     roadmap['quality_selection'] = scope
     return roadmap, nodes
