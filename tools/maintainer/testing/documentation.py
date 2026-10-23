@@ -104,6 +104,16 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertIn('docs/runa/maintainer/internal.md', paths)
         self.assertFalse(any(p.startswith('docs/runa/maintainer/customer-agent/') for p in paths))
 
+    def test_customer_template_links_use_installed_paths_and_public_boundaries(self):
+        product = self.root / 'docs/runa/maintainer/customer-agent'
+        product.mkdir(parents=True)
+        template = product / 'AGENTS.md'
+        template.write_text('[Public guide](docs/runa/handbook/ai/skills-policy.md)')
+        docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
+        template.write_text('[Owner guide](docs/runa/maintainer/agent-contract.md)')
+        with self.assertRaisesRegex(ValueError, 'owner-only'):
+            docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
+
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self):
         self.copy_owner_inputs()
         self.receipt.unlink()

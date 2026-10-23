@@ -38,11 +38,11 @@ sys.path.insert(0,"tools/application/knowledge")
 from configuration import load
 from store import Store
 config=load(Path.cwd()); points=Store(config).all_points()
-paths={p['payload'].get('source_path') for p in points.values() if p['payload'].get('kind')=='chunk'}
+paths={p.get('source_path') for p in points.values() if p.get('kind')=='chunk'}
 assert 'AGENTS.md' in paths
 assert '.agents/skills/frontend/references/application.md' in paths
 assert not any('/maintainer/' in p for p in paths)
-assert not any('Owner Agent Contract' in p['payload'].get('content','') for p in points.values())
+assert not any('Owner Agent Contract' in p.get('content','') for p in points.values())
 print(json.dumps(sorted(paths)))'''
     paths = json.loads(app('python3', '-c', probe))
     before = app('python3', '-c', 'import urllib.request; print(urllib.request.urlopen("http://qdrant:6333/collections/runa_knowledge").read().decode())')

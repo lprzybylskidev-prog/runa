@@ -296,7 +296,7 @@ When preparing release `1.0.0` or a later update to the stable application, load
 
 ## Documentation ownership
 
-This owner-only contract supplements the root application contract when maintaining Runa. Runa roadmaps, release metadata, quality definitions, dependency review records and maintenance reports live under docs/runa/maintainer. Read the public placement rules in docs/README.md; do not deliver this directory to customer installations. Closed roadmap contents and dated audit evidence remain immutable when relocated.
+This root owner contract governs receipt-free Runa maintenance; customer application instructions are authored separately and substituted at delivery. Runa roadmaps, release metadata, quality definitions, dependency review records and maintenance reports live under docs/runa/maintainer. Read the public placement rules in docs/README.md; do not deliver this directory to customer installations. Closed roadmap contents and dated audit evidence remain immutable when relocated.
 
 ## Instruction product maintenance
 

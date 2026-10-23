@@ -95,14 +95,14 @@ def infrastructure_review(root, original):
     if any(name.startswith('docker/') and name not in mapped for name in changed):
         affected.update(service for group in descriptors for _, service in group)
     fingerprint = hashlib.sha256(json.dumps([[name, identities[0].get(name), identities[1].get(name)] for name in changed], separators=(',', ':')).encode()).hexdigest()
-    return {'required': bool(changed), 'services': sorted(affected), 'devcontainer': workspace, 'fingerprint': fingerprint}
+    return {'required': bool(changed), 'services': sorted(affected), 'devcontainer': workspace, 'fingerprint': fingerprint, 'inputs': sorted(identities[0].keys() | identities[1].keys())}
 
 
 def review(root, original, target=None, releases=None, local_overrides=None):
     """Bind reviewed actions to exact releases and three-way customer file state."""
     import update_files
-    result = update_files.review(root, original, target or original, releases, local_overrides)
     infrastructure = infrastructure_review(root, original)
+    result = update_files.review(root, original, target or original, releases, local_overrides, infrastructure['inputs'])
     upstream = infrastructure_review(target, original) if target is not None else {'services': [], 'devcontainer': False}
     return {**result, 'required': result['required'] or infrastructure['required'],
             'services': sorted(set(infrastructure['services']) | set(upstream['services'])),

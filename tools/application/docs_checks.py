@@ -12,7 +12,7 @@ REQUIRED = ('.agents/README.md', '.agents/skills/README.md', 'AGENTS.md', 'READM
                 ('backend', 'frontend', 'laravel', 'vue', 'tailwind', 'postgresql', 'docker', 'security', 'rag'))
 
 
-def links(root, paths, public=True):
+def links(root, paths, public=True, logical_paths=None):
     root = Path(root).resolve()
     for path in paths:
         fence = None
@@ -30,7 +30,8 @@ def links(root, paths, public=True):
                 target = match[1].strip('<>').split('#', 1)[0]
                 if not target or re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:', target):
                     continue
-                destination = (path.parent / target).resolve()
+                logical = (logical_paths or {}).get(path, path)
+                destination = (logical.parent / target).resolve()
                 if not destination.is_relative_to(root):
                     raise ValueError('Documentation link escapes checkout: ' + str(path.relative_to(root)))
                 relative = destination.relative_to(root).as_posix()

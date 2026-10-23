@@ -39,6 +39,7 @@ def main():
             copy(name)
         write('docs/runa/maintainer/agent-contract.md', '# Owner policy\n\nPrivate platform release guidance.\n')
         write('docs/runa/maintainer/private.md', '# Private decision\n\nOwner-only sentinel private_739.\n')
+        write('docs/runa/maintainer/customer-agent/AGENTS.md', '# Customer template\n\nTemplate sentinel template_739, never owner operating context.\n')
         git('add', '.')
         git('-c', 'user.name=Documentation Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture baseline')
         def config():
@@ -50,6 +51,7 @@ def main():
             with contextlib.redirect_stdout(io.StringIO()):
                 assert index(root, config(), 'cpu') == 0
             assert any('/maintainer/' in p['source_path'] for p in store.all_points().values())
+            assert not any('/customer-agent/' in p['source_path'] for p in store.all_points().values())
             (root / '.git/runa-bootstrap.json').write_text('{}\n')
             customer = config()
             assert status(root, customer)['stale']

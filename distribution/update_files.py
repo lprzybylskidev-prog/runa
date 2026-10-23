@@ -80,10 +80,11 @@ def difference(before, after):
     return 'unchanged' if before == after else 'added' if before is None else 'removed' if after is None else 'modified'
 
 
-def review(root, original, target, releases=None, local_overrides=None):
+def review(root, original, target, releases=None, local_overrides=None, infrastructure_inputs=()):
     original_names, target_names, local_names = tracked(original), tracked(target), tracked(root)
     rows = []
-    for name in sorted(original_names | target_names | local_names):
+    infrastructure_inputs = set(infrastructure_inputs)
+    for name in sorted(original_names | target_names | local_names | infrastructure_inputs):
         owner = ownership(name)
         if owner in ('owner-excluded', 'protected-platform', 'private-or-generated'):
             continue
@@ -97,9 +98,10 @@ def review(root, original, target, releases=None, local_overrides=None):
         after = identity(target, name) if name in target_names else None
         local = identity(root, name) if before is not None or after is not None else None
         if before is None and after is None:
-            if name in local_names:
+            if name in local_names or name in infrastructure_inputs:
                 rows.append({'path': name, 'ownership': owner, 'action': 'preserve',
-                             'local': 'added', 'upstream': 'unchanged', 'conflict': None})
+                             'local': 'added', 'upstream': 'unchanged', 'conflict': None,
+                             'current': identity(root, name) if name in infrastructure_inputs else None})
             continue
         # Journaled known transitions may be normalized only after their real identities
         # have been independently validated by the execution layer.

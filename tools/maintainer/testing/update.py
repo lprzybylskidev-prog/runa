@@ -389,6 +389,15 @@ class Updater(unittest.TestCase):
         (self.installed / 'src/runa/Support/example.php').write_text('tampered')
         self.assertEqual(self.run_plan()['checks'][-1]['id'], 'protected-source-mismatch')
 
+    def test_untracked_infrastructure_changes_are_bound_to_exact_review(self):
+        extra = self.installed / 'compose.override.yaml'
+        extra.write_text('{"services":{"redis":{"image":"redis"}}}')
+        before = self.run_plan()['customization_review']
+        self.assertIn('compose.override.yaml', [r['path'] for r in before['files']])
+        extra.write_text('{"services":{"redis":{"image":"redis","command":["changed"]}}}')
+        after = self.run_plan()['customization_review']
+        self.assertNotEqual(before['fingerprint'], after['fingerprint'])
+
     def test_multiple_devcontainer_compose_files_and_override_services_are_reviewed(self):
         (self.installed / '.devcontainer').mkdir()
         (self.installed / 'containers').mkdir()
