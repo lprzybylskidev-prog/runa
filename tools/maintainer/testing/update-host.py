@@ -22,14 +22,21 @@ def release_tags(installed_version):
     return 'v' + installed_version, f'v{major}.{minor}.{patch + 1}'
 
 
-def reconcile_fixture_services(root, services):
+def reconcile_fixture_configuration(root, services):
     """Explicit customer action after the updater applies its approved target."""
     path = root / 'compose.yaml'
     value = json.loads(path.read_text())
     if set(services) & value['services'].keys():
         raise RuntimeError('Fixture reconciliation refuses to replace an existing release service.')
+    templates = {root / name: (root / name).read_text()
+                 for name in ('.env.dev.example', '.env.prod.example')}
+    if any(any(line.strip().startswith('TEAM_RELEASE_MARKER=') for line in content.splitlines())
+           for content in templates.values()):
+        raise RuntimeError('Fixture reconciliation refuses to replace an existing environment instruction.')
     value['services'].update(services)
     path.write_text(json.dumps(value, indent=2) + '\n')
+    for template, content in templates.items():
+        template.write_text(content.rstrip('\n') + '\n\nTEAM_RELEASE_MARKER=\n')
 
 
 def exercise(prod, fixture, project, check, report, call, output, commit):
@@ -167,9 +174,11 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         check(not (prod / '.runtime/production/in-progress.json').exists() and not list((prod / '.runtime/production/update-staging').iterdir()), 'successful resume archives journal and removes only its verified temporary platform source')
         app_pending.unlink()
         # The updater applied the reviewed release, including removal of the local
-        # descriptor. The customer now explicitly reconciles its extra service
-        # before the complete customer commit is published/deployed by Team.
-        reconcile_fixture_services(prod, {'redis': configuration['services']['redis']})
-        check(json.loads(definitions.read_text())['services']['redis'] == configuration['services']['redis'],
-              'customer explicitly reconciles its additional Redis descriptor before team publication and production deployment')
+        # descriptor and public environment instructions. Reconcile both before
+        # Team publishes the complete customer project for fresh installation.
+        reconcile_fixture_configuration(prod, {'redis': configuration['services']['redis']})
+        check(json.loads(definitions.read_text())['services']['redis'] == configuration['services']['redis']
+              and all((prod / name).read_text().count('TEAM_RELEASE_MARKER=\n') == 1
+                      for name in ('.env.dev.example', '.env.prod.example')),
+              'customer reconciles its additional service and both environment templates before team publication and production deployment')
     report.setdefault('update_preflight', {})[mode] = {'result': result['status'], 'target': result['target_release']['commit']}

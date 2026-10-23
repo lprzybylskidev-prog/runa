@@ -229,8 +229,19 @@ class Execution(UpdaterFixture):
         self.assertEqual(self.apply(resume=True)['status'], 'completed')
         self.assertEqual((self.installed / 'README.md').read_text(), 'target')
 
-    def test_customer_reconciles_service_after_approved_replacement_before_publication(self):
-        import runpy
+    def test_customer_reconciles_configuration_before_publication_and_production_provision(self):
+        import installation as installer
+        templates = ('.env.dev.example', '.env.prod.example')
+        defaults = {name: (ROOT / name).read_text() for name in templates}
+        for root in (self.original, self.target, self.installed):
+            for name, content in defaults.items():
+                (root / name).write_text(content)
+        self.before = self.commit(self.original)
+        self.after = self.commit(self.target)
+        for name in templates:
+            with (self.installed / name).open('a') as stream:
+                stream.write('\nTEAM_RELEASE_MARKER=\n')
+        private_before = (self.installed / '.env').read_bytes()
         extra = {'image': 'customer-redis', 'command': ['redis-server', '--save', '']}
         value = json.loads((self.installed / 'compose.yaml').read_text())
         value['services']['redis'] = extra
@@ -239,14 +250,40 @@ class Execution(UpdaterFixture):
         self.assertEqual(result['status'], 'completed', result)
         target = json.loads((self.target / 'compose.yaml').read_text())
         self.assertEqual(json.loads((self.installed / 'compose.yaml').read_text()), target)
+        for name, content in defaults.items():
+            self.assertEqual((self.installed / name).read_text(), content)
         self.assertIn('redis', result['infrastructure_follow_up']['services'])
-        reconcile = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['reconcile_fixture_services']
+        reconcile = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['reconcile_fixture_configuration']
         reconcile(self.installed, {'redis': extra})
         published = json.loads((self.installed / 'compose.yaml').read_text())
         self.assertEqual(published['services']['redis'], extra)
         self.assertEqual({k: v for k, v in published['services'].items() if k != 'redis'}, target['services'])
         with self.assertRaisesRegex(RuntimeError, 'existing release service'):
             reconcile(self.installed, {'app': extra})
+        before = {name: (self.installed / name).read_bytes() for name in ('compose.yaml', *templates)}
+        with self.assertRaisesRegex(RuntimeError, 'existing environment instruction'):
+            reconcile(self.installed, {'another': extra})
+        self.assertEqual(before, {name: (self.installed / name).read_bytes() for name in before})
+        self.assertEqual((self.installed / '.env').read_bytes(), private_before)
+        (self.installed / '.gitignore').write_text('.env\n.runtime/\n')
+        self.commit(self.installed)
+        production = self.base / 'production-clone'
+        self.git(self.base, 'clone', '-q', str(self.installed), str(production))
+        self.assertFalse((production / '.env').exists())
+        for name in templates:
+            self.assertEqual((production / name).read_text().count('TEAM_RELEASE_MARKER=\n'), 1)
+        self.assertFalse((production / '.env.prod').exists())
+        settings = {'app_url': 'https://fixture.example.invalid', 'tls': {'mode': 'external'},
+                    'smtp': {'host': 'smtp.example.invalid', 'port': 587, 'scheme': 'smtp', 'from': 'fixture@example.invalid'}}
+        with patch.object(installer, 'ROOT', production):
+            installer.provision(settings, self.after, True)
+            environment = production / '.env.prod'
+            content = environment.read_text()
+            self.assertEqual(content.count('TEAM_RELEASE_MARKER=\n'), 1)
+            environment.write_text(content.replace('TEAM_RELEASE_MARKER=\n', 'TEAM_RELEASE_MARKER=manually-prepared\n'))
+            private = {name: (production / name).read_bytes() for name in ('.env.prod', '.env.prod.database')}
+            installer.provision(settings, self.after, True)
+        self.assertEqual(private, {name: (production / name).read_bytes() for name in private})
 
     def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(self):
         self.engine.fail = 'build'; self.apply()
