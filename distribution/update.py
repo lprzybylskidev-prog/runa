@@ -98,7 +98,7 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
     return {'no_op': target_identity['commit'] == installed_identity['commit'] and not (set(migrations) - applied) and seed_done, 'source_changes': delta,
             'platform_migrations': [name for name in migrations if name not in applied],
             'platform_seeder': {'class': seeder, 'release': target_identity['commit'], 'already_completed': seed_done},
-            'customer_inputs': 'preserved; reconcile scaffold/infrastructure manually from release instructions',
+            'customer_inputs': 'application/private inputs preserved; exact reviewed delivered-file actions require consent',
             'steps': ['planned', 'preflight-passed', 'customization-reviewed', 'maintenance', 'source-replaced', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'platform-modules', 'switch', 'health', 'completed'],
             'preserve': ['src/app', 'docs/app', 'application identity/version', 'application dependency declarations/locks',
                          'private environment inputs', 'both durable storage trees', 'customer Git remotes/history'],
@@ -172,8 +172,9 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
                 report['plan'] = plan(root, target, original, target_identity, installed_identity, runtime)
                 report['plan']['modules'] = update_modules.plan(root, target, runtime, report['toolchain_image'])
                 report['plan']['no_op'] = report['plan']['no_op'] and all(row['from'] == row['to'] and not row['pending_migrations'] and not row['pending_upgrades'] for row in report['plan']['modules'])
-                report['customization_review'] = update_customization.review(root, original)
-                passed('infrastructure-review')
+                report['customization_review'] = update_customization.review(root, original, target, {'original': report['installed_release'], 'target': report['target_release']})
+                passed('delivered-file-review')
+                report['plan']['no_op'] = report['plan']['no_op'] and not report['customization_review']['required']
                 report['status'] = 'ready'
     except Blocker as error:
         report['checks'].append({'id': error.code, 'status': 'blocked', 'message': str(error)})
@@ -194,7 +195,7 @@ def main(arguments=None):
     mode.add_argument('--apply', action='store_true')
     mode.add_argument('--resume', action='store_true')
     parser.add_argument('--customization-decision', choices=('continue', 'abort'))
-    parser.add_argument('--review-fingerprint', help='Exact reviewed infrastructure fingerprint, required for changed resume reviews')
+    parser.add_argument('--review-fingerprint', help='Exact reviewed delivered-file fingerprint, required for changed resume reviews')
     parser.add_argument('--non-interactive', action='store_true')
     parser.add_argument('--installation', required=True)
     parser.add_argument('--target', required=True, help='Exact published stable vX.Y.Z release')
@@ -224,7 +225,9 @@ def main(arguments=None):
             def choose(review):
                 print('Customized services: ' + ', '.join(review['services']) + ('; devcontainer' if review['devcontainer'] else ''), file=sys.stderr)
                 print('Review fingerprint: ' + review['fingerprint'], file=sys.stderr)
-                return input('Preserve this infrastructure and continue, or abort [continue/abort]: ').strip().lower()
+                print(json.dumps(review['files'], indent=2), file=sys.stderr)
+                print('Continue applies listed eligible changes, including replacement/removal of customized files. Manual reconciliation preserves customer instruction extensions; review the extra work before consent.', file=sys.stderr)
+                return input('Apply these exact reviewed actions, or abort [continue/abort]: ').strip().lower()
             interactive = not args.non_interactive and not args.json and sys.stdin.isatty() and sys.stderr.isatty()
             result = execute(args.installation, client, args.target, resume=args.resume, choice=args.customization_decision,
                              fingerprint=args.review_fingerprint, toolchain=args.toolchain_image, expected_commit=args.expected_commit,
@@ -247,7 +250,7 @@ def main(arguments=None):
         if 'plan' in result:
             print(json.dumps(result['plan'], indent=2))
         if 'customization_review' in result:
-            print('Infrastructure customization: ' + json.dumps(result['customization_review']))
+            print('Delivered-file customization: ' + json.dumps(result['customization_review']))
         if 'journal' in result:
             print('Preserve ' + result['journal'] + '; inspect the failed phase before explicit --resume.')
         if 'temporary_downloads_cleaned' in result:
