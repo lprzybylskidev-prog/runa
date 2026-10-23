@@ -27,6 +27,25 @@ class ProductionContracts(unittest.TestCase):
         boundary.start()
         self.addCleanup(boundary.stop)
 
+    def test_team_deployment_compares_production_projection_and_refuses_excluded_source(self):
+        import runpy
+        matches = runpy.run_path(str(ROOT / 'tools/maintainer/testing/team-update-host.py'))['production_source_matches']
+        with tempfile.TemporaryDirectory() as folder:
+            peer, active = Path(folder) / 'peer', Path(folder) / 'active'
+            names = ['src/app/main.php', 'src/app/modules/reference/backend/Contracts/Ping.php']
+            for root in (peer, active):
+                (root / names[0]).parent.mkdir(parents=True)
+                (root / names[0]).write_text('customer')
+            self.assertTrue(matches(active, peer, names))
+            (active / names[0]).write_text('changed')
+            self.assertFalse(matches(active, peer, names))
+            (active / names[0]).write_text('customer')
+            (active / 'src/app/modules/reference').mkdir(parents=True)
+            self.assertFalse(matches(active, peer, names))
+            (active / 'src/app/modules/reference').rmdir()
+            (active / 'tools/maintainer').mkdir(parents=True)
+            self.assertFalse(matches(active, peer, names))
+
     def test_every_production_action_is_blocked_before_locks_or_host_work_in_dev(self):
         import operations
         actions = ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation']

@@ -16,7 +16,7 @@ final class Application extends LaravelApplication
     public function isDownForMaintenance()
     {
         // Only the actual queue daemon owns this context; diagnostic/probe processes never set it.
-        if ($this->bound('runa.queue_worker_active')) {
+        if ($this->bound('runa.queue_worker_active') && $this->make('runa.queue_worker_active') === true) {
             $this->make(RuntimeHeartbeat::class)->record('queue');
         }
 

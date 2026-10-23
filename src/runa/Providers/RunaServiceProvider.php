@@ -252,7 +252,7 @@ final class RunaServiceProvider extends ServiceProvider
             $heartbeat->record('queue');
         });
         Event::listen(WorkerStopping::class, function (): void {
-            unset($this->app['runa.queue_worker_active']);
+            $this->app->instance('runa.queue_worker_active', false);
         });
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
         Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));

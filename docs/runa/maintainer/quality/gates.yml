@@ -123,6 +123,7 @@ impact_areas:
       severity: hard_fail
 
     - id: frontend-browser
+      execution_context: host
       depends_on: [frontend-build, frontend-tests]
       exclusive_group: testing-state
       command: python3 tools/maintainer/test-e2e --critical
