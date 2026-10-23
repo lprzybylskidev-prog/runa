@@ -21,7 +21,7 @@ Generated private error shells live under src/.runtime/runa-errors, outside prot
 
 Compare original-release and customer Compose/devcontainer/container definitions separately. Read Compose as data without interpolating environment values or resolving env files; never import installed Python/PHP. Include referenced devcontainer Compose files, conventional override files and Dockerfiles shared by multiple services. Reports contain affected service names, a devcontainer indicator and an exact difference fingerprint; no environment values or file contents. Added/removed services are included. Unsupported/unreadable references produce a review blocker rather than an assumed match.
 
-Customization is supported. An execution decision must explicitly continue or abort, is bound to the reviewed fingerprint and must be renewed when differences change. Continuing cannot waive platform mismatch and preserves customer infrastructure. Read-only modes only report the decision requirement. Reconcile release-required scaffold/Docker/Compose/env changes manually and commit versioned changes to the customer project. Customization may complicate future upgrades.
+Customization is supported. An execution decision must explicitly continue or abort, is bound to the reviewed fingerprint and must be renewed when differences change. Continuing cannot waive platform mismatch and applies exactly reviewed eligible delivered-file changes, including approved infrastructure replacements/removals. Local instruction extensions remain preserved with explicit reconciliation requirements. Read-only modes only report the decision requirement. Review release-required scaffold/Docker/Compose/env changes and reconcile preserved conflicts manually and commit versioned changes to the customer project. Customization may complicate future upgrades.
 
 ## Read-only prerequisites
 
@@ -71,3 +71,9 @@ python3 tools/maintainer/testing/installation-host.py --updater-preflight --team
 ```
 
 Pure contracts cover independently verified Git acquisition, source ownership, dependency/compatibility failures, read-only preservation and customization decision binding. Run them inside the application toolchain for PHP grammar parity. Native disposable acceptance exercises real Docker Compose/Composer/pnpm/PostgreSQL, checks read-only development plans, real platform migration/seed execution, failure fencing/resume and production rejection, and preserves active development resources. Synthetic future release fixtures are not evidence of publication.
+
+## Journaled delivered-file actions
+
+The complete file review binds original/target release identities, local before-state, modes/types and proposed actions. Unattended continue requires both --customization-decision=continue and --review-fingerprint from the inspected plan. Under the operation lock the updater repeats preflight before creating a journal. It stages independent target bytes, retains previous bytes and records each file rename transition durably. Resume validates all retained identities, normalizes known completed changes, and requests a fresh exact review for new local differences. Unknown staging or ambiguous changed transitions block for inspection. Protected-source refusal remains absolute on every resume.
+
+Completion reports manual instruction reconciliation and affected service/devcontainer follow-up. Review image rebuild/recreation, custom writers/services and editor reopen before committing the complete customer project and deploying it. Updater file recovery never claims database rollback.

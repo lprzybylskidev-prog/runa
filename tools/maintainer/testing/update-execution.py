@@ -78,6 +78,7 @@ class Execution(UpdaterFixture):
         self.engine = Runtime(self)
 
     def apply(self, **kwargs):
+        kwargs.setdefault('choose', lambda review: kwargs.get('choice', 'continue'))
         return execution.execute(self.installed, self.client, 'v0.3.0', download=self.download,
                                  runtime_factory=lambda root: self.engine, lock_probe=lambda *a: 'fixture', **kwargs)
 
@@ -86,7 +87,7 @@ class Execution(UpdaterFixture):
 
     def test_execution_replaces_only_platform_and_records_completion_without_git_writes(self):
         (self.installed / 'src/app/customer.php').write_text('<?php // customer')
-        before = {name: (self.installed / name).read_bytes() for name in ('VERSION', 'compose.yaml', 'src/app/application.json', 'src/app/customer.php', '.git/config')}
+        before = {name: (self.installed / name).read_bytes() for name in ('compose.yaml', 'src/app/application.json', 'src/app/customer.php', '.git/config')}
         result = self.apply()
         self.assertEqual(result['status'], 'completed', result)
         self.assertEqual(update_contracts.platform(self.installed), '0.3.0')
@@ -176,18 +177,57 @@ class Execution(UpdaterFixture):
     def test_execution_customization_requires_explicit_choice_and_changed_resume_review(self):
         self.installed.joinpath('compose.yaml').write_text('{"services":{"redis":{"image":"redis"}}}')
         before = self.snapshot()
-        self.assertEqual(self.apply()['checks'][-1]['id'], 'customization-decision-required')
+        self.assertEqual(self.apply(choose=None)['checks'][-1]['id'], 'customization-decision-required')
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(self.apply(choice='abort')['checks'][-1]['id'], 'customization-aborted')
         self.assertEqual(self.snapshot(), before)
         self.engine.fail = 'build'
         self.assertEqual(self.apply(choice='continue')['status'], 'blocked')
         self.installed.joinpath('compose.yaml').write_text('{"services":{"redis":{"image":"redis","command":["changed"]}}}')
-        blocked = self.apply(resume=True, choice='continue')
+        blocked = self.apply(resume=True, choice='continue', choose=None)
         self.assertEqual(blocked['checks'][-1]['id'], 'customization-changed', blocked)
         fingerprint = blocked['customization_review']['fingerprint']
         self.assertEqual(self.apply(resume=True, choice='continue', fingerprint=fingerprint)['status'], 'completed')
-        self.assertIn('changed', (self.installed / 'compose.yaml').read_text())
+        self.assertEqual((self.installed / 'compose.yaml').read_bytes(), (self.target / 'compose.yaml').read_bytes())
+
+    def test_reviewed_non_platform_add_replace_remove_and_instruction_preservation(self):
+        for root in (self.original, self.target, self.installed):
+            for name in ('README.md', 'obsolete.txt', 'AGENTS.md'):
+                (root / name).write_text('baseline')
+                self.git(root, 'add', name)
+        (self.target / 'README.md').write_text('new readme')
+        (self.installed / 'README.md').write_text('customer customized readme')
+        (self.installed / 'AGENTS.md').write_text('customer instruction extension')
+        (self.target / 'AGENTS.md').write_text('new defaults')
+        self.git(self.target, 'rm', '-f', 'obsolete.txt')
+        (self.target / 'new-guide.md').write_text('new guide')
+        self.git(self.target, 'add', 'new-guide.md')
+        result = self.apply()
+        self.assertEqual(result['status'], 'completed', result)
+        self.assertEqual((self.installed / 'README.md').read_text(), 'new readme')
+        self.assertEqual((self.installed / 'new-guide.md').read_text(), 'new guide')
+        self.assertFalse((self.installed / 'obsolete.txt').exists())
+        self.assertEqual((self.installed / 'AGENTS.md').read_text(), 'customer instruction extension')
+        self.assertIn('AGENTS.md', result['manual_reconciliation'])
+
+    def test_file_rename_interruptions_resume_from_saved_before_after_state(self):
+        for root in (self.original, self.target, self.installed):
+            (root / 'README.md').write_text('baseline')
+            self.git(root, 'add', 'README.md')
+        (self.target / 'README.md').write_text('target')
+        rename = execution.os.rename
+        interrupted = False
+        def interrupt(source, destination):
+            nonlocal interrupted
+            rename(source, destination)
+            if Path(source) == self.installed / 'README.md' and not interrupted:
+                interrupted = True
+                raise KeyboardInterrupt()
+        with patch.object(execution.os, 'rename', side_effect=interrupt), self.assertRaises(KeyboardInterrupt):
+            self.apply()
+        self.assertFalse((self.installed / 'README.md').exists())
+        self.assertEqual(self.apply(resume=True)['status'], 'completed')
+        self.assertEqual((self.installed / 'README.md').read_text(), 'target')
 
     def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(self):
         self.engine.fail = 'build'; self.apply()

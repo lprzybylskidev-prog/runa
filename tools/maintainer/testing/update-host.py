@@ -136,10 +136,10 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         (ROOT / '.runtime/ownership' / ('update-execution-' + project + '.json')).write_text(json.dumps(resumed, indent=2) + '\n')
         check(resumed['status'] == 'completed', 'independently verified resume recovers the actual development runtime')
         check(query("SELECT count(*) FROM shared.platform_seed_runs WHERE release_sha='" + journal['target']['commit'] + "'") == seeds_before == '1', 'resume never blindly replays already committed required seeds')
-        check(all(path.read_bytes() == content for path, content in infrastructure.items()) and output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'explicit continue preserves real custom Redis and devcontainer definitions')
+        check(all(path.read_bytes() == (repository / path.relative_to(prod)).read_bytes() for path in infrastructure) and output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'explicit continue applies exact reviewed infrastructure while preserving the existing custom service until operator reconciliation')
         check(private.read_text() == 'preserved' and app_pending.is_file() and output(['git', '-C', str(prod), 'rev-parse', 'HEAD']) == git_head, 'updater preserves application pending data/source, private storage and customer Git HEAD')
         after = files()
-        check(all(after[name] == content for name, content in preserved.items() if not name.endswith('/src/runa/platform.json')), 'customer identity, dependency locks, settings and scaffold survive real update and recovery')
+        check(all(after[name] == content for name, content in preserved.items() if not name.endswith(('/src/runa/platform.json', '/VERSION'))), 'customer identity, dependency locks, settings survive reviewed update and recovery')
         check(not (prod / '.runtime/production/in-progress.json').exists() and not list((prod / '.runtime/production/update-staging').iterdir()), 'successful resume archives journal and removes only its verified temporary platform source')
         app_pending.unlink()
     report.setdefault('update_preflight', {})[mode] = {'result': result['status'], 'target': result['target_release']['commit']}
