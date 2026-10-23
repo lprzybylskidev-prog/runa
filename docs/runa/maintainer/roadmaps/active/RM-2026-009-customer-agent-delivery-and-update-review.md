@@ -134,7 +134,7 @@ Make justified naming/generation/documentation improvements with a safe transiti
 
 ## Implementation plan
 
-- [ ] 1. Refresh baseline and define instruction/delivery/update ownership contracts.
+- [x] 1. Refresh baseline and define instruction/delivery/update ownership contracts.
   - Requires RM-006 closed, merged and released, then explicit activation of this roadmap. Inspect actual source and local knowledge freshness, both instruction sets' intended readers, existing installer/projection/receipt/update behavior and env consumers. Record the delivered-file classification, guidance ownership/update strategy, compatibility transition and relevant decisions. Resolve significant unknowns before implementation.
 - [ ] 2. Rewrite owner instructions and author the concise customer bundle.
   - Requires 1. Audit all AGENTS/skills/references; implement owner-only operating scope and the customer product under maintainer docs. Ground application guidance in actual public code, support classic Laravel and optional modules, prohibit protected edits, define maintenance of both products during Runa work and local guidance during app work. Require built-in command precedence and justified proposals only for reusable missing operations, keeping one-off checks proportionate. Explicitly prohibit bypassing supported test/acceptance entrypoints with internal or detached log-only runners. Clarify point checks versus final background quality and tool-specific status. Verify public links, instruction discovery and representative agent tasks, including scoped/host/final command selection, bypass rejection and missing-command cases, without changing runtime behavior.
@@ -156,3 +156,11 @@ Make justified naming/generation/documentation improvements with a safe transiti
 ## Acceptance and planning status
 
 Every implementation point requires any necessary small, fast, focused checks, synchronized current-state guidance, a logical commit and checklist update. Test actual customer projections and runtime behavior; static path checks alone do not prove instruction usability, fresh vector storage or safe update recovery. Activation is authorized; no implementation, release or verification PASS is claimed before execution.
+
+## Execution evidence
+
+### Point 1 — baseline and ownership
+
+- 2026-10-23: main/origin/main both dd91880, clean worktree; RM-006 closed and VERSION 0.4.0. Release projection remains the owner-approved fix 0.4.1. Knowledge status current (145 documents, 1987 chunks); focused retrieval confirmed release/update ownership sources.
+- Reviewed bootstrap acquisition/projection, repository boundary, installation scaffold, updater preflight/customization/journal, knowledge configuration/corpus and environment consumers. Existing updater preserves infrastructure after consent and covers no general delivered-file actions. Existing sparse acquisition delivers root agent defaults without substitution.
+- Ownership and compatible transition contract: [customer delivery](../../tooling/customer-delivery.md). New-bundle releases use staged customer substitutions, historical releases retain historical projection; modified existing instructions require reconciliation. Per-file execution extends the existing journal rather than a second installer. Private unexplained backups stay preserved. No data reset or runtime mutation performed.
