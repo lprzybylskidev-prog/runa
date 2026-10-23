@@ -44,3 +44,5 @@ For framework module data, use the [module boundary contract](../../../../docs/r
 40. Full-text/trigram search is introduced only for a real need and after evaluating normal search.
 
 Durable dictionaries use code/name_pl/name_en/description_pl/description_en, projected deliberately from source pl/en descriptors through DictionaryEntry. Authority-affecting operations use the shared registry/advisory/Auth/Permissions lock order and exact Connection described in [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); no cross-module SQL/FK/model exception follows.
+
+Manual Audit storage and guarded events are delivered; follow the [Audit contract](../../../../docs/runa/handbook/modules/audit/README.md) for exact-connection transactions, root-rollback refusal persistence, safe declared values and trusted actors. Automatic capture and authorized reads remain pending; never imply that arbitrary Eloquent writes are already captured.

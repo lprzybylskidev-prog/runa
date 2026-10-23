@@ -5,8 +5,7 @@
 The [foundation contracts](module-foundations.md) define transactional settings
 participation, reserved installation Audit participation, pre-controller account
 policy/trusted principal scopes, neutral authority guards and bounded management
-entity metadata. These are additive adapters; actual Audit/Auth/Permissions stores
-and authentication transport remain pending their owning implementation points.
+entity metadata. The [Audit manual store and events](../modules/audit/README.md) are delivered; automatic capture/authorized reads, Auth/Permissions stores and authentication transport remain pending their owning implementation points.
 
 ## Delivery status and scope
 
@@ -139,7 +138,7 @@ Synchronization locks the existing singleton row, validates/discovers trusted lo
 
 The forward Runa preparation primitive and external updater explicitly invoke the Runa-owned update contract below. Application deployment code explicitly invokes the same contract for app modules; the platform updater never installs them implicitly. The retained development-only `app.reference` example is the only supplied module source; there are no production Core registrations.
 
-Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. No real Auth, Permissions, Audit or Admin implementation is included.
+Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. Audit supplies the manual store and event contract; Auth, Permissions and Admin remain undelivered.
 
 ### Delivered dependency graph and lifecycle previews
 
@@ -202,7 +201,7 @@ PostgreSQL session advisory locks serialize evaluations per module across proces
 
 ### Independent platform maintenance
 
-`MaintenanceState::reasons()` composes manual Laravel maintenance, the existing update marker, unavailable registered Core modules and runtime database/registry requirements. No real Core registrations or dummy Auth/Permissions users are supplied. Core checks include all required dependencies and may recover on-use checks before rejecting traffic. The service never calls `up`, clears a marker or changes enabled flags; clearing one owner’s reason leaves the others intact. Detailed reasons are available only to trusted in-process/CLI diagnostics, not an unauthenticated management endpoint.
+`MaintenanceState::reasons()` composes manual Laravel maintenance, the existing update marker, unavailable registered Core modules and runtime database/registry requirements. The real Core runa.audit is supplied with explicit installation; no dummy Auth/Permissions users are supplied. Core checks include all required dependencies and may recover on-use checks before rejecting traffic. The service never calls `up`, clears a marker or changes enabled flags; clearing one owner’s reason leaves the others intact. Detailed reasons are available only to trusted in-process/CLI diagnostics, not an unauthenticated management endpoint.
 
 Ordinary Laravel HTTP traffic fails with a sanitized 503 during effective maintenance; `/api/health` remains liveness and `/api/ready` returns only `ok`/`unavailable` with no-store headers. Both routes remain reachable through Laravel’s manual-maintenance middleware. Laravel queue and ordinary scheduler maintenance checks consume the same effective state. The scheduler pulse and health recovery are explicitly exempt so recovery can continue. Existing external update/deployment process and Nginx fencing remain owned by their update adapters; these Laravel routes do not bypass stopped infrastructure. `MaintenanceState::assertOperational()` supplies the common guard for future operational commands. Public PHP/HTTP adapters compose maintenance with target availability; managed queue work composes the same guard; classified command/schedule adapters use managed queue dispatch; event adapters enforce owned subscriptions and optional integration state. Availability is never authorization.
 
@@ -366,7 +365,7 @@ Existence validation is a point-in-time check: another transaction can delete/ch
 Use the retained Optional `app.reference` development example and isolated test graph fixtures. The reference demonstrates executable public extension contracts and remains excluded from production source/images/discovery. Isolated fixtures cover Core/Optional graphs, version/ownership failures, required/optional Audit shapes, policy refusal/waiting/compensation, health expiry and worker races without registering production Core modules.
 
 The temporary `app.module_probe` construction aid has been retired. Its source and documentation are removed; backend discovery rejects its reserved identity and the frontend registry omits it in development and production. Defensive packaging exclusions also protect acquisition of older releases. Useful behavior assertions remain in the isolated suites and the retained reference integration test.
-Complete the developer guide incrementally in this document or linked focused guides: anatomy/manifest; registration and retained data; graph/lifecycle; own health; module work policy; PostgreSQL/storage; public PHP/HTTP APIs; jobs/commands/schedules; events/integrations; settings; Admin descriptors; frontend/slots; versioned upgrades; generators/contracts; troubleshooting. Examples should consume actual delivered contracts and must not imply real Auth/Permissions/Audit/Admin are present.
+Complete the developer guide incrementally in this document or linked focused guides: anatomy/manifest; registration and retained data; graph/lifecycle; own health; module work policy; PostgreSQL/storage; public PHP/HTTP APIs; jobs/commands/schedules; events/integrations; settings; Admin descriptors; frontend/slots; versioned upgrades; generators/contracts; troubleshooting. Examples should consume actual delivered contracts and must distinguish delivered manual Audit capabilities from pending automatic capture, reads, Auth/Permissions and Admin.
 
 ## Delivered module Artisan and schedules
 

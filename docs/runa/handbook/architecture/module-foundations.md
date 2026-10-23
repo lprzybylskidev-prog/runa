@@ -1,7 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. They do not
-supply domain stores, authentication/session transport or administration screens.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its manual append-only store; see the [Audit guide](../modules/audit/README.md). Authentication/session transport and administration screens remain undelivered.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -23,8 +22,7 @@ manifest, binds the exact connection/step fingerprint and retains ordinary ingre
 fencing. It is not a request option or general availability bypass. Completed
 steps are not repeated. Nontransactional steps do not receive this capability.
 Do not retain/serialize preparation contexts or invoke private foreign writers
-from application code. Baseline participants refuse missing integration once Audit
-is installed; before installation they cannot claim an Audit record exists.
+from application code. The framework Audit adapter resolves exact owned participation after installation and refuses missing/stale source; before installation it cannot claim an Audit record exists.
 
 ## HTTP identity boundary
 
@@ -48,8 +46,7 @@ Availability, identity, permission, step-up and domain invariants remain separat
 
 Owning Actions and Audit success persistence share the exact default PostgreSQL
 Connection and transaction. Independent refusal history belongs after root rollback,
-never in the rejected transaction/savepoint or an afterCommit listener. A future
-Audit module owns the concrete event/redaction APIs; do not invent a substitute.
+never in the rejected transaction/savepoint or an afterCommit listener. The [Audit module](../modules/audit/README.md) owns concrete manual event/redaction APIs; automatic capture and authorized reads follow separately.
 
 AuthorityGuard is the neutral lifecycle integration for future Permissions. Its
 default denies changes requiring administrative authority. AuthorityLock requires

@@ -31,3 +31,5 @@ Complete customer-repository deployment orders scoped forward platform migration
 ## Module installation boundaries
 
 Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle toggles or request boot. Pure upgrade descriptors/preflight declare forward version paths; schema migrations and transactional upgrade completion records commit atomically. Nontransactional retry requires explicit idempotency, otherwise retain the source/owner/fingerprint fence and follow documented operator recovery. Reuse the caller's installation/deployment journal/lock/maintenance; the platform updater selects only Runa modules. App-module invocation and ordering stay explicit in the customer deployment. See docs/runa/handbook/architecture/module-framework.md for the delivered contract.
+
+Manual Audit storage and guarded events are delivered; follow the [Audit contract](../../../../docs/runa/handbook/modules/audit/README.md) for exact-connection transactions, root-rollback refusal persistence, safe declared values and trusted actors. Automatic capture and authorized reads remain pending; never imply that arbitrary Eloquent writes are already captured.

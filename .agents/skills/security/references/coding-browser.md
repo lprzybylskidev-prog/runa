@@ -39,3 +39,5 @@
 37. Do not permanently lock accounts using a simple attacker-triggerable failed-login counter.
 
 Module account policy runs before controller/FormRequest resolution; Public/Authenticated/Restricted metadata never substitutes for current eligibility, permission or step-up checks. Never derive TrustedPrincipal from request fields or call a protected identity API recursively. Preparation contexts are trusted update-local capabilities, never request bypass flags. See [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md).
+
+Manual Audit storage and guarded events are delivered; follow the [Audit contract](../../../../docs/runa/handbook/modules/audit/README.md) for exact-connection transactions, root-rollback refusal persistence, safe declared values and trusted actors. Automatic capture and authorized reads remain pending; never imply that arbitrary Eloquent writes are already captured.

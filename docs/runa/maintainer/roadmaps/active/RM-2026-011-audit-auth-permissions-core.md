@@ -576,7 +576,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     fail-closed failure table and bootstrap sequence recorded in durable design;
     regression fixtures cover seams without dummy production Core registrations.
     Public framework docs and both affected instruction references are synchronized.
-- [ ] 2. Deliver Audit storage, manual API and transactional/independent semantics.
+- [x] 2. Deliver Audit storage, manual API and transactional/independent semantics.
   - Requires 1. Add Core manifest, owned runa_audit migrations, append-only repository,
     immutable public record/query DTOs and manual multi-entity event Actions.
   - Implement trusted actor/execution context and redaction/bounds, same-connection
@@ -779,8 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Point 1 establishes additive framework foundations;
-domain modules and Fortify installation remain assigned to subsequent points.
+Active on the roadmap branch. Points 1–2 deliver additive framework foundations and manual Audit storage/transaction participation. Point 3 is next: automatic capture, suppression and authorized reads. Auth/Permissions and Fortify remain assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -827,3 +826,49 @@ architectural premise requires discussion before dependent work.
   services, Qdrant/model caches, backups and verification reports are preserved.
   Tests use the supported guarded maintainer runner and disposable source/schema
   fixtures with its existing scoped teardown.
+
+## Point 2 delivery
+
+- Delivered Core `runa.audit` at independent initial version 0.1.0; public manual API
+  version 1.0.0 and framework API 1.0.0 remain compatible. No current required
+  dependents exist; planned Auth/Permissions constraints remain ^0.1.0. Central
+  Audit changelog and public handbook document actual delivered scope.
+- Owned ModuleSchema migrations create append-only events and normalized related
+  references with bigint identities, UUIDv7, UTC occurrence, same-schema RESTRICT
+  FK, query-driven time/actor/module/action/correlation/entity indexes and bounded
+  meaningful JSON. No mutable model, update/delete API, retention or Auth dependency.
+- Immutable event/entity/reference/query values, trusted actor resolution, guarded
+  manual record/attempt Actions, bounded nested redaction and explicit sensitive
+  alias names. Server request/operation/queue/CLI identities remain separate from
+  caller context. HTTP retains safe route templates, validated IP and bounded
+  known User-Agent family; no raw request/job/command arguments or credentials.
+- Success requires the exact active default PostgreSQL Connection. Independent
+  refusal requires complete root rollback and a non-success outcome; nested
+  ambient transactions and alternate connections are refused. Persistence failures
+  propagate as AuditUnavailable without claiming confirmed history. No afterCommit
+  or asynchronous Audit persistence.
+- Real provider bindings now use the source-checked Audit participation adapter
+  after installation. It composes atomic settings publication/restoration and
+  reserved preparation without opening ordinary ingress. Transactional initial
+  store-ready history starts only after migrations; matching versions/completed
+  steps do not duplicate it. Upgrade handlers retain their isolated-construction
+  contract and resolve the owned writer only during execution.
+- Six distinct focused regressions passed: real root/savepoint rollback and write
+  failure; independent refusal/unavailable store; safe payload/actor identity;
+  settings participation and invalid reservation; exact initializer/no-op/fenced
+  gateway; sequential queue cleanup without inherited human/request identity.
+  Initial fixtures missed the manifest-declared test directory and supplied an
+  incomplete reservation tuple; both fixture errors were corrected and their
+  focused checks passed. Module source check and independent version check passed;
+  runtime declarations were checked inside the isolated initializer regression.
+  Full suites/static analysis/builds/scanners remain deferred to point 19.
+- Current module/framework/deferred guidance and owner/customer backend, Laravel,
+  PostgreSQL and security references are synchronized. Root AGENTS and customer
+  AGENTS already require guarded module access, safe values and transactional
+  writes; no duplicate procedure is needed here. Mandatory automatic/manual Audit
+  awareness remains assigned to point 3 when capture is delivered. Frontend
+  instruction products remain unaffected because no UI changed.
+- No Docker resources were created or removed. Exact disposable Audit fixture
+  tables/schema and registry/update-step rows were removed by scoped teardown in
+  the guarded test database. Existing development/test data outside that fixture,
+  running services, Qdrant/model caches, backups and verification reports remain.

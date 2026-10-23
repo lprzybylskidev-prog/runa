@@ -1,8 +1,7 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Domain stores,
-Fortify integration and user interfaces are delivered by later roadmap points;
-these contracts do not claim that authentication or business auditing is available.
+RM-2026-011 point 1 establishes the framework adapters below. Point 2 delivers the manual Audit store and transactional participation. Fortify integration and user interfaces remain assigned to later roadmap points;
+Manual business auditing is available; authentication and automatic model capture remain pending.
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
@@ -42,10 +41,10 @@ Audit-owned rows with same-schema event FK and foreign UUIDv7 references. Audit
 rows do not inherit ModuleModel soft-delete/update semantics. Index actual read
 paths (time/id pagination, actor, entity, module/action and correlation).
 
-The module implementation introduces immutable owned AuditEvent/AuditReference
+The Audit module now provides immutable owned AuditEvent/AuditReference
 DTOs and `AuditWriter::record(Connection $connection, AuditEvent $event):
 AuditReference`. It verifies an active transaction and exact connection before
-writing. The local Auditable helper requires that transaction before the model's
+writing. The planned local Auditable helper (point 3) requires that transaction before the model's
 first write. Diff is default; approved full snapshots are opt-in. Manual aggregate
 operations suppress automatic capture within a finally-unwound local scope;
 explicit records remain active. No callback/model/secret crosses ModuleApis.
@@ -122,8 +121,7 @@ source. It must not be serialized, retained or reused after the callback returns
 Bootstrap order is Audit schema/store and its initial transactional step, then Auth
 schema/dictionaries/policy state, then Permissions schema/dictionaries/declarations.
 Audit's initial writer records the store-ready boundary when storage exists;
-there is no invented pre-store history. Point 2 replaces baseline participation;
-thereafter failure/missing binding is closed. Permissions installs the protected
+there is no invented pre-store history. Point 2 replaces baseline provider bindings with the source-checked Audit participation adapter; failure/missing source is closed. Permissions installs the protected
 system role, then point 16 binds idempotent first-admin invitation/role assignment
 to actual installer/CLI ownership. Incomplete administrative web operations stay
 denied; no is_admin fallback, temporary general bypass or extra services.
