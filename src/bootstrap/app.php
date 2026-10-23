@@ -14,6 +14,7 @@ use Runa\Foundation\Application;
 use Runa\Http\Middleware\AssignRequestId;
 use Runa\Http\Middleware\EnforceAccountPolicy;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
+use Runa\Http\Middleware\SessionPersistence;
 use Runa\Http\Middleware\ThrottleAuthEntry;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\ModuleHttpGuard;
@@ -40,6 +41,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
+            SessionPersistence::class,
             ValidateCsrfToken::class,
         ], append: [ThrottleAuthEntry::class, EnforceAccountPolicy::class]);
         $middleware->append(AssignRequestId::class);

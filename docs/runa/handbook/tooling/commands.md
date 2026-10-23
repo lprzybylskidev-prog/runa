@@ -300,3 +300,10 @@ disabled by default and bounded by encrypted module settings; see the
 [Auth transport procedure](../modules/auth/transport.md). Administrative invitation
 issue/resend/invalidation uses the protected typed contract, not credentials or raw
 tokens in CLI arguments. No Auth UI/operator-bootstrap command is delivered yet.
+
+### Auth session cleanup
+
+`php artisan runa:auth:sessions.cleanup` admits operational ModuleWork cleanup;
+its zero exit indicates admission, not completion. The five-minute schedule removes
+bounded expired/revoked/stale technical session/trust/login-window rows and preserves
+Audit history. See the [session/abuse contract](../modules/auth/sessions.md).

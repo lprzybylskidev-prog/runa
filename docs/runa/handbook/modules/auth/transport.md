@@ -29,14 +29,14 @@ Auth readiness merely because its source is registered.
 
 The server-side file session is encrypted, JSON serialized, host-only, HttpOnly,
 SameSite=Lax, with production Secure cookies and HTTPS. File storage uses Laravel's
-private runtime storage, with a 120-minute lifetime and expire-on-close cookie.
+private runtime storage, with a 30-day storage ceiling and expire-on-close ordinary cookie.
 Production configuration validation rejects weakened defaults. Infrastructure and
 cookie settings live in platform config, with normal application override rules;
 registration/token policy belongs to encrypted module settings, not environment
-credentials. Concurrency limits, activity/absolute deadlines, remember-me, session
-listing/cleanup and trusted-device storage are delivered by their later Auth points.
-The remember input is currently prohibited. This baseline does not claim those
-operational policies are already enforced.
+credentials. Auth 0.3.0 supplies [operational session controls](sessions.md): bounded concurrency,
+activity/absolute deadlines, optional remembered-cookie persistence, own list/revoke,
+protected administrative contracts, technical trust storage and cleanup. Trust
+issuance and remaining password/2FA flows follow in their owning points.
 
 Login verifies hashes before evaluating all independent account blockers, including
 scheduled activation. Unknown, incorrect, pending approval, inactive, deleted,
@@ -49,8 +49,8 @@ identifier or credential. Fortify's credential-bearing Failed event is not emitt
 Logout audits the known session subject, clears current-device authentication,
 invalidates session and regenerates CSRF. No remember token is created or rotated.
 
-Every supplied authenticated session is checked against fresh eligibility and its
-revocation generation before module controllers/FormRequests and ordinary app APIs.
+Every supplied authenticated session is checked against its tracked session proof,
+activity/absolute deadlines, fresh eligibility and revocation generation before module controllers/FormRequests and ordinary app APIs.
 A mismatch/blocker yields 401 `authentication_required`. Pending verification or
 forced password change yields 403 `account_restricted` on ordinary operations.
 Only Auth's explicit restricted session/read/resend allowlist is admitted; marking
@@ -62,9 +62,10 @@ mutation; the administrative policy workflow is assigned to its later point.
 Auth responses use no-store, safe `{data: ...}` projections or `{error: {code: ...}}`.
 Validation returns bounded field names with fixed messages, never echoed input.
 Unexpected Auth failures return `auth_unavailable`; debug SQL/credential exception
-text is not rendered. A small source cap (30 unsafe entry requests/minute) and
-Fortify's five failed account/source login attempts/minute return 429 with
-Retry-After. Dedicated configurable account/source abuse policy follows separately.
+text is not rendered. Non-login unsafe entry operations retain the small source cap (30/minute), returning
+429 with Retry-After. Login has configurable account/source windows and bounded
+temporary locks under the [session/abuse contract](sessions.md), with generic 422
+refusals and optional review escalation instead of permanent attacker-triggered locks.
 
 ## Named module endpoints
 

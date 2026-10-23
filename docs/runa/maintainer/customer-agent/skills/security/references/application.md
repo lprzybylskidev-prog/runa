@@ -8,4 +8,11 @@ Module access declarations do not replace current account/session eligibility, p
 
 Meaningful business/security mutations require Audit history. Use public Auditable Contracts with approved fields inside the default PostgreSQL transaction. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual Audit events in that same transaction; scoped automatic suppression never disables them. Follow docs/runa/handbook/modules/audit/README.md for guarded ModuleApis, redaction, rollback/refusal boundaries and permission-protected bounded reads. Never invoke the protected bootstrap/settings writer or assume arbitrary Eloquent writes are captured.
 
-Evaluate Auth eligibility from current account state/time at each relevant ingress. Keep blockers separate from restricted flows, session revocation, permissions and step-up. Never expose lifecycle reasons anonymously or reactivate revoked session/trust generations. Follow the public Auth identity/lifecycle contract in `docs/runa/handbook/modules/auth/README.md`; cookie/session/CSRF entry transport, registration and invitation/verification are delivered under `docs/runa/handbook/modules/auth/transport.md`; operational session controls and remaining Auth security flows follow separately. Do not add duplicate Fortify routes or send credentials/tokens through module APIs, events, metadata or queue payloads.
+Evaluate Auth eligibility from current account state/time at each relevant ingress. Keep blockers separate from restricted flows, session revocation, permissions and step-up. Never expose lifecycle reasons anonymously or reactivate revoked session/trust generations. Follow the public Auth identity/lifecycle contract in `docs/runa/handbook/modules/auth/README.md`; cookie/session/CSRF entry transport, registration and invitation/verification are delivered under `docs/runa/handbook/modules/auth/transport.md`; remaining password/2FA flows follow separately. Do not add duplicate Fortify routes or send credentials/tokens through module APIs, events, metadata or queue payloads.
+
+Use `docs/runa/handbook/modules/auth/sessions.md` for tracked session/deadline checks,
+own/admin revocation, real-activity heartbeat and bounded account/source login locks.
+Polling never renews activity; remember persistence cannot restore a revoked session
+or move its captured absolute deadline. Technical cleanup preserves Audit history.
+Do not add a recaller or attacker-triggered permanent account lock. Consume delivered
+public contracts; protected platform source remains read-only.

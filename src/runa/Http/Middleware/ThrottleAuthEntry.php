@@ -16,7 +16,7 @@ final class ThrottleAuthEntry
         if (! $request->is('api/runa/auth/*')) {
             return $next($request);
         }
-        if (! $request->isMethod('GET') && ! $request->isMethod('HEAD')) {
+        if (! $request->is('api/runa/auth/login') && ! $request->isMethod('GET') && ! $request->isMethod('HEAD')) {
             $key = 'auth-entry:'.hash('sha256', (string) $request->ip());
             if (RateLimiter::tooManyAttempts($key, 30)) {
                 throw new OperationRejected('too_many_requests', 'runa.auth', 'entry', 429, retryAfter: RateLimiter::availableIn($key));

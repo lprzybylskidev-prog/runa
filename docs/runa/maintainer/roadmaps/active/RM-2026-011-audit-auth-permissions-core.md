@@ -618,7 +618,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     enumeration, before-activation refusal, token replay/races and idempotent stale
     delivery checks. Auth security/command/config documentation and package review
     record explain environment defaults and supported extension points.
-- [ ] 6. Deliver session limits, deadlines, revocation and abuse defenses.
+- [x] 6. Deliver session limits, deadlines, revocation and abuse defenses.
   - Requires 5. Persist operational sessions/trust metadata under Auth; implement
     unlimited/default and bounded concurrency with oldest-session eviction, absolute/
     idle/remember-me rules, immediate account revocation and restricted ingress.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–5 deliver framework foundations, Audit, Auth identities/eligibility/lifecycle and Fortify cookie/session/CSRF entry transport with registration/invitations and verification. Point 6 is next: operational session limits, deadlines, revocation and abuse defenses. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–6 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport and tracked operational sessions with deadlines, revocation and standalone login abuse defenses. Point 7 is next: passwords, 2FA, trusted-device issuance and reusable step-up. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1058,3 +1058,65 @@ architectural premise requires discussion before dependent work.
   development/test data, Qdrant/model caches, backups, reports and shared builder
   caches remain preserved. Guarded fixtures removed only their absent-before-use
   Auth/Audit schemas and matching registry/update/work/queue records.
+
+## Point 6 delivery
+
+- Auth advances independently 0.2.0 -> 0.3.0 for additive session capabilities;
+  existing identity/lifecycle/invitation API signatures remain compatible. Add
+  protected AuthSessions 1.0.0 and explicit reserved settings-default upgrade.
+  Permissions must select the then-current compatible Auth baseline. Audit and
+  framework API versions remain unchanged; no new dependency/service is added.
+- Owned forward migration creates operational sessions, revocable trust metadata
+  and HMAC-keyed account/source login windows. Session/trust have same-module
+  RESTRICT user references; internal counters have no public identity. No application
+  or production database migration ran outside isolated guarded fixtures.
+- Root admission serializes registry/authority/user locks, finishes native/Fortify
+  session regeneration before storing the ID hash, atomically evicts oldest live
+  sessions when a positive cap applies and records Audit. Unlimited remains default.
+  Every authenticated ingress checks fresh eligibility/generation and bound tracked
+  session proof, current idle and captured absolute deadline. Lifecycle revocation
+  marks session/trust rows atomically; reactivation never restores old access.
+- Optional remember persists the same native encrypted session cookie, without a
+  recaller or remember-token reconstruction. Idle still applies and the captured
+  absolute deadline never resets. Stricter lifetime policy may expire sooner;
+  relaxation never extends the captured deadline. Native storage/cookie ceiling is
+  30 days; ordinary cookies still expire on close. Untracked older sessions must
+  log in again after upgrade. Trust issuance/2FA remains point 7.
+- Own cursor-bounded session list/revoke and explicit real-activity heartbeat are
+  named restricted-flow endpoints. Polling never updates activity; early heartbeats
+  are coalesced, mouse movement is rejected, extension/warning policy is exposed for
+  later UI. Protected administrative list/revoke/all contracts remain denied by
+  default until Permissions. No administration UI or automatic write replay exists.
+- Standalone transactional DB windows count account failures and all source logins,
+  use fixed bounded temporary locks and never slide locks on blocked requests.
+  Generic 422 refusals hide account/source/lifecycle reasons. Optional escalation
+  emits Audit for review without attacker-triggered permanent security locks.
+  Non-login unsafe entry retains its separate source cap. Scheduled operational
+  cleanup deletes bounded expired/idle/revoked/stale-generation technical rows only,
+  preserving Audit; native files retain Laravel GC.
+- Local knowledge was current (162 sources/2232 chunks); focused retrieval, original
+  sources and Boost Laravel 13 session/rate-limit documentation were consulted.
+  Eight distinct focused regressions passed for deadlines/heartbeat, cap eviction/
+  foreign proof/revocation rollback, remembered persistence/cleanup/lifecycle,
+  temporary-lock expiry/escalation, login-admission Audit rollback, additive settings
+  upgrades, cross-connection registry arbitration and real updater initialization/
+  runtime declarations. An initial test did not send
+  real cookies across JSON requests; its browser helper now does. A duplicated import
+  was removed; its interrupted fixture left route-registration residue which the
+  guarded teardown removed, and the isolated upgrade check then passed. Module source
+  and independent version/changelog checks passed. Broader parallel/browser/security/
+  installation acceptance remains point 19; mandatory hooks remain enabled.
+- Public Auth/session/API/database/security/command guidance and owner architecture
+  are synchronized. Owner and customer backend/Laravel/PostgreSQL/security references
+  link the shared procedure; acquisition/clone/update regressions assert its delivery
+  while preserving local extensions. Root/customer AGENTS already require current
+  server authority and transactional Audit, so no constitution/procedure duplication
+  is needed. CLAUDE remains a pointer; frontend instruction products are unaffected
+  because no browser component is delivered.
+- Knowledge status rebuilt the absent cached management-helper image unexpectedly;
+  it is not credited as an image quality gate. Scoped cleanup targets only newly
+  created runa-management:2a709b7923c92afbb4bbef20 after checking there are no container
+  references. No task service/network/volume was created. Guarded fixtures remove
+  only their absent-before-use Auth/Audit schemas and matching registry/work/queue
+  evidence. Existing development/test databases, Qdrant/model caches, backups,
+  verification reports and shared builder caches remain preserved.

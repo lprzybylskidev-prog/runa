@@ -1,16 +1,17 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.2.0`, requiring
+Core `runa.auth` ships at independent version `0.3.0`, requiring
 `runa.audit ^0.2.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
 Permissions dependency or cross-module SQL, model, relationship or foreign key.
 
-RM-2026-011 points 4–5 supply identity/lifecycle foundations and
+RM-2026-011 points 4–6 supply identity/lifecycle foundations and
 [Fortify cookie/session/CSRF transport, registration and invitations](transport.md).
-Operational session limits/deadlines/trusted devices, password recovery/2FA, private
-profile/preferences, Permissions and Auth screens follow in later points.
+[Operational sessions, remembered persistence and abuse defenses](sessions.md) are
+also available. Trust issuance, password recovery/2FA, private profile/preferences,
+Permissions and Auth screens follow in later points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access
@@ -122,11 +123,13 @@ Deactivate/delete/restore/activate and an applied administrative security lock
 advance security_version and erase remember_token. Rescheduling/cancelling an
 already reached deactivation also advances that generation, as does changing an
 inactive account's activation schedule, so changing dates cannot revive old access.
-Future operational sessions
-and trusted-device records must bind that generation and reject a mismatch;
-reactivation never restores old credentials. Cookie transport binds that persistent generation on login and rejects mismatches
-on subsequent ingress; operational session/trust metadata is still deferred. Scheduled deadlines also require current-time ingress checks and later
-lifecycle/session orchestration. Temporary locks and expiry stay independent.
+Operational sessions and trusted-device rows bind that generation and are revoked
+in the same lifecycle transaction. Reactivation never restores them. The
+[session/abuse contract](sessions.md) defines proof binding, deadlines, own/admin
+revocation, remembered-cookie persistence, heartbeat and cleanup. Trust issuance
+follows with 2FA. Scheduled deadlines also require current-time ingress checks;
+future lifecycle orchestration does not replace those checks. Temporary locks and
+account expiry stay independent.
 
 Root conflicts and invariant refusals are recorded through Audit's independent
 attempt API after rollback. Nested callers must first roll back their root and

@@ -148,6 +148,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 // Irreversible revocation; later activation/restore never revalidates old sessions/trust.
                 $user->security_version++;
                 $user->remember_token = null;
+                app(SessionStore::class)->revokeUser($connection, $user);
             }
             $user->version++;
             $user->save();

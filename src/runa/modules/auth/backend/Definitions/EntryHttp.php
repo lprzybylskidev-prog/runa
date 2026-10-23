@@ -18,6 +18,9 @@ final class EntryHttp implements HttpProvider
     public function endpoints(): array
     {
         return [
+            new HttpEndpoint('GET', 'sessions', new ApiOperation('sessions.list'), Http\SessionsController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'sessions/revoke', new ApiOperation('sessions.revoke'), Http\RevokeSessionController::class, HttpAccess::Restricted),
+            new HttpEndpoint('POST', 'session/activity', new ApiOperation('session.activity'), Http\ActivityController::class, HttpAccess::Restricted),
             new HttpEndpoint('GET', 'csrf', new ApiOperation('csrf'), Http\CsrfController::class),
             new HttpEndpoint('POST', 'login', new ApiOperation('login'), Http\LoginController::class),
             new HttpEndpoint('POST', 'logout', new ApiOperation('logout'), Http\LogoutController::class),

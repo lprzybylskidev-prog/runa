@@ -80,7 +80,7 @@ Do not use an unvalidated Host header as the authority for sensitive absolute UR
 
 ## Authentication-sensitive behavior
 
-Exact authentication/authorization architecture is deferred to its future module, but secure defaults apply:
+Auth supplies [identity/entry transport](../modules/auth/transport.md) and [operational sessions/abuse defenses](../modules/auth/sessions.md). Remaining password/2FA and Permissions integration follow their owning roadmap points. Secure defaults apply:
 
 - avoid account-enumeration leaks in login/recovery flows where practical,
 - do not permanently lock an account based on a naive failed-login counter that enables denial-of-service,

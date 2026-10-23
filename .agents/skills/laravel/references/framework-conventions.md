@@ -42,5 +42,11 @@ Meaningful business/security mutations require [Audit history](../../../../docs/
 Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
 for native session/CSRF bootstrapping, registration/invitation/verification and
 private single-use delivery boundaries. Do not add duplicate Fortify routes or put
-credentials/tokens in module APIs, events, metadata or queue payloads. Operational
-session controls and remaining Auth security flows have separate owning points.
+credentials/tokens in module APIs, events, metadata or queue payloads. Remaining password/2FA flows have separate owning points.
+
+Use the [Auth session/abuse contract](../../../../docs/runa/handbook/modules/auth/sessions.md)
+for tracked proof/deadline validation, own/admin revocation and standalone abuse
+windows. Ordinary polling is not user activity; a heartbeat never moves the captured
+absolute deadline. Remembered cookies cannot recreate revoked sessions. Technical
+cleanup preserves Audit history. Do not add a native recaller or permanent account
+lock from attacker-controlled counters.

@@ -1,9 +1,9 @@
 <?php
 
 return [
-    // Server-side storage; operational Auth session metadata follows in its own flow.
+    // Storage/cookie ceiling only. Auth enforces captured absolute and activity deadlines.
     'driver' => 'file',
-    'lifetime' => 120,
+    'lifetime' => 43200,
     'expire_on_close' => true,
     'encrypt' => true,
     'serialization' => 'json',
