@@ -904,7 +904,9 @@ architectural premise requires discussion before dependent work.
   were reviewed. Six distinct focused regressions passed, resolving unsafe/caught
   failure/savepoint rollback, lifecycle/snapshot behavior, suppression cleanup and
   explicit records, default denial/filtered bounded reads/large detail, persisted
-  before-state/unavailable suppression and fresh initializer/runtime declarations.
+  before-state/unavailable suppression and fresh initializer/runtime declarations. A final remember/absolute-boundary review added a focused
+  regression proving a longer remember policy cannot bypass the ordinary absolute
+  lifetime at admission or after policy tightening.
   The first test fixture loaded its module trait before registry initialization;
   moving it to the lazy owner fixture autoloader fixed discovery. The authorization
   fixture also needed fresh singleton gateways after replacing the test authorizer.
@@ -965,7 +967,9 @@ architectural premise requires discussion before dependent work.
   regressions passed for naming/normalization/DB constraints, exact-time independent
   predicates, reservation/reuse/restore conflicts, caught Audit rollback/revocation,
   default denial/authorized immutable projections and real reserved initialization/
-  no-op/runtime declarations. A fixture expected `completed` instead of the existing
+  no-op/runtime declarations. A final remember/absolute-boundary review added a focused
+  regression proving a longer remember policy cannot bypass the ordinary absolute
+  lifetime at admission or after policy tightening. A fixture expected `completed` instead of the existing
   `succeeded` settings result; the expectation was corrected. Source ownership and
   independent module version checks passed. Competing-connection claim arbitration
   and extended customer acquisition/update/clone scenarios are prepared for final
@@ -1078,7 +1082,8 @@ architectural premise requires discussion before dependent work.
   marks session/trust rows atomically; reactivation never restores old access.
 - Optional remember persists the same native encrypted session cookie, without a
   recaller or remember-token reconstruction. Idle still applies and the captured
-  absolute deadline never resets. Stricter lifetime policy may expire sooner;
+  absolute deadline never resets. Remember duration is capped by the general absolute
+  policy. Stricter lifetime policy may expire sooner;
   relaxation never extends the captured deadline. Native storage/cookie ceiling is
   30 days; ordinary cookies still expire on close. Untracked older sessions must
   log in again after upgrade. Trust issuance/2FA remains point 7.
@@ -1096,11 +1101,13 @@ architectural premise requires discussion before dependent work.
   preserving Audit; native files retain Laravel GC.
 - Local knowledge was current (162 sources/2232 chunks); focused retrieval, original
   sources and Boost Laravel 13 session/rate-limit documentation were consulted.
-  Eight distinct focused regressions passed for deadlines/heartbeat, cap eviction/
+  Nine distinct focused regressions passed for deadlines/heartbeat, cap eviction/
   foreign proof/revocation rollback, remembered persistence/cleanup/lifecycle,
   temporary-lock expiry/escalation, login-admission Audit rollback, additive settings
   upgrades, cross-connection registry arbitration and real updater initialization/
-  runtime declarations. An initial test did not send
+  runtime declarations. A final remember/absolute-boundary review added a focused
+  regression proving a longer remember policy cannot bypass the ordinary absolute
+  lifetime at admission or after policy tightening. An initial test did not send
   real cookies across JSON requests; its browser helper now does. A duplicated import
   was removed; its interrupted fixture left route-registration residue which the
   guarded teardown removed, and the isolated upgrade check then passed. Module source
@@ -1114,7 +1121,7 @@ architectural premise requires discussion before dependent work.
   is needed. CLAUDE remains a pointer; frontend instruction products are unaffected
   because no browser component is delivered.
 - Knowledge status rebuilt the absent cached management-helper image unexpectedly;
-  it is not credited as an image quality gate. Scoped cleanup targets only newly
+  it is not credited as an image quality gate. Scoped cleanup removed only newly
   created runa-management:2a709b7923c92afbb4bbef20 after checking there are no container
   references. No task service/network/volume was created. Guarded fixtures remove
   only their absent-before-use Auth/Audit schemas and matching registry/work/queue

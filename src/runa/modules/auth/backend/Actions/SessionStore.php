@@ -21,7 +21,8 @@ final readonly class SessionStore
         $now = CarbonImmutable::now('UTC');
         $rememberMinutes = $this->settings->value('runa.auth', 'session_remember_minutes');
         $remember = $remember && $rememberMinutes > 0;
-        $minutes = $remember ? $rememberMinutes : $this->settings->value('runa.auth', 'session_absolute_minutes');
+        $absoluteMinutes = $this->settings->value('runa.auth', 'session_absolute_minutes');
+        $minutes = $remember ? min($rememberMinutes, $absoluteMinutes) : $absoluteMinutes;
         $limit = $this->settings->value('runa.auth', 'session_limit');
         $active = $this->liveRows($connection, $user)->orderBy('authenticated_at')->orderBy('id')->pluck('id');
         if ($limit > 0 && $active->count() >= $limit) {
@@ -44,6 +45,7 @@ final readonly class SessionStore
 
         return $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')
             ->where('security_version', $user->security_version)->where('expires_at', '>', $now)
+            ->where('authenticated_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_absolute_minutes')))
             ->where('activity_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_idle_minutes')))
             ->where(function ($query) use ($now): void {
                 $query->where(fn ($q) => $q->where('remembered', false)->where('authenticated_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_absolute_minutes'))))
@@ -68,8 +70,9 @@ final readonly class SessionStore
         // A stricter policy takes effect immediately; a relaxed policy never moves a captured absolute deadline.
         $policyDeadline = CarbonImmutable::parse($row->authenticated_at)->addMinutes($this->settings->value('runa.auth',
             $row->remembered ? 'session_remember_minutes' : 'session_absolute_minutes'));
+        $absoluteDeadline = CarbonImmutable::parse($row->authenticated_at)->addMinutes($this->settings->value('runa.auth', 'session_absolute_minutes'));
 
-        return $now->lt(CarbonImmutable::parse($row->expires_at)) && $now->lt($policyDeadline)
+        return $now->lt(CarbonImmutable::parse($row->expires_at)) && $now->lt($policyDeadline) && $now->lt($absoluteDeadline)
             && $now->lt(CarbonImmutable::parse($row->activity_at)->addMinutes($this->settings->value('runa.auth', 'session_idle_minutes')));
     }
 

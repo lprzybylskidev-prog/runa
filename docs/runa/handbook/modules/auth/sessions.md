@@ -37,7 +37,8 @@ this does not authorize ordinary operations or another module's Restricted route
 `remember: true` is optional on login. It is effective only when remembered lifetime
 is positive. It persists the same encrypted native session cookie across browser
 restart; it does not mint a second credential, use `remember_token` or reconstruct a
-session from a recaller. Idle timeout continues to apply. The captured deadline is
+session from a recaller. Idle timeout continues to apply. Remembered duration is capped by the ordinary
+absolute lifetime, including stricter current policy. The captured deadline is
 never moved by polling, activity or browser restart. Tightening the corresponding
 current absolute/remember policy can expire existing sessions sooner; relaxing it
 never extends the captured deadline. Turning remember duration to zero invalidates

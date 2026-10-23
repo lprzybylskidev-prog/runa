@@ -414,3 +414,19 @@ it('counts successful logins in source windows and restarts after the fixed lock
     entryLogin($this, $payload)->assertOk();
     expect(DB::table('runa_auth.sessions')->count())->toBe(2);
 });
+
+it('caps remembered authentication by the general absolute policy at admission and on policy tightening', function (): void {
+    CarbonImmutable::setTestNow('2026-10-23 12:00:00 UTC');
+    entryPolicy(['session_remember_minutes' => 60, 'session_absolute_minutes' => 2, 'session_idle_minutes' => 10]);
+    $user = entryUser('absolute-remember@example.test');
+    $payload = ['identifier' => $user->email, 'password' => 'a-long-test-password', 'remember' => true];
+    entryLogin($this, $payload)->assertOk();
+    expect(CarbonImmutable::parse(DB::table('runa_auth.sessions')->value('expires_at'))->toIso8601String())->toBe('2026-10-23T12:02:00+00:00');
+    CarbonImmutable::setTestNow('2026-10-23 12:02:00 UTC');
+    $this->getJson('/api/runa/auth/session')->assertUnauthorized();
+    entryPolicy(['session_absolute_minutes' => 10]);
+    entryLogin($this, $payload)->assertOk();
+    CarbonImmutable::setTestNow('2026-10-23 12:04:00 UTC');
+    entryPolicy(['session_absolute_minutes' => 2]);
+    $this->getJson('/api/runa/auth/session')->assertUnauthorized();
+});
