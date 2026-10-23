@@ -1,10 +1,10 @@
 ---
 id: RM-2026-010
 title: Manual quality group selection for owner and customer workflows
-status: draft
+status: active
 branch: roadmap/RM-2026-010-manual-quality-group-selection
 created_at: 2026-10-23
-activated_at: null
+activated_at: 2026-10-23
 closed_at: null
 release_type: maintenance
 proposed_version: 0.4.2
@@ -40,10 +40,10 @@ baseline is 0.4.1; this roadmap projects maintenance PATCH **0.4.2**, explicitly
 confirmed by the owner. Refresh the predecessor link and released baseline at
 activation without editing the predecessor once closed.
 
-Creation and a separate planning commit on the current RM-009 branch are
-authorized now. This draft does not activate a second roadmap, change current
-quality behavior or interrupt/reconfigure the running RM-009 gate. Do not apply
-its future group flags to that run. Activation remains a separate owner decision.
+RM-009 is closed and merged on main at 58c159f; VERSION and published tag
+v0.4.1 establish the released baseline. On 2026-10-23 the owner requests execution
+of this next roadmap. Activation is authorized; the concrete policy proposal below
+remains subject to the point-1 agreement before runtime implementation.
 
 ### Scope
 
@@ -67,6 +67,11 @@ resource ownership, cleanup, lock and production-isolation contracts stay in for
 ## Specification
 
 ### Decisions
+
+- 2026-10-23 — Owner requests execution of the next roadmap in one continuous
+  effort. Activate RM-010 after confirming RM-009 closure and the clean, updated
+  main baseline. Point 1 still requires explicit agreement on the concrete gate
+  policy; activation does not silently approve that constitutional change.
 
 - 2026-10-23 — Owner confirms release_type maintenance and proposed_version 0.4.2
   after RM-009's projected 0.4.1. This increments PATCH rather than introducing a
@@ -97,6 +102,98 @@ in point 1 before changing policy or runtime selection. Explicitly reconcile cur
 final AI/security/release requirements in both contracts and workflows; stop on an
 unresolved constitutional decision instead of treating this draft as permission
 to bypass it. No test-selection policy changes during RM-009.
+
+### Point-1 proposal awaiting owner agreement
+
+Inspected sources: tools/application/quality.py, quality.yml and executors/quality.py;
+tools/maintainer/entrypoint (quality-plan launcher); owner quality/gates.yml;
+src/runa/management/development.json and ToolingCommand.php; owner quality,
+roadmap/release workflows and public command catalogue. Local knowledge status was
+current on main; retrieval corroborated these source contracts. No broad checks ran.
+
+This is a proposed policy, not available command behavior. Implementation waits for
+owner agreement; point 1 remains open.
+
+CLI and compatibility:
+
+- Repeatable --group=NAME and standalone --all on plan/roadmap/final, with the same
+  explicit resolved step set in all three modes. --background remains limited to
+  roadmap/final; status reads stored scope and accepts no selection flags.
+- Reject --all with --group, empty/unknown/unavailable groups, extra positional
+  arguments and malformed flags before mutating latest-run evidence or starting
+  children. Deduplicate repeated groups and shared prerequisite steps.
+- Flag-free invocations preserve the exact existing impact-area/base/final behavior.
+  New agent examples use explicit groups. No automatic scope inference is added.
+- Explicit selected final runs retain lightweight release/closure checks in their
+  resolved baseline. A final roadmap selection and rationale are recorded in the
+  roadmap; closure checks evidence against it, candidate commit and results.
+  Exploratory runs cannot substitute for this final selection.
+
+Mandatory baseline for every explicit owner selection: repository-state,
+secret-scan, debug-residue, maintenance-consistency, documentation-consistency,
+tool-ownership-contracts, repository-boundary-contracts, source-tree-cleanliness,
+release-metadata-contract and version-changelog-roadmap. Source ownership checks
+remain source-only; they do not acquire/build a customer fixture. Retain mandatory
+commit hooks and knowledge freshness. Configuration/configuration-templates are
+prerequisites of runtime/tool checks that actually need them, rather than reasons
+to include all backend tests. Preserve each selected node's hard-fail severity.
+
+Mandatory customer baseline: application-config, application-config-templates,
+application-docs, application-secrets, plus the existing delivered debug-residue
+check. Retain customer hooks, source ownership protection and knowledge freshness.
+No owner roadmap/release tooling is added to customer selections.
+
+The following matrix maps explicit groups to existing owner step IDs. Dependencies
+are expanded transitively using depends_on; conditional ordering applies only when
+both nodes are selected. Every added prerequisite is reported with its parent.
+Baseline steps are omitted from the table to avoid duplication.
+
+| Group        | Owner selected steps                                                                                                | Customer selected capabilities                                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| docs         | documentation-ownership-contracts                                                                                   | application-docs (baseline)                                                                                                              |
+| tooling      | quality-runner-contract, tooling-help                                                                               | delivered tooling doctor                                                                                                                 |
+| backend      | backend-tests, php-static-analysis, module-development-contracts, formatting, lint                                  | application-tests, application-analysis, application-module-contracts, application-module-versions, application-format, application-lint |
+| frontend     | frontend-build, frontend-typecheck, frontend-tests, formatting, lint                                                | existing build, application-types, runa:test:frontend, application-format, application-lint                                              |
+| e2e          | frontend-browser, frontend-render-diagnostics                                                                       | runa:test:e2e and delivered frontend diagnostics/build prerequisites                                                                     |
+| database     | database-migrations, database-constraints, seeding-contract                                                         | delivered database-migrations/database/seeding diagnostics with application tests                                                        |
+| development  | dependency-composition-contracts, development-startup-contract, development-stack, hook-contract                    | delivered development and hooks diagnostics                                                                                              |
+| containers   | repository-container-scan, gosu-disposition-contracts                                                               | application-container-security (existing Trivy contract)                                                                                 |
+| installation | installation-contracts, installation-host-acceptance, bootstrap-source-contracts, customer-initialization-contracts | unavailable: owner acquisition acceptance is not delivered                                                                               |
+| updates      | update-preflight-contracts, update-execution-contracts, installation-host-acceptance                                | unavailable: owner updater acceptance is not delivered                                                                                   |
+| transport    | host-executor-contracts, host-executor-acceptance, management-transport-contracts, management-host-acceptance       | unavailable: owner transport acceptance is not delivered                                                                                 |
+| production   | production-operation-contracts, customer-deployment-source-contracts, production-acceptance                         | unavailable: owner production fixture acceptance is not delivered                                                                        |
+| security     | dependency-audit, security-review-contracts, expanded-security-review, gosu-disposition-contracts                   | application-dependencies and application-container-security                                                                              |
+| knowledge    | documentation-ownership-live, knowledge-doctor, knowledge-evals, boost-mcp                                          | application-knowledge-doctor, application-knowledge-eval, delivered Boost diagnostic                                                     |
+
+Customer entries naming existing commands reuse those commands as graph nodes;
+they do not introduce new test frameworks or expose private owner harnesses.
+Do not add groups for nonexistent customer installer/updater/transport acceptance.
+The containers group necessarily keeps image build/scanning acceptance; security's
+expanded review depends on that scan and therefore also runs it. Installation and
+updates retain the full current installation-host acceptance, including updater,
+team propagation and customer-knowledge scenarios. Production keeps its real data,
+deployment and isolation acceptance. Do not split these into cheaper imitations.
+
+Policy reconciliation requiring owner approval:
+
+- Explicit docs/tooling/backend selections may exclude image scans, full dependency
+  audits, AI doctor/evals and installation acceptance unless selected transitively.
+  Secret protection, hooks/freshness, ownership and release consistency remain
+  mandatory. Full security/AI gates are strict when selected; excluded means not run.
+- Update both owner/customer contracts and affected handbook/maintainer workflows
+  to replace unconditional full AI/security requirements with this explicit policy.
+  Legacy flag-free behavior remains unchanged during compatibility migration.
+- The agent chooses a proportionate final selection and records its rationale;
+  owner steering overrides it. Ordinary group choices need no repeated approval.
+- This roadmap changes the coordinator, transports, evidence and both instruction
+  products. Its own final verification uses --all, including installation, real
+  image/security/production and knowledge checks; this implementation is not
+  validated only by its own narrow selection. Final verification remains the sole
+  broad execution point and uses the supported background handoff.
+
+Owner/customer instruction products are intentionally unchanged during this
+planning point: no reusable runtime capability or approved gate policy has changed.
+Both products will be synchronized in implementation points 2–3.
 
 ### Manual flags and group catalogue
 
@@ -213,6 +310,7 @@ final verification point, after implementation is complete.
 
 ## Planning status
 
-Only the draft and its planning commit are authorized now. Runtime implementation,
-activation, revised gate policy and release remain pending. Exact baseline and
-flag/default details require the point-1 agreement; no new CLI option exists yet.
+Activated with owner execution authorization on 2026-10-23, from clean main at
+58c159f (0.4.1). Point 1 contains a concrete proposal awaiting owner agreement.
+Runtime implementation and gate-policy changes have not started; no new CLI option
+exists yet. Release metadata remains maintenance 0.4.2 as previously confirmed.
