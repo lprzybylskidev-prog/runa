@@ -73,3 +73,21 @@ small, fast diagnostics resolving a concrete uncertainty run before the final
 point. Final integrated acquisition/clone/update/recovery/knowledge/production
 acceptance runs through the owner quality coordinator. Its background handoff uses
 python3 tools/maintainer/quality-status; unrelated processes are not tracked there.
+
+## Instruction review record (2026-10-23)
+
+All nine existing skills, their references and provenance were reviewed for reader/task scope. Owner references retain platform implementation detail. Customer skills were rewritten into one concise application reference per domain rather than copying owner procedures:
+
+| Domain     | Customer disposition                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------ |
+| Backend    | Ordinary Actions/Services/Queries and optional guarded module consumption; public handbook owns detailed protocols |
+| Laravel    | App providers/config/routes and native generators; application-only tests/data commands                            |
+| Frontend   | Public facade catalogue and composition; repeated application controls stay in App; no platform extraction         |
+| Vue        | Strict SFC/reactivity/async contracts and the real /api-prefixing request wrapper                                  |
+| Tailwind   | Installed syntax/tokens/static discovery with application-owned styling                                            |
+| PostgreSQL | Application ownership, strong constraints, migration safety and optional app-module boundaries                     |
+| Docker     | Supported lifecycle, teammate preparation, preserved volumes and customer-commit deployment                        |
+| RAG        | Delivered-only corpus, incremental freshness, independent optional startup; no runtime redesign permission         |
+| Security   | Server authority, safe boundaries, supplied scanners and unconditional protected-source refusal                    |
+
+Customer provenance retains the existing research pins with explicit local adaptation dates, without claiming a new upstream review. AGENTS remains the authority; CLAUDE is a thin @AGENTS.md adapter in each product. Representative use cases route ordinary CRUD to App, optional module generation to app.code, shared UI reuse to the facade and application wrappers, tests to application or owner entrypoints by scope, and final monitoring to the matching coordinator status. Missing-command one-off diagnostics require an explanation and observed results, not an invented permanent command. Full regression execution is reserved for final verification.

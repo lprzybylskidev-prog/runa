@@ -314,3 +314,9 @@ Record:
 The receiving session reads AGENTS, the active roadmap and handoff; verifies repository path, branch/worktree and actual relevant services before mutation. Host execution uses Docker/Python/Git and project containers for the application toolchain. Follow `docs/runa/handbook/development/editor-and-agents.md` for startup/recovery. Before returning, update the same handoff with results and whether **Dev Containers: Reopen in Container** is safe. The container session verifies current state and resumes without repeating completed work. Do not automate editor window switching. Point completion still requires implementation, docs, checks, commit and checklist synchronization.
 
 Application release metadata belongs to `src/app/application.json` and `docs/app`; never bump protected src/runa/platform.json or publish to the Runa upstream repository. Follow [application release finalization](releases.md).
+
+## Supported command selection
+
+Discover the supported entrypoint and ownership scope before running tests or acceptance. Preserve its documented transport, guards, locks, reporting and exit codes; internal runners or detached log-only processes must not replace it. A direct invocation is permitted only as the documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result in the point. Add a permanent command only for an approved reusable operational need.
+
+Implementation points run only necessary small, fast checks resolving a concrete uncertainty. Receive results, fix failures and continue; duration alone never authorizes handing monitoring to the user. Only final full verification uses background quality and the built-in status command. That status observes its coordinator, not arbitrary processes; raw tail is not a substitute.
