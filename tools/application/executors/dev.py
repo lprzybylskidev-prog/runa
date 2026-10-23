@@ -151,6 +151,11 @@ def private_environment(path):
 
 
 def environment_files():
+    # A dangling link reports exists=False; reject it before any secret creation.
+    for name in ('.env', '.env.dev.database', '.env.testing'):
+        path = ROOT / name
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+            raise ValueError('Development environment must not traverse symlinks: ' + name)
     template = ROOT / '.env.dev.example'
     if not template.exists():
         return

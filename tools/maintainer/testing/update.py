@@ -417,7 +417,7 @@ class Updater(unittest.TestCase):
         self.assertNotIn('private-value', json.dumps(result))
 
     def test_shared_dockerfile_and_workspace_only_changes_are_reviewed(self):
-        for root in (self.original, self.installed):
+        for root in (self.original, self.installed, self.target):
             (root / 'docker').mkdir()
             (root / 'docker/Dockerfile').write_text('FROM scratch')
             (root / 'compose.yaml').write_text(json.dumps({'services': {name: {'build': {'context': '.', 'dockerfile': 'docker/Dockerfile'}} for name in ('app', 'queue')}}))

@@ -144,7 +144,7 @@ Triggers are not a business-logic mechanism. A future low-level technical invari
 
 Indexes are justified by concrete access paths; do not mechanically index every FK or treat every sequential scan as a defect. Normalize first and avoid speculative database infrastructure. N+1 in normal paths is a quality defect.
 
-Load `.agents/skills/postgresql/references/schema-indexes.md` for types, constraints, index/operator selection and query design. Load `.agents/skills/postgresql/references/operations-performance.md` for plans, statistics, backfills and live migration safety. These references own detailed PostgreSQL engineering guidance rather than duplicating it here.
+Load the installed `.agents/skills/postgresql/SKILL.md` for types, constraints, query design, migration safety and its relevant task references. These references own detailed PostgreSQL engineering guidance rather than duplicating it here.
 
 ## Concurrency
 

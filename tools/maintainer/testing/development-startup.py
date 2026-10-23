@@ -268,6 +268,18 @@ class EnvironmentOwnership(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'private owned regular'):
                     dev.environment_files()
 
+    def test_dangling_secret_links_are_rejected_before_any_creation(self):
+        for name in ('.env', '.env.dev.database', '.env.testing'):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / '.env.dev.example').write_text('DB_PASSWORD=\n')
+                outside = root / 'untouched'
+                (root / name).symlink_to(outside)
+                with patch.object(dev, 'ROOT', root), self.assertRaisesRegex(ValueError, 'symlinks'):
+                    dev.environment_files()
+                self.assertFalse(outside.exists())
+                self.assertTrue((root / name).is_symlink())
+
     def test_linked_secret_files_are_preserved_and_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

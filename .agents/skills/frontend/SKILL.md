@@ -18,7 +18,7 @@ A new UI element may remain local to its first page/use. When the same element i
 
 Before editing UI, inspect analogous existing pages/forms and search the shared component catalogue. Reuse the established structure and controls. After changing a reusable component/pattern, inspect existing layouts for applicable uses and replace matching provisional elements with the finalized shared component in the same task. Recheck affected layout behavior and rendering; update its catalogue entry and page references in that task.
 
-For discovery and maintenance load:
+For discovery and maintenance load the relevant public contract through these thin references:
 
 - `references/components.md` — real component paths/contracts/examples
 - `references/page-layouts.md` — canonical page structures
