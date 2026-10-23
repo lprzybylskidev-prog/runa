@@ -1,10 +1,10 @@
 ---
 id: RM-2026-011
 title: Audit, Auth and Permissions Core modules
-status: draft
+status: active
 branch: roadmap/RM-2026-011-audit-auth-permissions-core
 created_at: 2026-10-23
-activated_at: null
+activated_at: 2026-10-23
 closed_at: null
 release_type: feature
 proposed_version: 0.5.0
@@ -32,14 +32,11 @@ supplies installation-local human identity, secure sessions and private account
 self-service; Permissions supplies native action-level grants and reusable access
 templates. Reuse the shipped module framework and existing Laravel/Vue platform.
 
-This is planning only. Execute after
-[RM-2026-010](../closed/RM-2026-010-manual-quality-group-selection.md) is released, closed and
-merged, following RM-2026-009. Expected predecessor: maintenance 0.4.2. The owner
-explicitly confirmed **feature 0.5.0** on 2026-10-23: increment MINOR and reset PATCH.
-Refresh the real baseline and predecessor links at activation. This document does
-not change VERSION, install a package, activate another roadmap or alter the
-completed RM-2026-009 verification. Commit this draft separately on the active
-RM-2026-009 branch; activation remains a later explicit owner decision.
+Activated by the owner on 2026-10-23 after
+[RM-2026-010](../closed/RM-2026-010-manual-quality-group-selection.md) was released,
+closed and merged as maintenance 0.4.2 (baseline `0616673`, tag `v0.4.2`).
+The owner confirmed **feature 0.5.0**: increment MINOR and reset PATCH.
+VERSION remains 0.4.2 until release finalization.
 
 ### Scope and non-goals
 
@@ -65,11 +62,15 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-23 — Owner explicitly requested activation and execution of point 1.
+  Baseline main and origin/main match at 0616673; RM-010 is closed, v0.4.2 exists,
+  and no other roadmap is active. Confirmed feature 0.5.0 remains appropriate.
+
 - 2026-10-23 — Owner supplied the comprehensive Audit/Auth/Permissions planning
   specification as approved functional requirements and placed this work after
   RM-2026-010. Its explicit request is ONE comprehensive roadmap, not three releases.
 - 2026-10-23 — Owner confirmed release_type feature and proposed_version 0.5.0.
-  Preparation/commit is authorized; activation and implementation are not.
+  That planning decision did not itself authorize activation.
 - Audit precedes Auth; Auth precedes Permissions. Audit has no Auth/Permissions
   dependency. Final Auth security cannot rely on a temporary is_admin column.
 - Keep dictionary values in PostgreSQL with code/name_pl/name_en/description_pl/
@@ -776,15 +777,9 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     main, create immutable tag/push/publish release and delete the roadmap branch
     under the established workflow. Report migrations/recovery and residual limits.
 
-## Planning status and activation readiness
+## Execution status
 
-Draft only; no modules, package/lock changes, runtime settings, migrations, tests or
-command flags are implemented by this planning commit. RM-2026-009 is closed at 0.4.1; RM-2026-010 keeps its separate place before
-this feature. Neither follow-up is activated by predecessor closure.
-
-Release metadata is owner-confirmed. The old deletion wording and missing
-transactional settings, preparation-time Audit and pre-controller auth seams are
-explicitly reconciled above rather than assumed to exist. Their concrete contracts
-must be designed in point 1 and validated during implementation/final acceptance.
-No additional functional clarification is currently required; a newly discovered
-incompatible architectural premise requires discussion before dependent work.
+Active on the roadmap branch. Point 1 establishes additive framework foundations;
+domain modules and Fortify installation remain assigned to subsequent points.
+Release metadata is owner-confirmed. Any newly discovered incompatible
+architectural premise requires discussion before dependent work.
