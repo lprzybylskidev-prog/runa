@@ -5,13 +5,14 @@ namespace Runa\Database;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Seeder;
 use ReflectionClass;
+use Runa\Support\Modules\ModuleIdentity;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 
 final readonly class DatabaseScope
 {
     // Protected source inventory; update alongside each new platform-owned table.
-    public const PLATFORM_TABLES = ['shared.migrations', 'shared.jobs', 'shared.failed_jobs', 'shared.platform_seed_runs'];
+    public const PLATFORM_TABLES = ['shared.migrations', 'shared.jobs', 'shared.failed_jobs', 'shared.platform_seed_runs', 'shared.module_registry_state', 'shared.modules', 'shared.module_transitions', 'shared.module_work', 'shared.module_update_steps'];
 
     public function __construct(public string $root, public bool $platform = false) {}
 
@@ -127,13 +128,39 @@ final readonly class DatabaseScope
             throw new RuntimeException('Scoped wipes require PostgreSQL.');
         }
         $connection->transaction(function () use ($connection): void {
+            $moduleOwners = [];
+            if ($connection->getSchemaBuilder()->hasTable('shared.modules')) {
+                foreach ($connection->table('shared.modules')->pluck('module_id') as $id) {
+                    if (! is_string($id)) {
+                        throw new RuntimeException('Invalid persisted module identity.');
+                    }
+                    $module = new ModuleIdentity($id);
+                    $moduleOwners[$module->schema()] = $module;
+                }
+            }
+            /** @var list<object{name: string, marker: ?string}> $schemas */
+            $schemas = $connection->select("SELECT nspname AS name, obj_description(oid, 'pg_namespace') AS marker FROM pg_namespace");
+            $claimed = [];
+            foreach ($schemas as $schema) {
+                $module = $moduleOwners[$schema->name] ?? null;
+                if ($module !== null || str_starts_with($schema->marker ?? '', 'runa.module.v1:')) {
+                    if ($module === null || $schema->marker !== 'runa.module.v1:'.$module->id) {
+                        throw new RuntimeException('Uncertain module schema ownership blocks scoped wipe.');
+                    }
+                    $claimed[$schema->name] = $module->owner;
+                }
+            }
             // Extension-owned objects and system schemas are never application-owned.
             /** @var list<object{schema: string, name: string}> $tables */
             $tables = $connection->select("SELECT n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r', 'p') AND n.nspname NOT LIKE 'pg_%' AND n.nspname <> 'information_schema' AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.classid = 'pg_class'::regclass AND d.deptype = 'e') ORDER BY 1,2");
             $owned = [];
             foreach ($tables as $table) {
                 $name = $table->schema.'.'.$table->name;
-                if (in_array($name, self::PLATFORM_TABLES, true) === $this->platform) {
+                if (str_starts_with($table->schema, 'runa_') && ! isset($claimed[$table->schema])) {
+                    throw new RuntimeException('Unclaimed Runa module tables block scoped wipe; inspect ownership first.');
+                }
+                $platform = in_array($name, self::PLATFORM_TABLES, true) || ($claimed[$table->schema] ?? null) === 'runa';
+                if ($platform === $this->platform) {
                     if ($table->schema === 'public') {
                         throw new RuntimeException('Unowned tables in public block scoped wipe; inspect database ownership first.');
                     }

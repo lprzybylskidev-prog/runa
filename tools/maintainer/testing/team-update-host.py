@@ -6,6 +6,17 @@ import shutil
 import sys
 
 
+def production_source_matches(active, peer, names):
+    from operations import DEVELOPMENT_MODULES
+    from repository_boundary import OWNER_PATHS
+    excluded = (*OWNER_PATHS, *DEVELOPMENT_MODULES)
+    if any((active / name).exists() or (active / name).is_symlink() for name in excluded):
+        return False
+    return all((active / name).read_bytes() == (peer / name).read_bytes()
+               for name in names if name and not any(name == root or name.startswith(root + '/') for root in excluded)
+               and not (active / name).is_symlink())
+
+
 class Team:
     def __init__(self, dev, fixture, project, check, report, call, output, commit, snapshot):
         self.dev, self.fixture, self.project = dev, fixture, project
@@ -100,6 +111,6 @@ class Team:
         self.check(True, 'production deployment preserves both owners private storage')
         active = Path(state['path'])
         names = self.output(['git', '-C', str(self.peer), 'ls-files', '-z']).split('\0')
-        self.check(all((active / name).read_bytes() == (self.peer / name).read_bytes() for name in names if name and not (active / name).is_symlink()), 'deployed production and teammate retain equal complete versioned customer source')
+        self.check(production_source_matches(active, self.peer, names), 'deployed production matches versioned customer production source and excludes owner/development modules')
         self.check(self.sql(project, "SELECT count(*) FROM shared.platform_seed_runs WHERE release_sha='" + expected + "'") == '1', 'repeat deployment keeps one exact-customer-revision required platform seed completion')
         self.report['team_update']['deployed'] = expected

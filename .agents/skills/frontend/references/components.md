@@ -230,3 +230,10 @@ const name = ref('');
 Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Keep application composition coverage under src/app/tests; test scenarios are test assets, never application demo routes.
 
 IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version; customer scaffold VERSION is not a runtime identity input. See docs/runa/handbook/architecture/configuration.md for canonical metadata and compatibility, and docs/runa/handbook/architecture/frontend.md for consumer behavior.
+
+## Optional module page and slot adapters
+
+- `src/runa/resources/js/components/ModulePage.vue` and `ModuleSlot.vue`; public imports through `@/runa/modules` or the UI facade. They introduce no replacement layout/control styling or motion.
+- ModulePage takes nullable view, built components, href, optional locale and unavailableText, with an unavailable scoped slot. It reconstructs exact route context and mounts only available pages with matching manifest hashes. Gate before setup/import, rather than starting page requests then hiding content.
+- ModuleSlot takes nullable view, components, name and exact scalar values. It preserves backend contribution order and stable identity, rejects incompatible props/builds, and exposes ordinary fallback content. Host/contributor availability and permission projection are backend-owned.
+- createModuleComponents wraps the opt-in virtual local registry with raw lazy Vue components. useModuleFrontend explicitly refreshes through the existing HTTP wrapper, clears stale presentation and cancels/ignores obsolete requests. Follow the public module-framework frontend section for schema, build inclusion, scalar props, ordering persistence and permission limits.

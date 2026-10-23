@@ -7,6 +7,7 @@ created_at: 2026-10-18
 activated_at: 2026-10-18
 closed_at: 2026-10-18
 release_type: maintenance
+proposed_version: 0.1.2
 impact_areas:
   - development
   - ai_environment

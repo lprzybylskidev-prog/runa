@@ -1,0 +1,7 @@
+<?php
+namespace MODULE_NAMESPACE\Http;
+final class ReadEntryRequest extends \Illuminate\Foundation\Http\FormRequest
+{
+    public function authorize(): bool { return true; }
+    public function rules(): array { return ['filter' => ['sometimes', 'in:accepted']]; }
+}

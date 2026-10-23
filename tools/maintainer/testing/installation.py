@@ -131,9 +131,10 @@ class InstallationContracts(unittest.TestCase):
             calls = [call.args[0] for call in process.call_args_list]
             wait = next(i for i, call in enumerate(calls) if call[-2:] == ['wait', 'setup'])
             database = [i for i, call in enumerate(calls) if 'src/runa/database/prepare.php' in call]
-            self.assertEqual(len(database), 1)
+            self.assertEqual(len(database), 2)
             self.assertGreater(database[0], wait)
             self.assertEqual(calls[database[0]][-2:], ['src/runa/database/prepare.php', self.sha])
+            self.assertEqual(calls[database[1]][-8:], ['exec', '-T', '-e', 'APP_ENV=testing', 'app', 'php', 'src/runa/database/prepare.php', self.sha])
             count = len(process.call_args_list)
             installer.install('dev', self.sha)
             # Repeat reads source identity but never launches setup/services again.

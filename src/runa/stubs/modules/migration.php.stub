@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Runa\Support\Modules\Data\ModuleSchema;
+use Runa\Support\Modules\ModuleIdentity;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        (new ModuleSchema(DB::connection(), new ModuleIdentity('{{id}}')))->create('{{table}}', function (Blueprint $table): void {
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+    }
+
+    public function down(): never
+    {
+        throw new RuntimeException('Module rollback requires an explicit retained-data recovery plan.');
+    }
+};

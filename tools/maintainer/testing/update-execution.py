@@ -55,7 +55,7 @@ class Runtime:
         self.event(phase)
         if phase == 'migrations':
             self.fixture.runtime['migrations'] = sorted(p.stem for p in (self.fixture.target / 'src/runa/database/migrations').glob('*.php'))
-        else:
+        elif phase == 'required-seeds':
             self.fixture.runtime['seed_runs'].append({'release_sha': release, 'seeder': execution.SEEDER})
             self.seeds += 1
         self.event(phase + '-committed')
@@ -72,6 +72,9 @@ class Execution(UpdaterFixture):
     def setUp(self):
         super().setUp()
         (self.installed / '.runtime/production').chmod(0o700)
+        modules = self.target / 'src/runa/Support/Modules/Updates/ModuleUpdates.php'
+        modules.parent.mkdir(parents=True, exist_ok=True)
+        modules.write_text('<?php // target module update capability fixture')
         self.engine = Runtime(self)
 
     def apply(self, **kwargs):
@@ -99,8 +102,25 @@ class Execution(UpdaterFixture):
         self.assertEqual(self.apply()['status'], 'completed')
         self.assertEqual(self.engine.seeds, 1)
 
+    def test_execution_resume_refuses_lost_module_completion_history(self):
+        row = {'module': 'runa.fixture', 'step': 'upgrade:initialize:install:0.1.0', 'fingerprint': 'a' * 64, 'status': 'succeeded'}
+        self.runtime['module_steps'] = [row]
+        self.engine.fail = 'health'
+        self.assertEqual(self.apply()['status'], 'blocked')
+        self.runtime['module_steps'] = []
+        result = self.apply(resume=True)
+        self.assertEqual(result['status'], 'blocked', result)
+        self.assertEqual(result['checks'][-1]['id'], 'module-history-missing')
+        self.assertTrue(self.engine.fenced)
+
+    def test_execution_legacy_target_without_module_phase_remains_supported(self):
+        (self.target / 'src/runa/Support/Modules/Updates/ModuleUpdates.php').unlink()
+        result = self.apply()
+        self.assertEqual(result['status'], 'completed', result)
+        self.assertNotIn('modules', self.engine.events)
+
     def test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects(self):
-        for phase in ('fence', 'build', 'migrations', 'migrations-committed', 'required-seeds', 'required-seeds-committed', 'activate', 'health'):
+        for phase in ('fence', 'build', 'migrations', 'migrations-committed', 'required-seeds', 'required-seeds-committed', 'modules', 'modules-committed', 'activate', 'health'):
             with self.subTest(phase=phase):
                 # Each case starts with its own complete fixture and private state.
                 case = Execution('test_execution_replaces_only_platform_and_records_completion_without_git_writes')

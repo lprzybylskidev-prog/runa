@@ -93,6 +93,7 @@ Near roadmap completion:
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
 5. compute the version from current `VERSION` and `release_type`,
+   reconcile the roadmap's `proposed_version` with that result before closure,
 6. update `VERSION` and the version field of `src/runa/platform.json` to the same value; preserve `src/app/application.json`,
 7. update `docs/runa/maintainer/CHANGELOG.md` and synchronize the maintainer README current version,
 8. complete the roadmap checklist/review evidence, move it to `closed/` on the roadmap branch and set the maintainer README active roadmap to `none`,

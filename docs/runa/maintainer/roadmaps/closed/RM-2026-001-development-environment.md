@@ -7,6 +7,7 @@ created_at: 2026-10-17
 activated_at: 2026-10-17
 closed_at: 2026-10-18
 release_type: feature
+proposed_version: 0.1.0
 impact_areas:
   - development
   - production

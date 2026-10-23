@@ -1,0 +1,11 @@
+<?php
+namespace MODULE_NAMESPACE\Http;
+final class ReadEntry
+{
+    public function __construct() { \Tests\Fixtures\ApiCalls::$constructed++; }
+    public function __invoke(ReadEntryRequest $request, string $public_id): \Illuminate\Http\Resources\Json\JsonResource
+    {
+        \Tests\Fixtures\ApiCalls::$executed++;
+        return new EntryResource(['public_id' => $public_id]);
+    }
+}

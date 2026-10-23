@@ -1,0 +1,6 @@
+<?php
+namespace MODULE_NAMESPACE\Http;
+final class EntryResource extends \Illuminate\Http\Resources\Json\JsonResource
+{
+    public static $wrap = null;
+}

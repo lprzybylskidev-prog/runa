@@ -255,7 +255,7 @@ def publish(source, destination):
         raise BootstrapError('Atomic source publication failed; destination was not replaced.')
 
 
-def acquire(client, tag, destination, mode, expected_commit=None, expected_digest=None):
+def acquire(client, tag, destination, mode, expected_commit=None, expected_digest=None, reference_module=False):
     if mode != 'dev':
         raise BootstrapError('Runa release acquisition is development-only; initialize production from the customer repository.')
     identity = client.resolve(tag)
@@ -285,9 +285,13 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
             raise BootstrapError('GitHub release/tag/repository changed during acquisition; no source published.')
         receipt = dict(schema_version=1, repository=client.repository, repository_id=repository_id,
                        tag=tag, **identity, source_sha256=digest, mode=mode, state='downloaded', installed_profile='source',
+                       reference_module=reference_module,
                        projection={'version': 1, 'excluded': list(OWNER_PATHS)},
                        trust='GitHub HTTPS + annotated tag and Git object hashes; no independent signature')
         patterns = ['/*', *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
+        patterns += ['!/src/app/modules/module_probe/']
+        if not reference_module:
+            patterns += ['!/src/app/modules/reference/', '!/docs/app/modules/reference/']
         git(source, home, 'sparse-checkout', 'init', '--no-cone')
         git(source, home, 'sparse-checkout', 'set', '--no-cone', '--stdin', input_data='\n'.join(patterns) + '\n')
         if any((source / name).exists() or (source / name).is_symlink() for name in OWNER_PATHS):
@@ -316,6 +320,7 @@ def main(argv=None):
     parser.add_argument('--destination', help='New directory under an existing owned parent')
     parser.add_argument('--install', choices=('now', 'later'))
     parser.add_argument('--non-interactive', action='store_true', help='Require every selection; never prompt')
+    parser.add_argument('--reference-module', choices=('include', 'exclude'), help='Development working example; default exclude in automation')
     parser.add_argument('--profile', choices=('low', 'standard', 'high'), help='Unified development install resource profile')
     credentials = parser.add_mutually_exclusive_group()
     credentials.add_argument('--token-file', help='Private GitHub read credential file (never pass a token as an argument)')
@@ -343,8 +348,11 @@ def main(argv=None):
     args.install = args.install or input('Install now or later (now/later): ').strip()
     if args.install not in ('now', 'later'):
         raise BootstrapError('Choose installation now/later.')
+    reference = args.reference_module or (input('Include development reference module? [y/N]: ').strip().lower() if interactive else 'exclude')
+    if reference not in ('include', 'exclude', 'y', 'n', ''):
+        raise BootstrapError('Choose reference module include/exclude.')
     destination = destination_path(args.destination)
-    receipt = acquire(client, args.tag, destination, 'dev', args.expected_commit, args.expected_digest)
+    receipt = acquire(client, args.tag, destination, 'dev', args.expected_commit, args.expected_digest, reference_module=reference in ('include', 'y'))
     command = install_command(destination, 'dev', receipt['commit'])
     if args.profile:
         command += ['--profile=' + args.profile]

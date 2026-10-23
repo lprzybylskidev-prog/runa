@@ -147,3 +147,7 @@ Commit coherent implementation/cleanup before final verification. The final chec
 `php artisan runa:doctor:docs` validates required public documentation, application roadmap directories, placement and local links, including rejection of links to undelivered owner material. This supplements semantic source review and does not prove real deployment or remote release publication.
 
 The gate selects application roadmaps under docs/app/roadmaps. Run runa:quality:plan before execution. Dependency/container scans and knowledge doctor/evaluation are strict final checks; failures block closure.
+
+## Stage timings
+
+The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. No test-selection or Playwright skip flag is added.

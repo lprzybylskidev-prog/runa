@@ -184,6 +184,11 @@ it('keeps the protected platform table inventory synchronized with actual platfo
         $expected = DatabaseScope::PLATFORM_TABLES;
         sort($expected);
         expect(array_column($tables, 'name'))->toBe($expected);
+        $registryIdentities = DB::select("SELECT table_name, data_type, is_identity, identity_generation FROM information_schema.columns WHERE table_schema = 'shared' AND table_name IN ('modules', 'module_registry_state', 'module_transitions', 'module_work', 'module_update_steps') AND column_name = 'id' ORDER BY table_name");
+        expect(array_column($registryIdentities, 'table_name'))->toBe(['module_registry_state', 'module_transitions', 'module_update_steps', 'module_work', 'modules']);
+        foreach ($registryIdentities as $identity) {
+            expect($identity->data_type)->toBe('bigint')->and($identity->is_identity)->toBe('YES')->and($identity->identity_generation)->toBe('ALWAYS');
+        }
     } finally {
         $fixture->remove();
     }

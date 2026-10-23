@@ -53,6 +53,7 @@ created_at: 2026-10-17
 activated_at: null
 closed_at: null
 release_type: feature
+proposed_version: 0.1.0
 impact_areas:
   - backend
   - frontend
@@ -81,6 +82,8 @@ Impact areas are a short explicit list such as:
 
 Impact areas drive local quality-gate selection.
 
+`proposed_version` is a required canonical `X.Y.Z` projection of the platform version after this roadmap is implemented. Set it from the expected predecessor release and `release_type`, including agreed roadmap order; drafts may target a later version than the next active release. Refresh it when that order or baseline changes, verify it at activation and reconcile it with the actual version at closure before the roadmap becomes immutable. It is not the version shipping the draft, a VERSION change, activation approval or permission for a major release. For `release_type: release`, retain the separate user-approved `target_version` required by the release workflow.
+
 ## Required structure
 
 Every roadmap contains:
@@ -99,6 +102,8 @@ Every roadmap contains:
 
 ## Discussion and activation
 
+While agreeing the roadmap, explicitly ask the owner which `release_type` and `proposed_version` to use. Offer a reasoned proposal based on scope, current VERSION and agreed predecessor order, but obtain confirmation instead of silently treating it as accepted. Record the answer in frontmatter and Decisions. If the owner has already explicitly supplied or confirmed both values in the same planning discussion, use that decision without repeating the question. Unconfirmed agent suggestions remain provisional; confirmation of release metadata is not activation approval. Reconfirm a changed proposal if later scope/order changes require a different classification or projected version.
+
 If no roadmap is active and implementation is requested:
 
 - stay in discussion/specification mode,
@@ -109,6 +114,8 @@ If no roadmap is active and implementation is requested:
 The agent cannot self-approve.
 
 Draft roadmaps are planning documents and may be edited/committed on `main`.
+
+If active platform work produces an agreed substantial follow-up scope deserving a separate roadmap, create or update its draft in `docs/runa/maintainer/roadmaps/draft/` immediately in the current checkout. Commit the draft as a separate planning commit on the current roadmap branch before ending that planning task, without another user reminder. Use the active roadmap ID as the commit scope and name the future roadmap in the subject. Preserve existing unrelated changes. The draft travels with the current branch into its normal merge; do not defer recording it until its own implementation or release. Record agreed dependencies/order, but leave it in draft: activation requires explicit user approval, and implementation and eventual release version are independent of the release carrying the planning document. Refresh predecessor links when their roadmaps close, without editing closed records. An unresolved idea is not an agreed specification.
 
 Activation:
 
@@ -140,6 +147,12 @@ Each implementation point should be a coherent, self-contained chunk that can re
 
 Before finalizing the roadmap, sanity-check point dependencies and order.
 
+Implementation points deliver code, test code and synchronized documentation. Do not schedule routine test runs or verification after every point. Only a small, fast, focused check needed to answer a concrete implementation question belongs there; no check is needed merely because a point ends. Mandatory commit hooks remain in force.
+
+Schedule full test suites, broad integration/concurrency/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI gates in the final verification point, after all implementation work. Implement their test harnesses and scenarios earlier without running the broad acceptance. Then perform full verification, insert fixes if needed and repeat final verification under the existing failure procedure. Do not create an earlier acceptance point that duplicates the final gate or makes later implementation depend on its PASS.
+
+Apply this check when creating, importing, reviewing, activating and executing roadmaps, regardless of whether the author is the user, ChatGPT, another agent or an external tool. If a supplied or existing roadmap requires broad verification earlier, stop and identify the conflicting point and this rule to the user before activation or further execution. Wait for the user to resolve the plan; do not silently run the checks, relabel them as lightweight, rearrange an agreed plan or treat normal roadmap precedence as approval of an exception.
+
 Do not mechanically create one point per file/class. Design points around outcomes.
 
 ## Starting a point
@@ -164,7 +177,7 @@ A point is complete when:
 
 - implementation is complete,
 - local point dependencies are satisfied,
-- proportionate lightweight checks pass,
+- any necessary small, fast, focused checks pass; no broad verification is required at this stage,
 - affected current-state documentation and relevant durable docs/skills are updated in the same point, including removal of superseded claims,
 - a logical commit is created,
 - the roadmap checklist reflects completion.

@@ -6,6 +6,7 @@ parameters:
         - artisan
         - app
         - runa/Console
+        - runa/Contracts
         - runa/Database
         - runa/Foundation
         - runa/Http

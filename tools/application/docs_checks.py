@@ -59,6 +59,9 @@ def validate(root):
             raise ValueError('Missing regular application roadmap directory: ' + state)
     if (root / 'src/app/docs').exists() or (root / 'src/app/docs').is_symlink():
         raise ValueError('Application documentation belongs in docs/app, not src/app/docs.')
+    for owner in ('app', 'runa'):
+        for path in (root / ('src/' + owner + '/modules')).glob('*/docs'):
+            raise ValueError('Module documentation belongs in central docs directories, not ' + str(path.relative_to(root)))
     paths = [root / name for name in ('AGENTS.md', 'README.md', 'docs/README.md')]
     for folder in ('docs/app', 'docs/runa/handbook', '.agents'):
         for path in (root / folder).rglob('*.md'):

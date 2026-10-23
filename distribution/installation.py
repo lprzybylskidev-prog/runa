@@ -352,6 +352,7 @@ def platform_database(release_sha, mode, release=None):
     arguments = ['php', 'src/runa/database/prepare.php', release_sha]
     if mode == 'dev':
         run(dev_compose() + ['exec', '-T', 'app', *arguments])
+        run(dev_compose() + ['exec', '-T', '-e', 'APP_ENV=testing', 'app', *arguments])
     else:
         ops.dc(['run', '--rm', '--no-deps', '-T', 'app', *arguments], release)
 

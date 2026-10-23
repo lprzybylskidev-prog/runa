@@ -108,6 +108,16 @@ def metadata(root, args=None):
     # environment, never host argv/output. SQL is a fixed positional argument.
     query = 'PGPASSWORD="$APP_DB_PASSWORD" exec psql -h 127.0.0.1 -X -qAt -U runa -d runa -v ON_ERROR_STOP=1 -c "$1"'
     database = json.loads(command(args + ['exec', '-T', 'postgres', 'sh', '-c', query, '--', sql], root))
+    # Probe optional module metadata without referring to tables absent in older releases.
+    exists_sql = "BEGIN READ ONLY; SELECT json_build_object('modules',to_regclass('shared.modules') IS NOT NULL,'steps',to_regclass('shared.module_update_steps') IS NOT NULL); ROLLBACK;"
+    available = json.loads(command(args + ['exec', '-T', 'postgres', 'sh', '-c', query, '--', exists_sql], root))
+    database.update(modules={}, module_steps=[])
+    if available['modules']:
+        module_sql = "BEGIN READ ONLY; SELECT coalesce(json_object_agg(module_id,json_build_object('installed',installed_version,'version',source_version,'registered',registered AND source_present,'required',manifest->'dependencies'->'required')),'{}') FROM shared.modules; ROLLBACK;"
+        database['modules'] = json.loads(command(args + ['exec', '-T', 'postgres', 'sh', '-c', query, '--', module_sql], root))
+    if available['steps']:
+        step_sql = "BEGIN READ ONLY; SELECT coalesce(json_agg(json_build_object('module',m.module_id,'step',s.step,'fingerprint',s.fingerprint,'status',s.status,'operation',s.operation)),'[]') FROM shared.module_update_steps s JOIN shared.modules m ON m.id=s.module_id; ROLLBACK;"
+        database['module_steps'] = json.loads(command(args + ['exec', '-T', 'postgres', 'sh', '-c', query, '--', step_sql], root))
     return database
 
 

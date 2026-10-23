@@ -7,6 +7,7 @@ created_at: 2026-10-21
 activated_at: 2026-10-21
 closed_at: 2026-10-21
 release_type: fix
+proposed_version: 0.3.1
 impact_areas:
   - backend
   - development

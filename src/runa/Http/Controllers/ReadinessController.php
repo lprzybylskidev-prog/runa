@@ -2,17 +2,14 @@
 
 namespace Runa\Http\Controllers;
 
-use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Runa\Support\MaintenanceState;
 
 final class ReadinessController extends Controller
 {
     public function __invoke(): JsonResponse
     {
-        try {
-            DB::table('shared.jobs')->limit(1)->get(['id']);
-        } catch (QueryException) {
+        if (app(MaintenanceState::class)->active()) {
             return response()->json(['status' => 'unavailable'], 503, ['Cache-Control' => 'no-store']);
         }
 

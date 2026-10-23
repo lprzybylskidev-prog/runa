@@ -25,12 +25,13 @@
       "Database\\Factories\\": "app/database/factories/"
     },
     "exclude-from-classmap": [
-      "runa/management/"
+      "runa/management/",
+      "runa/Testing/"
     ]
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/",
+      "Tests\\": "runa/Testing/",
       "ApplicationTests\\": "app/tests/"
     }
   },

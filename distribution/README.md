@@ -8,7 +8,7 @@ as part of the ready-to-use environment. No automated entitlement/license servic
 is implemented. Public Git history remains public until repository access changes.
 
 bootstrap.py acquires a verified Runa release for first development. initialize.py selects a complete customer repository revision for production; teammate clones use the delivered runa:dev:initialize workflow.
-update.py with update_contracts.py, update_runtime.py, update_customization.py, update_execution.py and bootstrap.py provides development-only read-only preflight/plan, explicit apply and independently verified journaled resume. Production receives the complete tested customer revision through deployment. Keep this reviewed standard-library tool package together outside the customer installation; it needs no maintenance checkout. Never copy these tools into bin or installed source.
+update.py with update_contracts.py, update_runtime.py, update_customization.py, update_execution.py, update_modules.py, module-plan.php and bootstrap.py provides development-only read-only preflight/plan, explicit apply and independently verified journaled resume. Production receives the complete tested customer revision through deployment. Keep this reviewed standard-library tool package together outside the customer installation; it needs no maintenance checkout. Never copy these tools into bin or installed source.
 Internal system actions needed for operation/recovery remain in the platform;
 they are not an installed owner distribution command surface.
 
@@ -16,3 +16,7 @@ Owner maintenance/quality/release entrypoints live under tools/maintainer and ar
 checkout retains its own workflow, with explicit local runa.maintenance=true
 and canonical Runa fetch/push identity before project-state publishing; customer deployment evidence never commits or
 pushes to the Runa repository.
+
+## Development reference selection
+
+First-development acquisition accepts `--reference-module=include|exclude`. Interactive acquisition asks whether to include the working `app.reference` example; unattended calls default to exclude. The receipt records the choice and the fixed sparse projection excludes the temporary probe in both variants. Clean source also excludes the reference source and its central application guide. Reopen preserves the projection; platform updates never add example code or replace customer-owned example changes. Production staging excludes both development modules even from a customer commit, and image/runtime checks reject their presence.

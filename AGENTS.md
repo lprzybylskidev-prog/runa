@@ -33,7 +33,13 @@ The agent cannot self-approve a roadmap.
 
 Application roadmap lifecycle directories are `docs/app/roadmaps/{draft,active,paused,closed}`. At most one application roadmap may be active.
 
+Every roadmap records `proposed_version: X.Y.Z` alongside `release_type`: the projected application version after implementation, not the version carrying the draft. Refresh it when release order or baseline changes and reconcile it with the actual release at closure. It does not bump a manifest, authorize activation or approve a major release.
+
+During roadmap agreement, explicitly ask the user to confirm `release_type` and `proposed_version`, explaining the proposed increment. Do not silently approve them. If the user already explicitly supplied or confirmed these values, record that decision without asking again.
+
 Read `docs/runa/handbook/workflows/roadmaps.md` before roadmap lifecycle work.
+
+When work on an active roadmap produces an agreed substantial follow-up scope requiring its own roadmap, create or update its draft immediately in the current checkout and commit it separately before ending that planning task, without waiting for another commit request. Carry the draft with the current development changes; activation, implementation and the eventual release version remain separate decisions. Follow the roadmap workflow; do not activate a second roadmap or implement the follow-up scope through its draft.
 
 ## Roadmap execution
 
@@ -47,11 +53,15 @@ Before each roadmap point:
 
 Do not load the whole repository or all skills by default.
 
+Implementation points produce code, tests and documentation. Do not routinely run checks during them; only small, fast, focused checks needed to resolve a specific uncertainty are appropriate. Full suites, broad integration/installation acceptance, static analysis, image builds/scanner pipelines and full quality gates belong to final verification after all implementation points, followed by fixes and repeated final verification. Mandatory commit hooks remain in force.
+
+When creating, importing, reviewing or executing a roadmap, reject earlier full-verification requirements. If any roadmap (including one supplied by ChatGPT or another author/tool) requires broad checks before implementation is complete, stop and tell the user about the conflict before activation or further execution. Do not silently execute it, reinterpret it as a small check or infer an exception from roadmap precedence. Wait for the user to resolve the conflicting plan.
+
 A point is complete only when:
 
 - its implementation is complete,
 - local dependencies are satisfied,
-- proportionate lightweight checks pass,
+- any necessary small, fast, focused checks pass; no broad verification is required at this stage,
 - affected current-state documentation is synchronized in the same point (including removal of obsolete delivery claims),
 - the change is committed,
 - the roadmap checklist is updated.
@@ -270,6 +280,10 @@ Do not persist:
 - temporary debugging notes.
 
 Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
+
+## Module development
+
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. The agent owns assessing and updating each changed module's independent PATCH/MINOR/MAJOR manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming
 

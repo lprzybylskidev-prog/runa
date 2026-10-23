@@ -20,7 +20,7 @@ from update_contracts import Blocker, SEMVER, compare, compose, document, platfo
 
 SEEDER = 'Runa\\Database\\Seeders\\DatabaseSeeder'
 STEPS = ('planned', 'preflight-passed', 'customization-reviewed', 'maintenance', 'source-replaced', 'staged/built',
-         'platform-migrations', 'platform-seeders/upgrades', 'switch', 'health', 'completed')
+         'platform-migrations', 'platform-seeders/upgrades', 'platform-modules', 'switch', 'health', 'completed')
 
 
 def stamp():
@@ -288,7 +288,7 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
             baseline = runtime.metadata()
             journal = {'schema_version': 1, 'kind': 'development-update', 'id': uuid.uuid4().hex, 'root': str(root),
                        'repository': client.repository.lower(), 'project': fresh['runtime']['project'], 'baseline': baseline, 'original': fresh['installed_release'], 'target': fresh['target_release'],
-                       'phase': 'planned', 'completed': ['planned', 'preflight-passed', 'customization-reviewed'],
+                       'module_plan': fresh['plan'].get('modules', []), 'phase': 'planned', 'completed': ['planned', 'preflight-passed', 'customization-reviewed'],
                        'review': review, 'decision': approved, 'state': 'running', 'started_at': stamp()}
             atomic(pending, journal)
         runtime.bind(journal['project'])
@@ -324,6 +324,16 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
                 raise Blocker('database-identity', 'Journaled database mounts changed; preserve and inspect the original data before resuming.')
             if not set(baseline['migrations']) <= set(metadata['migrations']) or not pairs(baseline['seed_runs']) <= pairs(metadata['seed_runs']):
                 raise Blocker('database-identity', 'Previously recorded platform data/history is missing; do not adopt a different database.')
+            module_records = lambda rows: {(row['module'], row['step'], row['fingerprint'], row['status']) for row in rows}
+            if not module_records(baseline.get('module_steps', [])) <= module_records(metadata.get('module_steps', [])):
+                raise Blocker('module-history-missing', 'Recorded baseline module completion evidence is missing or changed.')
+            if 'platform-modules' in journal['completed']:
+                if not module_records(journal.get('module_steps', [])) <= module_records(metadata.get('module_steps', [])):
+                    raise Blocker('module-history-missing', 'Recorded completed module steps are missing or changed.')
+                for module in journal.get('module_plan', []):
+                    actual = metadata.get('modules', {}).get(module['module'], {})
+                    if actual.get('installed') != module['to'] or not actual.get('registered'):
+                        raise Blocker('module-version-mismatch', 'Recorded completed module installed version is missing or changed.')
             migration_names = {p.stem for p in (target / 'src/runa/database/migrations').glob('*.php')}
             if set(metadata['migrations']) - migration_names:
                 raise Blocker('migration-state-mismatch', 'Database contains platform migration history absent from the verified target.')
@@ -370,6 +380,12 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
                 if not seed_done(runtime.metadata()):
                     raise Blocker('seed-state-mismatch', 'Required seed completion could not be verified.')
                 done('platform-seeders/upgrades')
+            if 'platform-modules' not in journal['completed']:
+                begin('platform-modules')
+                if (target / 'src/runa/Support/Modules/Updates/ModuleUpdates.php').is_file():
+                    runtime.data('modules', journal['target']['commit'])
+                journal['module_steps'] = runtime.metadata().get('module_steps', [])
+                done('platform-modules')
             begin('switch'); runtime.activate(journal['id']); done('switch')
             begin('health'); runtime.health(); done('health')
             if compare(root, target):

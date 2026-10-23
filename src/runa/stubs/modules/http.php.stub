@@ -1,0 +1,15 @@
+<?php
+
+namespace {{namespace}}\Definitions;
+
+use {{namespace}}\Http\{{name}};
+use Runa\Contracts\Modules\{ApiOperation, HttpEndpoint, HttpProvider};
+
+final class {{name}}Http implements HttpProvider
+{
+    public function schemaVersion(): int { return 1; }
+    public function endpoints(): array
+    {
+        return [new HttpEndpoint('GET', '{{slug}}', new ApiOperation('{{operation}}'), {{name}}::class)];
+    }
+}

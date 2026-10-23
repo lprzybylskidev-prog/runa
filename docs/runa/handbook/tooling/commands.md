@@ -80,6 +80,16 @@ Executed on the host through the private executor: `build [service ...]` builds 
 
 Alias for `php artisan runa:doctor:development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `php artisan runa:knowledge:doctor` and `php artisan runa:knowledge:eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
 
+## Module discovery
+
+### `php artisan runa:modules:sync runa|app`
+
+Trusted installation/deployment operation that discovers exactly one source owner and atomically synchronizes module registration metadata. It preserves administrative flags and installed versions, defaults new Optional modules to disabled and records missing source without deleting data. It does not install module data or load operational providers. Normal requests never invoke it. See [module discovery and registry](../architecture/module-framework.md#delivered-discovery-and-registry-operations) for migration prerequisites, snapshot semantics and current delivery limits.
+
+### Module-owned commands and schedules
+
+Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded JSON through `--payload`. Diagnostic handlers remain available while disabled/unhealthy. Operational commands enqueue a managed owned job and return its work ID; a zero exit reports admission, not completion. Module schedules target the same classified entries, run in UTC and recheck at dispatch and worker execution. Use `php artisan schedule:list` to inspect them. See [module Artisan and schedules](../architecture/module-framework.md#delivered-module-artisan-and-schedules) for trusted recovery, overlap and retry boundaries. No module-specific global registration edits or cold host-management aliases are provided.
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`
@@ -234,7 +244,7 @@ Pinned Gitleaks 8.30.1 is stored under ignored `.runtime/tools/`, installed by d
 
 ## Production operations and security
 
-- `php artisan runa:deploy [target] [--simulation]`: fetch the configured customer repository (default `main`, or branch/tag/full SHA), build the complete selected project, run forward Runa migrations/required seeds then application migrate/DatabaseSeeder, recreate selected services and verify health/isolation. See [deployment](../production/deployment.md) for remote selection and recovery.
+- `php artisan runa:deploy [target] [--simulation]`: fetch the configured customer repository (default `main`, or branch/tag/full SHA), build the complete selected project, run forward Runa migrations/required seeds/module upgrades then application migrate/DatabaseSeeder, recreate selected services and verify health/isolation. See [deployment](../production/deployment.md) for remote selection and recovery.
 - `php artisan runa:deploy:rollback`: previous immutable application images only, requiring proven schema/data compatibility; current data-changing deployments block automatic rollback. Never reverses database changes.
 - `php artisan runa:production:self-test|verify-ai-isolation`: host checks against the managed deployment, including services, images, env, volumes and common customer-source exclusions.
 - `php artisan runa:production:self-test`: delegates to the same deep host self-test.
@@ -258,3 +268,19 @@ Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `pyt
 - distribution: external owner bootstrap/installation helpers and reserved updater; excluded from customer projection.
 
 Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses src/app/tests. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
+
+### `php artisan runa:modules:settings [module]`
+
+Trusted redacted settings read. `--write --revision=N --generation=N` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. No management HTTP endpoint or Admin UI is supplied.
+
+### `php artisan runa:modules:management <module>`
+
+Trusted versioned combined management metadata: localized identity, status/root causes/dependencies, redacted settings, integrations, bounded active work and declared permissions/actions/component keys. Exit 1 means missing/incomplete metadata or a concurrent generation change; disabled/unhealthy state remains inspectable. No action is executed and no management HTTP endpoint is exposed. See the [management descriptor contract](../architecture/module-framework.md#delivered-management-descriptors).
+
+### `php artisan runa:make:module <owner.code> [type] [name]`
+
+Development-only owned source generator. Defaults to a complete nonmutating JSON Lines preview. `--write` applies; repeated `--overwrite=repository/path=SHA256` explicitly authorizes each existing target, including changed manifest declarations. Types: module, controller, model, migration, service, action, api, component and test. Central owner docs/test scaffold and safe refusing stubs follow the [module development guide](../development/modules.md). No registry/migration/activation side effect; Runa generation additionally requires a receipt-free owner checkout.
+
+### `php artisan runa:modules:check <runa|app>`
+
+Development source ownership/manifest/required graph checks without executing module source. `--runtime` adds synchronized trusted descriptor validation through existing resolvers without running operations, health checks or lifecycle/settings/update hooks. Failures exit 1. Reusable test suite, literal-analysis limitations and independent `python3 tools/application/module_versions.py --owner app --base main` version/changelog checks are documented in the [module development guide](../development/modules.md).

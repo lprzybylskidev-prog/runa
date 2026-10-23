@@ -18,7 +18,8 @@ from runtime import ROOT, inside, run
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
 from repository_boundary import OWNER_PATHS
-DELIVERY = ['/*', *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
+DEVELOPMENT_MODULES = ('src/app/modules/module_probe', 'src/app/modules/reference')
+DELIVERY = ['/*', *['!/' + name + '/' for name in DEVELOPMENT_MODULES], *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
 
 
 def stamp():
@@ -175,8 +176,8 @@ def resolve(target):
 
 
 def tree_hash(sha, repository=None):
-    # Conservatively block rollback on any migration or seeder implementation change.
-    return hashlib.sha256(run(['git', '-C', str(repository or ROOT), 'ls-tree', '-r', sha, 'src/app/database', 'src/app/Support/Seeding', 'src/runa/database', 'src/runa/Support/Seeding'], capture_output=True).stdout).hexdigest()
+    # Conservatively include module migrations/upgrades and their owned helper implementations.
+    return hashlib.sha256(run(['git', '-C', str(repository or ROOT), 'ls-tree', '-r', sha, 'src/app/database', 'src/app/Support/Seeding', 'src/runa/database', 'src/runa/Support/Seeding', 'src/runa/modules', 'src/app/modules', 'src/runa/Support/Modules/Updates'], capture_output=True).stdout).hexdigest()
 
 
 def checkout(sha, source=None):
@@ -295,8 +296,8 @@ def isolation(release=None, verify_source=False):
 
 
 def assert_delivery(path):
-    if any((path / name).exists() or (path / name).is_symlink() for name in OWNER_PATHS):
-        raise ValueError('Owner-only source is present in the customer project.')
+    if any((path / name).exists() or (path / name).is_symlink() for name in (*OWNER_PATHS, *DEVELOPMENT_MODULES)):
+        raise ValueError('Owner-only or development example source is present in the production project.')
 
 
 def build_images(release=None):
@@ -382,6 +383,9 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
             platform_data(sha, 'migrations', release)
             phase('platform-seeding')
             platform_data(sha, 'required-seeds', release)
+            if (release / 'src/runa/Support/Modules/Updates/ModuleUpdates.php').is_file():
+                phase('platform-modules')
+                platform_data(sha, 'modules', release)
             phase('application-migrations')
             artisan(['migrate', '--force'], release)
             phase('application-seeding')

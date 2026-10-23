@@ -211,12 +211,15 @@ print('parent:' + sys.stdin.read())
         sha = 'a' * 40
         previous = {'sha': 'b' * 40, 'path': '/previous', 'database_tree': 'same', 'simulation': True,
                     'images': {'postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873': 'fixture'}}
-        for failure in ('build', 'platform-migration', 'platform-seed', 'seed', 'health'):
+        for failure in ('build', 'platform-migration', 'platform-seed', 'platform-module', 'seed', 'health'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as folder, contextlib.ExitStack() as stack:
                 root = Path(folder)
                 state = root / 'state'
                 original = 'RUNA_IMAGE_TAG=' + previous['sha'] + '\nRUNA_PRODUCTION_MODE=simulation\n'
                 (root / '.env.prod.compose').write_text(original)
+                modules = root / sha / 'src/runa/Support/Modules/Updates/ModuleUpdates.php'
+                modules.parent.mkdir(parents=True)
+                modules.write_text('<?php // module update capability fixture')
                 calls = []
                 stack.enter_context(patch.object(ops, 'ROOT', root))
                 stack.enter_context(patch.object(ops, 'STATE', state))
@@ -232,7 +235,7 @@ print('parent:' + sys.stdin.read())
                         raise ValueError('seed failed')
                 data = stack.enter_context(patch.object(ops, 'artisan', side_effect=artisan))
                 def platform_data(sha, phase, release):
-                    if (failure == 'platform-migration' and phase == 'migrations') or (failure == 'platform-seed' and phase == 'required-seeds'):
+                    if (failure == 'platform-migration' and phase == 'migrations') or (failure == 'platform-seed' and phase == 'required-seeds') or (failure == 'platform-module' and phase == 'modules'):
                         raise ValueError(failure + ' failed')
                 platform = stack.enter_context(patch.object(ops, 'platform_data', side_effect=platform_data))
                 stack.enter_context(patch.object(ops, 'health', side_effect=ValueError('health failed')))
@@ -246,7 +249,7 @@ print('parent:' + sys.stdin.read())
                 else:
                     pending = json.loads((state / 'in-progress.json').read_text())
                     self.assertTrue(pending['data_steps_started'])
-                    phases = {'platform-migration': 'platform-migrations', 'platform-seed': 'platform-seeding', 'seed': 'application-seeding', 'health': 'restart-and-health'}
+                    phases = {'platform-migration': 'platform-migrations', 'platform-seed': 'platform-seeding', 'platform-module': 'platform-modules', 'seed': 'application-seeding', 'health': 'restart-and-health'}
                     self.assertEqual(pending['phase'], phases[failure])
                     self.assertEqual(calls[-1], ['stop', 'queue', 'scheduler', 'app'])
                     self.assertEqual([call.args[0][0] for call in data.call_args_list], [] if failure.startswith('platform-') else ['migrate', 'db:seed'])

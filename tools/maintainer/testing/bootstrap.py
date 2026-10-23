@@ -159,6 +159,10 @@ class BootstrapContracts(unittest.TestCase):
         (repo / '.githooks/pre-commit').write_text('customer hook fixture\n')
         (repo / 'tools/application').mkdir(parents=True)
         (repo / 'tools/application/fixture.py').write_text('customer tool fixture\n')
+        for name in ('src/app/modules/reference/module.json', 'src/app/modules/module_probe/module.json', 'docs/app/modules/reference/README.md'):
+            file = repo / name
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text('example fixture\n')
         git('add', '.')
         git('commit', '-qm', 'fixture')
         git('tag', '-a', 'v1.0.0', '-m', 'fixture')
@@ -206,6 +210,32 @@ class BootstrapContracts(unittest.TestCase):
             second = Path(folder) / 'second'
             self.assertEqual(bootstrap.acquire(client, 'v1.0.0', second, 'dev', expected_digest=receipt['source_sha256'])['source_sha256'], receipt['source_sha256'])
             self.assertTrue(all(not (second / name).exists() for name in bootstrap.OWNER_PATHS))
+
+    def test_reference_choices_survive_reopen_and_production_projection(self):
+        sys.path.insert(0, str(ROOT / 'tools/application'))
+        import operations
+        for include in (False, True):
+            with self.subTest(include=include), tempfile.TemporaryDirectory() as folder, self.local_git():
+                client, identity = self.fixture(folder)
+                destination = Path(folder) / 'download'
+                receipt = bootstrap.acquire(client, 'v1.0.0', destination, 'dev', reference_module=include)
+                example = destination / 'src/app/modules/reference/module.json'
+                self.assertEqual(example.exists(), include)
+                self.assertEqual(receipt['reference_module'], include)
+                self.assertFalse((destination / 'src/app/modules/module_probe').exists())
+                if include:
+                    example.write_text('customer edit\n')
+                subprocess.run(['git', '-C', str(destination), 'sparse-checkout', 'reapply'], check=True, capture_output=True)
+                self.assertEqual(example.exists(), include)
+                if include:
+                    self.assertEqual(example.read_text(), 'customer edit\n')
+                production = Path(folder) / 'production'
+                subprocess.run(['git', 'clone', '--quiet', '--no-checkout', client.url, str(production)], check=True, capture_output=True)
+                subprocess.run(['git', '-C', str(production), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input='\n'.join(operations.DELIVERY)+'\n', text=True, check=True, capture_output=True)
+                subprocess.run(['git', '-C', str(production), 'checkout', '--detach', identity['commit']], check=True, capture_output=True)
+                operations.assert_delivery(production)
+                self.assertFalse((production / 'src/app/modules/reference').exists())
+                self.assertFalse((production / 'src/app/modules/module_probe').exists())
 
     def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self):
         for failure in ('commit', 'digest', 'changed-ref', 'fetched-ref'):
@@ -284,7 +314,7 @@ class BootstrapContracts(unittest.TestCase):
     def test_interactive_lists_releases_and_asks_postponement(self):
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / 'download'
-            answers = ['owner/repository', 'n', 'v1.0.0', str(destination), 'later']
+            answers = ['owner/repository', 'n', 'v1.0.0', str(destination), 'later', 'y']
             with patch.object(sys.stdin, 'isatty', return_value=True), patch.object(sys.stderr, 'isatty', return_value=True), patch('builtins.input', side_effect=answers), patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap.GitHub, 'releases', return_value=['v1.0.0']), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}), contextlib.redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(bootstrap.main([]), 0)
             self.assertIn('Accessible stable releases: v1.0.0', output.getvalue())
@@ -298,6 +328,13 @@ class BootstrapContracts(unittest.TestCase):
             run.assert_not_called()
             self.assertIn('Installation has not run', output.getvalue())
             self.assertIn('installation.py', output.getvalue())
+
+    def test_unattended_reference_option_reaches_acquisition(self):
+        for option, included in (('include', True), ('exclude', False)):
+            with self.subTest(option=option), tempfile.TemporaryDirectory() as folder:
+                with patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}) as acquire, contextlib.redirect_stdout(io.StringIO()):
+                    bootstrap.main(['--non-interactive', '--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(Path(folder) / 'download'), '--install', 'later', '--reference-module', option])
+                self.assertEqual(acquire.call_args.kwargs['reference_module'], included)
 
     def test_external_handoffs_ignore_customer_bin_and_installer_files(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -317,7 +354,7 @@ class BootstrapContracts(unittest.TestCase):
 
     def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self):
         with tempfile.TemporaryDirectory() as folder:
-            args = ['--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(Path(folder) / 'download'), '--install', 'later', '--ask-token']
+            args = ['--repository', 'owner/repository', '--tag', 'v1.0.0', '--destination', str(Path(folder) / 'download'), '--install', 'later', '--ask-token', '--reference-module', 'exclude']
             with patch.object(sys.stdin, 'isatty', return_value=True), patch.object(sys.stderr, 'isatty', return_value=True), patch.object(bootstrap.getpass, 'getpass', return_value='synthetic_not_a_real_token') as hidden, patch.object(bootstrap, 'host_checks'), patch.object(bootstrap.GitHub, 'verify_repository', return_value=7), patch.object(bootstrap, 'acquire', return_value={'commit': 'a' * 40, 'source_sha256': 'b' * 64}) as acquire, contextlib.redirect_stdout(io.StringIO()) as output:
                 bootstrap.main(args)
             hidden.assert_called_once()

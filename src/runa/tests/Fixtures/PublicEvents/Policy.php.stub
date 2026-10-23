@@ -1,0 +1,13 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class Policy implements \Runa\Contracts\Modules\WorkPolicy
+{
+    public function schemaVersion(): int { return 1; }
+    public function pending(\Runa\Contracts\Modules\WorkStatus $work, bool $available): \Runa\Contracts\Modules\WorkDecision
+    {
+        if ($work->cancellationRequested) { return new \Runa\Contracts\Modules\WorkDecision('cancel', 'cancelled'); }
+        if (in_array($work->status, ['failed', 'recovery_required'], true)) { return new \Runa\Contracts\Modules\WorkDecision('retry', 'idempotent_replay', 2); }
+        return new \Runa\Contracts\Modules\WorkDecision($available ? 'run' : 'retry', $available ? 'ready' : 'unavailable', $available ? null : 2);
+    }
+    public function checkpoint(\Runa\Contracts\Modules\WorkStatus $work): \Runa\Contracts\Modules\WorkDecision { return new \Runa\Contracts\Modules\WorkDecision('run', 'ready'); }
+}

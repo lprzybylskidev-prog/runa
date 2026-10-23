@@ -7,6 +7,7 @@ created_at: 2026-10-18
 activated_at: 2026-10-20
 closed_at: 2026-10-21
 release_type: feature
+proposed_version: 0.3.0
 impact_areas:
   - backend
   - frontend

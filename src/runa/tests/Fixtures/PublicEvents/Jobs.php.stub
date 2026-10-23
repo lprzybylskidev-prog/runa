@@ -1,0 +1,6 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class Jobs implements \Runa\Contracts\Modules\JobProvider
+{
+    public function jobs(): array { return [new \Runa\Contracts\Modules\JobDefinition('receive', Handler::class, Policy::class, 3, 2, 30, true, 'idempotent_subscriber')]; }
+}

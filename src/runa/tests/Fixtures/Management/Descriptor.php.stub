@@ -1,0 +1,38 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+
+use Runa\Contracts\Modules\ManagementProvider;
+use Runa\Contracts\Modules\ManagementPermission;
+use Runa\Contracts\Modules\ManagementAction;
+use Runa\Contracts\Modules\ManagementComponent;
+
+final class Descriptor implements ManagementProvider, \Runa\Contracts\Modules\IntegrationProvider
+{
+    public static string $renderer = 'action';
+    public static int $version = 1;
+    public static string $permission = 'probe.inspect';
+    public static string $component = 'MODULE_ID.inspect';
+    public static bool $duplicate = false;
+    public static ?\Closure $duringRead = null;
+
+    public function integrations(): array
+    {
+        return [new \Runa\Contracts\Modules\IntegrationDefinition('audit', 'app.audit_fixture', false, ['pl' => 'Audyt', 'en' => 'Audit'])];
+    }
+    public function validConfiguration(string $key, array $config): bool { return $config === []; }
+
+    public function permissions(): array
+    {
+        if (self::$duringRead !== null) { (self::$duringRead)(); }
+        return [new ManagementPermission('probe.inspect', ['pl' => 'Inspekcja', 'en' => 'Inspect'], ['pl' => 'Opis', 'en' => 'Description'])];
+    }
+    public function actions(): array
+    {
+        $action = new ManagementAction('inspect', self::$permission, ['pl' => 'Inspekcja', 'en' => 'Inspect'], ['pl' => 'Opis', 'en' => 'Description'], self::$renderer, self::$version);
+        return self::$duplicate ? [$action, $action] : [$action];
+    }
+    public function components(): array
+    {
+        return [new ManagementComponent('inspect', self::$component, 'probe.inspect')];
+    }
+}

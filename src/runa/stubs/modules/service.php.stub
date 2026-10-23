@@ -1,0 +1,5 @@
+<?php
+
+namespace {{namespace}}\Services;
+
+final class {{name}} {}

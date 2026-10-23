@@ -1,0 +1,16 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class Events implements \Runa\Contracts\Modules\EventProvider
+{
+    public function events(): array { return [new \Runa\Contracts\Modules\EventDefinition('changed', 1)]; }
+    public function listeners(): array
+    {
+        if (IS_PUBLISHER) { return []; }
+        $integration = \Tests\Fixtures\EventCalls::$integration ? 'audit' : null;
+        return [
+            new \Runa\Contracts\Modules\ListenerDefinition('first', 'PUBLISHER_ID', 'changed', 1, 'sync', Sync::class, $integration),
+            new \Runa\Contracts\Modules\ListenerDefinition('second', 'PUBLISHER_ID', 'changed', 1, 'sync', Sync::class, $integration),
+            new \Runa\Contracts\Modules\ListenerDefinition('queued', 'PUBLISHER_ID', 'changed', 1, 'async', 'receive', $integration),
+        ];
+    }
+}

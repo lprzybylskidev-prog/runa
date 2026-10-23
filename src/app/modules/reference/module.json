@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "app.reference",
+  "kind": "optional",
+  "version": "0.1.0",
+  "platform": ">=0.3.1 <1.0.0",
+  "framework_api": "^1.0.0",
+  "name": {
+    "pl": "Moduł referencyjny",
+    "en": "Reference module"
+  },
+  "description": {
+    "pl": "Deweloperski przykład publicznych kontraktów modułów.",
+    "en": "Development-only working example of public module contracts."
+  },
+  "dependencies": {
+    "required": {},
+    "optional": {}
+  },
+  "providers": [],
+  "declarations": {
+    "apis": ["App\\Modules\\Reference\\Definitions\\ReferenceApi"],
+    "health": ["App\\Modules\\Reference\\Definitions\\ReferenceHealthPolicy"],
+    "lifecycle": ["App\\Modules\\Reference\\Definitions\\ReferenceWorkPolicy"],
+    "settings": ["App\\Modules\\Reference\\Definitions\\ReferenceSettings"],
+    "integrations": [],
+    "http": ["App\\Modules\\Reference\\Definitions\\ReferenceHttp"],
+    "commands": ["App\\Modules\\Reference\\Definitions\\ReferenceCommands"],
+    "jobs": ["App\\Modules\\Reference\\Definitions\\ReferenceJobs"],
+    "schedules": ["App\\Modules\\Reference\\Definitions\\ReferenceSchedules"],
+    "events": ["App\\Modules\\Reference\\Definitions\\ReferenceEvents"],
+    "frontend": ["App\\Modules\\Reference\\Definitions\\ReferenceFrontend"],
+    "slots": ["App\\Modules\\Reference\\Definitions\\ReferenceFrontend"],
+    "management": ["App\\Modules\\Reference\\Definitions\\ReferenceManagement"],
+    "upgrades": ["App\\Modules\\Reference\\Definitions\\ReferenceUpgrades"]
+  },
+  "docs": ["docs/app/modules/reference/README.md"],
+  "tests": ["tests"]
+}

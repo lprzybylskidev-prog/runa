@@ -1,0 +1,38 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+
+use Runa\Contracts\Modules\SettingDefinition;
+use Runa\Contracts\Modules\SettingsContext;
+use Runa\Contracts\Modules\SettingsHandler;
+use Runa\Contracts\Modules\SettingsProvider;
+use Tests\Fixtures\SettingsCalls;
+
+final class Settings implements SettingsProvider, SettingsHandler
+{
+    public function settings(): array
+    {
+        $names = ['pl' => 'Nazwa', 'en' => 'Name'];
+        $descriptions = ['pl' => 'Opis', 'en' => 'Description'];
+        return [
+            new SettingDefinition('label', 'string', SettingsCalls::$invalidDefault ? 42 : 'initial', $names, $descriptions, rules: ['max:40']),
+            new SettingDefinition('attempts', 'integer', 3, $names, $descriptions, rules: ['min:1', 'max:10']),
+            new SettingDefinition('rate', 'decimal', '0.25', $names, $descriptions),
+            new SettingDefinition('active', 'boolean', false, $names, $descriptions),
+            new SettingDefinition('mode', 'enum', 'basic', $names, $descriptions, options: ['choices' => ['basic', 'full']]),
+            new SettingDefinition('tags', 'array', [], $names, $descriptions),
+            new SettingDefinition('token', 'string', null, $names, $descriptions, sensitive: true, application: 'reinitialize', nullable: true),
+        ];
+    }
+    public function valid(array $values): bool { return $values['label'] !== 'invalid'; }
+    public function handler(): string { return self::class; }
+    public function apply(SettingsContext $context): bool
+    {
+        SettingsCalls::$contexts[] = $context;
+        return SettingsCalls::$apply === null || (SettingsCalls::$apply)($context);
+    }
+    public function compensate(SettingsContext $context): bool
+    {
+        SettingsCalls::$contexts[] = $context;
+        return SettingsCalls::$compensate === null || (SettingsCalls::$compensate)($context);
+    }
+}

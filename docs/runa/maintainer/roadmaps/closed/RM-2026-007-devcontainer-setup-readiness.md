@@ -7,6 +7,7 @@ created_at: 2026-10-20
 activated_at: 2026-10-20
 closed_at: 2026-10-20
 release_type: fix
+proposed_version: 0.2.1
 impact_areas:
   - development
   - tooling

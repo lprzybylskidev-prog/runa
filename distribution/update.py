@@ -17,6 +17,7 @@ import tempfile
 import bootstrap
 from update_contracts import (Blocker, OWNER_PATHS, SEMVER, compare, changes, compose, document,
                               platform, regular, stable, supports)
+import update_modules
 import update_runtime
 import update_customization
 
@@ -98,7 +99,7 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
             'platform_migrations': [name for name in migrations if name not in applied],
             'platform_seeder': {'class': seeder, 'release': target_identity['commit'], 'already_completed': seed_done},
             'customer_inputs': 'preserved; reconcile scaffold/infrastructure manually from release instructions',
-            'steps': ['planned', 'preflight-passed', 'customization-reviewed', 'maintenance', 'source-replaced', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'switch', 'health', 'completed'],
+            'steps': ['planned', 'preflight-passed', 'customization-reviewed', 'maintenance', 'source-replaced', 'staged/built', 'platform-migrations', 'platform-seeders/upgrades', 'platform-modules', 'switch', 'health', 'completed'],
             'preserve': ['src/app', 'docs/app', 'application identity/version', 'application dependency declarations/locks',
                          'private environment inputs', 'both durable storage trees', 'customer Git remotes/history'],
             'uncertainties': ['Migration/seed bodies are not executed to predict effects.', 'Image build disk use is an estimate.', 'Offline lock consistency is not a supply-chain audit; real build/install policies must still pass.',
@@ -169,6 +170,8 @@ def preflight(value, client, tag, *, toolchain='runa-development:dev', download=
                 report['runtime'] = {'project': runtime['project'], 'services': runtime['services']}
                 passed('runtime-and-database')
                 report['plan'] = plan(root, target, original, target_identity, installed_identity, runtime)
+                report['plan']['modules'] = update_modules.plan(root, target, runtime, report['toolchain_image'])
+                report['plan']['no_op'] = report['plan']['no_op'] and all(row['from'] == row['to'] and not row['pending_migrations'] and not row['pending_upgrades'] for row in report['plan']['modules'])
                 report['customization_review'] = update_customization.review(root, original)
                 passed('infrastructure-review')
                 report['status'] = 'ready'

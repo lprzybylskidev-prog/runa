@@ -18,7 +18,7 @@ import corpus
 import docs_checks
 from configuration import load, golden
 from documentation import maintainer_checkout, roadmap_root
-from hooks import commit_message
+from hooks import approved_version_backfill, commit_message
 
 
 class DocumentationOwnership(unittest.TestCase):
@@ -120,6 +120,14 @@ class DocumentationOwnership(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'symlink'):
             self.validate()
 
+    def test_module_local_documentation_is_rejected(self):
+        for owner in ('app', 'runa'):
+            local = self.root / ('src/' + owner + '/modules/example/docs')
+            local.mkdir(parents=True)
+            with self.assertRaisesRegex(ValueError, 'central docs'):
+                self.validate()
+            local.rmdir()
+
     def test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable(self):
         text = '---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n'
         app = self.write('docs/app/roadmaps/active/RM-2026-099-test.md', text)
@@ -151,7 +159,7 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertTrue(shared['evidence'].startswith('docs/runa/handbook/security/'))
         self.assertEqual(hashlib.sha256((ROOT / shared['evidence']).read_bytes()).hexdigest(), shared['evidence_sha256'])
 
-    def test_relocated_closed_roadmaps_and_dated_reports_remain_byte_identical(self):
+    def test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes(self):
         mapping = json.loads((ROOT / 'docs/runa/maintainer/documentation-map.json').read_text())
         for name, expected in mapping['immutable_sha256'].items():
             with self.subTest(source=name):
@@ -162,6 +170,34 @@ class DocumentationOwnership(unittest.TestCase):
                 self.assertEqual(len(list((ROOT / 'docs/runa/maintainer/roadmaps').glob('*/' + path.name))), 1, name)
             else:
                 self.assertTrue(path.is_file(), name)
+
+    def test_version_backfill_accepts_only_exact_metadata_changes_in_owner_context(self):
+        mapping = json.loads((ROOT / 'docs/runa/maintainer/documentation-map.json').read_text())
+        records = mapping['proposed_version_backfill_2026_10_22']
+        self.assertEqual(len(records), 7)
+        self.copy_owner_inputs()
+        self.copy('docs/runa/maintainer/documentation-map.json')
+        self.receipt.unlink()
+        for name, record in records.items():
+            with self.subTest(source=name):
+                after = (ROOT / name).read_bytes()
+                field = b'\nproposed_version: ' + record['proposed_version'].encode()
+                front, boundary, body = after.partition(b'\n---\n')
+                before = front.replace(field, b'', 1) + boundary + body
+                self.assertEqual(hashlib.sha256(before).hexdigest(), record['before_sha256'])
+                self.assertTrue(approved_version_backfill(self.root, name, before, after))
+                self.assertFalse(approved_version_backfill(self.root, name, before, after + b'Changed history.\n'))
+                self.assertFalse(approved_version_backfill(self.root, name, after, after))
+                # Even updating the approved digest cannot authorize changes beyond the one field.
+                altered = after + b'Changed history.\n'
+                changed_mapping = json.loads(json.dumps(mapping))
+                changed_mapping['proposed_version_backfill_2026_10_22'][name]['after_sha256'] = hashlib.sha256(altered).hexdigest()
+                self.write('docs/runa/maintainer/documentation-map.json', json.dumps(changed_mapping))
+                self.assertFalse(approved_version_backfill(self.root, name, before, altered))
+                self.copy('docs/runa/maintainer/documentation-map.json')
+                self.receipt.write_text('{}\n')
+                self.assertFalse(approved_version_backfill(self.root, name, before, after))
+                self.receipt.unlink()
 
 
 if __name__ == '__main__':

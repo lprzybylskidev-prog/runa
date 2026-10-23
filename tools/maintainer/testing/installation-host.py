@@ -182,7 +182,7 @@ def main():
                 check(json.load(response)['status'] == 'ok', 'fresh development installation serves real Laravel readiness')
             check(not (dev / '.git/runa-ownership.json').exists(), 'development installation leaves no source baseline')
             bootstrap_providers = (dev / 'src/bootstrap/providers.php').read_bytes()
-            for generator_command in (['make:config', 'CustomerGeneratorProbe'], ['make:test', 'CustomerGeneratorProbe', '--pest'], ['make:provider', 'CustomerGeneratorProbeProvider']):
+            for generator_command in (['make:config', 'CustomerGeneratorProbe'], ['make:test', 'CustomerGeneratorProbe', '--pest'], ['make:test', 'CustomerPhpUnitProbeTest', '--phpunit'], ['make:test', 'CustomerPestProbeTest', '--pest'], ['make:provider', 'CustomerGeneratorProbeProvider']):
                 call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', *generator_command, '--no-interaction'])
             check((dev / 'src/app/config/CustomerGeneratorProbe.php').is_file() and (dev / 'src/app/tests/Feature/CustomerGeneratorProbe.php').is_file(), 'standard config and test generators write only application roots')
             check((dev / 'src/app/Providers/CustomerGeneratorProbeProvider.php').is_file() and 'CustomerGeneratorProbeProvider' in (dev / 'src/app/providers.php').read_text() and (dev / 'src/bootstrap/providers.php').read_bytes() == bootstrap_providers, 'provider generation registers the application provider without editing platform bootstrap')
@@ -200,6 +200,9 @@ def main():
             check('WelcomeTest' in native_tests and 'Runa\\tests' not in native_tests and 'ManagementTest' not in native_tests, 'native customer Artisan discovers application tests without owner autoloading')
             for test_command in ('test', 'runa:test', 'runa:test:frontend'):
                 call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', test_command])
+            for test_command in ('test', 'runa:test'):
+                call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', test_command, '--parallel', '--processes=2'])
+            check(not (dev / 'src/tests').exists() and (dev / 'src/runa/Testing/TestCase.php').is_file(), 'generated PHPUnit/Pest tests and native/wrapped parallel customer suites use delivered guarded testing infrastructure without src/tests or owner tools')
             call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
             call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
             browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)

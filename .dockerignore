@@ -37,6 +37,7 @@ public/ui-review
 src/storage
 src/bootstrap/cache/*.php
 src/app/tests
+src/app/modules/module_probe
 src/app/docs
 
 src/runa/tests
@@ -48,10 +49,12 @@ src/runa/resources/views/errors/generated
 
 src/.runtime
 
-src/tests
+src/runa/Testing
 
 .pnpm-store/
 
 # Owner source is outside every normal image context. Only the maintainer target
 # receives a separate explicit named build context from the owner transport.
 distribution/
+
+src/app/modules/reference

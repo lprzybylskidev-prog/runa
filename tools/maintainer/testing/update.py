@@ -156,9 +156,11 @@ class Updater(unittest.TestCase):
                 self.assertTrue(contracts.compare(root, self.original))
 
     def test_application_storage_and_known_cache_are_preserved_without_hiding_source(self):
-        for name in ('src/app/new.php', 'docs/app/custom.md', 'src/storage/app/application/private/data.bin', 'src/bootstrap/cache/config.php'):
+        for name in ('src/app/new.php', 'src/app/modules/reference/module.json', 'docs/app/modules/reference/README.md', 'docs/app/custom.md', 'src/storage/app/application/private/data.bin', 'src/bootstrap/cache/config.php'):
             path = self.installed / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text('customer/generated content')
+        before = self.snapshot()
         self.assertEqual(self.run_plan()['status'], 'ready')
+        self.assertEqual(before, self.snapshot())
 
     def test_incompatible_and_unsupported_ranges_block(self):
         for constraint in ('>=0.4.0', '*', '>=0.2.1 || *', '>=0.2.1 ||'):
@@ -269,9 +271,26 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'development-only')
         self.assertEqual(result['temporary_downloads'], [])
 
+    def test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application(self):
+        import update_modules
+        directory = self.target / 'src/runa/modules/example'
+        directory.mkdir(parents=True)
+        (directory / 'module.json').write_text('{}')
+        from unittest.mock import patch
+        result = subprocess.CompletedProcess([], 0, stdout='[]', stderr='')
+        with patch.object(update_modules.subprocess, 'run', return_value=result) as execute:
+            self.assertEqual(update_modules.plan(self.installed, self.target, self.runtime, 'sha256:' + 'a' * 64), [])
+        command = execute.call_args_list[0].args[0]
+        self.assertIn('--read-only', command)
+        self.assertEqual(command[command.index('--network') + 1], 'none')
+        mounts = [command[i + 1] for i, value in enumerate(command) if value == '--mount']
+        self.assertIn('type=bind,src=' + str(self.installed / 'src/vendor') + ',dst=/installed/vendor,readonly', mounts)
+        self.assertFalse(any(str(self.installed / 'src') + ',dst=' in value for value in mounts))
+        self.assertNotIn('artisan', command)
+
     def test_external_tool_package_runs_without_the_maintenance_checkout(self):
         package = self.base / 'owner-tools'; package.mkdir()
-        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'bootstrap.py'):
+        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'update_modules.py', 'module-plan.php', 'bootstrap.py'):
             shutil.copyfile(ROOT / 'distribution' / name, package / name)
         result = subprocess.run([sys.executable, str(package / 'update.py'), '--help'], cwd='/', capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)

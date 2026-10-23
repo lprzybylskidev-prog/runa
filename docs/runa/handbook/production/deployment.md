@@ -36,8 +36,9 @@ Deploy records pending state, starts PostgreSQL, fences HTTP and stops the core 
 
 1. Forward Runa migrations, using the Runa migration repository.
 2. The fixed required Runa seed root, with atomic exact-source completion records.
-3. Application migrate --force, using its separate repository.
-4. The application's explicit DatabaseSeeder via db:seed --force.
+3. All supplied Runa-module migrations/upgrades, including disabled modules, through the shared source-linked completion ledger.
+4. Application migrate --force, using its separate repository.
+5. The application's explicit DatabaseSeeder via db:seed --force. Application module installers require an explicit customer-owned invocation/order; deployment never silently discovers and executes them.
 
 Neither owner discovers loose seed files. Required platform seeds must be idempotent; their effects and completion record share a transaction. Application seeders must also be repeatable. Native application migrate/fresh/wipe/seed commands remain application-only; coordinated deployment adds no destructive platform command.
 
@@ -51,7 +52,7 @@ All production operations share a nonblocking lock. An existing Laravel/shared H
 
 `deployment.json` records successful current/previous source/image identities, independent platform/application versions and UTC timestamps. `in-progress.json` records the target, previous deployment, current phase and whether data steps started. Keep the entire `.runtime/production` directory and production env files private. Do not print expanded Compose/env configuration.
 
-Migration, seeding, restart or health failure returns nonzero, retains recovery evidence, enables HTTP maintenance and stops writers. If fencing itself fails, diagnostics explicitly require immediate operator intervention. Partial seeding may have committed data; equal migration/seeder source hashes do not prove compatibility. No automatic code/schema rollback or blind seed replay occurs.
+Migration, seeding, module-upgrade, restart or health failure returns nonzero, retains recovery evidence, enables HTTP maintenance and stops writers. If fencing itself fails, diagnostics explicitly require immediate operator intervention. Partial seeding may have committed data; equal migration/seeder source hashes do not prove compatibility. No automatic code/schema rollback or blind seed replay occurs.
 
 Inspect the recorded phase, images, database and application state under the application's recovery procedure. Preserve failure evidence before deliberately clearing a resolved marker; deleting it is not recovery. Externally managed customer backups may be part of that procedure. There is no bundled backup/restore subsystem or mandatory backup prerequisite.
 

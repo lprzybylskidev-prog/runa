@@ -26,6 +26,22 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_records_stage_durations_and_shows_them_through_shared_status(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            state = {'status': 'running', 'steps': {'short': dict(node('short', 'true'), status='pending')}}
+            self.assertEqual(quality.execute(directory, state), 0)
+            stage = state['steps']['short']
+            self.assertGreaterEqual(stage['duration_seconds'], 0)
+            self.assertGreaterEqual(state['duration_seconds'], stage['duration_seconds'])
+            self.assertLessEqual(stage['started_at'], stage['finished_at'])
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                quality.status(directory, False)
+            self.assertIn('short: passed (', output.getvalue())
+            self.assertIn('Total elapsed:', output.getvalue())
+            self.assertIn('Overall status: passed', output.getvalue())
+
     def test_debug_check_allows_only_reviewed_output_statements(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

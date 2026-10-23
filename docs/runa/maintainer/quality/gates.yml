@@ -99,7 +99,12 @@ base:
     severity: hard_fail
 
 impact_areas:
-  backend: [] # Backend tests/static analysis are already in base.
+  backend:
+    - id: module-development-contracts
+      depends_on: [configuration]
+      description: Check owned module source boundaries, independent module versions/changelogs and generator policy regressions.
+      command: python3 tools/maintainer/testing/module-development.py
+      severity: hard_fail
   frontend:
     - id: frontend-build
       depends_on: [configuration]
@@ -118,6 +123,7 @@ impact_areas:
       severity: hard_fail
 
     - id: frontend-browser
+      execution_context: host
       depends_on: [frontend-build, frontend-tests]
       exclusive_group: testing-state
       command: python3 tools/maintainer/test-e2e --critical

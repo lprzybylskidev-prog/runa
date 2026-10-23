@@ -1,0 +1,13 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class Routes implements \Runa\Contracts\Modules\HttpProvider
+{
+    public function schemaVersion(): int { return 1; }
+    public function endpoints(): array
+    {
+        return [
+            new \Runa\Contracts\Modules\HttpEndpoint('GET', 'entries/{public_id}', new \Runa\Contracts\Modules\ApiOperation('read'), \MODULE_NAMESPACE\Http\ReadEntry::class),
+            new \Runa\Contracts\Modules\HttpEndpoint('POST', 'entries/{public_id}', new \Runa\Contracts\Modules\ApiOperation('write', 'entries.write'), \MODULE_NAMESPACE\Http\ReadEntry::class),
+        ];
+    }
+}

@@ -1,0 +1,14 @@
+<?php
+namespace MODULE_NAMESPACE\Definitions;
+final class PublicApi implements \Runa\Contracts\Modules\ApiProvider
+{
+    public function definition(): \Runa\Contracts\Modules\ApiDefinition
+    {
+        return new \Runa\Contracts\Modules\ApiDefinition(
+            \MODULE_NAMESPACE\Contracts\Lookup::class, \MODULE_NAMESPACE\LookupProxy::class, \MODULE_NAMESPACE\LookupHandler::class,
+            \Tests\Fixtures\ApiCalls::$version,
+            ['exists' => new \Runa\Contracts\Modules\ApiOperation('read'), 'describe' => new \Runa\Contracts\Modules\ApiOperation('read_detail'), 'invalid' => new \Runa\Contracts\Modules\ApiOperation('invalid')],
+            \Tests\Fixtures\ApiCalls::$schema,
+        );
+    }
+}

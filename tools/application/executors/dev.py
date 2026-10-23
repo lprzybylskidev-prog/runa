@@ -257,6 +257,7 @@ def main():
         subprocess.run([*context, 'wait', 'setup'], cwd=ROOT, check=True)
         sha = subprocess.check_output(['git', 'rev-parse', '--verify', 'HEAD'], cwd=ROOT).decode().strip()
         subprocess.run([*context, 'exec', '-T', 'app', 'php', 'src/runa/database/prepare.php', sha], cwd=ROOT, check=True)
+        subprocess.run([*context, 'exec', '-T', '-e', 'APP_ENV=testing', 'app', 'php', 'src/runa/database/prepare.php', sha], cwd=ROOT, check=True)
         for command in (['migrate', '--force'], ['db:seed', '--force']):
             subprocess.run([*context, 'exec', '-T', 'app', 'php', 'artisan', *command, '--no-interaction'], cwd=ROOT, check=True)
         subprocess.run([sys.executable, str(helper), 'up'], cwd=ROOT, check=True)
