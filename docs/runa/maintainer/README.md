@@ -6,8 +6,8 @@ Owner-only platform engineering, lifecycle and release records. Customer applica
 
 <!-- runa:current-state -->
 
-- Current version: `0.3.1`
-- Active roadmap: `RM-2026-006`
+- Current version: `0.4.0`
+- Active roadmap: `none`
 
 <!-- /runa:current-state -->
 

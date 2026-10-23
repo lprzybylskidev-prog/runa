@@ -2,6 +2,19 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.4.0] - 2026-10-23
+
+Feature release — RM-2026-006.
+
+- Deliver module manifests, persistent registry/discovery, dependency planning, atomic lifecycle transitions, technical health and effective maintenance with guarded runtime entrypoints.
+- Add PostgreSQL/storage boundaries, typed public PHP/HTTP contracts, events, optional integrations, encrypted settings, queue/work fencing, commands/schedules and structured module logging.
+- Provide opt-in frontend navigation/slots, versioned management metadata, independent module versions/changelogs, guarded generators and module-aware resumable install/update execution.
+- Deliver the development-only reference module, customer source selection and module developer guide; keep reference/probe and AI tooling excluded from production.
+- Consolidate delivered customer testing support, repair parallel database isolation and maintenance-paused worker health, and expose per-stage durations through shared Python/Artisan quality status.
+- Pass all 54 final quality gates, including real customer/native/generated-test acceptance, team propagation, production isolation, image scanning and strict AI checks; total elapsed 32 minutes 48 seconds.
+
+The bounded owner-only PostgreSQL/gosu accepted risk MT-2026-001 remains unchanged and scanner-validated; customer security defaults remain fail-closed. Application version stays 0.0.0. New platform module registry/lifecycle/work/settings/update migrations are forward-only; no real production deployment or development/test database reset occurred. Disposable acceptance resources were scoped-cleaned; active development/test data, existing test services, rollback resources, shared/model caches, backups and verification reports were preserved.
+
 ## [0.3.1] - 2026-10-21
 
 Fix release — RM-2026-008.

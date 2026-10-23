@@ -25,7 +25,7 @@ impact_areas:
 
 Deliver distinct owner and customer AI instruction sets, maintain both while developing Runa, and give the customer a self-contained agent environment for building applications on Runa. Extend development updates with a complete review of delivered project files and explicit consent to replace customized non-platform files. Review environment-file responsibilities and operation guidance.
 
-Execute immediately after [RM-2026-006](../active/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 remains the only active roadmap. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. The owner classifies this as corrective work: planned fix release **0.4.1** after RM-006's projected 0.4.0. Reconcile the actual released baseline at activation; no platform version or release is changed by this draft.
+Execute immediately after [RM-2026-006](../closed/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 is closed for release 0.4.0; this roadmap remains a draft. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. The owner classifies this as corrective work: planned fix release **0.4.1** after RM-006's projected 0.4.0. Reconcile the actual released baseline at activation; no platform version or release is changed by this draft.
 
 ### Scope
 
