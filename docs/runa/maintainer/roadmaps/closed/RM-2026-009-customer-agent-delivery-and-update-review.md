@@ -1,11 +1,11 @@
 ---
 id: RM-2026-009
 title: Customer agent delivery and project update review
-status: active
+status: closed
 branch: roadmap/RM-2026-009-customer-agent-delivery-and-update-review
 created_at: 2026-10-22
 activated_at: 2026-10-23
-closed_at: null
+closed_at: 2026-10-23
 release_type: fix
 proposed_version: 0.4.1
 impact_areas:
@@ -158,7 +158,7 @@ Make justified naming/generation/documentation improvements with a safe transiti
   - Attempt 2 passed the actual reviewed update but later production fixture setup still assumed the pre-update Redis descriptor existed. Add explicit customer reconciliation after the verified updater completes and before the customer commit/push. Keep the updater's exact target application and real custom-service deployment checks intact. Add a focused transition regression and refresh changed-surface evidence.
 - [x] 12. Reconcile fixture environment instructions before publication and production provisioning.
   - Requires 11. Restore both public environment templates together with the customer service after approved target replacement. Cover actual file replacement, publication/clone, production provisioning and repeat preservation with a focused regression; review the remaining downstream deployment assumptions. No updater policy or private environment mutation.
-- [ ] 13. Full verification, release finalization, merge and final report.
+- [x] 13. Full verification, release finalization, merge and final report.
   - Requires 1–12 complete and committed. Review current-state docs, both instruction products, source ownership, knowledge/installer/update/env procedures and release metadata against code; record sources/findings/disposition. Execute the integrated acceptance prepared in point 8 as part of the full applicable owner quality workflow, security and production isolation gates through the established background interface; end the turn and provide the built-in owner status command. Insert fix points and rerun full verification from the beginning if needed. Finalize version/changelog, refresh knowledge, close/merge with a merge commit, run main sanity, publish immutable tag/release and remove the roadmap branch under the existing workflows.
 
 ## Acceptance and planning status
@@ -260,3 +260,20 @@ Every implementation point requires any necessary small, fast, focused checks, s
 ### Execution handoff — verification attempt 4
 
 - Commit point 12 and refresh staged durable knowledge before the supported native-host command python3 tools/maintainer/quality-roadmap --background. End the turn after launch and provide python3 tools/maintainer/quality-status. Do not apply RM-2026-010's proposed flags or reuse earlier passing gates. Release/closure remain pending a complete PASS.
+
+
+### Final verification attempt 4 — passed
+
+- All 42 selected owner quality checks passed on source commit 9f02ec7ab78b9316c18a0497fc236ae09b42d06b, branch roadmap/RM-2026-009-customer-agent-delivery-and-update-review. Elapsed 2183.928s (36m 24s); completed 2026-10-23 at 16:09:48 Europe/Warsaw. The only later pre-closure tree change is the separately committed RM-2026-011 draft; verified product source is unchanged.
+- Evidence archived at .runtime/verification/RM-2026-009-final/attempt-4-pass/quality, including coordinator state and every gate log. Backend: 418 tests, 2473 assertions. Static analysis, audits/secrets/image scans, exact changed-surface security review, owner/customer contracts, fresh Qdrant initialization/retrieval, knowledge doctor/evals and documentation gates pass.
+- Actual installation/update/team acceptance now completes through customer service/template reconciliation, ordinary teammate initialization and repeated exact-customer production deployment, preserving both owners' data/storage and private settings. Synthetic failures/resume, TLS/SMTP and production AI isolation remain covered. These disposable production simulations are not real production deployments.
+- Cleanup evidence in installation-host-acceptance, production-acceptance, repository-container-scan and host acceptance logs records scoped removal of test-created containers/networks/image tags/volumes. Active development identities were preserved, allowing documented natural queue-worker lifetime rollovers; development/test data, rollback resources, Qdrant/model/shared build caches, backups and reports remain protected.
+- Closure review: inspected README/AGENTS and both instruction products, public guides and owner release/roadmap metadata against the completed implementation; no new capability/procedure change follows PASS. Final edits are version/changelog/checklist/closure evidence, checked maintainer state and predecessor/status wording in planning-only successor drafts. Root VERSION and platform manifest become 0.4.1; application version is preserved. Focused docs/release checks and knowledge refresh precede commit, and repeat on main after merge.
+
+## Final report
+
+RM-2026-009 delivers fix release 0.4.1: separate verified customer instruction delivery, complete consent-bound delivered-file review/execution with resumable source recovery, safe private environment checks and synchronized public frontend/operator guidance. Inserted fixes covered consent renewal, public references/fixture baselines/security evidence and complete customer service/template reconciliation. All 42 final gates pass.
+
+No product dependency addition, database migration/reset, destructive data change or real production deployment occurred. Temporary acceptance resources were scoped-cleaned while active data, rollback material, caches, backups and reports were preserved. Existing owner-only PostgreSQL/gosu accepted-risk boundaries remain unchanged; the scan PASS is not blanket customer production risk acceptance. RM-2026-010 and RM-2026-011 are planning-only follow-ups, not activated work.
+
+Release metadata and closure are finalized on the roadmap branch. Merge-commit/main sanity, immutable v0.4.1 tag, push/publication and branch deletion follow the established release workflow; their actual results are reported in chat without modifying this closed record after merge.

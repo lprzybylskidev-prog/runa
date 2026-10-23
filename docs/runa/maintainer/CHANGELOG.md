@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.4.1] - 2026-10-23
+
+Fix release — RM-2026-009.
+
+- Deliver separate owner/customer agent instructions and verified customer skills through acquisition, reviewed updates and ordinary customer clones; exclude authoring templates from owner retrieval.
+- Review complete delivered-file differences and apply exact consent-bound add/replace/remove actions with durable recovery, preserving application source, dependency composition, private settings and local instruction extensions.
+- Enforce safe development environment-file ownership and credential consistency, including pre-generation symlink refusal; document environment creators, consumers and backup preservation.
+- Deliver missing public frontend contracts and complete fresh customer knowledge, real update/team/production propagation and security acceptance. All 42 final quality checks pass.
+
+No new dependency, product database migration/reset or real production deployment. Disposable acceptance containers, networks, image tags and volumes were scoped-cleaned; active development/test data, rollback material, Qdrant/model/build caches, backups and verification reports were preserved. Existing owner-only PostgreSQL/gosu risk applicability remains unchanged. Manual quality selection and the Core-module follow-up remain separate drafts.
+
 ## [0.4.0] - 2026-10-23
 
 Feature release — RM-2026-006.

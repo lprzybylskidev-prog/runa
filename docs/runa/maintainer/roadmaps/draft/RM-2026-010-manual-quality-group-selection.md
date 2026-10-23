@@ -34,9 +34,9 @@ build a source-diff classifier or automatic test-selection engine for that task.
 
 ### Order and release
 
-Execute after [RM-2026-009](../active/RM-2026-009-customer-agent-delivery-and-update-review.md)
-completes its current full verification, release, closure and merge. Its planned
-release is 0.4.1; this roadmap projects maintenance PATCH **0.4.2**, explicitly
+Execute after [RM-2026-009](../closed/RM-2026-009-customer-agent-delivery-and-update-review.md)
+completes its current full verification, release, closure and merge. Its released
+baseline is 0.4.1; this roadmap projects maintenance PATCH **0.4.2**, explicitly
 confirmed by the owner. Refresh the predecessor link and released baseline at
 activation without editing the predecessor once closed.
 

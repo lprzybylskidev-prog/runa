@@ -38,7 +38,7 @@ merged, following RM-2026-009. Expected predecessor: maintenance 0.4.2. The owne
 explicitly confirmed **feature 0.5.0** on 2026-10-23: increment MINOR and reset PATCH.
 Refresh the real baseline and predecessor links at activation. This document does
 not change VERSION, install a package, activate another roadmap or alter the
-running RM-2026-009 verification. Commit this draft separately on the active
+completed RM-2026-009 verification. Commit this draft separately on the active
 RM-2026-009 branch; activation remains a later explicit owner decision.
 
 ### Scope and non-goals
@@ -779,8 +779,8 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 ## Planning status and activation readiness
 
 Draft only; no modules, package/lock changes, runtime settings, migrations, tests or
-command flags are implemented by this planning commit. RM-2026-009 remains the
-active roadmap, and RM-2026-010 keeps its separate place before this feature.
+command flags are implemented by this planning commit. RM-2026-009 is closed at 0.4.1; RM-2026-010 keeps its separate place before
+this feature. Neither follow-up is activated by predecessor closure.
 
 Release metadata is owner-confirmed. The old deletion wording and missing
 transactional settings, preparation-time Audit and pre-controller auth seams are
