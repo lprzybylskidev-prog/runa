@@ -120,7 +120,7 @@ Do not store authentication tokens in `localStorage`.
 
 Cookies use appropriate `HttpOnly`, `Secure`, and `SameSite` behavior.
 
-The exact roles/permissions model is intentionally deferred to the future authorization system/module.
+The [Auth module](../modules/auth/README.md) supplies UUIDv7 identity/display and independent eligibility/lifecycle contracts. Consume guarded APIs without foreign models or tables; identifiers and lifecycle reasons never belong in anonymous authentication errors. Cookie/CSRF/Fortify transport and operational sessions follow in later implementation points. Roles/permissions integration remains assigned to the Permissions module; protected operations currently deny by default.
 
 ## CORS
 

@@ -343,6 +343,15 @@ class Updater(unittest.TestCase):
         self.assertIn('## Audit awareness', audit_guidance)
         (self.target / 'AGENTS.md').write_text(audit_guidance)
         (self.installed / 'AGENTS.md').write_text('customer extension')
+        for area in ('backend', 'laravel', 'postgresql', 'security'):
+            relative = Path('.agents/skills') / area / 'references/application.md'
+            for root in (self.original, self.target, self.installed):
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                (root / relative).write_text('baseline domain guidance')
+                self.git(root, 'add', str(relative))
+            guidance = (ROOT / 'docs/runa/maintainer/customer-agent/skills' / area / 'references/application.md').read_text()
+            (self.target / relative).write_text(guidance)
+            (self.installed / relative).write_text('customer domain extension')
         self.git(self.target, 'rm', '-f', 'obsolete.txt')
         (self.target / 'new-guide.md').write_text('target addition')
         self.git(self.target, 'add', 'new-guide.md')
@@ -356,6 +365,11 @@ class Updater(unittest.TestCase):
         self.assertEqual(rows['AGENTS.md']['action'], 'manual-reconciliation')
         self.assertEqual((self.installed / 'AGENTS.md').read_text(), 'customer extension')
         self.assertIn('explicit manual Audit events', (self.target / 'AGENTS.md').read_text())
+        for area in ('backend', 'laravel', 'postgresql', 'security'):
+            relative = '.agents/skills/' + area + '/references/application.md'
+            self.assertEqual(rows[relative]['action'], 'manual-reconciliation')
+            self.assertIn('docs/runa/handbook/modules/auth/README.md', (self.target / relative).read_text())
+            self.assertEqual((self.installed / relative).read_text(), 'customer domain extension')
         self.assertEqual(rows['obsolete.txt']['action'], 'remove')
         self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')
         self.assertNotIn('never report', json.dumps(result))

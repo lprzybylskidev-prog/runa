@@ -596,7 +596,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     manual relationship/bulk examples and stable bounded reads. Add mandatory Audit
     awareness now to root AGENTS and owner/customer backend/Laravel/PostgreSQL
     guidance, with public examples and delivery regression preparation.
-- [ ] 4. Deliver Auth identities and independent eligibility/lifecycle state.
+- [x] 4. Deliver Auth identities and independent eligibility/lifecycle state.
   - Requires 3. Add Core manifest requiring Audit, runa_auth schema, owned compatible
     Authenticatable model, naming/identifier/primary-email constraints and public
     UUIDv7 identity/display/eligibility lookup contracts.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–3 deliver framework foundations, manual/automatic Audit storage, transaction participation, suppression and authorized reads. Point 4 is next: Auth identities and independent eligibility/lifecycle state. Auth/Permissions and Fortify remain assigned to subsequent points.
+Active on the roadmap branch. Points 1–4 deliver framework foundations, manual/automatic Audit storage, transaction participation, suppression, authorized reads and Auth identity/eligibility/lifecycle foundations. Point 5 is next: Fortify, cookie/session/CSRF transport and registration/invitation flows. Operational sessions, remaining Auth flows and Permissions remain assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -924,3 +924,64 @@ architectural premise requires discussion before dependent work.
   matching test registry/update rows through scoped teardown. Existing development/
   test data outside those disposable fixtures, services, Qdrant/model caches, backups
   and verification reports remain preserved. No production migration was executed.
+
+## Point 4 delivery
+
+- Delivered Core `runa.auth` at independent initial version 0.1.0, requiring Audit
+  ^0.2.0 and framework API ^1.0.0. New AuthIdentities/AuthLifecycle guarded APIs
+  are 1.0.0. Audit and the framework retain their versions; no current Auth
+  dependents exist. Planned Permissions ^0.1.0 remains compatible. The explicit
+  transactional null -> 0.1.0 initialization creates no user/credential/authority;
+  matching versions are no-ops. No Fortify/package/configuration change in this point.
+- Owned ModuleSchema migration supplies runa_auth.users with bigint identity,
+  immutable external UUIDv7, UTC timestamps, soft deletion, complete exclusive naming
+  alternatives and normalized email/login claim constraints. The owned ModuleModel
+  implements native Authenticatable and uses public_id for authentication identity.
+  Default mass assignment is closed, model serialization reveals only public_id,
+  and direct model deletion/restore/force-delete are refused in favor of owning Actions.
+- Unique email/login claims reserve identifiers through deletion by default; explicit
+  configured reuse releases them on subsequent deletions. Policy changes do not
+  retrospectively reassign/reclaim ownership. A restored account reacquires both
+  claims atomically and stays inactive; conflicts retain the old deleted identity
+  and never transfer history. Identifier modes email/login/either use one normalized
+  lookup with unambiguous namespaces. Initial settings use existing audited publication;
+  complete policy history/impact preview remains point 10.
+- Current-time eligibility keeps approval, activation/scheduling, deletion, expiry,
+  administrative/attempt locks and verification/password restrictions independent.
+  Exact UTC deadlines apply without scheduler cadence or login-time caching.
+  Versioned lifecycle Actions follow registry/settings/advisory/Auth/participant lock
+  order, synchronous manual Audit and safe root-rollback refusal persistence. No-op
+  changes do not emit history. Missing trusted authority integration denies changes;
+  no is_admin, Permissions dependency, foreign model/SQL/FK or administrative HTTP/UI.
+- Deactivate/delete/restore/activate and administrative security locks advance the
+  persistent revocation generation and clear remember tokens. Rescheduling an already
+  effective deactivation or an inactive activation schedule cannot revive old tokens.
+  Actual operational session/trust rows, deadline enforcement and registration/auth
+  transport remain their owning subsequent points; no such runtime capability is
+  claimed merely from the generation contract.
+- Local knowledge was current (159 sources/2193 chunks); targeted retrieval and
+  original foundation sources were reviewed, together with Laravel 13 Boost native
+  authentication/soft-delete/transaction documentation. Six distinct focused
+  regressions passed for naming/normalization/DB constraints, exact-time independent
+  predicates, reservation/reuse/restore conflicts, caught Audit rollback/revocation,
+  default denial/authorized immutable projections and real reserved initialization/
+  no-op/runtime declarations. A fixture expected `completed` instead of the existing
+  `succeeded` settings result; the expectation was corrected. Source ownership and
+  independent module version checks passed. Competing-connection claim arbitration
+  and extended customer acquisition/update/clone scenarios are prepared for final
+  acceptance; broad suites/static analysis/builds/scanners remain point 19.
+- Public Auth/API/database/module guidance and obsolete deferred claims are
+  synchronized. Both backend/Laravel/PostgreSQL/security reference products link
+  the identity/lifecycle procedure. Delivery fixtures retain these rules through
+  acquisition/clone and preserve customer extensions during reviewed updates.
+  Root/customer AGENTS already require UUIDv7, guarded public APIs, default-denied
+  authorization and transactional Audit; no additional constitution/procedure copy
+  is needed. CLAUDE remains an AGENTS pointer. Frontend products are unaffected:
+  no UI or browser capability changed. Platform release metadata stays projected
+  feature 0.5.0; historical closed roadmaps and released changelog entries are untouched.
+- No Docker resources were created or removed and no production migration ran.
+  Guarded focused tests removed only their previously absent runa_auth.users/schema,
+  runa_audit.entities/events/schema and matching fixture registry/update rows, with
+  exact RESTRICT teardown. Audit fixtures now prepare real Auth storage rather than
+  fabricate Core readiness. Development/test data outside those fixtures, existing
+  services, Qdrant/model caches, backups and verification reports are preserved.

@@ -1,13 +1,13 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Fortify integration and user interfaces remain assigned to later roadmap points;
-Manual/automatic business auditing is available; authentication remains pending.
+RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Fortify integration and user interfaces remain assigned to later roadmap points;
+Manual/automatic business auditing and Auth identity/lifecycle foundations are available; authentication transport remains pending.
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.2.0` for capture/reads; the unimplemented modules retain their initial projection. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.2.0` for capture/reads; Auth now delivers its initial 0.1.0 identity/lifecycle foundation; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
@@ -185,3 +185,16 @@ Procedures remain in the public Audit guide. Audit is now 0.2.0 (compatible new
 capture/read behavior); planned Auth/Permissions consume ^0.2.0 rather than the
 initial ^0.1.0 Audit store constraint. Their own initial versions remain 0.1.0.
 Frontend skills/components are unaffected because this point adds no screens.
+
+## Auth identity delivery
+
+Point 4 delivers the [Auth identity contract](../../handbook/modules/auth/README.md):
+owned Authenticatable ModuleModel, exclusive naming, normalized email/login claims,
+independent current-time eligibility, optimistic audited lifecycle operations and
+monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0; initial
+Auth stays 0.1.0, requiring Audit ^0.2.0. Default administrative authority remains
+denied. No Permissions dependency, is_admin flag, foreign data access or user seed.
+Identifier-reuse settings govern subsequent deletions without reclaiming ownership;
+operational session/trust enforcement follows in its owning point. Root/customer
+AGENTS already require guarded module access, UUIDv7 and transactional history;
+both domain reference products link this guide rather than duplicate procedures.

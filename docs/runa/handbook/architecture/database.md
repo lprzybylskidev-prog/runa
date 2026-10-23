@@ -23,7 +23,7 @@ Shared/global technical or application tables use the `shared` schema.
 
 Laravel technical tables such as migrations, jobs, batches, failed jobs, and cache tables belong in `shared`.
 
-Password reset data belongs with authentication once that module exists.
+Auth owns runa_auth identity/lifecycle data; password-reset and operational-session storage follow with their owning Auth flows. Normalized email/login ownership uses nullable unique claims, retained on deletion by default. See the [Auth identity contract](../modules/auth/README.md) for explicit release/reuse, atomic restore conflicts and UUIDv7 history preservation; do not infer identifier ownership from validation alone.
 
 Models use schema-qualified `$table` values. Migrations create/use explicit schemas. Do not rely on a magical `search_path`.
 

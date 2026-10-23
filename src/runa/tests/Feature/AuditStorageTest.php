@@ -31,7 +31,16 @@ beforeEach(function (): void {
         throw new RuntimeException('Audit test fixture requires an absent disposable Audit schema.');
     }
     $this->auditFixtureCreated = false;
+    if (DB::selectOne("SELECT 1 FROM pg_namespace WHERE nspname = 'runa_auth'")) {
+        throw new RuntimeException('Audit fixture requires an absent disposable Auth schema.');
+    }
+    $this->authFixtureCreated = false;
     app(ModuleRegistry::class)->synchronize('runa');
+    // The newly supplied Core must be genuinely ready, not a fabricated installed flag.
+    $authMigration = require base_path('runa/modules/auth/database/migrations/2026_10_23_000001_runa_auth_identities.php');
+    $authMigration->up();
+    $this->authFixtureCreated = true;
+    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0']);
     $migration = require base_path('runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php');
     $migration->up();
     $this->auditFixtureCreated = true;
@@ -42,6 +51,13 @@ beforeEach(function (): void {
 afterEach(function (): void {
     while (DB::connection()->transactionLevel() > 0) {
         DB::connection()->rollBack();
+    }
+    if ($this->authFixtureCreated ?? false) {
+        DB::statement('DROP TABLE runa_auth.users RESTRICT');
+        DB::statement('DROP SCHEMA runa_auth RESTRICT');
+        $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
+        DB::table('shared.module_update_steps')->where('module_id', $authId)->delete();
+        DB::table('shared.modules')->where('module_id', 'runa.auth')->delete();
     }
     if ($this->auditFixtureCreated ?? false) {
         // Exact fixture-created tables only; no durable development/test data or global prune.

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "runa.auth",
+  "kind": "core",
+  "version": "0.1.0",
+  "platform": ">=0.4.2 <0.6.0",
+  "framework_api": "^1.0.0",
+  "name": {
+    "pl": "Uwierzytelnianie",
+    "en": "Authentication"
+  },
+  "description": {
+    "pl": "Tożsamości użytkowników i niezależny cykl życia kont.",
+    "en": "Human identities and independent account lifecycle."
+  },
+  "dependencies": {
+    "required": {
+      "runa.audit": "^0.2.0"
+    },
+    "optional": {}
+  },
+  "providers": [],
+  "declarations": {
+    "apis": [
+      "Runa\\Modules\\Auth\\Definitions\\IdentityApi",
+      "Runa\\Modules\\Auth\\Definitions\\LifecycleApi"
+    ],
+    "health": [],
+    "lifecycle": ["Runa\\Modules\\Auth\\Definitions\\IdentityLifecycle"],
+    "settings": ["Runa\\Modules\\Auth\\Definitions\\IdentitySettings"],
+    "integrations": [],
+    "http": [],
+    "commands": [],
+    "jobs": [],
+    "schedules": [],
+    "events": [],
+    "frontend": [],
+    "slots": [],
+    "management": [],
+    "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]
+  },
+  "docs": ["docs/runa/handbook/modules/auth/README.md"],
+  "tests": ["tests"]
+}
