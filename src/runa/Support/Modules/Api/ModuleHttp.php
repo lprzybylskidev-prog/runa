@@ -77,7 +77,8 @@ final readonly class ModuleHttp
             $this->router->addRoute($endpoint->method, $uri, ModuleHttpController::class.'@__invoke')
                 ->name($name)->middleware(['api', ModuleHttpGuard::class])
                 ->defaults('_runa_module', $record->id)->defaults('_runa_operation', $endpoint->operation->key)
-                ->defaults('_runa_controller', $endpoint->controller)->defaults('_runa_permission', $endpoint->operation->permission);
+                ->defaults('_runa_controller', $endpoint->controller)->defaults('_runa_permission', $endpoint->operation->permission)
+                ->defaults('_runa_access', $endpoint->access->value);
         }
     }
 

@@ -11,6 +11,8 @@ use Runa\Contracts\Modules\SettingDefinition;
 use Runa\Contracts\Modules\SettingsActor;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsObserver;
+use Runa\Contracts\Modules\SettingsParticipant;
+use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\Modules\ModuleRegistry;
@@ -32,6 +34,7 @@ final class ModuleSettings
         private readonly Connection $connection, private readonly ModuleRegistry $registry,
         private readonly SettingsDefinitions $definitions, private readonly Encrypter $encrypter,
         private readonly SettingsObserver $observer,
+        private readonly SettingsParticipant $participant = new NoSettingsParticipation,
     ) {}
 
     /** Safe management projection. Sensitive values expose set-state only, never ciphertext.
@@ -121,6 +124,8 @@ final class ModuleSettings
                     'status' => 'preparing', 'created_at' => now(), 'updated_at' => now(),
                 ]);
                 $this->write($module, $encrypted, $expectedRevision + 1);
+                $row = $this->operation($id);
+                $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $expectedRevision + 1, 'publish', $changes));
                 $this->bump(); // Publish candidate and durable fence together, preserving enabled state.
             });
             $row = $this->operation($id);
@@ -178,6 +183,8 @@ final class ModuleSettings
                 $state = $this->state($row->target);
                 if ($state->settings_values !== $payload['old']) {
                     $this->write($row->target, $payload['old'], $state->settings_revision + 1);
+                    $changes = array_map(static fn (array $change): array => isset($change['replaced']) ? $change : ['old' => $change['new'], 'new' => $change['old']], $payload['changes']);
+                    $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $state->settings_revision + 1, 'restore', $changes));
                 }
                 $this->save($row->public_id, 'compensating');
             });

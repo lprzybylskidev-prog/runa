@@ -2,6 +2,8 @@
 
 namespace Runa\Support\Modules\Management;
 
+use Runa\Contracts\Modules\ManagementEntity;
+use Runa\Contracts\Modules\ManagementEntityProvider;
 use Runa\Contracts\Modules\ManagementProvider;
 use Runa\Contracts\Modules\ModuleManagement as ManagementView;
 use Runa\Support\Modules\Api\ModuleDeclarations;
@@ -25,7 +27,7 @@ final readonly class ModuleManagement
         $status = $this->availability->statuses($module)[$module];
         $metadata = ['kind' => $record->kind, 'required' => $record->required, 'optional' => $record->optional];
         $settings = null;
-        $integrations = $permissions = $actions = $components = $diagnostics = [];
+        $integrations = $permissions = $actions = $components = $entities = $diagnostics = [];
         if ($record->registered && $record->sourcePresent) {
             try {
                 $manifest = $this->declarations->manifest($record);
@@ -34,6 +36,18 @@ final readonly class ModuleManagement
                     $provider = $this->declarations->make($record, $class, ManagementProvider::class);
                     if (! $provider instanceof ManagementProvider) {
                         throw new RuntimeException;
+                    }
+                    if ($provider instanceof ManagementEntityProvider) {
+                        $declared = $provider->entities();
+                        if (! array_is_list($declared) || count($declared) > 32) {
+                            throw new RuntimeException;
+                        }
+                        foreach ($declared as $entity) {
+                            if (! $entity instanceof ManagementEntity || isset($entities[$entity->key]) || count($entities) >= 32) {
+                                throw new RuntimeException;
+                            }
+                            $entities[$entity->key] = $entity;
+                        }
                     }
                     foreach ($provider->permissions() as $permission) {
                         if (isset($permissions[$permission->key])) {
@@ -59,13 +73,20 @@ final readonly class ModuleManagement
                         throw new RuntimeException;
                     }
                 }
+                foreach ($entities as $entity) {
+                    foreach ([$entity->permission, ...array_map(static fn ($operation): string => $operation->operation->permission ?? throw new RuntimeException('Management permission missing.'), $entity->operations)] as $permission) {
+                        if (! isset($permissions[$permission])) {
+                            throw new RuntimeException;
+                        }
+                    }
+                }
                 foreach ([...array_values($actions), ...array_values($components)] as $entry) {
                     if (! isset($permissions[$entry->permission])) {
                         throw new RuntimeException;
                     }
                 }
             } catch (Throwable) {
-                $permissions = $actions = $components = [];
+                $permissions = $actions = $components = $entities = [];
                 $diagnostics[] = 'management_declaration_unavailable';
             }
             try {
@@ -95,7 +116,8 @@ final readonly class ModuleManagement
         ksort($permissions);
         ksort($actions);
         ksort($components);
+        ksort($entities);
 
-        return new ManagementView($module, $snapshot->generation, $status, $metadata, $settings, $integrations, array_slice($work, 0, 100), count($work) > 100, $permissions, $actions, $components, $diagnostics);
+        return new ManagementView($module, $snapshot->generation, $status, $metadata, $settings, $integrations, array_slice($work, 0, 100), count($work) > 100, $permissions, $actions, $components, $diagnostics, $entities);
     }
 }

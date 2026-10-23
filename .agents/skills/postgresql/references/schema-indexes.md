@@ -42,3 +42,5 @@ For framework module data, use the [module boundary contract](../../../../docs/r
 38. `citext` is not the automatic solution to all case-insensitive fields.
 39. Collation/locale-sensitive sort/uniqueness semantics must be deliberate where business correctness depends on them.
 40. Full-text/trigram search is introduced only for a real need and after evaluating normal search.
+
+Durable dictionaries use code/name_pl/name_en/description_pl/description_en, projected deliberately from source pl/en descriptors through DictionaryEntry. Authority-affecting operations use the shared registry/advisory/Auth/Permissions lock order and exact Connection described in [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); no cross-module SQL/FK/model exception follows.

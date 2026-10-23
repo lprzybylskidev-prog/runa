@@ -4,6 +4,8 @@ namespace Runa\Support\Modules\Updates;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\Migrations\Migration;
+use Runa\Contracts\Modules\PreparationContext;
+use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Contracts\Modules\UpgradeHandler;
 use Runa\Support\Modules\Data\ModuleSchema;
@@ -14,7 +16,7 @@ use RuntimeException;
 /** Steps are database completion evidence belonging to the caller's existing operation journal. */
 final readonly class ModuleUpdates
 {
-    public function __construct(private Connection $connection, private ModuleRegistry $registry, private string $root, private string $platform, private bool $development = false) {}
+    public function __construct(private Connection $connection, private ModuleRegistry $registry, private string $root, private string $platform, private bool $development = false, private PreparationParticipant $participant = new NoPreparationParticipation) {}
 
     /** @return array<string, array{installed: ?string, version: string, registered: bool, required: array<string, string>}> */
     public function state(): array
@@ -76,15 +78,15 @@ final readonly class ModuleUpdates
         try {
             // Plan/preflight before publishing any registry or fence change.
             $plan = $this->plan($owner);
-            $fingerprint = hash('sha256', json_encode(array_map(fn (PlannedModule $module): array => [$module->source->manifest->id, $module->fingerprint], $plan), JSON_THROW_ON_ERROR));
-            $this->connection->transaction(function () use ($operation, $owner, $fingerprint): void {
+            $reservationFingerprint = hash('sha256', json_encode(array_map(fn (PlannedModule $module): array => [$module->source->manifest->id, $module->fingerprint], $plan), JSON_THROW_ON_ERROR));
+            $this->connection->transaction(function () use ($operation, $owner, $reservationFingerprint): void {
                 $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
                 $active = $this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_operation');
-                if (($active !== null && ($active !== $operation || $this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_owner') !== $owner || $this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_fingerprint') !== $fingerprint)) || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
+                if (($active !== null && ($active !== $operation || $this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_owner') !== $owner || $this->connection->table('shared.module_registry_state')->where('id', 1)->value('update_fingerprint') !== $reservationFingerprint)) || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
                     throw new RuntimeException('Reconcile the existing module operation before updating.');
                 }
                 $this->registry->synchronize($owner, $operation);
-                $this->connection->table('shared.module_registry_state')->where('id', 1)->update(['update_operation' => $operation, 'update_owner' => $owner, 'update_fingerprint' => $fingerprint]);
+                $this->connection->table('shared.module_registry_state')->where('id', 1)->update(['update_operation' => $operation, 'update_owner' => $owner, 'update_fingerprint' => $reservationFingerprint]);
                 $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
             });
             foreach ($plan as $module) {
@@ -105,7 +107,18 @@ final readonly class ModuleUpdates
                 foreach ($module->steps as $step) {
                     $key = ModuleStepHistory::key($step);
                     $fingerprint = ModuleStepHistory::fingerprint($this->root, $module, $step);
-                    $this->step($id, $key, $fingerprint, $operation, $step->transactional, $step->idempotent, $progress, function () use ($module, $step, $id, $operation): void {
+                    $this->step($id, $key, $fingerprint, $operation, $step->transactional, $step->idempotent, $progress, function () use ($module, $step, $id, $operation, $owner, $fingerprint, $key, $reservationFingerprint): void {
+                        if ($step->transactional) {
+                            $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+                            if ($state === null || $state->update_operation !== $operation || $state->update_owner !== $owner || $state->update_fingerprint !== $reservationFingerprint) {
+                                throw new RuntimeException('Preparation reservation changed.');
+                            }
+                            $record = $this->registry->snapshot()->modules[$id] ?? throw new RuntimeException('Preparation source missing.');
+                            if (! $record->registered || ! $record->sourcePresent || $record->manifestHash !== hash_file('sha256', $this->root.'/'.$module->source->path.'/module.json')) {
+                                throw new RuntimeException('Preparation source changed.');
+                            }
+                            $this->participant->preparing(new PreparationContext($this->connection, $owner, $operation, $id, $key, $fingerprint, $record->manifestHash, $reservationFingerprint));
+                        }
                         $handler = (new UpgradeDefinitions($this->root))->instance($module->source, $step->handler, UpgradeHandler::class);
                         $handler->run(new UpgradeContext($operation, $id, $step->from, $step->to, $step->key, $this->connection, new ModuleSchema($this->connection, new ModuleIdentity($id))));
                     });

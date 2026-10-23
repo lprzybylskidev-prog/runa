@@ -34,3 +34,5 @@ Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle
 ## Module generators
 
 Use `runa:make:module owner.code [type] [name]` for module-local generation, following docs/runa/handbook/development/modules.md. Native `make:*` retains ordinary application paths. Generated controllers use owned HttpProvider declarations and named centrally guarded routes; public APIs use GuardedApi proxies. Run reusable ModuleContractSuite source checks, module tests and synchronized runtime checks; generator success is not implementation acceptance.
+
+HttpEndpoint may declare Public/Authenticated/Restricted access. The shared pre-controller HttpAccountPolicy resolves current identity without recursive protected API calls; PrincipalScope unwinds at the server root. Keep session/CSRF wiring explicit. Use SettingsParticipant for required in-transaction persistence. See [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); these interfaces alone do not supply authentication.

@@ -559,7 +559,7 @@ handbook/owner/customer guidance in the same commit. Listed tests are preparatio
 and acceptance criteria for final verification unless a necessary focused check
 resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
-- [ ] 1. Establish shared contracts, transaction and bootstrap foundations.
+- [x] 1. Establish shared contracts, transaction and bootstrap foundations.
   - Requires explicit activation after RM-010 release/closure/merge. Refresh source,
     knowledge, dependency versions, public API constraints and the actual RM-010
     selection interface. Record the owner-confirmed feature version against baseline.
@@ -783,3 +783,47 @@ Active on the roadmap branch. Point 1 establishes additive framework foundations
 domain modules and Fortify installation remain assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
+
+## Point 1 delivery
+
+- Architecture: [core foundations](../../architecture/core-module-foundations.md)
+  records independent 0.1.0 manifests, framework API 1.0.0 compatibility,
+  dependency/connection/schema ownership, Audit modes/refusal boundaries, explicit
+  transactional initialization/no-op/resume edges, bootstrap order and shared
+  registry/advisory/Auth/Permissions lock protocol. No production Core skeletons.
+- Additive framework code: transactional settings publication/restoration participant,
+  reserved transactional update participant, pre-controller account policy/access
+  declarations, scoped trusted principals with recursion refusal, ordinary API
+  account middleware, default-denied authority guard and shared transaction lock.
+  Missing integration after Audit installation refuses publication/preparation.
+- Management: optional version-1 bounded entity/field/operation metadata and safe
+  projection; explicit five-column DictionaryEntry projection preserves source
+  localization. No renderer, administrative routes or screens.
+- [Fortify evaluation](../../architecture/fortify-dependency-review.md) reviews
+  compatibility, current releases, advisory history and five-package candidate
+  footprint. Candidate exact 1.36.2 avoids the newer mandatory passkeys tree;
+  point 5 must refresh the review and lock the actual solver result. No package,
+  lockfile, migration, image or runtime service change in this point.
+- Knowledge status was current at activation (154 sources/2147 chunks); relevant
+  local retrieval and original sources were reviewed, including Laravel 13 Boost
+  documentation. RM-010 selection is repeated --group=NAME or --all; preview via
+  quality-plan and final background execution/status remain assigned to point 19.
+  No final quality scope/evidence is claimed here.
+- Focused diagnostics resolved transaction rollback/restoration/retry, reserved
+  preparation atomicity/resume, principal cleanup/recursion, pre-controller policy,
+  authenticated-null/cache-access refusal and bounded dictionary/entity validation.
+  Eight distinct focused regressions passed; the first settings rollback assertion
+  incorrectly compared DTO object identity and was corrected to structural equality.
+  Additional entity projection and two-connection authority-lock regressions are
+  prepared for final acceptance. Broad suites/static analysis/builds/scanners remain
+  deferred to point 19; commit hooks remain mandatory.
+- Public module/API guidance and owner/customer backend, Laravel, PostgreSQL and
+  security references are synchronized. The deferred deletion claim now assigns
+  physical deletion/anonymization to future data management. Root/customer AGENTS
+  need no duplicate foundation procedure; their existing rules apply. Mandatory
+  manual Audit guidance follows actual capture in point 3. Frontend references
+  remain unaffected because no frontend capability changed.
+- No task-created Docker resources to remove. Existing development/test data,
+  services, Qdrant/model caches, backups and verification reports are preserved.
+  Tests use the supported guarded maintainer runner and disposable source/schema
+  fixtures with its existing scoped teardown.

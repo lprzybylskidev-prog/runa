@@ -1,5 +1,13 @@
 # Module framework contracts
 
+## Shared transaction and identity foundations
+
+The [foundation contracts](module-foundations.md) define transactional settings
+participation, reserved installation Audit participation, pre-controller account
+policy/trusted principal scopes, neutral authority guards and bounded management
+entity metadata. These are additive adapters; actual Audit/Auth/Permissions stores
+and authentication transport remain pending their owning implementation points.
+
 ## Delivery status and scope
 
 The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading, graph-only lifecycle previews, durable atomic administrative transitions, module-owned health observations, effective availability, independent maintenance reasons, PostgreSQL/storage boundaries, availability-aware typed PHP/HTTP adapters, managed database-queue work, classified Artisan/schedule adapters, independent public events, optional integration toggles and typed encrypted settings with controlled reinitialization, versioned trusted management projections and opt-in frontend pages/named slots are delivered. Owner-scoped install/update orchestration, nonmutating target plans and tracked upgrade chains, development generators, independent module version checks and a reusable contract suite are delivered. Managed operations use the declared PHP/HTTP/job/command/schedule/event boundaries; other module entrypoints remain unsupported. Ordinary application PHP/Vue and independent frontends remain supported.

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Runa\Foundation\Application;
 use Runa\Http\Middleware\AssignRequestId;
+use Runa\Http\Middleware\EnforceAccountPolicy;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\ModuleHttpGuard;
@@ -26,6 +27,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->preventRequestsDuringMaintenance(except: ['api/health', 'api/ready']);
         $middleware->prependToPriorityList(SubstituteBindings::class, ModuleHttpGuard::class);
+        $middleware->prependToPriorityList(SubstituteBindings::class, EnforceAccountPolicy::class);
+        $middleware->api(append: [EnforceAccountPolicy::class]);
         $middleware->append(AssignRequestId::class);
         $middleware->append(EnforceEffectiveMaintenance::class);
     })

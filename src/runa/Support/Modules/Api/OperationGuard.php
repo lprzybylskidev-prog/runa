@@ -2,11 +2,13 @@
 
 namespace Runa\Support\Modules\Api;
 
+use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
+use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Support\Logging\LogContext;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\ModuleAvailability;
@@ -17,7 +19,8 @@ final readonly class OperationGuard
 {
     public function __construct(private ModuleRegistry $registry, private ModuleAvailability $availability, private MaintenanceState $maintenance, private OperationAuthorizer $authorizer, private Application $app, private OperationScope $scope) {}
 
-    public function enter(string $module, ApiOperation $operation): OperationContext
+    /** @param (Closure(): ?TrustedPrincipal)|null $beforeAuthorization Trusted HTTP adapter only. */
+    public function enter(string $module, ApiOperation $operation, ?Closure $beforeAuthorization = null): OperationContext
     {
         try {
             if ($this->maintenance->active()) {
@@ -32,7 +35,9 @@ final readonly class OperationGuard
             $candidate = $this->app->make(LogContext::class)->current()['correlation_id'] ?? null;
             $correlation = is_string($candidate) && preg_match('/\A[a-zA-Z0-9_-]{1,64}\z/D', $candidate) === 1 ? $candidate : $id;
             $context = new OperationContext($module, $operation->key, $id, $parent !== null ? $parent->correlationId : $correlation, $status->generation, $parent?->moduleId);
-            if ($operation->permission !== null && ! $this->authorizer->allows($context, $operation->permission)) {
+            $principalScope = $this->app->make(PrincipalScope::class);
+            $principal = $beforeAuthorization === null ? $principalScope->current() : $principalScope->resolve($beforeAuthorization);
+            if ($operation->permission !== null && ! $principalScope->run($principal, fn (): bool => $principalScope->resolve(fn (): bool => $this->authorizer->allows($context, $operation->permission)))) {
                 throw new OperationRejected('module_forbidden', $module, $operation->key, 403);
             }
             $this->assertCurrent($context);

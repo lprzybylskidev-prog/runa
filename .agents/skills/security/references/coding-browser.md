@@ -37,3 +37,5 @@
 35. Rate limiting supplements rather than replaces auth/authz/validation/idempotency.
 36. Brute-force controls may need multiple dimensions rather than one naive global counter.
 37. Do not permanently lock accounts using a simple attacker-triggerable failed-login counter.
+
+Module account policy runs before controller/FormRequest resolution; Public/Authenticated/Restricted metadata never substitutes for current eligibility, permission or step-up checks. Never derive TrustedPrincipal from request fields or call a protected identity API recursively. Preparation contexts are trusted update-local capabilities, never request bypass flags. See [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md).

@@ -1,14 +1,18 @@
 <?php
 
 use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\HttpAccess;
+use Runa\Contracts\Modules\HttpAccountPolicy;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\Preparation;
+use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Support\MaintenanceState;
 use Runa\Support\Modules\Api\DenyProtectedOperations;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -17,6 +21,7 @@ use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\OperationScope;
+use Runa\Support\Modules\Api\PrincipalScope;
 use Runa\Support\Modules\Data\PublicReferenceRule;
 use Runa\Support\Modules\HealthDeadline;
 use Runa\Support\Modules\HealthPolicies;
@@ -363,4 +368,67 @@ it('attributes HTTP controller construction and invocation to the guarded module
             ->and($record->extra['correlation_id'])->toBe('module-http-123');
     }
     expect($this->scope->current())->toBeNull();
+});
+
+it('resolves account policy before permission validation and unwinds the principal after HTTP', function (): void {
+    $principal = new TrustedPrincipal((string) Str::uuid7());
+    $policy = new class($principal) implements HttpAccountPolicy
+    {
+        public bool $deny = true;
+
+        public function __construct(private TrustedPrincipal $principal) {}
+
+        public function principal(Request $request, ?string $module, string $operation, HttpAccess $access): ?TrustedPrincipal
+        {
+            if ($this->deny) {
+                throw new OperationRejected('account_restricted', $module, $operation, 403);
+            }
+
+            return $this->principal;
+        }
+    };
+    app()->instance(HttpAccountPolicy::class, $policy);
+    $authorizer = new class($principal) implements OperationAuthorizer
+    {
+        public function __construct(private TrustedPrincipal $principal) {}
+
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            expect(app(PrincipalScope::class)->current())->toBe($this->principal);
+
+            return true;
+        }
+    };
+    app()->instance(OperationGuard::class, new OperationGuard($this->registry, $this->availability, $this->maintenance, $authorizer, app(), $this->scope));
+    $this->http->register();
+    $this->postJson($this->url.'?filter=rejected')->assertForbidden()->assertJsonPath('error.code', 'account_restricted');
+    expect(ApiCalls::$constructed)->toBe(0);
+    $policy->deny = false;
+    $this->postJson($this->url.'?filter=rejected')->assertUnprocessable();
+    expect(app(PrincipalScope::class)->current())->toBeNull();
+    $this->postJson($this->url)->assertOk();
+    expect(app(PrincipalScope::class)->current())->toBeNull();
+});
+
+it('rejects null principals on authenticated descriptors and stale cached access declarations', function (): void {
+    $source = $this->directory.'/backend/Definitions/Routes.php';
+    file_put_contents($source, str_replace('ReadEntry::class)', 'ReadEntry::class, \\Runa\\Contracts\\Modules\\HttpAccess::Authenticated)', file_get_contents($source)));
+    // Even an incorrectly permissive trusted provider cannot turn authenticated into anonymous.
+    app()->instance(HttpAccountPolicy::class, new class implements HttpAccountPolicy
+    {
+        public function principal(Request $request, ?string $module, string $operation, HttpAccess $access): ?TrustedPrincipal
+        {
+            return null;
+        }
+    });
+    $this->http->register();
+    $this->getJson($this->url.'?filter=rejected')->assertUnauthorized()->assertJsonPath('error.code', 'authentication_required');
+    expect(ApiCalls::$constructed)->toBe(0);
+    foreach (app('router')->getRoutes()->getRoutes() as $route) {
+        if (($route->defaults['_runa_module'] ?? null) === $this->id) {
+            $route->defaults('_runa_access', 'public');
+        }
+    }
+    $this->getJson($this->url)->assertStatus(503)->assertJsonPath('error.code', 'http_contract_changed');
+    expect(ApiCalls::$constructed)->toBe(0);
 });

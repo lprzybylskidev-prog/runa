@@ -185,3 +185,30 @@ it('requires a renderer contract separately from a custom backend setting type',
     app(ManagementRenderers::class)->register('setting', 'custom', 1);
     expect($this->management->read($this->id)->diagnostics)->toBe([]);
 });
+
+it('projects bounded entity extensions and refuses undeclared entity permissions', function (): void {
+    $source = $this->sources->root.'/app/modules/'.$this->code.'/backend/Definitions/Descriptor.php';
+    $contents = str_replace('implements ManagementProvider,', 'implements \\Runa\\Contracts\\Modules\\ManagementEntityProvider,', file_get_contents($source));
+    $method = <<<'METHOD'
+    public static string $entityPermission = 'probe.inspect';
+
+    public function entities(): array
+    {
+        return [new \Runa\Contracts\Modules\ManagementEntity(
+            'entry', self::$entityPermission, ['pl' => 'Wpis', 'en' => 'Entry'], ['pl' => 'Opis', 'en' => 'Description'],
+            [new \Runa\Contracts\Modules\ManagementField('name', 'text', ['pl' => 'Nazwa', 'en' => 'Name'], ['pl' => 'Opis', 'en' => 'Description'])],
+            [new \Runa\Contracts\Modules\ManagementOperation(new \Runa\Contracts\Modules\ApiOperation('inspect', 'probe.inspect'), stepUp: 'both', previewRequired: true)],
+        )];
+    }
+METHOD;
+    $position = strrpos($contents, '}');
+    file_put_contents($source, substr($contents, 0, $position).$method."\n}");
+    $view = $this->management->read($this->id);
+    expect($view->entities['entry']->schemaVersion)->toBe(1);
+    expect($view->entities['entry']->operations[0]->previewRequired)->toBeTrue();
+    expect($view->diagnostics)->toBe([]);
+    $descriptor = $this->descriptor;
+    $descriptor::$entityPermission = 'undeclared.read';
+    $refused = $this->management->read($this->id);
+    expect($refused->entities)->toBe([])->and($refused->diagnostics)->toContain('management_declaration_unavailable');
+});

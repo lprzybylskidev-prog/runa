@@ -2,10 +2,13 @@
 
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Validation\Factory;
+use Illuminate\Database\Connection;
 use Illuminate\Encryption\Encrypter as LaravelEncrypter;
 use Illuminate\Support\Facades\DB;
 use Runa\Contracts\Modules\SettingDefinition;
 use Runa\Contracts\Modules\SettingsActor;
+use Runa\Contracts\Modules\SettingsParticipant;
+use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\SettingType;
 use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\ModuleAutoloader;
@@ -230,4 +233,57 @@ it('leaves values and flags unchanged when encryption fails before reserving a s
     expect(fn () => $service->update($this->module, ['token' => 'test-private-value'], $view['revision'], $view['generation']))->toThrow(RuntimeException::class, 'Settings encryption unavailable.');
     expect($this->settings->read($this->module))->toEqual($view)->and($this->registry->snapshot()->fenced)->toBe([]);
     expect(DB::table('shared.module_transitions')->where('target', $this->module)->exists())->toBeFalse();
+});
+
+it('atomically rolls back a settings publication when mandatory participation fails', function (): void {
+    $participant = new class implements SettingsParticipant
+    {
+        public function publishing(Connection $connection, SettingsPublication $publication): void
+        {
+            expect($connection)->toBe(DB::connection());
+            expect($connection->transactionLevel())->toBeGreaterThan(0);
+            expect($publication->phase)->toBe('publish')->and($publication->revision)->toBe(1);
+            expect($publication->changes['token'])->toBe(['replaced' => true]);
+            throw new RuntimeException('Required persistence failed.');
+        }
+    };
+    $this->settings = new ModuleSettings(DB::connection(), $this->registry, $this->definitions, app(Encrypter::class), new SettingsCalls, $participant);
+    $before = $this->settings->read($this->module);
+    expect(fn () => ($this->update)(['label' => 'candidate', 'token' => 'private-fixture-value']))->toThrow(RuntimeException::class, 'Required persistence failed.');
+    expect($this->settings->read($this->module))->toEqual($before);
+    expect(DB::table('shared.module_transitions')->where('target', $this->module)->count())->toBe(0);
+    expect(SettingsCalls::$changes)->toBe([])->and(SettingsCalls::$contexts)->toBe([]);
+});
+
+it('fences failed transactional restoration and retries participation without losing history', function (): void {
+    $participant = new class implements SettingsParticipant
+    {
+        public bool $fail = true;
+
+        public array $publications = [];
+
+        public function publishing(Connection $connection, SettingsPublication $publication): void
+        {
+            expect($connection->transactionLevel())->toBeGreaterThan(0);
+            $this->publications[] = $publication;
+            if ($publication->phase === 'restore' && $this->fail) {
+                throw new RuntimeException('Required restore history failed.');
+            }
+        }
+    };
+    $this->settings = new ModuleSettings(DB::connection(), $this->registry, $this->definitions, app(Encrypter::class), new SettingsCalls, $participant);
+    SettingsCalls::$apply = fn () => false;
+    $result = ($this->update)(['label' => 'candidate']);
+    expect($result->status)->toBe('recovery_required');
+    expect($this->settings->value($this->module, 'label'))->toBe('candidate');
+    expect($this->settings->read($this->module)['revision'])->toBe(1);
+    expect($this->registry->snapshot()->fenced)->toBe([$this->module]);
+    $participant->fail = false;
+    expect($this->settings->recover($result->operationId)->status)->toBe('failed');
+    expect($this->settings->value($this->module, 'label'))->toBe('initial');
+    $restore = $participant->publications[2];
+    expect($restore->revision)->toBe(2)->and($restore->changes['label'])->toBe(['old' => 'candidate', 'new' => 'initial']);
+    $count = count($participant->publications);
+    $this->settings->recover($result->operationId);
+    expect($participant->publications)->toHaveCount($count);
 });
