@@ -229,6 +229,25 @@ class Execution(UpdaterFixture):
         self.assertEqual(self.apply(resume=True)['status'], 'completed')
         self.assertEqual((self.installed / 'README.md').read_text(), 'target')
 
+    def test_customer_reconciles_service_after_approved_replacement_before_publication(self):
+        import runpy
+        extra = {'image': 'customer-redis', 'command': ['redis-server', '--save', '']}
+        value = json.loads((self.installed / 'compose.yaml').read_text())
+        value['services']['redis'] = extra
+        (self.installed / 'compose.yaml').write_text(json.dumps(value))
+        result = self.apply()
+        self.assertEqual(result['status'], 'completed', result)
+        target = json.loads((self.target / 'compose.yaml').read_text())
+        self.assertEqual(json.loads((self.installed / 'compose.yaml').read_text()), target)
+        self.assertIn('redis', result['infrastructure_follow_up']['services'])
+        reconcile = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['reconcile_fixture_services']
+        reconcile(self.installed, {'redis': extra})
+        published = json.loads((self.installed / 'compose.yaml').read_text())
+        self.assertEqual(published['services']['redis'], extra)
+        self.assertEqual({k: v for k, v in published['services'].items() if k != 'redis'}, target['services'])
+        with self.assertRaisesRegex(RuntimeError, 'existing release service'):
+            reconcile(self.installed, {'app': extra})
+
     def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(self):
         self.engine.fail = 'build'; self.apply()
         original = self.installed / 'src/runa/Support/example.php'

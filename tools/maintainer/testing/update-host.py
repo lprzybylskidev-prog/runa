@@ -22,6 +22,16 @@ def release_tags(installed_version):
     return 'v' + installed_version, f'v{major}.{minor}.{patch + 1}'
 
 
+def reconcile_fixture_services(root, services):
+    """Explicit customer action after the updater applies its approved target."""
+    path = root / 'compose.yaml'
+    value = json.loads(path.read_text())
+    if set(services) & value['services'].keys():
+        raise RuntimeError('Fixture reconciliation refuses to replace an existing release service.')
+    value['services'].update(services)
+    path.write_text(json.dumps(value, indent=2) + '\n')
+
+
 def exercise(prod, fixture, project, check, report, call, output, commit):
     mode = json.loads((prod / '.git/runa-bootstrap.json').read_text())['mode']
     installed_version = json.loads((prod / 'src/runa/platform.json').read_text())['version']
@@ -156,4 +166,10 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         check(all(after[name] == content for name, content in preserved.items() if not name.endswith(('/src/runa/platform.json', '/VERSION'))), 'customer identity, dependency locks, settings survive reviewed update and recovery')
         check(not (prod / '.runtime/production/in-progress.json').exists() and not list((prod / '.runtime/production/update-staging').iterdir()), 'successful resume archives journal and removes only its verified temporary platform source')
         app_pending.unlink()
+        # The updater applied the reviewed release, including removal of the local
+        # descriptor. The customer now explicitly reconciles its extra service
+        # before the complete customer commit is published/deployed by Team.
+        reconcile_fixture_services(prod, {'redis': configuration['services']['redis']})
+        check(json.loads(definitions.read_text())['services']['redis'] == configuration['services']['redis'],
+              'customer explicitly reconciles its additional Redis descriptor before team publication and production deployment')
     report.setdefault('update_preflight', {})[mode] = {'result': result['status'], 'target': result['target_release']['commit']}
