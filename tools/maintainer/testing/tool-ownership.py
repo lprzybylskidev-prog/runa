@@ -41,13 +41,24 @@ class ToolOwnership(unittest.TestCase):
         self.assertEqual(calls[0].args[0], ['php', str(ROOT / 'distribution/platform-database.php'), 'db:seed', '--class=' + seeder])
 
     def test_owner_entrypoints_reject_foreign_actions_before_running_anything(self):
-        for name in ('check-repository', 'quality-plan', 'quality-status', 'quality-roadmap'):
+        for name in ('check-repository', 'quality-plan', 'quality-status', 'quality-roadmap', 'quality-final'):
             with self.subTest(name=name):
                 code, calls = self.invoke(name, ['release'])
                 self.assertIsInstance(code, str)
                 self.assertEqual(calls, [])
         for retired in ('doctor', 'quality', 'test'):
             self.assertFalse((ROOT / 'tools/maintainer' / retired).exists())
+
+    def test_owner_quality_rejects_invalid_options_before_reconfiguring_the_shared_runner(self):
+        original_plan = quality.plan
+        cases = [('quality-plan', ['--background']), ('quality-status', ['--group=docs']),
+                 ('quality-final', ['--all', '--group=docs']), ('quality-roadmap', ['--group='])]
+        for name, arguments in cases:
+            with self.subTest(name=name, arguments=arguments):
+                code, calls = self.invoke(name, arguments)
+                self.assertIsInstance(code, str)
+                self.assertEqual(calls, [])
+                self.assertIs(quality.plan, original_plan)
 
     def test_owner_test_runners_select_private_configurations(self):
         import owner_tests

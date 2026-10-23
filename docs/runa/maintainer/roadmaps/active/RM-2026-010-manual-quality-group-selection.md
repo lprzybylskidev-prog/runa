@@ -70,6 +70,12 @@ resource ownership, cleanup, lock and production-isolation contracts stay in for
 
 ### Decisions
 
+- 2026-10-23 — After the first final run (50 passed, 2 failed, 3 blocked), owner
+  authorizes fixing the two failures but explicitly forbids another full run.
+  Perform focused checks only and preserve the failed full-run evidence. This does
+  not turn the prior failure into PASS or authorize release/closure/merge. The final
+  point remains open; the existing full-rerun policy is not changed globally.
+
 - 2026-10-23 — Owner accepts the complete point-1 contract and authorizes
   implementation, including selection-scoped security/AI policy and --all final
   verification for RM-010.
@@ -302,8 +308,14 @@ final verification point, after implementation is complete.
     agreed baseline/final matrix, closure evidence and compatibility transition.
     Update both instruction products, help, workflows and examples in the same point.
     Prepare integration scenarios without early broad acceptance.
-- [ ] 4. Full verification, release finalization, merge and final report.
-  - Requires 1–3 implemented and committed. Review current-state docs and both
+- [x] 4. Fix final-gate owner argument validation and predecessor link.
+  - Restore owner entrypoint argument rejection before configuring the shared
+    coordinator; preserve textual SystemExit diagnostics and zero subprocess calls.
+    Cover malformed selection options and quality-final with focused regressions.
+    Correct RM-011's predecessor link after RM-010 activation. Run only focused
+    ownership-contract and documentation checks, as explicitly directed by owner.
+- [ ] 5. Full verification, release finalization, merge and final report.
+  - Requires 1–4 implemented and committed. Review current-state docs and both
     instruction products. Run all applicable selection/coordinator/transport/
     owner/customer acceptance, security and isolation checks through the supported
     final workflow; do not validate this implementation solely with a narrow group
@@ -383,3 +395,33 @@ delivered sources. Availability claims now match supported flags and catalogues.
 
 The final point remains open. Runtime PASS, release 0.4.2, merge/tag/publication and
 post-acceptance resource cleanup are pending the supported final background gate.
+
+## Fix point 4 — first final verification findings
+
+Full --all run on 4f30ddb finished after 2094 seconds: 50 passed, 2 failed and 3
+blocked. Evidence remains in .runtime/quality; do not overwrite or edit its state.
+Owner tool-ownership contracts rejected the numeric exit result introduced by
+shared validation instead of the original textual SystemExit diagnostic. Move
+syntactic argument validation before owner runner configuration; invalid invocations
+must not change quality.plan or launch a subprocess. RM-011's predecessor link
+still targeted draft/RM-010 after activation; point it to the current active source.
+
+Scope is owner-only wrapper compatibility and owner roadmap navigation. Root owner
+rules/skills and the customer instruction product need no changes: supported flags,
+selection/security policy and customer command behavior are unchanged. No Docker
+resources, databases, runtime configuration or dependencies are changed by this fix.
+Observed focused results:
+
+- python3 tools/maintainer/testing/tool-ownership.py — all 6 tests passed, including
+  the additional malformed-option/no-runner-mutation regression.
+- python3 tools/maintainer/check-docs — public/owner links, placement, command and
+  current-state checks passed.
+- python3 tools/maintainer/quality-plan --group=docs — supported preview resolved;
+  SHA256 of .runtime/quality/state.json remained unchanged. Preview is retained at
+  .runtime/RM-2026-010-fix-docs-plan.txt.
+
+Knowledge was current at point start; a concurrent search reported staleness after
+these source edits. Original sources governed the fix; refresh staged sources
+incrementally before the required commit hooks.
+Full verification, version/tag/release and merge remain pending; no broad rerun is
+authorized by this fix task.

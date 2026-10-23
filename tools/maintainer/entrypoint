@@ -26,6 +26,10 @@ if name in CHECKS:
 elif name in QUALITY:
     import runpy
     import quality
+    try:
+        quality.arguments([QUALITY[name], *arguments])
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     quality.RUN_DIRECTORY = ROOT / '.runtime/quality'
     quality.COMMAND_PREFIX = 'python3 tools/maintainer/quality-'
     original_plan = quality.plan
