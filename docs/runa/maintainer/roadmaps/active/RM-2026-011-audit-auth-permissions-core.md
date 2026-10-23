@@ -586,7 +586,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     rollback does not retain success; independent refusal survives; no raw secrets/
     unsafe payloads or Auth dependency. Document public contracts, transaction
     preconditions and unavailable-Audit handling in the Audit handbook guide.
-- [ ] 3. Deliver automatic capture, suppression and authorized Audit reads.
+- [x] 3. Deliver automatic capture, suppression and authorized Audit reads.
   - Requires 2. Implement Auditable event configuration, changed-fields/snapshot
     capture and safe transactional mutation preconditions; local scoped suppression
     helper preserves explicit events and unwinds across errors/reused workers.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–2 deliver additive framework foundations and manual Audit storage/transaction participation. Point 3 is next: automatic capture, suppression and authorized reads. Auth/Permissions and Fortify remain assigned to subsequent points.
+Active on the roadmap branch. Points 1–3 deliver framework foundations, manual/automatic Audit storage, transaction participation, suppression and authorized reads. Point 4 is next: Auth identities and independent eligibility/lifecycle state. Auth/Permissions and Fortify remain assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -872,3 +872,55 @@ architectural premise requires discussion before dependent work.
   tables/schema and registry/update-step rows were removed by scoped teardown in
   the guarded test database. Existing development/test data outside that fixture,
   running services, Qdrant/model caches, backups and verification reports remain.
+
+## Point 3 delivery
+
+- Core Audit advances independently to 0.2.0 for compatible capture/read behavior.
+  Manual API 1.0.0 and framework API 1.0.0 remain unchanged; new AuditReads is
+  version 1.0.0. No current required dependents exist. Planned Auth/Permissions
+  now require Audit ^0.2.0; their initial module versions remain 0.1.0. The explicit
+  0.1.0 -> 0.2.0 forward edge adds action/outcome append-order indexes without
+  rewriting history; fresh installation traverses initialization and this edge.
+- Public opt-in Auditable and source-owned AuditModelPolicy implement explicit
+  field/event allowlists, diff/snapshot, nested JSON redaction, create/update/soft
+  delete/restore/physical delete distinctions and quiet single-model capture.
+  An existing exact default PostgreSQL transaction and availability are required
+  before mutation, even when suppressed/disabled. Each model mutation plus Audit
+  uses one savepoint; a caught Audit failure cannot retain the business write.
+  Persisted locked before state avoids stale-original history. No-op changes are
+  omitted; insert-or-ignore and model atomic counters require manual orchestration.
+- Scoped local AuditSuppression unwinds nested callbacks on errors and never
+  suppresses explicit records. It is not a callback-bearing gateway API. Public
+  examples require manual aggregate/relationship/bulk events in the same owning
+  transaction; no SQL interception or claim of universal Eloquent event capture.
+- Separate AuditReads operations all require trusted runa.audit.read authority,
+  denied by the supplied default authorizer until Permissions integration. Immutable
+  summaries/detail and metadata support bounded filters, inclusive UTC ranges,
+  stable append-order UUIDv7 cursors, batched related entities, at most 100 summaries
+  and 512 KiB per page. Large payloads appear only in single-record detail. No
+  edit/delete/retention operation, HTTP management endpoint or Audit UI was added.
+- Local knowledge was current (159 sources/2182 chunks); relevant retrieval,
+  original foundation sources and Laravel 13 Boost Eloquent/transaction guidance
+  were reviewed. Six distinct focused regressions passed, resolving unsafe/caught
+  failure/savepoint rollback, lifecycle/snapshot behavior, suppression cleanup and
+  explicit records, default denial/filtered bounded reads/large detail, persisted
+  before-state/unavailable suppression and fresh initializer/runtime declarations.
+  The first test fixture loaded its module trait before registry initialization;
+  moving it to the lazy owner fixture autoloader fixed discovery. The authorization
+  fixture also needed fresh singleton gateways after replacing the test authorizer.
+  Source ownership and independent module version checks passed. Full lifecycle
+  mode/event combinations and delivery/update/clone regressions are prepared for
+  final acceptance; broad suites/static analysis/builds/scanners remain point 19.
+- Public Audit/module/foundation guidance and deferred capability claims are
+  synchronized. Root owner/customer AGENTS and both backend/Laravel/PostgreSQL/
+  security products require meaningful Audit history and manual bulk/relationship
+  events, referencing one public procedure. Acquisition/teammate-clone and reviewed
+  update fixtures assert Audit guidance survives while local extensions are kept.
+  CLAUDE already routes to AGENTS; frontend products need no change because no UI
+  or frontend contract changed. Historical closed roadmaps/changelog evidence stays
+  unchanged. Mandatory hooks and incremental knowledge freshness apply at commit.
+- No Docker resources were created or removed. Guarded tests removed only their
+  fixture-created app_audit_fixture.records/schema, runa_audit tables/schema and
+  matching test registry/update rows through scoped teardown. Existing development/
+  test data outside those disposable fixtures, services, Qdrant/model caches, backups
+  and verification reports remain preserved. No production migration was executed.

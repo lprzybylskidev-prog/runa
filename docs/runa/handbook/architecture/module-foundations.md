@@ -1,6 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its manual append-only store; see the [Audit guide](../modules/audit/README.md). Authentication/session transport and administration screens remain undelivered.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). Authentication/session transport and administration screens remain undelivered.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -46,7 +46,7 @@ Availability, identity, permission, step-up and domain invariants remain separat
 
 Owning Actions and Audit success persistence share the exact default PostgreSQL
 Connection and transaction. Independent refusal history belongs after root rollback,
-never in the rejected transaction/savepoint or an afterCommit listener. The [Audit module](../modules/audit/README.md) owns concrete manual event/redaction APIs; automatic capture and authorized reads follow separately.
+never in the rejected transaction/savepoint or an afterCommit listener. The [Audit module](../modules/audit/README.md) owns manual event/redaction APIs, opt-in transactional model capture and permission-protected bounded reads.
 
 AuthorityGuard is the neutral lifecycle integration for future Permissions. Its
 default denies changes requiring administrative authority. AuthorityLock requires

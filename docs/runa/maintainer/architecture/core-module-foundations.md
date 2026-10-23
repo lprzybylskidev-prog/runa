@@ -1,19 +1,19 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Point 2 delivers the manual Audit store and transactional participation. Fortify integration and user interfaces remain assigned to later roadmap points;
-Manual business auditing is available; authentication and automatic model capture remain pending.
+RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Fortify integration and user interfaces remain assigned to later roadmap points;
+Manual/automatic business auditing is available; authentication remains pending.
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.2.0` for capture/reads; the unimplemented modules retain their initial projection. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
 0.5.0, not a claim that the predecessor contains these capabilities.
 
-Auth requires Audit `^0.1.0`; Permissions requires both Auth and Audit `^0.1.0`.
+Auth requires Audit `^0.2.0`; Permissions requires Auth `^0.1.0` and Audit `^0.2.0`.
 There is no reverse Auth dependency. Each manifest uses the normal source-owned
 lifecycle, upgrade and public adapter declarations. First installation declares an
 explicit transactional `null -> 0.1.0` initialization step. A matching installed
@@ -44,7 +44,7 @@ paths (time/id pagination, actor, entity, module/action and correlation).
 The Audit module now provides immutable owned AuditEvent/AuditReference
 DTOs and `AuditWriter::record(Connection $connection, AuditEvent $event):
 AuditReference`. It verifies an active transaction and exact connection before
-writing. The planned local Auditable helper (point 3) requires that transaction before the model's
+writing. The local Auditable helper requires that transaction before the model's
 first write. Diff is default; approved full snapshots are opt-in. Manual aggregate
 operations suppress automatic capture within a finally-unwound local scope;
 explicit records remain active. No callback/model/secret crosses ModuleApis.
@@ -178,8 +178,10 @@ validation strings, database class paths or renderer. Form Requests remain the
 validation authority. ModuleManagement adds entities without changing existing
 schemaVersion 1 consumers. Concrete modules extend only for actual operations.
 
-Both backend/Laravel/security/PostgreSQL instruction references link the public
-contract. Root owner/customer AGENTS need no duplicate procedure in point 1:
-their existing module/transaction/security authority remains sufficient, and the
-mandatory manual Audit rule belongs with the actual capture capability in point 3.
+Both backend/Laravel/security/PostgreSQL instruction products link the public
+contract. Root owner/customer AGENTS require meaningful business/security history
+and explicit manual events for bulk SQL, relationships and aggregate operations.
+Procedures remain in the public Audit guide. Audit is now 0.2.0 (compatible new
+capture/read behavior); planned Auth/Permissions consume ^0.2.0 rather than the
+initial ^0.1.0 Audit store constraint. Their own initial versions remain 0.1.0.
 Frontend skills/components are unaffected because this point adds no screens.

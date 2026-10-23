@@ -149,6 +149,16 @@ Prefer an internal implementation when reasonable. Keep lockfiles committed. Dep
 
 Load `.agents/skills/laravel/SKILL.md` and `.agents/skills/backend/SKILL.md` when relevant.
 
+## Audit awareness
+
+Meaningful business/security mutations require Audit history. Use the opt-in
+Auditable contract for approved single-model changes inside the default PostgreSQL
+transaction. Bulk SQL, relationship/pivot changes and aggregate operations require
+explicit manual Audit events in that same transaction; Eloquent does not emit model
+events for every write. Scoped automatic suppression never disables explicit
+records. Follow docs/runa/handbook/modules/audit/README.md for safe fields,
+redaction, rollback/refusal boundaries and authorized reads.
+
 ## Database invariants
 
 PostgreSQL only.

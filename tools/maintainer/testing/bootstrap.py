@@ -258,6 +258,10 @@ class BootstrapContracts(unittest.TestCase):
                 receipt = bootstrap.acquire(client, 'v1.0.0', destination, 'dev', reference_module=include)
                 expected = (ROOT / 'docs/runa/maintainer/customer-agent/AGENTS.md').read_bytes()
                 self.assertEqual((destination / 'AGENTS.md').read_bytes(), expected)
+                self.assertIn(b'## Audit awareness', expected)
+                for area in ('backend', 'laravel', 'postgresql'):
+                    guidance = destination / '.agents/skills' / area / 'references/application.md'
+                    self.assertIn('explicit manual Audit events', guidance.read_text())
                 self.assertEqual(len(list((destination / '.agents/skills').glob('*/SKILL.md'))), 9)
                 self.assertIn('AGENTS.md', receipt['customer_agent']['files'])
                 self.assertFalse((destination / 'docs/runa/maintainer').exists())
@@ -272,6 +276,8 @@ class BootstrapContracts(unittest.TestCase):
                 clone = Path(folder) / 'teammate'
                 subprocess.run(['git', 'clone', '-q', str(exported), str(clone)], check=True)
                 self.assertEqual((clone / 'AGENTS.md').read_bytes(), expected)
+                for area in ('backend', 'laravel', 'postgresql'):
+                    self.assertIn('explicit manual Audit events', (clone / '.agents/skills' / area / 'references/application.md').read_text())
                 self.assertFalse((clone / '.git/runa-bootstrap.json').exists())
                 self.assertFalse((clone / 'docs/runa/maintainer').exists())
 

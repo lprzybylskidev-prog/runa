@@ -65,6 +65,7 @@ use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Database\DatabaseScope;
 use Runa\Database\IdentityMigrationRepository;
+use Runa\Modules\Audit\Contracts\AuditSuppression;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\Logging\ConsoleLogContext;
 use Runa\Support\Logging\LogContext;
@@ -145,6 +146,7 @@ final class RunaServiceProvider extends ServiceProvider
                 fn ($command, Application $app) => $app->make(ApplicationTestCommand::class));
         }
         $this->app->scoped(PrincipalScope::class);
+        $this->app->scoped(AuditSuppression::class);
         $this->app->bindIf(HttpAccountPolicy::class, AnonymousAccountPolicy::class);
         $this->app->bindIf(AuthorityGuard::class, DenyAuthorityChanges::class);
         $this->app->bindIf(SettingsParticipant::class, AuditParticipation::class);
