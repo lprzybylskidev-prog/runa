@@ -24,7 +24,7 @@ final class User extends ModuleModel implements AuthenticatableContract, MustVer
     protected function casts(): array
     {
         return [
-            'active' => 'boolean', 'approved' => 'boolean', 'security_locked' => 'boolean',
+            'verification_forced' => 'boolean', 'verification_required' => 'boolean', 'active' => 'boolean', 'approved' => 'boolean', 'security_locked' => 'boolean',
             'password_change_required' => 'boolean', 'version' => 'integer', 'security_version' => 'integer',
             'activate_at' => 'immutable_datetime', 'deactivate_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime', 'attempt_locked_until' => 'immutable_datetime',

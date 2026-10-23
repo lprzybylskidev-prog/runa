@@ -129,6 +129,7 @@ final readonly class EntryTokens implements AuthInvitations
                 $user->remember_token = null;
             }
             $user->email_verified_at = CarbonImmutable::now('UTC');
+            $user->verification_forced = false;
             if ($purpose !== 'invitation') {
                 $user->version++;
             }

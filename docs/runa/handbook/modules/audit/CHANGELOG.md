@@ -1,5 +1,13 @@
 # Audit module changelog
 
+## 0.3.0
+
+Add OwnHistory 1.0.0 safe summary pages bound to a trusted human's own UUIDv7 entity,
+bounded source-selected actions and same-scope append cursors. No arbitrary subject,
+actor/entity/payload details or general Audit permission is exposed. Add a no-data-
+transform 0.2.0 -> 0.3.0 edge; existing AuditRecords/AuditReads signatures and
+framework API remain compatible, with no Auth/Permissions dependency.
+
 ## 0.2.0
 
 Compatible automatic Auditable single-model capture with explicit approved fields,

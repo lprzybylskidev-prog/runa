@@ -18,15 +18,19 @@ final readonly class SecurityContext
     public function __construct(private EntryTransaction $transactions, private SessionStore $sessions,
         private LookupIdentity $identities, private CredentialPolicy $policy) {}
 
-    public function run(Request $request, Closure $work, bool $count = true): mixed
+    public function run(Request $request, Closure $work, bool $count = true, bool $unrestricted = false): mixed
     {
-        $result = $this->transactions->run(function (Connection $connection) use ($request, $work, $count): mixed {
+        $result = $this->transactions->run(function (Connection $connection) use ($request, $work, $count, $unrestricted): mixed {
             $this->transactions->lockAuthority($connection);
             $subject = Auth::guard('web')->user();
             $user = $subject instanceof User ? User::where('id', $subject->id)->lockForUpdate()->first() : null;
             $row = $user === null ? null : $this->sessions->current($request, $user);
             if ($user === null || $row === null || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {
                 throw new OperationRejected('authentication_required', 'runa.auth', 'security', 401);
+            }
+            if ($unrestricted && (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate()
+                || $this->policy->restrictions($user, $row) !== [])) {
+                throw new OperationRejected('account_restricted', 'runa.auth', 'profile', 403);
             }
             if ($count && ! $this->attempt($connection, $user)) {
                 return null;

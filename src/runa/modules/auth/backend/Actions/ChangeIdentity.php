@@ -48,7 +48,9 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 'login' => $input->login, 'login_claim' => $input->login,
                 'active' => $input->active, 'approved' => $input->approved,
                 'version' => 1, 'security_version' => 1,
+                'verification_required' => $this->settings->value('runa.auth', 'email_verification') !== 'disabled',
             ]);
+            app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();
             // No names, addresses, login, password or token in lifecycle history.
             $this->record('identity.created', $user, ['active' => $input->active, 'approved' => $input->approved]);
@@ -108,6 +110,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
                     if (! $user->trashed()) {
                         return $user->identity();
                     }
+                    app(EmailAddresses::class)->available($connection, $user, $user->email, true);
                     $user->email_claim = $user->email;
                     $user->login_claim = $user->login;
                     $user->deleted_at = null;

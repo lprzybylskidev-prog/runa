@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
@@ -17,7 +18,7 @@ use Runa\Support\Modules\Api\PrincipalScope;
 final readonly class StepUp implements AuthStepUp
 {
     public function __construct(private SecurityContext $context, private CredentialPolicy $policy,
-        private CredentialFactors $factors, private EntryTransaction $transactions, private PrincipalScope $principals) {}
+        private LookupIdentity $identities, private CredentialFactors $factors, private EntryTransaction $transactions, private PrincipalScope $principals) {}
 
     private function validate(string $action, string $requirement): void
     {
@@ -36,7 +37,7 @@ final readonly class StepUp implements AuthStepUp
         return $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request, $action, $requirement): ?array {
             // Restricted sessions must first finish login factors and password/verification flows.
             if ($this->policy->restrictions($user, $session) !== [] || $user->password_change_required || $this->policy->passwordExpired($user)
-                || $user->email_verified_at === null) {
+                || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate()) {
                 return null;
             }
             if (in_array($requirement, ['password', 'both'], true) && ! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
@@ -66,7 +67,7 @@ final readonly class StepUp implements AuthStepUp
 
         return $this->context->run(app('request'), function (Connection $connection, User $user, object $session) use ($action, $requirement, $ttlSeconds, $everyAction): bool {
             if ($this->principals->current()?->publicId !== $user->public_id || $this->policy->restrictions($user, $session) !== []
-                || $user->email_verified_at === null || $user->password_change_required || $this->policy->passwordExpired($user)) {
+                || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate() || $user->password_change_required || $this->policy->passwordExpired($user)) {
                 throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);
             }
             $proof = $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->where('session_hash', $session->session_hash)

@@ -45,7 +45,7 @@ beforeEach(function (): void {
     $this->auditFixtureCreated = true;
     DB::statement('CREATE SCHEMA app_audit_fixture');
     DB::statement('CREATE TABLE app_audit_fixture.records (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, public_id uuid NOT NULL UNIQUE, title text NOT NULL, details jsonb, created_at timestamptz, updated_at timestamptz, deleted_at timestamptz)');
-    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => '0.2.0']);
+    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => '0.3.0']);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 });
 

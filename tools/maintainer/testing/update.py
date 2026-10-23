@@ -372,6 +372,7 @@ class Updater(unittest.TestCase):
             self.assertIn('docs/runa/handbook/modules/auth/transport.md', (self.target / relative).read_text())
             self.assertIn('docs/runa/handbook/modules/auth/sessions.md', (self.target / relative).read_text())
             self.assertIn('docs/runa/handbook/modules/auth/security.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/profile.md', (self.target / relative).read_text())
             self.assertEqual((self.installed / relative).read_text(), 'customer domain extension')
         self.assertEqual(rows['obsolete.txt']['action'], 'remove')
         self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')

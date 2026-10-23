@@ -19,6 +19,10 @@ final readonly class CleanupSessions
             $now = CarbonImmutable::now('UTC');
             $proofIds = $connection->table('runa_auth.step_up_proofs')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.step_up_proofs')->whereIn('id', $proofIds)->delete();
+            $mailIds = $connection->table('runa_auth.profile_mail')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
+            $connection->table('runa_auth.profile_mail')->whereIn('id', $mailIds)->delete();
+            $changeIds = $connection->table('runa_auth.email_changes')->where('expires_at', '<=', $now)->whereNotExists(fn ($q) => $q->selectRaw('1')->from('runa_auth.profile_mail')->whereColumn('change_id', 'runa_auth.email_changes.id'))->orderBy('id')->limit(500)->pluck('id');
+            $connection->table('runa_auth.email_changes')->whereIn('id', $changeIds)->delete();
             foreach (['sessions', 'trusted_devices', 'login_windows'] as $table) {
                 $query = $connection->table('runa_auth.'.$table);
                 $query->where(function ($query) use ($table, $now): void {
@@ -39,5 +43,6 @@ final readonly class CleanupSessions
                 $connection->table('runa_auth.'.$table)->whereIn('id', $ids)->delete();
             }
         });
+        app(Avatars::class)->cleanup();
     }
 }

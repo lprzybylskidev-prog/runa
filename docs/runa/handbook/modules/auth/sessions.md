@@ -128,3 +128,8 @@ Prepared regressions cover deadline/activity boundaries, remembered-cookie expir
 oldest eviction, stale/foreign proof refusal, Audit rollback, lifecycle revocation,
 window/temporary-lock expiry, safe escalation and cross-connection lock arbitration.
 Full parallel/browser/installation/security acceptance remains final verification.
+
+The [profile contract](profile.md) adds captured email-change session policy,
+revoke-all administrative replacement, and bounded expired profile mail/request
+and unreferenced-avatar cleanup through the same sessions.cleanup work. Current
+private avatars, disabled-avatar storage, Audit and address identities are preserved.

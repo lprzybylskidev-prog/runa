@@ -1,6 +1,6 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `0.2.0`, with no
+`runa.audit` is a platform-owned Core module, version `0.3.0`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
 automatic model capture, local suppression and permission-protected reads. No Audit viewer or administration interface is supplied.
 
@@ -239,3 +239,19 @@ a next cursor. Related entities are loaded in one bounded batch, without N+1 rea
 payloads, or null for an unknown valid reference. Both DTOs are readonly; neither
 exposes internal IDs or an Eloquent model. `metadata()` describes filter/order/page
 bounds for trusted consumers, without providing a generic renderer or management UI.
+
+## Own-account history summaries
+
+Audit 0.3.0 adds an additive no-data-transform `0.2.0 -> 0.3.0` forward edge and
+public `OwnHistory` 1.0.0 through ModuleApis. `page(module, entityType, actions,
+before)` requires a trusted human principal, binds the entity UUIDv7 to that
+principal, validates a bounded 1–64 action allowlist and returns at most 50 rows.
+Only public_id, occurred_at, action and outcome are projected; next is an opaque
+append cursor. Cursors must belong to that same filtered own-entity history.
+No caller-supplied subject, actor identity, entity graph, payload, correlation or
+detail access is available. General AuditReads still requires runa.audit.read.
+Module availability remains mandatory; no Auth/Permissions dependency is added.
+Auth independently controls its own login/account switches and action allowlists;
+see the [private profile contract](../auth/profile.md). Other modules must choose
+their own source-controlled action list and confirm an identity-bound entity is
+appropriate; this contract is not record ACL or arbitrary subject authorization.

@@ -40,11 +40,12 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.4.0' : '0.2.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.5.0' : '0.3.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php'))->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.
     app()->bind(AuthorityGuard::class, fn () => new class implements AuthorityGuard
@@ -64,7 +65,7 @@ afterEach(function (): void {
     }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
-        foreach ($schema === 'runa_auth' ? ['step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
+        foreach ($schema === 'runa_auth' ? ['profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
             DB::statement('DROP TABLE '.$schema.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
@@ -236,7 +237,7 @@ it('arbitrates competing Auth identifier claims in PostgreSQL and preserves immu
 });
 
 it('initializes Audit then Auth exactly once through the real fenced module updater with current runtime declarations', function (): void {
-    foreach (['step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices'] as $table) {
+    foreach (['profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices'] as $table) {
         DB::statement('DROP TABLE runa_auth.'.$table.' RESTRICT');
     }
     DB::statement('DROP TABLE runa_auth.entry_tokens RESTRICT');
@@ -253,5 +254,5 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $updates->apply('runa', str_repeat('a', 40), static function (): void {});
     expect(DB::table('runa_audit.events')->count())->toBe($events)->and(DB::table('runa_auth.users')->count())->toBe(0);
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
-    expect($record->installedVersion)->toBe('0.4.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
+    expect($record->installedVersion)->toBe('0.5.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });

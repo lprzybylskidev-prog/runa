@@ -87,6 +87,8 @@ final readonly class Passwords
         $retained = $connection->table('runa_auth.password_history')->where('user_id', $user->id)->orderByDesc('id')
             ->limit($this->policy->value('password_history'))->pluck('id');
         $connection->table('runa_auth.password_history')->where('user_id', $user->id)->whereNotIn('id', $retained)->delete();
+        $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
+        $connection->table('runa_auth.profile_mail')->where('user_id', $user->id)->where('purpose', '<>', 'notice')->whereNull('consumed_at')->update(['consumed_at' => now(), 'delivery_secret' => null]);
         $user->password = Hash::make($password);
         $user->password_changed_at = CarbonImmutable::now('UTC');
         $user->password_change_required = false;

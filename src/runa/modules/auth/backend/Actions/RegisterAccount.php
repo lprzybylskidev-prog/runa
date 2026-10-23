@@ -7,6 +7,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryPassword;
@@ -25,7 +26,7 @@ final readonly class RegisterAccount implements CreatesNewUsers
         Validator::make($input, ['password' => EntryPassword::rules()])->validate();
         $password = Hash::make($input['password']);
         try {
-            return $this->transactions->run(function (Connection $connection) use ($identity, $password): User {
+            return $this->transactions->run(function (Connection $connection) use ($identity, $password): ?User {
                 if ($this->settings->value('runa.auth', 'public_registration') !== true) {
                     throw new OperationRejected('registration_unavailable', 'runa.auth', 'register', 403);
                 }
@@ -37,10 +38,16 @@ final readonly class RegisterAccount implements CreatesNewUsers
                 $user = new User;
                 $user->forceFill(['name' => $identity->name, 'first_name' => $identity->firstName, 'surname' => $identity->surname,
                     'email' => $identity->email, 'email_claim' => $identity->email, 'login' => $identity->login, 'login_claim' => $identity->login,
+                    'verification_required' => $this->settings->value('runa.auth', 'email_verification') !== 'disabled',
                     'password' => $password, 'password_changed_at' => now(), 'active' => true, 'approved' => $approved, 'version' => 1, 'security_version' => 1]);
+                try {
+                    app(EmailAddresses::class)->available($connection, $user, $identity->email, true);
+                } catch (IdentityConflict) {
+                    return null;
+                }
                 $user->save();
                 $this->transactions->record('registration.completed', $user);
-                if ($approved) {
+                if ($approved && $user->verification_required) {
                     $this->tokens->issueLocked($connection, $user, 'verification');
                 }
 

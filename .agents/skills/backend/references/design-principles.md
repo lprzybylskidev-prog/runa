@@ -95,3 +95,9 @@ for password policy/recovery, mandatory factors, trusted devices and AuthStepUp.
 Consume server-chosen session/action-bound step-up inside the business transaction;
 trust or recent login never substitutes for required fresh proof. Never expose
 factor secrets, password history or OTPs through module APIs, logs or Audit.
+
+Use the [private Auth profile/address contract](../../../../docs/runa/handbook/modules/auth/profile.md)
+for versioned own/admin changes, recipient-bound verification, notification-only
+secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
+modules consume guarded public contracts; never expand security delivery to
+secondary recipients or expose general Audit detail for self-service history.

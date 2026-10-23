@@ -1,5 +1,20 @@
 # Auth module changelog
 
+## 0.5.0
+
+Add private versioned profile, configurable naming/login self-edits, primary-address
+confirmation with optional old consent and captured session policy, independently
+verified notification-only secondaries, force-reverification, authenticated private
+avatar storage/cleanup, optional guarded self lifecycle and independently enabled
+safe own login/account history. Add permissioned AuthProfiles 1.0.0 administrative
+contracts with specific both-factor email step-up/bypass permission and old-primary
+notice; administrative replacement revokes all sessions/trust. Add profile forward
+migration and reserved settings upgrade, current/new-account verification policy,
+address ownership arbitration across create/restore/change, and credential-driven
+pending-address cancellation. Require Audit ^0.3.0 for OwnHistory; existing public
+API signatures and framework API remain compatible. UI/preferences/Permissions
+integration remain separate roadmap points.
+
 ## 0.4.0
 
 Add shared password complexity/history/expiry/change/recovery, TOTP with transactional

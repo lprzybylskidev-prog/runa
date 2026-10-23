@@ -14,6 +14,7 @@ final class EntryWork implements CommandProvider, JobProvider, ScheduleProvider
     public function jobs(): array
     {
         return [
+            new JobDefinition('profile.deliver', ProfileMailHandler::class, EntryWorkPolicy::class, 3, 30, 60, false, 'single_smtp_attempt'),
             new JobDefinition('sessions.cleanup', SessionCleanupHandler::class, EntryWorkPolicy::class, 3, 30, 60, false, 'bounded_technical_cleanup'),
             new JobDefinition('entry.deliver', EntryMailHandler::class, EntryWorkPolicy::class, 3, 30, 60, false, 'single_smtp_attempt'),
             new JobDefinition('entry.remind', EntryReminderHandler::class, EntryWorkPolicy::class, 3, 30, 60, false, 'locked_token_rotation'),

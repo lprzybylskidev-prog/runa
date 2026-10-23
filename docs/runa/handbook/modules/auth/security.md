@@ -182,3 +182,8 @@ names have prefix `runa.auth.`. Public password recovery creates no session.
 | GET    | trusted-devices          | trust.list               | optional before UUIDv7 cursor; own bounded rows                             |
 | POST   | trusted-devices/revoke   | trust.revoke             | public_id; own device only                                                  |
 | POST   | step-up                  | step_up.confirm          | action/requirement, current_password and/or method/code                     |
+
+Private email changes, profile/avatar ownership and forced reverification use the
+[profile contract](profile.md). Password replacement also cancels pending address
+requests/links. Step-up follows current verification policy; explicit forced
+reverification still prevents it until the address is verified.

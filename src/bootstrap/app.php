@@ -16,6 +16,7 @@ use Runa\Http\Middleware\EnforceAccountPolicy;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 use Runa\Http\Middleware\SessionPersistence;
 use Runa\Http\Middleware\ThrottleAuthEntry;
+use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\ModuleHttpGuard;
 use Runa\Support\Modules\Console\ModuleConsole;
@@ -54,6 +55,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'token', 'identifier', 'email', 'code', 'enrollment_code', 'recovery_code', 'secret']);
+        $exceptions->render(function (IdentityConflict $error, Request $request) {
+            if ($request->is('api/runa/auth/*')) {
+                return response()->json(['error' => ['code' => $error->getMessage()]], 409, ['Cache-Control' => 'no-store']);
+            }
+        });
         $exceptions->render(function (ValidationException $error, Request $request) {
             if ($request->is('api/runa/auth/*')) {
                 $fields = array_fill_keys(array_keys($error->errors()), ['Invalid input.']);

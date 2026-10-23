@@ -306,5 +306,5 @@ tokens in CLI arguments. No Auth UI/operator-bootstrap command is delivered yet.
 `php artisan runa:auth:sessions.cleanup` admits operational ModuleWork cleanup;
 its zero exit indicates admission, not completion. The five-minute schedule removes
 bounded expired/revoked/stale technical session/trust/login-window rows and preserves
-Audit or password history. It also removes bounded expired step-up proofs. See the
+Audit or password history. It also removes bounded expired step-up proofs, profile mail/requests and disposable unreferenced private avatar files; current/disabled avatars and address identities remain preserved. See the [profile contract](../modules/auth/profile.md). See the
 [session/abuse contract](../modules/auth/sessions.md) and [credential contract](../modules/auth/security.md).

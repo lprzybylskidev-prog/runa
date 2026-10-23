@@ -637,7 +637,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     requirements, mandatory TOTP not bypassed, trust never satisfies forced step-up,
     hash/history confidentiality and non-reusable proof. Synchronize secure usage,
     mail settings and owner/customer backend/security guidance.
-- [ ] 8. Deliver email changes, private profile, avatar and own-history contracts.
+- [x] 8. Deliver email changes, private profile, avatar and own-history contracts.
   - Requires 7. Implement protected own/admin primary-email changes, verified
     secondary addresses and notification-only routing; own editable-field policy,
     optional self-deactivate/delete, authenticated avatar storage/validation and
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–7 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices and reusable step-up. Point 8 is next: email changes, private profile, avatar and own-history contracts. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–8 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up and private profile/address/avatar/own-history contracts. Point 9 is next: account preferences and security delivery contracts. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1190,3 +1190,80 @@ architectural premise requires discussion before dependent work.
   Auth/Audit schemas and their registry/work/queue evidence. Development/test data,
   Qdrant/model caches, backups, verification reports and shared builder caches are
   preserved. No actual mail or production database migration was performed.
+
+## Point 8 delivery
+
+- Auth advances independently 0.4.0 -> 0.5.0 for private profile/address/avatar
+  capabilities and AuthProfiles 1.0.0. Audit advances compatibly 0.2.0 -> 0.3.0
+  for OwnHistory 1.0.0; its forward edge transforms no data and adds no Auth
+  dependency. Auth now requires Audit ^0.3.0; future Permissions must select Auth
+  ^0.5.0 and Audit ^0.3.0. Existing API signatures/framework API stay compatible.
+- Private named HTTP/FormRequest/Action/resource operations enforce current tracked
+  unrestricted sessions again under the account lock, optimistic versions and
+  configurable own naming/login/email editability. Names retain exclusive complete
+  representations and consistent display/initials; no domain profile fields or
+  screens are introduced. Explicit self-deactivate/delete default disabled and
+  consume password step-up with lifecycle authority, revocation and Audit atomically.
+- Primary changes retain the old identity claim until new-address and optional
+  captured old-address consent complete. Hash-only equality, encrypted pending mail,
+  exact expiry, single-use/reissue cancellation, shared registry/authority/user
+  arbitration and native database uniqueness protect completion. Captured own
+  session policy defaults revoke-others. Administrative change requires dedicated
+  permission, authority and both-factor every-action step-up; normal flow verifies
+  the new address, configured separately permissioned bypass can mark it verified.
+  Administrative replacement always revokes all sessions/trust. Mandatory former-
+  primary notice survives the reported address/generation and later lifecycle
+  changes; actionable mail rechecks current eligibility/ownership before SMTP.
+- Secondary UUIDv7 identities are independently verified, versioned, optionally
+  shared under current policy and notification-only. Add/change/remove switches
+  and bounded counts are independent; removal immediately stops routing. Primary
+  creation/registration/restore participate in address arbitration. Core credential
+  recipients remain primary-only. Recipient/category/channel delivery preferences
+  remain point 9. Private profile mail uses reference-only queued work and persisted
+  single-attempt SMTP claims; password replacement cancels pending address links.
+- Verification policy supports all/new/disabled with creation-time requirement and
+  an independent explicit forced flag. Administrative force-reverification removes
+  normal access from existing sessions on next ingress, and successful verification
+  clears only that restriction. Current eligibility/password/factor/session gates
+  remain authoritative. Step-up follows these current verification predicates.
+- Avatars use private ModuleStorage, native content/MIME/dimension/size validation
+  for JPEG/PNG/WebP and rejection of executable/SVG-like payloads. User/admin/both/
+  neither editing and feature disable preserve current blobs/initials. Upload first
+  commits a bounded unreferenced cleanup candidate; publication rechecks ownership,
+  version/policy and commits with Audit. Old blobs become disposable after commit;
+  failed publication preserves the old avatar. Existing technical cleanup retries
+  exact unreferenced candidates and expires profile mail/requests, never current or
+  disabled avatars, address identities or Audit history.
+- Independently enabled own login/account history uses guarded public Audit queries
+  bound to the trusted human entity and fixed Auth action lists. Same-scope cursors
+  and 50-row pages return only event identity/time/action/outcome, without arbitrary
+  subject, actor/entity/payload disclosure or general Audit read permission.
+- Local knowledge was current (164 documents/2264 chunks); focused retrieval and
+  original sources plus Boost Laravel 13 file/image/storage guidance informed the
+  work. Sixteen distinct new focused regressions passed, including session-policy
+  dataset variants, private naming/history isolation, address consent/replay/expiry/
+  conflict/Audit rollback, secondary ownership/sharing/routing, admin bypass proof,
+  pre-existing-session reverification, avatar disable/rollback/cleanup, lifecycle
+  proof rollback, recipient-aware single-attempt delivery, password cancellation,
+  current verification policy, worker-row arbitration and late restriction changes.
+  Three existing focused transport/updater regressions passed. Module source and
+  independent version/changelog checks passed; real fenced updater fixtures checked
+  current runtime declarations and additive settings/no-op behavior. An unfenced
+  runtime CLI scan correctly reported not_registered on the ordinary development
+  database; no registry synchronization was forced to satisfy that diagnostic.
+  Broad suites/browser/installation/security acceptance remains point 19.
+- Public Auth/Audit/API/database/command guides and owner architecture are current.
+  Both owner/customer backend/Laravel/PostgreSQL/security references point to the
+  public profile procedure; acquisition/clone/reviewed-update assertions prepare
+  delivery coverage. Root/customer AGENTS already require guarded APIs, transaction
+  Audit and server authority; no constitutional change or duplicate procedure is
+  needed. CLAUDE remains a pointer. No frontend component/pattern contract changed:
+  actual screens and their frontend instruction updates remain points 11–12.
+- No new dependency/service or production migration/mail is introduced. Guarded
+  fixtures removed only their absent-before-use Auth/Audit schemas, work/queue and
+  registry evidence; avatar fixtures removed their exact temporary storage root.
+  Knowledge status recreated the absent cached helper image. After the final hook/
+  knowledge operations, scoped cleanup removes only the unreferenced task-created
+  runa-management:2a709b7923c92afbb4bbef20 image tag. No task network/container/volume
+  was created. Development/test data, Qdrant/model caches, backups, reports and
+  shared builder caches are preserved.

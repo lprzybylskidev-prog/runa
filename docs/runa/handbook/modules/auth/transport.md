@@ -104,7 +104,7 @@ owning screen points. No management HTTP endpoints or placeholder pages are adde
 
 Enabled registration creates a new UUIDv7 identity, native hash and synchronous Audit
 atomically. Approval and verification stay independent. An approved registration
-queues primary-email verification; a pending approval sends no actionable message.
+queues primary-email verification when required; a pending approval sends no actionable message.
 It issues no authenticated session. A uniqueness conflict returns the same 202
 accepted payload as a creation; PostgreSQL claims arbitrate races. Disabled
 registration returns 403 `registration_unavailable` independently of existence.
@@ -148,7 +148,7 @@ Links use validated configured app.url, never request Host. The secret is in the
 fragment (`/auth/invitation#token=...` or `/auth/verify-email#token=...`), which is not
 sent to access logs. The later Auth Vue screen must consume and remove the fragment
 and POST the proof; no GET consumes a token. Screens are not delivered in this point.
-Core security mail always targets the current primary email. Configurable localized
+Credential security mail always targets the current primary email. The [profile address contract](profile.md) separately permits new/secondary-address verification and mandatory captured-old-primary change notices. Configurable localized
 security delivery and private account preferences remain separate later flows.
 
 `runa:auth:entry.remind` is a declared operational command that enqueues bounded

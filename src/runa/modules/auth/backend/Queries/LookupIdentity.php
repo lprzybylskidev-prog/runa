@@ -77,7 +77,8 @@ final readonly class LookupIdentity implements AuthIdentities
         if ($user->attempt_locked_until !== null && $now->lt($user->attempt_locked_until)) {
             $blockers[] = 'attempt_locked';
         }
-        if ($user->email_verified_at === null) {
+        if ($user->email_verified_at === null && ($user->verification_forced || $this->settings->value('runa.auth', 'email_verification') === 'all'
+            || ($this->settings->value('runa.auth', 'email_verification') === 'new' && $user->verification_required))) {
             $restrictions[] = 'email_verification_required';
         }
         if ($user->password_change_required || $this->credentials->passwordExpired($user)) {

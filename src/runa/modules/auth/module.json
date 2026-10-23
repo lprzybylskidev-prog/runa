@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.auth",
   "kind": "core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "platform": ">=0.4.2 <0.6.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "required": {
-      "runa.audit": "^0.2.0"
+      "runa.audit": "^0.3.0"
     },
     "optional": {}
   },
@@ -27,13 +27,17 @@
       "Runa\\Modules\\Auth\\Definitions\\InvitationsApi",
       "Runa\\Modules\\Auth\\Definitions\\SessionsApi",
       "Runa\\Modules\\Auth\\Definitions\\SecurityApi",
-      "Runa\\Modules\\Auth\\Definitions\\StepUpApi"
+      "Runa\\Modules\\Auth\\Definitions\\StepUpApi",
+      "Runa\\Modules\\Auth\\Definitions\\ProfilesApi"
     ],
     "health": [],
     "lifecycle": ["Runa\\Modules\\Auth\\Definitions\\IdentityLifecycle"],
     "settings": ["Runa\\Modules\\Auth\\Definitions\\IdentitySettings"],
     "integrations": [],
-    "http": ["Runa\\Modules\\Auth\\Definitions\\EntryHttp"],
+    "http": [
+      "Runa\\Modules\\Auth\\Definitions\\EntryHttp",
+      "Runa\\Modules\\Auth\\Definitions\\ProfileHttp"
+    ],
     "commands": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
     "jobs": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
     "schedules": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
