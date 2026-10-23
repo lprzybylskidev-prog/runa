@@ -33,7 +33,7 @@ self-service; Permissions supplies native action-level grants and reusable acces
 templates. Reuse the shipped module framework and existing Laravel/Vue platform.
 
 This is planning only. Execute after
-[RM-2026-010](../active/RM-2026-010-manual-quality-group-selection.md) is released, closed and
+[RM-2026-010](../closed/RM-2026-010-manual-quality-group-selection.md) is released, closed and
 merged, following RM-2026-009. Expected predecessor: maintenance 0.4.2. The owner
 explicitly confirmed **feature 0.5.0** on 2026-10-23: increment MINOR and reset PATCH.
 Refresh the real baseline and predecessor links at activation. This document does

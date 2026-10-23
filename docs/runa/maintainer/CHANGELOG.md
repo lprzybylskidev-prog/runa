@@ -2,6 +2,16 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.4.2] - 2026-10-23
+
+Maintenance release — RM-2026-010.
+
+- Add manual --group=NAME/--all quality selection for owner and customer plan/run/final commands, including native Artisan and host transport validation.
+- Resolve mandatory checks and true prerequisites with scope/command evidence, explicit exclusions, timings and closure validation; preserve legacy flag-free behavior.
+- Synchronize owner/customer instructions, quality catalogues and release workflows. All 55 full final checks passed; the owner approved focused regression verification for the subsequent narrow closure-link metadata correction.
+
+No new dependencies, product migrations, Docker topology changes or real production deployment. Scoped acceptance resources were cleaned; development/test data, caches, backups and verification evidence were preserved.
+
 ## [0.4.1] - 2026-10-23
 
 Fix release — RM-2026-009.

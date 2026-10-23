@@ -1,14 +1,15 @@
 ---
 id: RM-2026-010
 title: Manual quality group selection for owner and customer workflows
-status: active
+status: closed
 branch: roadmap/RM-2026-010-manual-quality-group-selection
 created_at: 2026-10-23
 activated_at: 2026-10-23
-closed_at: null
+closed_at: 2026-10-23
 release_type: maintenance
 proposed_version: 0.4.2
 quality_groups: all
+quality_closure_fix_commit: 16ed17dd1eacdfd4ded575e1c3c0912d7df0f866
 quality_rationale: Coordinator and both command products require complete owner and customer acceptance.
 impact_areas:
   - tooling
@@ -334,7 +335,7 @@ final verification point, after implementation is complete.
     link changes in existing drafts. Bind RM-010's one-time validator/test exception
     to its direct post-gate fix commit and exact source bytes; reject other edits.
     Three focused link/exception/closure regressions passed.
-- [ ] 6. Full verification, release finalization, merge and final report.
+- [x] 6. Full verification, release finalization, merge and final report.
   - Requires 1–5 implemented and committed. Review current-state docs and both
     instruction products. Run all applicable selection/coordinator/transport/
     owner/customer acceptance, security and isolation checks through the supported
@@ -349,8 +350,8 @@ final verification point, after implementation is complete.
 
 Activated with owner execution authorization on 2026-10-23, from clean main at
 58c159f (0.4.1). Owner approved the point-1 catalogue, baseline, CLI, compatibility
-and closure contract on 2026-10-23. Implementation points 2–3 are complete; final
-verification/release remains open. Release metadata remains maintenance 0.4.2 as previously confirmed.
+and closure contract on 2026-10-23. All implementation/fix points and final verification are complete. Maintenance
+0.4.2 is finalized for closure; publication follows the checked branch metadata.
 
 ## Point 2 outcome
 
@@ -413,8 +414,8 @@ replaced with the approved explicit policy; historical evidence/closed roadmaps
 were preserved. Customer instructions remain product data and public links target
 delivered sources. Availability claims now match supported flags and catalogues.
 
-The final point remains open. Runtime PASS, release 0.4.2, merge/tag/publication and
-post-acceptance resource cleanup are pending the supported final background gate.
+The final run subsequently passed all 55 steps; the final report below records
+closure evidence and the owner-approved focused exception.
 
 ## Fix point 4 — first final verification findings
 
@@ -484,3 +485,37 @@ Current instructions/skills need no procedural change: this fixes existing closu
 metadata behavior; the customer product gains the same exact-link classification,
 while the explicitly approved source exception remains owner RM-010-only. No new
 dependency, migration, infrastructure change or Docker test resource was introduced.
+
+## Final report
+
+RM-2026-010 delivers maintenance version 0.4.2: manual repeatable --group=NAME and
+--all selection for owner/customer quality plan/run/final workflows. Explicit
+selection includes mandatory baseline and true prerequisites, records honest
+scope/commands/exclusions and rejects invalid arguments before work. Legacy
+flag-free behavior remains compatible. Owner/customer instructions and public
+transports are synchronized; no automatic diff classifier is introduced.
+
+Full --all verification: 55/55 PASS on
+17a68e73787f11999c54c13126252850b3b09cdb, elapsed 2101.639 seconds. Evidence is retained
+under .runtime/quality and .runtime/RM-2026-010-final-status.txt. The first run found
+owner diagnostic compatibility and a stale predecessor link; fix point 4 and the
+complete rerun resolved those findings. Closure review then found the exact-link
+metadata classification issue, corrected in fix point 5. The owner explicitly
+approved three focused regression checks and closure without another full run for
+that narrow validator/test correction, bound to quality_closure_fix_commit above.
+No failed results were changed or presented as passing.
+
+Closure review covers both instruction products, supported flags, selected-scope
+release evidence, current version/active-roadmap projections and RM-011 predecessor
+navigation. Only release/closure metadata and the exact predecessor-link transition
+follow the approved fix commit. No new dependencies, module changes, product
+migrations/database resets, Docker topology changes or real production deployment.
+
+Acceptance harnesses removed their scoped disposable containers, networks, volumes
+and task image tags; post-run inspection confirmed zero resources for the nine
+reported installation/team/production simulation projects. Active development/test
+data, rollback material, Qdrant/model/build caches, backups, live management image
+and verification reports were preserved. No global pruning occurred.
+
+Merge, annotated v0.4.2 tag and GitHub publication follow the established workflow;
+report their actual results in chat without rewriting this closed record.
