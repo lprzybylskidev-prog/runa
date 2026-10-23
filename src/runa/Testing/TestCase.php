@@ -5,6 +5,7 @@ namespace Tests;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\BootProviders;
 use Illuminate\Foundation\Testing\TestCase as FrameworkTestCase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -46,25 +47,28 @@ abstract class TestCase extends FrameworkTestCase
             }
         }
         $app->useStoragePath($storage);
-        $app->make(Kernel::class)->bootstrap();
-        // This base owns guarded worker selection; Laravel must not suffix it again.
-        $app->make(ParallelTesting::class)->resolveOptionsUsing(static fn (string $option) => $option === 'without_databases' ? true : ($_SERVER['LARAVEL_PARALLEL_TESTING_'.strtoupper($option)] ?? false));
-        $guard = $app->make(TestDatabaseGuard::class);
-        $guard->assertSafe();
-        // Validate the base identity before any worker database DDL; tokens cannot inject SQL.
         $name = 'runa_test'.($token === '0' ? '' : '_test_'.$token);
-        if ($token !== '0') {
-            if (! DB::selectOne('SELECT 1 FROM pg_database WHERE datname = ?', [$name])) {
-                DB::statement('CREATE DATABASE "'.$name.'"');
+        // Select the worker before provider boot captures a database connection in services.
+        $app->beforeBootstrapping(BootProviders::class, function () use ($app, $token, $name): void {
+            // This base owns guarded worker selection; Laravel must not suffix it again.
+            $app->make(ParallelTesting::class)->resolveOptionsUsing(static fn (string $option) => $option === 'without_databases' ? true : ($_SERVER['LARAVEL_PARALLEL_TESTING_'.strtoupper($option)] ?? false));
+            $guard = $app->make(TestDatabaseGuard::class);
+            $guard->assertSafe();
+            // Validate the base identity before any worker database DDL; tokens cannot inject SQL.
+            if ($token !== '0') {
+                if (! DB::selectOne('SELECT 1 FROM pg_database WHERE datname = ?', [$name])) {
+                    DB::statement('CREATE DATABASE "'.$name.'"');
+                }
+                config()->set('database.connections.pgsql.database', $name);
+                DB::purge('pgsql');
             }
-            config()->set('database.connections.pgsql.database', $name);
-            DB::purge('pgsql');
-        }
-        $guard->assertSafe();
-        config()->set('cache.default', 'array');
-        config()->set('cache.prefix', 'runa_test_'.$token.'_');
-        config()->set('queue.default', 'sync');
-        config()->set('mail.default', 'array');
+            $guard->assertSafe();
+            config()->set('cache.default', 'array');
+            config()->set('cache.prefix', 'runa_test_'.$token.'_');
+            config()->set('queue.default', 'sync');
+            config()->set('mail.default', 'array');
+        });
+        $app->make(Kernel::class)->bootstrap();
         if (! isset(self::$migrated[$name])) {
             $this->migrateTestDatabase($name, $storage);
             self::$migrated[$name] = true;

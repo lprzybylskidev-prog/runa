@@ -26,6 +26,8 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\WorkerIdle;
+use Illuminate\Queue\Events\WorkerStarting;
+use Illuminate\Queue\Events\WorkerStopping;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
@@ -245,6 +247,13 @@ final class RunaServiceProvider extends ServiceProvider
         Event::listen(JobExceptionOccurred::class, [QueueLogContext::class, 'after']);
         Event::listen(JobFailed::class, [QueueLogContext::class, 'after']);
         Event::listen(JobProcessing::class, ModuleQueueGuard::before(...));
+        Event::listen(WorkerStarting::class, function () use ($heartbeat): void {
+            $this->app->instance('runa.queue_worker_active', true);
+            $heartbeat->record('queue');
+        });
+        Event::listen(WorkerStopping::class, function (): void {
+            unset($this->app['runa.queue_worker_active']);
+        });
         Event::listen(WorkerIdle::class, fn () => $heartbeat->record('queue'));
         Event::listen(JobProcessed::class, fn () => $heartbeat->record('queue'));
         if (! $this->app->runningInConsole() && ($errors = $validator->errors()) !== []) {

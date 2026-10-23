@@ -7,6 +7,7 @@ import shlex
 import signal
 import subprocess
 import time
+from datetime import datetime, timezone
 from checks import yaml
 from runtime import ROOT, inside, app_command
 
@@ -61,6 +62,9 @@ def save(directory, state):
 
 def execute(directory, state):
     running = {}
+    started = {}
+    run_started = time.monotonic()
+    state['started_at'] = datetime.now(timezone.utc).isoformat()
     interrupted = False
 
     def stop(signum, frame):
@@ -74,15 +78,19 @@ def execute(directory, state):
                 code = process.poll()
                 if code is not None:
                     log.close()
-                    state['steps'][key].update(status='passed' if code == 0 else 'failed', exit_code=code)
+                    state['steps'][key].update(status='passed' if code == 0 else 'failed', exit_code=code,
+                                             finished_at=datetime.now(timezone.utc).isoformat(),
+                                             duration_seconds=round(time.monotonic() - started.pop(key), 3))
                     del running[key]
             if interrupted:
                 for key, (process, log) in running.items():
                     os.killpg(process.pid, signal.SIGTERM)
                     state['steps'][key]['status'] = 'interrupted'
-                for process, log in running.values():
+                for key, (process, log) in running.items():
                     process.wait()
                     log.close()
+                    state['steps'][key].update(finished_at=datetime.now(timezone.utc).isoformat(),
+                                              duration_seconds=round(time.monotonic() - started.pop(key), 3))
                 state['status'] = 'interrupted'
                 break
             groups = {state['steps'][k].get('exclusive_group') for k in running}
@@ -97,6 +105,8 @@ def execute(directory, state):
                     if group and group in groups:
                         continue
                     log = (directory / (key + '.log')).open('w')
+                    started[key] = time.monotonic()
+                    node['started_at'] = datetime.now(timezone.utc).isoformat()
                     try:
                         arguments = shlex.split(node['command'])
                         if node.get('execution_context') == 'host':
@@ -107,7 +117,8 @@ def execute(directory, state):
                         process = subprocess.Popen(arguments, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
                     except OSError as error:
                         log.write(str(error) + '\n'); log.close()
-                        node.update(status='failed', exit_code=127)
+                        node.update(status='failed', exit_code=127, finished_at=datetime.now(timezone.utc).isoformat(),
+                                    duration_seconds=round(time.monotonic() - started.pop(key), 3))
                         continue
                     running[key] = (process, log)
                     node.update(status='running', pid=process.pid)
@@ -120,6 +131,7 @@ def execute(directory, state):
                 break
             time.sleep(0.1)
     finally:
+        state.update(finished_at=datetime.now(timezone.utc).isoformat(), duration_seconds=round(time.monotonic() - run_started, 3))
         save(directory, state)
         for sig, handler in old.items():
             signal.signal(sig, handler)
@@ -141,10 +153,16 @@ def status(directory, active):
     for key, node in state['steps'].items():
         if active and node['status'] != 'running':
             continue
-        print(f"{key}: {node['status']}")
+        elapsed = node.get('duration_seconds')
+        if elapsed is None and node['status'] == 'running' and node.get('started_at'):
+            elapsed = max(0, (datetime.now(timezone.utc) - datetime.fromisoformat(node['started_at'])).total_seconds())
+        timing = f' ({elapsed:.1f}s)' if elapsed is not None else ''
+        print(f"{key}: {node['status']}{timing}")
         log = directory / (key + '.log')
         if log.exists():
             print('\n'.join(log.read_text(errors='replace').splitlines()[-30:]))
             if not active:
                 print('Full log: ' + str(log))
+    if not active and state.get('duration_seconds') is not None:
+        print(f"Total elapsed: {state['duration_seconds']:.1f}s (parallel stage durations overlap).")
     print('Process is still running.' if active else 'Overall status: ' + state['status'])
