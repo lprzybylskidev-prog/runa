@@ -44,3 +44,5 @@
 42. Closed roadmaps prioritize Overview/Specification/Decisions/final outcome over noisy implementation checklist history.
 43. CHANGELOG may be searchable history but should not outrank current code/docs.
 44. Maintenance/deprecation registries should carry precise metadata for focused lookup.
+
+Owner retrieval excludes docs/runa/maintainer/customer-agent regardless of broad allowlists. Customer indexes consume installed guidance only. Verify fresh project-scoped Qdrant storage by actual mounts and empty collections before initialization; preserve existing caches/collections and use incremental removal after source changes.

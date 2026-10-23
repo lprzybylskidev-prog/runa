@@ -268,7 +268,7 @@ impact_areas:
       execution_context: host
       depends_on: [installation-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation
+      command: python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation --customer-knowledge
       severity: hard_fail
 
     - id: update-preflight-contracts

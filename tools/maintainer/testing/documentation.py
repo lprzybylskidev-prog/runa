@@ -92,6 +92,18 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertIn('docs/runa/maintainer', load(self.root)['markdown_roots'])
         self.assertTrue(any('/maintainer/' in q['source_path'] for q in golden(self.root)))
 
+    def test_customer_authoring_templates_never_enter_owner_retrieval(self):
+        self.copy_owner_inputs()
+        self.receipt.unlink()
+        self.write('docs/runa/maintainer/customer-agent/AGENTS.md', '# Customer template sentinel')
+        self.write('docs/runa/maintainer/customer-agent/skills/frontend/SKILL.md', '# Customer UI rules')
+        self.track()
+        config = load(self.root)
+        config['files'].append('docs/runa/maintainer/customer-agent/AGENTS.md')
+        paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, config)}
+        self.assertIn('docs/runa/maintainer/internal.md', paths)
+        self.assertFalse(any(p.startswith('docs/runa/maintainer/customer-agent/') for p in paths))
+
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self):
         self.copy_owner_inputs()
         self.receipt.unlink()
