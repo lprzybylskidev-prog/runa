@@ -1,4 +1,4 @@
-import { defaultPreferenceStore } from './preferenceStore';
+import { accountPreferences, defaultPreferenceStore } from './preferenceStore';
 import type { PreferenceDefinition } from './preferenceStore';
 const scope = {
   applicationId: 'runa',
@@ -23,7 +23,8 @@ export function readPreference(key: string): string | null {
 }
 export function savePreference(key: string, value: string): void {
   defaultPreferenceStore.write(scope, key, definition(key), value);
-  // Keep the established keys readable by older consumers and deployments.
+  if (accountPreferences.signedIn()) return;
+  // Guest compatibility keys never receive an account value.
   try {
     localStorage.setItem(key, value);
   } catch {

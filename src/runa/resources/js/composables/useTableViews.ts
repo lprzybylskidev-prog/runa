@@ -1,4 +1,4 @@
-import { computed, shallowRef, watch, type Ref } from 'vue';
+import { computed, onScopeDispose, shallowRef, watch, type Ref } from 'vue';
 import {
   defaultPreferenceStore,
   type PreferenceDefinition,
@@ -18,7 +18,7 @@ import type {
   TableViewSnapshot,
 } from '../runa/ui/tables';
 
-/** Browser-local, per-application/view state; never an authorization boundary. */
+/** Account-backed when signed in, separate guest fallback otherwise. */
 export function useTableViews<Row>(options: {
   scope: PreferenceScope;
   columns: () => readonly TableColumn<Row>[];
@@ -87,9 +87,22 @@ export function useTableViews<Row>(options: {
       activeId: preferred.id,
     };
   apply(state.value.current);
+  let syncing = false;
+  const unsubscribe = store.subscribe?.(() => {
+    syncing = true;
+    state.value = normalizeTableViews(
+      store.read(options.scope, 'table-views', readDefinition),
+      options.columns(),
+      baseline,
+    );
+    apply(state.value.current);
+    syncing = false;
+  });
+  if (unsubscribe) onScopeDispose(unsubscribe);
   function commit(next: TableViewPreferences) {
     state.value = normalizeTableViews(next, options.columns(), baseline);
-    store.write(options.scope, 'table-views', definition, state.value);
+    if (!syncing)
+      store.write(options.scope, 'table-views', definition, state.value);
   }
   commit(state.value);
   watch(

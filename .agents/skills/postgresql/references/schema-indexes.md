@@ -72,3 +72,5 @@ for versioned own/admin changes, recipient-bound verification, notification-only
 secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
 modules consume guarded public contracts; never expand security delivery to
 secondary recipients or expose general Audit detail for self-service history.
+
+Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.

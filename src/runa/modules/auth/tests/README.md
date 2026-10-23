@@ -25,3 +25,10 @@ private avatar MIME/ownership/disable preservation/rollback/cleanup, optional
 self-lifecycle proof rollback, private at-most-once recipient-aware mail, exact
 expiry, credential cancellation and captured session-policy/worker-lock scenarios.
 See `docs/runa/handbook/modules/auth/profile.md`; integrated acceptance is final-only.
+
+AuthEntryTest prepares declared preference persistence/adoption/reset, stale revisions,
+account isolation, permissioned typed API, mandatory/invalid routing, reminder
+idempotence/obsolescence and single SMTP attempt regressions. Browser-store tests
+cover late account replies, logout cancellation, guest separation and rejected writes.
+See `docs/runa/handbook/modules/auth/preferences.md`; broad runtime/render/installation
+acceptance remains the final roadmap gate.

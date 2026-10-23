@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
+import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
+import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
+import { accountPreferences } from '../lib/preferenceStore';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import AppBrandIllustration from '../components/AppBrandIllustration.vue';
 import RunaLogo from '../components/RunaLogo.vue';
@@ -21,6 +24,15 @@ const props = withDefaults(
 );
 const identity = useIdentity();
 const logoFailed = ref(false);
+onMounted(() => {
+  if (!props.staticPreferences) initializePreferenceSession();
+});
+if (!props.staticPreferences)
+  watch(
+    () => identity.value.applicationId,
+    (app) => accountPreferences.setApplication(app),
+    { immediate: true },
+  );
 watch(
   () => identity.value.logo?.src,
   () => {
@@ -102,6 +114,10 @@ const {
           <div
             class="order-2 min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16 lg:order-1"
           >
+            <AppPreferenceFeedback
+              v-if="!props.staticPreferences"
+              :locale="locale"
+            />
             <slot name="content" :t="t"><slot :t="t" /></slot>
             <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
               <slot name="actions" :t="t" />

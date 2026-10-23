@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Fortify;
 use Runa\Contracts\Modules\TrustedPrincipal;
@@ -54,6 +55,14 @@ final readonly class AuthenticateSession
                 $request->session()->put('auth.security_version', $user->security_version);
                 $request->session()->put('auth.session_id', $id);
                 $this->devices->apply($connection, $user, $id, $request);
+                $browser = $request->cookie('runa_browser');
+                $newBrowser = ! is_string($browser) || ! preg_match('/\A[0-9a-f]{64}\z/D', $browser);
+                if ($newBrowser) {
+                    $browser = bin2hex(random_bytes(32));
+                }
+                app(SecurityNotices::class)->browserLocked($connection, $user, $browser);
+                Cookie::queue(cookie('runa_browser', $browser, 525600, '/', null,
+                    app()->environment('production') || $request->isSecure(), true, false, 'lax'));
                 $row = $this->sessions->current($request, $user);
                 $request->session()->put('auth.remember', $row?->remembered === true);
                 $this->principals->run(new TrustedPrincipal($user->public_id), fn () => $this->transactions->record($this->credentials->restrictions($user, $row) === [] ? 'login.succeeded' : 'login.credentials_accepted', $user));

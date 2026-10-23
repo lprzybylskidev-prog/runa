@@ -7,3 +7,14 @@ Compose MinimalLayout for compact public screens or ApplicationLayout with named
 Tables use stable public_id keys, typed providers and validated envelopes. Never infer authorization from hidden columns/actions. Shared loading/empty/error/retry, dialog focus return and keyboard behavior must remain usable on mobile/tablet/desktop, light/dark and PL/EN. Admin UI is English. Use semantic labels, visible focus, associated errors, zoom-safe content and reduced-motion behavior. Exiting content becomes inert immediately; preserve focus/drafts during interrupted transitions. Do not add duplicate page entrances or animate dense data sorting. Rendered behavior is acceptance truth. Add application patterns here when they become reusable.
 
 Detailed public contracts and examples live in docs/runa/handbook/development/frontend/components.md, forms.md, tables.md, motion.md and page-layouts.md. Load only the relevant guide; keep application-specific additions in local App guidance. These public guides are delivered independently of the owner skill reference layout.
+
+Use docs/runa/handbook/modules/auth/preferences.md for the delivered AuthPreferences/
+AuthDelivery contracts. Declare exact source-owned preference schemas and notification
+categories, use optimistic revisions, and keep account caches/requests isolated on
+logout or switch. Legacy guest adoption requires explicit ownership confirmation;
+server values win and reset never resurrects legacy state. Do not put credentials,
+drafts or permission state in preferences, disable mandatory primary security mail,
+cache recipients across jobs, or import Auth private SQL/models. Reference-only
+managed security mail rechecks state and uses a persisted single SMTP attempt;
+critical recovery retains direct mail. Application code consumes these contracts
+without requiring conversion into an app module; protected Runa remains read-only.

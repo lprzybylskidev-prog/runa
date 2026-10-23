@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { onScopeDispose, ref, watch } from 'vue';
 import type {
   PreferenceDefinition,
   PreferenceStore,
@@ -13,8 +13,24 @@ export function usePreference<T>(
   store: PreferenceStore = defaultPreferenceStore,
 ) {
   const value = ref<T>(store.read(scope, control, definition));
-  watch(value, (next) => store.write(scope, control, definition, next as T), {
-    deep: true,
+  let syncing = false;
+  watch(
+    value,
+    (next) => {
+      if (!syncing) store.write(scope, control, definition, next as T);
+    },
+    {
+      deep: true,
+      flush: 'sync',
+    },
+  );
+  const unsubscribe = store.subscribe?.(() => {
+    syncing = true;
+    const next = store.read(scope, control, definition);
+    if (JSON.stringify(value.value) !== JSON.stringify(next))
+      value.value = next;
+    syncing = false;
   });
+  if (unsubscribe) onScopeDispose(unsubscribe);
   return value;
 }

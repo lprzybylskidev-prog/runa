@@ -150,3 +150,7 @@ export {
 export { loadApplicationIdentity } from './loadIdentity';
 
 export { ModulePage, ModuleSlot } from '../modules';
+
+export { accountPreferences } from '../../lib/preferenceStore';
+export { createAccountPreferenceStore } from '../../lib/accountPreferences';
+export { default as PreferenceFeedback } from '../../components/AppPreferenceFeedback.vue';

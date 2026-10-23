@@ -647,7 +647,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     revoke-all, self-only records, avatar ownership/content/disable preservation and
     naming fallbacks. No domain profile expansion or administration pages.
   - Update public Auth contracts and frontend component/pattern references as needed.
-- [ ] 9. Deliver account preferences and security delivery contracts.
+- [x] 9. Deliver account preferences and security delivery contracts.
   - Requires 8. Add typed/versioned preference declarations, Auth-owned rows and
     immediate revision-checked APIs; adapt all inspected local/legacy preference
     consumers with safe first adoption, guest fallback, reset and account switching.
@@ -779,7 +779,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–8 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up and private profile/address/avatar/own-history contracts. Point 9 is next: account preferences and security delivery contracts. Remaining Auth flows, UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–9 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 is next: policy history, privileged backend and operator initialization. Remaining Auth UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1267,3 +1267,71 @@ architectural premise requires discussion before dependent work.
   runa-management:2a709b7923c92afbb4bbef20 image tag. No task network/container/volume
   was created. Development/test data, Qdrant/model caches, backups, reports and
   shared builder caches are preserved.
+
+## Point 9 delivery
+
+- Auth advances independently 0.5.0 -> 0.6.0, with an explicit reserved forward
+  storage/defaults edge. AuthPreferences/AuthDelivery 1.0.0 add compatible public
+  contracts; Audit ^0.3.0 and framework API 1.0.0 stay unchanged. Future Permissions
+  must select Auth ^0.6.0 and Audit ^0.3.0. VERSION stays 0.4.2 until finalization.
+- Source-owned SettingsProvider extensions declare exact typed/versioned preference
+  schemas and email categories without another manifest registry. Auth owns bounded
+  PostgreSQL rows and account revisions, default/migration validation, current
+  principal reads/writes, own key/module/all reset and permissioned audited admin
+  reset. Source-configured application and shared display scopes prevent arbitrary
+  namespace growth. Named private no-store cookie/CSRF endpoints recheck current
+  unrestricted tracked sessions under registry/authority/user locks. Declaration
+  source/availability and optimistic conflicts remain authoritative.
+- Inventory covers legacy locale/theme, scoped display/navigation, statistics and
+  table columns/query/current/named/default views. Shared consumers subscribe to
+  account hydration without writing it back, queue immediate revision-ordered saves,
+  retain separate guest compatibility storage and show localized failure/reload
+  feedback through one Alert/Button-based PreferenceFeedback in both layouts.
+  Reset tombstones prevent legacy resurrection. Account caches stay memory-only;
+  logout/switch aborts/fences pending and late work. New login/reload refreshes the
+  server snapshot without polling. Legacy adoption is explicitly ownership-confirmed,
+  allowlists four display/navigation keys, preserves server values and closes after
+  adoption/reset. No automatic browser ownership inference is made. Exact domain
+  table/statistics schemas remain the originating module's declaration responsibility;
+  existing concrete tables are isolated developer fixtures, not shipped app domains.
+- Source-owned categories expose email-only routing with verified owned secondary
+  UUIDv7 choices and current eligibility; mandatory/sensitive mail is primary-only
+  and cannot be user-disabled. Delivery preference changes are audited atomically.
+  No Notifications runtime or operational in-app controls are introduced. Existing
+  recovery/password/OTP/address-link delivery stays on its direct security path.
+- Reference-only managed security notices cover optional new-browser/failed-login,
+  configured locks/password changes and account/password expiry. HMAC browser
+  inventory conveys no trust. Global availability/frequency, exact-deadline lead/
+  interval/count and an optional verified eligible admin-account copy bound delivery.
+  A durable rotating 100-user reminder scan, event uniqueness and persisted single
+  SMTP claims handle repeat/obsolete work. Execution revalidates policy, account,
+  addresses and current deadlines. A future trusted adapter can decline before an
+  attempt and retain direct Mail fallback; ambiguous sends never auto-retry.
+  Bounded technical outbox cleanup preserves Audit and current preference/address data.
+- Added prepared coverage for PostgreSQL persistence/relogin/account/application
+  isolation, validation/adoption/reset/revision conflict, guarded DTO API/default
+  admin denial, mandatory/invalid recipients, reminder deduplication/obsolescence,
+  single SMTP attempt and Audit-failure rollback. Browser tests cover late account
+  responses, queued logout fencing, guest separation, conflict feedback and rendered
+  shared PL/EN alert/reload controls. Existing fixture migration/version/teardown and
+  reserved updater expectations now include the new storage; broad execution stays
+  in point 19.
+- Necessary focused diagnostics: supported backend runner selecting the three new
+  preference/delivery scenarios PASS (55 assertions); supported frontend runner
+  selecting account-preferences.test.ts PASS (4 browser tests). These answer concrete
+  revision/transaction/late-response/rendering questions, not full acceptance. No
+  broad suites, static analysis, builds, security scans or final quality gate run.
+  Mandatory commit formatting/lint/secrets/freshness hooks still apply.
+- Synchronized the public Auth preference/delivery procedure, independent changelog,
+  frontend architecture/component/table/layout references, database/command guidance
+  and obsolete deferred-preference claim. Updated owner backend/Laravel/PostgreSQL/
+  security/frontend/Vue routes and separately authored customer application references.
+  Root owner/customer AGENTS need no new constitution rule: existing public-contract,
+  Audit, server authority and account-isolation invariants already cover this capability.
+  No new dependency, admin screen or platform release is introduced.
+- Fixture teardown removes only its exact disposable Auth/Audit tables and managed
+  work rows through the existing guarded owner harness. No task-specific Docker
+  containers/networks/volumes were created for these diagnostics. Existing development/
+  test data, management tooling image, Qdrant/model caches and verification/browser
+  reports remain preserved. The small source diagnostics do not authorize a dev
+  database reset or replace final installation/concurrency/browser acceptance.

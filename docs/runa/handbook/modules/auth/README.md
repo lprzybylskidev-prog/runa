@@ -12,7 +12,8 @@ RM-2026-011 points 4–8 supply identity/lifecycle foundations and
 [Operational sessions, remembered persistence and abuse defenses](sessions.md) are
 also available. [Password policy/recovery, 2FA, trusted devices and step-up](security.md)
 are delivered, along with [private profile, verified address changes, avatar and own history](profile.md).
-Preferences, Permissions and Auth screens follow in later points.
+[Account preferences and security delivery](preferences.md) are delivered.
+Policy management, Permissions and Auth screens follow in later points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access

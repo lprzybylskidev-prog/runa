@@ -1,5 +1,19 @@
 # Auth module changelog
 
+## 0.6.0
+
+Add AuthPreferences/AuthDelivery 1.0.0, source-owned versioned preference/category
+declarations, PostgreSQL account revisions, bounded validation/migration, own
+snapshot/write/reset/explicit guest adoption and audited permissioned admin reset.
+Adapt display/navigation/statistics/table consumers to an account cache with
+revision-ordered writes, guest separation, reset tombstones, late-response fencing
+and visible failure/reload feedback. Add email-only category/address routing,
+mandatory primary recipients, reference-only security notices, bounded idempotent
+expiry reminders, new-browser HMAC inventory and single-attempt mail with a future
+trusted delivery adapter/direct fallback. Add forward storage/settings upgrade
+0.5.0 -> 0.6.0. Existing API signatures/framework API/Audit requirement stay unchanged;
+policy/UI/Permissions integration remains assigned to later roadmap points.
+
 ## 0.5.0
 
 Add private versioned profile, configurable naming/login self-edits, primary-address

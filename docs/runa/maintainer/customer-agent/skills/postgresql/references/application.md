@@ -27,3 +27,14 @@ address workflows, notification-only verified secondary emails, authenticated av
 ownership/cleanup and safe own-history summaries. Consume guarded public contracts;
 never route core security mail to secondaries or grant general Audit read access
 for an own-account history feature. Protected platform implementation remains read-only.
+
+Use docs/runa/handbook/modules/auth/preferences.md for the delivered AuthPreferences/
+AuthDelivery contracts. Declare exact source-owned preference schemas and notification
+categories, use optimistic revisions, and keep account caches/requests isolated on
+logout or switch. Legacy guest adoption requires explicit ownership confirmation;
+server values win and reset never resurrects legacy state. Do not put credentials,
+drafts or permission state in preferences, disable mandatory primary security mail,
+cache recipients across jobs, or import Auth private SQL/models. Reference-only
+managed security mail rechecks state and uses a persisted single SMTP attempt;
+critical recovery retains direct mail. Application code consumes these contracts
+without requiring conversion into an app module; protected Runa remains read-only.

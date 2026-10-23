@@ -3,3 +3,14 @@
 Use Vue 3 SFCs with script setup lang=ts, strict payload types, typed props/emits and stable semantic keys. Props stay read-only; explicit local drafts are intentional. Keep computed pure, use watch for side effects, cancel obsolete async effects and ignore stale responses. Dispose listeners, timers and observers. Route parameters are inputs; account for reuse without remounting. Use composables for real reusable state with explicit inputs/outputs, not hidden global stores. Add no state library without an established shared need and dependency approval. Avoid any for known payloads, untrusted v-html, index keys for editable data and needless optimization. Unexpected Vue warnings fail acceptance.
 
 Use the shared request wrapper in src/runa/resources/js/lib/http.ts through the established project alias. It prefixes /api; pass resource paths such as /documents, not /api/documents. Decode unknown payloads at the boundary. Preserve cancellation and stable safe ApiError handling. Frontend checks use runa:test:frontend and runa:test:e2e via documented transport; internal runners do not replace them.
+
+Use docs/runa/handbook/modules/auth/preferences.md for the delivered AuthPreferences/
+AuthDelivery contracts. Declare exact source-owned preference schemas and notification
+categories, use optimistic revisions, and keep account caches/requests isolated on
+logout or switch. Legacy guest adoption requires explicit ownership confirmation;
+server values win and reset never resurrects legacy state. Do not put credentials,
+drafts or permission state in preferences, disable mandatory primary security mail,
+cache recipients across jobs, or import Auth private SQL/models. Reference-only
+managed security mail rechecks state and uses a persisted single SMTP attempt;
+critical recovery retains direct mail. Application code consumes these contracts
+without requiring conversion into an app module; protected Runa remains read-only.

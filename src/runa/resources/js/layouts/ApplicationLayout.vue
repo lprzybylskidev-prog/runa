@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
+import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
+import { accountPreferences } from '../lib/preferenceStore';
 import { lockDocumentScroll } from '../lib/scrollLock';
 import {
   computed,
@@ -71,6 +74,11 @@ const {
   finishPreferenceChange,
 } = useDisplayPreferences();
 watch(locale, (value) => emit('localeChange', value), { immediate: true });
+watch(
+  () => identity.value.applicationId,
+  (app) => accountPreferences.setApplication(app),
+  { immediate: true },
+);
 const scope = {
   applicationId: identity.value.applicationId,
   moduleKey: 'shell',
@@ -242,6 +250,7 @@ watch(
   },
 );
 onMounted(() => {
+  initializePreferenceSession();
   document.addEventListener('keydown', keydown);
 });
 const media = window.matchMedia('(max-width: 63.999rem)');
@@ -436,6 +445,7 @@ onScopeDispose(() => {
         </div>
       </header>
       <main :id="contentId" tabindex="-1" class="shell-workspace">
+        <AppPreferenceFeedback :locale="locale" />
         <header class="shell-heading">
           <div>
             <slot name="heading" :t="t"

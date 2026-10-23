@@ -5,6 +5,7 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Settings\ModuleSettings;
@@ -29,6 +30,14 @@ final readonly class LoginAbuse
     public function failure(Connection $connection, string $identifier, ?User $user): void
     {
         $this->count($connection, 'account:'.$identifier, $this->settings->value('runa.auth', 'abuse_account_limit'), $user);
+        if ($user !== null) {
+            $connection->table('runa_auth.users')->where('id', $user->id)->lockForUpdate()->first();
+            $notices = app(SecurityNotices::class);
+            $notices->issueLocked($connection, $user, 'failed_login', (string) Str::uuid7());
+            if ($this->blocked($connection, $identifier)) {
+                $notices->issueLocked($connection, $user, 'locked', (string) Str::uuid7());
+            }
+        }
     }
 
     private function count(Connection $connection, string $subject, int $limit, ?User $user = null): bool

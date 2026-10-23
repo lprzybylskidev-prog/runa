@@ -7,6 +7,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
@@ -91,6 +92,7 @@ final readonly class Passwords
         $connection->table('runa_auth.profile_mail')->where('user_id', $user->id)->where('purpose', '<>', 'notice')->whereNull('consumed_at')->update(['consumed_at' => now(), 'delivery_secret' => null]);
         $user->password = Hash::make($password);
         $user->password_changed_at = CarbonImmutable::now('UTC');
+        app(SecurityNotices::class)->issueLocked($connection, $user, 'password_changed', (string) Str::uuid7());
         $user->password_change_required = false;
         $user->remember_token = null;
         $user->version++;

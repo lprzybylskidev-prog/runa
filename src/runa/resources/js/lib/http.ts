@@ -1,3 +1,18 @@
+type RequestEvent = {
+  phase: 'start' | 'end';
+  path: string;
+  status?: number;
+  payload?: unknown;
+  context?: unknown;
+};
+const observers = new Set<(event: RequestEvent) => unknown>();
+export function observeRequests(
+  observer: (event: RequestEvent) => unknown,
+): () => void {
+  observers.add(observer);
+  return () => observers.delete(observer);
+}
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -31,6 +46,12 @@ export async function request(
   if (!path.startsWith('/') || path.startsWith('//') || /[\\?#]/.test(path)) {
     throw new Error('Use a relative API resource path.');
   }
+  const contexts = new Map(
+    [...observers].map((observer) => [
+      observer,
+      observer({ phase: 'start', path }),
+    ]),
+  );
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
   headers.set('X-Requested-With', 'XMLHttpRequest');
@@ -54,6 +75,9 @@ export async function request(
     !response.headers.get('Content-Type')?.includes('application/json')
       ? null
       : await response.json();
+  contexts.forEach((context, observer) =>
+    observer({ phase: 'end', path, status: response.status, payload, context }),
+  );
   if (!response.ok) throw new ApiError(response.status, payload);
   return payload;
 }

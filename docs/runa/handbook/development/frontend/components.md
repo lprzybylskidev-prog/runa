@@ -237,3 +237,14 @@ IdentityProvider keeps its existing reactive subtree contract. Normal applicatio
 - ModulePage takes nullable view, built components, href, optional locale and unavailableText, with an unavailable scoped slot. It reconstructs exact route context and mounts only available pages with matching manifest hashes. Gate before setup/import, rather than starting page requests then hiding content.
 - ModuleSlot takes nullable view, components, name and exact scalar values. It preserves backend contribution order and stable identity, rejects incompatible props/builds, and exposes ordinary fallback content. Host/contributor availability and permission projection are backend-owned.
 - createModuleComponents wraps the opt-in virtual local registry with raw lazy Vue components. useModuleFrontend explicitly refreshes through the existing HTTP wrapper, clears stale presentation and cancels/ignores obsolete requests. Follow the public module-framework frontend section for schema, build inclusion, scalar props, ordering persistence and permission limits.
+
+## Account preference adapter
+
+Public `accountPreferences` and `createAccountPreferenceStore` complement the
+existing PreferenceStore/usePreference contract. Display/navigation/statistics/table
+consumers subscribe to account hydration and keep guest values separate. Public `PreferenceFeedback` (`AppPreferenceFeedback.vue`) is reused by both layouts
+and shows save/load/conflict feedback through existing Alert/Button components with an
+explicit reload action; feedback is static and announced, with no added motion.
+See [Auth preferences](../../modules/auth/preferences.md) for exact declarations,
+revisions, safe legacy adoption and logout/late-response behavior. Custom standalone
+stores remain opt-in; standalone components initialize no account session.

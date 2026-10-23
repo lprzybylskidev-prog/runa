@@ -308,3 +308,11 @@ its zero exit indicates admission, not completion. The five-minute schedule remo
 bounded expired/revoked/stale technical session/trust/login-window rows and preserves
 Audit or password history. It also removes bounded expired step-up proofs, profile mail/requests and disposable unreferenced private avatar files; current/disabled avatars and address identities remain preserved. See the [profile contract](../modules/auth/profile.md). See the
 [session/abuse contract](../modules/auth/sessions.md) and [credential contract](../modules/auth/security.md).
+
+### Auth security reminders
+
+`php artisan runa:auth:security.remind` admits bounded operational reminder work;
+zero means admission, not completion. Its minute schedule rotates through 100
+accounts, revalidating exact deadlines and current recipients before delivery.
+See [preferences and security delivery](../modules/auth/preferences.md). Normal
+recovery mail remains direct and independent of a Notifications module.

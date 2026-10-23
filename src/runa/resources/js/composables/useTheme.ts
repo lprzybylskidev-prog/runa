@@ -1,3 +1,4 @@
+import { defaultPreferenceStore } from '../lib/preferenceStore';
 import { onScopeDispose, ref, watch } from 'vue';
 import { readPreference, savePreference } from '../lib/preferences';
 
@@ -17,13 +18,21 @@ export function useTheme() {
           : 'light'
         : theme.value;
   }
+  let syncing = false;
+  const unsubscribe = defaultPreferenceStore.subscribe?.(() => {
+    const saved = readPreference('runa.theme');
+    syncing = true;
+    theme.value = saved === 'light' || saved === 'dark' ? saved : 'system';
+    syncing = false;
+  });
+  if (unsubscribe) onScopeDispose(unsubscribe);
   watch(
     theme,
     (value) => {
-      savePreference('runa.theme', value);
+      if (!syncing) savePreference('runa.theme', value);
       apply();
     },
-    { immediate: true },
+    { immediate: true, flush: 'sync' },
   );
   media.addEventListener('change', apply);
   onScopeDispose(() => media.removeEventListener('change', apply));

@@ -6,12 +6,14 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\FortifyServiceProvider;
@@ -33,15 +35,19 @@ use Runa\Modules\Auth\Actions\ManageSessions;
 use Runa\Modules\Auth\Actions\Passwords;
 use Runa\Modules\Auth\Actions\ProfileMail;
 use Runa\Modules\Auth\Actions\Profiles;
+use Runa\Modules\Auth\Actions\SecurityNotices;
 use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Actions\StepUp;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
+use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\PreferenceScope;
+use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -95,12 +101,13 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.5.0' : '0.3.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.6.0' : '0.3.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.
     config()->set('queue.default', 'database');
@@ -133,7 +140,7 @@ afterEach(function (): void {
     DB::table('shared.module_work')->where('module_id', $authId)->delete();
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
-        foreach ($schema === 'runa_auth' ? ['profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
+        foreach ($schema === 'runa_auth' ? ['notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
             DB::statement('DROP TABLE '.$schema.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
@@ -267,7 +274,7 @@ it('rejects a missing CSRF proof with the actual middleware even in the focused 
 
 it('upgrades encrypted identity settings additively only inside the reserved updater', function (): void {
     // Establish real migration/step history, then model the supported prior data version.
-    foreach (['runa_auth.profile_mail', 'runa_auth.email_changes', 'runa_auth.secondary_emails', 'runa_auth.avatar_files', 'runa_auth.step_up_proofs', 'runa_auth.password_history', 'runa_auth.login_windows', 'runa_auth.sessions', 'runa_auth.trusted_devices', 'runa_auth.entry_tokens', 'runa_auth.users', 'runa_audit.entities', 'runa_audit.events'] as $table) {
+    foreach (['runa_auth.notice_scan', 'runa_auth.known_browsers', 'runa_auth.notice_frequencies', 'runa_auth.security_notices', 'runa_auth.delivery_preferences', 'runa_auth.preferences', 'runa_auth.profile_mail', 'runa_auth.email_changes', 'runa_auth.secondary_emails', 'runa_auth.avatar_files', 'runa_auth.step_up_proofs', 'runa_auth.password_history', 'runa_auth.login_windows', 'runa_auth.sessions', 'runa_auth.trusted_devices', 'runa_auth.entry_tokens', 'runa_auth.users', 'runa_audit.entities', 'runa_audit.events'] as $table) {
         DB::statement('DROP TABLE '.$table.' RESTRICT');
     }
     DB::statement('DROP SCHEMA runa_auth RESTRICT');
@@ -275,7 +282,7 @@ it('upgrades encrypted identity settings additively only inside the reserved upd
     DB::table('shared.modules')->whereIn('module_id', ['runa.auth', 'runa.audit'])->update(['installed_version' => null]);
     app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0'])->delete();
+    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
     DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0', 'settings_revision' => 4,
         'settings_values' => app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false)]);
@@ -1083,4 +1090,94 @@ it('rechecks profile restrictions under the account lock after admission has alr
     expect(fn () => app(Profiles::class)->edit(credentialRequest('/', ['version' => 1, 'name' => 'Forbidden after admission'])))
         ->toThrow(OperationRejected::class);
     expect(User::find($user->id)->name)->toBe('Test User');
+});
+
+it('persists declared own preferences with revision conflicts adoption reset and account isolation', function (): void {
+    entryPolicy(['email_verification' => 'disabled']);
+    $user = entryUser('preferences@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $endpoint = '/api/runa/auth/preferences';
+    $base = ['application' => 'runa'];
+    $scope = ['module' => 'runa.auth', 'view' => 'global', 'key' => 'locale'];
+    $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.revision', 0);
+    config()->set('branding.application_id', 'custom-app');
+    $custom = $this->postJson($endpoint, ['application' => 'custom-app', 'operation' => 'snapshot'])->assertOk()->json('data.values');
+    expect(array_column($custom, 'scope'))->toContain('custom-app:runa.auth:navigation:expanded');
+    $this->postJson($endpoint, $base + $scope + ['operation' => 'write', 'value' => 'en', 'revision' => 0])
+        ->assertOk()->assertJsonPath('data.value', 'en')->assertJsonPath('data.revision', 1);
+    $this->postJson($endpoint, $base + $scope + ['operation' => 'write', 'value' => 'pl', 'revision' => 0])->assertStatus(409);
+    $this->postJson($endpoint, $base + $scope + ['operation' => 'write', 'value' => 'invalid', 'revision' => 1])->assertStatus(422);
+    $this->postJson($endpoint, $base + array_replace($scope, ['key' => 'undeclared']) + ['operation' => 'write', 'value' => 'en', 'revision' => 1])->assertStatus(422);
+    // Explicit guest adoption is allowlisted; server values win.
+    $this->postJson($endpoint, $base + ['operation' => 'adopt', 'revision' => 1, 'values' => [
+        $scope + ['value' => 'pl'], ['module' => 'runa.auth', 'view' => 'global', 'key' => 'theme', 'value' => 'dark'],
+    ]])->assertOk()->assertJsonPath('data.legacy_claimed', true)->assertJsonPath('data.revision', 2);
+    $this->postJson($endpoint, $base + ['operation' => 'adopt', 'revision' => 2, 'values' => []])->assertStatus(409);
+    $this->postJson($endpoint, $base + $scope + ['operation' => 'reset', 'revision' => 2])->assertOk()->assertJsonPath('data.revision', 3);
+    $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.values.0.value', 'pl');
+    // A fresh login/device reads PostgreSQL, and another account has its own defaults.
+    $this->postJson('/api/runa/auth/logout')->assertOk();
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.revision', 3);
+    $this->postJson('/api/runa/auth/logout')->assertOk();
+    $other = entryUser('other-preferences@example.test');
+    entryLogin($this, ['identifier' => $other->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.revision', 0)->assertJsonPath('data.values.1.value', 'system');
+    app(PrincipalScope::class)->run(new TrustedPrincipal($other->public_id), function (): void {
+        $api = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.0.0');
+        $scope = new PreferenceScope('runa', 'runa.auth', 'global', 'theme');
+        expect($api->read($scope)['value'])->toBe('system');
+        expect($api->write($scope, new PreferenceValue('dark'), 0)['value'])->toBe('dark');
+        expect(fn () => $api->resetAccount((string) Str::uuid7(), 0))->toThrow(OperationRejected::class);
+    });
+});
+
+it('protects mandatory routing and revalidates obsolete reminders with single SMTP attempts', function (): void {
+    entryPolicy(['email_verification' => 'disabled', 'notice_account_expiry' => true, 'notice_interval_minutes' => 1]);
+    $user = entryUser('notices@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->expires_at = now()->addDays(2);
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth', 'category' => 'locked',
+        'revision' => 0, 'enabled' => false, 'recipients' => ['primary']])->assertStatus(422);
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth', 'category' => 'new_browser',
+        'revision' => 0, 'enabled' => true, 'recipients' => [(string) Str::uuid7()]])->assertStatus(422);
+    $notices = app(SecurityNotices::class);
+    $notices->reminders();
+    $notices->reminders();
+    expect(DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->count())->toBe(1);
+    $notice = DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->first();
+    $sent = 0;
+    app('events')->listen(MessageSending::class, function () use (&$sent): void {
+        $sent++;
+    });
+    // State changes between enqueue and execution make the reminder obsolete.
+    DB::transaction(function () use ($user): void {
+        $user->expires_at = now()->addDays(30);
+        $user->save();
+    });
+    $notices->deliver($notice->public_id);
+    expect($sent)->toBe(0);
+    $this->postJson('/api/runa/auth/password/change', ['current_password' => 'a-long-test-password', 'password' => 'a-new-long-password', 'password_confirmation' => 'a-new-long-password'])
+        ->assertOk();
+    $passwordNotice = DB::table('runa_auth.security_notices')->where('category', 'password_changed')->first();
+    expect($passwordNotice)->not->toBeNull();
+    $notices->deliver($passwordNotice->public_id);
+    $notices->deliver($passwordNotice->public_id);
+    expect($sent)->toBe(1)->and(DB::table('runa_auth.security_notices')->where('id', $passwordNotice->id)->value('sent_at'))->not->toBeNull();
+});
+
+it('rolls back delivery preferences and their revision when mandatory Audit persistence fails', function (): void {
+    entryPolicy(['email_verification' => 'disabled']);
+    $user = entryUser('delivery-atomic@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT delivery_fixture_refusal CHECK (false) NOT VALID');
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth', 'category' => 'new_browser',
+        'revision' => 0, 'enabled' => false, 'recipients' => ['primary']])->assertServiceUnavailable();
+    expect(User::find($user->id)->preference_revision)->toBe(0)
+        ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count())->toBe(0);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT delivery_fixture_refusal');
 });

@@ -28,3 +28,5 @@ Synchronize affected current guidance and domain/pattern references in the same 
 ## Owner and customer guidance
 
 This skill serves Runa owner engineering. Assess the separately authored customer skill and references under docs/runa/maintainer/customer-agent/skills in the same relevant point. Update both for reusable/public changes, or record why the customer product is unaffected. Customer source is product data, never owner operating authority. Use supported project commands before internal runners; receive necessary scoped diagnostic results within the point. Full verification belongs to final quality and its built-in quality-status interface.
+
+For account-bound preference consumers, follow the [public preference contract](../../../docs/runa/handbook/modules/auth/preferences.md). Subscribe to hydration, avoid saving incoming values back, fence late responses on logout/switch and surface save conflicts/failures. Injected custom stores own their own account lifecycle.
