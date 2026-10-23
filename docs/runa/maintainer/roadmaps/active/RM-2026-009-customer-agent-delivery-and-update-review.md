@@ -1,10 +1,10 @@
 ---
 id: RM-2026-009
 title: Customer agent delivery and project update review
-status: draft
+status: active
 branch: roadmap/RM-2026-009-customer-agent-delivery-and-update-review
 created_at: 2026-10-22
-activated_at: null
+activated_at: 2026-10-23
 closed_at: null
 release_type: fix
 proposed_version: 0.4.1
@@ -25,7 +25,7 @@ impact_areas:
 
 Deliver distinct owner and customer AI instruction sets, maintain both while developing Runa, and give the customer a self-contained agent environment for building applications on Runa. Extend development updates with a complete review of delivered project files and explicit consent to replace customized non-platform files. Review environment-file responsibilities and operation guidance.
 
-Execute immediately after [RM-2026-006](../closed/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 is closed for release 0.4.0; this roadmap remains a draft. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. The owner classifies this as corrective work: planned fix release **0.4.1** after RM-006's projected 0.4.0. Reconcile the actual released baseline at activation; no platform version or release is changed by this draft.
+Execute immediately after [RM-2026-006](../closed/RM-2026-006-module-framework.md) finishes verification, closure, merge and release. RM-006 is closed for release 0.4.0; this roadmap is active with owner approval on 2026-10-23. The owner approved creation of this draft on 2026-10-22; this is not approval to activate it or implement its scope during RM-006. Refresh the predecessor link when RM-006 closes, without changing its closed contents. The owner classifies this as corrective work: planned fix release **0.4.1** after RM-006's projected 0.4.0. Reconcile the actual released baseline at activation; no platform version or release is changed by this draft.
 
 ### Scope
 
@@ -51,6 +51,8 @@ Observed gaps: customer-facing frontend guidance currently directs reusable comp
 ## Specification
 
 ### Decisions
+
+- 2026-10-23 — Owner authorizes activation and execution, and explicitly approves preparing broad acceptance during implementation and running it only in final point 9. Earlier points permit only small, fast checks that resolve a concrete uncertainty; their scenario descriptions do not require early broad verification.
 
 - 2026-10-22 — Owner specifies `release_type: fix` and `proposed_version: 0.4.1`, following RM-006 at 0.4.0. Treat this as correction of existing delivery/workflow/update behavior, not a feature release; refresh the projection if the actual release baseline changes.
 
@@ -137,20 +139,20 @@ Make justified naming/generation/documentation improvements with a safe transiti
 - [ ] 2. Rewrite owner instructions and author the concise customer bundle.
   - Requires 1. Audit all AGENTS/skills/references; implement owner-only operating scope and the customer product under maintainer docs. Ground application guidance in actual public code, support classic Laravel and optional modules, prohibit protected edits, define maintenance of both products during Runa work and local guidance during app work. Require built-in command precedence and justified proposals only for reusable missing operations, keeping one-off checks proportionate. Explicitly prohibit bypassing supported test/acceptance entrypoints with internal or detached log-only runners. Clarify point checks versus final background quality and tool-specific status. Verify public links, instruction discovery and representative agent tasks, including scoped/host/final command selection, bypass rejection and missing-command cases, without changing runtime behavior.
 - [ ] 3. Deliver customer instructions through installation and customer repositories.
-  - Requires 2. Update verified projection/materialization and baseline records to substitute customer files and exclude owner instructions. Cover fresh acquisition, repeat/reopen, reference include/exclude variants, ordinary teammate clones and safe adoption for existing installations. Preserve local guidance extensions and synchronize installer/distribution docs. Run scoped real-Git delivery regressions.
+  - Requires 2. Update verified projection/materialization and baseline records to substitute customer files and exclude owner instructions. Cover fresh acquisition, repeat/reopen, reference include/exclude variants, ordinary teammate clones and safe adoption for existing installations. Preserve local guidance extensions and synchronize installer/distribution docs. Prepare real-Git delivery regression scenarios for final verification.
 - [ ] 4. Isolate knowledge products and verify empty customer Qdrant startup.
-  - Requires 3. Update source allowlists/metadata so customer authoring templates are not owner operating guidance and only delivered customer sources enter customer retrieval. Verify fresh empty isolated storage before first indexing, first-start corpus/doctor/retrieval, no owner payloads, repeat preservation and incremental changes. Verify optional-AI degradation and production exclusion. Preserve existing knowledge/model caches and record scoped disposable resource cleanup.
+  - Requires 3. Update source allowlists/metadata so customer authoring templates are not owner operating guidance and only delivered customer sources enter customer retrieval. Prepare final acceptance scenarios for fresh empty isolated storage, first-start corpus/doctor/retrieval, no owner payloads, repeat preservation, incremental changes, optional-AI degradation and production exclusion. Preserve existing knowledge/model caches and record scoped disposable resource cleanup.
 - [ ] 5. Implement complete delivered-file differences and proposed update plans.
   - Requires 3. Compare installed/default/target projections across non-platform delivered files, including instruction products. Report exact local/upstream differences and add/update/remove/preserve/reconcile actions, protected/application/private/generated ownership and infrastructure impact. Retain unconditional `src/runa` mismatch refusal and secret-safe output. Verify read-only operation, path/type handling, customer additions/deletions and target removal conflicts.
 - [ ] 6. Execute explicitly approved non-platform updates with safe recovery.
   - Requires 5. Extend consent fingerprints, lock-time revalidation, staging and journal/resume for exact eligible file actions. Test missing consent/abort without mutation, accepted overwrite/deletion, changed-plan renewal, interruption/resume and preservation of application source/docs/instruction extensions/secrets/data/Git history. Keep protected-source refusal absolute and production customer-commit deployment unchanged. Update reconciliation/operator guidance in the same point.
 - [ ] 7. Audit and simplify environment-file handling where justified.
   - Requires 1 and 6. Complete the creator/consumer/secret-boundary inventory; resolve backup-file provenance, naming/template consistency and duplicated-credential checks. Implement justified compatible changes and migration guidance, with proportionate tests for existing settings/repeat/recovery and no secret output or unapproved data deletion. Synchronize both instruction products if operator workflow changes.
-- [ ] 8. Integrated customer delivery and update acceptance.
-  - Requires 2–7. Exercise real isolated customer installation, instruction substitution, teammate clone, clean first knowledge initialization and both supported app structures. Exercise complete update review, consent/abort, changed local state, accepted upstream additions/replacements/deletions, preserved customer extensions and failure/resume, plus absolute modified-platform rejection. Inspect built production images for AI/owner tooling exclusion. Receive results and resolve scoped failures within implementation points; clean only proven task-created disposable resources and record preserved resources.
+- [ ] 8. Prepare integrated customer delivery and update acceptance.
+  - Requires 2–7. Implement the scenarios and harness for real isolated customer installation, instruction substitution, teammate clone, clean first knowledge initialization and both supported app structures. Prepare complete update review, consent/abort, changed local state, accepted upstream additions/replacements/deletions, preserved customer extensions and failure/resume, absolute modified-platform rejection, and built production image isolation checks. Do not run broad acceptance here; execute it in point 9.
 - [ ] 9. Full verification, release finalization, merge and final report.
-  - Requires 1–8 complete and committed. Review current-state docs, both instruction products, source ownership, knowledge/installer/update/env procedures and release metadata against code; record sources/findings/disposition. Run the full applicable owner quality workflow, security and production isolation gates through the established background interface; end the turn and provide the built-in owner status command. Insert fix points and rerun full verification from the beginning if needed. Finalize version/changelog, refresh knowledge, close/merge with a merge commit, run main sanity, publish immutable tag/release and remove the roadmap branch under the existing workflows.
+  - Requires 1–8 complete and committed. Review current-state docs, both instruction products, source ownership, knowledge/installer/update/env procedures and release metadata against code; record sources/findings/disposition. Execute the integrated acceptance prepared in point 8 as part of the full applicable owner quality workflow, security and production isolation gates through the established background interface; end the turn and provide the built-in owner status command. Insert fix points and rerun full verification from the beginning if needed. Finalize version/changelog, refresh knowledge, close/merge with a merge commit, run main sanity, publish immutable tag/release and remove the roadmap branch under the existing workflows.
 
 ## Acceptance and planning status
 
-Every implementation point requires proportionate passing checks, synchronized current-state guidance, a logical commit and checklist update. Test actual customer projections and runtime behavior; static path checks alone do not prove instruction usability, fresh vector storage or safe update recovery. No implementation, activation, release or verification PASS is claimed by this draft.
+Every implementation point requires any necessary small, fast, focused checks, synchronized current-state guidance, a logical commit and checklist update. Test actual customer projections and runtime behavior; static path checks alone do not prove instruction usability, fresh vector storage or safe update recovery. Activation is authorized; no implementation, release or verification PASS is claimed before execution.
