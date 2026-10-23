@@ -78,6 +78,7 @@ class Execution(UpdaterFixture):
         self.engine = Runtime(self)
 
     def apply(self, **kwargs):
+        kwargs.setdefault('choose', lambda review: kwargs.get('choice', 'continue'))
         return execution.execute(self.installed, self.client, 'v0.3.0', download=self.download,
                                  runtime_factory=lambda root: self.engine, lock_probe=lambda *a: 'fixture', **kwargs)
 
@@ -86,7 +87,7 @@ class Execution(UpdaterFixture):
 
     def test_execution_replaces_only_platform_and_records_completion_without_git_writes(self):
         (self.installed / 'src/app/customer.php').write_text('<?php // customer')
-        before = {name: (self.installed / name).read_bytes() for name in ('VERSION', 'compose.yaml', 'src/app/application.json', 'src/app/customer.php', '.git/config')}
+        before = {name: (self.installed / name).read_bytes() for name in ('compose.yaml', 'src/app/application.json', 'src/app/customer.php', '.git/config')}
         result = self.apply()
         self.assertEqual(result['status'], 'completed', result)
         self.assertEqual(update_contracts.platform(self.installed), '0.3.0')
@@ -176,18 +177,113 @@ class Execution(UpdaterFixture):
     def test_execution_customization_requires_explicit_choice_and_changed_resume_review(self):
         self.installed.joinpath('compose.yaml').write_text('{"services":{"redis":{"image":"redis"}}}')
         before = self.snapshot()
-        self.assertEqual(self.apply()['checks'][-1]['id'], 'customization-decision-required')
+        self.assertEqual(self.apply(choose=None)['checks'][-1]['id'], 'customization-decision-required')
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(self.apply(choice='abort')['checks'][-1]['id'], 'customization-aborted')
         self.assertEqual(self.snapshot(), before)
         self.engine.fail = 'build'
         self.assertEqual(self.apply(choice='continue')['status'], 'blocked')
         self.installed.joinpath('compose.yaml').write_text('{"services":{"redis":{"image":"redis","command":["changed"]}}}')
-        blocked = self.apply(resume=True, choice='continue')
+        blocked = self.apply(resume=True, choice='continue', choose=None)
         self.assertEqual(blocked['checks'][-1]['id'], 'customization-changed', blocked)
         fingerprint = blocked['customization_review']['fingerprint']
         self.assertEqual(self.apply(resume=True, choice='continue', fingerprint=fingerprint)['status'], 'completed')
-        self.assertIn('changed', (self.installed / 'compose.yaml').read_text())
+        self.assertEqual((self.installed / 'compose.yaml').read_bytes(), (self.target / 'compose.yaml').read_bytes())
+
+    def test_reviewed_non_platform_add_replace_remove_and_instruction_preservation(self):
+        for root in (self.original, self.target, self.installed):
+            for name in ('README.md', 'obsolete.txt', 'AGENTS.md'):
+                (root / name).write_text('baseline')
+                self.git(root, 'add', name)
+        (self.target / 'README.md').write_text('new readme')
+        (self.installed / 'README.md').write_text('customer customized readme')
+        (self.installed / 'AGENTS.md').write_text('customer instruction extension')
+        (self.target / 'AGENTS.md').write_text('new defaults')
+        self.git(self.target, 'rm', '-f', 'obsolete.txt')
+        (self.target / 'new-guide.md').write_text('new guide')
+        self.git(self.target, 'add', 'new-guide.md')
+        result = self.apply()
+        self.assertEqual(result['status'], 'completed', result)
+        self.assertEqual((self.installed / 'README.md').read_text(), 'new readme')
+        self.assertEqual((self.installed / 'new-guide.md').read_text(), 'new guide')
+        self.assertFalse((self.installed / 'obsolete.txt').exists())
+        self.assertEqual((self.installed / 'AGENTS.md').read_text(), 'customer instruction extension')
+        self.assertIn('AGENTS.md', result['manual_reconciliation'])
+
+    def test_file_rename_interruptions_resume_from_saved_before_after_state(self):
+        for root in (self.original, self.target, self.installed):
+            (root / 'README.md').write_text('baseline')
+            self.git(root, 'add', 'README.md')
+        (self.target / 'README.md').write_text('target')
+        rename = execution.os.rename
+        interrupted = False
+        def interrupt(source, destination):
+            nonlocal interrupted
+            rename(source, destination)
+            if Path(source) == self.installed / 'README.md' and not interrupted:
+                interrupted = True
+                raise KeyboardInterrupt()
+        with patch.object(execution.os, 'rename', side_effect=interrupt), self.assertRaises(KeyboardInterrupt):
+            self.apply()
+        self.assertFalse((self.installed / 'README.md').exists())
+        self.assertEqual(self.apply(resume=True)['status'], 'completed')
+        self.assertEqual((self.installed / 'README.md').read_text(), 'target')
+
+    def test_customer_reconciles_configuration_before_publication_and_production_provision(self):
+        import installation as installer
+        templates = ('.env.dev.example', '.env.prod.example')
+        defaults = {name: (ROOT / name).read_text() for name in templates}
+        for root in (self.original, self.target, self.installed):
+            for name, content in defaults.items():
+                (root / name).write_text(content)
+        self.before = self.commit(self.original)
+        self.after = self.commit(self.target)
+        for name in templates:
+            with (self.installed / name).open('a') as stream:
+                stream.write('\nTEAM_RELEASE_MARKER=\n')
+        private_before = (self.installed / '.env').read_bytes()
+        extra = {'image': 'customer-redis', 'command': ['redis-server', '--save', '']}
+        value = json.loads((self.installed / 'compose.yaml').read_text())
+        value['services']['redis'] = extra
+        (self.installed / 'compose.yaml').write_text(json.dumps(value))
+        result = self.apply()
+        self.assertEqual(result['status'], 'completed', result)
+        target = json.loads((self.target / 'compose.yaml').read_text())
+        self.assertEqual(json.loads((self.installed / 'compose.yaml').read_text()), target)
+        for name, content in defaults.items():
+            self.assertEqual((self.installed / name).read_text(), content)
+        self.assertIn('redis', result['infrastructure_follow_up']['services'])
+        reconcile = runpy.run_path(str(ROOT / 'tools/maintainer/testing/update-host.py'))['reconcile_fixture_configuration']
+        reconcile(self.installed, {'redis': extra})
+        published = json.loads((self.installed / 'compose.yaml').read_text())
+        self.assertEqual(published['services']['redis'], extra)
+        self.assertEqual({k: v for k, v in published['services'].items() if k != 'redis'}, target['services'])
+        with self.assertRaisesRegex(RuntimeError, 'existing release service'):
+            reconcile(self.installed, {'app': extra})
+        before = {name: (self.installed / name).read_bytes() for name in ('compose.yaml', *templates)}
+        with self.assertRaisesRegex(RuntimeError, 'existing environment instruction'):
+            reconcile(self.installed, {'another': extra})
+        self.assertEqual(before, {name: (self.installed / name).read_bytes() for name in before})
+        self.assertEqual((self.installed / '.env').read_bytes(), private_before)
+        (self.installed / '.gitignore').write_text('.env\n.runtime/\n')
+        self.commit(self.installed)
+        production = self.base / 'production-clone'
+        self.git(self.base, 'clone', '-q', str(self.installed), str(production))
+        self.assertFalse((production / '.env').exists())
+        for name in templates:
+            self.assertEqual((production / name).read_text().count('TEAM_RELEASE_MARKER=\n'), 1)
+        self.assertFalse((production / '.env.prod').exists())
+        settings = {'app_url': 'https://fixture.example.invalid', 'tls': {'mode': 'external'},
+                    'smtp': {'host': 'smtp.example.invalid', 'port': 587, 'scheme': 'smtp', 'from': 'fixture@example.invalid'}}
+        with patch.object(installer, 'ROOT', production):
+            installer.provision(settings, self.after, True)
+            environment = production / '.env.prod'
+            content = environment.read_text()
+            self.assertEqual(content.count('TEAM_RELEASE_MARKER=\n'), 1)
+            environment.write_text(content.replace('TEAM_RELEASE_MARKER=\n', 'TEAM_RELEASE_MARKER=manually-prepared\n'))
+            private = {name: (production / name).read_bytes() for name in ('.env.prod', '.env.prod.database')}
+            installer.provision(settings, self.after, True)
+        self.assertEqual(private, {name: (production / name).read_bytes() for name in private})
 
     def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(self):
         self.engine.fail = 'build'; self.apply()

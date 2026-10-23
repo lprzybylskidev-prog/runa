@@ -29,6 +29,9 @@ def sources(root, config):
     for name in result.stdout.decode().split('\0'):
         if not name:
             continue
+        # Authored customer instructions are a separate product, never owner operating rules.
+        if name.startswith('docs/runa/maintainer/customer-agent/'):
+            continue
         if not owner and (name.startswith('docs/runa/maintainer/') or name.startswith('tools/maintainer/')):
             continue
         path = root / name

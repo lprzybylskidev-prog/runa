@@ -22,6 +22,23 @@ def release_tags(installed_version):
     return 'v' + installed_version, f'v{major}.{minor}.{patch + 1}'
 
 
+def reconcile_fixture_configuration(root, services):
+    """Explicit customer action after the updater applies its approved target."""
+    path = root / 'compose.yaml'
+    value = json.loads(path.read_text())
+    if set(services) & value['services'].keys():
+        raise RuntimeError('Fixture reconciliation refuses to replace an existing release service.')
+    templates = {root / name: (root / name).read_text()
+                 for name in ('.env.dev.example', '.env.prod.example')}
+    if any(any(line.strip().startswith('TEAM_RELEASE_MARKER=') for line in content.splitlines())
+           for content in templates.values()):
+        raise RuntimeError('Fixture reconciliation refuses to replace an existing environment instruction.')
+    value['services'].update(services)
+    path.write_text(json.dumps(value, indent=2) + '\n')
+    for template, content in templates.items():
+        template.write_text(content.rstrip('\n') + '\n\nTEAM_RELEASE_MARKER=\n')
+
+
 def exercise(prod, fixture, project, check, report, call, output, commit):
     mode = json.loads((prod / '.git/runa-bootstrap.json').read_text())['mode']
     installed_version = json.loads((prod / 'src/runa/platform.json').read_text())['version']
@@ -37,6 +54,10 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         return output(['git', '-C', str(repository), *args])
     for tag in (original_tag, target_tag):
         call(['git', '-C', str(repository), 'tag', '-d', tag], check=False, capture=True)
+    for name in ('release-note.txt', 'retired-guide.txt'):
+        (repository / name).write_text('original release guide\n')
+        (prod / name).write_text('original release guide\n')
+    commit(repository)
     git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'tag', '-a', original_tag, '-m', 'original')
     (repository / 'VERSION').write_text(target_tag.removeprefix('v') + '\n')
     manifest = repository / 'src/runa/platform.json'
@@ -47,8 +68,15 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     scope.write_text(scope.read_text().replace("'shared.platform_seed_runs'", "'shared.platform_seed_runs', 'shared.update_reference'", 1))
     seed = repository / 'src/runa/database/seeders/DatabaseSeeder.php'
     seed.write_text("<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']); } }\n")
+    (repository / 'release-note.txt').write_text('target release guide\n')
+    (repository / 'retired-guide.txt').unlink()
+    (repository / 'new-release-guide.txt').write_text('new target guide\n')
     commit(repository)
     git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'tag', '-a', target_tag, '-m', 'target')
+    (prod / 'release-note.txt').write_text('customer customized guide\n')
+    instructions = prod / 'AGENTS.md'
+    instructions.write_text(instructions.read_text() + '\nCustomer application rule sentinel.\n')
+    instruction_before = instructions.read_bytes()
     workspace = prod / '.devcontainer/devcontainer.json'
     value = json.loads(workspace.read_text()); value['name'] = 'Customer customized workspace'; workspace.write_text(json.dumps(value) + '\n')
     definitions = prod / 'compose.yaml'
@@ -135,11 +163,22 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         resumed = update_execution.execute(prod, client, target_tag, resume=True)
         (ROOT / '.runtime/ownership' / ('update-execution-' + project + '.json')).write_text(json.dumps(resumed, indent=2) + '\n')
         check(resumed['status'] == 'completed', 'independently verified resume recovers the actual development runtime')
+        check((prod / 'release-note.txt').read_text() == 'target release guide\n' and not (prod / 'retired-guide.txt').exists()
+              and (prod / 'new-release-guide.txt').read_text() == 'new target guide\n', 'real reviewed update applies non-infrastructure replacement, removal and addition')
+        check(instructions.read_bytes() == instruction_before and 'AGENTS.md' in resumed['manual_reconciliation'], 'real update preserves customer instruction extensions for explicit reconciliation')
         check(query("SELECT count(*) FROM shared.platform_seed_runs WHERE release_sha='" + journal['target']['commit'] + "'") == seeds_before == '1', 'resume never blindly replays already committed required seeds')
-        check(all(path.read_bytes() == content for path, content in infrastructure.items()) and output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'explicit continue preserves real custom Redis and devcontainer definitions')
+        check(all(path.read_bytes() == (repository / path.relative_to(prod)).read_bytes() for path in infrastructure) and output(['docker', 'exec', project + '-redis-1', 'redis-cli', 'ping']) == 'PONG', 'explicit continue applies exact reviewed infrastructure while preserving the existing custom service until operator reconciliation')
         check(private.read_text() == 'preserved' and app_pending.is_file() and output(['git', '-C', str(prod), 'rev-parse', 'HEAD']) == git_head, 'updater preserves application pending data/source, private storage and customer Git HEAD')
         after = files()
-        check(all(after[name] == content for name, content in preserved.items() if not name.endswith('/src/runa/platform.json')), 'customer identity, dependency locks, settings and scaffold survive real update and recovery')
+        check(all(after[name] == content for name, content in preserved.items() if not name.endswith(('/src/runa/platform.json', '/VERSION'))), 'customer identity, dependency locks, settings survive reviewed update and recovery')
         check(not (prod / '.runtime/production/in-progress.json').exists() and not list((prod / '.runtime/production/update-staging').iterdir()), 'successful resume archives journal and removes only its verified temporary platform source')
         app_pending.unlink()
+        # The updater applied the reviewed release, including removal of the local
+        # descriptor and public environment instructions. Reconcile both before
+        # Team publishes the complete customer project for fresh installation.
+        reconcile_fixture_configuration(prod, {'redis': configuration['services']['redis']})
+        check(json.loads(definitions.read_text())['services']['redis'] == configuration['services']['redis']
+              and all((prod / name).read_text().count('TEAM_RELEASE_MARKER=\n') == 1
+                      for name in ('.env.dev.example', '.env.prod.example')),
+              'customer reconciles its additional service and both environment templates before team publication and production deployment')
     report.setdefault('update_preflight', {})[mode] = {'result': result['status'], 'target': result['target_release']['commit']}

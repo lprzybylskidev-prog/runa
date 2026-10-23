@@ -6,7 +6,7 @@ Classify a document by its reader and task, not by whether it mentions developme
 - `docs/runa/handbook`: delivered Runa guidance for application developers, operators and agents, including development/testing, architecture/public contracts, security, quality, workflows/templates, Boost and knowledge tooling.
 - `docs/runa/maintainer`: owner-only Runa engineering, platform roadmaps/release metadata, dependency maintenance and audit evidence. It is absent from customer dev/prod source and images and from their knowledge corpus.
 
-The root README and AGENTS contract address the application workflow. Supplied `.agents/skills`, hooks and `tools/application` remain available to customer development. Owner tools under `tools/maintainer` and `distribution` are excluded from delivery. One authoritative document owns each rule; split mixed material instead of copying an entire owner guide into the handbook.
+The root README describes the delivered application workflow. In the owner checkout root AGENTS and .agents/skills govern Runa maintenance. Customer AGENTS/CLAUDE/skills are separately authored under docs/runa/maintainer/customer-agent and substituted at acquisition. Customer instructions, hooks and tools/application remain available to customer development. Owner tools under `tools/maintainer` and `distribution` are excluded from delivery. One authoritative document owns each rule; split mixed material instead of copying an entire owner guide into the handbook.
 
 ## Maintenance rules
 

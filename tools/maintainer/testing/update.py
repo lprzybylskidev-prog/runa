@@ -189,7 +189,7 @@ class Updater(unittest.TestCase):
         (self.target / 'compose.yaml').write_text('{"services": {"redis": {"image": "redis"}}}')
         result = self.run_plan()
         self.assertEqual(result['status'], 'ready', result)
-        self.assertFalse(result['customization_review']['required'])
+        self.assertTrue(result['customization_review']['required'])
 
     def test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed(self):
         lock = self.installed / '.runtime/production/operation.lock'
@@ -290,7 +290,7 @@ class Updater(unittest.TestCase):
 
     def test_external_tool_package_runs_without_the_maintenance_checkout(self):
         package = self.base / 'owner-tools'; package.mkdir()
-        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'update_modules.py', 'module-plan.php', 'bootstrap.py'):
+        for name in ('update.py', 'update_contracts.py', 'update_runtime.py', 'update_customization.py', 'update_execution.py', 'update_modules.py', 'update_files.py', 'module-plan.php', 'bootstrap.py'):
             shutil.copyfile(ROOT / 'distribution' / name, package / name)
         result = subprocess.run([sys.executable, str(package / 'update.py'), '--help'], cwd='/', capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -332,6 +332,46 @@ class Updater(unittest.TestCase):
             (self.installed/'src/app/application.json').write_text(json.dumps({'schema_version':schema,'version':version,'runa':'>=0.2.1'}))
             self.assertEqual(self.run_plan()['checks'][-1]['id'],'application-incompatible')
 
+    def test_complete_project_review_distinguishes_upstream_local_and_instruction_conflicts(self):
+        for root in (self.original, self.target, self.installed):
+            for name, value in {'README.md': 'baseline', 'AGENTS.md': 'customer defaults', 'obsolete.txt': 'remove upstream'}.items():
+                (root / name).write_text(value)
+            self.git(root, 'add', 'README.md', 'AGENTS.md', 'obsolete.txt')
+        (self.target / 'README.md').write_text('target readme')
+        (self.installed / 'README.md').write_text('customer readme')
+        (self.target / 'AGENTS.md').write_text('new customer defaults')
+        (self.installed / 'AGENTS.md').write_text('customer extension')
+        self.git(self.target, 'rm', '-f', 'obsolete.txt')
+        (self.target / 'new-guide.md').write_text('target addition')
+        self.git(self.target, 'add', 'new-guide.md')
+        (self.installed / 'new-guide.md').write_text('untracked customer collision')
+        (self.installed / '.env.private').write_text('PRIVATE_VALUE=never report')
+        result = self.run_plan()
+        self.assertEqual(result['status'], 'ready', result)
+        rows = {r['path']: r for r in result['customization_review']['files']}
+        self.assertEqual(rows['README.md']['action'], 'update')
+        self.assertEqual(rows['README.md']['local'], 'modified')
+        self.assertEqual(rows['AGENTS.md']['action'], 'manual-reconciliation')
+        self.assertEqual(rows['obsolete.txt']['action'], 'remove')
+        self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')
+        self.assertNotIn('never report', json.dumps(result))
+        self.assertEqual((self.installed / 'README.md').read_text(), 'customer readme')
+
+    def test_project_review_tracks_executable_modes_and_rejects_symlink_parents(self):
+        for root in (self.original, self.target, self.installed):
+            path = root / 'scripts/task'
+            path.parent.mkdir()
+            path.write_text('task')
+            self.git(root, 'add', 'scripts/task')
+        (self.target / 'scripts/task').chmod(0o755)
+        review = self.run_plan()['customization_review']
+        row = next(r for r in review['files'] if r['path'] == 'scripts/task')
+        self.assertEqual(row['target']['mode'], '100755')
+        (self.installed / 'scripts/task').unlink()
+        (self.installed / 'scripts').rmdir()
+        (self.installed / 'scripts').symlink_to(self.target / 'scripts')
+        self.assertEqual(self.run_plan()['status'], 'blocked')
+
     def test_customization_reports_added_removed_services_without_secret_values(self):
         (self.installed / 'compose.yaml').write_text('{"services": {"redis": {"image": "redis", "environment": {"PASSWORD": "secret-value"}}}}')
         before = self.snapshot()
@@ -348,6 +388,15 @@ class Updater(unittest.TestCase):
         with self.assertRaises(contracts.Blocker): update_customization.decision(review, 'continue', 'old-review')
         (self.installed / 'src/runa/Support/example.php').write_text('tampered')
         self.assertEqual(self.run_plan()['checks'][-1]['id'], 'protected-source-mismatch')
+
+    def test_untracked_infrastructure_changes_are_bound_to_exact_review(self):
+        extra = self.installed / 'compose.override.yaml'
+        extra.write_text('{"services":{"redis":{"image":"redis"}}}')
+        before = self.run_plan()['customization_review']
+        self.assertIn('compose.override.yaml', [r['path'] for r in before['files']])
+        extra.write_text('{"services":{"redis":{"image":"redis","command":["changed"]}}}')
+        after = self.run_plan()['customization_review']
+        self.assertNotEqual(before['fingerprint'], after['fingerprint'])
 
     def test_multiple_devcontainer_compose_files_and_override_services_are_reviewed(self):
         (self.installed / '.devcontainer').mkdir()
@@ -368,7 +417,7 @@ class Updater(unittest.TestCase):
         self.assertNotIn('private-value', json.dumps(result))
 
     def test_shared_dockerfile_and_workspace_only_changes_are_reviewed(self):
-        for root in (self.original, self.installed):
+        for root in (self.original, self.installed, self.target):
             (root / 'docker').mkdir()
             (root / 'docker/Dockerfile').write_text('FROM scratch')
             (root / 'compose.yaml').write_text(json.dumps({'services': {name: {'build': {'context': '.', 'dockerfile': 'docker/Dockerfile'}} for name in ('app', 'queue')}}))

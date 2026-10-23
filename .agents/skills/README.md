@@ -1,6 +1,6 @@
 # Runa Skills Index
 
-Runa maintains nine primary local skills.
+Runa maintains nine primary owner skills here. The separately authored customer product lives under docs/runa/maintainer/customer-agent/skills. Assess both products for reusable rules and public capability changes.
 
 | Skill        | Load when                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------ |

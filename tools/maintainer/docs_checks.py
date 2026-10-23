@@ -64,6 +64,12 @@ def validate(root):
     current = [p for p in (root / 'docs/runa/maintainer').rglob('*.md')
                if p.relative_to(root).as_posix() not in historical
                and '/evidence/' not in p.relative_to(root).as_posix()
-               and '/roadmaps/closed/' not in p.relative_to(root).as_posix()]
+               and '/roadmaps/closed/' not in p.relative_to(root).as_posix()
+               and '/customer-agent/' not in p.relative_to(root).as_posix()]
     public.links(root, current, public=False)
+    product = root / 'docs/runa/maintainer/customer-agent'
+    if product.exists():
+        mapping = {p: root / ('.agents/' + p.relative_to(product).as_posix() if p.is_relative_to(product / 'skills') else p.relative_to(product).as_posix())
+                   for p in product.rglob('*.md')}
+        public.links(root, list(mapping), public=True, logical_paths=mapping)
     print('PASS: README version/active-roadmap state and public command documentation; prose review is separate.')

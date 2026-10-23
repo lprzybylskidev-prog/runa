@@ -51,7 +51,7 @@ def configuration(root, name):
         raise Blocker('customization-review-unavailable', 'Compose definitions could not be compared safely; validate referenced files before updating.') from None
 
 
-def review(root, original):
+def infrastructure_review(root, original):
     roots = (original, root)
     names = files(original) | files(root)
     descriptors = [{}, {}]
@@ -95,7 +95,18 @@ def review(root, original):
     if any(name.startswith('docker/') and name not in mapped for name in changed):
         affected.update(service for group in descriptors for _, service in group)
     fingerprint = hashlib.sha256(json.dumps([[name, identities[0].get(name), identities[1].get(name)] for name in changed], separators=(',', ':')).encode()).hexdigest()
-    return {'required': bool(changed), 'services': sorted(affected), 'devcontainer': workspace, 'fingerprint': fingerprint}
+    return {'required': bool(changed), 'services': sorted(affected), 'devcontainer': workspace, 'fingerprint': fingerprint, 'inputs': sorted(identities[0].keys() | identities[1].keys())}
+
+
+def review(root, original, target=None, releases=None, local_overrides=None):
+    """Bind reviewed actions to exact releases and three-way customer file state."""
+    import update_files
+    infrastructure = infrastructure_review(root, original)
+    result = update_files.review(root, original, target or original, releases, local_overrides, infrastructure['inputs'])
+    upstream = infrastructure_review(target, original) if target is not None else {'services': [], 'devcontainer': False}
+    return {**result, 'required': result['required'] or infrastructure['required'],
+            'services': sorted(set(infrastructure['services']) | set(upstream['services'])),
+            'devcontainer': infrastructure['devcontainer'] or upstream['devcontainer']}
 
 
 def decision(reviewed, choice, previous=None):
@@ -103,9 +114,9 @@ def decision(reviewed, choice, previous=None):
     if not reviewed['required']:
         return None
     if choice == 'abort':
-        raise Blocker('customization-aborted', 'Operator aborted the infrastructure customization review; installation unchanged.')
+        raise Blocker('customization-aborted', 'Operator aborted the delivered-file customization review; installation unchanged.')
     if previous is not None and previous != reviewed['fingerprint']:
-        raise Blocker('customization-changed', 'Infrastructure differences changed since review; obtain a new explicit decision.')
+        raise Blocker('customization-changed', 'Delivered-file differences changed since review; obtain a new explicit decision.')
     if choice != 'continue':
-        raise Blocker('customization-decision-required', 'Infrastructure customization requires explicit continue/abort before mutation.')
+        raise Blocker('customization-decision-required', 'Delivered-file customization requires explicit continue/abort before mutation.')
     return reviewed['fingerprint']

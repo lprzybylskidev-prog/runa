@@ -81,19 +81,31 @@ def customer_snapshot(source, destination):
             target.parent.mkdir(parents=True, exist_ok=True)
             if path.is_symlink(): target.symlink_to(os.readlink(path))
             else: shutil.copy2(path, target)
+    import bootstrap
+    product = bootstrap.customer_agent(source)
+    if product:
+        shutil.rmtree(destination / '.agents/skills')
+        for name, content in product.items():
+            path = destination / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
     call(['git', 'init', '--quiet', '-b', 'main', str(destination)])
 
 
 def project_customer(root, sha):
+    import bootstrap
+    product = bootstrap.customer_agent(root)
     patterns = '/*\n' + ''.join('!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') + '\n' for name in OWNER_PATHS)
     call(['git', '-C', str(root), 'sparse-checkout', 'init', '--no-cone'])
     subprocess.run(['git', '-C', str(root), 'sparse-checkout', 'set', '--no-cone', '--stdin'], input=patterns, text=True, check=True)
+    bootstrap.materialize_customer_agent(root, root.parent, product)
     call(['git', '-C', str(root), 'remote', 'set-url', 'origin', 'https://github.com/fixture/runa.git'])
     call(['git', '-C', str(root), 'config', 'remote.origin.pushurl', 'disabled://runa-read-only-upstream'])
     write_staging_receipt(root, {'mode': 'dev', 'schema_version': 1, 'repository': 'fixture/runa', 'commit': sha,
                                'projection': {'version': 1, 'excluded': list(OWNER_PATHS)}})
     assert all(not (root / name).exists() for name in OWNER_PATHS)
-    assert not output(['git', '-C', str(root), 'status', '--porcelain'])
+    if not product:
+        assert not output(['git', '-C', str(root), 'status', '--porcelain'])
 
 
 def installer(root, mode, sha):
@@ -209,6 +221,10 @@ def main():
             shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
             report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
             check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
+
+            if '--customer-knowledge' in sys.argv[1:]:
+                runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-knowledge.py'))['exercise'](
+                    dev, dev_project, data, env, check, report, call, output, yaml_source)
 
             secrets = {name: (dev / name).read_bytes() for name in ('.env', '.env.testing', '.env.dev.database')}
             customer = dev / 'src/app/customer-sentinel.txt'

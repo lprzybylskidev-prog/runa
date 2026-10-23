@@ -14,6 +14,7 @@ import uuid
 
 import bootstrap
 import update
+import update_files
 import update_customization
 import update_runtime
 from update_contracts import Blocker, SEMVER, compare, compose, document, platform, supports
@@ -204,8 +205,10 @@ def move(source, destination):
 
 def stage_shape(operation):
     for child in operation.iterdir():
-        if child.name not in ('incoming', 'previous') or child.is_symlink() or not child.is_dir():
+        if child.name not in ('incoming', 'previous', 'project-files') or child.is_symlink() or not child.is_dir():
             raise Blocker('source-staging-changed', 'Unexpected operation staging content is preserved for inspection.')
+        if child.name == 'project-files':
+            continue  # Independently checked against journaled file identities.
         for part in child.iterdir():
             if part.name != 'src' or part.is_symlink() or not part.is_dir():
                 raise Blocker('source-staging-changed', 'Unexpected operation staging content is preserved for inspection.')
@@ -262,9 +265,11 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
                 return {**report, 'status': 'completed', 'no_op': True}
             review = snapshot['customization_review']
             if fingerprint is not None and fingerprint != review['fingerprint']:
-                raise Blocker('customization-changed', 'The supplied review fingerprint differs from current infrastructure.')
+                raise Blocker('customization-changed', 'The supplied review fingerprint differs from current delivered files.')
             if review['required'] and choice is None and choose is not None:
                 choice = choose(review)
+            if review['required'] and choice == 'continue' and choose is None and fingerprint != review['fingerprint']:
+                raise Blocker('customization-decision-required', 'Unattended continue requires the exact reviewed plan fingerprint.')
             approved = update_customization.decision(review, choice)
             runtime.manual()
         locked = lock(root)
@@ -289,7 +294,7 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
             journal = {'schema_version': 1, 'kind': 'development-update', 'id': uuid.uuid4().hex, 'root': str(root),
                        'repository': client.repository.lower(), 'project': fresh['runtime']['project'], 'baseline': baseline, 'original': fresh['installed_release'], 'target': fresh['target_release'],
                        'module_plan': fresh['plan'].get('modules', []), 'phase': 'planned', 'completed': ['planned', 'preflight-passed', 'customization-reviewed'],
-                       'review': review, 'decision': approved, 'state': 'running', 'started_at': stamp()}
+                       'review': review, 'decision': approved, 'file_actions': update_files.actions(review), 'file_action_history': [], 'state': 'running', 'started_at': stamp()}
             atomic(pending, journal)
         runtime.bind(journal['project'])
         operation = state / 'update-staging' / journal['id']
@@ -301,13 +306,17 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
             original, target = references(client, journal, Path(temporary), download)
             stage_shape(operation)
             position = source_state(root, operation, original, target, journal)
-            reviewed = update_customization.review(root, original)
+            overrides = update_files.validate_staging(root, operation, original, target, journal)
+            reviewed = update_customization.review(root, original, target, {'original': journal['original'], 'target': journal['target']}, overrides)
             report['customization_review'] = reviewed
-            if reviewed != journal['review']:
+            if reviewed['fingerprint'] != journal['review']['fingerprint']:
                 if choose is not None:
                     choice = choose(reviewed); fingerprint = reviewed['fingerprint']
                 if choice != 'continue' or fingerprint != reviewed['fingerprint']:
-                    raise Blocker('customization-changed', 'Infrastructure changed since review; inspect the reported names and explicitly continue with the new review fingerprint.')
+                    raise Blocker('customization-changed', 'Delivered files changed since review; inspect the reported names and explicitly continue with the new review fingerprint.')
+                if any(row['state'] == 'replacing' for row in journal.get('file_actions', [])):
+                    raise Blocker('project-transition-changed', 'Finish or inspect interrupted file transitions before accepting a different plan.')
+                update_files.renew_actions(reviewed, journal)
                 journal['decision'] = update_customization.decision(reviewed, choice)
                 journal['review'] = reviewed
                 atomic(pending, journal)
@@ -364,6 +373,7 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
                 move(operation / 'incoming/src/runa', root / 'src/runa')
             if compare(root, target):
                 raise Blocker('protected-source-mismatch', 'Replaced source does not match the verified target release.')
+            update_files.apply_actions(root, operation, target, journal, lambda: atomic(pending, journal), move)
             done('source-replaced')
             # Rebuild on resume against the current explicitly reconciled scaffold;
             # only transactional data completions are skipped from durable evidence.
@@ -398,7 +408,10 @@ def execute(value, client, tag, *, resume=False, choice=None, fingerprint=None, 
             # Only this operation's independently verified source staging.
             report['source_staging_removed'] = str(operation)
             pending.unlink()
-            report.update(status='completed', operation_id=journal['id'], target_release=journal['target'])
+            report.update(status='completed', operation_id=journal['id'], target_release=journal['target'],
+                          manual_reconciliation=journal['review'].get('manual_reconciliation', []),
+                          infrastructure_follow_up={'services': journal['review']['services'], 'devcontainer': journal['review']['devcontainer'],
+                                                    'instruction': 'Review image rebuild/recreation and devcontainer reopen requirements before committing/deploying the customer project.'})
             # Completion is durable before best-effort disposal: a cleanup interruption
             # must not resurrect a pending data operation or fence a healthy release.
             try: shutil.rmtree(operation)

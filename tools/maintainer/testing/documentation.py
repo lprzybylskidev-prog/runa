@@ -31,6 +31,10 @@ class DocumentationOwnership(unittest.TestCase):
             self.copy(name)
         for name in ('docs/app', 'docs/runa/handbook', '.agents', 'tools/application/knowledge'):
             shutil.copytree(ROOT / name, self.root / name, ignore=shutil.ignore_patterns('__pycache__'))
+        product = ROOT / 'docs/runa/maintainer/customer-agent'
+        shutil.copy2(product / 'AGENTS.md', self.root / 'AGENTS.md')
+        shutil.rmtree(self.root / '.agents/skills')
+        shutil.copytree(product / 'skills', self.root / '.agents/skills')
         self.copy('tools/application/quality.yml')
         self.receipt = self.root / '.git/runa-bootstrap.json'
         self.receipt.write_text('{}\n')
@@ -87,6 +91,28 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertTrue(maintainer_checkout(self.root))
         self.assertIn('docs/runa/maintainer', load(self.root)['markdown_roots'])
         self.assertTrue(any('/maintainer/' in q['source_path'] for q in golden(self.root)))
+
+    def test_customer_authoring_templates_never_enter_owner_retrieval(self):
+        self.copy_owner_inputs()
+        self.receipt.unlink()
+        self.write('docs/runa/maintainer/customer-agent/AGENTS.md', '# Customer template sentinel')
+        self.write('docs/runa/maintainer/customer-agent/skills/frontend/SKILL.md', '# Customer UI rules')
+        self.track()
+        config = load(self.root)
+        config['files'].append('docs/runa/maintainer/customer-agent/AGENTS.md')
+        paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, config)}
+        self.assertIn('docs/runa/maintainer/internal.md', paths)
+        self.assertFalse(any(p.startswith('docs/runa/maintainer/customer-agent/') for p in paths))
+
+    def test_customer_template_links_use_installed_paths_and_public_boundaries(self):
+        product = self.root / 'docs/runa/maintainer/customer-agent'
+        product.mkdir(parents=True)
+        template = product / 'AGENTS.md'
+        template.write_text('[Public guide](docs/runa/handbook/ai/skills-policy.md)')
+        docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
+        template.write_text('[Owner guide](docs/runa/maintainer/agent-contract.md)')
+        with self.assertRaisesRegex(ValueError, 'owner-only'):
+            docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
 
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self):
         self.copy_owner_inputs()

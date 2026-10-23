@@ -126,3 +126,9 @@ The initial local skill references are project adaptations, not verbatim upstrea
 ## Durable documentation ownership
 
 Every relevant domain skill routes documentation by reader/task using docs/README.md. Keep application-specific guidance in docs/app; public Runa development/testing/agent/security procedures in docs/runa/handbook; owner-only platform maintenance, roadmap/release records and audit evidence in docs/runa/maintainer. Development is not inherently owner-only. Split mixed procedures, preserve historical bytes, update the authoritative guide and domain pattern references together, and validate public links and staged knowledge freshness. Extend an existing skill for this rule; do not create a new skill for a single roadmap point.
+
+## Customer application guidance
+
+Installed root AGENTS/CLAUDE and .agents/skills guide application development using delivered public capabilities. Ordinary Laravel App code and optional app modules are both supported. Repeated application components belong in src/app/resources/js/components; protected src/runa is read-only. Maintain local application patterns and docs/app domain guidance in the owning point. Upstream guidance updates require reviewed reconciliation of local extensions, never directory replacement.
+
+First acquisition stages the supplied customer instruction defaults in Git. Include those changes in the customer repository so teammate clones retain the same application guidance. Reopen preserves them; existing local extensions require reviewed update reconciliation.

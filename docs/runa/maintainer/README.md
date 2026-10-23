@@ -1,12 +1,12 @@
 # Runa maintenance
 
-Owner-only platform engineering, lifecycle and release records. Customer application work follows the [public handbook](../handbook/README.md) and root AGENTS contract; platform work also reads [the owner contract](agent-contract.md).
+Owner-only platform engineering, lifecycle and release records. Platform work follows the [owner contract](agent-contract.md), with root AGENTS as its authority. Customer application work follows the [public handbook](../handbook/README.md) and the separately delivered customer instruction product.
 
 ## Current state
 
 <!-- runa:current-state -->
 
-- Current version: `0.4.0`
+- Current version: `0.4.1`
 - Active roadmap: `none`
 
 <!-- /runa:current-state -->

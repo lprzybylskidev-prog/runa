@@ -1,8 +1,6 @@
-# Runa Application Agent Contract
+# Runa Owner Agent Contract
 
-This contract supports customer application development on Runa. Business code belongs in `src/app`; application documentation and roadmaps belong in `docs/app`. Use the public `docs/runa/handbook` and supplied `.agents/skills`. Preserve protected platform source and use configuration, public contracts and application extension points.
-
-In a Runa owner checkout, also read `docs/runa/maintainer/agent-contract.md` if present before platform maintenance. Its platform roadmap/release procedures apply to that checkout. Customer installations contain no maintainer directory or owner tooling. A customer acquisition receipt always retains application scope, even if owner files were accidentally copied.
+This receipt-free checkout maintains Runa itself. Platform implementation belongs in src/runa; Runa roadmaps/releases and owner-only engineering belong in docs/runa/maintainer. Application examples remain in src/app and docs/app. Root AGENTS and .agents/skills are owner instructions. Customer instructions are a separately authored product in docs/runa/maintainer/customer-agent; open them as product data when editing, never as owner operating authority. Customer acquisition receipts always retain customer scope, including when owner files were copied. Read docs/README.md for documentation ownership.
 
 ## Authority and truth
 
@@ -20,7 +18,7 @@ Project-specific rules override upstream skills and generic best practices.
 
 ## Roadmap gate
 
-No application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
+No platform/application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
 
 If no roadmap is active and the user requests implementation:
 
@@ -31,15 +29,15 @@ If no roadmap is active and the user requests implementation:
 
 The agent cannot self-approve a roadmap.
 
-Application roadmap lifecycle directories are `docs/app/roadmaps/{draft,active,paused,closed}`. At most one application roadmap may be active.
+At most one roadmap may be active.
 
-Every roadmap records `proposed_version: X.Y.Z` alongside `release_type`: the projected application version after implementation, not the version carrying the draft. Refresh it when release order or baseline changes and reconcile it with the actual release at closure. It does not bump a manifest, authorize activation or approve a major release.
+Every platform roadmap records `proposed_version: X.Y.Z` alongside `release_type`: the projected platform version after implementation, not the version carrying the draft. Refresh it when release order or baseline changes and reconcile it with the actual release at closure. It does not change VERSION, authorize activation or approve a major release.
 
-During roadmap agreement, explicitly ask the user to confirm `release_type` and `proposed_version`, explaining the proposed increment. Do not silently approve them. If the user already explicitly supplied or confirmed these values, record that decision without asking again.
+During roadmap agreement, explicitly ask the owner to confirm `release_type` and `proposed_version`, explaining the proposed increment. Do not silently approve them. If the owner already explicitly supplied or confirmed these values, record that decision without asking again.
 
-Read `docs/runa/handbook/workflows/roadmaps.md` before roadmap lifecycle work.
+Read `docs/runa/maintainer/workflows/roadmaps.md` before roadmap lifecycle work.
 
-When work on an active roadmap produces an agreed substantial follow-up scope requiring its own roadmap, create or update its draft immediately in the current checkout and commit it separately before ending that planning task, without waiting for another commit request. Carry the draft with the current development changes; activation, implementation and the eventual release version remain separate decisions. Follow the roadmap workflow; do not activate a second roadmap or implement the follow-up scope through its draft.
+When active platform work produces an agreed substantial follow-up scope requiring its own roadmap, immediately create or update its draft under `docs/runa/maintainer/roadmaps/draft/` and commit it separately on the current roadmap branch before ending that planning task, without waiting for another commit request. Include the draft in the current development history; its activation, implementation and eventual release version are separate decisions. Do not activate a second roadmap or implement future scope through a draft.
 
 ## Roadmap execution
 
@@ -70,7 +68,7 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
+The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
 
 If verification finds work:
 
@@ -99,7 +97,7 @@ Do not merge with failed hard gates, open roadmap points, an unsafe dirty worktr
 - Delete roadmap branches after a successful merge.
 - Run a short sanity check on `main` after merge.
 
-Read `docs/runa/handbook/workflows/git.md`.
+Read `docs/runa/maintainer/workflows/git.md`.
 
 ## No CI policy
 
@@ -108,7 +106,7 @@ Do not add GitHub Actions or another CI pipeline unless the user explicitly chan
 Runa uses:
 
 - versioned local Git hooks,
-- `php artisan runa:quality:roadmap`,
+- `python3 tools/maintainer/quality-roadmap`,
 - explicit local verification,
 - release checks.
 
@@ -171,7 +169,7 @@ PostgreSQL only.
 - Optimistic concurrency is the default for business edit forms.
 - After production has ever been deployed, never edit a committed migration that may have run there. See the database migration policy.
 
-An active application roadmap authorizes necessary identified application-owned dev/test data resets under `docs/runa/handbook/architecture/database.md`, without repeated approval for hypothetical production data. Native application migrations and wipes preserve platform-owned objects; only the external Runa owner can manage platform migrations. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
+Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/runa/handbook/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
 
 Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/database.md`.
 
@@ -214,7 +212,7 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 ## Host execution
 
-Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/handbook/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
+Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/maintainer/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
 ## Temporary Docker resources
 
@@ -251,16 +249,6 @@ Adopt before invent: when adding durable agent guidance, adapt good upstream gui
 Do not create a new skill for task noise. Create one only for a distinct reusable workflow.
 
 Read `docs/runa/handbook/ai/skills-policy.md` and `docs/runa/handbook/ai/knowledge-system.md`.
-
-## Documentation ownership
-
-Classify every new or changed document by reader and task:
-
-- `docs/app`: application-specific domain/architecture/operations, decisions, dependency notes and application roadmaps.
-- `docs/runa/handbook`: every customer-facing Runa procedure, including application development/testing, security, quality, agent workflows, Boost, knowledge, public contracts and supplied templates.
-- `docs/runa/maintainer`: owner-only platform engineering, Runa roadmaps/releases, internal quality definitions, maintenance and historical audit evidence. This directory is not delivered to customers or indexed in their corpus.
-
-Never create `src/app/docs`, duplicate owner guidance into public instructions, or link a customer procedure to undelivered owner files/commands. Split mixed documents by purpose while retaining one authority for each rule. Preserve closed roadmaps and dated evidence byte-for-byte when moving them. Maintain relevant existing skill/pattern references in the same point. Check placement/public links with `php artisan runa:doctor:docs`, and refresh staged durable knowledge incrementally before commit. See `docs/README.md`.
 
 ## Documentation maintenance
 
@@ -304,4 +292,18 @@ See `docs/runa/handbook/architecture/language-and-naming.md`.
 
 ## Release 1.0 trigger
 
-When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/handbook/release/1.0-readiness.md` and apply its release-scale validation requirements.
+When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/maintainer/release/1.0-readiness.md` and apply its release-scale validation requirements.
+
+## Documentation ownership
+
+This root owner contract governs receipt-free Runa maintenance; customer application instructions are authored separately and substituted at delivery. Runa roadmaps, release metadata, quality definitions, dependency review records and maintenance reports live under docs/runa/maintainer. Read the public placement rules in docs/README.md; do not deliver this directory to customer installations. Closed roadmap contents and dated audit evidence remain immutable when relocated.
+
+## Instruction product maintenance
+
+For every reusable rule or delivered capability change, assess root AGENTS/.agents/skills and the customer bundle under docs/runa/maintainer/customer-agent. Update affected products and their references in the same implementation point; record why an unaffected product needs no change. Customer guidance supports ordinary Laravel plus optional app modules and never authorizes protected platform edits. Customer authors maintain their local application guidance independently. Authoring templates are excluded from owner retrieval. Do not duplicate handbook procedures in skills.
+
+## Supported commands and check completion
+
+Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner tests use `python3 tools/maintainer/test-backend`, `test-frontend`, `test-e2e`; application tests use Artisan runa:test commands. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.
+
+Before final verification, run only necessary small, fast, focused checks resolving concrete uncertainty. Receive results, repair failures and continue; duration alone is no permission to hand monitoring to the user. Only final full verification uses the supported background handoff: `python3 tools/maintainer/quality-roadmap --background`, end the turn and provide `python3 tools/maintainer/quality-status`. Status tracks its coordinator only; raw tail is not a substitute.

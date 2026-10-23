@@ -134,7 +134,28 @@ def knowledge_availability():
         print('DEGRADED: optional knowledge probe timed out; use source search.')
 
 
+def private_environment(path):
+    """Read local generated secrets without exposing values in diagnostics."""
+    import stat
+    if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+        raise ValueError('Development environment must not traverse symlinks: ' + path.name)
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, 'r') as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077 or info.st_size > 32768:
+            raise ValueError('Development secret files must be bounded private owned regular files: ' + path.name)
+        text = stream.read(32769)
+    if len(text) > 32768:
+        raise ValueError('Development environment file exceeds supported size.')
+    return dict(line.split('=', 1) for line in text.splitlines() if '=' in line and not line.startswith('#'))
+
+
 def environment_files():
+    # A dangling link reports exists=False; reject it before any secret creation.
+    for name in ('.env', '.env.dev.database', '.env.testing'):
+        path = ROOT / name
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+            raise ValueError('Development environment must not traverse symlinks: ' + name)
     template = ROOT / '.env.dev.example'
     if not template.exists():
         return
@@ -142,12 +163,12 @@ def environment_files():
     if not env.exists():
         env.write_text(template.read_text().replace('DB_PASSWORD=\n', 'DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n'))
         env.chmod(0o600)
-    application = dict(line.split('=', 1) for line in env.read_text().splitlines() if '=' in line and not line.startswith('#'))
+    application = private_environment(env)
     infrastructure = ROOT / '.env.dev.database'
     if not infrastructure.exists():
         infrastructure.write_text('POSTGRES_PASSWORD=' + secrets.token_urlsafe(32) + '\nAPP_DB_PASSWORD=' + application['DB_PASSWORD'] + '\nTEST_DB_PASSWORD=' + secrets.token_urlsafe(32) + '\n')
         infrastructure.chmod(0o600)
-    settings = dict(line.split('=', 1) for line in infrastructure.read_text().splitlines() if '=' in line and not line.startswith('#'))
+    settings = private_environment(infrastructure)
     if not all(settings.get(key) for key in ('POSTGRES_PASSWORD', 'APP_DB_PASSWORD', 'TEST_DB_PASSWORD')):
         raise ValueError('Development database credentials must be non-empty.')
     if settings['APP_DB_PASSWORD'] != application['DB_PASSWORD']:
@@ -156,6 +177,9 @@ def environment_files():
     if not testing.exists():
         testing.write_text((ROOT / '.env.test.example').read_text().replace('DB_PASSWORD=\n', 'DB_PASSWORD=' + settings['TEST_DB_PASSWORD'] + '\n').replace('APP_KEY=\n', 'APP_KEY=' + application.get('APP_KEY', '') + '\n'))
         testing.chmod(0o600)
+    test_settings = private_environment(testing)
+    if not test_settings.get('DB_PASSWORD') or test_settings['DB_PASSWORD'] != settings['TEST_DB_PASSWORD']:
+        raise ValueError('Testing and database initialization credentials differ. Preserve files and reconcile the existing testing role explicitly; passwords are never silently rotated.')
 
 
 def setup_fingerprint():

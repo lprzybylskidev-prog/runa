@@ -180,7 +180,7 @@ The shared table provider transports its optional normalized search text as `fil
 
 ## Export and operation frontend contracts
 
-The optional UI facade provides typed explicit/all-matching selections, export scope/capabilities, BulkProvider and ExportOperation contracts plus createApiExportProvider over the shared HTTP wrapper. Applications own named API routes, authorization, request validation, query snapshots, idempotency, durable jobs/downloads, cancellation and partial retry semantics; no backend export/bulk endpoint is installed by UI foundations. Send selection metadata and exclusions, never fetch every server record/ID into the browser. Status/download/retry/cancel require the same server permission checks as start. See the [wire contract and limits](../../../../.agents/skills/frontend/references/tables.md#server-export-transport).
+The optional UI facade provides typed explicit/all-matching selections, export scope/capabilities, BulkProvider and ExportOperation contracts plus createApiExportProvider over the shared HTTP wrapper. Applications own named API routes, authorization, request validation, query snapshots, idempotency, durable jobs/downloads, cancellation and partial retry semantics; no backend export/bulk endpoint is installed by UI foundations. Send selection metadata and exclusions, never fetch every server record/ID into the browser. Status/download/retry/cancel require the same server permission checks as start. See the [wire contract and limits](../development/frontend/tables.md#server-export-transport).
 
 ## Platform/application route ownership
 

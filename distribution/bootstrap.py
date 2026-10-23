@@ -255,6 +255,60 @@ def publish(source, destination):
         raise BootstrapError('Atomic source publication failed; destination was not replaced.')
 
 
+def customer_agent(source):
+    """Capture release-authored customer instructions before sparse exclusion.
+
+    Historical releases without this product retain their original projection.
+    Full source verification precedes this call; no installed code is executed.
+    """
+    base = source / 'docs/runa/maintainer/customer-agent'
+    if not base.exists():
+        return {}
+    if base.is_symlink() or not base.is_dir():
+        raise BootstrapError('Customer instruction product must be a regular source tree.')
+    result = {}
+    for path in sorted(base.rglob('*')):
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+            raise BootstrapError('Customer instruction product cannot contain symlinks.')
+        if path.is_dir():
+            continue
+        relative = path.relative_to(base).as_posix()
+        if relative in ('AGENTS.md', 'CLAUDE.md'):
+            name = relative
+        elif relative.startswith('skills/') and path.suffix == '.md':
+            name = '.agents/' + relative
+        else:
+            raise BootstrapError('Unsupported customer instruction product input.')
+        if not path.is_file() or path.stat().st_size > 2 * 1024 ** 2:
+            raise BootstrapError('Customer instruction product exceeds supported source limits.')
+        result[name] = path.read_bytes()
+    required = {'AGENTS.md', 'CLAUDE.md', '.agents/skills/README.md'}
+    required.update('.agents/skills/' + name + '/SKILL.md' for name in
+                    ('backend', 'laravel', 'frontend', 'vue', 'tailwind', 'postgresql', 'docker', 'rag', 'security'))
+    if not required.issubset(result) or any(not content.strip() for content in result.values()):
+        raise BootstrapError('Customer instruction product is incomplete.')
+    return result
+
+
+def materialize_customer_agent(source, home, product):
+    """Stage substitutions so customer commits/clones/reopen retain their defaults."""
+    if not product:
+        return
+    skills = source / '.agents/skills'
+    if skills.exists():
+        if skills.is_symlink() or not skills.is_dir():
+            raise BootstrapError('Owner skill tree cannot be projected safely.')
+        shutil.rmtree(skills)
+    for name, content in product.items():
+        path = source / name
+        if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+            raise BootstrapError('Instruction substitution cannot traverse symlinks.')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+        path.chmod(0o644)
+    git(source, home, 'add', '--sparse', '-A', '--', 'AGENTS.md', 'CLAUDE.md', '.agents/skills')
+
+
 def acquire(client, tag, destination, mode, expected_commit=None, expected_digest=None, reference_module=False):
     if mode != 'dev':
         raise BootstrapError('Runa release acquisition is development-only; initialize production from the customer repository.')
@@ -277,6 +331,7 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
         entries = inspect_tree(source, home, actual_commit)
         git(source, home, 'checkout', '--quiet', '--detach', actual_commit)
         digest = verify_files(source, entries)
+        product = customer_agent(source)
         if expected_digest and digest != expected_digest:
             raise BootstrapError('Release differs from the independently supplied source digest.')
         if (source / 'VERSION').read_text().strip() != tag[1:]:
@@ -294,6 +349,9 @@ def acquire(client, tag, destination, mode, expected_commit=None, expected_diges
             patterns += ['!/src/app/modules/reference/', '!/docs/app/modules/reference/']
         git(source, home, 'sparse-checkout', 'init', '--no-cone')
         git(source, home, 'sparse-checkout', 'set', '--no-cone', '--stdin', input_data='\n'.join(patterns) + '\n')
+        materialize_customer_agent(source, home, product)
+        if product:
+            receipt['customer_agent'] = {'version': 1, 'files': {name: hashlib.sha256(content).hexdigest() for name, content in sorted(product.items())}}
         if any((source / name).exists() or (source / name).is_symlink() for name in OWNER_PATHS):
             raise BootstrapError('Owner distribution sources remain in the projected installation.')
         # Keep origin as a credential-free upstream read source. An impossible
