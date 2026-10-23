@@ -206,22 +206,22 @@
     "name": "runa:quality:plan",
     "tool": "quality",
     "prefix": ["show"],
-    "signature": "",
+    "signature": "{--group=*} {--all}",
     "description": "Show selected application quality gates"
   },
   {
     "name": "runa:quality:roadmap",
     "tool": "quality",
     "prefix": ["roadmap"],
-    "signature": "{--background}",
+    "signature": "{--background} {--group=*} {--all}",
     "description": "Run the selected application roadmap quality workflow"
   },
   {
     "name": "runa:quality:final",
     "tool": "quality",
     "prefix": ["final"],
-    "signature": "{--background}",
-    "description": "Run the full application quality workflow"
+    "signature": "{--background} {--group=*} {--all}",
+    "description": "Run the selected application quality workflow"
   },
   {
     "name": "runa:quality:status",

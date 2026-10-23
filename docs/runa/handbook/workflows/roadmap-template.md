@@ -8,6 +8,8 @@ activated_at: null
 closed_at: null
 release_type: feature
 proposed_version: 0.1.0
+quality_groups: docs
+quality_rationale: Documentation-only changes; choose groups from the actual agreed scope.
 impact_areas:
   - documentation
 ---

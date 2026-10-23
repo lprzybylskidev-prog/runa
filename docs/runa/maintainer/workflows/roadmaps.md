@@ -80,7 +80,7 @@ Impact areas are a short explicit list such as:
 - `tooling`
 - `documentation`
 
-Impact areas drive local quality-gate selection.
+Impact areas describe scope and drive legacy flag-free selection. Explicit manual groups determine the selected graph independently of impact areas.
 
 `proposed_version` is a required canonical `X.Y.Z` projection of the platform version after this roadmap is implemented. Set it from the expected predecessor release and `release_type`, including agreed roadmap order; drafts may target a later version than the next active release. Refresh it when that order or baseline changes, verify it at activation and reconcile it with the actual version at closure before the roadmap becomes immutable. It is not the version shipping the draft, a VERSION change, activation approval or permission for a major release. For `release_type: release`, retain the separate user-approved `target_version` required by the release workflow.
 
@@ -231,7 +231,7 @@ Move `paused/` -> `active/` and continue.
 
 ## Final verification point
 
-The final point runs the full applicable local quality gate and performs release finalization.
+The final point runs the complete agreed manual selection and all mandatory/prerequisite gates, then performs release finalization. Record `quality_groups` (comma-separated names or `all`) and `quality_rationale` in frontmatter before execution. The agent chooses scope proportionately; owner steering overrides it. Excluded groups are not PASS. Flag-free workflows retain legacy behavior for compatibility. See the quality guide for group availability and closure evidence.
 
 Before the gate, review current-state documentation against the delivered implementation: README, affected command/environment/deployment guidance, project-state metadata, agent rules and domain skill procedures. Check available versus deferred capabilities, startup instructions, CLI semantics and development/production boundaries. Classify dated reports, closed roadmaps and genuine proposals separately; do not rewrite history to describe newer behavior.
 
@@ -309,7 +309,7 @@ Security, migration/data-loss, or production-health failures cannot be downgrade
 
 During the final gate, the current roadmap remains active and its final checklist item remains open. Checks must not require that pending item to be complete before it can be verified. After PASS and focused release-metadata checks, complete the checklist/closure metadata on the roadmap branch. The closure commit may record a final report using facts known before merge; report merge/tag/publication results in chat without editing the now-closed roadmap.
 
-Final gate evidence records branch, commit, selected impact areas and results. Final release-only edits permitted by `docs/runa/maintainer/workflows/releases.md` receive focused validation; substantive changes invalidate the prior result. Do not interpret a stale PASS as proof for changed runtime code.
+Final gate evidence records branch, commit, requested/excluded groups, baseline, prerequisites, graph fingerprint, rationale and results; legacy runs retain impact areas. Final release-only edits permitted by `docs/runa/maintainer/workflows/releases.md` receive focused validation; substantive changes invalidate the prior result. Do not interpret a stale PASS as proof for changed runtime code.
 
 Do not wait or poll after launching a background gate. Ask the user to return the status/log output when ready; an interrupted run is never a PASS.
 

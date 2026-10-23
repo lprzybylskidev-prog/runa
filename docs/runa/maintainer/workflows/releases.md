@@ -89,7 +89,7 @@ The GitHub Release may be richer than `docs/runa/maintainer/CHANGELOG.md`, but b
 Near roadmap completion:
 
 1. complete implementation,
-2. run the full applicable local gate,
+2. run the complete agreed quality selection and its mandatory/prerequisite gates,
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
 5. compute the version from current `VERSION` and `release_type`,
@@ -132,3 +132,14 @@ docs/runa/maintainer/README.md has exactly one block between `<!-- runa:current-
 Use these fields as a checked projection of existing sources, not as a second source of truth. Keep these current-state facts in the block instead of repeating values elsewhere in README prose. The block does not claim GitHub publication. Examples and historical documents are outside this bounded syntax and remain untouched.
 
 `doctor docs` checks this block and command documentation coverage. `doctor release` invokes the same documentation checks in addition to release metadata checks, so final verification covers documentation even without a documentation impact area. Arbitrary capability prose still requires the recorded roadmap review. Offline contracts are `python3 tools/maintainer/testing/docs.py` and `python3 tools/maintainer/testing/release.py`.
+
+## Selected-scope evidence
+
+New roadmaps record `quality_groups` (comma-separated names or `all`) and a nonempty
+`quality_rationale` before final execution. Preview through the supported quality
+plan command. Final and closure must match this declaration, graph/commands, actual
+complete PASS and candidate commit. An exploratory/narrower or stale run cannot
+close the roadmap. After failures or scope changes, rerun the complete agreed plan
+from the beginning. Only reviewed release-only metadata may follow PASS. Legacy
+flag-free workflows retain existing behavior; the agent normally chooses groups
+without asking the owner on every invocation. See the quality guide.

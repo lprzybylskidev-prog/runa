@@ -284,3 +284,10 @@ Development-only owned source generator. Defaults to a complete nonmutating JSON
 ### `php artisan runa:modules:check <runa|app>`
 
 Development source ownership/manifest/required graph checks without executing module source. `--runtime` adds synchronized trusted descriptor validation through existing resolvers without running operations, health checks or lifecycle/settings/update hooks. Failures exit 1. Reusable test suite, literal-analysis limitations and independent `python3 tools/application/module_versions.py --owner app --base main` version/changelog checks are documented in the [module development guide](../development/modules.md).
+
+## Quality selection options
+
+`runa:quality:plan`, `runa:quality:roadmap` and `runa:quality:final` accept repeated
+`--group=NAME` or standalone `--all`. Background remains limited to roadmap/final;
+status takes no flags. See [quality groups and examples](../quality/README.md).
+The native Artisan registry and host transport preserve and validate these options.

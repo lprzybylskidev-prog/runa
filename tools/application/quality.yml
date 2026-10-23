@@ -73,3 +73,111 @@ final:
     depends_on: []
     command: php artisan runa:knowledge:eval
     severity: hard_fail
+
+mandatory:
+  [
+    application-repository,
+    application-config,
+    application-config-templates,
+    application-docs,
+    application-secrets,
+    application-debug-residue,
+    application-knowledge-freshness,
+  ]
+groups:
+  docs: [application-docs]
+  tooling: [application-tooling]
+  backend:
+    [
+      application-tests,
+      application-analysis,
+      application-module-contracts,
+      application-module-versions,
+      application-format,
+      application-lint,
+    ]
+  frontend:
+    [
+      application-build,
+      application-types,
+      application-frontend-tests,
+      application-format,
+      application-lint,
+    ]
+  e2e: [application-e2e, application-frontend-diagnostics]
+  database:
+    [application-database-migrations, application-database, application-seeding]
+  development: [application-development, application-hooks]
+  containers: [application-container-security]
+  security: [application-dependencies, application-container-security]
+  knowledge:
+    [
+      application-knowledge-doctor,
+      application-knowledge-eval,
+      application-boost,
+    ]
+
+group_steps:
+  - id: application-repository
+    depends_on: []
+    command: php artisan runa:doctor:repository
+    severity: hard_fail
+  - id: application-debug-residue
+    depends_on: [application-config]
+    command: php artisan runa:check:debug-residue
+    severity: hard_fail
+  - id: application-knowledge-freshness
+    depends_on: [application-config]
+    command: php artisan runa:knowledge:stale
+    severity: hard_fail
+  - id: application-tooling
+    depends_on: [application-config]
+    command: php artisan runa:doctor:tooling
+    severity: hard_fail
+  - id: application-build
+    depends_on: [application-config]
+    command: ./bin/pnpm run build
+    severity: hard_fail
+  - id: application-frontend-tests
+    depends_on: [application-config]
+    command: php artisan runa:test:frontend
+    severity: hard_fail
+    exclusive_group: testing-state
+  - id: application-e2e
+    depends_on: [application-build, application-frontend-tests]
+    command: ./bin/artisan runa:test:e2e
+    severity: hard_fail
+    exclusive_group: testing-state
+    execution_context: host
+  - id: application-frontend-diagnostics
+    depends_on: [application-e2e]
+    command: php artisan runa:doctor:frontend
+    severity: hard_fail
+    exclusive_group: testing-state
+  - id: application-database-migrations
+    depends_on: [application-tests]
+    command: php artisan runa:doctor:database-migrations
+    severity: hard_fail
+    exclusive_group: testing-state
+  - id: application-database
+    depends_on: [application-database-migrations]
+    command: php artisan runa:doctor:database
+    severity: hard_fail
+    exclusive_group: testing-state
+  - id: application-seeding
+    depends_on: [application-database]
+    command: php artisan runa:doctor:seeding
+    severity: hard_fail
+    exclusive_group: testing-state
+  - id: application-development
+    depends_on: [application-config]
+    command: php artisan runa:doctor:development
+    severity: hard_fail
+  - id: application-hooks
+    depends_on: [application-config]
+    command: php artisan runa:doctor:hooks
+    severity: hard_fail
+  - id: application-boost
+    depends_on: [application-config]
+    command: php artisan runa:doctor:boost
+    severity: hard_fail

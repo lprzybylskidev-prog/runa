@@ -10,7 +10,7 @@ CHECKS = {'check-repository': 'repository', 'check-maintenance': 'maintenance', 
 QUALITY = {'quality-plan': 'show', 'quality-roadmap': 'roadmap', 'quality-final': 'final', 'quality-status': 'status'}
 TESTS = {'test-backend': 'backend', 'test-frontend': 'frontend', 'test-e2e': 'e2e'}
 if arguments == ['--help']:
-    print('Usage: python3 tools/maintainer/' + name + (' [--background]' if name in ('quality-roadmap', 'quality-final') else ' [runner options]' if name in TESTS else ''))
+    print('Usage: python3 tools/maintainer/' + name + (' [--group=NAME ... | --all]' + (' [--background]' if name != 'quality-plan' else '') if name in QUALITY and name != 'quality-status' else ' [runner options]' if name in TESTS else ''))
     raise SystemExit(0)
 if name in CHECKS:
     if arguments:
@@ -24,14 +24,16 @@ if name in CHECKS:
     else:
         getattr(checks, area)()
 elif name in QUALITY:
-    if arguments not in ([], ['--background']) or (arguments and name in ('quality-plan', 'quality-status')):
-        raise SystemExit('Only quality-roadmap/final accept --background.')
     import runpy
     import quality
+    try:
+        quality.arguments([QUALITY[name], *arguments])
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     quality.RUN_DIRECTORY = ROOT / '.runtime/quality'
     quality.COMMAND_PREFIX = 'python3 tools/maintainer/quality-'
     original_plan = quality.plan
-    quality.plan = lambda final=False: original_plan(final, ROOT / 'docs/runa/maintainer/roadmaps/active', ROOT / 'docs/runa/maintainer/quality/gates.yml')
+    quality.plan = lambda final=False, **selection: original_plan(final, ROOT / 'docs/runa/maintainer/roadmaps/active', ROOT / 'docs/runa/maintainer/quality/gates.yml', **selection)
     sys.argv = [sys.argv[0], QUALITY[name], *arguments]
     runpy.run_path(str(ROOT / 'tools/application/executors/quality.py'), run_name='__main__')
 elif name in TESTS:

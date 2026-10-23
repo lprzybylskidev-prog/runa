@@ -71,6 +71,14 @@ def main():
             check(not output(compose + ['ps', '-aq']), 'cold discovery started no application or database services')
             plan = json.loads(output([launcher, 'runa:dev:up', '--plan'], cwd=root))
             check(plan['operation'] == 'development.up' and not output(compose + ['ps', '-aq']), 'plan-only does not start services')
+            for action in ('plan', 'roadmap', 'final'):
+                selected = json.loads(output([launcher, 'runa:quality:' + action, '--group=docs', '--group=backend', '--plan'], cwd=root))
+                expected = ['show' if action == 'plan' else action, '--group=docs', '--group=backend']
+                check(selected['parameters']['arguments'] == expected, 'quality ' + action + ' preserves repeated groups through cold native transport')
+            for arguments in (['--all', '--group=docs'], ['--group=installation'], ['--group='], ['--group=../exec']):
+                refused = subprocess.run([launcher, 'runa:quality:final', *arguments, '--plan'], cwd=root, capture_output=True, text=True)
+                check(refused.returncode != 0, 'cold quality selection rejects ' + repr(arguments))
+            check(not output(compose + ['ps', '-aq']), 'quality selection previews/rejections start no application services')
             result = subprocess.run([launcher, 'runa:dev:up'], cwd=root, capture_output=True, text=True)
             report['cold_recovery'] = {'exit_code': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}
             check(result.returncode == 0, 'bound Artisan plan runs the existing host dev lifecycle on an empty isolated project')

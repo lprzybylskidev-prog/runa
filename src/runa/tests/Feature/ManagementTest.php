@@ -57,6 +57,17 @@ it('exposes canonical tooling help and cold plans without booting application se
         ->and($plan['parameters']['arguments'])->toBe(['final', '--background']);
 });
 
+it('preserves repeated quality groups in programmatic management calls', function () {
+    foreach (['plan' => 'show', 'roadmap' => 'roadmap', 'final' => 'final'] as $name => $action) {
+        expect(Artisan::call('runa:quality:'.$name, ['--group' => ['docs', 'backend'], '--plan' => true]))->toBe(0);
+        $plan = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+        expect($plan['parameters']['arguments'])->toBe([$action, '--group=docs', '--group=backend']);
+    }
+    expect(Artisan::call('runa:quality:final', ['--all' => true, '--group' => ['docs'], '--plan' => true]))->toBe(2);
+    expect(Artisan::call('runa:quality:plan', ['--group' => ['installation'], '--plan' => true]))->toBe(2);
+    expect(Artisan::call('runa:quality:plan', ['--all' => true, '--plan' => true]))->toBe(0);
+});
+
 it('keeps all development command families out of the production registry', function (): void {
     $process = new Process([PHP_BINARY, base_path('artisan'), 'list', '--raw'], base_path(), ['APP_ENV' => 'production']);
     $process->mustRun();

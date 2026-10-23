@@ -15,7 +15,7 @@ Quality is enforced locally through:
 
 ### `python3 tools/maintainer/quality-plan`
 
-Show the checks selected for the active roadmap based on its `impact_areas`.
+Preview explicit groups, or the legacy impact-area selection when no flags are supplied.
 
 Do not execute the full gate.
 
@@ -25,7 +25,7 @@ Run the complete gate required for the current roadmap.
 
 ### `python3 tools/maintainer/quality-final`
 
-Run final closure verification. Semantically equivalent to the strictest applicable roadmap gate and release consistency checks.
+Run final closure verification. Validate the agreed final scope and run its complete graph plus mandatory release checks.
 
 ### `python3 tools/maintainer/quality-status`
 
@@ -41,6 +41,78 @@ When finished or interrupted:
 - show the last 30 lines from each relevant log,
 - show full log paths,
 - finish with the overall status.
+
+## Manual group selection
+
+The agent normally selects proportionate groups from roadmap scope, changed behavior
+and real dependencies. The owner can steer that choice. There is no Git-diff
+classifier or automatic scope selection. Record the final choice and rationale in
+roadmap frontmatter as `quality_groups: docs,tooling` (comma-separated, no spaces)
+or `quality_groups: all`, with a nonempty `quality_rationale` string. This declaration
+is required for new roadmaps; older flag-free workflows remain compatible.
+
+Use repeatable `--group=NAME` or standalone `--all` on `quality-plan`,
+`quality-roadmap` and `quality-final`. Do not combine them. `--background` applies
+only to roadmap/final; status accepts no flags. Without selection flags, the legacy
+base/impact-area selection (and final extras for final) remains unchanged.
+Explicit plan/roadmap/final resolve the same graph. Final rejects a selection that
+differs from the roadmap declaration. Plan lists exact commands, mandatory checks,
+prerequisites with reasons and excluded groups without creating run evidence.
+
+| Group        | Scope                                                                                |
+| ------------ | ------------------------------------------------------------------------------------ |
+| docs         | Documentation ownership source contracts                                             |
+| tooling      | Quality coordinator contracts and tooling diagnostics                                |
+| backend      | Owner backend tests, PHP analysis, module contracts, formatting/lint                 |
+| frontend     | Build, types, unit tests, formatting/lint                                            |
+| e2e          | Browser and render diagnostics; includes build/unit prerequisites                    |
+| database     | Migration, constraints and seeding acceptance; includes backend tests                |
+| development  | Dependency composition, startup, live development and hooks                          |
+| containers   | Real repository/image scan and assessed artifact disposition                         |
+| installation | Acquisition/bootstrap/customer initialization and complete native acceptance         |
+| updates      | Preflight/execution and complete native installation/update acceptance               |
+| transport    | Management/host executor source and native acceptance                                |
+| production   | Production operation/source contracts and real isolated deployment acceptance        |
+| security     | Dependency audit, security contracts and changed-surface review; includes image scan |
+| knowledge    | Documentation live contracts, knowledge doctor/evals and Boost                       |
+
+The authoritative step matrix is `gates.yml` (`mandatory`, `groups`, `group_steps`).
+Mandatory owner checks cover repository/release state, secrets, debug/scratch
+residue, maintenance/docs consistency, source ownership and knowledge freshness.
+Runtime configuration/template checks are genuine prerequisites. Existing hooks
+remain mandatory. Heavy suites/audits/AI checks are required when selected directly
+or transitively. Security/data-loss/production-health failures remain blocking.
+An excluded group was not run; a selected-scope PASS never claims all-group coverage.
+
+Representative previews (replace `quality-plan` with `quality-final` only after
+implementation is committed and its final agreement is recorded):
+
+```sh
+python3 tools/maintainer/quality-plan --group=docs
+python3 tools/maintainer/quality-plan --group=docs --group=tooling
+python3 tools/maintainer/quality-plan --group=backend
+python3 tools/maintainer/quality-plan --group=frontend --group=e2e
+python3 tools/maintainer/quality-plan --group=installation --group=updates
+python3 tools/maintainer/quality-plan --group=containers
+python3 tools/maintainer/quality-plan --all
+python3 tools/maintainer/quality-final --all --background
+```
+
+Installation/update groups retain full updater/team/customer-knowledge acceptance;
+production retains actual data/security/isolation acceptance. Security review needs
+real image scans and content-bound agent findings. No lightweight tools/docs group
+pulls these suites in merely because `impact_areas` includes tooling/security.
+
+State/status retain requested/excluded groups, mandatory checks, prerequisite
+reasons, graph fingerprint, branch/commit, rationale, timings and actual results.
+Closure validates complete PASS against the agreed scope and unchanged candidate
+(except reviewed release-only metadata). Missing, failed, interrupted, stale,
+command-altered or narrower evidence blocks closure. Changing final scope requires
+updating the roadmap and rerunning its entire selection from the beginning.
+
+Customer catalogues use delivered application commands only; see the
+[public quality guide](../../handbook/quality/README.md). Owner acquisition/update,
+production-fixture and transport-acceptance groups are not customer capabilities.
 
 ## Latest run only
 
@@ -178,4 +250,4 @@ Native updater acceptance derives its original release tag from the installed pl
 
 ## Stage timings
 
-The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. No test-selection or Playwright skip flag is added.
+The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual group selection does not change individual test bodies or add Playwright skip flags.

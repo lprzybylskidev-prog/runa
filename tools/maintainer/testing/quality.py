@@ -26,6 +26,199 @@ def node(key, command, deps=None, group=None):
 
 
 class QualityContracts(unittest.TestCase):
+    def test_closure_allows_only_exact_predecessor_link_updates_in_existing_drafts(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            name = 'docs/runa/maintainer/roadmaps/draft/RM-2026-011-next.md'
+            path = root / name
+            path.parent.mkdir(parents=True)
+            before = '[RM-2026-010](../active/RM-2026-010-manual-quality-group-selection.md)\n'
+            path.write_text(before)
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'fixture'], check=True)
+            after = before.replace('../active/', '../closed/')
+            path.write_text(after)
+            self.assertTrue(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+            for content in (before, after + 'unrelated change\n', after.replace('010', '009')):
+                path.write_text(content)
+                self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+            path.write_text(after)
+            self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-009', 'docs/runa/maintainer'))
+            self.assertFalse(quality.closure_link_update(root, name, 'HEAD', 'RM-2026-010', 'docs/app'))
+            new = path.with_name('RM-2026-012-new.md')
+            new.write_text(after)
+            self.assertFalse(quality.closure_link_update(root, new.relative_to(root).as_posix(), 'HEAD', 'RM-2026-010', 'docs/runa/maintainer'))
+
+    def test_rm010_one_time_exception_is_bound_to_exact_fix_commit_and_source(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            def commit():
+                subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'fixture'], check=True)
+                return subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+            paths = {'tools/application/quality.py', 'tools/maintainer/testing/quality.py'}
+            roadmap = 'docs/runa/maintainer/roadmaps/active/RM-2026-010-manual-quality-group-selection.md'
+            for name in paths | {roadmap}:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('before')
+            candidate = commit()
+            for name in paths | {roadmap}:
+                (root / name).write_text('approved fix')
+            approved = commit()
+            data = {'id': 'RM-2026-010', 'quality_closure_fix_commit': approved}
+            self.assertEqual(quality.approved_rm010_closure_fix(root, data, candidate), paths)
+            self.assertEqual(quality.approved_rm010_closure_fix(root, data | {'id': 'RM-2026-011'}, candidate), set())
+            (root / 'tools/application/quality.py').write_text('unreviewed follow-up')
+            with self.assertRaisesRegex(ValueError, 'source changed'):
+                quality.approved_rm010_closure_fix(root, data, candidate)
+            (root / 'tools/application/quality.py').write_text('approved fix')
+            (root / 'unrelated.py').write_text('extra')
+            extra = commit()
+            with self.assertRaises(ValueError):
+                quality.approved_rm010_closure_fix(root, data | {'quality_closure_fix_commit': extra}, candidate)
+
+    def grouped_definition(self):
+        return {'base': [node('baseline', 'true'), node('runtime', 'true', ['baseline'])],
+                'impact_areas': {'tooling': [node('cheap', 'true'), node('expensive', 'false')]},
+                'final': [node('closure', 'true')], 'mandatory': ['baseline', 'closure'],
+                'groups': {'docs': ['cheap'], 'backend': ['runtime'], 'containers': ['expensive']}}
+
+    def test_explicit_selection_expands_only_dependencies_and_never_spawns_exclusions(self):
+        definition = self.grouped_definition()
+        nodes, scope = quality.resolve(definition, ['tooling'], groups=['docs', 'docs', 'backend'])
+        self.assertEqual(list(nodes), ['baseline', 'runtime', 'cheap', 'closure'])
+        self.assertEqual(scope['requested_groups'], ['backend', 'docs'])
+        self.assertEqual(scope['excluded_groups'], ['containers'])
+        self.assertIn('prerequisite of runtime', scope['reasons']['baseline'])
+        self.assertEqual(nodes['closure']['depends_on'], ['baseline', 'runtime', 'cheap'])
+        for final in (False, True):
+            self.assertEqual(quality.resolve(definition, ['tooling'], final, ['docs', 'backend']), (nodes, scope))
+        with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'inside', return_value=True):
+            state = {'status': 'running', 'selection': scope, 'steps': {k: dict(n, status='pending') for k, n in nodes.items()}}
+            self.assertEqual(quality.execute(Path(folder), state), 0)
+            self.assertFalse((Path(folder) / 'expensive.log').exists())
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                quality.status(Path(folder), False)
+            self.assertIn('Excluded groups (not run): containers', output.getvalue())
+
+    def test_explicit_all_and_legacy_keep_distinct_honest_scope(self):
+        definition = self.grouped_definition()
+        nodes, scope = quality.resolve(definition, [], all_groups=True)
+        self.assertIn('expensive', nodes)
+        self.assertEqual(scope['mode'], 'all')
+        self.assertEqual(scope['excluded_groups'], [])
+        legacy, scope = quality.resolve(definition, ['tooling'])
+        self.assertEqual(legacy, quality.select(definition, ['tooling']))
+        self.assertEqual(scope['mode'], 'legacy')
+
+    def test_group_validation_rejects_invalid_and_cyclic_selections(self):
+        for args in (['show', '--group='], ['status', '--all'], ['show', '--background'],
+                     ['final', '--all', '--group=docs'], ['final', '--all', '--all'],
+                     ['final', '--group=../command'], ['final', 'docs'], ['final', '--group']):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                quality.arguments(args)
+        self.assertEqual(quality.arguments(['final', '--group=docs', '--group=docs', '--background']), (['docs'], False, True))
+        for groups in (['unknown'], []):
+            with self.assertRaises(ValueError):
+                quality.resolve(self.grouped_definition(), [], groups=groups)
+        definition = self.grouped_definition()
+        definition['base'][0]['depends_on'] = ['runtime']
+        with self.assertRaisesRegex(ValueError, 'cycle'):
+            quality.resolve(definition, [], groups=['backend'])
+        definition['groups']['broken'] = ['missing']
+        with self.assertRaisesRegex(ValueError, 'Missing'):
+            quality.resolve(definition, [], groups=['broken'])
+
+    def test_real_catalogues_cover_existing_steps_without_owner_customer_leaks(self):
+        owner = quality.yaml(ROOT / 'docs/runa/maintainer/quality/gates.yml')
+        customer = quality.yaml(ROOT / 'tools/application/quality.yml')
+        owner_nodes, _ = quality.resolve(owner, [], all_groups=True)
+        legacy = quality.select(owner, list(owner['impact_areas']), True)
+        self.assertTrue(set(legacy) <= set(owner_nodes))
+        for definition in (owner, customer):
+            docs, _ = quality.resolve(definition, ['tooling', 'security'], groups=['docs', 'tooling'])
+            self.assertFalse(any('installation-host.py' in n['command'] or 'security:trivy' in n['command'] for n in docs.values()))
+        customer_nodes, _ = quality.resolve(customer, [], all_groups=True)
+        self.assertFalse(any('tools/maintainer' in n['command'] or 'distribution/' in n['command'] for n in customer_nodes.values()))
+        catalogue = json.loads((ROOT / 'src/runa/management/quality-groups.json').read_text())
+        self.assertEqual(set(catalogue), set(customer['groups']))
+        for group in ('installation', 'updates', 'transport', 'production'):
+            with self.assertRaises(ValueError):
+                quality.resolve(customer, [], groups=[group])
+
+    def test_invalid_executor_selection_preserves_existing_evidence_and_plan_is_read_only(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            engine = root / 'tools/application/executors/quality.py'
+            engine.parent.mkdir(parents=True)
+            shutil.copy(ROOT / 'tools/application/executors/quality.py', engine)
+            directory = root / '.runtime/application-quality'
+            directory.mkdir(parents=True)
+            (directory / 'state.json').write_text('{"sentinel": true}')
+            harness = root / 'harness.py'
+            harness.write_text('import sys, runpy\n'
+                + f'sys.path.insert(0, {str(ROOT / "tools/application")!r})\nimport quality\n'
+                + 'def plan(final=False, **selection):\n'
+                + '    nodes, scope = quality.resolve(' + repr(self.grouped_definition()) + ', [], final, **selection)\n'
+                + '    return {"id":"fixture", "impact_areas":[], "quality_selection":scope}, nodes\n'
+                + 'quality.plan = plan\n'
+                + f'runpy.run_path({str(engine)!r}, run_name="__main__")\n')
+            for args in (['final', '--group=unknown'], ['final', '--all', '--group=docs'], ['show', '--background']):
+                result = subprocess.run([sys.executable, str(harness), *args], cwd=root, capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertEqual((directory / 'state.json').read_text(), '{"sentinel": true}')
+                self.assertEqual(list(directory.iterdir()), [directory / 'state.json'])
+            output = subprocess.run([sys.executable, str(harness), 'show', '--group=docs'], cwd=root, capture_output=True, text=True, check=True).stdout
+            self.assertIn('Excluded groups (not run): backend, containers', output)
+            self.assertIn('cheap: true', output)
+            self.assertEqual((directory / 'state.json').read_text(), '{"sentinel": true}')
+            self.assertFalse((directory.parent / 'quality.lock').exists())
+
+    def test_closure_requires_agreed_scope_complete_results_and_unchanged_candidate(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '-q', '-b', 'roadmap/test', str(root)], check=True)
+            (root / '.git/info/exclude').write_text('.runtime/\n')
+            subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
+            directory = root / '.runtime/quality'
+            directory.mkdir(parents=True)
+            definition = self.grouped_definition()
+            nodes, scope = quality.resolve(definition, [], groups=['docs'])
+            data = {'id': 'fixture', 'branch': 'roadmap/test', 'quality_groups': 'docs', 'quality_rationale': 'docs scope'}
+            state = {'status': 'passed', 'mode': 'final', 'roadmap': 'fixture', 'branch': data['branch'],
+                     'rationale': data['quality_rationale'], 'selection': scope,
+                     'commit': subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip(),
+                     'steps': {key: dict(n, status='passed', exit_code=0) for key, n in nodes.items()}}
+            with patch.object(quality, 'yaml', return_value=definition):
+                quality.save(directory, state)
+                quality.check_evidence(root, data, root / 'definition', directory, owner=True)
+                for change in ({'status': 'interrupted'}, {'branch': 'other'}, {'mode': 'show'}, {'rationale': 'other'}):
+                    quality.save(directory, state | change)
+                    with self.assertRaises(ValueError):
+                        quality.check_evidence(root, data, root / 'definition', directory, owner=True)
+                quality.save(directory, state)
+                with self.assertRaises(ValueError):
+                    quality.check_evidence(root, data | {'quality_groups': 'all'}, root / 'definition', directory, owner=True)
+                state['steps']['cheap']['status'] = 'failed'
+                quality.save(directory, state)
+                with self.assertRaisesRegex(ValueError, 'Incomplete'):
+                    quality.check_evidence(root, data, root / 'definition', directory, owner=True)
+                state['steps']['cheap']['status'] = 'passed'
+                state['steps']['cheap']['command'] = 'false'
+                quality.save(directory, state)
+                with self.assertRaisesRegex(ValueError, 'commands'):
+                    quality.check_evidence(root, data, root / 'definition', directory, owner=True)
+                state['steps']['cheap']['command'] = 'true'
+                quality.save(directory, state)
+                (root / 'runtime.py').write_text('changed')
+                subprocess.run(['git', '-C', str(root), 'add', 'runtime.py'], check=True)
+                with self.assertRaisesRegex(ValueError, 'Substantive'):
+                    quality.check_evidence(root, data, root / 'definition', directory, owner=True)
+
     def test_records_stage_durations_and_shows_them_through_shared_status(self):
         with tempfile.TemporaryDirectory() as folder:
             directory = Path(folder)
