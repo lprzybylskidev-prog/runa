@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\FortifyServiceProvider;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
@@ -106,6 +107,7 @@ afterEach(function (): void {
 
 it('uses guarded named Auth endpoints without Fortify bypasses and rotates cookie sessions on login and logout', function (): void {
     $user = entryUser('session@example.test');
+    expect(app()->getProvider(FortifyServiceProvider::class))->toBeInstanceOf(FortifyServiceProvider::class);
     expect(Fortify::$registersRoutes)->toBeFalse();
     foreach (['login', 'register', 'forgot-password', 'two-factor-challenge'] as $path) {
         $this->postJson('/'.$path)->assertNotFound();
