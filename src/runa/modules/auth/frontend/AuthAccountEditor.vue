@@ -249,10 +249,7 @@ function closeCrop(value: boolean) {
             :error="sectionErrors.details.email ?? ''"
             :helper="
               profile.email_verified
-                ? text(
-                    'Adres potwierdzony. Zmiana wymaga potwierdzenia nowego adresu.',
-                    'Address verified. Changing it requires verification of the new address.',
-                  )
+                ? ''
                 : text('Adres niepotwierdzony.', 'Email not verified.')
             "
             @update:model-value="
@@ -368,7 +365,7 @@ function closeCrop(value: boolean) {
               :size="80"
             />
           </FormConflict>
-          <div class="flex items-center gap-4">
+          <div class="flex justify-center" data-account-avatar-preview>
             <Avatar
               :src="
                 previewUrl ||
@@ -380,14 +377,6 @@ function closeCrop(value: boolean) {
               :size="80"
               class="text-xl"
             />
-            <p class="text-xs leading-relaxed text-muted">
-              {{
-                text(
-                  'Wybierz zdjęcie do 20 MB, ustaw kadr i zapisz.',
-                  'Choose an image up to 20 MB, adjust the crop and save.',
-                )
-              }}
-            </p>
           </div>
           <template v-if="canAvatar">
             <FileInput

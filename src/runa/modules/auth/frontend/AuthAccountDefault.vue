@@ -269,8 +269,8 @@ const passwordHint = computed(() =>
   options.value
     ? [
         text(
-          `Co najmniej ${options.value.password.min_length} znaków, maksymalnie 72 bajty.`,
-          `At least ${options.value.password.min_length} characters, at most 72 bytes.`,
+          `Co najmniej ${options.value.password.min_length} znaków.`,
+          `At least ${options.value.password.min_length} characters.`,
         ),
         options.value.password.mixed_case
           ? text('Wielkie i małe litery.', 'Upper and lower case letters.')

@@ -138,7 +138,6 @@ export function useAuthAccount(accountId: string) {
   const trustedRows = ref<AccountRow[]>([]),
     trustedCursor = ref<string | null>(null);
   let trustedReadEpoch = 0;
-  let trustedLoaded = false;
   const canTrustDevice = computed(
     () =>
       security.value?.trusted_devices_enabled === true &&
@@ -490,8 +489,7 @@ export function useAuthAccount(accountId: string) {
         )
       )
         await readPage();
-      if (trustedLoaded && security.value?.trusted_devices_enabled)
-        await readTrustedDevices();
+      if (security.value?.trusted_devices_enabled) await readTrustedDevices();
       if (alive && failure.value === 'refresh_failed') failure.value = '';
     })();
     try {
@@ -531,6 +529,14 @@ export function useAuthAccount(accountId: string) {
       fields.email = profile.value?.email ?? '';
       draft.value = takeAccountDraft(accountId);
       method.value = proofMethods.value[0] ?? 'totp';
+      if (s.trusted_devices_enabled) {
+        try {
+          await readTrustedDevices();
+        } catch (error) {
+          if (alive && !(error instanceof RequestCancelledError))
+            failure.value = 'refresh_failed';
+        }
+      }
     });
   }
   async function readPage(append = false) {
@@ -569,7 +575,6 @@ export function useAuthAccount(accountId: string) {
       await accountRequest('trusted-devices', 'GET', input, abort.signal),
     );
     if (alive && own === trustedReadEpoch) {
-      trustedLoaded = true;
       trustedRows.value = append
         ? [...trustedRows.value, ...page.rows]
         : page.rows;
@@ -802,7 +807,10 @@ export function useAuthAccount(accountId: string) {
         }
         await loadProfile(true);
         const s = decodeSecurity(await authGet('security', abort.signal));
-        if (alive) security.value = s;
+        if (alive) {
+          security.value = s;
+          if (s.trusted_devices_enabled) await readTrustedDevices();
+        }
         if (op === 'details') {
           clearAccountDraft();
           draftEpoch = accountDraftEpoch();

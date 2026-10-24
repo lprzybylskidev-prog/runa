@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.21.1
+
+Remove redundant account helper/status paragraphs and byte counts from password
+hints while retaining dynamic minimum/complexity requirements and all validation.
+Center the avatar preview. Show device management only while the guarded current
+trusted-device list has at least one active item; refresh that list at account
+initialization and after security changes. Source-only forward edge; no schema,
+security policy, public API or dependency change.
+
 ## 0.21.0
 
 Add lifecycle-fenced automatic account read refresh on visible return/tab changes

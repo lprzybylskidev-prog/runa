@@ -244,14 +244,6 @@ defineExpose({ beginReset, reload });
         </h3></template
       >
       <div class="space-y-5">
-        <p class="text-xs leading-relaxed text-muted">
-          {{
-            text(
-              'Włącz wybrane wiadomości, wskaż odbiorców i zapisz zmiany w danym wierszu.',
-              'Enable the emails you want, select recipients and save each row.',
-            )
-          }}
-        </p>
         <Spinner
           v-if="busy && !delivery.length"
           :label="text('Wczytywanie powiadomień', 'Loading notifications')"

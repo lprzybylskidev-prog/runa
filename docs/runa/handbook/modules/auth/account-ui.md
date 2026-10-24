@@ -265,3 +265,19 @@ The current profile has no separate avatar-content revision, so an external prof
 version change while an image draft exists conservatively requires local image
 review; it cannot safely prove that replacement bytes are unchanged. Submission,
 cancel, expiry and factor-proof cleanup retain their existing security contracts.
+
+## Concise account presentation
+
+Default password hints show the configured minimum and enabled complexity rules;
+the server's fixed byte limit still applies but is omitted from helper copy. Omit
+redundant verified-email, secondary-address introduction, avatar instructions,
+enrolled-method summaries/status lines, trust explanation and delivery-editor
+introduction. Keep actionable verification errors and enrollment prerequisites.
+The avatar preview is centered within its Card.
+
+Trusted-device management is visible only when trustedRows contains an active
+record from the existing guarded current-device endpoint. Load that list at
+initialization, visible refresh and after security changes; preserve its independent
+cursor and busy state when opening its dialog. Expired/revoked/missing devices do
+not keep the action visible. This is presentation availability only; server trust,
+factor proof, validation and authorization rules remain unchanged.

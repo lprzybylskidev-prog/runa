@@ -156,6 +156,11 @@ beforeEach(() => {
       writes.push({ path, body });
       return write(path, body);
     }
+    if (path.endsWith('/trusted-devices'))
+      return new Response(
+        JSON.stringify({ data: [], meta: { next_cursor: null } }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
     if (path.endsWith('/entry-options')) return json(options);
     if (path.endsWith('/security')) return json(currentSecurity);
     if (path.endsWith('/profile')) return json(currentProfile);
@@ -1451,6 +1456,7 @@ it('trusted devices live inside two-factor settings and cannot be enabled withou
     .find((button) => button.text() === 'Zaufaj tej przeglądarce')!;
   expect(trigger.attributes('disabled')).toBeDefined();
   expect(card.text()).toContain('Najpierw włącz uwierzytelnianie dwuetapowe');
+  expect(card.text()).not.toContain('Zarządzaj urządzeniami');
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.overviewAction.value = 'trustIssue';
   await state.saveSection('security');
@@ -1575,6 +1581,7 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
   await vi.waitFor(() =>
     expect(document.querySelectorAll('[role=dialog] tbody tr')).toHaveLength(1),
   );
+  await vi.waitFor(() => expect(state.busy.value).toBe(false));
   const body = new DOMWrapper(document.body);
   await body
     .findAll('[role=dialog] button')
@@ -2181,4 +2188,40 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
   expect(state.fields.name).toBe('My pending draft');
   expect(state.detailConflicts.name).toBe('Remote update');
   expect(writes).toHaveLength(0);
+});
+
+it('trusted management appears only while an active device exists and disappears after refresh', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  let active = true;
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation((input, init) =>
+    String(input).split('?')[0]!.endsWith('/trusted-devices')
+      ? Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: active
+                ? [
+                    {
+                      public_id: other,
+                      created_at: '2026-10-25T00:00:00Z',
+                      expires_at: '2026-11-25T00:00:00Z',
+                    },
+                  ]
+                : [],
+              meta: { next_cursor: null },
+            }),
+            { headers: { 'Content-Type': 'application/json' } },
+          ),
+        )
+      : original(input, init),
+  );
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const card = w.get('[data-account-security]');
+  expect(card.text()).toContain('Zarządzaj urządzeniami');
+  expect(card.text()).not.toContain('Zaufana przeglądarka pomija kod');
+  active = false;
+  await w.getComponent(AuthAccountEditor).props('account').refresh();
+  await flushPromises();
+  expect(card.text()).not.toContain('Zarządzaj urządzeniami');
 });

@@ -163,14 +163,6 @@ async function remove() {
         >{{ profile.secondary_emails.length }} / {{ limit }}</span
       >
     </div>
-    <p class="text-xs leading-relaxed text-muted">
-      {{
-        text(
-          'Adresy do powiadomień. Każdy dodatkowy adres wymaga osobnego potwierdzenia.',
-          'Notification addresses. Each secondary address must be verified separately.',
-        )
-      }}
-    </p>
     <ul
       v-if="profile.secondary_emails.length"
       class="divide-y divide-line"

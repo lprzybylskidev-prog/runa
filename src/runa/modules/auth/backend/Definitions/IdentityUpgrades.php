@@ -6,6 +6,7 @@ use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\UpgradeAccountCards;
+use Runa\Modules\Auth\UpgradeAccountCopy;
 use Runa\Modules\Auth\UpgradeAccountEditor;
 use Runa\Modules\Auth\UpgradeAccountMethods;
 use Runa\Modules\Auth\UpgradeAccountRefresh;
@@ -80,7 +81,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('preferences_presentation', '0.19.0', '0.19.1', UpgradePreferencesPresentation::class),
             new UpgradeDefinition('all_preferences', '0.19.1', '0.20.0', UpgradeAllPreferences::class),
             new UpgradeDefinition('preferences_selection', '0.20.0', '0.20.1', UpgradePreferencesSelection::class),
-            new UpgradeDefinition('account_refresh', '0.20.1', '0.21.0', UpgradeAccountRefresh::class)];
+            new UpgradeDefinition('account_refresh', '0.20.1', '0.21.0', UpgradeAccountRefresh::class),
+            new UpgradeDefinition('account_copy', '0.21.0', '0.21.1', UpgradeAccountCopy::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

@@ -65,6 +65,12 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests concise account/password copy, centered avatar and
+  trusted-device management only while an active trusted device exists. Point 19zd
+  removes the named helper/status text in PL/EN and reuses the guarded active-device
+  list for visibility. Owner confirms expired/missing devices need no management
+  button; no historical marker, schema or security-policy change is needed.
+
 - 2026-10-25 — Owner approves automatic read refresh across current account views,
   preservation of dirty drafts, shared revisions for own preference saves and
   form-local conflict decisions only for overlapping changes. Point 19zc supplies
@@ -1089,6 +1095,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19za. Record owner-approved module stabilization and later MINOR/PATCH/MAJOR policy in owner/customer guidance and closure requirements.
 - [x] 19zb. Simplify and stack Preferences Cards; repair multi-address selection.
 - [x] 19zc. Refresh current account views automatically, preserve drafts and reconcile conflicts locally; record reusable guidance.
+- [x] 19zd. Remove redundant account copy, center avatar and show management only for active trusted devices.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3478,3 +3485,34 @@ architectural premise requires discussion before dependent work.
   cancellation and secret-cleanup rules; no duplicate rule needed. No dependency,
   schema, authorization policy or Docker resource change. No broad/final gate run;
   point 20 remains gated by explicit owner appearance acceptance.
+
+### Point 19zd — Concise account copy and active trust management
+
+- Removed byte counts from PL/EN password hints while preserving configured minimum,
+  complexity rules and existing byte validation. Removed the requested confirmed-email,
+  secondary-address introduction, avatar instructions, factor summary/status lines,
+  trust explanation and delivery-editor introduction. Kept actionable unverified-email
+  and missing-enrollment guidance. Centered the avatar preview within its Card.
+- Device management appears only for a nonempty current guarded trustedRows list;
+  expired/revoked/missing devices do not keep it visible. Read the existing list at
+  initialization, visible refresh and after security changes; preserve independent
+  pagination and busy state. No historical marker, database migration, endpoint or
+  authentication/authorization change.
+- Auth PATCH 0.21.0 -> 0.21.1 with a source-only forward edge and central changelog/
+  README. Permissions 0.5.9 and Auth ^0.21.0 remain compatible; Audit/framework and
+  platform versions unchanged. Local source-only update and scoped runtime/version
+  diagnostics passed without resetting data or changing owner sessions/credentials.
+- Focused frontend diagnostics passed for empty/active trust visibility, disappearance
+  after refresh, guarded issuance, cursor/revocation dialogs and retained byte-limit
+  validation in entry forms. The dialog pagination regression now waits for its
+  refresh to finish before invoking another request against preloaded rows.
+- Published Vite assets. Served-browser previews with synthetic API passed at
+  1440/768/390px, light/dark and EN: requested copy absent, centered avatar, hidden
+  empty manager, shared preference revisions and nondestructive refresh preserved.
+  Inspected mobile avatar/security screenshots; no page errors/overflow. Evidence
+  remains under .runtime/dev/manual-auth/account-copy.
+- Updated public account UI guidance and owner/customer page-pattern references.
+  Root/frontend/Vue/Tailwind/security/backend instructions already require concise
+  copy, shared primitives and server authority; no duplicate rule needed. No external
+  dependency or Docker resource changes. Final point 20 remains appearance-gated;
+  no broad/final verification started.

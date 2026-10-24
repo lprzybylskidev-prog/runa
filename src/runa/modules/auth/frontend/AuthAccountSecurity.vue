@@ -268,16 +268,6 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       </h3></template
     >
     <div class="space-y-4">
-      <p class="text-xs text-muted">
-        {{ text('Włączone metody:', 'Enrolled methods:') }}
-        {{
-          security?.enrolled
-            .map((value) =>
-              value === 'totp' ? text('aplikacja', 'authenticator') : 'e-mail',
-            )
-            .join(', ') || text('brak', 'none')
-        }}
-      </p>
       <div class="divide-y divide-[var(--runa-border)]">
         <div
           v-for="method in methods"
@@ -287,13 +277,6 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
           <div class="min-w-0 space-y-1">
             <h4 class="text-sm font-semibold">{{ method.label }}</h4>
             <p class="text-xs text-muted">{{ method.description }}</p>
-            <p class="text-xs">
-              {{
-                method.enrolled
-                  ? text('Włączona', 'Enabled')
-                  : text('Wyłączona', 'Disabled')
-              }}
-            </p>
           </div>
           <Button
             variant="outline"
@@ -328,17 +311,12 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         <h4 class="text-sm font-semibold">
           {{ text('Zaufane urządzenia', 'Trusted devices') }}
         </h4>
-        <p class="text-xs text-muted">
+        <p v-if="!canTrustDevice" class="text-xs text-muted">
           {{
-            canTrustDevice
-              ? text(
-                  'Zaufana przeglądarka pomija kod przy logowaniu. Wrażliwe operacje nadal wymagają potwierdzenia.',
-                  'A trusted browser skips the sign-in code. Sensitive actions still require confirmation.',
-                )
-              : text(
-                  'Najpierw włącz uwierzytelnianie dwuetapowe, aby zaufać tej przeglądarce.',
-                  'Enable two-factor authentication before trusting this browser.',
-                )
+            text(
+              'Najpierw włącz uwierzytelnianie dwuetapowe, aby zaufać tej przeglądarce.',
+              'Enable two-factor authentication before trusting this browser.',
+            )
           }}
         </p>
         <div class="flex flex-wrap gap-2">
@@ -348,9 +326,13 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
             @click="setAction('trustIssue')"
             >{{ text('Zaufaj tej przeglądarce', 'Trust this browser') }}</Button
           >
-          <Button variant="outline" :disabled="busy" @click="openDevices">{{
-            text('Zarządzaj urządzeniami', 'Manage devices')
-          }}</Button>
+          <Button
+            v-if="trustedRows.length"
+            variant="outline"
+            :disabled="busy"
+            @click="openDevices"
+            >{{ text('Zarządzaj urządzeniami', 'Manage devices') }}</Button
+          >
         </div>
       </section>
     </div>

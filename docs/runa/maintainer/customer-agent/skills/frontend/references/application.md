@@ -143,3 +143,8 @@ Use the public account UI/preferences guides for revision and recovery behavior.
 Use the public forms guide's automatic read reconciliation and shared FormConflict
 for current/future data views. Refresh current reads without discarding drafts;
 resolve only overlapping/ambiguous changes locally and never retry writes silently.
+
+Account defaults use concise helper copy and a centered avatar. Device management
+appears only for a nonempty guarded active trusted-device list; refresh it through
+the public controller and keep independent cursor/busy state. See the account UI
+guide; do not infer authority or historical trust from button visibility.
