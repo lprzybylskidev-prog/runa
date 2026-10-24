@@ -288,6 +288,20 @@ this is explicit local preparation, never an automatic reopen step.
    production security policy to skip their expected restrictions. Review in Polish
    and English, light/dark and desktop/tablet/mobile during final frontend acceptance.
 
-This is a prepared manual procedure. Implementation diagnostics use disposable
-owner-test storage; they do not assert that a live developer database was seeded or
-that integrated browser/install acceptance has already passed.
+Before handing a frontend to an owner/customer for manual review, explicitly
+prepare the actual development environment: forward-install/update mandatory Core
+modules, publish current frontend/error assets, run the module development corpus
+and privately initialize the administrator password. Ordinary reopen remains
+nondestructive and does not run seeds. Core modules are mandatory/enabled after
+normal initialization; an absent registry or stale assets is not a reason to ask
+the reviewer to enable Core manually or memorize a login URL.
+
+Verify the real served guest welcome, conditional registration, normal sign-in,
+profile and sign-out before handing over the URL and privately supplied development
+credentials. Keep passwords out of source, documentation, argv, logs and screenshots;
+preserve established credentials on repeats. Local public registration may be
+explicitly enabled through audited revision-checked settings for a requested
+manual scenario; production defaults do not change. Read current readiness from
+the running application, not from owner fixtures or an old verification result.
+This targeted operational preparation does not constitute full integrated
+browser/installation acceptance or the owner's visual acceptance.

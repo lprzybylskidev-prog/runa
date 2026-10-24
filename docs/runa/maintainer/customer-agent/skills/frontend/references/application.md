@@ -53,3 +53,8 @@ Use docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-
 for generated private build/tooling artifacts: one workspace-root .runtime/<area>,
 no src/.runtime or module-local runtime roots. Preserve public asset/Laravel storage
 contracts and unrelated reports, backups, caches and operation/recovery state.
+
+Before handing over a frontend for manual review, prepare and inspect the actual
+served development environment, current assets, mandatory Core data and private
+fixture-account setup through [manual preparation](docs/runa/handbook/data/seeding.md#manual-auth-navigation-scenario).
+Code/fixture coverage does not establish live readiness or owner appearance acceptance.

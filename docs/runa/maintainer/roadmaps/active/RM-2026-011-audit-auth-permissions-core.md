@@ -65,6 +65,15 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests a working local manual-test environment and private
+  login details for the development-seeded superadministrator before visual
+  acceptance. Point 19b owns non-destructive live development forward preparation,
+  explicit Core corpus/password setup, current frontend asset publication and a
+  focused real guest/sign-in/account/sign-out check. Building served frontend/error
+  assets is explicitly needed for this operational preparation; no full quality,
+  static-analysis, image/scanner or broad acceptance gate starts before point 20.
+  Never hardcode/distribute passwords, reset the database or bypass Auth security.
+
 - 2026-10-24 — Owner requests one workspace-root .runtime location for generated
   tooling/build state. Add point 19a before final verification to consolidate the
   src/.runtime error renderer/templates under .runtime/frontend/errors, synchronize
@@ -901,6 +910,16 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     in their existing roles. Record one-root placement in owner/customer guidance.
   - Prepare path/build/runtime regressions; run only necessary focused diagnostics.
     Broad builds/images/acceptance remain in 20 after explicit visual acceptance.
+- [x] 19b. Prepare the live development environment for manual frontend review.
+  - Requires 19a. Inspect local database/registry/build state, apply supported forward
+    platform/Core preparation and explicitly run the module development corpus.
+  - Privately initialize the fixture administrator password through the existing
+    supported prompt and provide the owner its development login details. Preserve
+    existing credentials/data and all production guards; no default shared password.
+  - Publish current development frontend/error assets and verify real welcome
+    guest links, policy-dependent registration, sign-in/security/account/sign-out.
+    Repair concrete readiness defects and synchronize the manual preparation docs.
+  - Commit the point; full point 20 remains gated by explicit owner visual acceptance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -929,7 +948,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, which remains gated by explicit owner appearance acceptance. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, which remains gated by explicit owner appearance acceptance. Point 19b prepares the real development environment and seeded administrator for review. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -2221,3 +2240,51 @@ architectural premise requires discussion before dependent work.
   data/services, Qdrant/model/build caches, backups, rollback resources and reports
   are preserved. Point 20 remains open and cannot start before explicit owner
   appearance acceptance; this cleanup does not grant that acceptance.
+
+## Point 19b delivery
+
+- Diagnosed actual local development environment (APP_ENV local, PostgreSQL runa
+  on service postgres): Core source had never been synchronized/installed and the
+  served frontend was stale. Auth entry-options returned a real 404; this was not
+  optional Core enablement or a missing welcome implementation. No reset needed.
+- Executed the documented forward platform primitive at exact source HEAD,
+  retaining existing tables/data and installing Audit 0.5.0, Auth 0.13.0 and
+  Permissions 0.5.1 with their existing transactional migrations/upgrade handlers.
+  All three are now registered, enabled and installed at source version. Ran the
+  explicit module development seed graph (Auth then Permissions); created canonical
+  local scenarios/extra records, fixture provenance and actual protected authority.
+- Initialized only the administrator's unset password through supported hidden
+  interactive runa:seed:accounts administrator --setup, with generated private
+  material and confirmation, no argv/source/log/default credential or echo.
+  Private local material is mode 0600 in the ignored manual-auth operational
+  directory; no password is recorded here. Confirmed protected role through the
+  existing authority adapter inside its required transaction. Other accounts keep
+  unset credentials; repeats preserve the administrator password.
+- Enabled public_registration only in this local development database through the
+  supported revision/generation-checked audited settings command; source/production
+  defaults remain false. Public welcome remains enabled. Guest now has both login
+  and conditional registration entry links; no UI/security bypass was introduced.
+- Published actual frontend assets with Vite and rebuilt/finalized shared error
+  assets for this explicit operational readiness task. Error rebuild exposed a
+  relocation issue: the SSR entry outside src/node_modules could not resolve Vue.
+  Set SSR noExternal so the private build renderer is self-contained; rebuilding
+  and standalone PHP finalization then passed. Renderer bundles still never enter
+  production runtime images. This changes no module-owned contract/version.
+- Focused real Chromium/Nginx/PHP/PostgreSQL manual-path diagnostic passed without
+  API interception: visible guest login/registration, seeded administrator login,
+  unrestricted session 200, application entry, dropdown profile, account form,
+  dropdown logout, guest welcome and session 401; zero page errors. Initial probes
+  were repaired for async navigation and exact dropdown scope, and the registration
+  probe reran after the audited local setting change. Readiness/safe screenshots
+  remain under .runtime/dev/manual-auth. This is not broad E2E/installation/security
+  acceptance or owner visual acceptance. No full quality, typecheck/static-analysis,
+  image build or scanner ran; mandatory commit hooks apply.
+- Synchronized public seeding/manual handover, renderer-placement guidance and both
+  frontend instruction reference products. Existing owner/customer AGENTS and
+  backend/Laravel/PostgreSQL/security rules already require supported operations,
+  private credentials, current guards and preserved data; no duplicate rule needed.
+  Platform VERSION and all module versions remain unchanged.
+- No temporary Docker resources were created or removed. Live development data is
+  forward-prepared and seeded as requested; all prior data, services, test database,
+  caches, backups, reports and rollback resources were preserved. Point 20 remains
+  open and awaits the owner's explicit acceptance of frontend appearance.

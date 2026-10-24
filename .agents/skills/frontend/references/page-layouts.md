@@ -20,3 +20,8 @@ Use the single workspace-root .runtime tree for private generated build/tooling
 state; see [artifact placement](../../../../docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state). Resolve paths consistently
 from src and build stages. Keep only required generated runtime assets in explicit
 production copies; preserve unrelated caches/reports/backups/operation state.
+
+Before handing over a frontend for manual review, prepare and inspect the actual
+served development environment, current assets, mandatory Core data and private
+fixture-account setup through [manual preparation](../../../../docs/runa/handbook/data/seeding.md#manual-auth-navigation-scenario).
+Code/fixture coverage does not establish live readiness or owner appearance acceptance.

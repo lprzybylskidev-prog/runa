@@ -17,6 +17,8 @@ if (
 
 export default defineConfig({
   base: '/runa-error/',
+  // The private renderer lives outside src/node_modules; ship a self-contained build tool.
+  ssr: { noExternal: true },
   resolve: {
     alias: {
       '@/runa': fileURLToPath(

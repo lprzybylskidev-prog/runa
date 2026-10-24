@@ -181,3 +181,9 @@ Owner-only examples and acceptance fixtures live under src/runa/tests and
 maintainer tooling, never as added customer business screens/modules. Rendered
 responsive/theme/keyboard/security-flow and delivery acceptance runs in the final
 roadmap verification; custom code still needs its own rendered acceptance.
+
+The private error SSR renderer is bundled with its dependencies because its output
+lives under workspace-root .runtime, outside src/node_modules. Keep this build tool
+self-contained when changing artifact paths; only generated HTML/CSS/assets enter
+production runtime images. See [manual preparation](../../data/seeding.md#manual-auth-navigation-scenario)
+for actual environment readiness before frontend review.
