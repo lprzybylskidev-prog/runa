@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.13.3
+
+Remove the interactive focus outline from programmatically focused entry/account
+headings while retaining heading focus announcements, tabindex=-1 and visible
+keyboard focus on actual controls. Source-only 0.13.2 -> 0.13.3 edge.
+
 ## 0.13.2
 
 Render welcome header entry actions as quiet text anchors with hover/focus and

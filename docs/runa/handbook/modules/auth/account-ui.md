@@ -118,3 +118,7 @@ presentation. AuthPresentationProvider replaces views/layouts within its subtree
 public headless controllers retain the same flow/session cleanup. Put customer
 files in src/app. This is the general Runa view rule, also required for future
 modules. DefaultApplication owns supplied path composition; App.vue is thin wiring.
+
+Programmatic heading focus announces the current Auth step/tab to assistive
+technology. These headings retain tabindex=-1 and suppress only their own outline;
+inputs, links, buttons and error-feedback focus retain visible keyboard indicators.

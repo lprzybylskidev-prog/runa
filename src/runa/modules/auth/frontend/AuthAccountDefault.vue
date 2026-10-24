@@ -283,7 +283,7 @@ const passwordHint = computed(() =>
         >{{ titles[item] }}</Button
       >
     </nav>
-    <h2 ref="heading" tabindex="-1" class="text-xl font-semibold">
+    <h2 ref="heading" tabindex="-1" class="auth-heading text-xl font-semibold">
       {{ titles[tab] }}
     </h2>
     <div v-if="failure" ref="feedback" tabindex="-1" role="alert">
@@ -773,6 +773,11 @@ const passwordHint = computed(() =>
   />
 </template>
 <style scoped>
+/* A programmatic reading target, not an interactive/tab-stop control. */
+.auth-heading:focus {
+  outline: none;
+}
+
 /* Account steps change immediately; shared controls own feedback and reduced-motion transitions. */
 @media print {
   [data-enrollment-secret],

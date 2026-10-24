@@ -68,3 +68,8 @@ headers wrapping without overflow.
 Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
+
+For Auth step/tab changes, keep programmatic focus on the noninteractive heading
+(tabindex=-1) for reading context, without an interactive outline on that heading.
+Scope this presentation exception to the reading target; retain visible keyboard
+focus on links, inputs, buttons, error feedback and other interactive controls.

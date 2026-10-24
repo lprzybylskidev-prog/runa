@@ -944,6 +944,11 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     behavior; publish and inspect desktop/mobile light/dark for continued review.
   - Synchronize current guidance, independent module version and commit; no broad
     verification or appearance acceptance inferred before point 20.
+- [x] 19e. Correct the visual outline of programmatic Auth heading focus.
+  - Owner review identifies automatic heading outline on Auth entry. Preserve
+    programmatic reading focus while suppressing only entry/account heading outlines;
+    retain visible interactive focus. Publish and inspect actual entry/tab behavior,
+    synchronize module version and guidance; point 20 remains appearance-gated.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2368,3 +2373,25 @@ architectural premise requires discussion before dependent work.
 - No temporary Docker resource, reset or credential change. Data, services,
   caches, backups, rollback material and reports preserved. Point 20 still awaits
   explicit owner frontend appearance acceptance.
+
+## Point 19e delivery
+
+- Owner reported a selection-like rectangle on every Auth heading. The global
+  :focus-visible rule overrode the heading utility while the flow intentionally
+  focused its tabindex=-1 reading target. Added a narrowly scoped auth-heading:focus
+  exception in supplied entry/account views. Programmatic focus/announcements and
+  control/error-feedback indicators remain intact; no global focus rule disabled.
+- Auth PATCH 0.13.2 -> 0.13.3, source-only heading_focus edge and central changelog.
+  Existing Permissions ^0.13.0 remains compatible. Published current client assets
+  and applied the local forward edge without schema/settings/credential changes.
+- Focused real browser inspection of login/register/forgot-password confirms the
+  heading remains active without outline and keyboard-mode text fields retain
+  their visible indicators. The probe explicitly selects a text field on the
+  registration page (its first Tab target is a radio input with wrapper feedback),
+  recognizes shared input inset-shadow indicators and waits for their transition.
+  No broad suite/static-analysis/image/scanner/final quality ran; hooks apply.
+- Updated entry/account guidance and both frontend instruction reference products:
+  reading-heading focus differs from interactive controls, whose visible keyboard
+  indicators remain required. Existing root/Vue/Tailwind rules already apply.
+- No Docker resources, resets or credential changes. Existing data/services/caches/
+  reports/backups/rollback resources preserved. Point 20 remains appearance-gated.

@@ -126,7 +126,7 @@ const submitLabel = computed(() => {
           id="auth-title"
           ref="heading"
           tabindex="-1"
-          class="text-2xl font-semibold leading-tight tracking-tight outline-none sm:text-3xl"
+          class="text-2xl font-semibold leading-tight tracking-tight auth-heading sm:text-3xl"
         >
           {{ title }}
         </h1>
@@ -334,6 +334,11 @@ const submitLabel = computed(() => {
 </template>
 
 <style scoped>
+/* A programmatic reading target, not an interactive/tab-stop control. */
+.auth-heading:focus {
+  outline: none;
+}
+
 .auth-link {
   display: inline-flex;
   min-height: 44px;
