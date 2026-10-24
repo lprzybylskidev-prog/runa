@@ -1006,6 +1006,9 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     current profile presentation into both, including immediate save/removal updates.
   - Reuse shared avatar with initials/error fallback, preserve identity fencing,
     public customization and no polling; publish and inspect focused cases.
+- [x] 19o. Center notification text.
+  - Owner requests centered text in shared top-right notifications. Keep icon,
+    dismissal and recovery actions usable; publish and inspect the rendered result.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2802,3 +2805,22 @@ architectural premise requires discussion before dependent work.
   apply. No Docker resources created/removed. Existing services/data, caches, reports,
   backups and rollback material preserved. Point 20 still awaits explicit owner
   frontend appearance acceptance.
+
+## Point 19o delivery
+
+- Owner requests centered text in the notification. Shared Toast now opts into
+  Alert alignment=center: center content horizontally, align icon/text/close
+  vertically and center recovery actions. Ordinary Alert alignment defaults start.
+  Empty descriptions no longer reserve a blank line or offset the title.
+- Published current client assets and inspected the actual authenticated no-change
+  success notification. Computed textAlign/alignItems are center, no empty content
+  line, and title/icon vertical centers differ by less than 0.01px. Screenshot
+  retained under .runtime/dev/manual-auth/notification-alignment. No new tests or
+  broad checks for this small presentation correction; mandatory hooks apply.
+- Updated the public component catalogue. Existing owner/customer frontend references
+  already point to that contract and require shared components; no new instruction
+  rule or duplicate guidance needed. Root/Vue/Tailwind/security products unchanged.
+  No module-owned source changed, so module versions remain unchanged.
+- No data/settings/avatar/credential changes or Docker resources created/removed.
+  Preserved services, caches, reports, backups and rollback material. Point 20
+  remains gated by explicit owner frontend appearance acceptance.

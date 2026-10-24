@@ -6,6 +6,7 @@ const props = withDefaults(
   defineProps<{
     tone?: FeedbackTone | undefined;
     title?: string;
+    alignment?: 'start' | 'center';
     dismissible?: boolean;
     closeLabel?: string;
     announce?: boolean;
@@ -13,6 +14,7 @@ const props = withDefaults(
   {
     tone: undefined,
     title: '',
+    alignment: 'start',
     dismissible: false,
     closeLabel: 'Close',
     announce: true,
@@ -32,14 +34,18 @@ const tone = useFeedbackTone(() => props.tone, 'info');
   <div
     class="runa-feedback app-alert"
     :data-tone="tone"
+    :data-alignment="alignment"
     :role="announce ? (tone === 'danger' ? 'alert' : 'status') : undefined"
     :aria-atomic="announce || undefined"
   >
     <span class="alert-symbol" aria-hidden="true">{{ symbols[tone] }}</span>
     <div class="alert-content">
       <p v-if="title" class="font-semibold">{{ title }}</p>
-      <div><slot /></div>
-      <div v-if="$slots.actions" class="mt-3 flex flex-wrap gap-2">
+      <div v-if="$slots.default"><slot /></div>
+      <div
+        v-if="$slots.actions"
+        class="alert-actions mt-3 flex flex-wrap gap-2"
+      >
         <slot name="actions" />
       </div>
     </div>
@@ -68,6 +74,15 @@ const tone = useFeedbackTone(() => props.tone, 'info');
   color: var(--feedback-text);
   font-size: 12px;
   line-height: 1.7;
+}
+.app-alert[data-alignment='center'] {
+  align-items: center;
+}
+.app-alert[data-alignment='center'] .alert-content {
+  text-align: center;
+}
+.app-alert[data-alignment='center'] .alert-actions {
+  justify-content: center;
 }
 .app-alert[data-tone='neutral'] {
   --feedback-text: var(--runa-text-secondary);

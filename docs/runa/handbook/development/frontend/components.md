@@ -43,7 +43,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppAlert, AppBadge and AppStatus
 
 - Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `src/runa/resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: neutral/success/info/warning/danger for alerts, toasts, badges and statuses. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, with no status tint. All use shared theme role tokens.
-- Alert accepts optional title, content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
+- Alert accepts optional title, alignment=start/center (start default), content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
 - Badge is static inline labeling/counts, size sm/md, no live role. Status pairs a decorative dot with required caller-provided readable slot content; announce opt-in enables role status.
 
 ## AppPopover
@@ -55,6 +55,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## ToastViewport and useToasts
 
 - Sources: `AppToastViewport.vue`, internal `AppToast.vue`, `composables/useToasts.ts`; public `ToastViewport`, `useToasts`, ToastMessage/FeedbackTone types.
+- Toast content is centered horizontally and vertically between its icon and close control; recovery actions are centered with the text. Empty descriptions reserve no extra line.
 - Local setup-scoped queue: `const { messages, show, dismiss } = useToasts()`. Pass messages to ToastViewport and bind dismiss. show accepts title, optional description/tone/duration and returns its ID. Default duration is 5000ms, danger defaults to persistent (0); invalid/nonfinite durations are persistent. This is transient feedback, not a notification center.
 - Viewport accepts an actions slot scoped with message; modal consumers teleport inside the active modal focus/inert boundary and wait for its target before rendering. Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
 - Form-wide outcomes use top-right notifications only; field-specific corrections remain associated with their controls. Persistent error notifications retain explicit recovery actions. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.

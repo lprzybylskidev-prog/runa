@@ -80,13 +80,16 @@ onScopeDispose(stop);
   >
     <AppAlert
       :announce="false"
+      alignment="center"
       :tone="message.tone"
       :title="message.title"
       dismissible
       :close-label="closeLabel"
       @close="emit('close', message.id)"
     >
-      {{ message.description }}
+      <template v-if="message.description" #default>{{
+        message.description
+      }}</template>
       <template v-if="$slots.actions" #actions
         ><slot name="actions"
       /></template>
