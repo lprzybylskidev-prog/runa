@@ -49,8 +49,13 @@ its caller owns the destination and must still use guarded account APIs.
 
 ## Shell and self-service
 
-AuthApplication composes the existing ApplicationLayout, identity initials and
-actual application/account navigation. Profile and CSRF-protected POST sign-out
+AuthApplication composes the existing ApplicationLayout and actual application/
+account navigation. A guarded own-profile read supplies display name, initials
+and private avatar to both the top-bar trigger and dropdown identity. Successful
+own-profile reads after save/remove update both immediately through the session
+controller; revisioned URLs refresh replaced bytes. Initials remain the fallback
+when absent, disabled or unreadable. Profile reads are presentation-only, optional
+and do not block an otherwise valid shell or poll. They never grant access. Profile and CSRF-protected POST sign-out
 share its existing user dropdown, with native links, keyboard/focus return and
 pending/failure feedback. Successful sign-out clears account state and safe drafts
 before navigating through `/`, so welcome policy determines the destination.

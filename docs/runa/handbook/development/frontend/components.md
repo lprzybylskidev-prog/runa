@@ -85,7 +85,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Source: `src/runa/resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
 - Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
-- Action-list/split buttons and reusable avatars were removed at the owner's request; build these only when an actual application need appears. ApplicationLayout retains its unique initials profile control.
+- Action-list/split buttons remain absent until an actual application need appears. The current Auth profile requirement uses public Avatar for shared image/initials presentation; ApplicationLayout retains its dedicated profile disclosure control.
 
 ## AppFooter
 
@@ -317,7 +317,7 @@ Button outline variants; active tabs retain their independent selection styling.
 
 ApplicationLayout omits the heading region for an empty title without heading or
 action slots. Dedicated Auth user-dropdown rows remain shell-local: compact
-initials/name identity, divider, 44px left-aligned icon/label navigation/sign-out.
+avatar/initials and name identity, divider, 44px left-aligned icon/label navigation/sign-out.
 The public Icon catalogue includes logout. Panel użytkownika/User panel appears
 only in the user dropdown; the default /app workspace has no placeholder content.
 
@@ -330,3 +330,13 @@ frame and dimmed surrounding image; direct mouse/touch dragging, wheel/pinch
 zoom and keyboard alternatives replace sliders. Mask pixels never enter export.
 AppPickerSlider remains the internal color-picker control, with optional min=0;
 disabled fieldsets/inert ancestors block edits.
+
+## Avatar
+
+Public Avatar from `@/runa/ui` renders a decorative circular image with initials
+fallback and object-fit cover. Props: initials (required), src (default empty),
+size in px (default 40). Image errors fall back to initials; changing src retries.
+The parent owns the accessible name, identity authorization and safe image URL.
+No fetching/profile storage, motion or global state lives in this primitive.
+ApplicationLayout accepts optional userAvatar (default empty) alongside userName/
+userInitials; the shell trigger, Auth dropdown and account preview share Avatar.

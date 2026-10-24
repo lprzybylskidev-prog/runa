@@ -2,6 +2,7 @@
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Alert,
+  Avatar,
   Button,
   Card,
   Dialog,
@@ -300,21 +301,17 @@ function closeCrop(value: boolean) {
         @submit="save('avatar')"
       >
         <div class="flex items-center gap-4">
-          <img
-            v-if="previewUrl || profile.has_avatar"
-            :key="profile.version"
+          <Avatar
             :src="
-              previewUrl || `/api/runa/auth/profile/avatar?v=${profile.version}`
+              previewUrl ||
+              (profile.has_avatar
+                ? `/api/runa/auth/profile/avatar?v=${profile.version}`
+                : '')
             "
-            :alt="text('Twoje zdjęcie profilowe', 'Your profile image')"
-            class="h-20 w-20 shrink-0 rounded-full object-cover"
+            :initials="profile.initials"
+            :size="80"
+            class="text-xl"
           />
-          <span
-            v-else
-            class="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--runa-primary-subtle)] text-xl font-semibold"
-            aria-hidden="true"
-            >{{ profile.initials }}</span
-          >
           <p class="text-xs leading-relaxed text-muted">
             {{
               text(

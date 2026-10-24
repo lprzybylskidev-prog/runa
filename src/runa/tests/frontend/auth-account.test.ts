@@ -2,7 +2,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
 import AuthAvatarCropper from '../../modules/auth/frontend/AuthAvatarCropper.vue';
-import { Button, Dialog, FileInput, Select } from '@/runa/ui';
+import {
+  Avatar,
+  ApplicationLayout,
+  Button,
+  Dialog,
+  FileInput,
+  Select,
+} from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
 import CustomerApplication from './fixtures/customization/CustomerApplication.vue';
@@ -763,4 +770,94 @@ it('avatar crop supports wheel zoom and keeps the dimmed preview out of exported
   expect(new Uint8Array(await (await w.vm.crop()).arrayBuffer())).not.toEqual(
     new Uint8Array(bytesAfter),
   );
+});
+
+it('shell avatar follows guarded profile reads immediately on replacement/removal and rejects stale or foreign presentation', async () => {
+  currentProfile.has_avatar = true;
+  const w = mount(AuthApplication);
+  await vi.waitFor(() =>
+    expect(w.findComponent(ApplicationLayout).exists()).toBe(true),
+  );
+  const shell = w.getComponent(ApplicationLayout);
+  await vi.waitFor(() => expect(shell.props('userAvatar')).toContain('v=5'));
+  await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
+  await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
+  expect(
+    w
+      .findAllComponents(Avatar)
+      .every((avatar) => avatar.props('src').includes('v=5')),
+  ).toBe(true);
+  currentProfile = {
+    ...currentProfile,
+    version: 6,
+    display_name: 'Updated identity',
+  };
+  await request('/runa/auth/profile');
+  await flushPromises();
+  expect(shell.props('userAvatar')).toContain('v=6');
+  expect(shell.props('userName')).toBe('Updated identity');
+  expect(
+    w
+      .findAllComponents(Avatar)
+      .every((avatar) => avatar.props('src').includes('v=6')),
+  ).toBe(true);
+  currentProfile = { ...currentProfile, version: 4, has_avatar: false };
+  await request('/runa/auth/profile');
+  await flushPromises();
+  expect(shell.props('userAvatar')).toContain('v=6');
+  currentProfile = { ...currentProfile, public_id: other, version: 9 };
+  await request('/runa/auth/profile');
+  await flushPromises();
+  expect(shell.props('userName')).toBe('Updated identity');
+  currentProfile = {
+    ...currentProfile,
+    public_id: id,
+    version: 7,
+    has_avatar: false,
+  };
+  await request('/runa/auth/profile');
+  await flushPromises();
+  expect(shell.props('userAvatar')).toBe('');
+  expect(
+    w.findAllComponents(Avatar).every((avatar) => avatar.props('src') === ''),
+  ).toBe(true);
+});
+it('shared avatar falls back on image errors and retries only when its source changes', async () => {
+  const w = mount(Avatar, {
+    props: { src: '/missing-avatar-one.png', initials: 'TU', size: 40 },
+  });
+  await w.get('img').trigger('error');
+  expect(w.find('img').exists()).toBe(false);
+  expect(w.text()).toBe('TU');
+  await w.setProps({ src: '/missing-avatar-two.png' });
+  expect(w.get('img').attributes('src')).toBe('/missing-avatar-two.png');
+  expect(w.get('img').attributes('alt')).toBe('');
+});
+it('session profile presentation clears on suspension instead of retaining the previous account image', async () => {
+  currentProfile.has_avatar = true;
+  const { state } = mountSession();
+  await vi.waitFor(() => expect(state.profile.value?.has_avatar).toBe(true));
+  signedIn = false;
+  await expect(request('/runa/auth/session')).rejects.toBeDefined();
+  expect(state.paused.value).toBe(true);
+  expect(state.profile.value).toBeUndefined();
+});
+it('optional shell profile read never blocks the session and cannot restore presentation after disposal', async () => {
+  const implementation = vi.mocked(window.fetch).getMockImplementation()!;
+  let finish!: (value: Response) => void;
+  vi.mocked(window.fetch).mockImplementation((input, init) =>
+    String(input).endsWith('/profile')
+      ? new Promise<Response>((resolve) => {
+          finish = resolve;
+        })
+      : implementation(input, init),
+  );
+  const { state, wrapper } = mountSession();
+  await vi.waitFor(() => expect(state.loading.value).toBe(false));
+  expect(state.session.value?.public_id).toBe(id);
+  expect(state.profile.value).toBeUndefined();
+  wrapper.unmount();
+  finish(json({ ...currentProfile, has_avatar: true }));
+  await flushPromises();
+  expect(state.profile.value).toBeUndefined();
 });

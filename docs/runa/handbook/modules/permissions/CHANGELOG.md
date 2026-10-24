@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 0.5.3
+
+Align Auth dependency with compatible 0.15.0 shell profile presentation contracts.
+Source-only forward edge; no Permissions behavior, API or stored changes.
+
 ## 0.5.2
 
 Align Auth dependency with compatible 0.14.0 account-card/cropping contracts.

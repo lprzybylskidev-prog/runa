@@ -68,7 +68,7 @@ names, URLs or backend metadata. Keep the map stable during an active form.
 | Entry               | Customer component contract                                                                                                                                                                                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `minimalLayout`     | Accept and render the default content slot, including its `t` translator slot argument for welcome, and forward `header-actions` for the welcome entry links; accept layout props. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
-| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward width/navigation/current/title/user identity and preserve the account/sign-out controls.                                                                                                                                  |
+| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward width/navigation/current/title/user identity (including userAvatar) and preserve the account/sign-out controls.                                                                                                           |
 | `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                |
 | `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                |
 | `welcome`           | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                                                                                     |
@@ -120,6 +120,13 @@ panning, wheel/pinch zoom and object-URL cleanup; it never uploads. Pass the res
 controller's files ref and explicitly saveSection('avatar'). Compose it inside public
 Dialog with explicit Apply/Cancel; export only on Apply and upload only on Save. Dispose it with the
 account/page; do not copy its private implementation.
+
+useApplicationSession also exposes optional reactive profile presentation from the
+guarded own-profile route. Subscribe through the public controller; same-account
+profile reads with a nonstale version refresh name/initials/avatar after edits.
+It clears presentation on pause/logout/switch and ignores foreign or stale responses.
+Custom ApplicationLayout wrappers forward userAvatar; use public Avatar for a
+custom user identity row. These presentation fields never establish authorization.
 
 Keep private forms scoped to the current account and unmount them on pause/switch.
 In a full customer shell, key the private subtree by session.public_id.

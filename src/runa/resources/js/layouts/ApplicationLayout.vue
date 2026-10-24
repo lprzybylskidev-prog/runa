@@ -13,6 +13,7 @@ import {
   watch,
 } from 'vue';
 import AppButton from '../components/AppButton.vue';
+import AppAvatar from '../components/AppAvatar.vue';
 import AppPopover from '../components/AppPopover.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
@@ -42,6 +43,7 @@ const props = withDefaults(
     preferenceStore?: PreferenceStore | undefined;
     userName?: string;
     userInitials?: string;
+    userAvatar?: string;
   }>(),
   {
     current: undefined,
@@ -54,6 +56,7 @@ const props = withDefaults(
     preferenceStore: undefined,
     userName: 'Runa',
     userInitials: 'RU',
+    userAvatar: '',
   },
 );
 const emit = defineEmits<{
@@ -430,8 +433,11 @@ onScopeDispose(() => {
                 :aria-controls="panelId"
                 aria-haspopup="dialog"
                 @click="toggle"
-                >{{ userInitials }}</AppButton
-              >
+                ><AppAvatar
+                  :src="userAvatar"
+                  :initials="userInitials"
+                  :size="40"
+              /></AppButton>
             </template>
             <div class="shell-profile-panel">
               <slot name="user-menu" :t="t"

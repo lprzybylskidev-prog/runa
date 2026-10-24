@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useAuthPresentation } from './presentation';
 import {
   Alert,
+  Avatar,
   ApplicationLayout,
   Button,
   Icon,
@@ -22,6 +23,7 @@ const { locale } = useLocale();
 const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
 const {
   session,
+  profile,
   paused,
   loading,
   failure,
@@ -49,15 +51,25 @@ const current = computed(() => ({
   moduleKey: props.account ? 'runa.auth' : 'application',
   href: props.account ? '/account' : '/app',
 }));
+const userName = computed(
+  () => profile.value?.display_name ?? session.value?.display_name ?? '',
+);
+const avatar = computed(() =>
+  profile.value?.has_avatar
+    ? `/api/runa/auth/profile/avatar?v=${profile.value.version}&account=${profile.value.public_id}`
+    : '',
+);
 const initials = computed(
   () =>
+    profile.value?.initials ??
     session.value?.display_name
       .split(/\s+/)
       .map((v) => v.slice(0, 1))
       .filter(Boolean)
       .slice(0, 2)
       .join('')
-      .toLocaleUpperCase() ?? '',
+      .toLocaleUpperCase() ??
+    '',
 );
 </script>
 <template>
@@ -82,17 +94,16 @@ const initials = computed(
     :navigation="navigation"
     :current="current"
     :title="account ? text('Panel użytkownika', 'User panel') : ''"
-    :user-name="session.display_name"
+    :user-name="userName"
+    :user-avatar="avatar"
     :user-initials="initials"
   >
     <template #user-menu>
       <div class="account-menu">
         <div class="account-menu-identity">
-          <span class="account-menu-avatar" aria-hidden="true">{{
-            initials
-          }}</span>
+          <Avatar :src="avatar" :initials="initials" :size="40" />
           <div class="min-w-0">
-            <p class="account-menu-name">{{ session.display_name }}</p>
+            <p class="account-menu-name">{{ userName }}</p>
             <p class="account-menu-caption">
               {{ text('Twoje konto', 'Your account') }}
             </p>
@@ -160,18 +171,6 @@ const initials = computed(
   gap: 12px;
   padding: 8px 8px 16px;
   border-bottom: 1px solid var(--runa-border);
-}
-.account-menu-avatar {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--runa-primary-subtle);
-  color: var(--runa-primary-text);
-  font-size: 12px;
-  font-weight: 600;
 }
 .account-menu-name {
   font-size: 12px;

@@ -11,7 +11,8 @@ import {
   record,
 } from './entry';
 import type { EntrySession } from './entry';
-import { clearAccountDraft } from './account';
+import { clearAccountDraft, profileResponse } from './account';
+import type { Profile } from './account';
 
 export interface ActivitySession extends EntrySession {
   session: { public_id: string; activity_at: string; expires_at: string };
@@ -53,6 +54,7 @@ export function useApplicationSession(
   navigate: (path: string) => void = (path) => window.location.assign(path),
 ) {
   const session = shallowRef<ActivitySession>();
+  const profile = shallowRef<Profile>();
   const paused = ref(false),
     loading = ref(true),
     failure = ref(''),
@@ -85,6 +87,7 @@ export function useApplicationSession(
   function suspend() {
     if (paused.value) return;
     paused.value = true;
+    profile.value = undefined;
     epoch++;
     abort.abort();
     abort = new AbortController();
@@ -93,6 +96,18 @@ export function useApplicationSession(
   const unobserve = observeRequests((event) => {
     if (event.phase === 'start') return epoch;
     if (!alive || event.context !== epoch || paused.value) return;
+    if (event.path === '/runa/auth/profile' && event.status === 200) {
+      try {
+        const next = profileResponse(event.payload);
+        if (
+          next.public_id === session.value?.public_id &&
+          (!profile.value || next.version >= profile.value.version)
+        )
+          profile.value = next;
+      } catch {
+        /* Invalid/foreign profile data cannot replace shell identity. */
+      }
+    }
     if (event.status === 401) suspend();
     if (event.status === 403) {
       try {
@@ -113,9 +128,17 @@ export function useApplicationSession(
       if (!alive || own !== epoch) return;
       if (session.value && session.value.public_id !== next.public_id)
         clearAccountDraft();
+      if (profile.value?.public_id !== next.public_id)
+        profile.value = undefined;
       session.value = next;
       failure.value = '';
       if (next.restrictions.length) suspend();
+      else {
+        // Optional presentation read; its failure must not invalidate a valid session.
+        void authGet('profile', abort.signal).catch(() => {
+          /* Initials remain available; optional presentation never blocks the shell. */
+        });
+      }
     } catch (error) {
       if (alive && own === epoch && !(error instanceof RequestCancelledError)) {
         if (authFailure(error).code === 'signed_out') suspend();
@@ -131,6 +154,7 @@ export function useApplicationSession(
     epoch++;
     paused.value = false;
     session.value = undefined;
+    profile.value = undefined;
     loading.value = true;
     await refresh();
   }
@@ -145,6 +169,7 @@ export function useApplicationSession(
       clearAccountDraft();
       accountPreferences.disconnect();
       session.value = undefined;
+      profile.value = undefined;
       navigate('/');
     } catch (error) {
       if (!(error instanceof RequestCancelledError))
@@ -216,6 +241,7 @@ export function useApplicationSession(
   });
   onScopeDispose(() => {
     alive = false;
+    profile.value = undefined;
     epoch++;
     abort.abort();
     unobserve();
@@ -228,6 +254,7 @@ export function useApplicationSession(
   });
   return {
     session,
+    profile,
     paused,
     loading,
     failure,

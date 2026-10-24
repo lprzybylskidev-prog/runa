@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.15.0
+
+Expose optional guarded profile presentation through useApplicationSession and
+render private avatars in the shell trigger/dropdown using shared Avatar. Refresh
+both from same-account nonstale profile reads after save/remove; clear on session
+pause/logout/switch and fall back to initials on image errors. Source-only forward
+edge; no backend API, data/settings or session-authority change.
+
 ## 0.14.2
 
 Unify account, entry and avatar form outcomes through public top-right

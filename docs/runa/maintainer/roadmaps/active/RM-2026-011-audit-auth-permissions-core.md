@@ -1001,6 +1001,11 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     without duplicate banners above forms. Keep associated field corrections.
   - Reuse public notification presentation with persistent actionable failures,
     shared account/entry/avatar/preference consumers, modal accessibility and docs.
+- [x] 19n. Display current account avatar throughout the application shell.
+  - Owner reports saved avatar absent from top menu and dropdown. Wire guarded
+    current profile presentation into both, including immediate save/removal updates.
+  - Reuse shared avatar with initials/error fallback, preserve identity fencing,
+    public customization and no polling; publish and inspect focused cases.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2757,3 +2762,43 @@ architectural premise requires discussion before dependent work.
   apply. No Docker resources created/removed. Preserved services/development data,
   caches, reports, backups and rollback material. Point 20 remains gated by explicit
   owner frontend appearance acceptance.
+
+## Point 19n delivery
+
+- Owner reports saved avatar missing in top menu/dropdown. Both previously rendered
+  initials only. ApplicationLayout now accepts optional userAvatar and AuthApplication
+  supplies the guarded current profile's image to both trigger and dropdown, using
+  the same revision/account-qualified private URL. Profile display name/initials also
+  update after edits; no backend session projection or authority contract changed.
+- Added public shared Avatar (src/initials/size) for the shell trigger, dedicated
+  dropdown identity and account/crop preview. It renders a circular object-fit image,
+  falls back to initials on missing/failed images and retries on source changes.
+  Decorative images use empty alt; the owning trigger retains its accessible name,
+  focus/disclosure behavior and 44px target. No additional avatar motion is needed.
+- Public useApplicationSession exposes optional current profile presentation. Its
+  nonblocking guarded read runs on initialization/explicit session refresh, without
+  polling. Existing shared HTTP observation accepts same-account validated nonstale
+  profile reads after saves/removals, refreshing both shell locations immediately.
+  Foreign/stale responses are ignored; pause/logout/switch/dispose clear presentation.
+  Epoch/identity fences remain authoritative. A failed optional read leaves initials
+  and cannot block an otherwise valid shell; no credential/data is persisted.
+- Auth MINOR 0.14.2 -> 0.15.0 for additive public session presentation; Permissions
+  PATCH 0.5.2 -> 0.5.3 aligns Auth ^0.15.0. Source-only forward edges/changelogs and
+  local preparation passed. Published current client assets; all Core source/version
+  diagnostics passed. No schema/settings/backend API/dependency changes.
+- Seven focused frontend cases passed across received runs: shell/dropdown updates
+  on replacement/removal, stale/foreign profile rejection, image failure/retry,
+  suspension cleanup, existing dropdown/session boundaries, migrated account-avatar
+  save/draft handling and delayed optional-read disposal without blocking the shell.
+  Real served authenticated Chromium loaded the existing 512px image in both trigger
+  and dropdown; 1440/390 light/dark checks passed with no overflow/JS errors. Inspected
+  screenshots retained under .runtime/dev/manual-auth/shell-avatar. No real account/
+  avatar writes were made during this diagnostic.
+- Updated account/customization/component/page-layout guidance and both owner/customer
+  frontend reference products. Replaced obsolete no-avatar catalogue wording now
+  that a real requirement exists. Root AGENTS, Vue/Tailwind/security guidance already
+  requires public reuse, account fencing and safe private reads; no duplicate rule.
+- No broad suites/static analysis/image/scanner/final quality ran; mandatory hooks
+  apply. No Docker resources created/removed. Existing services/data, caches, reports,
+  backups and rollback material preserved. Point 20 still awaits explicit owner
+  frontend appearance acceptance.

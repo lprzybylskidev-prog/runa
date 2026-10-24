@@ -102,3 +102,8 @@ Use public FormNotifications for successful saves and form-wide failures only in
 the top-right viewport. Do not duplicate outcome banners above forms. Preserve
 associated field errors, persistent failure/recovery actions and explicit retries;
 increment attempt on each submit. Modal notifications stay within modal focus.
+
+Use public Avatar for repeated profile-image/initials presentation. Forward the
+ApplicationLayout userAvatar prop in wrappers, and consume current profile display
+through useApplicationSession rather than copying private profile orchestration.
+Profile/image presentation is never authentication or authorization state.

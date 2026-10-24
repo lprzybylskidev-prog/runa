@@ -1,4 +1,5 @@
 /** Public, shell-independent imports. Keep implementation paths private to the facade. */
+export { default as Avatar } from '../../components/AppAvatar.vue';
 export { default as Button } from '../../components/AppButton.vue';
 export { default as Tooltip } from '../../components/AppTooltip.vue';
 export { default as Icon } from '../../components/AppIcon.vue';
