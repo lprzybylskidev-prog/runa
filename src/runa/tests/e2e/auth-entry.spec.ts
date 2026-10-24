@@ -32,15 +32,15 @@ async function entryTransport(page: Page) {
 test('Auth entry render diagnostic: keyboard errors and responsive theme states', async ({
   page,
 }, info) => {
-  test.skip(
-    info.project.name !== 'chromium',
-    'Focused visual diagnostic; full browser acceptance runs at final verification.',
-  );
   await entryTransport(page);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   for (const [width, height, theme] of [
     [1440, 1000, 'dark'],
+    [1440, 1000, 'light'],
+    [820, 1180, 'dark'],
+    [820, 1180, 'light'],
+    [390, 844, 'dark'],
     [390, 844, 'light'],
   ] as const) {
     await page.setViewportSize({ width, height });
@@ -75,7 +75,7 @@ test('Auth entry render diagnostic: keyboard errors and responsive theme states'
       '1',
     );
     await page.screenshot({
-      path: `../artifacts/playwright/runa/auth-entry/login-${width}-${theme}.png`,
+      path: info.outputPath(`login-${width}-${theme}.png`),
       fullPage: true,
     });
   }

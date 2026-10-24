@@ -127,6 +127,10 @@ test('Auth account render diagnostic: profile and sign-out share the accessible 
   page.on('pageerror', (e) => errors.push(e.message));
   for (const [width, height, theme] of [
     [1440, 1000, 'dark'],
+    [1440, 1000, 'light'],
+    [820, 1180, 'dark'],
+    [820, 1180, 'light'],
+    [390, 844, 'dark'],
     [390, 844, 'light'],
   ] as const) {
     await page.setViewportSize({ width, height });

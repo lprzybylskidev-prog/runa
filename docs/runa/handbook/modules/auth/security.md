@@ -157,8 +157,7 @@ Cleanup bounds expired proof storage. Jobs/CLI cannot inherit browser proof stat
 `runa.auth.passwords.reset`, `runa.auth.two_factor.reset` and
 `runa.auth.trust.manage`. Reset mutations additionally require the neutral authority
 invariant and every-action `both` step-up, keyed `runa.auth.password.admin_reset`
-or `runa.auth.two_factor.reset`, in the caller's transaction. Until Permissions
-and the trusted invariant are integrated, administrative operations remain denied.
+or `runa.auth.two_factor.reset`, in the caller's transaction. The integrated Permissions participant enforces the last-eligible-superadministrator invariant; missing or unavailable integration denies the operation.
 Infrastructure emergency recovery uses its separate guarded workflow.
 
 ## Named HTTP surface

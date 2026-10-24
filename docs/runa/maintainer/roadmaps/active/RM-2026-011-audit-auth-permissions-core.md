@@ -834,7 +834,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     cyclic contributor refusal before mutation, real production refusal even through
     explicit CLI, no demo knobs in prod templates and no owner harness dependency in
     customer workflows. Document future module contributions and both data owners.
-- [ ] 18. Complete current-state guidance and integrated acceptance preparation.
+- [x] 18. Complete current-state guidance and integrated acceptance preparation.
   - Requires 17. Review AGENTS, owner/customer backend/Laravel/PostgreSQL/security/
     frontend skills and references, public API/module/database/seeding/mail/Auth/
     deployment guides, root README and command help against actual implementation.
@@ -907,7 +907,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 is next: current-state guidance and integrated acceptance preparation. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 is next: frontend customization contracts and the minimal application scaffold. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -2031,3 +2031,53 @@ architectural premise requires discussion before dependent work.
   container/network/image/volume was created. Development/test data, existing
   services/images/volumes, Qdrant/model caches, backups and reports are preserved.
   Point 18 is next; point 20 still requires explicit owner appearance acceptance.
+
+## Point 18 delivery
+
+- Reviewed requirements against actual public contracts and prepared meaningful
+  coverage in the [Core acceptance map](../../quality/core-module-acceptance.md).
+  It distinguishes real PostgreSQL/HTTP/worker evidence from intercepted rendered
+  fixtures and maps Audit, Auth identity/security/state, Permissions, integration,
+  customer delivery and development corpus scenarios to their owning tests.
+  Point 19 still owns replacement/customization/native-error/minimal-scaffold
+  coverage; point 20 owns complete execution after explicit appearance acceptance.
+- Corrected stale missing-Auth-UI, unbound-operator/bootstrap and deferred-protected-
+  authority claims in public commands, module/framework/Auth/Audit/frontend mail
+  guidance and owner foundations. Replaced obsolete deferred registry entries with
+  the actual remaining Admin/data-management/Filesystem/Logs/Notifications/
+  Throttling/Teams/Import/external-provider/WebAuthn scopes. Root README now links
+  the supplied Core capabilities. Default application seeds remain empty while
+  explicit module fixtures are available. Historical records remain unchanged.
+- Reviewed root owner/customer AGENTS and backend/Laravel/PostgreSQL/security/
+  frontend products and relevant references. Both roots already require manual
+  bulk/pivot/aggregate Audit, current native grants, supported commands and public
+  module boundaries; no duplicated root rule is needed. PostgreSQL products already
+  carry the five-field dictionary rule; backend/security/frontend already route
+  preferences to its authoritative contract. Updated public page acceptance and
+  customer frontend routing guidance; owner frontend references already link to
+  the public page guide. No Vue/Tailwind component, syntax or style contract changes
+  occur here; their customization work remains point 19.
+- Extended authored customer acquisition/sparse-reapply/teammate-clone and reviewed
+  update scenarios to cover preferences, operator/authority, seeding and frontend
+  guidance while preserving customer root/domain extensions. Prepared all configured
+  browser projects for login/profile keyboard and responsive desktop/tablet/phone
+  in both themes, with project-isolated screenshot paths; existing entry scenarios
+  cover PL/EN, reduced motion and private fragments. Removed the old Chromium-only
+  render diagnostic skip. Broad browser/delivery acceptance was not executed.
+- Added real installed-Core CSRF/login/profile/logout coverage with actual authority
+  binding, no assigned role and no authentication/permission mock. A necessary
+  focused diagnostic resolved route setup after explicit fixture initialization:
+  rebuild source-bound module routes once while retaining application routes.
+  Initial setup attempts caught duplicate route registration and missing Auth routes;
+  corrected fixture wiring, then the case passed: 1 test, 17 assertions. Native help
+  for initialize/accounts confirms invitation versus private-file options and hidden
+  initial setup. No broad suite, build, scanner or final workflow ran.
+- Reviewed manifests, compatible requirements, changelogs and forward/no-op edges:
+  Audit 0.5.0, Auth 0.12.0, Permissions 0.5.0, framework API 1.0.0. Guidance and
+  owner-test changes alter no shipped runtime/API/schema or dependency, so no module
+  version/changelog increment is required. Platform VERSION remains 0.4.2.
+- Only guarded disposable owner-test Core schemas were created and removed by the
+  existing fixture lifecycle. No live development/production initialization/reset,
+  migration, Docker resource or volume change occurred. Existing development/test
+  data, services/images/volumes, Qdrant/model caches, backups and reports are preserved.
+  Mandatory hooks and staged incremental knowledge freshness apply to this commit.

@@ -2,9 +2,12 @@
 
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Connection;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
+use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -1006,3 +1009,57 @@ it('initializes a fixture credential through hidden console confirmation without
     expect($tester->getDisplay())->toContain('Initial password saved.')->not->toContain($password);
     expect(Hash::check($password, User::where('login', 'dev.administrator')->firstOrFail()->password))->toBeTrue();
 });
+
+it('integrates real Core HTTP session CSRF profile and logout without authority substitutes', function (): void {
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    app()->bind(ValidateCsrfToken::class, fn ($app) => new class($app, $app['encrypter']) extends ValidateCsrfToken
+    {
+        protected function runningUnitTests()
+        {
+            return false;
+        }
+    });
+    // Rebuild source-bound routes after explicit fixture initialization, as a fresh
+    // application boot does; retain document and ordinary application routes.
+    $routes = new RouteCollection;
+    foreach (app('router')->getRoutes() as $route) {
+        if (! isset($route->defaults['_runa_module'])) {
+            $routes->add($route);
+        }
+    }
+    app('router')->setRoutes($routes);
+    app(ModuleHttp::class)->register();
+    app('router')->getRoutes()->refreshNameLookups();
+    config()->set('hashing.bcrypt.rounds', 4);
+    $password = 'core-http-test-password';
+    DB::transaction(function () use ($password): void {
+        $user = User::where('public_id', $this->permissionUser->publicId)->firstOrFail();
+        $user->password = Hash::make($password);
+        $user->save();
+    });
+    $this->getJson('/api/runa/auth/profile')->assertUnauthorized();
+    $this->getJson('/api/runa/auth/csrf')->assertOk()->assertCookie('XSRF-TOKEN');
+    $this->withCredentials()->withCookie('runa_session', app('session')->getId());
+    $credentials = ['identifier' => 'permission-fixture@example.test', 'password' => $password];
+    $this->postJson('/api/runa/auth/login', $credentials)->assertStatus(419);
+    $this->withHeader('X-CSRF-TOKEN', app('session')->token());
+    $this->postJson('/api/runa/auth/login', $credentials)->assertOk()
+        ->assertJsonPath('data.public_id', $this->permissionUser->publicId)
+        ->assertJsonPath('data.restrictions', []);
+    $this->withCookie('runa_session', app('session')->getId());
+    $this->getJson('/api/runa/auth/profile')->assertOk()
+        ->assertJsonPath('data.public_id', $this->permissionUser->publicId);
+    expect(DB::table('runa_permissions.user_roles')->count())->toBe(0);
+    // A logout request without a CSRF proof cannot revoke the session.
+    $this->withoutHeader('X-CSRF-TOKEN');
+    $this->postJson('/api/runa/auth/logout')->assertStatus(419);
+    $this->getJson('/api/runa/auth/session')->assertOk();
+    $this->withHeader('X-CSRF-TOKEN', app('session')->token());
+    $this->postJson('/api/runa/auth/logout')->assertOk();
+    Auth::forgetGuards();
+    $this->withCookie('runa_session', app('session')->getId());
+    $this->getJson('/api/runa/auth/profile')->assertUnauthorized();
+    $this->getJson('/api/runa/auth/session')->assertUnauthorized();
+    expect(app(PrincipalScope::class)->current())->toBeNull();
+    expect(DB::table('runa_audit.events')->get()->toJson())->not->toContain($password);
+})->group('core-integration');

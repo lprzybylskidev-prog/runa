@@ -115,7 +115,7 @@ Resolve `AuthInvitations` 1.0.0 through ModuleApis. `invite(publicId, expectedVe
 issues or manually resends for an eligible passwordless identity; resend rotates
 and invalidates prior tokens. `invalidate(publicId, expectedVersion)` revokes pending
 invitations. Both require `runa.auth.invitations.manage`, current availability and
-the neutral authority participant (default denial until Permissions integration).
+the neutral authority participant backed by Permissions (denial when integration is unavailable).
 Neither returns a token, email, internal ID or model. Before activation/deactivation,
 expiry, locks, deletion or pending approval, issuance/delivery/consumption refuses.
 

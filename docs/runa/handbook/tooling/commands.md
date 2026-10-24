@@ -139,7 +139,7 @@ Xdebug is development-only and off by default.
 - `php artisan runa:seed:occasional <scenario>`
 - `php artisan runa:seed:plan`
 
-Implemented now; the initial graph is empty because no business/reference/demo entities exist. Categories and dependency validation run before execution; production refuses development dependencies, including explicit development requests. `--force` deliberately bypasses the production confirmation only for automated seed execution, not destructive database commands. See `docs/runa/handbook/data/seeding.md`.
+The default application graph is empty until application seeders are registered. Explicit module development contributors supply optional local Auth/Permissions scenarios; they do not enter native/default/production application seeding. Categories and dependency validation run before execution; production refuses development dependencies, including explicit development requests. `--force` deliberately bypasses the production confirmation only for automated seed execution, not destructive database commands. See `docs/runa/handbook/data/seeding.md`.
 
 ## Knowledge/RAG
 
@@ -312,7 +312,7 @@ ModuleWork command and a minute schedule with overlap protection. Reminders are
 disabled by default and bounded by encrypted module settings; see the
 [Auth transport procedure](../modules/auth/transport.md). Administrative invitation
 issue/resend/invalidation uses the protected typed contract, not credentials or raw
-tokens in CLI arguments. No Auth UI is delivered yet. Operator commands and their pending Permissions integration are described below.
+tokens in CLI arguments. Delivered [Auth entry screens](../modules/auth/entry-ui.md) and [account screens](../modules/auth/account-ui.md) consume these guarded endpoints. Integrated operator commands are described below.
 
 ### Auth session cleanup
 
@@ -335,9 +335,8 @@ recovery mail remains direct and independent of a Notifications module.
 Native local `php artisan runa:auth:initialize`, `runa:auth:recover` and
 `runa:auth:restore-policy` perform the fixed trusted operator operations. Each
 requires `--confirm`; initialize accepts `--email`, `--name`, optional `--login`
-and a new absolute private `--output` file; recover takes `--user` UUIDv7 and
-`--output`; policy restoration takes `--revision`. Account commands refuse until
-the actual Permissions OperatorAuthority adapter is integrated. There is no
+and either a new absolute private `--output` file or `--invite` for configured mail; recover takes `--user` UUIDv7 and
+`--output`; policy restoration takes `--revision`. Account commands use the integrated Permissions OperatorAuthority adapter and require current exact Core source/data, no update fence and mandatory Audit. There is no
 temporary administrator flag or general web bypass. The external
 `AUTH_OPERATOR_RECOVERY_ENABLED=false` switch disables issuance/redemption and
 operator policy restoration. Secrets are written only to the private file, never

@@ -73,8 +73,7 @@ Own-account sections reuse Form/FormSection/TextInput/RadioGroup/FileInput/Table
 
 Disabled features disappear. Read-only fields and avatar policy remain enforced by
 the backend if policy changes after load. Self-deactivate/delete require an explicit
-confirmation, fresh password step-up and the neutral authority invariant; before
-Permissions integration the server still refuses the invariant-dependent operation.
+confirmation, fresh password step-up and the Permissions-backed neutral authority invariant, including protection of the last eligible superadministrator. Unavailable authority integration refuses the operation.
 Secrets/files clear after attempts/unmount. TOTP setup keys and single-display
 recovery codes stay in memory and are hidden from print. Recovery codes require an
 explicit saved acknowledgement. No token/password/OTP/draft enters preferences,

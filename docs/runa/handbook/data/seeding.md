@@ -88,7 +88,7 @@ One seeder owns one semantic responsibility, not necessarily one table.
 
 Example:
 
-- a future permission-system seeder may create permissions, roles, and assignments if those records form one system responsibility.
+- a module-owned development contributor may prepare related permissions, roles and assignments as one system responsibility through public owner contracts; platform dictionaries/system roles remain required module initialization.
 
 Do not create generic `InitialDataSeeder` dumping grounds.
 

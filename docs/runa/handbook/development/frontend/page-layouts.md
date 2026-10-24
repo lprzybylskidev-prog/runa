@@ -54,3 +54,10 @@ AuthWelcome uses MinimalLayout for session-aware public entry. AuthApplication u
 the existing ApplicationLayout for `/app` and `/account`, with no parallel shell or
 Admin page. Follow [account UI composition](../../modules/auth/account-ui.md), including
 restricted reauthentication, activity and safe draft ownership.
+
+Auth rendering acceptance covers desktop/tablet/phone, PL/EN, both themes, keyboard
+focus/errors and reduced motion. Keep it separate from real session/CSRF/permission
+acceptance: intercepted browser responses cannot prove server enforcement. Prepare
+both rendered scenarios and real backend boundaries for final verification. Private
+local accounts/setup and the complete navigation procedure live in the
+[seeding guide](../../data/seeding.md#explicit-module-development-contributors).

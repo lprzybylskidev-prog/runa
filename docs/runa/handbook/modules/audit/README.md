@@ -100,7 +100,7 @@ nonfinite numbers, invalid encoding and excessive payloads are rejected with saf
 errors. Do not split a secret across approved fields. There is no blind serializer.
 
 Actor identity is resolved on the server through the current trusted PrincipalScope;
-future Auth may bind AuditActorResolver for approved historical labels. Human and
+the optional AuditActorResolver bridge uses Auth public identity participation for approved historical display labels when available, without adding an Audit dependency. Human and
 machine identities require UUIDv7. Unresolved HTTP actors remain anonymous; system,
 CLI, scheduler and queue execution retain safe kind/labels. Requests cannot supply
 actor identity or occurrence time; arbitrary event context cannot overwrite them.
@@ -218,8 +218,7 @@ Never infer bulk capture from use of the trait elsewhere on the model.
 
 Resolve `Contracts\AuditReads` for `runa.audit`, version `1.0.0`, through ModuleApis.
 All page/detail/metadata operations require trusted `runa.audit.read` authority and
-normal module availability. Before Permissions integration, the supplied default
-authorizer denies them. There is no unauthenticated read, edit/delete operation,
+normal module availability. Installed Permissions supplies current native grants; the fallback authorizer denies protected reads when the integration is unavailable. There is no unauthenticated read, edit/delete operation,
 management endpoint or Audit UI. Consumers must not call the private Query directly.
 
 `page(AuditQuery): AuditPage` supports module, stable action, actor publicId/kind,

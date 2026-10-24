@@ -13,6 +13,13 @@ The development environment retains Git hooks, local quality/security checks, La
 For optional local Auth/Permissions manual scenarios, account discovery and private
 initial password setup, follow the [development corpus guide](docs/runa/handbook/data/seeding.md#explicit-module-development-contributors). No default password is distributed.
 
+Core [Audit](docs/runa/handbook/modules/audit/README.md),
+[Auth](docs/runa/handbook/modules/auth/README.md) and
+[Permissions](docs/runa/handbook/modules/permissions/README.md) supply transactional
+history, session/CSRF authentication, private account views and current action
+grants. [Trusted initial administrator setup/recovery](docs/runa/handbook/modules/auth/policies-and-operators.md)
+uses the actual protected system role. No administration UI is supplied.
+
 ## Application work
 
 Application UI defaults to Polish with English support and light/dark themes; administration UI is English-only. Technical source, APIs, commands and repository documentation are English-only.

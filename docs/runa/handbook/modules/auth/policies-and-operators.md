@@ -123,8 +123,7 @@ the account UUIDv7, random one-time token and 900-second lifetime. Only its SHA-
 hash is stored in Auth. Submit the token/new confirmed password through the existing
 no-store CSRF-protected `POST /api/runa/auth/password/reset` body, never a query
 string, command argument, issue attachment or transport log. Remove the private
-file after handoff/use; do not put it in source control or retrieval. Auth screens
-for this handoff are delivered in their later UI points.
+file after handoff/use; do not put it in source control or retrieval. The delivered [password-reset screen](entry-ui.md) accepts the private fragment proof and requires deliberate submission.
 
 Initialization has an installer-callable trusted local OperatorAccounts action and
 a persistent singleton ownership record. It creates a new identity and asks the

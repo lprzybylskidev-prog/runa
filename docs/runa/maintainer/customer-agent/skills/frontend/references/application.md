@@ -25,3 +25,16 @@ Use the [Auth application/account contract](../../../../../handbook/modules/auth
 navigation, shared-shell profile/sign-out, real-activity expiry and safe memory draft
 review. Preserve application-owned composition and server guards; never replay a
 write after login or persist credentials/drafts in browser preferences.
+
+For backend authority behind these screens, read
+`docs/runa/handbook/modules/auth/README.md`,
+`docs/runa/handbook/modules/auth/transport.md`,
+`docs/runa/handbook/modules/auth/sessions.md`,
+`docs/runa/handbook/modules/auth/security.md` and
+`docs/runa/handbook/modules/auth/profile.md`. UI visibility never grants access.
+Use `docs/runa/handbook/modules/auth/policies-and-operators.md` and
+`docs/runa/handbook/modules/permissions/README.md` with
+`docs/runa/handbook/modules/permissions/authority.md` for actual current grants,
+step-up and last-superadministrator constraints. Local manual scenarios and private
+setup follow `docs/runa/handbook/data/seeding.md#explicit-module-development-contributors`;
+no distributed password or owner test harness is required by customer workflows.

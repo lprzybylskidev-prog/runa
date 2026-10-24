@@ -207,7 +207,7 @@ ownership with durable retryable cleanup candidates and optional step-up-protect
 self lifecycle. All business writes and consumed proofs are synchronous with Audit.
 Audit 0.3.0 supplies trusted-self summary queries without importing Auth or granting
 general Audit reads. Procedures and transport are owned by the public
-[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens and Permissions action authorization are delivered; ordinary access management and protected-authority integration are delivered; operator bootstrap wiring remains subsequent work.
+[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens and Permissions action authorization are delivered; ordinary access management and protected-authority integration are delivered; trusted first-administrator/recovery wiring and explicit local development fixtures are delivered.
 
 ## Policy publication and operator delivery
 
@@ -221,8 +221,7 @@ prior security effects. Global revisions invalidate old bounded lifetime excepti
 Native operator commands trust access to execute CLI under the owner-confirmed
 production responsibility boundary. Private handoff files keep setup/recovery tokens
 out of stdout and recorded host transport; no extra container/service/DB credential
-is introduced. OperatorAuthority remains a neutral unbound contract until Permissions
-integration, so first-role grant/account recovery fail closed now. Initialization
+is introduced. OperatorAuthority is a neutral contract bound through the trusted framework bridge to the delivered Permissions participant; missing or unavailable integration fails closed. Initialization
 singleton ownership and exact same-subject pre-setup rotation prevent repeated normal
 initialization granting additional superadmins. An outstanding recovery blocks old
 password login; redemption issues no session and preserves required factor enrollment.

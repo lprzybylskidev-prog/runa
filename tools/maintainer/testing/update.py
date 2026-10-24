@@ -343,7 +343,7 @@ class Updater(unittest.TestCase):
         self.assertIn('## Audit awareness', audit_guidance)
         (self.target / 'AGENTS.md').write_text(audit_guidance)
         (self.installed / 'AGENTS.md').write_text('customer extension')
-        for area in ('backend', 'laravel', 'postgresql', 'security'):
+        for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
             relative = Path('.agents/skills') / area / 'references/application.md'
             for root in (self.original, self.target, self.installed):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
@@ -365,7 +365,7 @@ class Updater(unittest.TestCase):
         self.assertEqual(rows['AGENTS.md']['action'], 'manual-reconciliation')
         self.assertEqual((self.installed / 'AGENTS.md').read_text(), 'customer extension')
         self.assertIn('explicit manual Audit events', (self.target / 'AGENTS.md').read_text())
-        for area in ('backend', 'laravel', 'postgresql', 'security'):
+        for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
             relative = '.agents/skills/' + area + '/references/application.md'
             self.assertEqual(rows[relative]['action'], 'manual-reconciliation')
             self.assertIn('docs/runa/handbook/modules/auth/README.md', (self.target / relative).read_text())
@@ -373,6 +373,11 @@ class Updater(unittest.TestCase):
             self.assertIn('docs/runa/handbook/modules/auth/sessions.md', (self.target / relative).read_text())
             self.assertIn('docs/runa/handbook/modules/auth/security.md', (self.target / relative).read_text())
             self.assertIn('docs/runa/handbook/modules/auth/profile.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/preferences.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/policies-and-operators.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/permissions/README.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/permissions/authority.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/data/seeding.md#explicit-module-development-contributors', (self.target / relative).read_text())
             self.assertEqual((self.installed / relative).read_text(), 'customer domain extension')
         self.assertEqual(rows['obsolete.txt']['action'], 'remove')
         self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')
