@@ -65,6 +65,22 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner confirmed the frontend ownership/customization principle:
+  Runa supplies immediately usable default views, layouts and components; customers
+  may use them unchanged, compose application views from them, or replace their
+  entire frontend while retaining supported backend/security contracts. Customer
+  overrides belong in src/app and must survive platform updates without protected
+  src/runa edits or copying authentication/security orchestration. Keep the shipped
+  src/app as small as possible: only essential application/bootstrap/configuration/
+  extension entrypoints and the reference module, with no additional sample modules,
+  product screens, dashboards or platform presentation/business logic. Thin wiring
+  is permitted where needed to boot/customize an application; review each retained
+  scaffold file rather than mechanically deleting required entrypoints. New point
+  19 reviews and repairs the delivered customization boundary, prepares regressions
+  and synchronizes owner/customer skills and public guidance. Final verification
+  moves from point 19 to point 20; no broad checks move earlier. Existing feature
+  0.5.0 metadata and the exclusion of Admin UI remain unchanged.
+
 - 2026-10-24 — Owner requested an Auth setting to enable/disable the public welcome
   page. Enabled by default, it preserves the welcome view at `/`; disabled, entering
   `/` redirects directly to `/auth/login`. The login flow still resolves an existing
@@ -591,7 +607,7 @@ catalogue, layouts and test patterns; no new test framework/dependency by defaul
 Each point includes implementation, prepared regressions and affected current-state
 handbook/owner/customer guidance in the same commit. Listed tests are preparation
 and acceptance criteria for final verification unless a necessary focused check
-resolves a concrete uncertainty. Do not run broad checks in points 1–18.
+resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 - [x] 1. Establish shared contracts, transaction and bootstrap foundations.
   - Requires explicit activation after RM-010 release/closure/merge. Refresh source,
@@ -825,12 +841,44 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
   - Acceptance: every approved requirement maps to implementation and meaningful
     prepared coverage; both guidance products and current-state claims agree; no
     admin UI, new undeclared dependency or unsupported delivery claim is introduced.
-- [ ] 19. Full integrated verification, feature release, merge and final report.
-  - Requires 1–18 complete and committed. Record current-state documentation review
+- [ ] 19. Reconcile frontend customization contracts and the minimal application scaffold.
+  - Requires 18. Inventory delivered welcome/Auth/account/application views,
+    layouts, navigation, branding/theme, native HTTP errors and emergency 503
+    generation. Distinguish public extension contracts from protected internals;
+    preserve supplied defaults without requiring customer configuration.
+  - Support three deliberate adoption levels: unchanged Runa screens, application
+    screens composed from Runa layouts/components, and an entirely customer-owned
+    frontend using supported backend contracts. Repair missing presentation seams
+    where needed; customers must not copy security/session/restriction orchestration
+    or import private platform internals merely to replace appearance. Keep server
+    authentication, CSRF, authorization, eligibility and recovery authoritative.
+  - Keep default screens/templates and reusable orchestration in src/runa. Minimize
+    shipped src/app to essential manifest/dependency/bootstrap/configuration/route/
+    test/extension entrypoints and the reference module. Remove or relocate redundant
+    scaffolding and platform behavior; retain only necessary thin application wiring.
+    No new application example module, business screen, dashboard or Admin UI.
+    Customer-authored screens remain application-owned when customers add them.
+  - Document stable override/composition entrypoints, ownership and update behavior;
+    preserve customer files/customizations through acquisition, reviewed updates and
+    teammate clones. Cover both native errors and generated emergency responses;
+    do not introduce a second independent error renderer or bypass protections.
+  - Update public component/layout/Auth/error guidance and owner/customer agent
+    contracts, frontend/Vue/Tailwind/security skills/references where affected.
+    Establish the reusable requirement that future Runa views ship usable defaults
+    plus documented presentation replacement without protected source edits.
+    Assess independent module versions/contracts and synchronize changelogs.
+  - Prepare meaningful regressions/isolated examples for unchanged defaults, custom
+    application composition and full frontend replacement, security-flow preservation,
+    minimal scaffold and update/clone preservation. Keep examples in owner fixtures,
+    not shipped src/app beyond reference. Run only necessary focused diagnostics
+    here; broad rendering/integration/installation/security acceptance belongs to 20.
+- [ ] 20. Full integrated verification, feature release, merge and final report.
+  - Requires 1–19 complete and committed. Record current-state documentation review
     sources/findings/disposition and actual changed-surface security review. Resolve
     a proportionate explicit final selection through the supported RM-010 interface;
     include real module/backend/auth/CSRF/transaction/concurrency, Auth frontend/E2E,
-    database, installer/update/host transport, customer delivery/dev seeder, dependency/
+    database, frontend customization/replacement/native-error and minimal-scaffold
+    preservation, installer/update/host transport, customer delivery/dev seeder, dependency/
     secret/security and production-isolation acceptance affected by this work. These
     installation integrations genuinely require their acceptance. No invented flags.
   - Run the complete agreed final workflow once implementation is finished, using
@@ -875,7 +923,7 @@ architectural premise requires discussion before dependent work.
 - Knowledge status was current at activation (154 sources/2147 chunks); relevant
   local retrieval and original sources were reviewed, including Laravel 13 Boost
   documentation. RM-010 selection is repeated --group=NAME or --all; preview via
-  quality-plan and final background execution/status remain assigned to point 19.
+  quality-plan and final background execution/status remain assigned to point 20.
   No final quality scope/evidence is claimed here.
 - Focused diagnostics resolved transaction rollback/restoration/retry, reserved
   preparation atomicity/resume, principal cleanup/recursion, pre-controller policy,
@@ -884,7 +932,7 @@ architectural premise requires discussion before dependent work.
   incorrectly compared DTO object identity and was corrected to structural equality.
   Additional entity projection and two-connection authority-lock regressions are
   prepared for final acceptance. Broad suites/static analysis/builds/scanners remain
-  deferred to point 19; commit hooks remain mandatory.
+  deferred to point 20; commit hooks remain mandatory.
 - Public module/API guidance and owner/customer backend, Laravel, PostgreSQL and
   security references are synchronized. The deferred deletion claim now assigns
   physical deletion/anonymization to future data management. Root/customer AGENTS
@@ -930,7 +978,7 @@ architectural premise requires discussion before dependent work.
   incomplete reservation tuple; both fixture errors were corrected and their
   focused checks passed. Module source check and independent version check passed;
   runtime declarations were checked inside the isolated initializer regression.
-  Full suites/static analysis/builds/scanners remain deferred to point 19.
+  Full suites/static analysis/builds/scanners remain deferred to point 20.
 - Current module/framework/deferred guidance and owner/customer backend, Laravel,
   PostgreSQL and security references are synchronized. Root AGENTS and customer
   AGENTS already require guarded module access, safe values and transactional
@@ -981,7 +1029,7 @@ architectural premise requires discussion before dependent work.
   fixture also needed fresh singleton gateways after replacing the test authorizer.
   Source ownership and independent module version checks passed. Full lifecycle
   mode/event combinations and delivery/update/clone regressions are prepared for
-  final acceptance; broad suites/static analysis/builds/scanners remain point 19.
+  final acceptance; broad suites/static analysis/builds/scanners remain point 20.
 - Public Audit/module/foundation guidance and deferred capability claims are
   synchronized. Root owner/customer AGENTS and both backend/Laravel/PostgreSQL/
   security products require meaningful Audit history and manual bulk/relationship
@@ -1042,7 +1090,7 @@ architectural premise requires discussion before dependent work.
   `succeeded` settings result; the expectation was corrected. Source ownership and
   independent module version checks passed. Competing-connection claim arbitration
   and extended customer acquisition/update/clone scenarios are prepared for final
-  acceptance; broad suites/static analysis/builds/scanners remain point 19.
+  acceptance; broad suites/static analysis/builds/scanners remain point 20.
 - Public Auth/API/database/module guidance and obsolete deferred claims are
   synchronized. Both backend/Laravel/PostgreSQL/security reference products link
   the identity/lifecycle procedure. Delivery fixtures retain these rules through
@@ -1066,7 +1114,7 @@ architectural premise requires discussion before dependent work.
   updates/removals. Fresh Packagist advisory lookup matched none of their resolved
   versions. Native/custom authentication, CreatesNewUsers and regenerated sessions
   are integrated; package routes/views remain disabled from provider registration.
-  Final Composer audits, image/extension/scanner acceptance remain point 19.
+  Final Composer audits, image/extension/scanner acceptance remain point 20.
 - Auth advances independently 0.1.0 -> 0.2.0 for additive entry capabilities;
   existing identity/lifecycle API signatures remain compatible. New protected
   AuthInvitations 1.0.0 exposes bounded resend/invalidation without secrets. Audit
@@ -1181,7 +1229,7 @@ architectural premise requires discussion before dependent work.
   was removed; its interrupted fixture left route-registration residue which the
   guarded teardown removed, and the isolated upgrade check then passed. Module source
   and independent version/changelog checks passed. Broader parallel/browser/security/
-  installation acceptance remains point 19; mandatory hooks remain enabled.
+  installation acceptance remains point 20; mandatory hooks remain enabled.
 - Public Auth/session/API/database/security/command guidance and owner architecture
   are synchronized. Owner and customer backend/Laravel/PostgreSQL/security references
   link the shared procedure; acquisition/clone/update regressions assert its delivery
@@ -1244,7 +1292,7 @@ architectural premise requires discussion before dependent work.
   replay counter; ingress now refreshes the owned user before projections so a
   reused guard cannot return stale password restrictions. Module source and independent
   version/changelog checks passed. Broad concurrent/browser/installation/security
-  acceptance remains point 19; mandatory hooks remain enabled.
+  acceptance remains point 20; mandatory hooks remain enabled.
 - Public Auth/API/database/cleanup guidance, module changelog and owner architecture
   are synchronized. Owner/customer backend/Laravel/PostgreSQL/security references
   route to the shared credential guide; acquisition/clone/reviewed-update fixtures
@@ -1320,7 +1368,7 @@ architectural premise requires discussion before dependent work.
   current runtime declarations and additive settings/no-op behavior. An unfenced
   runtime CLI scan correctly reported not_registered on the ordinary development
   database; no registry synchronization was forced to satisfy that diagnostic.
-  Broad suites/browser/installation/security acceptance remains point 19.
+  Broad suites/browser/installation/security acceptance remains point 20.
 - Public Auth/Audit/API/database/command guides and owner architecture are current.
   Both owner/customer backend/Laravel/PostgreSQL/security references point to the
   public profile procedure; acquisition/clone/reviewed-update assertions prepare
@@ -1384,7 +1432,7 @@ architectural premise requires discussion before dependent work.
   responses, queued logout fencing, guest separation, conflict feedback and rendered
   shared PL/EN alert/reload controls. Existing fixture migration/version/teardown and
   reserved updater expectations now include the new storage; broad execution stays
-  in point 19.
+  in point 20.
 - Necessary focused diagnostics: supported backend runner selecting the three new
   preference/delivery scenarios PASS (55 assertions); supported frontend runner
   selecting account-preferences.test.ts PASS (4 browser tests). These answer concrete
@@ -1458,7 +1506,7 @@ architectural premise requires discussion before dependent work.
   Mockery dependency (replaced with native Artisan calls) and step-up Audit behind
   the publication fence (fixed by pre-publication transactional authorization).
   No broad suites, installation/concurrency acceptance, static analysis, builds,
-  scanners or final gates run; those remain point 19. Mandatory hooks still apply.
+  scanners or final gates run; those remain point 20. Mandatory hooks still apply.
 - Synchronized public policy/operator/security/database/configuration/command and
   module-foundation guidance, central Auth changelog, owner foundations and both
   backend/Laravel/PostgreSQL/security instruction reference products. Root owner and
@@ -1529,7 +1577,7 @@ architectural premise requires discussion before dependent work.
   public component and preserving app-owned integration, never protected edits.
   Account dropdown/self-service, global expiry/activity/drafts and optional own
   security management remain point 12; Permissions and real operator integration
-  remain their later points. Full acceptance remains point 19.
+  remain their later points. Full acceptance remains point 20.
 
 ## Point 12 delivery
 
@@ -1588,4 +1636,4 @@ architectural premise requires discussion before dependent work.
   development/test database data, services, images/networks/volumes, Qdrant/model
   caches, backups, reports and screenshots. No cleanup deletion was required.
   Real discoverable development accounts/manual end-to-end preparation remains
-  point 17; Permissions/integration and full acceptance remain points 13–19.
+  point 17; Permissions/integration and full acceptance remain points 13–20.
