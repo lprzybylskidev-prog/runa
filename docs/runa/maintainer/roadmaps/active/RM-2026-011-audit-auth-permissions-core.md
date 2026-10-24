@@ -818,7 +818,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     exact source and repeat resume, all security events without duplicate histories,
     broken Auth/Permissions trusted CLI emergency recovery, unavailable
     dependency handling and no foreign SQL/models/FKs. Synchronize delivery/operator docs.
-- [ ] 17. Deliver extensible development-only manual-testing corpus.
+- [x] 17. Deliver extensible development-only manual-testing corpus.
   - Requires 16. Extend owner-scoped ManagedSeeder/SeedGraph adapters/contributors;
     modules explicitly contribute deterministic idempotent scenarios and dependencies.
     Add representative administrator/roles/direct/preset/Auth states, guarded local
@@ -907,7 +907,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 is next: extensible development-only manual-testing corpus. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 is next: current-state guidance and integrated acceptance preparation. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1956,3 +1956,78 @@ architectural premise requires discussion before dependent work.
   test data, services, images/volumes, Qdrant/model caches, backups, reports and rollback
   resources remain preserved. Final frontend acceptance remains pending; point 17
   is next and point 20 must not start before the owner's explicit visual acceptance.
+
+## Point 17 delivery
+
+- Added explicit module-owned DevelopmentContributor registration, module-ID
+  dependencies and owner-checked development ManagedSeeders on the existing
+  SeedGraph/SeedContext foundation. `runa:seed:plan --modules` previews both graphs;
+  `runa:seed:development --modules` explicitly opts into module data. Missing/cyclic
+  contributors (including empty contributors), seed dependencies, category and
+  owner violations refuse before seeder mutation. Native db:seed/default/production
+  application ownership remains unchanged; loose seed files are not discovered.
+- Added local Auth scenarios for real administrator, role/direct recipients,
+  approval/verification, forced password change, email factor, tracked sessions,
+  inactive/locked/expired/scheduled accounts and independently tuned extra users.
+  Permissions adds reader role, direct grant, role/direct preset and independent
+  extra roles through fixed public development contracts. Module boundaries use
+  public UUID references, never foreign models/SQL/FKs or owner harness imports.
+  No new UI, package dependency, global PRNG mutation or production demo input.
+- Stable module-owned development_fixtures provenance binds scenarios and UUIDv7
+  subjects atomically with owned writes, monotonic assignment revisions and explicit
+  aggregate Audit. Registry -> authority -> Auth -> Permissions ordering serializes
+  local preparation. Repeat skips completed scenarios and preserves changed private
+  credentials, names/factors/grants and deleted-record history. Required deleted
+  definitions refuse rather than revive. Mandatory Audit failure rolls back the
+  complete owning contributor, including provenance and initial credential writes.
+- `runa:seed:accounts` lists only local scenario identifiers/setup status;
+  `<scenario> --setup` reads confirmed initial password through hidden interactive
+  input with visible fallback disabled. No password option, source default, token,
+  hash or factor secret is output. Existing credentials are never overwritten.
+  Administrator creation/setup uses the existing real operator singleton/system
+  membership/redemption contract and refuses unrelated prior initialization.
+  Current password/verification/mandatory-factor rules and normal login remain
+  authoritative; no session or durable proof is issued by setup.
+- Each entry, including direct module methods and development ManagedSeeder runs,
+  refuses non-console/non-local environments and production/unknown acquisition
+  roles through the existing DevelopmentContext guard. A local APP_ENV or --force
+  cannot override production provenance or configured production environment.
+  Installed enabled exact module data/source, no fences and mandatory Audit remain
+  prerequisites. Production forward upgrades create empty provenance storage only.
+- Auth advances compatible MINOR 0.11.0 -> 0.12.0; Permissions advances compatible
+  MINOR 0.4.0 -> 0.5.0 and requires Auth ^0.12.0. Each adds an explicit forward edge
+  and owned ledger migration, with central changelog. Audit remains 0.5.0, framework
+  API remains 1.0.0 and platform VERSION remains 0.4.2 until point 20.
+- Prepared regressions cover private setup/listing, real authority, idempotence and
+  preserved credentials/history, bounded incremental counts, foreign/missing/cyclic
+  contributors, unrelated-account refusal, direct production receipt rejection,
+  hidden CLI confirmation and aggregate/provenance/password Audit rollback.
+  Refreshed exact disposable-schema inventories and isolated Auth fixture setup.
+  Necessary focused diagnostics passed: real corpus/credential preservation plus
+  count/adoption behavior (2 cases, 31 assertions); injected Audit failure after
+  owned writes (1 case, 6 assertions); dependency/ownership and production receipt
+  refusal; current Auth fenced initialization/runtime fixture (1 case, 4 assertions).
+  Initial diagnostics caught a migration filename convention and the fixture's
+  Throwable expectation; corrected both and received passing results. Source module
+  checks and module_versions.py --owner runa --base HEAD passed. The hidden-console
+  credential diagnostic also passed (1 case, 4 assertions), using installed Symfony
+  CommandTester without an added mocking dependency; expanded empty-contributor
+  cycle refusal passed within the focused dependency diagnostic. Contributor graph
+  ordering retains transitive edges through empty intermediate contributors.
+  No broad suite, integration/concurrency/install acceptance, analysis, build,
+  scanner or final quality workflow ran. Mandatory commit hooks apply.
+- Synchronized the authoritative public seeding/contributor/private-setup/manual
+  welcome/sign-in/application/profile/dropdown-sign-out procedure, independent dev/
+  test inputs, commands, module/database/framework/operator guidance, root README
+  and owner foundations. Both backend/Laravel/PostgreSQL/security reference products
+  route to this contract. Root owner/customer AGENTS already enforce source owners,
+  supported commands, server security and atomic Audit; no duplicate root rule is
+  needed. Frontend/Vue/Tailwind products are unchanged because this point adds no
+  view/component/style/customization seam; point 19 owns those contracts.
+- Only guarded disposable owner-test schemas/work were installed and removed by
+  fixture lifecycle. No live developer/production database initialization, migration,
+  reset or volume operation ran; live accounts are created through the documented
+  explicit local command after normal forward initialization. No temporary Docker
+  container/network/image/volume was created. Development/test data, existing
+  services/images/volumes, Qdrant/model caches, backups and reports are preserved.
+  Point 18 is next; point 20 still requires explicit owner appearance acceptance.

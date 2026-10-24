@@ -147,6 +147,7 @@ beforeEach(function (): void {
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.
@@ -183,7 +184,7 @@ afterEach(function (): void {
     }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
-        foreach ($schema === 'runa_auth' ? ['operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
+        foreach ($schema === 'runa_auth' ? ['development_fixtures', 'operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
             DB::statement('DROP TABLE '.$schema.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
@@ -317,7 +318,7 @@ it('rejects a missing CSRF proof with the actual middleware even in the focused 
 
 it('upgrades encrypted identity settings additively only inside the reserved updater', function (): void {
     // Establish real migration/step history, then model the supported prior data version.
-    foreach (['runa_auth.operator_tokens', 'runa_auth.initialization', 'runa_auth.policy_exceptions', 'runa_auth.policy_versions', 'runa_auth.notice_scan', 'runa_auth.known_browsers', 'runa_auth.notice_frequencies', 'runa_auth.security_notices', 'runa_auth.delivery_preferences', 'runa_auth.preferences', 'runa_auth.profile_mail', 'runa_auth.email_changes', 'runa_auth.secondary_emails', 'runa_auth.avatar_files', 'runa_auth.step_up_proofs', 'runa_auth.password_history', 'runa_auth.login_windows', 'runa_auth.sessions', 'runa_auth.trusted_devices', 'runa_auth.entry_tokens', 'runa_auth.users', 'runa_audit.entities', 'runa_audit.events'] as $table) {
+    foreach (['runa_auth.development_fixtures', 'runa_auth.operator_tokens', 'runa_auth.initialization', 'runa_auth.policy_exceptions', 'runa_auth.policy_versions', 'runa_auth.notice_scan', 'runa_auth.known_browsers', 'runa_auth.notice_frequencies', 'runa_auth.security_notices', 'runa_auth.delivery_preferences', 'runa_auth.preferences', 'runa_auth.profile_mail', 'runa_auth.email_changes', 'runa_auth.secondary_emails', 'runa_auth.avatar_files', 'runa_auth.step_up_proofs', 'runa_auth.password_history', 'runa_auth.login_windows', 'runa_auth.sessions', 'runa_auth.trusted_devices', 'runa_auth.entry_tokens', 'runa_auth.users', 'runa_audit.entities', 'runa_audit.events'] as $table) {
         DB::statement('DROP TABLE '.$table.' RESTRICT');
     }
     DB::statement('DROP SCHEMA runa_auth RESTRICT');

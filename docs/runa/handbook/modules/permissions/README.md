@@ -1,7 +1,7 @@
 # Permissions
 
-Core `runa.permissions` has independent version `0.4.0`, requiring
-`runa.auth ^0.11.0`, `runa.audit ^0.5.0` and framework API `^1.0.0`.
+Core `runa.permissions` has independent version `0.5.0`, requiring
+`runa.auth ^0.12.0`, `runa.audit ^0.5.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -154,3 +154,10 @@ and localized selection declaration; it transforms no retained assignments.
 Matching-source preparation is a no-op. Missing Core source/data or an unresolved
 reservation refuses operator recovery; ordinary business gateways also enforce
 availability and current Auth eligibility. Fix source/update recovery first.
+
+The explicit [development corpus](../../data/seeding.md#explicit-module-development-contributors)
+adds fixed local role/direct/preset examples through DevelopmentAccess and an owned
+scenario ledger. It never replaces ordinary guarded PermissionsAccess or step-up,
+never grants protected membership through ordinary fixtures and never runs in
+production initialization. The actual first fixture administrator uses Auth's
+existing trusted operator participant.

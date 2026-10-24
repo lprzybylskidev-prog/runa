@@ -1,5 +1,9 @@
 # Auth module changelog
 
+## 0.12.0
+
+Add explicit local DevelopmentAccounts/contributor scenarios, owned transactional provenance, safe account discovery and hidden initial password setup using real first-administrator authority. Preserve existing credentials and security policy; production creates only empty ledger storage and refuses fixture execution. Add forward 0.11.0 -> 0.12.0 preparation without a Permissions dependency.
+
 ## 0.11.0
 
 Integrate trusted first-administrator/recovery authority with the actual Permissions system role and guarded Permissions-selected bulk sessions. Add resumable encrypted initial invitations alongside private no-mail CLI handoff, safe identity/session/policy metadata, and source-only 0.10.1 -> 0.11.0 preparation. Audit ^0.5.0 supplies metadata; public API signatures remain unchanged and no reverse required Permissions dependency is added.

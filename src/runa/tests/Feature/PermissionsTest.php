@@ -4,6 +4,7 @@ use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -25,10 +26,13 @@ use Runa\Modules\Auth\Actions\Passwords;
 use Runa\Modules\Auth\Actions\ScheduledLifecycle;
 use Runa\Modules\Auth\Contracts\AuthBulkSessions;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
+use Runa\Modules\Auth\Contracts\DevelopmentAccounts;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Development\Accounts;
+use Runa\Modules\Auth\Development\AuthDevelopmentSeeder;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -36,6 +40,7 @@ use Runa\Modules\Permissions\Contracts\DefinitionInput;
 use Runa\Modules\Permissions\Contracts\Permissions;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
+use Runa\Modules\Permissions\Development\Access;
 use Runa\Modules\Permissions\Support\DeclarationCatalog;
 use Runa\Support\Modules\Api\DenyAuthorityChanges;
 use Runa\Support\Modules\Api\DenyProtectedOperations;
@@ -54,6 +59,10 @@ use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Updates\ModuleUpdates;
+use Runa\Support\Seeding\DevelopmentContributor;
+use Runa\Support\Seeding\DevelopmentFixtures;
+use Runa\Support\Seeding\SeedGraph;
+use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\CoreModuleStorage;
@@ -878,3 +887,122 @@ it('serializes competing first administrator recipients without duplicate author
         }
     }
 })->group('core-integration-concurrency');
+
+it('seeds module development corpus idempotently and preserves private credentials with real authority', function (): void {
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    config()->set('queue.default', 'database');
+    expect(Artisan::call('runa:seed:plan', ['--modules' => true]))->toBe(0);
+    expect(DB::table('runa_auth.development_fixtures')->count())->toBe(0);
+    expect(Artisan::call('runa:seed:development', ['--modules' => true]))->toBe(0);
+    $accounts = app(DevelopmentFixtures::class)->contributor('runa.auth');
+    expect($accounts)->toBeInstanceOf(DevelopmentAccounts::class);
+    $rows = array_column($accounts->accounts(), null, 'scenario');
+    $admin = User::where('public_id', $rows['administrator']['public_id'])->firstOrFail();
+    expect($admin->password)->toBeNull()->and($rows['administrator']['setup_required'])->toBeTrue();
+    $roleId = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    expect(DB::table('runa_permissions.user_roles')->where('role_id', $roleId)->pluck('user_public_id')->all())->toBe([$admin->public_id]);
+    $password = 'Local!'.bin2hex(random_bytes(15));
+    expect($accounts->setup('administrator', $password))->toBeTrue();
+    $hash = $admin->fresh()->password;
+    expect(Hash::check($password, $hash))->toBeTrue();
+    expect($admin->fresh()->email_verified_at)->not->toBeNull();
+    expect($accounts->setup('administrator', 'Different!'.bin2hex(random_bytes(15))))->toBeFalse();
+    $events = DB::table('runa_audit.events')->count();
+    $count = DB::table('runa_auth.users')->count();
+    expect(Artisan::call('runa:seed:development', ['--modules' => true]))->toBe(0);
+    expect(DB::table('runa_auth.users')->count())->toBe($count)->and($admin->fresh()->password)->toBe($hash)
+        ->and(DB::table('runa_audit.events')->count())->toBe($events);
+    $reader = $rows['reader']['public_id'];
+    expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $reader)->count())->toBe(1);
+    expect(DB::table('runa_permissions.user_permissions')->where('user_public_id', $rows['direct']['public_id'])->count())->toBe(1);
+    expect(DB::table('runa_permissions.presets')->where('code', 'custom.dev_reader')->count())->toBe(1);
+    expect(User::where('public_id', $rows['second_factor']['public_id'])->firstOrFail()->email_factor)->toBeTrue();
+    expect(User::where('public_id', $rows['unverified']['public_id'])->firstOrFail()->email_verified_at)->toBeNull();
+    $listed = Artisan::call('runa:seed:accounts');
+    expect($listed)->toBe(0)->and(Artisan::output())->toContain('dev.administrator@example.test')->not->toContain($hash)->not->toContain($password);
+    expect(Artisan::call('runa:seed:accounts', ['scenario' => 'administrator', '--setup' => true, '--no-interaction' => true]))->toBe(1);
+    expect(app(PrincipalScope::class)->current())->toBeNull();
+});
+
+it('rolls back development provenance accounts and grants when mandatory Audit fails', function (): void {
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    config()->set('queue.default', 'database');
+    $fixtures = app(DevelopmentFixtures::class);
+    $accounts = $fixtures->contributor('runa.auth');
+    $accounts->populate();
+    $before = DB::table('runa_audit.events')->count();
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT reject_development_assignments CHECK (action <> 'development.assignments_created')");
+    try {
+        expect(fn () => $fixtures->contributor('runa.permissions')->populate())->toThrow(AuditUnavailable::class);
+        expect(DB::table('runa_permissions.development_fixtures')->count())->toBe(0)
+            ->and(DB::table('runa_permissions.roles')->where('code', 'custom.dev_reader')->count())->toBe(0)
+            ->and(DB::table('runa_audit.events')->count())->toBe($before);
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT reject_development_assignments');
+    }
+    $admin = collect($accounts->accounts())->firstWhere('scenario', 'administrator');
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT reject_development_password CHECK (action <> 'development.password_initialized')");
+    try {
+        expect(fn () => $accounts->setup('administrator', 'Local!'.bin2hex(random_bytes(15))))->toThrow(AuditUnavailable::class);
+        expect(User::where('public_id', $admin['public_id'])->firstOrFail()->password)->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT reject_development_password');
+    }
+});
+
+it('refuses missing cyclic or foreign module development contributors before mutation', function (): void {
+    $fixtures = app(DevelopmentFixtures::class);
+    config()->set('seeding.contributors', ['runa.permissions' => Access::class]);
+    expect(fn () => $fixtures->graph([])->plan('development', 'testing'))->toThrow(RuntimeException::class, 'explicitly registered');
+    expect(DB::table('runa_auth.development_fixtures')->count())->toBe(0);
+    config()->set('seeding.contributors', ['runa.auth' => Access::class]);
+    expect(fn () => $fixtures->registered())->toThrow(InvalidArgumentException::class);
+    $class = AuthDevelopmentSeeder::class;
+    expect(fn () => (new SeedGraph([$class], [$class => [$class]]))->plan('development', 'testing'))->toThrow(RuntimeException::class, 'cycle');
+    expect(DB::table('runa_auth.development_fixtures')->count())->toBe(0);
+    config()->set('seeding.contributors', ['runa.auth' => Accounts::class]);
+    app()->instance(Accounts::class, new class implements DevelopmentContributor
+    {
+        public function dependsOn(): array
+        {
+            return ['runa.auth'];
+        }
+
+        public function seeders(): array
+        {
+            return [];
+        }
+    });
+    expect(fn () => $fixtures->graph([]))->toThrow(RuntimeException::class, 'contributor dependency cycle');
+    expect(DB::table('runa_auth.development_fixtures')->count())->toBe(0);
+});
+
+it('keeps development fixture count tuning independent and refuses adoption of existing accounts', function (): void {
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    config()->set('queue.default', 'database');
+    $key = 'seeding.development.'.AuthDevelopmentSeeder::class;
+    config()->set($key.'.counts.extra_users', 0);
+    $accounts = app(DevelopmentFixtures::class)->contributor('runa.auth');
+    $accounts->populate();
+    expect(collect($accounts->accounts())->filter(fn ($row) => str_starts_with($row['scenario'], 'extra_')))->toHaveCount(0);
+    config()->set($key.'.counts.extra_users', 2);
+    $accounts->populate();
+    expect(collect($accounts->accounts())->filter(fn ($row) => str_starts_with($row['scenario'], 'extra_')))->toHaveCount(2);
+    $admin = collect($accounts->accounts())->firstWhere('scenario', 'administrator');
+    DB::table('runa_auth.development_fixtures')->where('scenario', 'administrator')->delete();
+    expect(fn () => $accounts->populate())->toThrow(RuntimeException::class);
+    expect(DB::table('runa_auth.development_fixtures')->where('scenario', 'administrator')->exists())->toBeFalse();
+    expect(User::where('public_id', $admin['public_id'])->count())->toBe(1);
+});
+
+it('initializes a fixture credential through hidden console confirmation without exposing it', function (): void {
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    config()->set('queue.default', 'database');
+    app(DevelopmentFixtures::class)->contributor('runa.auth')->populate();
+    $password = 'Local!'.bin2hex(random_bytes(15));
+    $tester = new CommandTester(Artisan::all()['runa:seed:accounts']);
+    $tester->setInputs([$password, $password]);
+    expect($tester->execute(['scenario' => 'administrator', '--setup' => true], ['interactive' => true]))->toBe(0);
+    expect($tester->getDisplay())->toContain('Initial password saved.')->not->toContain($password);
+    expect(Hash::check($password, User::where('login', 'dev.administrator')->firstOrFail()->password))->toBeTrue();
+});

@@ -90,3 +90,10 @@ for actual first-administrator membership, resumable invitation admission, priva
 no-mail setup and Auth bulk selection. Use guarded PermissionsSelections at ordinary
 ingress; the trusted operator adapter is local infrastructure access, not a public
 authorization bypass. Preserve source/data/update fences and atomic Audit.
+
+Use the [module development corpus contract](../../../../docs/runa/handbook/data/seeding.md#explicit-module-development-contributors)
+for explicit owner-checked contributors and module-ID dependencies. Keep native
+application production seeding separate, reject production even through direct
+fixture calls, exchange public references and preserve credentials/provenance with
+atomic Audit. Initial account passwords use hidden local prompts; never argv or
+distributed defaults.

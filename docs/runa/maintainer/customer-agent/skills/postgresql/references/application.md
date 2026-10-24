@@ -53,3 +53,10 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use `docs/runa/handbook/data/seeding.md#explicit-module-development-contributors`
+for supplied local manual-test accounts, hidden initial password setup and explicit
+module-owned contributors. Keep application `seeding.register` separate from the
+module contributor map; declare module-ID dependencies, preserve fixture provenance
+and existing credentials/grants with atomic Audit, and reject production at every
+fixture entry. Customer workflows use delivered commands, never owner test tools.

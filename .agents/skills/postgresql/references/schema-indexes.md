@@ -89,3 +89,10 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use the [module development corpus contract](../../../../docs/runa/handbook/data/seeding.md#explicit-module-development-contributors)
+for explicit owner-checked contributors and module-ID dependencies. Keep native
+application production seeding separate, reject production even through direct
+fixture calls, exchange public references and preserve credentials/provenance with
+atomic Audit. Initial account passwords use hidden local prompts; never argv or
+distributed defaults.

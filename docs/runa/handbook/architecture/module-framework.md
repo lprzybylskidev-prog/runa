@@ -558,3 +558,9 @@ The agent assesses PATCH/MINOR/MAJOR independently for each changed module and c
 ## Delivered development reference
 
 `app.reference` is the retained Optional development/testing example, selected explicitly at first acquisition. It demonstrates real registry/update/schema/storage/API/settings/health/work/events/CLI/frontend/slot/management contracts with its guide under `docs/app/modules/reference/` when selected. Clean installation omits its source and guide. Reopen/update preserve the choice and application edits. Production sparse source, Docker context and frontend registry exclude it, and backend discovery refuses an accidentally copied reserved reference identity. Core failure/dependency scenarios remain isolated test fixtures. The temporary construction probe is retired; its reserved identity cannot be rediscovered.
+
+Module development corpus contributions use an explicit owner-checked
+DevelopmentContributor map, module-ID dependencies and development ManagedSeeders.
+They are opt-in local tooling, separate from native application production seeding,
+module required initialization and loose seed files. See [the fixture contract](../data/seeding.md#explicit-module-development-contributors)
+for safe public references, production refusal, idempotence, private setup and tuning.

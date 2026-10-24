@@ -47,6 +47,7 @@ use Runa\Console\Commands\Database\ScopedMigrateCommand;
 use Runa\Console\Commands\Database\ScopedSeedCommand;
 use Runa\Console\Commands\Database\ScopedStatusCommand;
 use Runa\Console\Commands\DescribeModuleManagement;
+use Runa\Console\Commands\DevelopmentAccounts;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\MakeModule;
@@ -219,6 +220,7 @@ final class RunaServiceProvider extends ServiceProvider
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,
             PulseScheduler::class,
+            DevelopmentAccounts::class,
             new SeedProject,
             new SeedProject('production'),
             new SeedProject('development'),

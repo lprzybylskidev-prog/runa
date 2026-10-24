@@ -1,5 +1,9 @@
 # Permissions module changelog
 
+## 0.5.0
+
+Add explicit local DevelopmentAccess/contributor role/direct/preset scenarios with module-ID dependencies, transactional provenance/revisions/Audit and preserved developer changes. Keep protected authority in the existing first-administrator path and normal management proof requirements unchanged. Add forward 0.4.0 -> 0.5.0 preparation; require Auth ^0.12.0.
+
 ## 0.4.0
 
 Add guarded PermissionsSelections 1.0.0 with explicit one/selected/all user intent and its native capability. Supply trusted actual-role first-administrator/recovery participation, safe management input controls and source-only 0.3.0 -> 0.4.0 preparation. Require Auth ^0.11.0 and Audit ^0.5.0; retain independent account/security checks, atomic Audit and existing ordinary-assignment protections.

@@ -10,6 +10,9 @@ Development uses Docker Engine/Compose and Nginx -> PHP-FPM -> Laravel. PHP, Com
 
 The development environment retains Git hooks, local quality/security checks, Laravel Boost, Codex and optional Qdrant/embeddings knowledge retrieval. Application readiness is independent of AI services. Production excludes all AI and development tooling.
 
+For optional local Auth/Permissions manual scenarios, account discovery and private
+initial password setup, follow the [development corpus guide](docs/runa/handbook/data/seeding.md#explicit-module-development-contributors). No default password is distributed.
+
 ## Application work
 
 Application UI defaults to Polish with English support and light/dark themes; administration UI is English-only. Technical source, APIs, commands and repository documentation are English-only.

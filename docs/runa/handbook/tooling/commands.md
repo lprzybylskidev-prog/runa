@@ -348,3 +348,15 @@ filesystem paths, 15-minute handoff, repeated initialization and recovery behavi
 `php artisan runa:auth:lifecycle.apply` admits bounded current-predicate scheduled
 activation/deactivation work; zero means admission, not completion. Its minute
 schedule, authority integration and Audit semantics follow the same guide.
+
+### Module development fixtures and private initial setup
+
+`runa:seed:plan --modules` previews the explicit application plus module development
+graph; `runa:seed:development --modules` executes it only in local/testing console
+context. `runa:seed:accounts` lists safe local fixture identifiers and unset-password
+status. `runa:seed:accounts <scenario> --setup` uses hidden interactive confirmation
+to initialize only an absent password; it accepts no password argument and never
+replaces existing credentials. Production receipt/environment checks apply even
+with local APP_ENV or --force. Native db:seed/default/production seeding remain
+application-owned. See [seeding](../data/seeding.md#explicit-module-development-contributors)
+for prerequisites, independent tuning, contribution contracts and manual navigation.

@@ -51,6 +51,7 @@ beforeEach(function (): void {
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.
@@ -74,7 +75,7 @@ afterEach(function (): void {
     }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
-        foreach ($schema === 'runa_auth' ? ['operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
+        foreach ($schema === 'runa_auth' ? ['development_fixtures', 'operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
             DB::statement('DROP TABLE '.$schema.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
@@ -246,7 +247,7 @@ it('arbitrates competing Auth identifier claims in PostgreSQL and preserves immu
 });
 
 it('initializes Audit then Auth exactly once through the real fenced module updater with current runtime declarations', function (): void {
-    foreach (['operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices'] as $table) {
+    foreach (['development_fixtures', 'operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices'] as $table) {
         DB::statement('DROP TABLE runa_auth.'.$table.' RESTRICT');
     }
     DB::statement('DROP TABLE runa_auth.entry_tokens RESTRICT');

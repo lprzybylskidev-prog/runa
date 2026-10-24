@@ -291,3 +291,11 @@ The protected `shared.modules` row retains encrypted operational settings and a 
 ## Module slot ordering
 
 The existing protected `shared.module_registry_state` singleton stores bounded JSON-object `slot_order` metadata; no application domain table or additional public management entity is introduced. Trusted order writes use its row lock and expected generation, then increment generation atomically. Missing/disabled/unregistered contribution IDs remain inactive and retain compatible restoration order. Only explicit reset or an incompatible migration prunes them. Native application wipes preserve the platform row and its metadata. See [module frontend contracts](module-framework.md#delivered-frontend-pages-and-named-slots).
+
+Auth and Permissions each retain an owned `development_fixtures` table with bigint
+identity, unique scenario key, UUIDv7 subject reference and UTC creation moment.
+It is technical provenance, with no cross-module FK or independent business API.
+Forward migrations create only empty storage in every environment. Explicit guarded
+local fixture contracts atomically fill it with the owned business writes and Audit;
+production initialization and ordinary startup never create fixture data. See the
+[development corpus](../data/seeding.md#explicit-module-development-contributors).

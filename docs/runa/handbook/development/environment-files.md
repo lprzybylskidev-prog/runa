@@ -52,3 +52,9 @@ installer/updater. Existing preservation regression coverage is deliberate. Its
 presence does not authorize changing the external backup schedule or destination.
 The backup owner must establish provenance before cleanup; no runtime reference
 is not evidence that a private file is disposable.
+
+Dev/test templates additionally document independent `DEV_SEED_AUTH_*` and
+`DEV_SEED_PERMISSIONS_*` count/random/seed options for the optional module corpus.
+They contain no default account password and are absent from production templates.
+Use the [private initial setup command](../data/seeding.md#explicit-module-development-contributors)
+inside an interactive development container terminal; repeat/reopen preserves it.

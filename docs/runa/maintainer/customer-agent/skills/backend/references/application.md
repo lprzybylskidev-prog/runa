@@ -59,3 +59,10 @@ first-administrator/operator setup and Permissions-selected Auth bulk sessions.
 Consume guarded PermissionsSelections and current Auth bulk proof/preview contracts.
 Trusted local operator participation never authorizes a public bypass or protected
 platform edits; customer CLI/infrastructure access remains customer-owned.
+
+Use `docs/runa/handbook/data/seeding.md#explicit-module-development-contributors`
+for supplied local manual-test accounts, hidden initial password setup and explicit
+module-owned contributors. Keep application `seeding.register` separate from the
+module contributor map; declare module-ID dependencies, preserve fixture provenance
+and existing credentials/grants with atomic Audit, and reject production at every
+fixture entry. Customer workflows use delivered commands, never owner test tools.

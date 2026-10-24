@@ -7,8 +7,10 @@ use RuntimeException;
 
 final class SeedGraph
 {
-    /** @param list<class-string<ManagedSeeder>> $classes */
-    public function __construct(private readonly array $classes) {}
+    /** @param list<class-string<ManagedSeeder>> $classes
+     * @param  array<class-string<ManagedSeeder>, list<class-string<ManagedSeeder>>>  $contributorDependencies
+     */
+    public function __construct(private readonly array $classes, private readonly array $contributorDependencies = []) {}
 
     /** @return list<class-string<ManagedSeeder>> */
     public static function registered(): array
@@ -27,6 +29,14 @@ final class SeedGraph
         }
 
         return array_values(array_unique($classes));
+    }
+
+    /** @param class-string<ManagedSeeder> $class
+     * @return list<class-string<ManagedSeeder>>
+     */
+    public function dependencies(string $class): array
+    {
+        return array_values(array_unique([...$class::dependsOn(), ...($this->contributorDependencies[$class] ?? [])]));
     }
 
     /** @return list<class-string<ManagedSeeder>> */
@@ -54,7 +64,7 @@ final class SeedGraph
                 return;
             }
             $state[$class] = 1;
-            $dependencies = $class::dependsOn();
+            $dependencies = $this->dependencies($class);
             sort($dependencies);
             foreach ($dependencies as $dependency) {
                 if (! in_array($dependency, $classes, true)) {

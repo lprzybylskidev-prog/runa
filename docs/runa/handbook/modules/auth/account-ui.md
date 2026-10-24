@@ -104,7 +104,8 @@ discards memory; credentials, email mutations, files and security proofs are nev
 retained as drafts. Custom application forms must explicitly select similarly safe
 fields and maintain their own ownership/cancellation contracts.
 
-Rendered owner fixtures cover shell/dropdown/account states and navigation. Real
-installation accounts/manual discovery and integrated browser/security acceptance
-are completed in the later fixture and final-verification points; mock transports
+Rendered owner fixtures cover shell/dropdown/account states and navigation. Safe local account discovery/private initial setup and the complete manual
+welcome/sign-in/application/profile/dropdown sign-out path are documented in the
+[development corpus](../../data/seeding.md#manual-auth-navigation-scenario).
+Integrated browser/security acceptance remains final verification; mock transports
 are not evidence of a production login or delivery.

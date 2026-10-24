@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 final class CoreModuleStorage
 {
     public const TABLES = [
-        'permissions' => ['preset_permissions', 'preset_roles', 'presets', 'user_access', 'user_permissions', 'user_roles', 'role_permissions', 'roles', 'permissions'],
-        'auth' => ['operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'],
+        'permissions' => ['development_fixtures', 'preset_permissions', 'preset_roles', 'presets', 'user_access', 'user_permissions', 'user_roles', 'role_permissions', 'roles', 'permissions'],
+        'auth' => ['development_fixtures', 'operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'],
         'audit' => ['entities', 'events'],
     ];
 

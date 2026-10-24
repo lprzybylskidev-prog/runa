@@ -184,3 +184,9 @@ restoring an old policy cannot turn operator recovery back on. A policy restore
 creates a new history/Audit version and preserves prior executed security effects.
 Module source/storage, update/maintenance fencing and Audit availability remain
 required; these commands do not repair missing code or bypass an unresolved update.
+
+Development-only account discovery and private initial password setup are supplied
+through the explicit [module fixture workflow](../../data/seeding.md#explicit-module-development-contributors).
+The fixture administrator uses this same real initialization/singleton/authority
+contract and refuses an installation already owned by another administrator.
+It neither resets an existing password nor overrides current security policy.
