@@ -25,3 +25,9 @@ Before handing over a frontend for manual review, prepare and inspect the actual
 served development environment, current assets, mandatory Core data and private
 fixture-account setup through [manual preparation](../../../../docs/runa/handbook/data/seeding.md#manual-auth-navigation-scenario).
 Code/fixture coverage does not establish live readiness or owner appearance acceptance.
+
+Place public welcome sign-in/conditional registration and authenticated entry
+beside language/theme controls using MinimalLayout's public header-actions slot.
+Forward this slot in custom layout wrappers; preserve the default identity and
+preferences rather than copying their implementation into pages. Keep narrow
+headers wrapping without overflow.

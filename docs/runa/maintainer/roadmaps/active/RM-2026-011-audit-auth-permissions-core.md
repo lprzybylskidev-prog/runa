@@ -65,6 +65,12 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner visual review requires welcome login/conditional registration
+  beside language/theme controls in the page header, including authenticated entry
+  in that same location. Point 19c repairs presentation through a reusable public
+  MinimalLayout header-actions slot and republishes local assets for continued
+  manual review. Focused layout rendering/build is required; point 20 remains gated.
+
 - 2026-10-24 — Owner requests a working local manual-test environment and private
   login details for the development-seeded superadministrator before visual
   acceptance. Point 19b owns non-destructive live development forward preparation,
@@ -920,6 +926,13 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     guest links, policy-dependent registration, sign-in/security/account/sign-out.
     Repair concrete readiness defects and synchronize the manual preparation docs.
   - Commit the point; full point 20 remains gated by explicit owner visual acceptance.
+- [x] 19c. Place welcome authentication links beside header preferences.
+  - Requires 19b. Add a public header-actions composition slot, move welcome
+    session/guest links into it and preserve registration policy, responsive wrapping,
+    default header/identity/preferences and custom-layout forwarding contracts.
+  - Synchronize component/page/customization and owner/customer guidance, module
+    version/changelog and selected header regression. Publish and inspect the
+    actual desktop/mobile themed welcome. No broad verification before point 20.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2288,3 +2301,36 @@ architectural premise requires discussion before dependent work.
   forward-prepared and seeded as requested; all prior data, services, test database,
   caches, backups, reports and rollback resources were preserved. Point 20 remains
   open and awaits the owner's explicit acceptance of frontend appearance.
+
+## Point 19c delivery
+
+- Applied owner's visual correction: welcome sign-in/conditional registration and
+  authenticated application entry now occupy the default header beside locale and
+  theme controls. Added public MinimalLayout header-actions slot with translator t;
+  default branding/preferences remain shared and action groups wrap on narrow widths.
+  Loading/failure/retry follows the same header location; content keeps its heading
+  and description. Custom layout fixture forwards the new slot.
+- Rendered inspection exposed LinkButton borrowing a class whose Button styles
+  were scoped to another component. Extracted one button.css source and used scoped
+  imports in Button/LinkButton so links receive existing variants, theme/focus/
+  hover/reduced-motion behavior without mounting another button. No duplicate CSS
+  source, independent control implementation or new motion pattern was introduced.
+- Auth compatible PATCH 0.13.0 -> 0.13.1, source-only welcome_header edge and central
+  changelog. Existing Permissions ^0.13.0 remains compatible; Permissions 0.5.1,
+  Audit 0.5.0, framework API 1.0.0 and platform VERSION 0.4.2 remain unchanged.
+  Applied the explicit forward module edge locally, preserving credentials/data.
+- Selected welcome registration/session header regression passed (1 case). Published
+  current client and static error assets for continued manual review. Actual served
+  Chromium welcome passed at 1440/390 widths in light/dark: header links, no content
+  duplicates, 44px styled link controls and no horizontal overflow; initial probes
+  also confirmed no page errors. Inspected desktop/mobile screenshots retained in
+  .runtime/dev/manual-auth/header. The style diagnostic accounts for normal flex
+  item display blockification. Module-version check passed. No broad suites, full
+  typecheck/static-analysis, image/scanner or final quality acceptance ran.
+- Synchronized frontend architecture, component/page/customization contract and both
+  owner/customer frontend references. General root public-presentation rules and
+  existing Vue/Tailwind style/lifecycle guidance already apply; no duplicate root
+  rule is needed. The shared MinimalLayout default still serves Auth/errors.
+- No Docker resources created/removed, database reset or credential change.
+  Existing data, caches, reports, services, backups and rollback material preserved.
+  Point 20 remains gated by explicit owner frontend appearance acceptance.

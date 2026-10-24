@@ -15,3 +15,5 @@ withDefaults(
     ><slot
   /></a>
 </template>
+
+<style scoped src="../../css/button.css"></style>

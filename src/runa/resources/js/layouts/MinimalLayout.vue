@@ -88,15 +88,18 @@ const {
           >
           <span v-else class="break-words">{{ identity.applicationName }}</span>
         </a>
-        <AppPreferenceControls
-          :navigation="props.staticPreferences !== undefined"
-          :locale="locale"
-          :theme="theme"
-          :theme-label="themeLabel"
-          :language-label="languageLabel"
-          :t="t"
-          @change="changePreference"
-        />
+        <div class="flex max-w-full flex-wrap items-center justify-end gap-3">
+          <slot name="header-actions" :t="t" />
+          <AppPreferenceControls
+            :navigation="props.staticPreferences !== undefined"
+            :locale="locale"
+            :theme="theme"
+            :theme-label="themeLabel"
+            :language-label="languageLabel"
+            :t="t"
+            @change="changePreference"
+          />
+        </div>
       </slot>
     </header>
     <main

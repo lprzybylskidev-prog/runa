@@ -285,3 +285,12 @@ for supported props, slots, lifetime and security obligations. All future Runa
 module views follow the same usable-default/public-replacement requirement.
 Canonical custom consumers are owner-only fixtures under
 src/runa/tests/frontend/fixtures/customization; they are excluded from delivery.
+
+MinimalLayout exposes `header-actions` with translator `t` inside the default
+header action group beside locale/theme controls. Use it for page entry actions
+without duplicating identity/preferences. Welcome authentication links use this
+slot and wrap responsively; custom layout wrappers forward it.
+
+Button and LinkButton share the single src/runa/resources/css/button.css style
+source through scoped imports, retaining variants, themes, focus and reduced motion
+without making link styling depend on mounting a separate button instance.

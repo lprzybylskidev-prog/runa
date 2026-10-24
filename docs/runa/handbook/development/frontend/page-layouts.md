@@ -6,7 +6,7 @@ Bundled MinimalLayout and ApplicationLayout pages share `/favicon.ico`, declared
 
 Canonical source: `src/runa/resources/js/layouts/MinimalLayout.vue`, public import `MinimalLayout` from `@/runa/ui`. Use MinimalLayout for compact public pages rather than a separate auth wrapper point 2.
 
-Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. The supplied Runa illustration is built in and visible by default; content occupies the left panel, the illustration the right at `lg`, with a compact 240px illustration above content on narrow screens. Set `illustration: false` explicitly for one column, or override the illustration slot. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
+Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, header-actions, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. The supplied Runa illustration is built in and visible by default; content occupies the left panel, the illustration the right at `lg`, with a compact 240px illustration above content on narrow screens. Set `illustration: false` explicitly for one column, or override the illustration slot. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
 
 The layout owns locale/theme composables once. Consumers use scoped `t`, preserving guest compatibility keys, cover timing, inert content and focus restoration; signed-in display values use the shared account preference adapter. Identity overrides are scoped with `IdentityProvider`; no global installation is required. Custom headers replace the default brand and preferences together.
 
@@ -70,3 +70,9 @@ and complete presentation replacements stay in src/app. Use public composition o
 headless contracts, retaining server security and platform session orchestration.
 AuthPresentationProvider supplies Auth subtree overrides; the static errorLayout.ts
 entry selects the same layout for native errors and emergency 503.
+
+The public MinimalLayout `header-actions` slot adds actions beside the existing
+language/theme controls while retaining the default identity/header. Welcome places
+sign-in, policy-dependent registration and authenticated entry here; these controls
+do not belong in the welcome content panel. The header action group wraps on narrow
+screens. Replacing the whole header replaces this default group as well.

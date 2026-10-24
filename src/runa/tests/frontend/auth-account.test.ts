@@ -274,12 +274,15 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
     expect(w.find('a[href="/auth/login"]').exists()).toBe(true),
   );
   expect(w.find('a[href="/auth/register"]').exists()).toBe(false);
+  expect(w.get('header a[href="/auth/login"]').exists()).toBe(true);
+  expect(w.find('main a[href="/auth/login"]').exists()).toBe(false);
   w.unmount();
   options.public_registration = true;
   const w2 = mount(AuthWelcome);
   await vi.waitFor(() =>
     expect(w2.find('a[href="/auth/register"]').exists()).toBe(true),
   );
+  expect(w2.get('header a[href="/auth/register"]').exists()).toBe(true);
   w2.unmount();
   signedIn = true;
   sessionAccount = id;

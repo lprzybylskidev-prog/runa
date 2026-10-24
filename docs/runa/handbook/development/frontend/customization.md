@@ -66,13 +66,13 @@ applies only to descendants; nested providers inherit unspecified entries.
 Omitted entries use supplied defaults. Pass imported component definitions, not
 names, URLs or backend metadata. Keep the map stable during an active form.
 
-| Entry               | Customer component contract                                                                                                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `minimalLayout`     | Accept and render the default content slot, including its `t` translator slot argument for welcome; accept layout props. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
-| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward navigation/current/title/user identity and preserve the account/sign-out controls.                                                                              |
-| `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                      |
-| `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                      |
-| `welcome`           | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                           |
+| Entry               | Customer component contract                                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `minimalLayout`     | Accept and render the default content slot, including its `t` translator slot argument for welcome, and forward `header-actions` for the welcome entry links; accept layout props. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
+| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward navigation/current/title/user identity and preserve the account/sign-out controls.                                                                                                                                        |
+| `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                |
+| `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                |
+| `welcome`           | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                                                                                     |
 
 ```vue
 <script setup lang="ts">
@@ -187,3 +187,8 @@ lives under workspace-root .runtime, outside src/node_modules. Keep this build t
 self-contained when changing artifact paths; only generated HTML/CSS/assets enter
 production runtime images. See [manual preparation](../../data/seeding.md#manual-auth-navigation-scenario)
 for actual environment readiness before frontend review.
+
+Welcome entry links belong in MinimalLayout's public `header-actions` slot beside
+language/theme preferences, including the signed-in application link. Customer
+layout wrappers forward this slot; replacing the full header deliberately owns its
+identity, entry and preference presentation. The default slot remains page content.

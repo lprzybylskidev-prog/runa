@@ -231,7 +231,7 @@ Public identity, navigation, preference-storage, selection/export/provider and p
 
 ## Minimal layout and branding
 
-`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The default welcome uses MinimalLayout; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
+`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The default welcome uses MinimalLayout; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/header-actions/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
 
 ```vue
 <script setup lang="ts">
@@ -457,3 +457,9 @@ connects welcome, guarded sign-in, ApplicationLayout, profile and dropdown sign-
 It uses the shared HTTP lifecycle for 401/restricted reauthentication, local expiry
 warnings and throttled real activity; account-bound safe memory drafts require
 explicit review and resubmission. No global state/router package is introduced.
+
+The public MinimalLayout `header-actions` slot adds actions beside the existing
+language/theme controls while retaining the default identity/header. Welcome places
+sign-in, policy-dependent registration and authenticated entry here; these controls
+do not belong in the welcome content panel. The header action group wraps on narrow
+screens. Replacing the whole header replaces this default group as well.

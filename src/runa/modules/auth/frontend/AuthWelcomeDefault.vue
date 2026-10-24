@@ -7,18 +7,8 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
 </script>
 <template>
   <component :is="presentation.minimalLayout ?? MinimalLayout">
-    <template #default="{ t }">
-      <h1
-        class="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl xl:text-6xl"
-      >
-        {{ t('title') }}
-      </h1>
-      <p
-        class="mt-6 max-w-lg text-sm leading-7 text-muted sm:text-base sm:leading-8"
-      >
-        {{ t('description') }}
-      </p>
-      <div class="mt-8" aria-live="polite">
+    <template #header-actions>
+      <div class="max-w-full" aria-live="polite">
         <Spinner
           v-if="loading"
           :label="text('Sprawdzanie sesji', 'Checking session')"
@@ -34,7 +24,7 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
         >
         <nav
           v-else-if="options"
-          class="flex flex-wrap gap-4"
+          class="flex flex-wrap items-center gap-2"
           :aria-label="text('Dostęp do aplikacji', 'Application access')"
         >
           <LinkButton
@@ -56,6 +46,18 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
           </template>
         </nav>
       </div>
+    </template>
+    <template #default="{ t }">
+      <h1
+        class="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl xl:text-6xl"
+      >
+        {{ t('title') }}
+      </h1>
+      <p
+        class="mt-6 max-w-lg text-sm leading-7 text-muted sm:text-base sm:leading-8"
+      >
+        {{ t('description') }}
+      </p>
     </template>
   </component>
 </template>

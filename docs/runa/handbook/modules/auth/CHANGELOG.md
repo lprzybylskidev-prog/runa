@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.13.1
+
+Move welcome sign-in, conditional registration and authenticated entry links into
+the default header beside locale/theme controls through the public MinimalLayout
+header-actions slot. Preserve session/policy behavior and responsive wrapping.
+Source-only 0.13.0 -> 0.13.1 edge; no data/settings change.
+
 ## 0.13.0
 
 Add public subtree presentation replacement, headless entry/account/welcome/session
