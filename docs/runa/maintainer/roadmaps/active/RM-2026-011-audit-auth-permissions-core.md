@@ -685,7 +685,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     version; exception expiry/revalidation; trusted CLI confirmation/disablement and
     public emergency-issuance refusal; idempotent bootstrap ownership and no secret logs.
     Document operational recovery and policy consequences without an admin UI.
-- [ ] 11. Deliver Auth entry and restricted-flow Vue screens.
+- [x] 11. Deliver Auth entry and restricted-flow Vue screens.
   - Requires 10. Use MinimalLayout/current components for login, enabled registration,
     invitation/initial password, verification/reverification, recovery/reset,
     2FA/enrollment/recovery and forced-change flows. Use shared HTTP wrapper and
@@ -794,7 +794,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 is next: Auth entry and restricted-flow Vue screens. Remaining Auth UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 is next: own-account UI and session-expiry integration. Permissions stays assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1418,3 +1418,61 @@ architectural premise requires discussion before dependent work.
   were created; development services/data, Qdrant/model caches and reports are
   preserved. The forward policy migration is prepared, not applied to development
   or production by this point.
+
+## Point 11 delivery
+
+- Auth advances independently 0.7.0 -> 0.8.0 for additive entry/restricted UI,
+  safe public form constraints and own-security flags. An explicit source-only
+  forward edge changes no data/settings. Audit ^0.3.0, framework API ^1.0.0 and
+  platform VERSION 0.4.2 are unchanged; future Permissions requires Auth ^0.8.0.
+  No dependency, migration, authority shortcut or Admin UI is added.
+- Public lazy AuthEntry/entryPage composition uses MinimalLayout and existing form,
+  selection, feedback and preference controls. Exact named /auth routes cover
+  login, enabled registration, forgot/reset password, invitation setup, primary
+  verification, profile-address confirmation and current restricted-session support.
+  The app-owned App.vue explicitly selects these paths while retaining its welcome.
+  Document-only GETs remain independent of module readiness; data endpoints retain
+  availability/session/CSRF/eligibility guards. Unknown paths are still 404.
+- Public entry-options projects a narrow allowlist of form constraints, never the
+  settings document or account state. Compatible security flags guide recovery-code
+  availability, password-change proof and verified-email enrollment. Current session
+  state orders verification, permitted factor enrollment/challenge and password
+  change. Mandatory TOTP offers no email substitute; email enrollment verifies the
+  primary first, even when general verification is disabled. Change-specific 2FA
+  with no usable factor leads to enrollment. Unknown restrictions fail closed.
+- PL/EN forms implement immediate controlled validation, naming alternatives,
+  password complexity/UTF-8 bounds, password-manager autocomplete and fixed safe
+  backend error mapping. Fragment tokens are removed before requests and submitted
+  only by an explicit POST. Token/password/OTP/TOTP/recovery material stays in memory;
+  page changes/unmount cancel ownership and discard secrets. Recovery codes require
+  an explicit saved acknowledgement. Safe local returns, 401/409/419/429/failure
+  states, current-account refresh, explicit CSRF renewal and no automatic write
+  replay preserve server authority. Shared controls own motion; step transitions
+  are immediate with heading/error focus and live announcements.
+- Necessary focused diagnostics resolved the new state-machine/token/focus and
+  projection/route uncertainties: supported frontend runner selecting auth-entry
+  PASS (12 cases), backend runner selecting the two entry-options/named-route cases
+  PASS (25 assertions), and one Chromium rendered login/keyboard diagnostic PASS.
+  Inspected dark desktop and light mobile screenshots under
+  artifacts/playwright/runa/auth-entry. Additional locale/reduced-motion/flow browser
+  scenarios are prepared for final verification; no full suite, broad integration,
+  type/static analysis, application/image build, scanners or quality gate ran.
+  The isolated browser fixture build reports its existing large scenario chunks;
+  it is not production bundle acceptance. Mandatory commit hooks remain required.
+- Render startup exposed missing file-session storage in the dedicated test FPM
+  runtime (health 500). Compose now creates framework/sessions alongside existing
+  test directories; the focused request diagnostic and rendered test confirm the
+  repair. No database reset or development/production migration was run. Removed
+  the task-recreated runa-dev-app-test-1 and stopped the previously existing
+  runa-dev-nginx-test-1 back to its prior state. Preserved development services,
+  database data, existing network/images, Qdrant/model caches, reports and screenshots;
+  no disposable image/network/volume was created.
+- Synchronized Auth UI/transport/security/version guides, public frontend patterns,
+  architecture/design current-state claims, owner foundations and owner/customer
+  frontend instruction references. Both root AGENTS contracts and remaining domain
+  skills already require server authority, controlled forms and secret-safe handling;
+  no constitution/backend rule changed. Customer reference describes consuming the
+  public component and preserving app-owned integration, never protected edits.
+  Account dropdown/self-service, global expiry/activity/drafts and optional own
+  security management remain point 12; Permissions and real operator integration
+  remain their later points. Full acceptance remains point 19.

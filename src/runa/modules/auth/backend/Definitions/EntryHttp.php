@@ -18,6 +18,7 @@ final class EntryHttp implements HttpProvider
     public function endpoints(): array
     {
         return [
+            new HttpEndpoint('GET', 'entry-options', new ApiOperation('entry.options'), Http\EntryOptionsController::class),
             new HttpEndpoint('POST', 'security/challenge', new ApiOperation('security.challenge'), Http\ChallengeController::class, HttpAccess::Restricted),
             new HttpEndpoint('POST', 'security/email-send', new ApiOperation('security.email_send'), Http\EmailSendController::class, HttpAccess::Restricted),
             new HttpEndpoint('POST', 'security/totp-begin', new ApiOperation('security.totp_begin'), Http\TotpBeginController::class, HttpAccess::Restricted),

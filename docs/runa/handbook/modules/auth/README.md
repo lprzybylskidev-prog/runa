@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.7.0`, requiring
+Core `runa.auth` ships at independent version `0.8.0`, requiring
 `runa.audit ^0.3.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
@@ -144,3 +144,5 @@ model helpers refuse; destructive migration rollback is also refused.
 Independent module changes are recorded in [CHANGELOG](CHANGELOG.md). Full tests,
 concurrency, installation/delivery and operational Auth acceptance run in the final
 roadmap verification after their owning implementation points.
+
+Entry and restricted-session screens are available through the [Auth entry UI contract](entry-ui.md). Own-account screens and global session-expiry integration remain assigned to the next UI point.

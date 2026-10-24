@@ -1,6 +1,6 @@
 # Form Patterns
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. There are no business forms or backend write endpoints yet. Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
 

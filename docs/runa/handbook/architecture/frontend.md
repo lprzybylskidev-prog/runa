@@ -298,7 +298,7 @@ Production PHP includes native/namespaced views, the mail brand-tile PNG, shared
 
 ## HTTP error pages
 
-HTTP errors use **MinimalLayout.vue itself**, also used by the welcome dashboard and reserved for future Auth screens. They are not a second PHP/CSS shell. `src/runa/resources/errors/render.mjs` pre-renders the actual MinimalLayout with IdentityProvider and a content-only `MinimalErrorContent.vue` slot during `pnpm run build:errors` (also part of the normal frontend build). This includes the same AppBackdrop/constellations, default AppBrandIllustration, 42px logo/header, responsive split/stack composition and AppFooter. No Auth behavior is introduced.
+HTTP errors use **MinimalLayout.vue itself**, also used by the welcome dashboard and Auth entry/restricted screens. They are not a second PHP/CSS shell. `src/runa/resources/errors/render.mjs` pre-renders the actual MinimalLayout with IdentityProvider and a content-only `MinimalErrorContent.vue` slot during `pnpm run build:errors` (also part of the normal frontend build). This includes the same AppBackdrop/constellations, default AppBrandIllustration, 42px logo/header, responsive split/stack composition and AppFooter. No Auth behavior is introduced.
 
 MinimalLayout's optional `staticPreferences: { locale, theme }` mode is for build-time rendering: it avoids browser storage/DOM hooks and renders the existing AppPreferenceControls/AppButton/AppIcon as ordinary GET forms. Language/theme controls work without JavaScript and retain the other selection. Normal interactive layout consumers retain their existing preferences, cover timing, persistence and focus behavior. The static mode does not add runtime Node/Vue rendering to PHP or Nginx.
 
@@ -385,7 +385,7 @@ Form extends the original controlled AppForm with feedback/actions slots, respon
 
 NumberInput stores exact string/null values. Complete values normalize to decimal dots; PL/EN formatting preserves digits/zeros without binary conversion. Invalid intermediate drafts remain visible and in the model, so validation cannot accidentally submit a stale previous value. Validate with parseDecimal and serialize with serializeDecimal before an API call; optional scale rejects excessive precision rather than rounding. Currency/percentage kinds do not impose domain ranges or rescale values.
 
-useForm accepts finite JSON field values, isolates submitted snapshots, blocks concurrent/known-invalid writes and tracks nested dirty baselines. Successful submission advances only the submitted baseline; reset() restores that baseline and reset(serverSnapshot) explicitly loads new data. ApiError 422 maps exact nested Laravel keys; 409 marks conflict without replacing input, and other failures remain recoverable. Screens own immediate business validation, accessible error summaries, optimistic-lock tokens and deliberate comparison/reload/retry. No business write endpoints or account storage are provided; optional masks/navigation guards are described below. Detailed component/decimal/error examples are maintained in the frontend form reference.
+useForm accepts finite JSON field values, isolates submitted snapshots, blocks concurrent/known-invalid writes and tracks nested dirty baselines. Successful submission advances only the submitted baseline; reset() restores that baseline and reset(serverSnapshot) explicitly loads new data. ApiError 422 maps exact nested Laravel keys; 409 marks conflict without replacing input, and other failures remain recoverable. Screens own immediate business validation, accessible error summaries, optimistic-lock tokens and deliberate comparison/reload/retry. Auth entry forms use guarded backend endpoints and account preferences have their own persistence contract; optional masks/navigation guards are described below. Detailed component/decimal/error examples are maintained in the frontend form reference.
 
 ### Additional input foundation
 
@@ -430,3 +430,13 @@ The public consumer fixture at tests/frontend/fixtures/StandaloneConsumer.vue co
 ## Optional module composition
 
 `@/runa/modules` supplies ModulePage, ModuleSlot, build/runtime types, createModuleComponents, modulePages, moduleNavigation and useModuleFrontend. The two components are also exported through the UI facade. Import `virtual:runa-module-components` only in an entry that consumes modules; ordinary customer frontends need neither this registry nor the module projection request. The existing exact URL resolver and ApplicationLayout navigation remain the composition contracts. The application entry explicitly handles loading/unavailable/unknown routes and refreshes metadata on navigation/recovery; module page setup runs only after current availability and build-hash checks. Slots preserve server ordering and require exact scalar props before mounting. Tailwind scans both owned module source roots; module utility names must remain static. See [module frontend contracts](module-framework.md#delivered-frontend-pages-and-named-slots) for server routes, permissions, build mapping, ordering and freshness limits.
+
+## Auth entry integration
+
+Exact Auth entry paths render the lazy `AuthEntry` component from `@/runa/auth`
+inside MinimalLayout. See [Auth entry screens](../modules/auth/entry-ui.md) for
+server-declared constraints/restrictions, fragment-only proofs, safe local returns,
+explicit CSRF/conflict retry and secret cleanup. HTTP GET pages supply presentation
+only; security remains at guarded module endpoints. The existing welcome remains
+at `/`. Account dropdown/self-service and global session-expiry handling are
+separate implementation points.

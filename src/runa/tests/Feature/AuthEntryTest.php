@@ -69,6 +69,7 @@ use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Storage\ModuleStorage;
 use Runa\Support\Modules\Updates\ModuleUpdates;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 function entryLogin($test, array $payload): TestResponse
 {
@@ -99,6 +100,30 @@ function entryUser(string $email, bool $password = true): User
     return $user;
 }
 
+it('projects safe entry form options without exposing private settings or account state', function (): void {
+    $response = $this->getJson('/api/runa/auth/entry-options')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+    expect($response->json('data'))->toBe([
+        'public_registration' => false, 'identifier_mode' => 'email', 'remember_enabled' => false,
+        'password' => ['min_length' => 12, 'max_bytes' => 72, 'mixed_case' => false, 'numbers' => false, 'symbols' => false],
+    ]);
+    entryPolicy(['public_registration' => true, 'session_remember_minutes' => 60, 'password_numbers' => true]);
+    $this->getJson('/api/runa/auth/entry-options')->assertOk()->assertJsonPath('data.public_registration', true)
+        ->assertJsonPath('data.remember_enabled', true)->assertJsonPath('data.password.numbers', true);
+    entryUser('entry-options@example.test');
+    entryLogin($this, ['identifier' => 'entry-options@example.test', 'password' => 'a-long-test-password'])->assertOk();
+    $this->getJson('/api/runa/auth/security')->assertOk()->assertJsonPath('data.email_verified', false)
+        ->assertJsonPath('data.recovery_codes_enabled', true)->assertJsonPath('data.password_change_factor', false);
+});
+
+it('registers exact named Auth entry pages without a wildcard or consuming GET token route', function (): void {
+    foreach (['login', 'register', 'forgot-password', 'reset-password', 'invitation', 'verify-email', 'confirm-address', 'security'] as $page) {
+        $route = app('router')->getRoutes()->match(Request::create('/auth/'.$page));
+        expect($route->getName())->toBe('runa.auth.pages.'.str_replace('-', '_', $page));
+    }
+    expect(fn () => app('router')->getRoutes()->match(Request::create('/auth/unknown')))
+        ->toThrow(NotFoundHttpException::class);
+});
+
 beforeEach(function (): void {
     $this->authSchemas = [];
     foreach (['runa_audit', 'runa_auth'] as $schema) {
@@ -111,7 +136,7 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.7.0' : '0.3.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.8.0' : '0.3.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -294,7 +319,7 @@ it('upgrades encrypted identity settings additively only inside the reserved upd
     DB::table('shared.modules')->whereIn('module_id', ['runa.auth', 'runa.audit'])->update(['installed_version' => null]);
     app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0'])->delete();
+    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
     DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0', 'settings_revision' => 4,
         'settings_values' => app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false)]);

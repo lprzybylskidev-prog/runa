@@ -74,6 +74,7 @@ Names are `runa.auth.<operation>`; paths below are under `/api/runa/auth/`.
 
 | Method | Path                  | Operation             | Access/result                                                |
 | ------ | --------------------- | --------------------- | ------------------------------------------------------------ |
+| GET    | entry-options         | entry.options         | Public; safe form constraints and availability only          |
 | GET    | csrf                  | csrf                  | Public; issues same-origin CSRF/session cookies              |
 | POST   | login                 | login                 | Public; identifier/password; own UUIDv7/display/restrictions |
 | POST   | logout                | logout                | Public; permits clearing stale cookies                       |
@@ -88,8 +89,7 @@ identifier normalization. Registration and initial invitation passwords use the 
 [credential policy](security.md), defaulting to at least 12 characters and at most 72 UTF-8 bytes without NUL, protecting native
 bcrypt's input boundary. The shared policy also enforces configured complexity/history.
 Explicitly supplied activation/approval/verification flags are prohibited; unknown
-fields are never mass assigned. Known frontend validation and UI arrive with the
-owning screen points. No management HTTP endpoints or placeholder pages are added.
+fields are never mass assigned. Known frontend validation and entry UI use the [screen contract](entry-ui.md). No management HTTP endpoints or placeholder pages are added.
 
 ## Registration, verification and invitations
 
@@ -146,8 +146,8 @@ until consumption, invalidation or expiry; Audit history is never cleaned here.
 Mail uses the configured existing Laravel mail adapter and Polish entry copy.
 Links use validated configured app.url, never request Host. The secret is in the
 fragment (`/auth/invitation#token=...` or `/auth/verify-email#token=...`), which is not
-sent to access logs. The later Auth Vue screen must consume and remove the fragment
-and POST the proof; no GET consumes a token. Screens are not delivered in this point.
+sent to access logs. The [Auth Vue screen](entry-ui.md) consumes and removes the fragment and POSTs
+the proof only after confirmation; no GET consumes a token.
 Credential security mail always targets the current primary email. The [profile address contract](profile.md) separately permits new/secondary-address verification and mandatory captured-old-primary change notices. Configurable localized
 security delivery and private account preferences remain separate later flows.
 
@@ -163,5 +163,5 @@ resend starts a new chain. No reminder is enabled by default.
 Full concurrency, cookie/browser, module update/acquisition, production image and
 security acceptance belongs to final verification. The focused owner AuthEntryTest
 also prepares replay/rollback, enumeration, stale delivery, deadline, real CSRF and
-encrypted-settings upgrade regressions. This guide describes the current backend
-contract; it does not claim final release acceptance or an available Auth UI.
+encrypted-settings upgrade regressions. This guide describes the current backend contract; entry screens are documented
+separately and do not claim final release acceptance.

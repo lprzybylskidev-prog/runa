@@ -18,3 +18,5 @@ cache recipients across jobs, or import Auth private SQL/models. Reference-only
 managed security mail rechecks state and uses a persisted single SMTP attempt;
 critical recovery retains direct mail. Application code consumes these contracts
 without requiring conversion into an app module; protected Runa remains read-only.
+
+Use the delivered AuthEntry component from @/runa/auth for entry and restricted-session flows; follow docs/runa/handbook/modules/auth/entry-ui.md. Preserve the application-owned App.vue integration when customizing navigation. Keep token proofs and credentials in component memory, honor server-declared restrictions and require explicit resubmission after CSRF/conflict failures; never edit protected Auth source.

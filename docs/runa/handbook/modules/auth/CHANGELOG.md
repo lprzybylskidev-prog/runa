@@ -1,5 +1,15 @@
 # Auth module changelog
 
+## 0.8.0
+
+Add lazy public AuthEntry composition and exact named entry pages, safe public form
+options, compatible own-security flags, login/registration/recovery/invitation/
+verification/address confirmation and restricted factor/password screens. Reuse
+MinimalLayout and shared PL/EN themed form controls. Consume fragments without GET
+writes or browser persistence; fence late responses, validate redirects and require
+explicit retry after CSRF/conflict errors. Add the source-only 0.7.0 -> 0.8.0 edge;
+no migration, settings change, dependency or Admin UI. Account UI remains separate.
+
 ## 0.7.0
 
 Add AuthPolicies/AuthBulkSessions 1.0.0, mandatory transactional policy history

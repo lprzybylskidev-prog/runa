@@ -18,7 +18,7 @@ final readonly class AccountPolicy
     public function principal(Request $request, ?string $module, string $operation, HttpAccess $access): ?TrustedPrincipal
     {
         // Stale cookies can still reach logout/new login and one-time public entry flows.
-        $publicEntry = $module === 'runa.auth' && in_array($operation, ['csrf', 'login', 'logout', 'register', 'invitation.accept', 'verification.complete', 'password.forgot', 'password.reset', 'email.complete'], true);
+        $publicEntry = $module === 'runa.auth' && in_array($operation, ['entry.options', 'csrf', 'login', 'logout', 'register', 'invitation.accept', 'verification.complete', 'password.forgot', 'password.reset', 'email.complete'], true);
         if ($publicEntry) {
             return null;
         }

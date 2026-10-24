@@ -30,6 +30,7 @@ $platformProviders = require __DIR__.'/providers.php';
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withProviders($platformProviders)
     ->withRouting(api: __DIR__.'/../runa/routes/api.php', then: function (): void {
+        require __DIR__.'/../runa/routes/web.php';
         require __DIR__.'/../app/routes/web.php';
         app(ModuleHttp::class)->register();
         app(ModuleFrontendRoutes::class)->register();

@@ -7,13 +7,13 @@ The public usage contract is [module foundations](../../handbook/architecture/mo
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.3.0` for capture/reads and private own-history summaries; Auth advances to 0.7.0 for credentials, private profile/address/avatar, preferences, policy history and operator contracts; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.3.0` for capture/reads and private own-history summaries; Auth advances to 0.8.0 for credentials, private profile/address/avatar, preferences, policy/operator contracts and entry/restricted UI; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
 0.5.0, not a claim that the predecessor contains these capabilities.
 
-Auth requires Audit `^0.3.0`; Permissions must require the current compatible Auth baseline (now `^0.7.0`) and Audit `^0.3.0`.
+Auth requires Audit `^0.3.0`; Permissions must require the current compatible Auth baseline (now `^0.8.0`) and Audit `^0.3.0`.
 There is no reverse Auth dependency. Each manifest uses the normal source-owned
 lifecycle, upgrade and public adapter declarations. First installation declares an
 explicit transactional `null -> 0.1.0` initialization step. A matching installed
@@ -193,7 +193,7 @@ Point 4 delivers the [Auth identity contract](../../handbook/modules/auth/README
 owned Authenticatable ModuleModel, exclusive naming, normalized email/login claims,
 independent current-time eligibility, optimistic audited lifecycle operations and
 monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0; initial
-The initial identity edge remains 0.1.0; Auth now targets 0.7.0, requiring Audit ^0.3.0. Default administrative authority remains
+The initial identity edge remains 0.1.0; Auth now targets 0.8.0, requiring Audit ^0.3.0. Default administrative authority remains
 denied. No Permissions dependency, is_admin flag, foreign data access or user seed.
 Identifier-reuse settings govern subsequent deletions without reclaiming ownership;
 operational session/trust revocation is delivered in point 6; point 7 delivers

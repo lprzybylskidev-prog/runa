@@ -248,3 +248,12 @@ explicit reload action; feedback is static and announced, with no added motion.
 See [Auth preferences](../../modules/auth/preferences.md) for exact declarations,
 revisions, safe legacy adoption and logout/late-response behavior. Custom standalone
 stores remain opt-in; standalone components initialize no account session.
+
+## Auth entry composition
+
+`AuthEntry`, `entryPage` and `EntryPage` are exported separately from `@/runa/auth`.
+The lazy module-owned flow reuses MinimalLayout and the shared Form, TextInput,
+RadioGroup, Checkbox, Button, Spinner and Alert components. Changing page resets
+and cancels the old flow. See [entry screens](../../modules/auth/entry-ui.md) for
+exact routes, public form constraints, server restrictions, safe returns and
+in-memory one-time material. Account management/session-expiry UI is separate.

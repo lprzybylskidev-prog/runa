@@ -5,7 +5,8 @@ Install through ModuleUpdates. Existing password hashes retain their values and
 start their password age at the upgrade; hashes cannot prove previous complexity.
 No dependency or service is added. Fortify's installed Google2FA engine generates
 and checks TOTP; native Laravel hashing, encryption, cookies and CSRF remain in use.
-Package routes remain disabled. User-facing screens are delivered separately.
+Package routes remain disabled. Entry/restricted screens use the [Auth UI contract](entry-ui.md); optional own-account
+management is separate.
 
 ## Password policy and recovery
 
