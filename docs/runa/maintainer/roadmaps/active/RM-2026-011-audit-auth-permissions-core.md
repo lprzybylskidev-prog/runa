@@ -1009,6 +1009,9 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19o. Center notification text.
   - Owner requests centered text in shared top-right notifications. Keep icon,
     dismissal and recovery actions usable; publish and inspect the rendered result.
+- [x] 19p. Remove the shell avatar frame.
+  - Owner requests no pixelated-looking border around the top-bar avatar.
+    Preserve its circular image, touch target and visible keyboard focus.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2824,3 +2827,17 @@ architectural premise requires discussion before dependent work.
 - No data/settings/avatar/credential changes or Docker resources created/removed.
   Preserved services, caches, reports, backups and rollback material. Point 20
   remains gated by explicit owner frontend appearance acceptance.
+
+## Point 19p delivery
+
+- Owner requests removing the pixelated-looking top avatar frame. Dedicated shell
+  CSS now removes its ordinary/hover/pressed border and background, preserving the
+  circular image, 44px disclosure target and existing visible keyboard outline.
+- Published current client assets. Real served authenticated browser confirmed 0px
+  border, transparent background and 44x44px target in ordinary/hover/focus states;
+  keyboard focus retains its 3px outline. No tests/broad checks for this small CSS
+  correction; mandatory hooks apply. Updated the public component catalogue.
+- No module source/API changed; versions unchanged. Owner/customer skills already
+  reference the shared catalogue and preserve keyboard focus, so no new rule needed.
+  No data/settings/resource changes; services, caches, reports and backups preserved.
+  Point 20 remains gated by explicit owner frontend appearance acceptance.

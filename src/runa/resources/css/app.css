@@ -744,8 +744,12 @@ select {
   gap: 12px;
   margin-left: auto;
 }
-button.app-button.shell-avatar-button {
+button.app-button.shell-avatar-button,
+button.app-button.shell-avatar-button:hover:not(:disabled),
+button.app-button.shell-avatar-button:active:not(:disabled) {
+  border: 0;
   border-radius: 50%;
+  background: transparent;
 }
 .shell-sidebar-toggle {
   align-self: center;
