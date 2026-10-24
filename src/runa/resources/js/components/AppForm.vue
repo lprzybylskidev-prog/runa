@@ -71,10 +71,7 @@ defineExpose({ focusInvalid });
       >
         <slot />
       </div>
-      <div
-        v-if="$slots.actions"
-        class="mt-6 flex flex-wrap items-center gap-3 border-t border-line pt-5"
-      >
+      <div v-if="$slots.actions" class="mt-6 flex flex-wrap items-center gap-3">
         <slot name="actions" />
       </div>
     </fieldset>

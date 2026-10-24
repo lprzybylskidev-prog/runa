@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests removing separators above form submits in the user
+  panel and Preferences. Point 19zf fixes the shared Form actions presentation;
+  retain spacing and separators between independent sections. No behavior change.
+
 - 2026-10-25 — Owner requests concise account/password copy, centered avatar and
   trusted-device management only while an active trusted device exists. Point 19zd
   removes the named helper/status text in PL/EN and reuses the guarded active-device
@@ -1097,6 +1101,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zc. Refresh current account views automatically, preserve drafts and reconcile conflicts locally; record reusable guidance.
 - [x] 19zd. Remove redundant account copy, center avatar and show management only for active trusted devices.
 - [x] 19ze. Remove duplicate spacing below the final two-factor method row.
+- [x] 19zf. Keep shared form actions with their fields without a separator.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3528,3 +3533,21 @@ architectural premise requires discussion before dependent work.
   owner/customer guidance need no new reusable rule for this local spacing fix.
 - Publish assets and inspect served layout spacing; no new test for a reversible
   class-only correction. Final point 20 remains appearance-gated.
+
+### Point 19zf — Form actions stay with their fields
+
+- Removed the horizontal border and extra top padding from the shared Form actions
+  slot, retaining its 24px margin and wrapping button layout. Account details,
+  password, avatar and Preferences now share this default; independent section
+  separators remain. Static presentation requires no motion.
+- Published current Vite assets for manual review. Focused served-browser diagnostics
+  with synthetic API confirmed computed zero border/padding and 24px action spacing
+  for account and dirty Preferences forms at desktop/light and mobile/dark sizes,
+  with no overflow or page errors. Inspected the desktop account screenshot;
+  evidence remains under .runtime/dev/manual-auth/form-actions.
+- Updated the public forms contract and owner/customer frontend references. Root,
+  Vue and Tailwind instructions already require shared components; no duplicate
+  guidance is needed. No module-owned source/API/dependency changed, so independent
+  module versions remain unchanged. No schema, dependency or Docker resource change.
+  No new tests for this reversible class-only correction. Final point 20 remains
+  appearance-gated; no broad verification or release started.

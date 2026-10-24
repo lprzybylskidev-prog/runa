@@ -148,3 +148,7 @@ Account defaults use concise helper copy and a centered avatar. Device managemen
 appears only for a nonempty guarded active trusted-device list; refresh it through
 the public controller and keep independent cursor/busy state. See the account UI
 guide; do not infer authority or historical trust from button visibility.
+
+Keep form submits with their fields using spacing, without a horizontal separator
+above actions. Use the shared Form actions slot; reserve separators for independent
+sections or operations. See the public forms guide.

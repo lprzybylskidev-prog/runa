@@ -5,7 +5,10 @@ Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, 
 ## Container and field composition
 
 When several Cards have independent forms, keep their drafts, validation and submit
-boundaries separate. For two columns with uneven card heights, use independent
+boundaries separate. Keep submit actions visually attached to their fields: use
+spacing without a horizontal separator above the actions. Reserve separators for
+independent sections or operations. The shared Form actions slot supplies this
+default for account, Preferences and other forms. For two columns with uneven card heights, use independent
 column stacks so unrelated card height does not create gaps. Present individual
 security methods with status and explicit setup/disable actions; show only the
 selected operation's proof fields and named submit. Confirm destructive removal

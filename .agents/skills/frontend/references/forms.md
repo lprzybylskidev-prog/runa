@@ -22,3 +22,7 @@ fields during collection requests. See Auth's saveSecondary presentation contrac
 Use the public forms guide's automatic read reconciliation and shared FormConflict
 for current/future data views. Refresh current reads without discarding drafts;
 resolve only overlapping/ambiguous changes locally and never retry writes silently.
+
+Keep form submits with their fields using spacing, without a horizontal separator
+above actions. Use the shared Form actions slot; reserve separators for independent
+sections or operations. See the public forms guide.
