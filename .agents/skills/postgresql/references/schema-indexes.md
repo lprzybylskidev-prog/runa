@@ -81,3 +81,5 @@ preview-bound bulk revocation and trusted CLI initialization/recovery. Keep priv
 one-time material out of command arguments/output and logs; operator access is the
 customer's infrastructure boundary. Do not grant a temporary administrator flag or
 call guarded business gateways behind a settings/update fence.
+
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.

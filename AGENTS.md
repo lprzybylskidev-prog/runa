@@ -157,6 +157,8 @@ events for every write. Scoped automatic suppression never disables explicit
 records. Follow docs/runa/handbook/modules/audit/README.md for safe fields,
 redaction, rollback/refusal boundaries and authorized reads.
 
+Use the [Permissions contract](docs/runa/handbook/modules/permissions/README.md) for source-owned permission/role declarations and current action grants. Grants never replace availability, Auth security steps or record-level Policies. Consume guarded public APIs; never use private identity/grant resolvers, mutate foreign assignments or add a generic superadmin policy bypass.
+
 ## Database invariants
 
 PostgreSQL only.

@@ -101,3 +101,5 @@ for versioned own/admin changes, recipient-bound verification, notification-only
 secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
 modules consume guarded public contracts; never expand security delivery to
 secondary recipients or expose general Audit detail for self-service history.
+
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.

@@ -90,6 +90,10 @@ Trusted installation/deployment operation that discovers exactly one source owne
 
 Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded JSON through `--payload`. Diagnostic handlers remain available while disabled/unhealthy. Operational commands enqueue a managed owned job and return its work ID; a zero exit reports admission, not completion. Module schedules target the same classified entries, run in UTC and recheck at dispatch and worker execution. Use `php artisan schedule:list` to inspect them. See [module Artisan and schedules](../architecture/module-framework.md#delivered-module-artisan-and-schedules) for trusted recovery, overlap and retry boundaries. No module-specific global registration edits or cold host-management aliases are provided.
 
+### `php artisan runa:permissions:declarations --payload='{"module":"app.documents"}'`
+
+Trusted read-only module diagnostic for declaration-update impact: old/new dictionary/role memberships, distinct impacted users and source/state fingerprint. It changes no grants; actual synchronization belongs to explicit transactional module install/update. See [Permissions declarations](../modules/permissions/README.md).
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`

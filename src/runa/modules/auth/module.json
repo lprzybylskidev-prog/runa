@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.auth",
   "kind": "core",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "platform": ">=0.4.2 <0.6.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "required": {
-      "runa.audit": "^0.3.0"
+      "runa.audit": "^0.4.0"
     },
     "optional": {}
   },
@@ -48,7 +48,7 @@
     "events": [],
     "frontend": [],
     "slots": [],
-    "management": [],
+    "management": ["Runa\\Modules\\Auth\\Definitions\\AuthPermissions"],
     "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/auth/README.md"],

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.audit",
   "kind": "core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "platform": ">=0.4.2 <0.6.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -35,7 +35,7 @@
     "events": [],
     "frontend": [],
     "slots": [],
-    "management": [],
+    "management": ["Runa\\Modules\\Audit\\Definitions\\AuditPermissions"],
     "upgrades": ["Runa\\Modules\\Audit\\Definitions\\AuditUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/audit/README.md"],

@@ -71,8 +71,8 @@ cryptographic proof; the absolute server deadline remains binding for every clie
 Resolve protected `AuthSessions` 1.0.0 through ModuleApis for administrative
 `listFor(publicId, before = null)`, `revoke(publicId, sessionId)` and
 `revokeAll(publicId)`. The list is cursor-bounded to 100 safe rows. Every method
-requires `runa.auth.sessions.manage` and current availability/authority. Default
-permission denial remains until Permissions integration; no admin HTTP page or
+requires `runa.auth.sessions.manage` and current availability/authority. Current
+Permissions grants are required; no admin HTTP page or
 bypass is supplied. Mutation Audit is synchronous, scoped to the subject, and
 rolls back revocation on persistence failure. Already revoked/foreign/absent IDs
 are harmless no-ops. Session revocation alone does not revoke trusted devices;

@@ -1,19 +1,19 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Point 6 adds tracked sessions, deadlines, revocation, real-activity heartbeat and account/source abuse windows. Remaining Auth flows, Permissions and user interfaces remain assigned to later roadmap points.
+RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Point 6 adds tracked sessions, deadlines, revocation, real-activity heartbeat and account/source abuse windows. Auth entry/account UI and Permissions dictionaries, declaration sync and current authorization are delivered; assignment, protected authority and cross-module bootstrap remain assigned to their owning points.
 See the [Auth transport contract](../../handbook/modules/auth/transport.md).
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.3.0` for capture/reads and private own-history summaries; Auth advances to 0.9.0 for credentials, private profile/address/avatar, preferences, policy/operator contracts and entry/restricted/application/account UI; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.4.0` for capture/reads, private own-history summaries and permission declarations; Auth advances to 0.10.0 for credentials, private profile/address/avatar, preferences, policy/operator contracts, entry/restricted/application/account UI and non-recursive authorization eligibility; Permissions starts at 0.1.0 with dictionaries/declarations and native grants. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
 0.5.0, not a claim that the predecessor contains these capabilities.
 
-Auth requires Audit `^0.3.0`; Permissions must require the current compatible Auth baseline (now `^0.9.0`) and Audit `^0.3.0`.
+Auth requires Audit `^0.4.0`; Permissions requires Auth `^0.10.0` and Audit `^0.4.0`.
 There is no reverse Auth dependency. Each manifest uses the normal source-owned
 lifecycle, upgrade and public adapter declarations. First installation declares an
 explicit transactional `null -> 0.1.0` initialization step. A matching installed
@@ -100,7 +100,7 @@ Point 5 deliberately wires session/CSRF middleware and secure cookies through th
 Auth transport provider and lazy account-policy bridge. The generic policy interface
 alone does not supply authentication. Anonymous independent module ingress does not
 require Auth readiness; supplied authenticated sessions do.
-DenyProtectedOperations and DenyAuthorityChanges remain the default bindings.
+PermissionAuthorizer now resolves current Permissions grants and fails closed before readiness; DenyAuthorityChanges remains the neutral default until point 15.
 
 ## Reserved preparation and bootstrap
 
@@ -183,8 +183,7 @@ schemaVersion 1 consumers. Concrete modules extend only for actual operations.
 Both backend/Laravel/security/PostgreSQL instruction products link the public
 contract. Root owner/customer AGENTS require meaningful business/security history
 and explicit manual events for bulk SQL, relationships and aggregate operations.
-Procedures remain in the public Audit guide. Audit is now 0.3.0 (compatible capture/read and safe own-history behavior); planned Auth/Permissions consume ^0.3.0 rather than the
-initial ^0.1.0 Audit store constraint. Their own initial versions remain 0.1.0.
+Procedures remain in the public Audit guide. Audit is now 0.4.0 (compatible capture/read, own-history and localized declarations); Auth/Permissions consume ^0.4.0. Initial installation edges remain 0.1.0.
 Frontend skills/components are unaffected because this point adds no screens.
 
 ## Auth identity delivery
@@ -192,8 +191,8 @@ Frontend skills/components are unaffected because this point adds no screens.
 Point 4 delivers the [Auth identity contract](../../handbook/modules/auth/README.md):
 owned Authenticatable ModuleModel, exclusive naming, normalized email/login claims,
 independent current-time eligibility, optimistic audited lifecycle operations and
-monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0; initial
-The initial identity edge remains 0.1.0; Auth now targets 0.9.0, requiring Audit ^0.3.0. Default administrative authority remains
+monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0.
+The initial identity edge remains 0.1.0; Auth now targets 0.10.0, requiring Audit ^0.4.0. Default administrative authority remains
 denied. No Permissions dependency, is_admin flag, foreign data access or user seed.
 Identifier-reuse settings govern subsequent deletions without reclaiming ownership;
 operational session/trust revocation is delivered in point 6; point 7 delivers
@@ -210,7 +209,7 @@ ownership with durable retryable cleanup candidates and optional step-up-protect
 self lifecycle. All business writes and consumed proofs are synchronous with Audit.
 Audit 0.3.0 supplies trusted-self summary queries without importing Auth or granting
 general Audit reads. Procedures and transport are owned by the public
-[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens are delivered and Permissions remains subsequent work.
+[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens and Permissions action authorization are delivered; assignment/authority integration remains subsequent work.
 
 ## Policy publication and operator delivery
 
@@ -229,3 +228,7 @@ integration, so first-role grant/account recovery fail closed now. Initializatio
 singleton ownership and exact same-subject pre-setup rotation prevent repeated normal
 initialization granting additional superadmins. An outstanding recovery blocks old
 password login; redemption issues no session and preserves required factor enrollment.
+
+## Permissions declaration and authorization delivery
+
+Point 13 supplies the [Permissions contract](../../handbook/modules/permissions/README.md). The existing management category accepts optional RoleProvider metadata without changing framework API 1.0.0. Explicit reserved preparation synchronizes source-owned dictionaries and predefined roles with bound previews, impacted-user counts and atomic Audit; source removal retains data. Native union/system grants compose with current Auth eligibility, independent HTTP session/step-up, availability and record policies. Cross-worker reads are uncached; bounded introspection uses batched grant reads. The only non-recursive foreign eligibility resolver is an Auth public contract implemented at the trusted framework boundary. Ordinary consumers retain guarded APIs. No assignment writer, authority participant or bootstrap user grant is supplied in this point.

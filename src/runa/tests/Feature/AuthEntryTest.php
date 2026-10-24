@@ -70,6 +70,7 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Storage\ModuleStorage;
 use Runa\Support\Modules\Updates\ModuleUpdates;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Tests\Fixtures\CoreModuleStorage;
 
 function entryLogin($test, array $payload): TestResponse
 {
@@ -126,17 +127,18 @@ it('registers exact named Auth entry pages without a wildcard or consuming GET t
 
 beforeEach(function (): void {
     $this->authSchemas = [];
-    foreach (['runa_audit', 'runa_auth'] as $schema) {
+    foreach (['runa_audit', 'runa_auth', 'runa_permissions'] as $schema) {
         if (DB::selectOne('SELECT 1 FROM pg_namespace WHERE nspname = ?', [$schema])) {
             throw new RuntimeException('Auth fixture requires absent disposable schemas.');
         }
     }
+    $this->permissionsStorageAbsent = true;
     app(ModuleRegistry::class)->synchronize('runa');
     foreach (['audit' => 'events', 'auth' => 'identities'] as $code => $table) {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.9.0' : '0.3.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.10.0' : '0.4.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -175,6 +177,9 @@ afterEach(function (): void {
         DB::table('shared.jobs')->whereRaw("payload::jsonb ->> 'runa_work' = ?", [$workId])->delete();
     }
     DB::table('shared.module_work')->where('module_id', $authId)->delete();
+    if ($this->permissionsStorageAbsent ?? false) {
+        CoreModuleStorage::removePermissions();
+    }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
         foreach ($schema === 'runa_auth' ? ['operator_tokens', 'initialization', 'policy_exceptions', 'policy_versions', 'notice_scan', 'known_browsers', 'notice_frequencies', 'security_notices', 'delivery_preferences', 'preferences', 'profile_mail', 'email_changes', 'secondary_emails', 'avatar_files', 'step_up_proofs', 'password_history', 'login_windows', 'sessions', 'trusted_devices', 'entry_tokens', 'users'] : ['entities', 'events'] as $table) {
@@ -319,7 +324,7 @@ it('upgrades encrypted identity settings additively only inside the reserved upd
     DB::table('shared.modules')->whereIn('module_id', ['runa.auth', 'runa.audit'])->update(['installed_version' => null]);
     app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0', 'upgrade:account_ui:0.8.0:0.9.0'])->delete();
+    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0', 'upgrade:account_ui:0.8.0:0.9.0', 'upgrade:permission_declarations:0.9.0:0.10.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
     DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0', 'settings_revision' => 4,
         'settings_values' => app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false)]);

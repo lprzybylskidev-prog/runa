@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "runa.permissions",
+  "kind": "core",
+  "version": "0.1.0",
+  "platform": ">=0.4.2 <0.6.0",
+  "framework_api": "^1.0.0",
+  "name": {
+    "pl": "Uprawnienia",
+    "en": "Permissions"
+  },
+  "description": {
+    "pl": "Natywne role i uprawnienia akcji.",
+    "en": "Native roles and action permissions."
+  },
+  "dependencies": {
+    "required": {
+      "runa.auth": "^0.10.0",
+      "runa.audit": "^0.4.0"
+    },
+    "optional": {}
+  },
+  "providers": [],
+  "declarations": {
+    "apis": ["Runa\\Modules\\Permissions\\Definitions\\PermissionsApi"],
+    "health": [],
+    "lifecycle": [
+      "Runa\\Modules\\Permissions\\Definitions\\PermissionsLifecycle"
+    ],
+    "settings": [],
+    "integrations": [],
+    "http": [],
+    "commands": [
+      "Runa\\Modules\\Permissions\\Definitions\\DeclarationCommands"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "events": [],
+    "frontend": [],
+    "slots": [],
+    "management": [
+      "Runa\\Modules\\Permissions\\Definitions\\PermissionManagement"
+    ],
+    "upgrades": ["Runa\\Modules\\Permissions\\Definitions\\PermissionsUpgrades"]
+  },
+  "docs": ["docs/runa/handbook/modules/permissions/README.md"],
+  "tests": ["tests"]
+}

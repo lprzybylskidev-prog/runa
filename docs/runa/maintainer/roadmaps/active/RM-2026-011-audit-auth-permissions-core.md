@@ -767,7 +767,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     keyboard/focus access to profile/sign-out in the same dropdown, and actual
     session invalidation plus state cleanup on sign-out.
     Synchronize component catalogue and user-facing guides; no admin views.
-- [ ] 13. Deliver Permissions dictionaries, declaration sync and authorization.
+- [x] 13. Deliver Permissions dictionaries, declaration sync and authorization.
   - Requires 12. Add Core manifest requiring Auth/Audit, owned runa_permissions
     schema/models with five-field dictionaries, roles/permissions/direct grants and
     UUIDv7 Auth references. Add module-owned role/permission declarations, initial
@@ -896,7 +896,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 is next: Permissions dictionaries, declarations and authorization.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 is next: assignment, preset and access-copy backend operations.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1637,3 +1637,69 @@ architectural premise requires discussion before dependent work.
   caches, backups, reports and screenshots. No cleanup deletion was required.
   Real discoverable development accounts/manual end-to-end preparation remains
   point 17; Permissions/integration and full acceptance remain points 13–20.
+
+## Point 13 delivery
+
+- Added Core runa.permissions 0.1.0, requiring Auth ^0.10.0 and Audit ^0.4.0.
+  Owned runa_permissions dictionaries have the five approved localized fields,
+  immutable UUIDv7 public identities, version/timestamp/soft-delete columns, unique
+  codes and protected source/system ownership. Assignment pivots have bigint
+  identities, unique pairs, same-schema RESTRICT/RESTRICT keys and foreign Auth
+  UUIDv7 references only. Explicit null -> 0.1.0 installation creates the protected
+  unassigned system role; no administrator, credential or user grant is seeded.
+- Reused ManagementProvider permission metadata and the existing management manifest
+  category. Additive optional RoleProvider/RoleDefinition declarations describe
+  same-owner predefined roles; namespace/type/duplicate/size/member validation
+  refuses unsafe declarations. Framework API remains 1.0.0. Source removal retains
+  definitions, memberships and user references; source-owned roles have no editable
+  administration surface. No Admin UI or general management executor was added.
+- Added source/state-bound declaration previews, old/new memberships and distinct
+  impacted-user counts. The existing trusted module diagnostic exposes read-only
+  previews; reserved install/update preparation applies them under the default
+  transaction, registry/shared authority lock and stale-state recheck. Initial
+  installation catches up registered source declarations. Per-definition Audit
+  events and nested savepoints roll back all changes on required history failure;
+  unchanged/repeated updates create no duplicate declaration events. Added explicit
+  source-only Audit 0.3.0 -> 0.4.0 and Auth 0.9.0 -> 0.10.0 edges and central module
+  changelogs, with dependent manifest constraints reconciled. Public APIs retain
+  their existing versions; Auth adds its trusted non-recursive eligibility contract.
+- Native authorization now resolves current direct/role unions and the protected
+  system-role ordinary-action shortcut. It denies unknown permissions and preserves
+  module/dependency readiness, maintenance, current Auth eligibility, independent
+  HTTP sessions/factor requirements, step-up and domain predicates. The framework
+  alone bridges Auth's public eligibility interface to its owning query; Permissions
+  imports no foreign private model/query/SQL and never reenters a protected gateway
+  while authorizing. Laravel namespaced Gate checks retain record-level policy
+  decisions. No grant/eligibility cache survives a check, so cross-worker mutations
+  take effect on the next request without logout or polling. Guarded Permissions
+  1.0.0 introspection is permission-protected, code-cursor paginated and bounded,
+  with batched direct/role/module reads and public IDs only.
+- Prepared regressions for real fenced installation/no-op, direct/role derivation,
+  cross-connection changes, native Gate/OperationGuard non-recursion, policy denial,
+  system-role limits, default denial/readiness, protected introspection, source
+  namespaces/duplicates, predefined membership impact/retirement, stale previews,
+  Audit rollback and disabled Optional-module grant preservation/re-enable. Updated
+  existing Auth/Audit fixture versions and exact Permissions cleanup for real Core
+  updater tests. Fixtures do not add a production module or distributed credential.
+- Necessary focused diagnostics used the supported owner test-backend entrypoint:
+  `--filter='initializes current Permissions dictionaries'` passed (1 test,
+  9 assertions), resolving first-install schema/upgrade construction and recursive
+  authorization uncertainty. `--filter='unions direct and role grants|previews affected users'`
+  passed (2 tests, 15 assertions), resolving batched introspection/cross-connection
+  reads and source-owned membership preview/synchronization behavior. Full suites,
+  broad acceptance, static analysis and scanners remain in final point 20.
+- Synchronized public Permissions/module/database/command and affected Auth/Audit
+  guidance, owner design/deferred-state descriptions, root/customer AGENTS and both
+  backend/Laravel/PostgreSQL/security reference products. No frontend/Vue/Tailwind
+  skill change is needed: this point supplies backend contracts without a new view,
+  layout, style or frontend pattern. Existing owner/customer skill entrypoints
+  already direct readers to the updated references; no duplicate procedure or new
+  skill/dependency is introduced. Updated durable sources are staged/indexed before
+  the mandatory commit hooks. Platform VERSION remains 0.4.2; feature 0.5.0 is still
+  finalized only in point 20.
+- No development data reset, application runtime configuration change or temporary
+  Docker resource was needed. New schema execution occurred only in guarded
+  disposable test databases, whose fixture-created module tables/schemas were
+  removed; development/test service data, knowledge/model caches and reports remain
+  preserved. Assignment/preset/copy mutations, last-superadmin participation and
+  first-admin integration remain points 14–16; their fail-closed seams are unchanged.

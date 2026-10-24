@@ -1,7 +1,7 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.9.0`, requiring
-`runa.audit ^0.3.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
+Core `runa.auth` ships at independent version `0.10.0`, requiring
+`runa.audit ^0.4.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
@@ -15,7 +15,7 @@ are delivered, along with [private profile, verified address changes, avatar and
 [Account preferences and security delivery](preferences.md) are delivered.
 [Policy history, account exceptions, bulk sessions and operator contracts](policies-and-operators.md) are delivered.
 [Entry/restricted screens](entry-ui.md) and [welcome/application/account screens](account-ui.md)
-are delivered. Permissions integration follows in later points.
+are delivered. [Permissions action grants and introspection](../permissions/README.md) are delivered; assignment/last-superadmin/bootstrap integration follows in its owning points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access
@@ -38,7 +38,7 @@ contains only immutable publicId, displayName, deleted and optimistic version.
 Historical lookup includes soft-deleted accounts and never reassigns their history.
 No bigint ID, address, login, model, credential, session or proof is exposed.
 Eligibility reasons are authorized server information, never anonymous responses.
-Default authorization denies these operations until Permissions is integrated.
+Permission checks use the current Permissions grants; missing readiness or grants deny these operations.
 
 `AuthLifecycle` version `1.0.0` offers `create(NewIdentity): Identity`, requiring
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
@@ -146,4 +146,4 @@ Independent module changes are recorded in [CHANGELOG](CHANGELOG.md). Full tests
 concurrency, installation/delivery and operational Auth acceptance run in the final
 roadmap verification after their owning implementation points.
 
-Entry and restricted-session screens are available through the [Auth entry UI contract](entry-ui.md). Own-account screens and global session-expiry integration remain assigned to the next UI point.
+Entry/restricted screens use the [Auth entry UI contract](entry-ui.md); own-account screens and session-expiry integration use the [account UI contract](account-ui.md).

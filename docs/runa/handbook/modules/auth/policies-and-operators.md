@@ -29,8 +29,7 @@ it never clears forced-password flags, restores revoked sessions/trust or revers
 previous effects. ModuleSettings validates restored values against current source
 rules. Trusted operator settings writes retain the existing CLI trust boundary;
 web/API consumers require `runa.auth.policy.read`, `runa.auth.policy.write` or
-`runa.auth.policy.exceptions` as declared. Administrative gateways remain denied
-until Permissions supplies real grants. There is no settings administration UI.
+`runa.auth.policy.exceptions` as declared. Administrative gateways require current Permissions grants and their independent security predicates. There is no settings administration UI.
 
 `password_policy_effect` defaults to `future_only`. When `force_change` accompanies
 an actual complexity change, all non-deleted password-bearing accounts must choose

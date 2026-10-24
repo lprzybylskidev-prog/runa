@@ -45,7 +45,7 @@ beforeEach(function (): void {
     $migration = require base_path('runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php');
     $migration->up();
     $this->auditFixtureCreated = true;
-    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => '0.3.0']);
+    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => '0.4.0']);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 });
 

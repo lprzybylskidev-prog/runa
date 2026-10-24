@@ -88,9 +88,7 @@ to prove their addressed primary during initial password setup.
 ## Protected administrative contracts
 
 Resolve `AuthProfiles` 1.0.0 through guarded ModuleApis. No general administration
-page or user-management HTTP CRUD is supplied. Ordinary administrative operations
-remain denied before Permissions integration and must also pass the neutral
-AuthorityGuard under the same default PostgreSQL transaction.
+page or user-management HTTP CRUD is supplied. Ordinary administrative operations require current Permissions grants and must also pass the neutral AuthorityGuard under the same default PostgreSQL transaction; authority-changing operations remain denied until its protected-authority integration.
 
 | Method                                                       | Permission                     | Additional requirements                                                                   |
 | ------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |

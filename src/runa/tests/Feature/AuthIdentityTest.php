@@ -28,20 +28,22 @@ use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Updates\ModuleUpdates;
+use Tests\Fixtures\CoreModuleStorage;
 
 beforeEach(function (): void {
     $this->authSchemas = [];
-    foreach (['runa_audit', 'runa_auth'] as $schema) {
+    foreach (['runa_audit', 'runa_auth', 'runa_permissions'] as $schema) {
         if (DB::selectOne('SELECT 1 FROM pg_namespace WHERE nspname = ?', [$schema])) {
             throw new RuntimeException('Auth fixture requires absent disposable schemas.');
         }
     }
+    $this->permissionsStorageAbsent = true;
     app(ModuleRegistry::class)->synchronize('runa');
     foreach (['audit' => 'events', 'auth' => 'identities'] as $code => $table) {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.9.0' : '0.3.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.10.0' : '0.4.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -66,6 +68,9 @@ afterEach(function (): void {
     CarbonImmutable::setTestNow();
     while (DB::connection()->transactionLevel() > 0) {
         DB::rollBack();
+    }
+    if ($this->permissionsStorageAbsent ?? false) {
+        CoreModuleStorage::removePermissions();
     }
     // Exact fixture-created objects; deliberately no CASCADE or schema-wide reset.
     foreach (array_reverse($this->authSchemas ?? []) as $schema) {
@@ -258,5 +263,5 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $updates->apply('runa', str_repeat('a', 40), static function (): void {});
     expect(DB::table('runa_audit.events')->count())->toBe($events)->and(DB::table('runa_auth.users')->count())->toBe(0);
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
-    expect($record->installedVersion)->toBe('0.9.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
+    expect($record->installedVersion)->toBe('0.10.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });

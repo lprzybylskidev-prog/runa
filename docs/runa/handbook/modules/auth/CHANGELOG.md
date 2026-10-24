@@ -1,5 +1,9 @@
 # Auth module changelog
 
+## 0.10.0
+
+Add source-owned localized administrative permission declarations and the trusted non-recursive AuthorizationIdentity eligibility contract for the framework authorization bridge. Add source-only 0.9.0 -> 0.10.0 upgrade and require Audit ^0.4.0. No reverse Permissions dependency, new schema, credential exposure or automatic grant.
+
 ## 0.9.0
 
 Add public welcome/application/account composition, exact named application/account

@@ -56,3 +56,5 @@ for password policy/recovery, mandatory factors, trusted devices and AuthStepUp.
 Consume server-chosen session/action-bound step-up inside the business transaction;
 trust or recent login never substitutes for required fresh proof. Never expose
 factor secrets, password history or OTPs through module APIs, logs or Audit.
+
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.

@@ -1,5 +1,9 @@
 # Audit module changelog
 
+## 0.4.0
+
+Add source-owned localized read permission declarations through the existing management category and a source-only 0.3.0 -> 0.4.0 upgrade edge. Public Audit API signatures and the dependency-free Audit store remain unchanged. Installed Permissions synchronizes declarations through reserved preparation; no request writes or automatic grants.
+
 ## 0.3.0
 
 Add OwnHistory 1.0.0 safe summary pages bound to a trusted human's own UUIDv7 entity,

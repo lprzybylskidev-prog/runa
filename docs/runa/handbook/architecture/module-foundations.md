@@ -1,6 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; [operational sessions](../modules/auth/sessions.md), credentials, private profiles, preferences and [policy/operator contracts](../modules/auth/policies-and-operators.md) are delivered; administration screens remain deferred.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; [operational sessions](../modules/auth/sessions.md), credentials, private profiles, preferences and [policy/operator contracts](../modules/auth/policies-and-operators.md) are delivered; [Permissions declarations/current action grants](../modules/permissions/README.md) are delivered; administration screens remain deferred.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -57,7 +57,7 @@ Owning Actions and Audit success persistence share the exact default PostgreSQL
 Connection and transaction. Independent refusal history belongs after root rollback,
 never in the rejected transaction/savepoint or an afterCommit listener. The [Audit module](../modules/audit/README.md) owns manual event/redaction APIs, opt-in transactional model capture and permission-protected bounded reads.
 
-AuthorityGuard is the neutral lifecycle integration for future Permissions. Its
+AuthorityGuard is the neutral lifecycle integration awaiting protected-authority participation. Its
 default denies changes requiring administrative authority. AuthorityLock requires
 an active PostgreSQL transaction: registry shared row lock first (or an already
 held stronger lock), then transaction advisory key `(1381322305, 11)`, then Auth

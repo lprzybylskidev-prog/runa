@@ -66,6 +66,16 @@ final readonly class AuditParticipation implements PreparationParticipant, Setti
             }
             $participant->preparing($context);
         }
+        // Installed Permissions participates through its own trusted preparation boundary.
+        // Initial Permissions installation synchronizes all sources in its owning handler.
+        if ($context->connection->table('shared.modules')->where('module_id', 'runa.permissions')->whereNotNull('installed_version')->exists()) {
+            $record = $this->registry->snapshot()->modules['runa.permissions'] ?? throw new \RuntimeException('Required Permissions source unavailable.');
+            $permissions = $this->declarations->make($record, 'Runa\\Modules\\Permissions\\Participation', PreparationParticipant::class);
+            if (! $permissions instanceof PreparationParticipant) {
+                throw new \RuntimeException('Required Permissions preparation unavailable.');
+            }
+            $permissions->preparing($context);
+        }
     }
 
     private function participant(Connection $connection): ?object
