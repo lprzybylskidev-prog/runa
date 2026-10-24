@@ -50,3 +50,9 @@ keys and disposal. Presentation providers stay subtree-scoped; omitted component
 retain defaults. Application composition uses public facades and owns its files.
 Static native/emergency error components must also work without browser globals,
 network or session state. Test actual custom consumers in owner fixtures.
+
+Separate initial document/UI application of persisted preferences from persistence.
+Mounting a locale/theme consumer while account hydration is pending must not write
+defaults or manufacture save failures. Apply initial display once, subscribe to
+hydration without echo writes, and persist subsequent deliberate changes. Keep
+actual rejected-write feedback and account-switch/late-response fencing intact.

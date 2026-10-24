@@ -86,6 +86,9 @@ legacy `runa.locale`/`runa.theme` fallback; denied storage uses lifetime memory.
 Reset writes a tombstone so legacy data cannot reappear. Only guest changes write
 legacy keys. Account values never enter guest/legacy storage. All mounted consumers
 subscribe to account changes, and incoming hydration does not generate new saves.
+Initial locale/theme application to document attributes is also read-only: mounting
+a consumer while its account snapshot is pending must not write defaults back.
+Only subsequent deliberate value changes persist, with the existing hydration guard.
 Writes enqueue immediately in revision order and expose pending/error status;
 both layouts present PL/EN save/load/conflict feedback with explicit reload. A failed
 save is never reported as persisted. Logout/account switch aborts requests, clears

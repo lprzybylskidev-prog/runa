@@ -132,3 +132,76 @@ it('renders localized rejected-save feedback through the shared layout control',
   wrapper.unmount();
   accountPreferences.disconnect();
 });
+
+it('mounts display consumers during delayed hydration without writes and persists explicit changes', async () => {
+  const { mount, flushPromises } = await import('@vue/test-utils');
+  const { vi } = await import('vitest');
+  const { accountPreferences } =
+    await import('../../resources/js/lib/preferenceStore');
+  const Consumer = (await import('./fixtures/PreferenceDisplayConsumer.vue'))
+    .default;
+  const account = '00000000-0000-7000-8000-000000000001';
+  let release!: () => void;
+  const inputs: Record<string, unknown>[] = [];
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockImplementation(async (_url, init) => {
+      const input = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      inputs.push(input);
+      if (input.operation === 'snapshot') {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        return new Response(JSON.stringify(snapshot(account, 'dark')), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          data: {
+            account,
+            scope: `runa:runa.auth:global:${input.key}`,
+            revision: inputs.length,
+            version: 1,
+            value: input.value,
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    });
+  let first: ReturnType<typeof mount> | undefined;
+  let second: ReturnType<typeof mount> | undefined;
+  try {
+    const loading = accountPreferences.connect(account);
+    first = mount(Consumer);
+    await flushPromises();
+    expect(accountPreferences.status().error).toBeNull();
+    expect(inputs.map((input) => input.operation)).toEqual(['snapshot']);
+    release();
+    await loading;
+    expect(first.get('[data-theme]').text()).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(accountPreferences.status().error).toBeNull();
+    second = mount(Consumer);
+    await flushPromises();
+    expect(inputs).toHaveLength(1);
+    await second.get('[data-language]').trigger('click');
+    await accountPreferences.flush();
+    await second.get('[data-theme]').trigger('click');
+    await accountPreferences.flush();
+    expect(
+      inputs.slice(1).map((input) => [input.operation, input.key]),
+    ).toEqual([
+      ['write', 'locale'],
+      ['write', 'theme'],
+    ]);
+    expect(first.get('[data-theme]').text()).toBe('light');
+    expect(accountPreferences.status().error).toBeNull();
+  } finally {
+    first?.unmount();
+    second?.unmount();
+    fetch.mockRestore();
+    accountPreferences.disconnect();
+  }
+});

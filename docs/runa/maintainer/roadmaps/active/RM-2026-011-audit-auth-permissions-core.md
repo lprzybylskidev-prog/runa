@@ -961,6 +961,13 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Preserve session/security feedback, public custom content slot and profile/
     sign-out behavior; publish and inspect actual application/menu/panel states.
     Synchronize module version, coverage and guidance; final appearance gate stays.
+- [x] 19h. Prevent preference writes during initial view hydration.
+  - Owner reported transient preference-error feedback on each authenticated page.
+    Apply initial locale/theme to the document without persistence; retain writes
+    for real changes, hydration fencing and explicit error feedback.
+  - Prepare focused delayed-hydration/remount/change regressions, publish assets
+    and verify real authenticated navigation does not flash errors or write on read.
+    Synchronize public/owner/customer guidance and commit; point 20 stays gated.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2470,3 +2477,31 @@ architectural premise requires discussion before dependent work.
 - No Docker resource creation/removal, reset or credential change. Existing data,
   services, caches, reports, backups and rollback material preserved. Point 20
   remains gated by explicit owner frontend appearance acceptance.
+
+## Point 19h delivery
+
+- Reproduced the owner's transient preference error on real authenticated /app and
+  /account without HTTP failures. Locale/theme immediate watchers attempted writes
+  when a new consumer mounted before account snapshot readiness, generating local
+  save_failed, then successful hydration cleared it. Kept existing error feedback;
+  removed the invalid initialization write rather than hiding errors.
+- useLocale/useTheme now apply initial document lang/theme directly and watch only
+  subsequent value changes for persistence. Existing hydration syncing, reactive
+  subscriptions, guest storage, account fences and media listener cleanup remain.
+  No module-owned code/API/schema changed; all module/platform versions unchanged.
+- Added a real shared-store display consumer regression: pending delayed snapshot,
+  mounted/remounted consumers, hydration and document theme cause no writes/errors;
+  explicit locale/theme changes each write once and synchronize another consumer.
+  Selected test passed (1 case); repaired fixture Content-Type before passing.
+- Published current client assets for continued manual review. Actual authenticated
+  Chromium navigation /account -> /app -> /account emitted snapshot operations only,
+  zero initialization writes and zero transient preference alerts. This reuses the
+  mutation observer that captured the original flash. No broad suites, typecheck/
+  analysis, image/scanner or final quality ran; mandatory hooks apply.
+- Synchronized authoritative preferences guide and owner/customer Vue references
+  with read-only mount/hydration and deliberate persistence. Existing frontend/
+  security/root contracts already require no echo writes and preserved error/fence
+  behavior; no duplicate rule needed. Backend/database behavior unchanged.
+- No Docker resources/reset/credential changes; preserved development/test data,
+  services, caches, reports, backups and rollback material. Point 20 still awaits
+  explicit owner frontend appearance acceptance.

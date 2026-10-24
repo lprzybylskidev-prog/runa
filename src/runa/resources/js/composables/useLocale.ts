@@ -15,13 +15,15 @@ export function useLocale() {
     syncing = false;
   });
   if (unsubscribe) onScopeDispose(unsubscribe);
+  // Apply initial presentation without treating hydration/mount as a user edit.
+  document.documentElement.lang = locale.value;
   watch(
     locale,
     (value) => {
       document.documentElement.lang = value;
       if (!syncing) savePreference('runa.locale', value);
     },
-    { immediate: true, flush: 'sync' },
+    { flush: 'sync' },
   );
   const t = (key: MessageKey): string => messages[locale.value][key];
   return { locale, t };

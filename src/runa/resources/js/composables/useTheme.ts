@@ -26,13 +26,15 @@ export function useTheme() {
     syncing = false;
   });
   if (unsubscribe) onScopeDispose(unsubscribe);
+  // Initial rendering is not a persisted preference change.
+  apply();
   watch(
     theme,
     (value) => {
       if (!syncing) savePreference('runa.theme', value);
       apply();
     },
-    { immediate: true, flush: 'sync' },
+    { flush: 'sync' },
   );
   media.addEventListener('change', apply);
   onScopeDispose(() => media.removeEventListener('change', apply));

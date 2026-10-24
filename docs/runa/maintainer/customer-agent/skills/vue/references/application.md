@@ -24,3 +24,9 @@ reauthentication and explicit retries; never copy private security orchestration
 Native errors and generated emergency 503 share one static, CSP-constrained
 presentation build. Keep the application scaffold minimal; domain pages are added
 only for real customer requirements.
+
+Separate initial document/UI application of persisted preferences from persistence.
+Mounting a locale/theme consumer while account hydration is pending must not write
+defaults or manufacture save failures. Apply initial display once, subscribe to
+hydration without echo writes, and persist subsequent deliberate changes. Keep
+actual rejected-write feedback and account-switch/late-response fencing intact.
