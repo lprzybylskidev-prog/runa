@@ -272,7 +272,7 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         <div
           v-for="method in methods"
           :key="method.value"
-          class="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0"
+          class="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0"
         >
           <div class="min-w-0 space-y-1">
             <h4 class="text-sm font-semibold">{{ method.label }}</h4>

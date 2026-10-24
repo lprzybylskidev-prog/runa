@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 0.21.2
+
+Remove trailing padding from the final factor row so the following section uses
+only the shared Card spacing. Source-only forward edge; no behavior/schema change.
+
 ## 0.21.1
 
 Remove redundant account helper/status paragraphs and byte counts from password

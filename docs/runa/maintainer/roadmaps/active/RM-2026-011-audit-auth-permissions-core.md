@@ -1096,6 +1096,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zb. Simplify and stack Preferences Cards; repair multi-address selection.
 - [x] 19zc. Refresh current account views automatically, preserve drafts and reconcile conflicts locally; record reusable guidance.
 - [x] 19zd. Remove redundant account copy, center avatar and show management only for active trusted devices.
+- [x] 19ze. Remove duplicate spacing below the final two-factor method row.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3516,3 +3517,14 @@ architectural premise requires discussion before dependent work.
   copy, shared primitives and server authority; no duplicate rule needed. No external
   dependency or Docker resource changes. Final point 20 remains appearance-gated;
   no broad/final verification started.
+
+### Point 19ze — Final factor-row spacing
+
+- Owner requests removal of the excess gap below Email codes. Remove the final
+  method row's bottom padding; keep the shared section gap and trust-section
+  border/padding. Static spacing correction, no motion or behavior change.
+- Auth PATCH 0.21.1 -> 0.21.2 with source-only update edge and central changelog/
+  README. Required dependents remain compatible. Existing layout skills and
+  owner/customer guidance need no new reusable rule for this local spacing fix.
+- Publish assets and inspect served layout spacing; no new test for a reversible
+  class-only correction. Final point 20 remains appearance-gated.
