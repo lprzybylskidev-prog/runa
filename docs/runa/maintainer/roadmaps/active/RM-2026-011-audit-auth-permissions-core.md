@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requires a mandatory stop before the final roadmap point.
+  After points 1–19 are complete and committed, explicitly notify the owner that
+  the roadmap is ready to enter its final point and wait for the owner's manual
+  frontend inspection and explicit acceptance of its appearance. Do not start
+  point 20, full verification or release finalization before that acceptance.
+  This roadmap-specific gate does not move broad verification into earlier points.
+
 - 2026-10-24 — Owner confirmed the frontend ownership/customization principle:
   Runa supplies immediately usable default views, layouts and components; customers
   may use them unchanged, compose application views from them, or replace their
@@ -873,6 +880,10 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     not shipped src/app beyond reference. Run only necessary focused diagnostics
     here; broad rendering/integration/installation/security acceptance belongs to 20.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
+  - Entry gate: stop and notify the owner before starting this final point. The
+    owner manually checks the frontend; proceed only after explicit acceptance
+    of its appearance. Frontend acceptance is pending and must not be inferred
+    from implementation completion, prior approvals or silence.
   - Requires 1–19 complete and committed. Record current-state documentation review
     sources/findings/disposition and actual changed-surface security review. Resolve
     a proportionate explicit final selection through the supported RM-010 interface;
