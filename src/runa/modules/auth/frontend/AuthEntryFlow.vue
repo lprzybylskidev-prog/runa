@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useAuthPresentation } from './presentation';
 import {
   Alert,
   Button,
@@ -13,6 +14,7 @@ import {
 import type { EntrySession, EntryPage } from './entry';
 import type { EntryCopyKey } from './messages';
 import { useAuthEntry } from './useAuthEntry';
+const presentation = useAuthPresentation();
 const props = defineProps<{
   page: EntryPage;
   authenticated?: ((session: EntrySession) => void) | undefined;
@@ -113,7 +115,7 @@ const submitLabel = computed(() => {
 </script>
 
 <template>
-  <MinimalLayout>
+  <component :is="presentation.minimalLayout ?? MinimalLayout">
     <section
       class="mx-auto w-full max-w-md space-y-6"
       :aria-busy="busy"
@@ -328,7 +330,7 @@ const submitLabel = computed(() => {
         </nav>
       </template>
     </section>
-  </MinimalLayout>
+  </component>
 </template>
 
 <style scoped>

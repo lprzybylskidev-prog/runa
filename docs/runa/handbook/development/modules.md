@@ -75,3 +75,21 @@ Use only a foreign module's public Contracts through these adapters, exchange pu
 Use ModuleSchema/ModuleModel and ModuleStorage for owned data/files; migrations run only in explicit install/update. No cross-module SQL/models/relations/FKs/path traversal. Settings providers declare typed defaults/validation and immediate/reinitialize handlers; use revision/generation checks and private runtime reads for sensitive values. Facts use ModuleEvents after commit and independent versioned listeners; coordinated critical operations use guarded APIs. Jobs/commands/schedules use classified adapters and cooperative work checkpoints. Frontends opt into ModulePage/navigation/ModuleSlot, validate runtime/build identity before loading and use the shared HTTP client; custom shells remain supported. Logs carry bounded origin/correlation and never raw secrets/payloads.
 
 Troubleshoot in this order: source/manifest synchronization, installed version, administrative state, own/effective health and independent maintenance reasons, active work/fences, then declaration/build compatibility. Inspect `runa:modules:management`, `runa:modules:health` and redacted settings. Source checks cannot prove semantic isolation or replace behavior tests. Test module-specific failure/retry cases and retained-data disable/unregister, and review dependent public contracts whenever the independent module version changes.
+
+## Replaceable module views
+
+Every present/future Runa module view follows [frontend adoption and
+replacement](frontend/customization.md): ship working default views under src/runa
+and documented public props/slots/controllers for unchanged use, application
+composition and complete customer presentation replacement. Reusable orchestration
+and security remain platform-owned; do not require customer private imports,
+protected edits or copied session/restriction flows. A module-specific facade and
+typed local seams are sufficient; no universal renderer/registry is required.
+
+Keep the supplied src/app minimal: essential wiring/extensions and the selected
+reference module. Additional platform examples belong in owner fixtures; customer
+business screens belong in their application only when requested. Synchronize the
+public contract, independent module version/changelog, owner/customer skills and
+meaningful default/custom consumer/update/clone regressions in the owning point.
+When a view participates in native/emergency errors, preserve the shared static
+CSP-constrained presentation build as well as normal browser composition.

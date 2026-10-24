@@ -3,8 +3,8 @@
 RM-2026-011 point 18 reviewed the approved requirements against the implemented
 Core contracts and prepared coverage below. This is a source/coverage map, not a
 verification report or a claim that unexecuted tests pass. The active roadmap owns
-execution order and acceptance gates; point 19 still owns frontend replacement,
-native-error customization and minimal-scaffold regressions. Point 20 runs the full
+execution order and acceptance gates; point 19 adds public frontend replacement,
+native-error customization and minimal-scaffold regressions described below. Point 20 runs the full
 selected graph only after the owner's explicit frontend appearance acceptance.
 
 ## Backend and integration
@@ -108,3 +108,28 @@ manifest matches its changelog and explicit forward/no-op edges. This point chan
 only guidance and owner acceptance tests, with no runtime/API/schema or dependency
 change; no independent module increment or changelog entry is warranted. Platform
 VERSION remains 0.4.2 until the authorized feature 0.5.0 finalization.
+
+## Frontend adoption and minimal scaffold
+
+- frontend/auth-entry.test.ts customization cases: default forms under a custom
+  layout, subtree isolation, public headless entry CSRF retry and required
+  verification without an authenticated callback bypass.
+- frontend/auth-account.test.ts customization cases: customer application content
+  within the existing shell, full customer shell with the public session controller,
+  removal on 401 and public account-controller capability projection.
+- frontend/error-customization.test.ts and fixtures/customization: static localized
+  error composition retains identity/actions/request placeholders without API calls
+  or executable HTML. Native/generated shared layout acquisition is exercised by
+  installation-host acceptance; normal HttpErrorsTest/errors.spec.ts retain status,
+  negotiation, headers, CSP, no-database and emergency behavior coverage.
+- e2e/auth-account.spec.ts and its owner fixture prepare default/composed/full-shell
+  responsive/theme/reduced-motion rendering and 401 reauthentication in every
+  configured browser project; these scenarios remain unexecuted until point 20.
+- CompositionTest.php retains the named root route with direct platform controller
+  wiring. bootstrap.py covers minimal delivered app inventory, customer custom
+  files across reapply/clones and propagation of frontend/Vue/Tailwind/security
+  guidance. update.py covers customer frontend/error/style ownership and preservation.
+
+Only necessary selected customization diagnostics run in point 19; full rendered,
+installation/update/clone and native/emergency acceptance stays in point 20 after
+explicit owner visual acceptance. No diagnostic claims full security acceptance.

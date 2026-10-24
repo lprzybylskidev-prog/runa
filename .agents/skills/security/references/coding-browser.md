@@ -97,3 +97,10 @@ application production seeding separate, reject production even through direct
 fixture calls, exchange public references and preserve credentials/provenance with
 atomic Audit. Initial account passwords use hidden local prompts; never argv or
 distributed defaults.
+
+For current/future module view replacement, follow [frontend
+adoption](../../../../docs/runa/handbook/development/frontend/customization.md).
+Expose presentation seams while retaining reusable security/session/restriction
+controllers in Runa and backend guards. Review pause/switch unmounting, explicit
+proof/retry, fragment/secret cleanup and no write replay in custom consumers.
+Native/emergency customization uses the same CSP-constrained static renderer.

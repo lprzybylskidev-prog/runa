@@ -188,6 +188,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 ## Frontend invariants
 
 - Vue 3 + TypeScript.
+- Every current and future Runa view ships usable defaults and a documented public presentation replacement/composition contract. Keep platform views and reusable session/security orchestration in src/runa; customers own their presentation in src/app without protected edits or copied security logic. Keep the delivered app scaffold minimal. Follow [frontend adoption](docs/runa/handbook/development/frontend/customization.md).
 - Tailwind CSS.
 - Polish user UI is default; English is secondary.
 - Admin panel is English-only.

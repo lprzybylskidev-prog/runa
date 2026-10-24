@@ -228,3 +228,56 @@ for (const welcome of [true, false]) {
     ).toBeVisible();
   });
 }
+
+for (const mode of ['composed', 'replacement']) {
+  test(`Frontend customization: ${mode} keeps responsive content and reauthentication`, async ({
+    page,
+  }, info) => {
+    await accountTransport(page);
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    for (const theme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+      await page.addInitScript((theme) => {
+        localStorage.clear();
+        localStorage.setItem('runa.theme', theme);
+      }, theme);
+      await page.goto('/app?presentation=' + mode);
+      const content = page.locator(
+        mode === 'composed'
+          ? '[data-customer-content]'
+          : '[data-customer-application]',
+      );
+      await expect(
+        content.getByRole('heading', { name: 'Anna Kowalska' }),
+      ).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: info.outputPath(`customization-${mode}-${theme}.png`),
+        fullPage: true,
+      });
+    }
+    await page.route('**/api/runa/auth/session', (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { code: 'authentication_required' } }),
+      }),
+    );
+    await page.getByRole('button', { name: 'Check access' }).click();
+    await expect(
+      page.locator('[data-customer-content], [data-customer-application]'),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('textbox', { name: 'Adres e-mail', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-customer-brand], [data-customer-entry]').first(),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+}

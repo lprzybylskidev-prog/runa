@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SpaController;
 use Illuminate\Support\Facades\Route;
+use Runa\Http\Controllers\WelcomePageController;
 
-Route::get('/', SpaController::class)->name('spa');
+Route::get('/', WelcomePageController::class)->name('spa');

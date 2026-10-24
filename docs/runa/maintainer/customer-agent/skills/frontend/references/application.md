@@ -38,3 +38,13 @@ Use `docs/runa/handbook/modules/auth/policies-and-operators.md` and
 step-up and last-superadministrator constraints. Local manual scenarios and private
 setup follow `docs/runa/handbook/data/seeding.md#explicit-module-development-contributors`;
 no distributed password or owner test harness is required by customer workflows.
+
+For all current/future Runa module views use
+docs/runa/handbook/development/frontend/customization.md. Runa supplies usable
+defaults plus documented public presentation replacement. Customer screens,
+wrappers and CSS belong in src/app and survive reviewed updates/clones. Use typed
+public facades/controllers, preserve identity/page cleanup, CSRF, restrictions,
+reauthentication and explicit retries; never copy private security orchestration.
+Native errors and generated emergency 503 share one static, CSP-constrained
+presentation build. Keep the application scaffold minimal; domain pages are added
+only for real customer requirements.

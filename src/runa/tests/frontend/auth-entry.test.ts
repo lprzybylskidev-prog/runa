@@ -6,6 +6,9 @@ import {
   type VueWrapper,
 } from '@vue/test-utils';
 import AuthEntry from '../../modules/auth/frontend/AuthEntry.vue';
+import CustomerHost from './fixtures/customization/CustomerHost.vue';
+import CustomerEntry from './fixtures/customization/CustomerEntry.vue';
+import CustomerMinimalLayout from './fixtures/customization/CustomerMinimalLayout.vue';
 import {
   decodeOptions,
   decodeSession,
@@ -408,4 +411,56 @@ it('cancels old flow ownership when a pending token write settles after page nav
   await settled(w);
   expect(w.get('h1').text()).toBe('Odzyskaj dostęp');
   expect(w.text()).not.toContain('Potwierdzenie zostało przyjęte');
+});
+
+it('customization: layout replacement retains the default entry validation and subtree defaults', async () => {
+  const custom = mount(CustomerHost, {
+    props: {
+      mode: 'entry',
+      page: 'login',
+      components: { minimalLayout: CustomerMinimalLayout },
+    },
+  });
+  await settled(custom);
+  expect(custom.find('[data-customer-brand]').exists()).toBe(true);
+  await custom.get('form').trigger('submit');
+  expect(calls).toEqual([]);
+  expect(custom.findAll('[aria-invalid="true"]').length).toBeGreaterThan(0);
+  const defaults = mount(AuthEntry, { props: { page: 'login' } });
+  await settled(defaults);
+  expect(defaults.find('[data-customer-brand]').exists()).toBe(false);
+});
+
+it('customization: public headless entry preserves CSRF refusal, explicit retry and required verification', async () => {
+  const accepted = vi.fn();
+  const w = mount(CustomerHost, {
+    props: {
+      mode: 'entry',
+      page: 'login',
+      authenticated: accepted,
+      components: { entry: CustomerEntry },
+    },
+  });
+  await vi.waitFor(() => expect(w.find('form').exists()).toBe(true));
+  await w.get('input[name="identifier"]').setValue('test@example.test');
+  await w.get('input[name="password"]').setValue('correct horse battery');
+  post = () => json({ error: { code: 'csrf_mismatch' } }, 419);
+  await w.get('form').trigger('submit');
+  await vi.waitFor(() => expect(w.get('[role="alert"]').text()).toBe('csrf'));
+  expect(accepted).not.toHaveBeenCalled();
+  const count = calls.length;
+  await w
+    .findAll('button')
+    .find((b) => b.text() === 'Refresh CSRF')!
+    .trigger('click');
+  await flushPromises();
+  expect(calls.length).toBe(count);
+  post = () => {
+    restrictions = ['email_verification_required'];
+    return json({ data: { accepted: true } });
+  };
+  await w.get('input[name="password"]').setValue('correct horse battery');
+  await w.get('form').trigger('submit');
+  await vi.waitFor(() => expect(w.get('[data-screen]').text()).toBe('verify'));
+  expect(accepted).not.toHaveBeenCalled();
 });

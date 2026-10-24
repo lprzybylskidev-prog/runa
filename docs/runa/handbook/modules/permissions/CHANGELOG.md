@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 0.5.1
+
+Align the existing Auth dependency with compatible Auth 0.13.0 public presentation
+contracts. No Permissions API, behavior, settings or storage change; source-only
+0.5.0 -> 0.5.1 forward edge.
+
 ## 0.5.0
 
 Add explicit local DevelopmentAccess/contributor role/direct/preset scenarios with module-ID dependencies, transactional provenance/revisions/Audit and preserved developer changes. Keep protected authority in the existing first-administrator path and normal management proof requirements unchanged. Add forward 0.4.0 -> 0.5.0 preparation; require Auth ^0.12.0.

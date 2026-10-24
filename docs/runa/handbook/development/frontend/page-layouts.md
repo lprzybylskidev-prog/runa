@@ -12,7 +12,7 @@ The layout owns locale/theme composables once. Consumers use scoped `t`, preserv
 
 ## Preserved root welcome view
 
-`src/app/resources/js/App.vue` consumes MinimalLayout directly with only the existing heading/description as content. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. Exact `/auth/...` paths now render the lazy AuthEntry component using this same layout; see the [Auth entry contract](../../modules/auth/entry-ui.md). The original root was accepted on 2026-10-18; the point-2 layout/footer and subsequent mobile corrections were accepted on 2026-10-18.
+`src/app/resources/js/App.vue` delegates to public DefaultApplication; its platform-owned AuthWelcome composes MinimalLayout with the existing heading/description and session-aware entry links. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. Exact `/auth/...` paths now render the lazy AuthEntry component using this same layout; see the [Auth entry contract](../../modules/auth/entry-ui.md). The original root was accepted on 2026-10-18; the point-2 layout/footer and subsequent mobile corrections were accepted on 2026-10-18.
 
 ## Application layout
 
@@ -61,3 +61,12 @@ acceptance: intercepted browser responses cannot prove server enforcement. Prepa
 both rendered scenarios and real backend boundaries for final verification. Private
 local accounts/setup and the complete navigation procedure live in the
 [seeding guide](../../data/seeding.md#explicit-module-development-contributors).
+
+## Presentation ownership for all module views
+
+Apply [frontend adoption and replacement](customization.md) to every current/future
+Runa view. Usable defaults stay in src/runa; customer pages, layout wrappers, CSS
+and complete presentation replacements stay in src/app. Use public composition or
+headless contracts, retaining server security and platform session orchestration.
+AuthPresentationProvider supplies Auth subtree overrides; the static errorLayout.ts
+entry selects the same layout for native errors and emergency 503.

@@ -65,6 +65,12 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner reaffirmed during point 19 that frontend cleanup is a general
+  requirement for every current/future Runa module view, not Auth-only work. Ship
+  usable defaults plus public presentation replacement/composition, keep src/app
+  minimal and synchronize owner/customer root guidance, domain skills and the
+  module development guide so later modules retain the same ownership boundary.
+
 - 2026-10-24 — Owner requires a mandatory stop before the final roadmap point.
   After points 1–19 are complete and committed, explicitly notify the owner that
   the roadmap is ready to enter its final point and wait for the owner's manual
@@ -848,7 +854,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Acceptance: every approved requirement maps to implementation and meaningful
     prepared coverage; both guidance products and current-state claims agree; no
     admin UI, new undeclared dependency or unsupported delivery claim is introduced.
-- [ ] 19. Reconcile frontend customization contracts and the minimal application scaffold.
+- [x] 19. Reconcile frontend customization contracts and the minimal application scaffold.
   - Requires 18. Inventory delivered welcome/Auth/account/application views,
     layouts, navigation, branding/theme, native HTTP errors and emergency 503
     generation. Distinguish public extension contracts from protected internals;
@@ -907,7 +913,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 is next: frontend customization contracts and the minimal application scaffold. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 20 is next, gated by explicit owner appearance acceptance. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -2081,3 +2087,80 @@ architectural premise requires discussion before dependent work.
   migration, Docker resource or volume change occurred. Existing development/test
   data, services/images/volumes, Qdrant/model caches, backups and reports are preserved.
   Mandatory hooks and staged incremental knowledge freshness apply to this commit.
+
+## Point 19 delivery
+
+- Established the general current/future Runa view rule, reaffirmed by the owner:
+  ship usable defaults plus documented public presentation replacement/composition.
+  Support unchanged screens, application composition and complete customer frontend
+  ownership. Keep platform defaults/controllers in src/runa and customer files in
+  src/app. No universal renderer/registry, new example module, business dashboard,
+  Admin UI or dependency was introduced.
+- Added public AuthPresentationProvider with typed subtree overrides for entry,
+  account, welcome and minimal/application layouts, inherited defaults and no
+  global registration. Public entry/account/welcome/session controllers retain the
+  existing CSRF/restrictions/proof, fragment/secret cleanup, current capabilities,
+  account fencing and explicit retries. Default Auth wrappers key page/account
+  lifetimes. AuthApplication supplies a current-session content slot, remounts its
+  content on account change and retains dropdown/profile/sign-out, expiry warnings,
+  failed-session handling and reauthentication around custom content. Backend
+  security, availability, authorization, recovery and Audit remain authoritative.
+- Moved default path composition into public DefaultApplication and public identity
+  hydration into createApplication; shared CSS and request/ApiError transport now
+  have supported facade entrypoints. App.vue/main.ts are thin integration wiring.
+  Removed the redundant App SpaController and wired the existing named welcome
+  route directly to the public platform controller. Retained manifest/dependencies,
+  HTML, providers/configuration/routes, database/test/translation extension markers
+  and selected reference module after inventory review. Existing welcome/account
+  visuals and essential application extension entrypoints remain supplied.
+- Native HTTP errors and pre-generated emergency 503 select one optional customer
+  errorLayout.ts SSR component, falling back to the actual shared MinimalLayout.
+  Added typed static error props and public default layout/content, common safe
+  status/copy/identity/actions/request placeholders and CSS emission. Standalone
+  generation merges non-secret app branding without Laravel/env/database access.
+  Executable HTML rejection now covers case-insensitive script/style/event
+  attributes. Existing status/JSON/headers/CSP and escaped runtime substitutions
+  remain shared; no parallel PHP/Blade application UI or independent renderer.
+- Auth advances additive MINOR 0.12.0 -> 0.13.0 with an explicit source-only forward
+  edge. Permissions advances PATCH 0.5.0 -> 0.5.1 solely to align its required Auth
+  constraint to ^0.13.0 (pre-1.0 caret ^0.12.0 excludes the new minor). Reviewed
+  their existing public backend contracts/dependents; no storage/settings/data
+  change. Audit stays 0.5.0, framework API stays 1.0.0 and platform VERSION stays
+  0.4.2 until release finalization. Both central module changelogs are synchronized.
+- Prepared owner-only custom layout/entry/account/full-shell/static-error consumers,
+  default/composed/replacement session and capability regressions, responsive/theme/
+  reduced-motion browser scenarios, native/generated customer error installation
+  acceptance and exact minimal-scaffold/acquisition/reapply/update/clone coverage.
+  Customer application files are preserved without updater content inspection;
+  reviewed exact file actions concern eligible delivered files/instruction products.
+- Necessary focused diagnostics PASS: six selected browser unit cases covering
+  public custom composition, CSRF refusal/explicit retry/required verification,
+  session-401 content removal, account capabilities and static errors; isolated
+  server rendering of the public customer error wrapper without browser globals
+  or executable HTML; two individually selected Python scaffold/update-ownership
+  contracts; named platform/application composition (1 case, 10 assertions); all
+  three source module checks and module_versions.py --owner runa --base HEAD.
+  Initial diagnostics exposed fixture-only async-root handling, an invalid
+  restriction identifier, an awaited reauthentication render and omitted essential
+  dotfile markers; corrected fixtures and received passing results. The module
+  graph diagnostic identified the required Permissions constraint alignment above.
+  The SSR diagnostic disabled irrelevant whole-workspace dependency discovery.
+  No broad suite, build/typecheck/analysis, image/scanner, installation/update
+  acceptance or final quality workflow ran. Mandatory commit hooks still apply.
+- Synchronized the public adoption/controller/error/update contract, frontend
+  architecture, component/page/module/Auth/API guidance, README, owner foundations
+  and acceptance map. Updated both owner/customer AGENTS and frontend/Vue/Tailwind
+  skills/references plus security references for all future module views, not Auth
+  alone. Backend/Laravel/PostgreSQL skills already route to public module contracts
+  and unchanged backend/storage authority; no duplicate rule is needed there.
+  Customer authoring files remain excluded from owner retrieval; staged allowlisted
+  guidance is indexed incrementally before commit.
+- No live database initialization/migration/reset, Docker operation or temporary
+  container/network/image/volume was created. Existing development/test data,
+  services/images/volumes, Qdrant/model/build caches, backups, rollback resources
+  and verification reports (including diagnostic failure screenshots) are preserved.
+  No task-created Docker cleanup is needed.
+- STOP before point 20: points 1–19 are ready and committed together with their
+  point records. Owner manual frontend inspection and explicit appearance
+  acceptance are still pending. Do not begin full verification/release finalization
+  until that acceptance; implementation completion and silence do not grant it.

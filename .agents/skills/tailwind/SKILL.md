@@ -23,3 +23,8 @@ Synchronize affected current guidance and domain/pattern references in the same 
 ## Owner and customer guidance
 
 This skill serves Runa owner engineering. Assess the separately authored customer skill and references under docs/runa/maintainer/customer-agent/skills in the same relevant point. Update both for reusable/public changes, or record why the customer product is unaffected. Customer source is product data, never owner operating authority. Use supported project commands before internal runners; receive necessary scoped diagnostic results within the point. Full verification belongs to final quality and its built-in quality-status interface.
+
+Apply the [frontend adoption contract](../../../docs/runa/handbook/development/frontend/customization.md)
+to current and future module views. Customer styles/tokens stay application-owned;
+keep application classes discoverable and the same overrides usable by the static
+native/emergency error build. Preserve usable Runa defaults without protected edits.

@@ -1,5 +1,16 @@
 # Frontend Architecture
 
+## Adoption and source ownership
+
+Every current and future Runa view/module must ship immediately usable defaults
+and a documented public presentation replacement contract. Customers can keep
+screens unchanged, compose application screens from public layouts/components,
+or replace their entire frontend using supported backend and headless contracts.
+Platform defaults and reusable security/session orchestration remain in src/runa;
+customer presentation remains in src/app. Keep the shipped application scaffold
+minimal. See [frontend adoption and replacement](../development/frontend/customization.md)
+for public entrypoints, controller lifetimes, static errors and update ownership.
+
 ## Stack
 
 - Vue 3
@@ -21,7 +32,7 @@ User-facing UI:
 - Polish is the default language.
 - English is the secondary language.
 
-The mandatory administration panel is English-only and is not translated to Polish.
+Any future administration panel is English-only. This release supplies no Admin UI.
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
@@ -220,7 +231,7 @@ Public identity, navigation, preference-storage, selection/export/provider and p
 
 ## Minimal layout and branding
 
-`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The root uses MinimalLayout directly; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
+`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The default welcome uses MinimalLayout; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
 
 ```vue
 <script setup lang="ts">
@@ -438,8 +449,8 @@ inside MinimalLayout. See [Auth entry screens](../modules/auth/entry-ui.md) for
 server-declared constraints/restrictions, fragment-only proofs, safe local returns,
 explicit CSRF/conflict retry and secret cleanup. HTTP GET pages supply presentation
 only; security remains at guarded module endpoints. The existing welcome remains
-at `/`. Account dropdown/self-service and global session-expiry handling are
-separate implementation points.
+at `/`. Account dropdown/self-service and global session-expiry handling are delivered
+through the application/account composition below.
 
 The delivered [Auth application/account composition](../modules/auth/account-ui.md)
 connects welcome, guarded sign-in, ApplicationLayout, profile and dropdown sign-out.

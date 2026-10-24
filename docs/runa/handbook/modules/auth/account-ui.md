@@ -10,7 +10,8 @@ framework API ^1.0.0 remain compatible; apply the normal fenced module update.
 
 The bundled application-owned App.vue selects AuthEntry for exact `/auth/...`
 paths, AuthApplication for `/app`, AuthApplication with `account` for `/account`,
-and AuthWelcome for `/`. Preserve that explicit composition when customizing App.
+and AuthWelcome for `/`. DefaultApplication owns that composition; use its public presentation provider or
+the documented headless contracts when customizing App.
 Named document routes are `runa.auth.pages.application`, `runa.auth.pages.account`
 and the [existing entry routes](entry-ui.md). Unknown paths remain 404. Document
 GETs contain no account data and never grant access; every account request uses
@@ -108,3 +109,12 @@ welcome/sign-in/application/profile/dropdown sign-out path are documented in the
 [development corpus](../../data/seeding.md#manual-auth-navigation-scenario).
 Integrated browser/security acceptance remains final verification; mock transports
 are not evidence of a production login or delivery.
+
+## Customer presentation
+
+Use [frontend adoption and replacement](../../development/frontend/customization.md)
+for unchanged defaults, public layout/content composition and complete customer
+presentation. AuthPresentationProvider replaces views/layouts within its subtree;
+public headless controllers retain the same flow/session cleanup. Put customer
+files in src/app. This is the general Runa view rule, also required for future
+modules. DefaultApplication owns supplied path composition; App.vue is thin wiring.

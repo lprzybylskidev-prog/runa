@@ -8,3 +8,10 @@ Use the [Auth application/account contract](../../../../docs/runa/handbook/modul
 navigation, shared-shell profile/sign-out, real-activity expiry and safe memory draft
 review. Preserve application-owned composition and server guards; never replay a
 write after login or persist credentials/drafts in browser preferences.
+
+All Runa views, including future module views, follow [frontend adoption and
+replacement](../../../../docs/runa/handbook/development/frontend/customization.md).
+Default screens, composition and full customer presentation are supported levels.
+Maintain public seams and account/security cleanup; application examples stay in
+owner fixtures rather than enlarging the delivered scaffold. Native errors and
+emergency output share one static build-time presentation contract.

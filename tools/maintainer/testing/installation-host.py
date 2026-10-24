@@ -16,6 +16,7 @@ import sys
 import tempfile
 import time
 import urllib.request
+import urllib.error
 import uuid
 from datetime import datetime, timezone
 
@@ -254,6 +255,12 @@ def main():
             snapshot(temporary_source)
             customer_snapshot(temporary_source, prod)
             shutil.rmtree(temporary_source)
+        if not team:
+            custom = prod / 'src/app/resources/js'
+            custom.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'src/runa/tests/frontend/fixtures/customization/CustomerErrorLayout.vue',
+                            custom / 'CustomerErrorLayout.vue')
+            (custom / 'errorLayout.ts').write_text('export { default } from "./CustomerErrorLayout.vue";\n')
         certificates = fixture_directory / 'certificates'
         certificates.mkdir(mode=0o700)
         call(['docker', 'run', '--rm', '--name', 'runa-install-cert-' + token, '--network', 'none', '--user', str(os.getuid()) + ':' + str(os.getgid()),
@@ -328,6 +335,22 @@ def main():
         secrets = {name: (prod / name).read_bytes() for name in ('.env.prod', '.env.prod.database', '.env.prod.compose')}
         (mail_reports / 'allow-mail').touch()
         call(command + ['--resume'], cwd=prod)
+        if not team:
+            # The actual production build consumes the customer's public static layout seam.
+            static_page = output(['docker', 'exec', prod_project + '-app-1', 'cat',
+                                  '/workspace/src/public/runa-error/pages/503-en-dark.html'])
+            check('data-customer-error' in static_page and 'Customer support' in static_page
+                  and 'Service unavailable' in static_page and '<script' not in static_page,
+                  'customer static layout reaches emergency 503 without browser runtime')
+            try:
+                urllib.request.urlopen('http://127.0.0.1:' + str(settings['http_port']) + '/missing-custom-error?lang=en', timeout=10)
+            except urllib.error.HTTPError as response:
+                body = response.read().decode()
+                check(response.code == 404 and 'data-customer-error' in body
+                      and 'HTTP 404' in body and '<script' not in body,
+                      'native 404 and generated emergency 503 share the customer presentation seam')
+            else:
+                raise RuntimeError('Unknown customer path did not retain native 404 status.')
         journal = json.loads((prod / '.runtime/production/install-prod.json').read_text())
         deployment = json.loads((prod / '.runtime/production/deployment.json').read_text())
         if not team:

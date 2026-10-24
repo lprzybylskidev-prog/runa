@@ -9,7 +9,7 @@ import {
   rm,
 } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import MinimalLayout from '../js/layouts/MinimalLayout.vue';
+import ErrorLayout from 'virtual:runa-error-layout';
 import IdentityProvider from '../js/components/AppIdentityProvider.vue';
 import MinimalErrorContent from '../js/layouts/MinimalErrorContent.vue';
 import copy from './messages.json';
@@ -62,8 +62,18 @@ for (const locale of ['pl', 'en']) {
               {
                 default: () =>
                   h(
-                    MinimalLayout,
+                    ErrorLayout,
                     {
+                      error: {
+                        status: Number(status),
+                        locale,
+                        theme,
+                        code,
+                        title: copy[locale].statuses[status][0],
+                        description: copy[locale].statuses[status][1],
+                        home: copy[locale].home,
+                        retry: copy[locale].retry,
+                      },
                       staticPreferences: { locale, theme },
                       footer: {
                         copyrightText: '© __RUNA_YEAR__ Łukasz Przybylski',
@@ -87,7 +97,7 @@ for (const locale of ['pl', 'en']) {
             ),
         });
         const html = await renderToString(app);
-        if (/\sstyle=|<script\b|\sonclick=/.test(html))
+        if (/\sstyle=|<script\b|\son[a-z]+\s*=/i.test(html))
           throw new Error(
             'Static shell must satisfy the normal CSP without JavaScript.',
           );

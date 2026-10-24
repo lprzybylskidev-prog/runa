@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
+import CustomerHost from './fixtures/customization/CustomerHost.vue';
+import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
+import CustomerApplication from './fixtures/customization/CustomerApplication.vue';
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import AuthAccount from '../../modules/auth/frontend/AuthAccount.vue';
 import AuthWelcome from '../../modules/auth/frontend/AuthWelcome.vue';
@@ -428,4 +431,51 @@ it('account boundary diagnostic: a refreshed different account clears drafts and
   expect(takeAccountDraft(id)).toBeNull();
   rememberAccountDraft(id, { name: 'Late previous form' }, epoch);
   expect(takeAccountDraft(id)).toBeNull();
+});
+
+it('customization: application composition retains the session boundary around customer content', async () => {
+  const w = mount(CustomerHost, {
+    props: { mode: 'application', components: {} },
+  });
+  await vi.waitFor(() =>
+    expect(w.find('[data-customer-page]').exists()).toBe(true),
+  );
+  expect(w.get('[data-customer-page]').text()).toBe(id);
+  signedIn = false;
+  await request('/runa/auth/session').catch(() => undefined);
+  await vi.waitFor(() =>
+    expect(w.find('[data-customer-page]').exists()).toBe(false),
+  );
+  await vi.waitFor(() =>
+    expect(w.find('input[name="identifier"]').exists()).toBe(true),
+  );
+});
+
+it('customization: full customer shell uses public session orchestration and removes content on 401', async () => {
+  const w = mount(CustomerApplication);
+  await vi.waitFor(() =>
+    expect(w.find('[data-customer-application]').exists()).toBe(true),
+  );
+  signedIn = false;
+  await request('/runa/auth/session').catch(() => undefined);
+  await vi.waitFor(() =>
+    expect(w.find('[data-customer-application]').exists()).toBe(false),
+  );
+  await vi.waitFor(() =>
+    expect(w.find('input[name="identifier"]').exists()).toBe(true),
+  );
+});
+
+it('customization: account replacement consumes the public controller with current capabilities', async () => {
+  const w = mount(CustomerHost, {
+    props: {
+      mode: 'account',
+      accountId: id,
+      components: { account: CustomerAccount },
+    },
+  });
+  await vi.waitFor(() => expect(w.text()).toContain('Test User'));
+  expect(w.find('[data-customer-account]').exists()).toBe(true);
+  expect(w.text()).toContain('details');
+  expect(w.text()).not.toContain('loginHistory');
 });

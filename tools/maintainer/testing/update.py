@@ -257,6 +257,24 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'disk-permissions')
         self.assertEqual(before, self.snapshot())
 
+    def test_frontend_and_error_customizations_remain_application_owned_across_review(self):
+        names = ('src/app/resources/js/App.vue', 'src/app/resources/js/main.ts',
+                 'src/app/resources/js/errorLayout.ts', 'src/app/resources/css/customer.css')
+        for root in (self.original, self.target, self.installed):
+            for name in names:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('customer customization' if root == self.installed else 'upstream default')
+                self.git(root, 'add', name)
+        result = self.run_plan()
+        self.assertEqual(result['status'], 'ready', result)
+        rows = {row['path']: row for row in result['customization_review']['files']}
+        for name in names:
+            self.assertEqual(rows[name]['ownership'], 'application')
+            self.assertEqual(rows[name]['action'], 'preserve')
+            self.assertNotIn('current', rows[name])
+            self.assertEqual((self.installed / name).read_text(), 'customer customization')
+
     def test_scaffold_edits_and_teammate_clones_need_no_original_receipt(self):
         (self.installed / '.git/runa-bootstrap.json').unlink()
         (self.installed / 'VERSION').write_text('customer version')

@@ -1,0 +1,783 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  FileInput,
+  Form,
+  FormSection,
+  RadioGroup,
+  Spinner,
+  Table,
+  TextInput,
+} from '@/runa/ui';
+import AppLoadingOverlay from '../../../resources/js/components/AppLoadingOverlay.vue';
+import AppPreferenceControls from '../../../resources/js/components/AppPreferenceControls.vue';
+import { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
+import type { AccountRow } from './account';
+import type { TableColumn, TableQuery } from '@/runa/ui';
+import type { AccountTab, AccountTask } from './useAuthAccount';
+import { useAuthAccount } from './useAuthAccount';
+const props = defineProps<{ accountId: string }>();
+const {
+  text,
+  locale,
+  profile,
+  security,
+  options,
+  tab,
+  task,
+  busy,
+  ready,
+  failure,
+  failureText,
+  notice,
+  confirmed,
+  fields,
+  errors,
+  naming,
+  method,
+  target,
+  secret,
+  codes,
+  files,
+  rows,
+  cursor,
+  delivery,
+  draft,
+  caps,
+  has,
+  canAvatar,
+  proofMethods,
+  tabs,
+  fieldNames,
+  needsProof,
+  form,
+  heading,
+  feedback,
+  choose,
+  initialize,
+  selectTab,
+  submit,
+  revoke,
+  saveDelivery,
+  resetPreferences,
+  restoreDraft,
+  readPage,
+  perform,
+  refreshCsrf,
+  sendCode,
+  sendVerification,
+} = useAuthAccount(props.accountId);
+const display = useDisplayPreferences();
+const titles = computed<Record<AccountTab, string>>(() => ({
+  details: text('Dane konta', 'Account details'),
+  security: text(
+    'Hasło i weryfikacja dwuetapowa',
+    'Password and two-factor authentication',
+  ),
+  addresses: text('Dodatkowe adresy e-mail', 'Secondary email addresses'),
+  avatar: text('Zdjęcie profilowe', 'Profile image'),
+  sessions: text('Aktywne sesje', 'Active sessions'),
+  trust: text('Zaufane urządzenia', 'Trusted devices'),
+  preferences: text('Preferencje', 'Preferences'),
+  loginHistory: text('Historia logowania', 'Login history'),
+  accountHistory: text('Historia konta', 'Account history'),
+}));
+const labels = computed<Record<string, string>>(() => ({
+  name: text('Nazwa wyświetlana', 'Display name'),
+  first_name: text('Imię', 'First name'),
+  surname: text('Nazwisko', 'Surname'),
+  login: 'Login',
+  email: text('Nowy adres e-mail', 'New email address'),
+  current_password: text('Aktualne hasło', 'Current password'),
+  password: text('Nowe hasło', 'New password'),
+  password_confirmation: text('Powtórz nowe hasło', 'Repeat new password'),
+  code: text('Kod weryfikacyjny', 'Verification code'),
+  enrollment_code: text('Kod z aplikacji', 'Authenticator code'),
+}));
+const destructive = computed(() =>
+  ['secondaryRemove', 'avatarRemove', 'deactivate', 'delete'].includes(
+    task.value,
+  ),
+);
+const taskTitle = computed(
+  () =>
+    ({
+      details: titles.value.details,
+      password: text('Zmień hasło', 'Change password'),
+      email: text('Zmień główny adres e-mail', 'Change primary email'),
+      secondaryAdd: text('Dodaj adres e-mail', 'Add email address'),
+      secondaryChange: text(
+        'Zmień lub ponów weryfikację adresu',
+        'Change or verify email again',
+      ),
+      secondaryRemove: text('Usuń dodatkowy adres', 'Remove secondary address'),
+      avatar: text('Zmień zdjęcie', 'Change image'),
+      avatarRemove: text('Usuń zdjęcie', 'Remove image'),
+      totpBegin: text(
+        'Dodaj aplikację uwierzytelniającą',
+        'Add authenticator app',
+      ),
+      totpConfirm: text('Potwierdź aplikację', 'Confirm authenticator'),
+      emailEnable: text('Włącz kody e-mail', 'Enable email codes'),
+      disable: text('Wyłącz drugi składnik', 'Disable second factor'),
+      recoveryRotate: text('Nowe kody odzyskiwania', 'Replace recovery codes'),
+      trustIssue: text('Zaufaj tej przeglądarce', 'Trust this browser'),
+      deactivate: text('Dezaktywuj konto', 'Deactivate account'),
+      delete: text('Usuń konto', 'Delete account'),
+    })[task.value],
+);
+const methodOptions = computed(() =>
+  proofMethods.value.map((value) => ({
+    value,
+    label:
+      value === 'totp'
+        ? text('Aplikacja', 'Authenticator')
+        : value === 'email'
+          ? 'E-mail'
+          : text('Kod odzyskiwania', 'Recovery code'),
+  })),
+);
+const formVisible = computed(
+  () =>
+    ['details', 'security', 'addresses'].includes(tab.value) ||
+    (tab.value === 'avatar' && canAvatar.value) ||
+    (tab.value === 'trust' && proofMethods.value.length > 0),
+);
+const history = computed(() => tab.value.endsWith('History'));
+const query = ref<TableQuery>({
+  page: 1,
+  perPage: 10,
+  sort: null,
+  filters: {},
+});
+function date(value: string | undefined) {
+  if (!value) return '—';
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z');
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+}
+const columns = computed<TableColumn<AccountRow>[]>(() =>
+  history.value
+    ? [
+        {
+          key: 'date',
+          label: text('Data', 'Date'),
+          value: (r) => date(r.occurred_at),
+        },
+        {
+          key: 'action',
+          label: text('Zdarzenie', 'Event'),
+          value: (r) => eventLabel(r.action),
+        },
+        {
+          key: 'outcome',
+          label: text('Wynik', 'Outcome'),
+          value: (r) =>
+            r.outcome === 'success'
+              ? text('Powodzenie', 'Success')
+              : r.outcome === 'refused'
+                ? text('Odmowa', 'Refused')
+                : text('Zarejestrowano', 'Recorded'),
+        },
+      ]
+    : [
+        {
+          key: 'created',
+          label: text('Utworzono', 'Created'),
+          value: (r) => date(r.authenticated_at ?? r.created_at),
+        },
+        {
+          key: 'expires',
+          label: text('Wygasa', 'Expires'),
+          value: (r) => date(r.expires_at),
+        },
+        ...(tab.value === 'sessions'
+          ? [
+              {
+                key: 'current',
+                label: text('Sesja', 'Session'),
+                value: (r: AccountRow) =>
+                  r.current
+                    ? text('Bieżąca', 'Current')
+                    : text('Inna', 'Other'),
+              },
+            ]
+          : []),
+      ],
+);
+function eventLabel(action?: string) {
+  const prefix = action?.split('.')[0];
+  return (
+    (
+      {
+        login: text('Logowanie', 'Sign-in'),
+        logout: text('Wylogowanie', 'Sign-out'),
+        password: text('Hasło', 'Password'),
+        two_factor: text('Drugi składnik', 'Second factor'),
+        profile: text('Profil', 'Profile'),
+        email: text('Adres e-mail', 'Email address'),
+        secondary: text('Dodatkowy adres', 'Secondary address'),
+        avatar: text('Zdjęcie', 'Image'),
+        session: text('Sesja', 'Session'),
+        sessions: text('Sesje', 'Sessions'),
+        verification: text('Weryfikacja adresu', 'Email verification'),
+        identity: text('Stan konta', 'Account status'),
+      } as Record<string, string>
+    )[prefix ?? ''] ?? text('Zmiana konta', 'Account change')
+  );
+}
+function selectTask(value: AccountTask) {
+  choose(value);
+}
+function recipients(
+  choice: { recipients: string[] },
+  id: string,
+  enabled: boolean,
+) {
+  choice.recipients = enabled
+    ? [...new Set([...choice.recipients, id])]
+    : choice.recipients.filter((v) => v !== id);
+}
+const passwordHint = computed(() =>
+  options.value
+    ? [
+        text(
+          `Co najmniej ${options.value.password.min_length} znaków, maksymalnie 72 bajty.`,
+          `At least ${options.value.password.min_length} characters, at most 72 bytes.`,
+        ),
+        options.value.password.mixed_case
+          ? text('Wielkie i małe litery.', 'Upper and lower case letters.')
+          : '',
+        options.value.password.numbers ? text('Cyfra.', 'A number.') : '',
+        options.value.password.symbols ? text('Symbol.', 'A symbol.') : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : '',
+);
+</script>
+<template>
+  <div
+    class="space-y-6"
+    :aria-busy="busy"
+    :inert="display.changingPreference.value || undefined"
+  >
+    <nav
+      class="flex flex-wrap gap-2"
+      :aria-label="text('Ustawienia konta', 'Account settings')"
+    >
+      <Button
+        v-for="item in tabs"
+        :key="item"
+        :variant="tab === item ? 'solid' : 'outline'"
+        :aria-current="tab === item ? 'page' : undefined"
+        :disabled="busy"
+        @click="
+          query.page = 1;
+          selectTab(item);
+        "
+        >{{ titles[item] }}</Button
+      >
+    </nav>
+    <h2 ref="heading" tabindex="-1" class="text-xl font-semibold">
+      {{ titles[tab] }}
+    </h2>
+    <div v-if="failure" ref="feedback" tabindex="-1" role="alert">
+      <Alert tone="danger">
+        {{ failureText }}
+        <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
+          text('Odśwież zabezpieczenie', 'Renew form security')
+        }}</Button>
+        <Button v-if="!ready || failure === 'conflict'" @click="initialize">{{
+          text('Wczytaj aktualne dane', 'Reload current values')
+        }}</Button>
+      </Alert>
+    </div>
+    <p
+      v-if="notice"
+      class="text-sm text-[var(--runa-success-text)]"
+      role="status"
+    >
+      {{ notice }}
+    </p>
+    <Spinner v-if="!ready && busy" :label="text('Wczytywanie', 'Loading')" />
+    <template v-if="ready && profile">
+      <Alert v-if="draft && tab === 'details'" tone="info">
+        {{
+          text(
+            'Zachowano niezapisane dane tego konta w pamięci.',
+            'Unsaved values for this account were retained in memory.',
+          )
+        }}
+        <Button @click="restoreDraft">{{
+          text('Przywróć do przejrzenia', 'Restore for review')
+        }}</Button>
+        <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
+      </Alert>
+      <FormSection
+        v-if="tab === 'details'"
+        :legend="text('Tożsamość', 'Identity')"
+      >
+        <p class="text-sm [overflow-wrap:anywhere]">
+          {{ profile.display_name }} · {{ profile.email }}
+        </p>
+        <p class="text-xs text-muted">
+          {{
+            profile.email_verified
+              ? text('Adres potwierdzony', 'Email verified')
+              : text('Adres niepotwierdzony', 'Email not verified')
+          }}
+        </p>
+        <Button
+          v-if="!profile.email_verified"
+          :busy="busy"
+          @click="sendVerification"
+          >{{
+            text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
+          }}</Button
+        >
+        <Button v-if="has('own_email_editable')" @click="selectTask('email')">{{
+          text('Zmień główny adres', 'Change primary email')
+        }}</Button>
+        <Button v-if="task !== 'details'" @click="selectTask('details')">{{
+          text('Edytuj dane', 'Edit details')
+        }}</Button>
+        <Button
+          v-if="has('self_deactivate')"
+          tone="danger"
+          @click="selectTask('deactivate')"
+          >{{ text('Dezaktywuj konto', 'Deactivate account') }}</Button
+        >
+        <Button
+          v-if="has('self_delete')"
+          tone="danger"
+          @click="selectTask('delete')"
+          >{{ text('Usuń konto', 'Delete account') }}</Button
+        >
+      </FormSection>
+      <FormSection
+        v-if="tab === 'security'"
+        :legend="text('Dostępne zabezpieczenia', 'Available security options')"
+      >
+        <p class="text-sm">
+          {{ text('Włączone metody:', 'Enrolled methods:') }}
+          {{
+            security?.enrolled
+              .map((m) =>
+                m === 'totp' ? text('aplikacja', 'authenticator') : 'e-mail',
+              )
+              .join(', ') || text('brak', 'none')
+          }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <Button @click="selectTask('password')">{{
+            text('Zmień hasło', 'Change password')
+          }}</Button>
+          <Button
+            v-if="security?.totp_enabled && !security.enrolled.includes('totp')"
+            @click="selectTask('totpBegin')"
+            >{{ text('Dodaj aplikację', 'Add authenticator') }}</Button
+          >
+          <Button
+            v-if="
+              security?.email_otp_enabled &&
+              !security.enrolled.includes('email') &&
+              security.email_verified
+            "
+            @click="selectTask('emailEnable')"
+            >{{ text('Włącz kody e-mail', 'Enable email codes') }}</Button
+          >
+          <Button
+            v-if="security?.enrolled.length"
+            @click="selectTask('disable')"
+            >{{ text('Wyłącz metodę', 'Disable method') }}</Button
+          >
+          <Button
+            v-if="
+              security?.recovery_codes_enabled &&
+              security.enrolled.includes('totp')
+            "
+            @click="selectTask('recoveryRotate')"
+            >{{
+              text('Nowe kody odzyskiwania', 'Replace recovery codes')
+            }}</Button
+          >
+        </div>
+      </FormSection>
+      <FormSection v-if="tab === 'addresses'" :legend="titles.addresses">
+        <p v-if="!profile.secondary_emails.length" class="text-sm text-muted">
+          {{ text('Brak dodatkowych adresów.', 'No secondary addresses.') }}
+        </p>
+        <div
+          v-for="address in profile.secondary_emails"
+          :key="address.public_id"
+          class="flex flex-wrap items-center gap-3 text-sm"
+        >
+          <span class="[overflow-wrap:anywhere]"
+            >{{ address.email }} ·
+            {{
+              address.verified_at
+                ? text('Potwierdzony', 'Verified')
+                : text('Oczekuje na potwierdzenie', 'Awaiting verification')
+            }}</span
+          >
+          <Button
+            v-if="has('secondary_self_change')"
+            @click="choose('secondaryChange', address)"
+            >{{ text('Zmień / ponów', 'Change / reissue') }}</Button
+          >
+          <Button
+            v-if="has('secondary_self_remove')"
+            tone="danger"
+            @click="choose('secondaryRemove', address)"
+            >{{ text('Usuń', 'Remove') }}</Button
+          >
+        </div>
+        <Button
+          v-if="
+            has('secondary_self_add') &&
+            profile.secondary_emails.length < Number(caps.secondary_email_limit)
+          "
+          @click="selectTask('secondaryAdd')"
+          >{{ text('Dodaj adres', 'Add address') }}</Button
+        >
+      </FormSection>
+      <FormSection v-if="tab === 'avatar'" :legend="titles.avatar">
+        <img
+          v-if="profile.has_avatar"
+          :key="profile.version"
+          :src="`/api/runa/auth/profile/avatar?v=${profile.version}`"
+          :alt="text('Twoje zdjęcie profilowe', 'Your profile image')"
+          class="h-24 w-24 rounded-full object-cover"
+        />
+        <span
+          v-else
+          class="grid h-24 w-24 place-items-center rounded-full bg-[var(--runa-primary-subtle)] text-2xl font-semibold"
+          >{{ profile.initials }}</span
+        >
+        <div v-if="canAvatar" class="flex flex-wrap gap-2">
+          <Button @click="selectTask('avatar')">{{
+            text('Zmień zdjęcie', 'Change image')
+          }}</Button>
+          <Button
+            v-if="profile.has_avatar"
+            tone="danger"
+            @click="selectTask('avatarRemove')"
+            >{{ text('Usuń zdjęcie', 'Remove image') }}</Button
+          >
+        </div>
+      </FormSection>
+      <Alert v-if="codes.length" tone="warning">
+        <p class="font-semibold">
+          {{
+            text(
+              'Zapisz kody odzyskiwania w bezpiecznym miejscu.',
+              'Save recovery codes in a safe place.',
+            )
+          }}
+        </p>
+        <ul class="my-4 space-y-2 font-mono text-sm">
+          <li
+            v-for="code in codes"
+            :key="code"
+            class="select-all [overflow-wrap:anywhere]"
+            data-recovery-code
+          >
+            {{ code }}
+          </li>
+        </ul>
+        <Button @click="codes = []">{{
+          text('Kody zostały zapisane', 'I saved the codes')
+        }}</Button>
+      </Alert>
+      <Form
+        v-if="
+          formVisible &&
+          !codes.length &&
+          (tab !== 'addresses' ||
+            task !== 'secondaryAdd' ||
+            (has('secondary_self_add') &&
+              profile.secondary_emails.length <
+                Number(caps.secondary_email_limit)))
+        "
+        ref="form"
+        :label="taskTitle"
+        :busy="busy"
+        @submit="submit"
+      >
+        <FormSection :legend="taskTitle">
+          <RadioGroup
+            v-if="task === 'details' && has('own_name_editable')"
+            v-model="naming"
+            :label="text('Sposób prezentacji nazwy', 'Name format')"
+            :options="[
+              { value: 'single', label: text('Jedna nazwa', 'Single name') },
+              {
+                value: 'full',
+                label: text('Imię i nazwisko', 'First name and surname'),
+              },
+            ]"
+          />
+          <RadioGroup
+            v-if="needsProof"
+            v-model="method"
+            :label="text('Metoda weryfikacji', 'Verification method')"
+            :options="methodOptions"
+          />
+          <RadioGroup
+            v-if="task === 'disable'"
+            v-model="target"
+            :label="text('Metoda do wyłączenia', 'Method to disable')"
+            :options="
+              (security?.enrolled ?? []).map((value) => ({
+                value,
+                label:
+                  value === 'totp'
+                    ? text('Aplikacja', 'Authenticator')
+                    : 'E-mail',
+              }))
+            "
+          />
+          <TextInput
+            v-for="name in fieldNames"
+            :key="name"
+            :model-value="fields[name] ?? ''"
+            :label="labels[name] ?? name"
+            :name="name"
+            :type="
+              name.includes('password')
+                ? 'password'
+                : name === 'email'
+                  ? 'email'
+                  : 'text'
+            "
+            :autocomplete="
+              name === 'current_password'
+                ? 'current-password'
+                : name.includes('password')
+                  ? 'new-password'
+                  : name.includes('code')
+                    ? 'one-time-code'
+                    : name === 'email'
+                      ? 'email'
+                      : 'off'
+            "
+            :error="errors[name] ?? ''"
+            :required="name !== 'login' || options?.identifier_mode === 'login'"
+            :helper="name === 'password' ? passwordHint : ''"
+            @update:model-value="
+              fields[name] = $event ?? '';
+              delete errors[name];
+            "
+          />
+          <Button v-if="needsProof && method === 'email'" @click="sendCode">{{
+            text('Wyślij kod', 'Send code')
+          }}</Button>
+          <div
+            v-if="secret"
+            class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"
+          >
+            <p class="text-sm">
+              {{
+                text(
+                  'Dodaj ten klucz w aplikacji uwierzytelniającej, a następnie potwierdź kodem.',
+                  'Add this key to your authenticator, then confirm with its code.',
+                )
+              }}
+            </p>
+            <code
+              class="select-all text-sm [overflow-wrap:anywhere]"
+              data-enrollment-secret
+              >{{ secret }}</code
+            >
+          </div>
+          <FileInput
+            v-if="task === 'avatar'"
+            v-model="files"
+            :locale="locale"
+            :label="text('Obraz JPEG, PNG lub WebP', 'JPEG, PNG or WebP image')"
+            accept="image/jpeg,image/png,image/webp"
+            :max-bytes="Number(caps.avatar_max_kib) * 1024"
+            :choose-label="text('Wybierz plik', 'Choose file')"
+            :empty-label="text('Nie wybrano pliku', 'No file selected')"
+            :remove-label="text('Usuń', 'Remove')"
+            :count-message="text('Wybierz jeden plik.', 'Choose one file.')"
+            :size-message="text('Plik jest za duży.', 'File is too large.')"
+            :type-message="
+              text(
+                'Wybierz obraz JPEG, PNG lub WebP.',
+                'Choose a JPEG, PNG or WebP image.',
+              )
+            "
+          />
+          <template v-if="destructive">
+            <p class="text-sm">
+              {{
+                ['deactivate', 'delete'].includes(task)
+                  ? text(
+                      'Utracisz dostęp do konta. Przywrócenie wymaga administratora.',
+                      'You will lose access. An administrator is required to restore it.',
+                    )
+                  : task === 'secondaryRemove'
+                    ? fields.email
+                    : text(
+                        'Zdjęcie zostanie usunięte.',
+                        'The profile image will be removed.',
+                      )
+              }}
+            </p>
+            <Checkbox
+              v-model="confirmed"
+              :label="text('Potwierdzam operację', 'I confirm this operation')"
+            />
+          </template>
+        </FormSection>
+        <template #actions
+          ><Button
+            type="submit"
+            variant="solid"
+            :busy="busy"
+            :tone="destructive ? 'danger' : 'primary'"
+            :disabled="task === 'details' && !fieldNames.length"
+            >{{ text('Zatwierdź', 'Submit') }}</Button
+          ></template
+        >
+      </Form>
+      <template v-if="tab === 'sessions' || tab === 'trust' || history">
+        <Table
+          v-model:query="query"
+          mode="client"
+          :rows="rows"
+          :columns="columns"
+          :row-key="(row) => row.public_id"
+          :caption="titles[tab]"
+          :english="locale === 'en'"
+          :searchable="false"
+        >
+          <template v-if="!history" #actions="{ row }"
+            ><Button
+              tone="danger"
+              :disabled="busy"
+              @click="revoke(row.public_id)"
+              >{{
+                row.current
+                  ? text('Zakończ bieżącą', 'End current')
+                  : text('Unieważnij', 'Revoke')
+              }}</Button
+            ></template
+          >
+        </Table>
+        <Button
+          v-if="cursor"
+          :busy="busy"
+          @click="perform(() => readPage(true))"
+          >{{ text('Wczytaj starsze', 'Load older') }}</Button
+        >
+      </template>
+      <FormSection
+        v-if="tab === 'preferences'"
+        :legend="text('Wygląd i język', 'Appearance and language')"
+      >
+        <AppPreferenceControls
+          :locale="display.locale.value"
+          :theme="display.theme.value"
+          :theme-label="display.themeLabel.value"
+          :language-label="display.languageLabel.value"
+          :t="display.t"
+          @change="display.changePreference"
+        />
+        <p class="text-sm text-muted">
+          {{
+            text(
+              'Zmiany zapisują się na koncie od razu.',
+              'Changes are saved to your account immediately.',
+            )
+          }}
+        </p>
+        <Checkbox
+          v-model="confirmed"
+          :label="
+            text(
+              'Potwierdzam przywrócenie domyślnych preferencji konta',
+              'I confirm resetting account preferences',
+            )
+          "
+        />
+        <Button :busy="busy" @click="resetPreferences">{{
+          text('Przywróć domyślne', 'Restore defaults')
+        }}</Button>
+      </FormSection>
+      <FormSection
+        v-if="tab === 'preferences'"
+        :legend="text('Powiadomienia e-mail', 'Email notifications')"
+      >
+        <Form
+          v-for="choice in delivery"
+          :key="choice.module + ':' + choice.key"
+          :label="choice.names[locale]"
+          :busy="busy"
+          @submit="saveDelivery(choice)"
+        >
+          <Checkbox
+            v-model="choice.enabled"
+            :disabled="choice.mandatory || choice.sensitive"
+            :label="choice.names[locale]"
+          />
+          <p
+            v-if="choice.mandatory || choice.sensitive"
+            class="text-xs text-muted"
+          >
+            {{
+              text(
+                'Wymagana wiadomość bezpieczeństwa, tylko na główny adres.',
+                'Required security email, sent only to the primary address.',
+              )
+            }}
+          </p>
+          <template v-else>
+            <Checkbox
+              :model-value="choice.recipients.includes('primary')"
+              :label="profile.email"
+              @update:model-value="recipients(choice, 'primary', $event)"
+            />
+            <template
+              v-for="address in profile.secondary_emails"
+              :key="address.public_id"
+              ><Checkbox
+                v-if="address.verified_at"
+                :model-value="choice.recipients.includes(address.public_id)"
+                :label="address.email"
+                @update:model-value="
+                  recipients(choice, address.public_id, $event)
+                "
+            /></template>
+          </template>
+          <template v-if="!choice.mandatory && !choice.sensitive" #actions
+            ><Button type="submit" :disabled="!choice.recipients.length">{{
+              text('Zapisz wybór', 'Save selection')
+            }}</Button></template
+          >
+        </Form>
+      </FormSection>
+    </template>
+  </div>
+  <AppLoadingOverlay
+    :active="display.coverVisible.value"
+    :label="display.t('applyingPreferences')"
+    @covered="display.applyPreference"
+    @revealed="display.finishPreferenceChange"
+  />
+</template>
+<style scoped>
+/* Account steps change immediately; shared controls own feedback and reduced-motion transitions. */
+@media print {
+  [data-enrollment-secret],
+  [data-recovery-code] {
+    visibility: hidden;
+  }
+}
+</style>

@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.13.0
+
+Add public subtree presentation replacement, headless entry/account/welcome/session
+controllers and default application composition. Reuse the existing CSRF, restrictions,
+private fragments, session fencing and account cleanup for customer-owned views.
+Keep unchanged defaults available. Source-only 0.12.0 -> 0.13.0 forward edge;
+no storage/settings change or new required dependency.
+
 ## 0.12.0
 
 Add explicit local DevelopmentAccounts/contributor scenarios, owned transactional provenance, safe account discovery and hidden initial password setup using real first-administrator authority. Preserve existing credentials and security policy; production creates only empty ledger storage and refuses fixture execution. Add forward 0.11.0 -> 0.12.0 preparation without a Permissions dependency.

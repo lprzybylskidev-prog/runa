@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useAuthPresentation } from './presentation';
 import {
   Alert,
   ApplicationLayout,
@@ -13,6 +14,7 @@ import { useLocale } from '../../../resources/js/composables/useLocale';
 import AuthEntry from './AuthEntry.vue';
 import AuthAccount from './AuthAccount.vue';
 import { useApplicationSession } from './useApplicationSession';
+const presentation = useAuthPresentation();
 const props = withDefaults(defineProps<{ account?: boolean }>(), {
   account: false,
 });
@@ -69,7 +71,10 @@ const initials = computed(
 </script>
 <template>
   <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
-  <MinimalLayout v-else-if="loading || !session">
+  <component
+    :is="presentation.minimalLayout ?? MinimalLayout"
+    v-else-if="loading || !session"
+  >
     <Spinner
       v-if="loading"
       :label="text('Wczytywanie konta', 'Loading account')"
@@ -78,8 +83,9 @@ const initials = computed(
       >{{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
       <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button></Alert
     >
-  </MinimalLayout>
-  <ApplicationLayout
+  </component>
+  <component
+    :is="presentation.applicationLayout ?? ApplicationLayout"
     v-else
     :navigation="navigation"
     :current="current"
@@ -104,7 +110,11 @@ const initials = computed(
         }}</Button>
       </div>
     </template>
-    <div class="space-y-6" :inert="pending || undefined">
+    <div
+      :key="session.public_id"
+      class="space-y-6"
+      :inert="pending || undefined"
+    >
       <Alert v-if="failure" tone="danger" role="alert"
         >{{
           text(
@@ -128,25 +138,26 @@ const initials = computed(
         :key="session.public_id"
         :account-id="session.public_id"
       />
-      <section
-        v-else
-        class="rounded-lg border border-[var(--runa-border)] bg-[var(--runa-surface)] p-6"
-      >
-        <h2 class="text-lg font-semibold">
-          {{ text('Witaj,', 'Welcome,') }} {{ session.display_name }}
-        </h2>
-        <p class="mt-3 text-sm text-muted">
-          {{
-            text(
-              'Ustawienia profilu, zabezpieczenia i aktywne sesje znajdziesz w swoim koncie.',
-              'Your account contains profile settings, security and active sessions.',
-            )
-          }}
-        </p>
-        <LinkButton class="mt-5" href="/account">{{
-          text('Moje konto', 'My account')
-        }}</LinkButton>
-      </section>
+      <slot v-else :session="session">
+        <section
+          class="rounded-lg border border-[var(--runa-border)] bg-[var(--runa-surface)] p-6"
+        >
+          <h2 class="text-lg font-semibold">
+            {{ text('Witaj,', 'Welcome,') }} {{ session.display_name }}
+          </h2>
+          <p class="mt-3 text-sm text-muted">
+            {{
+              text(
+                'Ustawienia profilu, zabezpieczenia i aktywne sesje znajdziesz w swoim koncie.',
+                'Your account contains profile settings, security and active sessions.',
+              )
+            }}
+          </p>
+          <LinkButton class="mt-5" href="/account">{{
+            text('Moje konto', 'My account')
+          }}</LinkButton>
+        </section>
+      </slot>
     </div>
-  </ApplicationLayout>
+  </component>
 </template>

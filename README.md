@@ -29,3 +29,9 @@ Use one active application roadmap under `docs/app/roadmaps`, a roadmap branch, 
 [Application tests](docs/runa/handbook/testing/strategy.md) use `php artisan test`, `runa:test`, `runa:test:frontend` and `runa:test:e2e`. [Commands](docs/runa/handbook/tooling/commands.md) documents the public interface. [Production guidance](docs/runa/handbook/production/architecture.md) covers runtime isolation and operations.
 
 Application identity/version in `src/app/application.json` is independent of the protected platform identity in `src/runa/platform.json`. Platform installation and updates are owner-operated external delivery procedures; customer repositories contain no owner installer/updater, platform test suites, maintenance reports or platform release history.
+
+Runa views support [unchanged defaults, application composition and full frontend
+replacement](docs/runa/handbook/development/frontend/customization.md). Customer
+presentation stays in src/app through public contracts; platform defaults and
+security/session orchestration stay in src/runa. The same rule applies to future
+Runa module views.

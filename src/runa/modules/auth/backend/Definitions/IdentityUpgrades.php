@@ -15,6 +15,7 @@ use Runa\Modules\Auth\UpgradeEntryUi;
 use Runa\Modules\Auth\UpgradePermissionDeclarations;
 use Runa\Modules\Auth\UpgradePolicy;
 use Runa\Modules\Auth\UpgradePreferences;
+use Runa\Modules\Auth\UpgradePresentation;
 use Runa\Modules\Auth\UpgradeProfiles;
 use Runa\Modules\Auth\UpgradeSessions;
 
@@ -34,7 +35,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('permission_declarations', '0.9.0', '0.10.0', UpgradePermissionDeclarations::class),
             new UpgradeDefinition('authority_participation', '0.10.0', '0.10.1', UpgradeAuthorityParticipation::class),
             new UpgradeDefinition('core_integration', '0.10.1', '0.11.0', UpgradeCoreIntegration::class),
-            new UpgradeDefinition('development_fixtures', '0.11.0', '0.12.0', UpgradeDevelopmentFixtures::class)];
+            new UpgradeDefinition('development_fixtures', '0.11.0', '0.12.0', UpgradeDevelopmentFixtures::class),
+            new UpgradeDefinition('presentation', '0.12.0', '0.13.0', UpgradePresentation::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

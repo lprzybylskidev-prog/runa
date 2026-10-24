@@ -184,7 +184,7 @@ The optional UI facade provides typed explicit/all-matching selections, export s
 
 ## Platform/application route ownership
 
-Platform health/readiness routes are registered from `src/runa/routes/api.php`, with Runa namespace controllers. The customer `src/app/routes/web.php` owns only the named `/` welcome entry (`spa`), served by App namespace SpaController. API URLs/names, JSON negotiation, status codes and request IDs are unchanged by RM-005 backend relocation. Unknown paths remain real 404s.
+Platform health/readiness routes are registered from `src/runa/routes/api.php`, with Runa namespace controllers. The customer `src/app/routes/web.php` owns only the named `/` welcome entry (`spa`), wired directly to the public Runa WelcomePageController; customer routes/controllers can replace this thin application entry. API URLs/names, JSON negotiation, status codes and request IDs are unchanged by RM-005 backend relocation. Unknown paths remain real 404s.
 
 ## Module APIs
 

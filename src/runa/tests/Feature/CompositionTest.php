@@ -19,7 +19,7 @@ it('composes customer code and platform behavior under one Laravel base', functi
         ->and(app()->getNamespace())->toBe('App\\')
         ->and(Artisan::all()['migrate:fresh'])->toBeInstanceOf(GuardedFreshCommand::class);
     expect(app('router')->getRoutes()->getByName('api.health')->getActionName())->toBe('Runa\\Http\\Controllers\\HealthController');
-    expect(app('router')->getRoutes()->getByName('spa')->getActionName())->toBe('App\\Http\\Controllers\\SpaController');
+    expect(app('router')->getRoutes()->getByName('spa')->getActionName())->toBe('Runa\\Http\\Controllers\\WelcomePageController');
 });
 
 it('keeps identical application and platform file and cache keys isolated', function (): void {

@@ -271,3 +271,17 @@ The latter accepts optional account=true and composes the existing ApplicationLa
 profile/sign-out slot, self-service forms, bounded Table lists, real-activity/expiry
 boundary and explicit safe draft review. See the [account UI](../../modules/auth/account-ui.md).
 Custom shells/forms must preserve request/account ownership and never replay writes.
+
+## Application boot and presentation contracts
+
+Public `@/runa/ui` exports `createApplication(root)` (Vue App with non-blocking
+public identity hydration), `HttpErrorLayout`, `HttpErrorContent` and
+`HttpErrorLayoutProps`. Shared CSS is imported through `@/runa/ui/styles.css`.
+`@/runa/http` exports the single `request`/`ApiError` transport boundary.
+`@/runa/auth` exports DefaultApplication, AuthPresentationProvider and its typed
+component map, AuthEntry/AuthApplication/AuthAccount/AuthWelcome and the shared
+entry/account/welcome/session controllers. See [frontend adoption](customization.md)
+for supported props, slots, lifetime and security obligations. All future Runa
+module views follow the same usable-default/public-replacement requirement.
+Canonical custom consumers are owner-only fixtures under
+src/runa/tests/frontend/fixtures/customization; they are excluded from delivery.

@@ -14,3 +14,13 @@ cache recipients across jobs, or import Auth private SQL/models. Reference-only
 managed security mail rechecks state and uses a persisted single SMTP attempt;
 critical recovery retains direct mail. Application code consumes these contracts
 without requiring conversion into an app module; protected Runa remains read-only.
+
+For all current/future Runa module views use
+docs/runa/handbook/development/frontend/customization.md. Runa supplies usable
+defaults plus documented public presentation replacement. Customer screens,
+wrappers and CSS belong in src/app and survive reviewed updates/clones. Use typed
+public facades/controllers, preserve identity/page cleanup, CSRF, restrictions,
+reauthentication and explicit retries; never copy private security orchestration.
+Native errors and generated emergency 503 share one static, CSP-constrained
+presentation build. Keep the application scaffold minimal; domain pages are added
+only for real customer requirements.

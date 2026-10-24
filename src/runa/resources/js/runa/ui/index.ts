@@ -156,3 +156,8 @@ export { createAccountPreferenceStore } from '../../lib/accountPreferences';
 export { default as PreferenceFeedback } from '../../components/AppPreferenceFeedback.vue';
 
 export { default as LinkButton } from '../../components/AppLinkButton.vue';
+
+export { createApplication } from './createApplication';
+export { default as HttpErrorLayout } from '../../layouts/HttpErrorLayout.vue';
+export { default as HttpErrorContent } from '../../layouts/MinimalErrorContent.vue';
+export type { HttpErrorLayoutProps } from './errors';

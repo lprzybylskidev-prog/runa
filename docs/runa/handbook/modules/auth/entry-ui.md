@@ -104,3 +104,12 @@ The existing layout supplies responsive desktop/tablet/mobile, light/dark themes
 language/theme controls and identity/footer. Browser acceptance fixtures cover
 locale, reduced motion, overflow, keyboard errors and private fragments; complete
 cross-browser/integration acceptance remains part of final roadmap verification.
+
+## Customer presentation
+
+Use [frontend adoption and replacement](../../development/frontend/customization.md)
+for unchanged defaults, public layout/content composition and complete customer
+presentation. AuthPresentationProvider replaces views/layouts within its subtree;
+public headless controllers retain the same flow/session cleanup. Put customer
+files in src/app. This is the general Runa view rule, also required for future
+modules. DefaultApplication owns supplied path composition; App.vue is thin wiring.
