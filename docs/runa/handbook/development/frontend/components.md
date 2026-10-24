@@ -294,3 +294,9 @@ slot and wrap responsively; custom layout wrappers forward it.
 Button and LinkButton share the single src/runa/resources/css/button.css style
 source through scoped imports, retaining variants, themes, focus and reduced motion
 without making link styling depend on mounting a separate button instance.
+
+Public TextLink from @/runa/ui (AppTextLink.vue) renders a native href anchor with
+quiet muted 12px text, no surface/border or permanent underline, hover underline/
+color, visible keyboard focus, 44px touch target and reduced-motion handling.
+Welcome and Auth entry navigation share this implementation. Form submits use
+Button outline variants; active tabs retain their independent selection styling.

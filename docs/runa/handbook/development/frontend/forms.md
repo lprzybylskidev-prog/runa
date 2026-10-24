@@ -54,7 +54,7 @@ async function save() {
   <NumberInput v-model="values.amount" label="Kwota" kind="currency"
     :scale="2" locale="pl" unit="PLN" :error="errors.amount ?? []"
     invalid-message="Podaj poprawną kwotę." />
-  <template #actions><Button type="submit" :busy="busy">Zapisz</Button></template>
+  <template #actions><Button type="submit" variant="outline" :busy="busy">Zapisz</Button></template>
 </Form>
 ```
 
@@ -92,3 +92,10 @@ Account reauthentication preserves only explicitly safe name/login fields in mem
 bound to the same account. Offer explicit restoration/review; never replay a write.
 Clear credentials, codes and files, fence late responses, and refresh stale revisions
 or CSRF only through deliberate actions. See [account UI](../../modules/auth/account-ui.md).
+
+Form submit actions use Button variant="outline" by default, including Auth entry,
+account/security and preference-save forms; retain semantic tone for destructive
+operations and existing busy/disabled behavior. Solid fills are not the default
+submit hierarchy. Navigation beside forms uses public TextLink like welcome:
+muted text without a permanent underline, underline/color on hover, visible focus,
+44px touch targets and reduced-motion support. Active tab selection is separate.

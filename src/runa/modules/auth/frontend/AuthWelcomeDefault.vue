@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Alert, Button, MinimalLayout, Spinner } from '@/runa/ui';
+import { Alert, Button, TextLink, MinimalLayout, Spinner } from '@/runa/ui';
 import { useAuthWelcome } from './useAuthWelcome';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
@@ -27,21 +27,19 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
           class="flex flex-wrap items-center gap-4"
           :aria-label="text('Dostęp do aplikacji', 'Application access')"
         >
-          <a
+          <TextLink
             v-if="session"
-            class="welcome-header-link"
             :href="session.restrictions.length ? '/auth/security' : '/app'"
-            >{{ text('Przejdź do aplikacji', 'Open application') }}</a
+            >{{ text('Przejdź do aplikacji', 'Open application') }}</TextLink
           >
           <template v-else>
-            <a class="welcome-header-link" href="/auth/login">{{
+            <TextLink href="/auth/login">{{
               text('Zaloguj się', 'Sign in')
-            }}</a>
-            <a
+            }}</TextLink>
+            <TextLink
               v-if="options.public_registration"
-              class="welcome-header-link"
               href="/auth/register"
-              >{{ text('Utwórz konto', 'Create account') }}</a
+              >{{ text('Utwórz konto', 'Create account') }}</TextLink
             >
           </template>
         </nav>
@@ -61,31 +59,3 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
     </template>
   </component>
 </template>
-
-<style scoped>
-.welcome-header-link {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  color: var(--runa-text-secondary);
-  font-size: 12px;
-  text-decoration: none;
-  text-underline-offset: 4px;
-  transition: color 160ms ease-out;
-}
-.welcome-header-link:hover {
-  color: var(--runa-primary-text);
-  text-decoration: underline;
-}
-.welcome-header-link:focus-visible {
-  color: var(--runa-primary-text);
-  outline: 2px solid var(--runa-focus-ring);
-  outline-offset: 4px;
-  border-radius: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .welcome-header-link {
-    transition: none;
-  }
-}
-</style>

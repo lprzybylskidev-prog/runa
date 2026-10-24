@@ -639,7 +639,7 @@ const passwordHint = computed(() =>
         <template #actions
           ><Button
             type="submit"
-            variant="solid"
+            variant="outline"
             :busy="busy"
             :tone="destructive ? 'danger' : 'primary'"
             :disabled="task === 'details' && !fieldNames.length"
@@ -757,9 +757,12 @@ const passwordHint = computed(() =>
             /></template>
           </template>
           <template v-if="!choice.mandatory && !choice.sensitive" #actions
-            ><Button type="submit" :disabled="!choice.recipients.length">{{
-              text('Zapisz wybór', 'Save selection')
-            }}</Button></template
+            ><Button
+              type="submit"
+              variant="outline"
+              :disabled="!choice.recipients.length"
+              >{{ text('Zapisz wybór', 'Save selection') }}</Button
+            ></template
           >
         </Form>
       </FormSection>

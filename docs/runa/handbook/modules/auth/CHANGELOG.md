@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.13.4
+
+Use outlined entry/account form actions and shared quiet TextLink navigation for
+welcome and Auth forms. Preserve semantics, policy, proof and keyboard interaction.
+Source-only 0.13.3 -> 0.13.4 edge; no data/settings change.
+
 ## 0.13.3
 
 Remove the interactive focus outline from programmatically focused entry/account

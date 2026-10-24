@@ -949,6 +949,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     programmatic reading focus while suppressing only entry/account heading outlines;
     retain visible interactive focus. Publish and inspect actual entry/tab behavior,
     synchronize module version and guidance; point 20 remains appearance-gated.
+- [x] 19f. Use outlined form actions and consistent quiet text navigation.
+  - Owner review requests outline submits across forms and Auth navigation matching
+    welcome text links. Reuse shared public controls, preserve interaction/security,
+    publish local assets and inspect actual form/link states before further review.
+  - Update component/form guidance and both frontend products, module version and
+    commit; final point 20 remains gated by explicit owner appearance acceptance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2395,3 +2401,34 @@ architectural premise requires discussion before dependent work.
   indicators remain required. Existing root/Vue/Tailwind rules already apply.
 - No Docker resources, resets or credential changes. Existing data/services/caches/
   reports/backups/rollback resources preserved. Point 20 remains appearance-gated.
+
+## Point 19f delivery
+
+- Owner requests outlined form submits and navigation matching quiet welcome links.
+  Entry login/register/recovery/security submits and account/profile/security/
+  delivery-preference saves now explicitly use outline, preserving busy/disabled
+  states and danger tone. Related entry confirmation actions also use outline;
+  active account tabs retain their independent selected state. Existing neutral
+  static GET preference/error controls are unchanged.
+- Extracted the second use of quiet navigation into public TextLink/AppTextLink;
+  welcome and all entry form navigation now share native href semantics, muted
+  12px text, no permanent underline/surface/border, hover underline/primary text,
+  visible focus, 44px touch target and reduced-motion behavior. Removed both
+  page-local link styles. Shared Button/LinkButton contracts remain unchanged.
+- Auth PATCH 0.13.3 -> 0.13.4, source-only form_presentation edge and changelog;
+  existing Permissions ^0.13.0 remains compatible. Published current Vite assets
+  and applied local forward preparation without schema/settings/password changes.
+  Initial compilation caught multiline anchor closing tags during component
+  extraction; corrected tags and received a passing build before review.
+- Focused real served browser diagnostics passed login/register/forgot at 1440/390
+  widths in light/dark: outline submits, no permanent navigation underlines, hover
+  underline and no overflow. Inspected rendered login screenshot; retained safe
+  screenshots in .runtime/dev/manual-auth/form-style. Selected welcome conditional
+  registration/session header regression passed (1 case). Module versions passed.
+  No broad suite/static-analysis/image/scanner/final quality ran; hooks apply.
+- Synchronized public component/form guidance and both frontend reference products
+  with outlined submits and shared TextLink use for future forms. Root/Vue/Tailwind
+  guidance already requires public component reuse and current patterns; no duplicate
+  rule needed. No Docker resources/reset/credential changes; preserved all existing
+  data, services, caches, reports, backups and rollback material. Point 20 remains
+  gated by explicit owner appearance acceptance.

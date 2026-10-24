@@ -73,3 +73,8 @@ For Auth step/tab changes, keep programmatic focus on the noninteractive heading
 (tabindex=-1) for reading context, without an interactive outline on that heading.
 Scope this presentation exception to the reading target; retain visible keyboard
 focus on links, inputs, buttons, error feedback and other interactive controls.
+
+Use outlined submit buttons for forms, retaining destructive tone/busy/disabled
+states. Use public TextLink for quiet welcome/Auth form navigation: no permanent
+underline or button surface, hover underline and visible keyboard focus. Reuse the
+shared implementation; do not restore page-local copies.

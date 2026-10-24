@@ -161,3 +161,5 @@ export { createApplication } from './createApplication';
 export { default as HttpErrorLayout } from '../../layouts/HttpErrorLayout.vue';
 export { default as HttpErrorContent } from '../../layouts/MinimalErrorContent.vue';
 export type { HttpErrorLayoutProps } from './errors';
+
+export { default as TextLink } from '../../components/AppTextLink.vue';

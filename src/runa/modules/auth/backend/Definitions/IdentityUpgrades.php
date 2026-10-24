@@ -12,6 +12,7 @@ use Runa\Modules\Auth\UpgradeCredentials;
 use Runa\Modules\Auth\UpgradeDevelopmentFixtures;
 use Runa\Modules\Auth\UpgradeEntry;
 use Runa\Modules\Auth\UpgradeEntryUi;
+use Runa\Modules\Auth\UpgradeFormPresentation;
 use Runa\Modules\Auth\UpgradeHeadingFocus;
 use Runa\Modules\Auth\UpgradePermissionDeclarations;
 use Runa\Modules\Auth\UpgradePolicy;
@@ -42,7 +43,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('presentation', '0.12.0', '0.13.0', UpgradePresentation::class),
             new UpgradeDefinition('welcome_header', '0.13.0', '0.13.1', UpgradeWelcomeHeader::class),
             new UpgradeDefinition('welcome_links', '0.13.1', '0.13.2', UpgradeWelcomeLinks::class),
-            new UpgradeDefinition('heading_focus', '0.13.2', '0.13.3', UpgradeHeadingFocus::class)];
+            new UpgradeDefinition('heading_focus', '0.13.2', '0.13.3', UpgradeHeadingFocus::class),
+            new UpgradeDefinition('form_presentation', '0.13.3', '0.13.4', UpgradeFormPresentation::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

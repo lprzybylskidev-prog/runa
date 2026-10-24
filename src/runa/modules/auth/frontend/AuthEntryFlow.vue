@@ -10,6 +10,7 @@ import {
   RadioGroup,
   Spinner,
   TextInput,
+  TextLink,
 } from '@/runa/ui';
 import type { EntrySession, EntryPage } from './entry';
 import type { EntryCopyKey } from './messages';
@@ -165,7 +166,7 @@ const submitLabel = computed(() => {
                 <code>{{ code }}</code>
               </li>
             </ul>
-            <Button variant="solid" @click="codesSaved">{{
+            <Button variant="outline" @click="codesSaved">{{
               t('savedCodes')
             }}</Button>
           </template>
@@ -173,7 +174,7 @@ const submitLabel = computed(() => {
             <p class="break-words text-sm text-muted">
               {{ session?.display_name }}
             </p>
-            <a :href="returnPath" class="auth-link">{{ t('continue') }}</a>
+            <TextLink :href="returnPath">{{ t('continue') }}</TextLink>
           </template>
           <template v-else-if="screen !== 'complete'">
             <RadioGroup
@@ -267,7 +268,7 @@ const submitLabel = computed(() => {
               >{{ t('sendCode') }}</Button
             >
             <template v-if="screen === 'verify' && !isTokenPage">
-              <Button variant="solid" @click="sendEmail">{{
+              <Button variant="outline" @click="sendEmail">{{
                 t('resend')
               }}</Button>
               <Button @click="refresh">{{ t('refresh') }}</Button>
@@ -277,7 +278,7 @@ const submitLabel = computed(() => {
             <Button
               v-if="hasSubmit"
               type="submit"
-              variant="solid"
+              variant="outline"
               :busy="busy"
               >{{ submitLabel }}</Button
             >
@@ -297,35 +298,27 @@ const submitLabel = computed(() => {
           class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs"
           :aria-label="t('security')"
         >
-          <a
-            v-if="screen === 'login'"
-            href="/auth/forgot-password"
-            class="auth-link"
-            >{{ t('forgotLink') }}</a
-          >
-          <a
+          <TextLink v-if="screen === 'login'" href="/auth/forgot-password">{{
+            t('forgotLink')
+          }}</TextLink>
+          <TextLink
             v-if="screen === 'login' && options?.public_registration"
             href="/auth/register"
-            class="auth-link"
-            >{{ t('register') }}</a
+            >{{ t('register') }}</TextLink
           >
-          <a
-            v-if="screen !== 'login' && !session"
-            href="/auth/login"
-            class="auth-link"
-            >{{ t('backLogin') }}</a
-          >
+          <TextLink v-if="screen !== 'login' && !session" href="/auth/login">{{
+            t('backLogin')
+          }}</TextLink>
           <Button v-if="session" :busy="busy" variant="ghost" @click="logout">{{
             t('logout')
           }}</Button>
-          <a
+          <TextLink
             v-if="
               screen === 'complete' &&
               ['verify-email', 'confirm-address'].includes(page)
             "
             href="/auth/security"
-            class="auth-link"
-            >{{ t('refresh') }}</a
+            >{{ t('refresh') }}</TextLink
           >
         </nav>
       </template>
@@ -339,21 +332,6 @@ const submitLabel = computed(() => {
   outline: none;
 }
 
-.auth-link {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  color: var(--runa-primary-text);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.auth-link:focus-visible {
-  outline: 2px solid var(--runa-focus-ring);
-  outline-offset: 4px;
-}
-.auth-link:hover {
-  color: var(--runa-primary-hover);
-}
 /* Security steps change immediately; shared controls provide reduced-motion feedback. */
 @media print {
   [data-enrollment-secret] {
