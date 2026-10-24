@@ -55,6 +55,15 @@ current source defaults as well as stored values for the selected application an
 shared `runa` display namespace. Other devices converge on reload or new login;
 there is no polling or WebSocket synchronization.
 
+## Default account presentation
+
+The default Preferences tab sits beside Account and security. Its Card/dialog
+composition is documented in [account UI](account-ui.md): automatic display controls,
+independent optional-category drafts, primary-only mandatory delivery and an
+explicit presentation-reset confirmation. Reuse existing account revision and
+preference hydration/error contracts; appearance changes and incoming snapshots
+must not create duplicate writes. Cancellation does not persist modal drafts.
+
 ## Browser integration and legacy ownership
 
 `defaultPreferenceStore`, `usePreference`, language/theme, navigation,

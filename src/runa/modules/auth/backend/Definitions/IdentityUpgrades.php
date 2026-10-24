@@ -25,6 +25,7 @@ use Runa\Modules\Auth\UpgradeNavigationCancellation;
 use Runa\Modules\Auth\UpgradePermissionDeclarations;
 use Runa\Modules\Auth\UpgradePolicy;
 use Runa\Modules\Auth\UpgradePreferences;
+use Runa\Modules\Auth\UpgradePreferencesPresentation;
 use Runa\Modules\Auth\UpgradePresentation;
 use Runa\Modules\Auth\UpgradeProfiles;
 use Runa\Modules\Auth\UpgradeRecoveryDialog;
@@ -72,7 +73,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('secondary_details', '0.17.0', '0.18.0', UpgradeSecondaryDetails::class),
             new UpgradeDefinition('mail_layout', '0.18.0', '0.18.1', UpgradeMailLayout::class),
             new UpgradeDefinition('session_sorting', '0.18.1', '0.18.2', UpgradeSessionSorting::class),
-            new UpgradeDefinition('factor_dialogs', '0.18.2', '0.19.0', UpgradeFactorDialogs::class)];
+            new UpgradeDefinition('factor_dialogs', '0.18.2', '0.19.0', UpgradeFactorDialogs::class),
+            new UpgradeDefinition('preferences_presentation', '0.19.0', '0.19.1', UpgradePreferencesPresentation::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

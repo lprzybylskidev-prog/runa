@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner limits the next visual revision to Preferences, places its
+  navigation beside Account and security and requests a complete presentation
+  rebuild using the accepted independent Card/shared-dialog patterns. Point 19y
+  groups display/language, email delivery and default reset; preserve existing
+  persistence, mandatory primary-only security delivery, explicit revisions and
+  confirmation. Publish assets for owner review, without inferring final acceptance.
+
 - 2026-10-24 — Owner requests moving trusted-device management into Two-factor
   authentication and allowing new trust only after a usable factor is enrolled.
   Point 19x moves all factor and trust actions into shared dialogs, preserves
@@ -1042,6 +1049,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19v. Consolidate browser evidence, pnpm store and Python bytecode under workspace-root .runtime; preserve existing artifacts and configure future writes.
 - [x] 19w. Enable global default column sorting and repair active-session actions/date ordering.
 - [x] 19x. Move trusted devices into two-factor settings and use guarded dialogs for all factor/trust actions.
+- [x] 19y. Rebuild Preferences with account Card/dialog patterns and adjacent navigation.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3242,3 +3250,51 @@ architectural premise requires discussion before dependent work.
   credentials/2FA, Qdrant/model caches, backups and reports preserved. Full suites,
   static analysis/scanners and final point 20 remain deferred; owner visual acceptance
   is still pending.
+
+## Point 19y delivery
+
+- Limited changes to Preferences presentation/controller outcome, with Preferences
+  directly after Account and security in the default navigation. Extracted
+  AuthAccountPreferences into module-owned source; account/security/session UI
+  retains its prior behavior. No application scaffold logic added.
+- Reused the accepted independent Card stacks: appearance/language and presentation
+  reset on the left, email summaries on the right, stacking on narrow screens.
+  Display keeps the existing two compact controls, current values, automatic
+  account persistence, shared loading cover and preference feedback. No selects,
+  parallel preference store, new dependency or custom animation was introduced.
+- Optional email categories have status/recipient summaries and independent copied
+  modal drafts. Reused Switch/Checkbox/Form/Dialog with local recipient validation,
+  primary/verified-secondary choices and explicit outlined Save/Cancel. Required/
+  sensitive categories remain read-only and primary-only. Successful saves refresh
+  authoritative categories/account preferences and show a named viewport outcome.
+  Conflict reload explicitly discards/reloads the current draft without replay.
+- Presentation reset uses ConfirmDialog body copy explaining default appearance/
+  navigation and removal of saved table layouts/filters/views. Cancel does not set
+  confirmation or write. Reset leaves delivery subscriptions unchanged; failures
+  stay in the modal focus layer with explicit CSRF recovery or full-page snapshot
+  reload for conflicts. Shared dialog motion/focus/reduced-motion remains unchanged.
+- Auth PATCH 0.19.0 -> 0.19.1 records this source-only presentation repair, with a
+  preferences_presentation forward edge applied locally. Permissions 0.5.7/^0.19.0
+  remains compatible; Audit remains 0.5.0. Source/runtime module checks and scoped
+  version/changelog checks against the preceding commit pass. Platform VERSION
+  and framework API remain unchanged. No schema, policy, backend API or security
+  mutation changed; existing controller persistence/revision guards are retained.
+- Five selected browser-component regressions pass: adjacent navigation/Card/read-only
+  required summaries, canceled independent drafts/verified recipients/local validation/
+  exact revisioned writes, explicit conflict reload without replay, confirmed reset
+  versus cancel, and failed category-read recovery without writes. No broad tests
+  or backend suite run for this presentation-only change.
+- Built/published current client assets and inspected served synthetic API previews
+  at 1440px/768px/390px, light/dark and English mobile: page, long-address delivery
+  modal, reset dialog and cancellation. No page errors, document/dialog overflow
+  or unintended summary mutation. Evidence: .runtime/dev/manual-auth/preferences.
+  Previews perform no real account writes/reset/email; actual private data remains.
+- Synchronized public account/preferences/presentation docs, Auth README/changelog,
+  owner page-pattern reference and customer frontend reference. Existing root
+  owner/customer and Vue/Tailwind guidance already mandates shared components,
+  isolated drafts, server authority and public replacement contracts; no duplicate
+  instructions needed. Module-owned default composition stays replaceable through
+  existing Auth presentation/controller contracts.
+- No Docker resources created/removed; development/test data, sessions, credentials,
+  Qdrant/model caches, backups and reports preserved. Broad final verification and
+  point 20 remain gated by explicit owner frontend appearance acceptance.

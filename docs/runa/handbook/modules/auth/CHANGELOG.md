@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.19.1
+
+Place Preferences beside Account and security and rebuild its default view with
+shared appearance/language, defaults and email delivery Cards. Optional delivery
+categories use independent modal drafts, verified recipients and explicit saves;
+mandatory/sensitive categories stay primary-only. Reset requires modal confirmation.
+Reuse existing preference persistence, cover, revision and recovery contracts.
+Source-only forward edge; no data, policy, backend API or dependency change.
+
 ## 0.19.0
 
 Move all two-factor actions into guarded dialogs; group trusted devices under the

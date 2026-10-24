@@ -54,3 +54,8 @@ Host avatar adjustment in the shared Dialog with explicit local Apply/Cancel.
 Use a dimmed surrounding image and bright circular frame, direct pointer panning,
 wheel/pinch zoom and keyboard alternatives; do not add redundant position sliders.
 Applying a crop prepares the card preview; the card's Save owns the upload.
+
+Account Preferences uses the same independent Card/shared-dialog patterns as
+Account and security. Keep existing compact language/theme controls and account
+persistence; isolate optional notification drafts and confirm presentation resets.
+Use the public account UI/preferences guides for revision and recovery behavior.

@@ -975,6 +975,10 @@ export function useAuthAccount(accountId: string) {
           accountId,
           accountPreferences.application(),
         );
+        notice.value = text(
+          'Zapisano ustawienia powiadomień.',
+          'Notification settings saved.',
+        );
       }
     });
   }

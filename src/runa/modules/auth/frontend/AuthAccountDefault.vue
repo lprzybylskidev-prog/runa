@@ -14,7 +14,7 @@ import {
   FormNotifications,
 } from '@/runa/ui';
 import AppLoadingOverlay from '../../../resources/js/components/AppLoadingOverlay.vue';
-import AppPreferenceControls from '../../../resources/js/components/AppPreferenceControls.vue';
+import AuthAccountPreferences from './AuthAccountPreferences.vue';
 import { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
 import type { AccountRow } from './account';
 import type { TableColumn, TableQuery } from '@/runa/ui';
@@ -49,7 +49,6 @@ const {
   files,
   rows,
   cursor,
-  delivery,
   draft,
   caps,
   has,
@@ -65,8 +64,6 @@ const {
   selectTab,
   submit,
   revoke,
-  saveDelivery,
-  resetPreferences,
   restoreDraft,
   readPage,
   perform,
@@ -151,11 +148,14 @@ const formVisible = computed(
     (tab.value === 'avatar' && canAvatar.value) ||
     (tab.value === 'trust' && proofMethods.value.length > 0),
 );
-const visibleTabs = computed(() =>
-  tabs.value.filter(
+const visibleTabs = computed(() => {
+  const visible = tabs.value.filter(
     (value) => !['security', 'avatar', 'addresses', 'trust'].includes(value),
-  ),
-);
+  );
+  const preferences = visible.indexOf('preferences');
+  if (preferences >= 0) visible.splice(1, 0, ...visible.splice(preferences, 1));
+  return visible;
+});
 const history = computed(() => tab.value.endsWith('History'));
 const query = ref<TableQuery>({
   page: 1,
@@ -263,15 +263,6 @@ function eventLabel(action?: string) {
 }
 function selectTask(value: AccountTask) {
   choose(value);
-}
-function recipients(
-  choice: { recipients: string[] },
-  id: string,
-  enabled: boolean,
-) {
-  choice.recipients = enabled
-    ? [...new Set([...choice.recipients, id])]
-    : choice.recipients.filter((v) => v !== id);
 }
 const passwordHint = computed(() =>
   options.value
@@ -546,94 +537,12 @@ const passwordHint = computed(() =>
           >{{ text('Wczytaj starsze', 'Load older') }}</Button
         >
       </template>
-      <FormSection
+      <AuthAccountPreferences
         v-if="tab === 'preferences'"
-        :title="text('Wygląd i język', 'Appearance and language')"
-      >
-        <AppPreferenceControls
-          :locale="display.locale.value"
-          :theme="display.theme.value"
-          :theme-label="display.themeLabel.value"
-          :language-label="display.languageLabel.value"
-          :t="display.t"
-          @change="display.changePreference"
-        />
-        <p class="text-sm text-muted">
-          {{
-            text(
-              'Zmiany zapisują się na koncie od razu.',
-              'Changes are saved to your account immediately.',
-            )
-          }}
-        </p>
-        <Checkbox
-          v-model="confirmed"
-          :label="
-            text(
-              'Potwierdzam przywrócenie domyślnych preferencji konta',
-              'I confirm resetting account preferences',
-            )
-          "
-        />
-        <Button :busy="busy" @click="resetPreferences">{{
-          text('Przywróć domyślne', 'Restore defaults')
-        }}</Button>
-      </FormSection>
-      <FormSection
-        v-if="tab === 'preferences'"
-        :title="text('Powiadomienia e-mail', 'Email notifications')"
-      >
-        <Form
-          v-for="choice in delivery"
-          :key="choice.module + ':' + choice.key"
-          :label="choice.names[locale]"
-          :busy="busy"
-          @submit="saveDelivery(choice)"
-        >
-          <Checkbox
-            v-model="choice.enabled"
-            :disabled="choice.mandatory || choice.sensitive"
-            :label="choice.names[locale]"
-          />
-          <p
-            v-if="choice.mandatory || choice.sensitive"
-            class="text-xs text-muted"
-          >
-            {{
-              text(
-                'Wymagana wiadomość bezpieczeństwa, tylko na główny adres.',
-                'Required security email, sent only to the primary address.',
-              )
-            }}
-          </p>
-          <template v-else>
-            <Checkbox
-              :model-value="choice.recipients.includes('primary')"
-              :label="profile.email"
-              @update:model-value="recipients(choice, 'primary', $event)"
-            />
-            <template
-              v-for="address in profile.secondary_emails"
-              :key="address.public_id"
-              ><Checkbox
-                v-if="address.verified_at"
-                :model-value="choice.recipients.includes(address.public_id)"
-                :label="address.email"
-                @update:model-value="
-                  recipients(choice, address.public_id, $event)
-                "
-            /></template>
-          </template>
-          <template v-if="!choice.mandatory && !choice.sensitive" #actions
-            ><Button
-              type="submit"
-              variant="outline"
-              :disabled="!choice.recipients.length"
-              >{{ text('Zapisz wybór', 'Save selection') }}</Button
-            ></template
-          >
-        </Form>
-      </FormSection>
+        :account="account"
+        :display="display"
+        @feedback-modal="modalFeedback = $event"
+      />
     </template>
   </div>
   <AuthRecoveryCodesDialog

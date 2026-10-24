@@ -112,6 +112,15 @@ AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 | `useAuthWelcome()`                   | Render loading/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                      |
 | `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                      |
 
+The default Preferences presentation uses the same public account replacement seam.
+Retain `saveDelivery(choice)`, `resetPreferences()` with explicit confirmation, and
+`selectTab('preferences')` for deliberate category reload. Copy each optional
+category's enabled/recipient values into a local modal draft instead of mutating
+controller read state before Save. Current revisions, verified-recipient and
+mandatory/sensitive primary-only rules remain server-owned. Reuse the existing
+shared display controller/controls and preference cover; do not add a second
+persistence adapter. Canceling or reloading a failed draft never replays a write.
+
 `useAuthAccount` also exposes `trustedRows`, `trustedCursor`, `canTrustDevice`,
 `loadTrustedDevices(append = false)` and `revokeTrustedDevice(publicId)` for trusted
 browser presentation within the two-factor section. Loading/revoking returns a

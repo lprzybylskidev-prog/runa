@@ -70,7 +70,8 @@ draft, validation and pending state. Wide screens use two
 independent column stacks: details/password on the left, avatar/two-factor on the
 right. A taller neighboring card does not add space between details and password;
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
-another card's draft. Sessions/preferences retain their separate navigation.
+another card's draft. Preferences follows Account and security in the default navigation; sessions and
+optional histories follow it.
 Operation successes and form-wide failures use shared FormNotifications only in
 the top-right viewport, with explicit operation descriptions and recovery actions.
 Persistent errors do not duplicate a banner above the form; linked field errors
@@ -135,6 +136,26 @@ retain the dialog and provide refresh; CSRF errors provide explicit renewal with
 write replay. Disabling/losing a factor never weakens the server's trust checks.
 Legacy trust tab/choose/submit seams remain for custom presentations; new independent
 trusted-device state/actions are documented in the public presentation contract.
+
+Preferences reuses the same independent Card pattern: appearance/language and
+presentation reset form the left stack, with email categories on the right; narrow
+screens stack in the same reading order. Keep the existing two compact preference
+buttons and automatic account persistence/cover. Reset is an explicit ConfirmDialog
+for presentation settings, navigation and declared saved table views; it does not
+change notification subscriptions. Cancel does not write.
+
+Email categories show compact status/recipient summaries. Mandatory/sensitive
+messages have no editable controls and remain primary-only. Each optional category
+opens a Dialog with its own copied enabled/recipient draft, a Switch, primary and
+verified secondary address choices, local nonempty-recipient validation and an
+explicit save. Cancel discards the draft. Save uses the existing current account
+revision and refreshes authoritative delivery/preferences; conflict reload is
+explicit and never replays a write. Errors/recovery actions stay in the modal focus
+layer; successful saves use the shared viewport notification. Reset conflict recovery
+explicitly reloads the page/account snapshot. Empty/loading/failed category reads
+retain a usable Card and explicit retry. Customer replacements retain the existing
+saveDelivery/resetPreferences/selectTab controller seams and public presentation
+provider; no copied persistence or protected-source edits are needed.
 
 Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/Table:
 

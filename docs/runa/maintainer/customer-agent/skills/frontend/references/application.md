@@ -132,3 +132,8 @@ Account factor actions belong in shared dialogs; trusted-device management is pa
 of two-factor settings and new trust requires an active factor plus fresh proof.
 Follow the public account UI/presentation guides for independent controller state,
 secret cleanup, feedback focus and legacy custom-presentation seams.
+
+Account Preferences uses the same independent Card/shared-dialog patterns as
+Account and security. Keep existing compact language/theme controls and account
+persistence; isolate optional notification drafts and confirm presentation resets.
+Use the public account UI/preferences guides for revision and recovery behavior.

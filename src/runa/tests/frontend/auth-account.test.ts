@@ -1678,3 +1678,243 @@ it('factor dialogs keep failures inside their focus boundary and never replay af
     (form.get('[name=current_password]').element as HTMLInputElement).value,
   ).toBe('');
 });
+
+function preferenceDeliveryFixture() {
+  let revision = 3;
+  const categories = [
+    {
+      module: 'runa.auth',
+      key: 'optional',
+      names: { pl: 'Nowe logowanie', en: 'New sign-in' },
+      mandatory: false,
+      sensitive: false,
+      enabled: true,
+      recipients: ['primary'],
+    },
+    {
+      module: 'runa.auth',
+      key: 'required',
+      names: { pl: 'Zmiana hasła', en: 'Password change' },
+      mandatory: true,
+      sensitive: true,
+      enabled: true,
+      recipients: ['primary'],
+    },
+  ];
+  const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).split('?')[0]!.endsWith('/delivery-preferences')) {
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      if (body.operation === 'read')
+        return json({
+          account: id,
+          revision,
+          categories: structuredClone(categories),
+        });
+    }
+    return fetcher(input, init);
+  });
+  write = (path, body) => {
+    if (path.endsWith('/delivery-preferences')) {
+      const category = categories.find(
+        (choice) => choice.key === body.category,
+      )!;
+      category.enabled = body.enabled as boolean;
+      category.recipients = body.recipients as string[];
+      revision++;
+    }
+    return json({ accepted: true });
+  };
+  return categories;
+}
+async function openPreferences(w: ReturnType<typeof mount>) {
+  await loaded(w);
+  await w
+    .get('nav[aria-label="Ustawienia konta"]')
+    .findAll('button')
+    .find((button) => button.text() === 'Preferencje')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('[data-delivery-category=optional]').exists()).toBe(true),
+  );
+}
+
+it('preferences follow account navigation with separate cards and mandatory delivery summaries', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  const labels = w
+    .get('nav[aria-label="Ustawienia konta"]')
+    .findAll('button')
+    .map((button) => button.text());
+  expect(labels.slice(0, 3)).toEqual([
+    'Konto i zabezpieczenia',
+    'Preferencje',
+    'Aktywne sesje',
+  ]);
+  expect(
+    w.findAll(
+      '[data-account-preferences] > section, [data-account-preferences] > div > section',
+    ),
+  ).toHaveLength(3);
+  expect(w.get('[data-preferences-display]').findAll('button')).toHaveLength(2);
+  expect(
+    w.get('[data-delivery-category=required]').find('button').exists(),
+  ).toBe(false);
+  expect(w.get('[data-delivery-category=required]').text()).toContain(
+    'Obowiązkowe',
+  );
+  expect(w.find('[data-preferences-delivery] form').exists()).toBe(false);
+  expect(writes).toHaveLength(0);
+});
+
+it('preference delivery modal validates recipients, isolates canceled drafts and saves one explicit category revision', async () => {
+  preferenceDeliveryFixture();
+  currentProfile.secondary_emails = [
+    {
+      public_id: other,
+      email: 'verified@example.test',
+      verified_at: '2026-10-24T00:00:00Z',
+    },
+    { public_id: 'pending', email: 'pending@example.test', verified_at: null },
+  ];
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  const edit = w.get('[data-delivery-category=optional] button');
+  await edit.trigger('click');
+  const body = new DOMWrapper(document.body);
+  let form = body.get('[data-delivery-editor]');
+  expect(form.text()).toContain('verified@example.test');
+  expect(form.text()).not.toContain('pending@example.test');
+  await form.get('input[role=switch]').setValue(false);
+  expect(w.get('[data-delivery-category=optional]').text()).toContain(
+    'Włączone',
+  );
+  await form
+    .findAll('button')
+    .find((button) => button.text() === 'Anuluj')!
+    .trigger('click');
+  expect(writes).toHaveLength(0);
+  await edit.trigger('click');
+  form = body.get('[data-delivery-editor]');
+  expect(
+    (form.get('input[role=switch]').element as HTMLInputElement).checked,
+  ).toBe(true);
+  await form.findAll('input[type=checkbox]')[1]!.setValue(false);
+  await form.trigger('submit');
+  expect(writes).toHaveLength(0);
+  expect(form.text()).toContain('Wybierz co najmniej jeden adres e-mail.');
+  await form.findAll('input[type=checkbox]')[2]!.setValue(true);
+  await form.trigger('submit');
+  await vi.waitFor(() =>
+    expect(document.querySelector('[data-delivery-editor]')).toBeNull(),
+  );
+  expect(writes).toHaveLength(1);
+  expect(writes[0]).toMatchObject({
+    path: '/api/runa/auth/delivery-preferences',
+    body: {
+      operation: 'write',
+      category: 'optional',
+      revision: 3,
+      enabled: true,
+      recipients: [other],
+    },
+  });
+  expect(w.get('[data-delivery-category=optional]').text()).toContain(
+    'verified@example.test',
+  );
+});
+
+it('preference delivery conflicts require an explicit reload and never replay the edited write', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  await w.get('[data-delivery-category=optional] button').trigger('click');
+  const body = new DOMWrapper(document.body);
+  write = () => json('version_conflict', 409);
+  await body.get('[data-delivery-editor]').trigger('submit');
+  expect(w.findComponent(AuthAccountEditor).exists()).toBe(false);
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  await vi.waitFor(() =>
+    expect(
+      body
+        .findAll('.app-toast button')
+        .some((button) => button.text() === 'Wczytaj aktualne dane'),
+    ).toBe(true),
+  );
+  await body
+    .findAll('.app-toast button')
+    .find((button) => button.text() === 'Wczytaj aktualne dane')!
+    .trigger('click');
+  await flushPromises();
+  expect(writes).toHaveLength(1);
+  expect(body.find('[data-delivery-editor]').exists()).toBe(true);
+});
+
+it('preference reset requires modal confirmation and cancel never resets the account', async () => {
+  preferenceDeliveryFixture();
+  const reset = vi
+    .spyOn(accountPreferences, 'reset')
+    .mockResolvedValue(undefined);
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  await w.get('[data-preferences-reset] button').trigger('click');
+  const body = new DOMWrapper(document.body);
+  expect(body.get('[role=dialog]').text()).toContain('Zapisane układy kolumn');
+  await body.get('[data-dialog-cancel]').trigger('click');
+  expect(reset).not.toHaveBeenCalled();
+  await w.get('[data-preferences-reset] button').trigger('click');
+  await body
+    .findAll('[role=dialog] button')
+    .find((button) => button.text() === 'Przywróć domyślne')!
+    .trigger('click');
+  await vi.waitFor(() => expect(reset).toHaveBeenCalledTimes(1));
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')).toBeNull(),
+  );
+});
+
+it('preference categories recover from failed reads without losing their card or issuing writes', async () => {
+  preferenceDeliveryFixture();
+  const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
+  let fail = true;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (fail && String(input).endsWith('/delivery-preferences')) {
+      fail = false;
+      return json('unavailable', 503);
+    }
+    return fetcher(input, init);
+  });
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  await w
+    .get('nav[aria-label="Ustawienia konta"]')
+    .findAll('button')
+    .find((button) => button.text() === 'Preferencje')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(w.get('[data-preferences-delivery]').text()).toContain(
+      'Ustawienia powiadomień są niedostępne.',
+    ),
+  );
+  await w.get('[data-preferences-delivery] button').trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('[data-delivery-category=optional]').exists()).toBe(true),
+  );
+  expect(writes).toHaveLength(0);
+});
