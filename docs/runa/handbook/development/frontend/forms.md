@@ -4,6 +4,14 @@ Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, 
 
 ## Container and field composition
 
+When several Cards have independent forms, keep their drafts, validation and submit
+boundaries separate. For two columns with uneven card heights, use independent
+column stacks so unrelated card height does not create gaps. Present individual
+security methods with status and explicit setup/disable actions; show only the
+selected operation's proof fields and named submit. Confirm destructive removal
+through shared ConfirmDialog, preserve data on Cancel and report the outcome once
+through FormNotifications.
+
 Form always uses novalidate, prevents native navigation and blocks submission when busy or valid=false. Busy disables the contained fieldset, including actions. Props also provide dirty metadata, accessible label, description and 1/2/3 responsive columns. Slots are default fields, feedback and actions. It emits submit(SubmitEvent) or invalid. After synchronous validation it focuses the first aria-invalid control. Exposed focusInvalid() focuses that control or the feedback wrapper for async failures; call after nextTick when applying server errors.
 
 FormSection is a labeled fieldset with description, responsive columns and optional controlled collapsed state (update:collapsed). Collapsing hides but does not unmount inputs. FormField supplies a visible label, stable supplied/generated control ID, required marker and helper/warning/error descriptions; its slot receives id/describedBy/invalid for custom controls. It does not guess field semantics or business validation. Error messages may be a string or readonly list. Pass exact dot keys such as errors['contacts.0.email'] when binding nested backend errors.
@@ -84,7 +92,7 @@ useDirtyGuard({dirty,enabled?,confirmLeave}) registers beforeunload only while e
 
 useWizard accepts stable keyed steps, validate(key), submit() and optional disabled input. go/next validate intervening forward steps; previous/backward go preserve values without validation. finish revalidates all steps and stops at the earliest error before calling submit. Rejected/thrown validation or submit leaves a retryable failed state; busy prevents duplicate work and scope disposal prevents a later submit. Values/errors remain in the caller’s useForm; neither composable nor Wizard stores drafts. Wizard is a controlled view: pass steps/index/busy/failed and bind go/next/previous/finish; optional progress defaults on. It supplies accessible step/current semantics, busy fieldset, localized controls and active-heading/error focus. Call its exposed focusInvalid after nextTick when an already-failed validation changes messages without changing failed. The feature owns server writes, validation rules and error feedback.
 
-For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, restoring errors inline and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
+For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, reporting failures through FormNotifications inside the modal focus boundary and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
 
 TextInput/NumberInput/Select expose optional size=sm for compact table/filter/toolbars (36px, matching small Buttons); their default md form size stays 44px. Select popup controls/options follow its size. TextInput hideLabel forwards to FormField's associated visually hidden label, keeping compact inline width controls accessible without a visible repeated heading. Form fields keep validation semantics and browser autofill in either size; do not shrink whole ordinary forms merely to demonstrate the variant.
 

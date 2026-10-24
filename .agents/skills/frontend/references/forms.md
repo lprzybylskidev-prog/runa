@@ -11,3 +11,6 @@ Use public FormNotifications for successful saves and form-wide failures only in
 the top-right viewport. Do not duplicate outcome banners above forms. Preserve
 associated field errors, persistent failure/recovery actions and explicit retries;
 increment attempt on each submit. Modal notifications stay within modal focus.
+
+Follow the public forms guide for independent Card forms, uneven-height column
+stacks, explicit security-method actions and confirmed destructive removal.

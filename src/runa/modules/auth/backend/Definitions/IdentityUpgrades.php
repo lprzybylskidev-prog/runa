@@ -7,6 +7,7 @@ use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\UpgradeAccountCards;
 use Runa\Modules\Auth\UpgradeAccountEditor;
+use Runa\Modules\Auth\UpgradeAccountMethods;
 use Runa\Modules\Auth\UpgradeAccountUi;
 use Runa\Modules\Auth\UpgradeAuthorityParticipation;
 use Runa\Modules\Auth\UpgradeAvatarModal;
@@ -58,7 +59,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('account_cards', '0.13.7', '0.14.0', UpgradeAccountCards::class),
             new UpgradeDefinition('avatar_modal', '0.14.0', '0.14.1', UpgradeAvatarModal::class),
             new UpgradeDefinition('form_notifications', '0.14.1', '0.14.2', UpgradeFormNotifications::class),
-            new UpgradeDefinition('shell_avatar', '0.14.2', '0.15.0', UpgradeShellAvatar::class)];
+            new UpgradeDefinition('shell_avatar', '0.14.2', '0.15.0', UpgradeShellAvatar::class),
+            new UpgradeDefinition('account_methods', '0.15.0', '0.15.1', UpgradeAccountMethods::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

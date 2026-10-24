@@ -107,3 +107,6 @@ Use public Avatar for repeated profile-image/initials presentation. Forward the
 ApplicationLayout userAvatar prop in wrappers, and consume current profile display
 through useApplicationSession rather than copying private profile orchestration.
 Profile/image presentation is never authentication or authorization state.
+
+Follow the public forms guide for independent Card forms, uneven-height column
+stacks, explicit security-method actions and confirmed destructive removal.

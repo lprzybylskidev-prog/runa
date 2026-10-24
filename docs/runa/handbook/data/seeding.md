@@ -303,6 +303,26 @@ preserve established credentials on repeats. Local public registration may be
 explicitly enabled through audited revision-checked settings for a requested
 manual scenario; production defaults do not change. Read current readiness from
 the running application, not from owner fixtures or an old verification result.
+For a full user-panel appearance review, use the same audited Auth settings
+command to enable `secondary_emails_enabled`, `own_login_history`,
+`own_account_history`, `email_otp_enabled`, `trusted_devices_enabled`,
+`self_deactivate` and `self_delete`. Keep editing/add/change/remove capabilities
+allowed, both avatar editors available, TOTP/recovery codes enabled and required
+2FA optional. `session_remember_minutes=10080` exposes remembered sign-in. Enable
+all six `notice_*` categories to review delivery preferences; expiry notices still
+require a real applicable expiry. Do not force account enrollment or password
+expiry merely to expose controls. Preserve last-superadministrator protection.
+Audit and Permissions have no independent settings declarations for these user
+views; verify their mandatory Core availability and current grants instead.
+
+Additional addresses appear in **Dodatkowe adresy e-mail**. After verification,
+they are selectable under **Preferencje** for categories that allow secondary
+recipients. Mandatory/sensitive security categories remain primary-only. Trusted
+device issuance and recovery-code controls depend on actual enrolled factors;
+mutually exclusive states must be reviewed with the documented fixture accounts
+and actual guarded flows, rather than bypassing security. These are explicit local
+review settings, not changed production defaults or automatic reopen behavior.
+
 This targeted operational preparation does not constitute full integrated
 browser/installation acceptance or the owner's visual acceptance.
 

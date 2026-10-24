@@ -64,9 +64,11 @@ account access, without speculative business statistics or management navigation
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
 The default account editor groups identity, private avatar, password and two-factor
-settings in four shared Cards. Each Card has a visible Form and its own outlined
-save action, credential draft, validation and submission boundary. Wide screens
-use two columns; narrow screens use one. Saving one card does not submit or clear
+settings in four shared Cards. Each Card has a visible Form and an independent
+submission boundary, credential draft and validation. Wide screens use two
+independent column stacks: details/password on the left, avatar/two-factor on the
+right. A taller neighboring card does not add space between details and password;
+narrow screens retain the same reading order in one column. Saving one card does not submit or clear
 another card's draft. Sessions/preferences retain their separate navigation.
 Operation successes and form-wide failures use shared FormNotifications only in
 the top-right viewport, with explicit operation descriptions and recovery actions.
@@ -94,7 +96,19 @@ files, decode failures and output above the server's current avatar_max_kib stop
 submission. Original files/object URLs stay in memory and are released on replacement
 or unmount. The backend remains authoritative for MIME, size, dimensions and storage.
 
-Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/Select/FileInput/Table:
+Avatar removal uses an outlined danger button and shared ConfirmDialog. Cancel
+preserves the current image; confirming sends only the versioned deletion and
+reports its result through the existing top-right notifications. Pending image
+selection must first be saved or discarded before removing the stored image.
+
+The two-factor card lists each policy-available method with its enabled/disabled
+state, explanation and explicit Set up/Disable action, rather than an operation
+select. Selecting a method reveals its current-password/proof fields and a named
+submit; Cancel clears the local setup/proof draft. Authenticator enrollment still
+requires confirming its code and acknowledging recovery codes. Email enrollment
+requires a verified primary address; replacing recovery codes remains explicit.
+
+Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/Table:
 
 - Versioned exclusive naming/login edits and protected primary email change.
 - Password change, optional authenticator/email enrollment, factor removal and

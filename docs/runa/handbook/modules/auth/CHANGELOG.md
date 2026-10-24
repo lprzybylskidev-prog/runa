@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.15.1
+
+Stack account details/password independently of avatar/security card heights.
+Replace the two-factor operation select with explicit method status and setup/disable
+actions. Require shared modal confirmation before avatar deletion. Independent
+password saves ignore unrelated factor drafts. Source-only forward edge; local
+manual-review feature settings remain outside module/production defaults.
+
 ## 0.15.0
 
 Expose optional guarded profile presentation through useApplicationSession and

@@ -1012,6 +1012,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19p. Remove the shell avatar frame.
   - Owner requests no pixelated-looking border around the top-bar avatar.
     Preserve its circular image, touch target and visible keyboard focus.
+- [x] 19q. Polish account card flow, confirm avatar removal, expose clear two-factor method controls and enable local full-feature manual review.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2841,3 +2842,58 @@ architectural premise requires discussion before dependent work.
   reference the shared catalogue and preserve keyboard focus, so no new rule needed.
   No data/settings/resource changes; services, caches, reports and backups preserved.
   Point 20 remains gated by explicit owner frontend appearance acceptance.
+
+## Point 19q delivery
+
+- Owner requests compact details/password stacking, confirmed avatar deletion,
+  explicit two-factor controls and all available self-service frontend features
+  enabled for local manual review. Default account cards now use independent
+  details/password and avatar/security column stacks, collapsing in reading order
+  on narrow screens. Each operation retains its own form and credential draft.
+- Avatar removal uses the shared ConfirmDialog with cancellation and busy guards.
+  It sends only the existing versioned DELETE after confirmation; failed requests
+  keep the modal open for explicit recovery/retry. Only the active feedback owner
+  renders top-right notifications, inside the modal focus boundary when open.
+  Existing crops must first be saved/discarded; cancellation preserves the image.
+- The two-factor card lists authenticator/email methods with status, descriptions
+  and explicit setup/disable buttons. Selected operations reveal scoped proof and
+  named submit/cancel. Cancellation clears local credentials/enrollment secrets;
+  enrollment confirmation, recovery-code acknowledgement and server authority
+  remain intact. Password saves no longer reject an unrelated selected security
+  operation in a different card.
+- Auth advances compatibly from 0.15.0 to 0.15.1 through the source-only
+  account_methods edge, applied locally. Audit 0.5.0 and Permissions 0.5.3 remain
+  compatible; Permissions' ^0.15.0 Auth dependency needs no change. No schema,
+  backend API, credentials, stored avatar or dependency changes.
+- Through the supported revision/generation-checked audited settings command,
+  local Auth settings revision 2 enables secondary addresses and their existing
+  add/change/remove permissions, own login/account histories, trusted devices,
+  email OTP, lifecycle self-service and all six mail-notice categories. Existing
+  TOTP/recovery/edit/avatar capabilities remain enabled; remembered sign-in is
+  enabled for 10080 minutes. Required 2FA stays optional. Audit/Permissions have no
+  settings declarations for these views and their Core runtime checks pass.
+  Production defaults and last-superadministrator/security invariants are unchanged.
+- Public account/forms/seeding guides describe current behavior and the explicit
+  full-feature review scenario, including verified secondary recipients and
+  primary-only sensitive mail. Owner/customer frontend references point to the
+  shared form pattern. Root contracts need no change. The upstream skill-creator
+  validator could not start because its Python environment lacks PyYAML; no
+  dependency was added. Only existing reference text changed; entrypoint/frontmatter
+  remain unchanged and references were reviewed directly.
+- Seven focused Chromium regressions pass: TOTP enrollment/recovery acknowledgement,
+  independent cropped-avatar save, independent password save with another security
+  draft, removal cancellation/confirmation, one modal error with explicit retry,
+  direct email enrollment/cancel cleanup and correct chosen-method disable/proof.
+  Initial assertions were corrected for the additional Dialog, obsolete checkbox,
+  asynchronous reload and nested danger-tone close button. Core source/runtime and
+  version diagnostics pass; current Vite client assets published for manual review.
+- Real served browser confirmed all user-panel tabs, both factor methods, secondary
+  address form, delivery categories and trust view. Desktop password card follows
+  details with the intended 24px gap regardless of avatar height; 390px mobile has
+  no horizontal overflow. Light/dark screenshots inspected; both avatars decode
+  at 512px, confirmation/cancel works and no browser page errors were reported.
+  Screenshots remain private under .runtime/dev/manual-auth/account-methods.
+  No actual avatar deletion, factor enrollment or lifecycle operation was performed
+  on the owner's account. No Docker resources created/removed; active services,
+  databases, caches, reports and backups preserved. Point 20 remains gated by
+  explicit owner frontend appearance acceptance; no full quality gate was run.

@@ -23,6 +23,7 @@ import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
+const modalFeedback = ref(false);
 const {
   text,
   locale,
@@ -308,6 +309,7 @@ const passwordHint = computed(() =>
         <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
       </Alert>
       <AuthAccountEditor
+        @feedback-modal="modalFeedback = $event"
         v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
         :account="account"
         :password-hint="passwordHint"
@@ -671,6 +673,7 @@ const passwordHint = computed(() =>
     </template>
   </div>
   <FormNotifications
+    v-if="!modalFeedback"
     :attempt="feedbackAttempt"
     :error="failure ? failureText : ''"
     :success="notice"

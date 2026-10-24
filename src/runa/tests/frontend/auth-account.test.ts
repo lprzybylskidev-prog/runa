@@ -8,7 +8,7 @@ import {
   Button,
   Dialog,
   FileInput,
-  Select,
+  ConfirmDialog,
 } from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
@@ -367,7 +367,11 @@ it('uses secondary address identity and account revision for change and explicit
 it('optional TOTP setup retains its private key only until confirmation and requires saved-code acknowledgement', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  w.getComponent(Select).vm.$emit('update:modelValue', 'totpBegin');
+  await w
+    .get('[data-account-section=security]')
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!
+    .trigger('click');
   await flushPromises();
   write = (path) =>
     json(
@@ -566,16 +570,14 @@ it('account avatar card crops and saves independently without clearing other car
   currentProfile.has_avatar = true;
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  const remove = w
-    .findAll('label')
-    .find((label) => label.text().includes('Usuń obecne zdjęcie'))!;
-  await remove.get('input').setValue(true);
   await w.get('input[name="name"]').setValue('Changed name');
   await w.get('input[name="password"]').setValue('unsaved-new-password');
   w.getComponent(FileInput).vm.$emit('update:modelValue', [
     await cropImageFile(),
   ]);
-  const dialog = w.getComponent(Dialog);
+  const dialog = w
+    .findAllComponents(Dialog)
+    .find((dialog) => dialog.props('title') === 'Kadrowanie zdjęcia')!;
   await vi.waitFor(() =>
     expect(w.getComponent(AuthAvatarCropper).find('canvas').exists()).toBe(
       true,
@@ -602,7 +604,6 @@ it('account avatar card crops and saves independently without clearing other car
   expect(writes[0]?.path).toBe('/api/runa/auth/profile/avatar');
   expect(writes[0]?.body.version).toBe('5');
   expect(writes[0]?.body.avatar).toBeInstanceOf(File);
-  expect((remove.get('input').element as HTMLInputElement).checked).toBe(false);
   expect(
     (w.get('input[name="password"]').element as HTMLInputElement).value,
   ).toBe('unsaved-new-password');
@@ -616,6 +617,11 @@ it('account avatar card crops and saves independently without clearing other car
 it('account password card submits independently of invalid account details', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
+  await w
+    .get('[data-account-section=security]')
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!
+    .trigger('click');
   await w.get('input[name="name"]').setValue('');
   await w.get('input[name="email"]').setValue('invalid');
   const form = w.get('[data-account-section=password]');
@@ -860,4 +866,132 @@ it('optional shell profile read never blocks the session and cannot restore pres
   finish(json({ ...currentProfile, has_avatar: true }));
   await flushPromises();
   expect(state.profile.value).toBeUndefined();
+});
+
+it('avatar removal requires confirmation, cancel preserves the image and confirmation submits only deletion', async () => {
+  currentProfile.has_avatar = true;
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const remove = () =>
+    w
+      .get('[data-account-section=avatar]')
+      .findAll('button')
+      .find((button) => button.text() === 'Usuń avatar')!;
+  await remove().trigger('click');
+  const dialog = w.getComponent(ConfirmDialog);
+  expect(dialog.props('modelValue')).toBe(true);
+  expect(writes).toHaveLength(0);
+  dialog.vm.$emit('update:modelValue', false);
+  await flushPromises();
+  expect(currentProfile.has_avatar).toBe(true);
+  expect(writes).toHaveLength(0);
+  await remove().trigger('click');
+  write = () => {
+    currentProfile = { ...currentProfile, has_avatar: false, version: 6 };
+    return json({ accepted: true });
+  };
+  dialog.vm.$emit('confirm');
+  await flushPromises();
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.path).toContain('/profile/avatar');
+  await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
+  expect(currentProfile.has_avatar).toBe(false);
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.find(
+        ([path, init]) =>
+          String(path).endsWith('/profile/avatar') && init?.method === 'DELETE',
+      ),
+  ).toBeDefined();
+  await vi.waitFor(() =>
+    expect(w.find('[data-account-section=avatar]').text()).not.toContain(
+      'Usuń avatar',
+    ),
+  );
+});
+
+it('two-factor method controls enable email codes directly without an operation select', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const form = w.get('[data-account-section=security]');
+  expect(form.find('select').exists()).toBe(false);
+  await form
+    .findAll('button')
+    .filter((button) => button.text() === 'Skonfiguruj')[0]!
+    .trigger('click');
+  await form
+    .get('[name=current_password]')
+    .setValue('discard-this-security-draft');
+  await form
+    .findAll('button')
+    .find((button) => button.text() === 'Anuluj')!
+    .trigger('click');
+  expect(form.find('[name=current_password]').exists()).toBe(false);
+  expect(writes).toHaveLength(0);
+  await form
+    .findAll('button')
+    .filter((button) => button.text() === 'Skonfiguruj')[1]!
+    .trigger('click');
+  expect(
+    (form.get('[name=current_password]').element as HTMLInputElement).value,
+  ).toBe('');
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.trigger('submit');
+  await vi.waitFor(() =>
+    expect(writes.map((item) => item.path)).toEqual([
+      '/api/runa/auth/security/email-enable',
+    ]),
+  );
+});
+
+it('failed avatar deletion keeps confirmation open and reports one modal error before an explicit retry', async () => {
+  currentProfile.has_avatar = true;
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w
+    .get('[data-account-section=avatar]')
+    .findAll('button')
+    .find((button) => button.text() === 'Usuń avatar')!
+    .trigger('click');
+  const dialog = w.getComponent(ConfirmDialog);
+  write = () => json('unexpected', 500);
+  dialog.vm.$emit('confirm');
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.app-toast > .app-alert[data-tone=danger]'),
+    ).toHaveLength(1),
+  );
+  expect(dialog.props('modelValue')).toBe(true);
+  expect(currentProfile.has_avatar).toBe(true);
+  expect(writes).toHaveLength(1);
+  write = () => {
+    currentProfile = { ...currentProfile, has_avatar: false, version: 6 };
+    return json({ accepted: true });
+  };
+  dialog.vm.$emit('confirm');
+  await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
+  expect(writes).toHaveLength(2);
+});
+it('two-factor disable acts on the chosen enrolled method and retains current-factor proof', async () => {
+  currentSecurity = { ...security, enrolled: ['totp', 'email'] };
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const form = w.get('[data-account-section=security]');
+  await form
+    .findAll('button')
+    .filter((button) => button.text() === 'Wyłącz')[1]!
+    .trigger('click');
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.get('[name=code]').setValue('123456');
+  await form.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]).toMatchObject({
+    path: '/api/runa/auth/security/disable',
+    body: {
+      target: 'email',
+      code: '123456',
+      current_password: 'a-long-test-password',
+    },
+  });
 });

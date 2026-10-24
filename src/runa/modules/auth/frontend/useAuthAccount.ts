@@ -664,7 +664,18 @@ export function useAuthAccount(accountId: string) {
       return;
     }
     // A factor proof may be single-use. Never reuse it for a second protected write.
-    if (plan.includes('password') && overviewAction.value !== 'none') {
+    if (
+      plan.includes('password') &&
+      plan.some((operation) =>
+        [
+          'totpBegin',
+          'totpConfirm',
+          'emailEnable',
+          'disable',
+          'recoveryRotate',
+        ].includes(operation),
+      )
+    ) {
       cleanErrors();
       errors.password = text(
         'Zapisz nowe hasło i zmianę weryfikacji osobno.',
