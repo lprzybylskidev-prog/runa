@@ -273,7 +273,8 @@ the server's fixed byte limit still applies but is omitted from helper copy. Omi
 redundant verified-email, secondary-address introduction, avatar instructions,
 enrolled-method summaries/status lines, trust explanation and delivery-editor
 introduction. Keep actionable verification errors and enrollment prerequisites.
-The avatar preview is centered within its Card.
+The avatar preview is centered within its Card. Trust actions appear directly
+inside the two-factor Card without a redundant subsection heading.
 
 Trusted-device management is visible only when trustedRows contains an active
 record from the existing guarded current-device endpoint. Load that list at

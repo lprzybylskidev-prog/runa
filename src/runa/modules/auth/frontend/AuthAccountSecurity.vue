@@ -308,9 +308,6 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         class="space-y-3 border-t border-line pt-4"
         data-trusted-devices
       >
-        <h4 class="text-sm font-semibold">
-          {{ text('Zaufane urządzenia', 'Trusted devices') }}
-        </h4>
         <p v-if="!canTrustDevice" class="text-xs text-muted">
           {{
             text(

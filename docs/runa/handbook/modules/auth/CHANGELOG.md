@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 0.21.3
+
+Remove the redundant trusted-device heading inside the two-factor Card. Retain
+trust actions and dialog titles. Source-only forward edge; no behavior/schema change.
+
 ## 0.21.2
 
 Remove trailing padding from the final factor row so the following section uses

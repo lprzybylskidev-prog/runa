@@ -65,6 +65,9 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests removing the trusted-device subsection title from
+  the two-factor Card. Point 19zg retains actions and dialog titles unchanged.
+
 - 2026-10-25 — Owner requests removing separators above form submits in the user
   panel and Preferences. Point 19zf fixes the shared Form actions presentation;
   retain spacing and separators between independent sections. No behavior change.
@@ -1102,6 +1105,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zd. Remove redundant account copy, center avatar and show management only for active trusted devices.
 - [x] 19ze. Remove duplicate spacing below the final two-factor method row.
 - [x] 19zf. Keep shared form actions with their fields without a separator.
+- [x] 19zg. Remove the redundant trusted-device subsection heading.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3551,3 +3555,22 @@ architectural premise requires discussion before dependent work.
   module versions remain unchanged. No schema, dependency or Docker resource change.
   No new tests for this reversible class-only correction. Final point 20 remains
   appearance-gated; no broad verification or release started.
+
+### Point 19zg — Remove redundant trust heading
+
+- Removed the trusted-device subsection heading from the two-factor Card in PL/EN;
+  retained actions, enrollment prerequisites, independent separator and dialog titles.
+- Auth PATCH 0.21.2 -> 0.21.3 uses the existing no-op presentation upgrade handler
+  for its source-only forward edge. Updated central module changelog/README and
+  public account presentation guidance. Permissions ^0.21.0 remains compatible.
+- Published Vite assets; focused served-browser inspection with synthetic API checks
+  the missing heading at desktop/light and mobile/dark sizes. No overflow/page errors.
+  Source/runtime module contracts and prior-HEAD module-version diagnostics passed
+  after supported registry synchronization. Applied only the pending source-only
+  Auth upgrade through the existing local preparation diagnostic: no scoped module
+  update CLI exists, so the fixture invokes the guarded ModuleUpdates API directly.
+  The initial browser check could not enter the pending module; it passed after
+  this update. No data reset or security change.
+- Existing owner/customer guidance already requires concise copy and delegates to
+  the updated public account guide; no new reusable instruction is necessary.
+  No dependency or Docker resources changed. Final point 20 remains gated.
