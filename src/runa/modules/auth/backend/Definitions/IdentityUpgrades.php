@@ -19,6 +19,7 @@ use Runa\Modules\Auth\UpgradePresentation;
 use Runa\Modules\Auth\UpgradeProfiles;
 use Runa\Modules\Auth\UpgradeSessions;
 use Runa\Modules\Auth\UpgradeWelcomeHeader;
+use Runa\Modules\Auth\UpgradeWelcomeLinks;
 
 final class IdentityUpgrades implements UpgradeProvider
 {
@@ -38,7 +39,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('core_integration', '0.10.1', '0.11.0', UpgradeCoreIntegration::class),
             new UpgradeDefinition('development_fixtures', '0.11.0', '0.12.0', UpgradeDevelopmentFixtures::class),
             new UpgradeDefinition('presentation', '0.12.0', '0.13.0', UpgradePresentation::class),
-            new UpgradeDefinition('welcome_header', '0.13.0', '0.13.1', UpgradeWelcomeHeader::class)];
+            new UpgradeDefinition('welcome_header', '0.13.0', '0.13.1', UpgradeWelcomeHeader::class),
+            new UpgradeDefinition('welcome_links', '0.13.1', '0.13.2', UpgradeWelcomeLinks::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

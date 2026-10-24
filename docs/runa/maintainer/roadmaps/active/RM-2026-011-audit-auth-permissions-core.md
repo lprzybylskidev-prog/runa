@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner accepts header placement but requires quiet ordinary text
+  links instead of prominent buttons for welcome authentication/application entry.
+  Point 19d applies this visual correction with accessible hover/focus/touch states
+  and republishes current assets. Full point 20 remains gated by visual acceptance.
+
 - 2026-10-24 — Owner visual review requires welcome login/conditional registration
   beside language/theme controls in the page header, including authenticated entry
   in that same location. Point 19c repairs presentation through a reusable public
@@ -933,6 +938,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Synchronize component/page/customization and owner/customer guidance, module
     version/changelog and selected header regression. Publish and inspect the
     actual desktop/mobile themed welcome. No broad verification before point 20.
+- [x] 19d. Reduce welcome header entry visual emphasis to text links.
+  - Requires 19c. Retain header placement, policy/session navigation and shared
+    preferences. Use quiet native anchors with accessible focus, touch and motion
+    behavior; publish and inspect desktop/mobile light/dark for continued review.
+  - Synchronize current guidance, independent module version and commit; no broad
+    verification or appearance acceptance inferred before point 20.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2334,3 +2345,26 @@ architectural premise requires discussion before dependent work.
 - No Docker resources created/removed, database reset or credential change.
   Existing data, caches, reports, services, backups and rollback material preserved.
   Point 20 remains gated by explicit owner frontend appearance acceptance.
+
+## Point 19d delivery
+
+- Owner retained header location but rejected prominent button presentation. Replaced
+  welcome entry LinkButton instances with local native text anchors: muted text,
+  no surface/border, 16px spacing, hover underline/primary text, visible focus and
+  44px touch area. Signed-in application entry follows the same presentation;
+  registration policy and shared locale/theme controls remain unchanged.
+- Small color transition uses the accepted 160ms control rhythm and disables under
+  reduced motion. No shared Button/LinkButton behavior/style contract changed.
+  Updated page/customization and owner/customer frontend references with the owner's
+  reusable welcome-link visual direction; existing Vue/Tailwind/root guidance applies.
+- Auth PATCH 0.13.1 -> 0.13.2 with source-only edge and central changelog; existing
+  Permissions ^0.13.0 remains compatible. Applied local forward edge without data/
+  credential changes and published current Vite assets for continued manual review.
+- Actual served Chromium desktop 1440 and phone 390 in both themes passed: native
+  header guest links, transparent background/zero border, 44px touch target, visible
+  focused outline and no overflow. Inspected rendered desktop and retained images
+  under .runtime/dev/manual-auth/header-text. Module version check passed. No broad
+  suites/static analysis/image build/scanner/final quality ran; hooks still apply.
+- No temporary Docker resource, reset or credential change. Data, services,
+  caches, backups, rollback material and reports preserved. Point 20 still awaits
+  explicit owner frontend appearance acceptance.

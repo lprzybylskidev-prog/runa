@@ -76,3 +76,7 @@ language/theme controls while retaining the default identity/header. Welcome pla
 sign-in, policy-dependent registration and authenticated entry here; these controls
 do not belong in the welcome content panel. The header action group wraps on narrow
 screens. Replacing the whole header replaces this default group as well.
+
+Welcome header authentication/application entry uses quiet text links beside
+preferences, without button surfaces/borders. Preserve muted default text,
+underline/color on hover, visible keyboard focus and 44px touch targets.

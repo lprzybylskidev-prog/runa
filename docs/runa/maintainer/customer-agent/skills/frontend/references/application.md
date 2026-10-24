@@ -64,3 +64,7 @@ beside language/theme controls using MinimalLayout's public header-actions slot.
 Forward this slot in custom layout wrappers; preserve the default identity and
 preferences rather than copying their implementation into pages. Keep narrow
 headers wrapping without overflow.
+
+Welcome header authentication/application entry uses quiet text links beside
+preferences, without button surfaces/borders. Preserve muted default text,
+underline/color on hover, visible keyboard focus and 44px touch targets.

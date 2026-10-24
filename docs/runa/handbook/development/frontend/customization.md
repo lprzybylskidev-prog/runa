@@ -192,3 +192,7 @@ Welcome entry links belong in MinimalLayout's public `header-actions` slot besid
 language/theme preferences, including the signed-in application link. Customer
 layout wrappers forward this slot; replacing the full header deliberately owns its
 identity, entry and preference presentation. The default slot remains page content.
+
+Welcome header authentication/application entry uses quiet text links beside
+preferences, without button surfaces/borders. Preserve muted default text,
+underline/color on hover, visible keyboard focus and 44px touch targets.

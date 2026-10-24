@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.13.2
+
+Render welcome header entry actions as quiet text anchors with hover/focus and
+44px touch targets, retaining location, session and registration policy.
+Source-only 0.13.1 -> 0.13.2 edge; no data/settings change.
+
 ## 0.13.1
 
 Move welcome sign-in, conditional registration and authenticated entry links into
