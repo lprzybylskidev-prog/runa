@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 0.5.9
+
+Align the required Auth constraint with compatible account refresh/controller
+additions in Auth 0.21.0. Source-only forward edge; no permission policy or schema
+change.
+
 ## 0.5.8
 
 Align the required Auth range to ^0.20.0 for the additive full-preferences reset

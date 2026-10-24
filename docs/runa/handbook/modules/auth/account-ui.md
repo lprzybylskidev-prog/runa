@@ -146,8 +146,9 @@ value does not save or animate. Shell controls retain their existing behavior.
 Optional email categories are edited directly in independent Form rows: a Switch
 controls subscription, a multiple Select chooses primary/verified-secondary
 recipients, and dirty rows expose Save/Revert. Edits stay local until Save. Saving,
-reverting or explicitly reloading one row preserves other unsaved row drafts.
-Incoming reloads update clean rows without overwriting dirty ones. Recipient
+reverting or refreshing one row preserves other unsaved row drafts.
+Incoming snapshots merge clean/disjoint fields without overwriting dirty ones;
+overlapping recipient edits use local FormConflict decisions. Recipient
 selection is disabled while the category is off, preserving its configured values.
 Known empty-recipient errors stop locally; server revision/recipient/security rules
 remain authoritative. Required-message summaries are omitted from Preferences;
@@ -243,3 +244,24 @@ Account data tables consume the global default-sortable column contract. Date
 columns compare original instants while displaying localized dates; history sorting
 only covers rows already loaded through the existing cursor. Revocation permissions,
 current-session sign-out and trusted-device Revoke behavior remain unchanged.
+
+## Automatic account refresh
+
+The public account controller refreshes profile, security/options, active lists,
+loaded trusted devices and visible delivery settings on tab changes, visible return,
+window focus/pageshow and rejected conflicts. Reads coalesce and retain account/view
+fences. It does not poll, remount the view, move focus or replay writes. Read failures
+preserve drafts and expose Retry loading. Preference hydration refreshes visible
+delivery categories; theme, navigation, table and delivery writes share one queue
+and current account revision. Session refresh of the same account retains cached
+presentation until the authoritative snapshot arrives; logout/switch still fences it.
+
+Clean profile fields merge automatically. Dirty identity/email fields, secondary
+address editors, avatar files and password/factor drafts remain in memory. Overlapping
+identity/secondary/recipient edits render FormConflict locally. The controller
+exposes refresh, detailConflicts/resolveDetails and avatarConflict/resolveAvatar;
+resolution changes local state only and requires an explicit subsequent save.
+The current profile has no separate avatar-content revision, so an external profile
+version change while an image draft exists conservatively requires local image
+review; it cannot safely prove that replacement bytes are unchanged. Submission,
+cancel, expiry and factor-proof cleanup retain their existing security contracts.

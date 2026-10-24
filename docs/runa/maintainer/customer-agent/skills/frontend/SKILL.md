@@ -13,3 +13,9 @@ Use docs/runa/handbook/development/frontend/customization.md for every Runa/modu
 view, including future modules: retain defaults, compose public layouts/components
 or own the frontend in src/app through supported contracts. Keep private platform
 source protected and reuse security/session controllers rather than copying them.
+
+For data views, follow the public forms guide's automatic read reconciliation
+contract: refresh reads in place, merge clean/disjoint values, preserve dirty drafts
+and use local decisions only for overlapping/ambiguous changes. Share aggregate
+mutation queues/revisions. Never replay failed writes, advance an unreconciled token,
+reinitialize an edited form or demand a page reload after a successful refresh.

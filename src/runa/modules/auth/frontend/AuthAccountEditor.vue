@@ -9,6 +9,7 @@ import {
   FileInput,
   Form,
   FormNotifications,
+  FormConflict,
   RadioGroup,
   TextInput,
 } from '@/runa/ui';
@@ -42,6 +43,10 @@ const {
   failure,
   failureText,
   notice,
+  detailConflicts,
+  resolveDetails,
+  avatarConflict,
+  resolveAvatar,
 } = props.account;
 const detailForm = ref<{ focusInvalid: () => void }>();
 const avatarForm = ref<{ focusInvalid: () => void }>();
@@ -55,6 +60,18 @@ const removalAttempt = ref(0);
 watch(removeOpen, (value) => {
   if (value) removalAttempt.value = 0;
 });
+watch(
+  () => profile.value?.version,
+  (next, before) => {
+    if (
+      removeOpen.value &&
+      !busy.value &&
+      before !== undefined &&
+      next !== before
+    )
+      avatarConflict.value = true;
+  },
+);
 watch(
   () => removeOpen.value || secondaryModalOpen.value || securityModalOpen.value,
   (value) => emit('feedback-modal', value),
@@ -169,6 +186,22 @@ function closeCrop(value: boolean) {
           :busy="busy"
           @submit="save('details')"
         >
+          <FormConflict
+            v-if="Object.keys(detailConflicts).length"
+            :current="
+              Object.entries(detailConflicts)
+                .filter(([key]) => key !== 'naming')
+                .map(
+                  ([key, value]) =>
+                    `${labels[key] ?? (key === 'email' ? text('Adres e-mail', 'Email address') : key)}: ${value || '—'}`,
+                )
+                .join('\n')
+            "
+            :locale="locale"
+            :busy="busy"
+            @accept="resolveDetails()"
+            @keep="resolveDetails(true)"
+          />
           <RadioGroup
             v-if="has('own_name_editable')"
             v-model="naming"
@@ -309,6 +342,32 @@ function closeCrop(value: boolean) {
           :busy="busy || cropping"
           @submit="save('avatar')"
         >
+          <FormConflict
+            v-if="avatarConflict"
+            :current="
+              text(
+                'Sprawdź aktualne zdjęcie przed zastąpieniem go swoim plikiem.',
+                'Review the current image before replacing it with your file.',
+              )
+            "
+            :locale="locale"
+            :busy="busy"
+            @accept="
+              resolveAvatar();
+              originals = [];
+            "
+            @keep="resolveAvatar(true)"
+          >
+            <Avatar
+              :src="
+                profile.has_avatar
+                  ? `/api/runa/auth/profile/avatar?v=${profile.version}`
+                  : ''
+              "
+              :initials="profile.initials"
+              :size="80"
+            />
+          </FormConflict>
           <div class="flex items-center gap-4">
             <Avatar
               :src="
@@ -399,6 +458,24 @@ function closeCrop(value: boolean) {
     :busy="busy"
     @confirm="confirmRemoval"
   >
+    <FormConflict
+      v-if="avatarConflict"
+      :current="text('Aktualne zdjęcie profilowe', 'Current profile image')"
+      :allow-keep="false"
+      :locale="locale"
+      :busy="busy"
+      @accept="resolveAvatar(true)"
+    >
+      <Avatar
+        :src="
+          profile?.has_avatar
+            ? `/api/runa/auth/profile/avatar?v=${profile.version}`
+            : ''
+        "
+        :initials="profile?.initials ?? ''"
+        :size="80"
+      />
+    </FormConflict>
     <p class="text-sm leading-7">
       {{
         text(
@@ -417,9 +494,6 @@ function closeCrop(value: boolean) {
       <template #actions>
         <Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
           text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button>
-        <Button v-if="failure === 'conflict'" @click="account.initialize">{{
-          text('Wczytaj aktualne dane', 'Reload current values')
         }}</Button>
       </template>
     </FormNotifications>

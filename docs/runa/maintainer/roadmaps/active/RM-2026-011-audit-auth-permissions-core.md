@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner approves automatic read refresh across current account views,
+  preservation of dirty drafts, shared revisions for own preference saves and
+  form-local conflict decisions only for overlapping changes. Point 19zc supplies
+  shared serialization, lifecycle-fenced refresh on visible return/tab changes and
+  conflict recovery without replaying writes or resetting the page; synchronize
+  owner/customer skills and public contracts. No polling or security-policy change.
+
 - 2026-10-24 — Owner requests stacked Preferences Cards, removal of theme/save
   helper copy and the Always enabled summary, and actual multi-address recipient
   selection. Point 19zb repairs only this presentation; mandatory security delivery
@@ -1081,6 +1088,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19z. Refine Preferences header reset, explicit display choices and inline delivery editing.
 - [x] 19za. Record owner-approved module stabilization and later MINOR/PATCH/MAJOR policy in owner/customer guidance and closure requirements.
 - [x] 19zb. Simplify and stack Preferences Cards; repair multi-address selection.
+- [x] 19zc. Refresh current account views automatically, preserve drafts and reconcile conflicts locally; record reusable guidance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3427,3 +3435,46 @@ architectural premise requires discussion before dependent work.
   Root/Vue/Tailwind/security guidance already covers these unchanged public seams
   and needs no duplicate rule. No Docker resources created or removed. Final
   verification and release remain gated by explicit owner appearance acceptance.
+
+### Point 19zc — Automatic read reconciliation and local conflict decisions
+
+- Added coalesced, account/view-fenced controller refresh on tab changes, visible
+  return, focus/pageshow and HTTP 409. Retain trailing focus invalidations during
+  pending reads/busy operations. Current profile/security/options, visible lists,
+  loaded trusted devices and delivery categories refresh without remount, polling,
+  focus changes or destructive form initialization. Failed reads retain drafts and
+  expose Retry loading; rejected writes are never replayed.
+- Three-way profile/delivery comparisons merge clean/disjoint values and retain
+  dirty identity, secondary email, password/factor and avatar drafts. Overlapping
+  fields use shared public FormConflict with current values and explicit local
+  accept/keep decisions before a subsequent save. Removed addresses cannot be kept.
+  Avatar content lacks a separate revision, so external profile changes with an
+  image draft conservatively require local review and show the current server image.
+- Serialized presentation and delivery mutations through the shared account
+  preference queue; delivery re-reads/compares its category within the queue before
+  using a newer revision. A counter update alone cannot authorize an unreconciled
+  overwrite. Conflicts refresh reads and cancel older queued mutation intents.
+  Same-account session refresh retains the cache until replacement; logout, account
+  switch, forbidden/restricted sessions and late results retain their fences.
+- Auth MINOR 0.20.1 -> 0.21.0 adds public refresh/detail/avatar resolution seams and
+  optional secondary baselineEmail; Permissions PATCH 0.5.8 -> 0.5.9 aligns Auth
+  ^0.21.0. Added source-only forward edges, central changelogs and current READMEs.
+  Existing PHP API/framework versions and Audit remain unchanged. Scoped source,
+  runtime and prior-HEAD module-version diagnostics passed; applied local source-only
+  updates without resetting databases or changing owner sessions/credentials.
+- Focused browser-runner diagnostics cover revision serialization, automatic conflict
+  reads/no replay, canceled queued intents, disjoint/overlapping fields, preserved
+  files/passwords, secondary edits, trailing focus, same-account cache and forbidden
+  session clearing. Existing scoped session/401/account-switch, independent avatar/
+  password, factor disable and trusted-device management regressions passed.
+- Served-browser synthetic API previews passed at 1440/768/390px, light/dark and EN:
+  actual display then multi-recipient delivery saves share revisions; focus refresh
+  retains a dirty name, updates untouched login and presents/resolves local conflict
+  without a write. No page errors/overflow. Inspected mobile local-conflict screenshot;
+  preserved evidence under .runtime/dev/manual-auth/account-refresh. Published assets.
+- Updated canonical public forms/components/account/preferences/customization guides,
+  root owner/customer rules, owner/customer frontend skills and Vue async references.
+  Backend/security skills retain their existing server-authority, transaction,
+  cancellation and secret-cleanup rules; no duplicate rule needed. No dependency,
+  schema, authorization policy or Docker resource change. No broad/final gate run;
+  point 20 remains gated by explicit owner appearance acceptance.

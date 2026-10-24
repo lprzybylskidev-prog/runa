@@ -30,7 +30,7 @@ useForm accepts finite JSON form data only (no Date/File/classes/cycles/nonfinit
 
 submit(action, validate?) validates first, blocks known errors/concurrent submissions, passes an isolated snapshot and holds busy until settlement. Success marks only that submitted snapshot clean, so programmatic edits during the request remain dirty. clearErrors(name?) and setError(name, messages) support feature-owned immediate validation. Validators should return fresh FieldErrors; preserve backend authority. No domain constraints are embedded in primitives.
 
-ApiError 422 maps validated string-array errors using exact Laravel dot keys; 409 sets failure=conflict, and other errors set unexpected. Input/baselines survive failures. A screen must display operation-wide errors as well as inline messages, focus the relevant error and offer explicit conflict comparison/reload/retry. Never silently overwrite a draft on 409 or invent a successful retry. reset(serverSnapshot) is the deliberate reload seam; optimistic-lock tokens and server reconciliation remain owned by the feature. The catalog demonstrates local fixtures only, including a newer sample snapshot.
+ApiError 422 maps validated string-array errors using exact Laravel dot keys; 409 sets failure=conflict, and other errors set unexpected. Input/baselines survive failures. A screen must display operation-wide errors as well as inline messages and focus the relevant error. Follow automatic read reconciliation below instead of asking users to reload the page or reinitialize an edited form. Never silently overwrite a draft on 409 or invent a successful retry. reset(serverSnapshot) deliberately discards/replaces a draft; optimistic-lock tokens and reconciliation remain owned by the feature. The catalog demonstrates local fixtures only, including a newer sample snapshot.
 
 Optional dirty guards, masks, cascading fields and wizards are available through the public facade; their contracts are below. No business write APIs or server drafts are introduced.
 
@@ -67,6 +67,39 @@ async function save() {
 ```
 
 Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:autofill) documents UA-important background/text rules. The shared field paints its theme surface with an inset shadow and sets text-fill/caret colors while retaining the internal focus indicator; it does not attempt to replace browser-owned suggestion UI.
+
+## Automatic read reconciliation
+
+Current and future data views refresh authoritative reads in place after their own
+mutations, when returning to a visible view and when a stale write is rejected.
+Coalesce overlapping reads and refresh on navigation as appropriate. Reuse the
+feature controller and shared HTTP client; do not add unconditional polling or a
+whole-document reload. Failed reads may offer Retry loading; successful automatic
+refresh does not require a generic Reload current values action.
+
+Track confirmed server baselines separately from local drafts. Update clean
+fields/lists automatically and merge disjoint changes while retaining dirty
+fields, file selections and other editors. Compare the old baseline, incoming
+snapshot and current draft before advancing a lock token. Never assign a newer
+token alone to an unreconciled form. Shared aggregate revisions require a shared
+mutation queue across controls, including display and delivery preferences.
+
+Only overlapping changes require a local decision in the affected form: show
+current values and offer Use current values or Keep my edits. Neither action
+writes; the user explicitly submits after resolving. If a resource lacks enough
+field/version detail to prove disjointness, preserve the draft and require a
+conservative local review. A removed target cannot be retained as a valid edit.
+`FormConflict` supplies this shared presentation through the UI facade with
+`current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
+owns merging, resolution, token advancement and subsequent explicit submission.
+
+On HTTP 409, automatically fetch current data without replaying the write. Report
+that the rejected change was not saved; retain its draft. Cancel older queued
+mutation intents after a failed mutation rather than rebasing them implicitly.
+Fence late responses by account/view/request generation; cancel and unsubscribe
+on disposal/logout. Refresh must not steal focus, clear validation unnecessarily,
+reset unrelated forms or persist secrets. Sensitive submission/cancel/expiry cleanup
+and server authorization remain authoritative.
 
 ## Additional field values and incomplete drafts
 

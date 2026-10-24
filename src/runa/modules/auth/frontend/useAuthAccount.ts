@@ -1,5 +1,8 @@
 import { enrollmentQrCode } from './totpEnrollment';
-import { RequestCancelledError } from '../../../resources/js/lib/http';
+import {
+  ApiError,
+  RequestCancelledError,
+} from '../../../resources/js/lib/http';
 import {
   computed,
   watch,
@@ -106,6 +109,7 @@ export function useAuthAccount(accountId: string) {
     | 'trustIssue'
   >('none');
   const removeAvatar = ref(false);
+  const avatarConflict = ref(false);
   const sectionFields = reactive<
     Record<AccountSection, Record<string, string>>
   >({
@@ -134,13 +138,17 @@ export function useAuthAccount(accountId: string) {
   const trustedRows = ref<AccountRow[]>([]),
     trustedCursor = ref<string | null>(null);
   let trustedReadEpoch = 0;
+  let trustedLoaded = false;
   const canTrustDevice = computed(
     () =>
       security.value?.trusted_devices_enabled === true &&
       proofMethods.value.length > 0,
   );
-  const delivery = ref<DeliveryChoice[]>([]),
-    deliveryRevision = ref(0);
+  const detailConflicts = reactive<Record<string, string>>({});
+  let deliveryReadEpoch = 0;
+  let refreshPromise: Promise<void> | undefined;
+  let refreshAgain = false;
+  const delivery = ref<DeliveryChoice[]>([]);
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
   const abort = new AbortController();
@@ -320,8 +328,8 @@ export function useAuthAccount(accountId: string) {
     }
     return Object.keys(errors).length === 0;
   }
-  async function perform(action: () => Promise<void>) {
-    await performTask(action);
+  async function perform(action: () => Promise<void>, clearSecrets = true) {
+    return performTask(action, clearSecrets);
   }
   async function performTask(
     action: () => Promise<void>,
@@ -329,6 +337,14 @@ export function useAuthAccount(accountId: string) {
     acceptedFields?: readonly string[],
   ) {
     if (busy.value || !alive) return;
+    if (refreshPromise) {
+      try {
+        await refreshPromise;
+      } catch {
+        /* The operation owns subsequent failure feedback. */
+      }
+      if (busy.value || !alive) return;
+    }
     busy.value = true;
     cleanErrors();
     try {
@@ -338,6 +354,16 @@ export function useAuthAccount(accountId: string) {
       if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
       failure.value = result.code;
+      if (result.code === 'conflict') {
+        if (['avatar', 'avatarRemove'].includes(task.value))
+          avatarConflict.value = true;
+        try {
+          await refreshAccount(true);
+        } catch {
+          if (alive) failure.value = 'refresh_failed';
+        }
+        if (!alive) return;
+      }
       result.fields
         .filter(
           (k) =>
@@ -359,10 +385,133 @@ export function useAuthAccount(accountId: string) {
       }
     }
   }
-  async function loadProfile() {
+  async function loadProfile(ownWrite = false) {
     const p = profileResponse(await authGet('profile', abort.signal));
     if (p.public_id !== accountId) throw new TypeError('Account changed.');
-    if (alive) profile.value = p;
+    if (alive && (!profile.value || p.version >= profile.value.version)) {
+      const before = profile.value;
+      if (before) {
+        if (
+          (!ownWrite || p.version > before.version + 1) &&
+          p.version > before.version &&
+          (files.value.length || removeAvatar.value)
+        )
+          avatarConflict.value = true;
+        const keys = [
+          'name',
+          'first_name',
+          'surname',
+          'login',
+          'email',
+        ] as const;
+        const oldNaming = before.name === null ? 'full' : 'single';
+        const nextNaming = p.name === null ? 'full' : 'single';
+        const nameKeys = ['name', 'first_name', 'surname'] as const;
+        const dirtyName =
+          naming.value !== oldNaming ||
+          nameKeys.some((key) => (fields[key] ?? '') !== (before[key] ?? ''));
+        const changedName = nameKeys.some((key) => p[key] !== before[key]);
+        if (!dirtyName) naming.value = nextNaming;
+        else if (
+          changedName &&
+          (naming.value !== nextNaming ||
+            nameKeys.some((key) => (fields[key] ?? '') !== (p[key] ?? '')))
+        ) {
+          detailConflicts.naming = nextNaming;
+          for (const key of nameKeys) detailConflicts[key] = p[key] ?? '';
+        }
+        for (const key of keys) {
+          const groupedName = (nameKeys as readonly string[]).includes(key);
+          if (
+            groupedName
+              ? !dirtyName
+              : (fields[key] ?? '') === (before[key] ?? '')
+          )
+            fields[key] = p[key] ?? '';
+          else if (
+            !groupedName &&
+            p[key] !== before[key] &&
+            (fields[key] ?? '') !== (p[key] ?? '')
+          )
+            detailConflicts[key] = p[key] ?? '';
+        }
+      }
+      if (
+        naming.value === (p.name === null ? 'full' : 'single') &&
+        ['name', 'first_name', 'surname'].every(
+          (key) => (fields[key] ?? '') === (p[key as 'name'] ?? ''),
+        )
+      )
+        for (const key of ['naming', 'name', 'first_name', 'surname'])
+          delete detailConflicts[key];
+      for (const key of ['login', 'email'] as const)
+        if ((fields[key] ?? '') === (p[key] ?? '')) delete detailConflicts[key];
+      profile.value = p;
+    }
+  }
+  function resolveDetails(keepLocal = false) {
+    if (busy.value || !profile.value) return;
+    if (!keepLocal) {
+      for (const key of Object.keys(detailConflicts)) {
+        if (key === 'naming')
+          naming.value = profile.value.name === null ? 'full' : 'single';
+        else fields[key] = detailConflicts[key] ?? '';
+      }
+    }
+    Object.keys(detailConflicts).forEach((key) => delete detailConflicts[key]);
+    if (failure.value === 'conflict') failure.value = '';
+  }
+  function resolveAvatar(keepLocal = false) {
+    if (busy.value) return;
+    if (!keepLocal) {
+      files.value = [];
+      removeAvatar.value = false;
+    }
+    avatarConflict.value = false;
+    if (failure.value === 'conflict') failure.value = '';
+  }
+  async function refreshAccount(duringOperation = false): Promise<void> {
+    if (!alive || !ready.value || (busy.value && !duringOperation)) return;
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = (async () => {
+      await loadProfile();
+      const next = decodeSecurity(await authGet('security', abort.signal));
+      const entry = decodeOptions(await authGet('entry-options', abort.signal));
+      if (!alive) return;
+      security.value = next;
+      options.value = entry;
+      if (accountPreferences.currentAccount() === accountId)
+        await accountPreferences.refresh();
+      if (!alive) return;
+      if (tab.value === 'preferences') await readDelivery();
+      if (
+        ['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(
+          tab.value,
+        )
+      )
+        await readPage();
+      if (trustedLoaded && security.value?.trusted_devices_enabled)
+        await readTrustedDevices();
+      if (alive && failure.value === 'refresh_failed') failure.value = '';
+    })();
+    try {
+      await refreshPromise;
+    } finally {
+      refreshPromise = undefined;
+      if (refreshAgain && alive && !busy.value) refreshVisible();
+    }
+  }
+  function refreshVisible() {
+    if (document.visibilityState !== 'visible') return;
+    if (refreshPromise || busy.value) {
+      refreshAgain = true;
+      return;
+    }
+    refreshAgain = false;
+    void refreshAccount().catch((error) => {
+      if (alive && !(error instanceof RequestCancelledError))
+        failure.value = 'refresh_failed';
+    });
   }
   async function initialize() {
     await perform(async () => {
@@ -377,6 +526,8 @@ export function useAuthAccount(accountId: string) {
       secret.value = '';
       ready.value = true;
       fillDetails();
+      if (accountPreferences.currentAccount() !== accountId)
+        await accountPreferences.connect(accountId).catch(() => {});
       fields.email = profile.value?.email ?? '';
       draft.value = takeAccountDraft(accountId);
       method.value = proofMethods.value[0] ?? 'totp';
@@ -405,7 +556,7 @@ export function useAuthAccount(accountId: string) {
           });
         })()
       : pageResponse(response);
-    if (alive && own === readEpoch) {
+    if (alive && own === readEpoch && currentTab === tab.value) {
       rows.value = append ? [...rows.value, ...page.rows] : page.rows;
       cursor.value = page.cursor;
     }
@@ -418,6 +569,7 @@ export function useAuthAccount(accountId: string) {
       await accountRequest('trusted-devices', 'GET', input, abort.signal),
     );
     if (alive && own === trustedReadEpoch) {
+      trustedLoaded = true;
       trustedRows.value = append
         ? [...trustedRows.value, ...page.rows]
         : page.rows;
@@ -453,12 +605,12 @@ export function useAuthAccount(accountId: string) {
     );
   }
   async function readDelivery() {
+    await fetchDelivery();
+  }
+  async function fetchDelivery(signal = abort.signal) {
+    const own = ++deliveryReadEpoch;
     const p = data(
-      await authPost(
-        'delivery-preferences',
-        { operation: 'read' },
-        abort.signal,
-      ),
+      await authPost('delivery-preferences', { operation: 'read' }, signal),
     );
     if (
       p.account !== accountId ||
@@ -483,10 +635,13 @@ export function useAuthAccount(accountId: string) {
         throw new TypeError('Invalid delivery category.');
       return row as unknown as DeliveryChoice;
     });
-    if (alive) {
-      deliveryRevision.value = Number(p.revision);
+    if (
+      alive &&
+      own === deliveryReadEpoch &&
+      accountPreferences.currentAccount() === accountId
+    )
       delivery.value = list;
-    }
+    return { revision: Number(p.revision), categories: list };
   }
   async function selectTab(value: AccountTab) {
     if (busy.value || !tabs.value.includes(value)) return;
@@ -507,6 +662,9 @@ export function useAuthAccount(accountId: string) {
     if (['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(value))
       await perform(() => readPage());
     if (value === 'preferences') await perform(readDelivery);
+    await refreshAccount().catch(() => {
+      if (alive) failure.value = 'refresh_failed';
+    });
     await nextTick();
     heading.value?.focus();
   }
@@ -531,6 +689,17 @@ export function useAuthAccount(accountId: string) {
       return;
     }
     const op = task.value;
+    if (['avatar', 'avatarRemove'].includes(op) && avatarConflict.value) {
+      failure.value = 'conflict';
+      return false;
+    }
+    if (
+      ['details', 'email'].includes(op) &&
+      Object.keys(detailConflicts).length
+    ) {
+      failure.value = 'conflict';
+      return false;
+    }
     const input: Record<string, unknown> = Object.fromEntries(
       fieldNames.value.map((k) => [k, fields[k] ?? '']),
     );
@@ -631,11 +800,10 @@ export function useAuthAccount(accountId: string) {
             throw new TypeError('Invalid recovery codes.');
           codes.value = result.recovery_codes as string[];
         }
-        await loadProfile();
+        await loadProfile(true);
         const s = decodeSecurity(await authGet('security', abort.signal));
         if (alive) security.value = s;
         if (op === 'details') {
-          fillDetails();
           clearAccountDraft();
           draftEpoch = accountDraftEpoch();
           draft.value = null;
@@ -779,6 +947,7 @@ export function useAuthAccount(accountId: string) {
     let completed = 0;
     try {
       for (const operation of plan) {
+        const submittedEmail = fields.email;
         task.value = operation;
         // Removal is explicitly selected in this editor; lifecycle operations are separate.
         confirmed.value = operation === 'avatarRemove';
@@ -791,7 +960,8 @@ export function useAuthAccount(accountId: string) {
           return;
         }
         completed++;
-        if (operation === 'email') fields.email = profile.value?.email ?? '';
+        if (operation === 'email' && fields.email === submittedEmail)
+          fields.email = profile.value?.email ?? '';
         if (operation === 'avatarRemove') removeAvatar.value = false;
         if (operation === 'avatar') {
           files.value = [];
@@ -853,7 +1023,12 @@ export function useAuthAccount(accountId: string) {
   }
   async function saveSecondary(
     action: 'secondaryAdd' | 'secondaryChange' | 'secondaryRemove',
-    input: { email?: string; address_id?: string; confirmed?: boolean },
+    input: {
+      email?: string;
+      address_id?: string;
+      confirmed?: boolean;
+      baselineEmail?: string;
+    },
   ): Promise<boolean> {
     if (!alive || !ready.value || busy.value || codes.value.length)
       return false;
@@ -892,6 +1067,20 @@ export function useAuthAccount(accountId: string) {
       failure.value = 'conflict';
       return false;
     }
+    if (
+      action !== 'secondaryAdd' &&
+      input.baselineEmail !== undefined &&
+      profile.value.secondary_emails.find(
+        (address) => address.public_id === input.address_id,
+      )?.email !== input.baselineEmail
+    ) {
+      failure.value = 'conflict';
+      secondaryErrors.email = text(
+        'Ten adres zmienił się podczas edycji. Sprawdź aktualną wartość.',
+        'This address changed while you were editing. Review its current value.',
+      );
+      return false;
+    }
     if (action === 'secondaryRemove' && !input.confirmed) {
       failure.value = 'confirmation';
       return false;
@@ -921,7 +1110,7 @@ export function useAuthAccount(accountId: string) {
           abort.signal,
         );
         if (!alive) return;
-        await loadProfile();
+        await loadProfile(true);
         if (alive)
           notice.value =
             action === 'secondaryRemove'
@@ -955,26 +1144,54 @@ export function useAuthAccount(accountId: string) {
     });
   }
   async function saveDelivery(choice: DeliveryChoice) {
+    const before = delivery.value.find(
+      (item) => item.module === choice.module && item.key === choice.key,
+    );
+    if (!before) return;
     await perform(async () => {
-      await accountRequest(
-        'delivery-preferences',
-        'POST',
-        {
-          operation: 'write',
-          module: choice.module,
-          category: choice.key,
-          revision: deliveryRevision.value,
-          enabled: choice.enabled,
-          recipients: choice.recipients,
-        },
-        abort.signal,
-      );
+      await accountPreferences.mutate(async (_revision, signal) => {
+        // A shared snapshot can advance the revision before this row has reconciled.
+        // Re-read and compare this row inside the same queue before using its token.
+        const fresh = await fetchDelivery(
+          AbortSignal.any([signal, abort.signal]),
+        );
+        if (!alive || signal.aborted) throw new RequestCancelledError();
+        const current = fresh.categories.find(
+          (item) => item.module === choice.module && item.key === choice.key,
+        );
+        const recipients = (item: DeliveryChoice) =>
+          [...item.recipients].sort().join('\0');
+        if (
+          !current ||
+          current.mandatory ||
+          current.sensitive ||
+          (recipients(choice) !== recipients(before) &&
+            recipients(current) !== recipients(before) &&
+            recipients(choice) !== recipients(current))
+        )
+          throw new ApiError(409, {});
+        return accountRequest(
+          'delivery-preferences',
+          'POST',
+          {
+            operation: 'write',
+            module: choice.module,
+            category: choice.key,
+            revision: fresh.revision,
+            enabled:
+              choice.enabled === before.enabled
+                ? current.enabled
+                : choice.enabled,
+            recipients:
+              recipients(choice) === recipients(before)
+                ? current.recipients
+                : choice.recipients,
+          },
+          AbortSignal.any([signal, abort.signal]),
+        );
+      });
       if (alive) {
         await readDelivery();
-        await accountPreferences.connect(
-          accountId,
-          accountPreferences.application(),
-        );
         notice.value = text(
           'Zapisano ustawienia powiadomień.',
           'Notification settings saved.',
@@ -1015,29 +1232,55 @@ export function useAuthAccount(accountId: string) {
   const failureText = computed(() =>
     failure.value === 'conflict'
       ? text(
-          'Dane zmieniły się. Wczytaj aktualne dane przed kolejnym zapisem.',
-          'Data changed. Reload current values before submitting again.',
+          'Nie zapisano zmian. Aktualne dane pobrano automatycznie; Twoje zmiany zostały zachowane.',
+          'Changes were not saved. Current data was loaded automatically; your edits were preserved.',
         )
-      : failure.value === 'csrf'
+      : failure.value === 'refresh_failed'
         ? text(
-            'Odśwież zabezpieczenie formularza i ponów zapis.',
-            'Renew form security and submit again.',
+            'Nie udało się pobrać aktualnych danych. Twoje zmiany zostały zachowane.',
+            'Unable to load current data. Your edits were preserved.',
           )
-        : failure.value === 'confirmation'
-          ? text('Potwierdź operację.', 'Confirm the operation.')
-          : failure.value === 'file_required'
-            ? text('Wybierz obraz.', 'Choose an image.')
-            : failure.value === 'throttled'
-              ? text(
-                  'Zbyt wiele prób. Spróbuj później.',
-                  'Too many attempts. Try again later.',
-                )
-              : text(
-                  'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
-                  'The operation failed. Check your values and try again.',
-                ),
+        : failure.value === 'csrf'
+          ? text(
+              'Odśwież zabezpieczenie formularza i ponów zapis.',
+              'Renew form security and submit again.',
+            )
+          : failure.value === 'confirmation'
+            ? text('Potwierdź operację.', 'Confirm the operation.')
+            : failure.value === 'file_required'
+              ? text('Wybierz obraz.', 'Choose an image.')
+              : failure.value === 'throttled'
+                ? text(
+                    'Zbyt wiele prób. Spróbuj później.',
+                    'Too many attempts. Try again later.',
+                  )
+                : text(
+                    'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
+                    'The operation failed. Check your values and try again.',
+                  ),
   );
-  onMounted(initialize);
+  watch(busy, (value) => {
+    if (!value && refreshAgain) refreshVisible();
+  });
+  const unsubscribePreferences = accountPreferences.subscribe(() => {
+    if (
+      alive &&
+      ready.value &&
+      !busy.value &&
+      tab.value === 'preferences' &&
+      accountPreferences.currentAccount() === accountId
+    )
+      void readDelivery().catch((error) => {
+        if (alive && !(error instanceof RequestCancelledError))
+          failure.value = 'refresh_failed';
+      });
+  });
+  onMounted(() => {
+    void initialize();
+    document.addEventListener('visibilitychange', refreshVisible);
+    window.addEventListener('focus', refreshVisible);
+    window.addEventListener('pageshow', refreshVisible);
+  });
   watch(
     secret,
     (value) => {
@@ -1055,6 +1298,11 @@ export function useAuthAccount(accountId: string) {
     )
       rememberAccountDraft(accountId, fields, draftEpoch);
     alive = false;
+    unsubscribePreferences();
+    document.removeEventListener('visibilitychange', refreshVisible);
+    window.removeEventListener('focus', refreshVisible);
+    window.removeEventListener('pageshow', refreshVisible);
+    deliveryReadEpoch++;
     readEpoch++;
     trustedReadEpoch++;
     trustedRows.value = [];
@@ -1106,6 +1354,14 @@ export function useAuthAccount(accountId: string) {
     feedback,
     choose,
     initialize,
+    refresh: () =>
+      refreshAccount().catch(() => {
+        if (alive) failure.value = 'refresh_failed';
+      }),
+    detailConflicts,
+    resolveDetails,
+    avatarConflict,
+    resolveAvatar,
     selectTab,
     submit: () => submitTask(),
     saveOverview: () => saveChanges(),

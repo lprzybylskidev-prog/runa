@@ -139,3 +139,7 @@ options sharing the existing preference cover, and independent inline email rows
 with Switch/recipient Select/Save/Revert. Preserve other dirty rows; confirm the
 atomic presentation-and-delivery reset. Shell controls still cycle compactly.
 Use the public account UI/preferences guides for revision and recovery behavior.
+
+Use the public forms guide's automatic read reconciliation and shared FormConflict
+for current/future data views. Refresh current reads without discarding drafts;
+resolve only overlapping/ambiguous changes locally and never retry writes silently.

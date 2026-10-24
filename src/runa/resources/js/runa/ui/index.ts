@@ -35,6 +35,7 @@ export { default as Alert } from '../../components/AppAlert.vue';
 export { default as Badge } from '../../components/AppBadge.vue';
 export { default as Status } from '../../components/AppStatus.vue';
 export { default as Popover } from '../../components/AppPopover.vue';
+export { default as FormConflict } from '../../components/AppFormConflict.vue';
 export { default as FormNotifications } from '../../components/AppFormNotifications.vue';
 export { default as ToastViewport } from '../../components/AppToastViewport.vue';
 export { useToasts } from '../../composables/useToasts';

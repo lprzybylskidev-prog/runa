@@ -585,11 +585,9 @@ const passwordHint = computed(() =>
         text('Odśwież zabezpieczenie', 'Renew form security')
       }}</Button>
       <Button
-        v-if="failure && (!ready || failure === 'conflict')"
-        @click="
-          tab === 'preferences' ? preferencesView?.reload() : initialize()
-        "
-        >{{ text('Wczytaj aktualne dane', 'Reload current values') }}</Button
+        v-if="failure && (!ready || failure === 'refresh_failed')"
+        @click="!ready ? initialize() : account.refresh()"
+        >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
       >
     </template>
   </FormNotifications>

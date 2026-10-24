@@ -6,6 +6,7 @@ import {
   ConfirmDialog,
   Form,
   FormNotifications,
+  FormConflict,
   RadioGroup,
   Select,
   Spinner,
@@ -37,6 +38,7 @@ const resetOpen = ref(false),
   attempt = ref(0),
   failedKey = ref<string>();
 const drafts = reactive<Record<string, Choice>>({});
+const conflicts = reactive<Record<string, Choice>>({});
 const recipientErrors = reactive<Record<string, string>>({});
 const forms = new Map<string, { focusInvalid: () => void }>();
 const optional = computed(() =>
@@ -72,11 +74,30 @@ watch(
     for (const choice of next) {
       const key = keyOf(choice);
       const before = previous?.find((item) => keyOf(item) === key);
-      if (!drafts[key] || same(drafts[key], before)) drafts[key] = copy(choice);
+      if (!drafts[key] || same(drafts[key], before)) {
+        drafts[key] = copy(choice);
+        delete conflicts[key];
+      } else if (before) {
+        const local = drafts[key]!;
+        const equalRecipients = (a: Choice, b: Choice) =>
+          [...a.recipients].sort().join('\0') ===
+          [...b.recipients].sort().join('\0');
+        if (local.enabled === before.enabled) local.enabled = choice.enabled;
+        if (equalRecipients(local, before))
+          local.recipients = [...choice.recipients];
+        else if (
+          !equalRecipients(before, choice) &&
+          !equalRecipients(local, choice)
+        )
+          conflicts[key] = copy(choice);
+        if (same(local, choice)) delete conflicts[key];
+        else if (conflicts[key]) conflicts[key] = copy(choice);
+      }
     }
     for (const key of Object.keys(drafts))
       if (!next.some((item) => keyOf(item) === key)) {
         delete drafts[key];
+        delete conflicts[key];
         delete recipientErrors[key];
         forms.delete(key);
       }
@@ -100,6 +121,7 @@ function revert(choice: Choice) {
   if (busy.value) return;
   const key = keyOf(choice);
   drafts[key] = copy(choice);
+  delete conflicts[key];
   delete recipientErrors[key];
   if (failedKey.value === key) {
     failure.value = '';
@@ -107,11 +129,16 @@ function revert(choice: Choice) {
     failedKey.value = undefined;
   }
 }
+function keep(choice: Choice) {
+  delete conflicts[keyOf(choice)];
+  if (failedKey.value === keyOf(choice) && failure.value === 'conflict')
+    failure.value = '';
+}
 async function save(choice: Choice) {
   if (busy.value) return;
   const key = keyOf(choice),
     draft = drafts[key];
-  if (!draft || !dirty(choice)) return;
+  if (!draft || !dirty(choice) || conflicts[key]) return;
   failedKey.value = key;
   if (!draft.recipients.length) {
     recipientErrors[key] = text(
@@ -134,10 +161,11 @@ async function save(choice: Choice) {
 }
 async function reload(key = failedKey.value) {
   if (busy.value) return;
-  await selectTab('preferences');
+  await props.account.refresh();
   if (failure.value) return;
   const current = delivery.value.find((item) => keyOf(item) === key);
-  if (current) revert(current);
+  // Automatic refresh preserves local drafts; Revert is the explicit discard action.
+  if (current && !dirty(current)) revert(current);
 }
 function beginReset() {
   if (busy.value) return;
@@ -154,9 +182,7 @@ function closeReset(value: boolean) {
   failure.value = '';
   notice.value = '';
 }
-function reloadPage() {
-  if (!busy.value) window.location.reload();
-}
+
 async function reset() {
   if (busy.value) return;
   attempt.value++;
@@ -165,6 +191,7 @@ async function reset() {
   if (!failure.value && notice.value) {
     for (const choice of delivery.value) {
       drafts[keyOf(choice)] = copy(choice);
+      delete conflicts[keyOf(choice)];
       delete recipientErrors[keyOf(choice)];
     }
     resetOpen.value = false;
@@ -272,6 +299,25 @@ defineExpose({ beginReset, reload });
             :data-delivery-category="choice.key"
             @submit="save(choice)"
           >
+            <FormConflict
+              v-if="conflicts[keyOf(choice)]"
+              :current="
+                [
+                  conflicts[keyOf(choice)]!.enabled
+                    ? text('Włączone', 'Enabled')
+                    : text('Wyłączone', 'Disabled'),
+                  ...conflicts[keyOf(choice)]!.recipients.map(
+                    (value) =>
+                      recipientOptions.find((option) => option.value === value)
+                        ?.label ?? value,
+                  ),
+                ].join(' · ')
+              "
+              :locale="locale"
+              :busy="busy"
+              @accept="revert(choice)"
+              @keep="keep(choice)"
+            />
             <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
               <Switch
                 v-model="drafts[keyOf(choice)]!.enabled"
@@ -297,7 +343,9 @@ defineExpose({ beginReset, reload });
                 text('Cofnij zmiany', 'Revert changes')
               }}</Button>
               <Button
-                v-if="failure && failedKey === keyOf(choice)"
+                v-if="
+                  failure === 'refresh_failed' && failedKey === keyOf(choice)
+                "
                 size="sm"
                 :disabled="busy"
                 @click="reload(keyOf(choice))"
@@ -338,9 +386,11 @@ defineExpose({ beginReset, reload });
         ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
           text('Odśwież zabezpieczenie', 'Renew form security')
         }}</Button
-        ><Button v-if="failure === 'conflict'" @click="reloadPage">{{
-          text('Odśwież stronę', 'Reload page')
-        }}</Button></template
+        ><Button
+          v-if="failure === 'refresh_failed'"
+          @click="account.refresh()"
+          >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
+        ></template
       ></FormNotifications
     >
   </ConfirmDialog>

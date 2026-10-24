@@ -40,7 +40,7 @@ not readable/writable through the live declaration. JSON values are bounded to
 32 KiB. There are at most 256 definitions per provider and 1024 snapshot entries.
 One account revision serializes preference and delivery-preference writes under
 registry → authority → user locks. Stale revisions return HTTP 409; never retry a
-write silently with a newer revision. Reload and let the user deliberately retry.
+write silently with a newer revision. Automatically reload current reads, preserve drafts and let the user deliberately retry.
 `reset(module, scope, revision)` resets one key, a module, or all presentation
 preferences. `resetAccount(publicId, revision)` is permissioned by
 `runa.auth.preferences.reset` and emits synchronous `preferences.admin_reset`
@@ -52,7 +52,7 @@ optional module and key scope. This POST read surface uses the normal cookie/CSR
 transport. Both ingress and the Action recheck unrestricted tracked sessions.
 Responses are private/no-store and include account/revision. The snapshot projects
 current source defaults as well as stored values for the selected application and
-shared `runa` display namespace. Other devices converge on reload or new login;
+shared `runa` display namespace. Other devices converge on visible return, navigation, conflict refresh or new login;
 there is no polling or WebSocket synchronization.
 
 ## Complete own-account reset
@@ -73,16 +73,17 @@ controller's confirmed `resetPreferences(true)` uses this complete operation and
 delivery categories. The no-argument `resetPreferences()` retains presentation-only
 behavior. Existing `reset(module)`/PreferenceStore scoped reset and the
 PHP AuthPreferences reset/admin-reset contracts remain presentation-only. A stale
-revision is an explicit conflict; no automatic retry with a newer revision.
+revision triggers automatic read reconciliation and remains a rejected write; no
+automatic retry with a newer revision.
 
 ## Default account presentation
 
 Preferences sits beside Account and security and uses explicit language/theme
 choices, independent inline email Form drafts and a header full-reset confirmation.
 See [account UI](account-ui.md). Keep the shared preference cover/persistence and
-current account revision/recipient rules. Save/Revert or explicit reload affects
-only its row; incoming snapshots must not overwrite other dirty rows or generate
-writes. The shell's compact preference controls retain their cycling contract.
+current account revision/recipient rules. Save/Revert affects only its row; incoming snapshots merge clean/disjoint values,
+preserve dirty rows and expose overlapping recipient changes locally without
+generating writes. The shell's compact preference controls retain their cycling contract.
 
 ## Browser integration and legacy ownership
 
@@ -210,3 +211,11 @@ remain visible. An interrupted write may already have committed server-side: nev
 replay it automatically or claim it persisted; reload authoritative state on return.
 The guard respects synchronously prevented dirty-form navigation, detaches when no
 requests are pending, and permits new explicit requests or pageshow recovery.
+
+The account adapter exposes `refresh()` for a queued snapshot without clearing the
+current account cache and `mutate(callback)` for feature-owned delivery writes.
+The callback receives the shared current revision and account-fenced AbortSignal,
+returns the normal account/revision envelope, and is followed by a queued snapshot.
+All presentation/delivery writes share this queue. On 409, current reads refresh
+without replay; older queued mutations are canceled. Failed synchronization offers
+an explicit read retry. A successful refresh never calls the destructive form reset.

@@ -25,3 +25,7 @@ Account factor actions belong in shared dialogs; trusted-device management is pa
 of two-factor settings and new trust requires an active factor plus fresh proof.
 Follow the public account UI/presentation guides for independent controller state,
 secret cleanup, feedback focus and legacy custom-presentation seams.
+
+Use public FormConflict for local overlapping/ambiguous edit decisions; its current
+values and accept/keep events are presentation-only. Follow the public forms guide
+for baseline merging, shared revision queues and explicit subsequent saves.

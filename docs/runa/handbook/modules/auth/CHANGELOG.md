@@ -1,5 +1,15 @@
 # Auth module changelog
 
+## 0.21.0
+
+Add lifecycle-fenced automatic account read refresh on visible return/tab changes
+and rejected conflicts, preserving dirty fields/files/proofs and merging disjoint
+changes. Expose refresh and local detail/avatar conflict resolution to replacement
+presentations. Serialize delivery and presentation writes with one preference
+revision queue; refresh rejected writes without replay. Use shared FormConflict
+for overlapping edits instead of page reload actions. Source-only forward edge;
+no database, security policy or external dependency change.
+
 ## 0.20.1
 
 Stack Preferences Cards at every width, remove redundant display/save helper text

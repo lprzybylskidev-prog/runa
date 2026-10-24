@@ -14,6 +14,7 @@ use Runa\Modules\Permissions\UpgradeAuthority;
 use Runa\Modules\Permissions\UpgradeAuthPresentation;
 use Runa\Modules\Permissions\UpgradeAuthQr;
 use Runa\Modules\Permissions\UpgradeAuthRecoveryDialog;
+use Runa\Modules\Permissions\UpgradeAuthRefresh;
 use Runa\Modules\Permissions\UpgradeAuthSecondaryDetails;
 use Runa\Modules\Permissions\UpgradeCoreIntegration;
 use Runa\Modules\Permissions\UpgradeDevelopmentFixtures;
@@ -34,7 +35,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('auth_recovery_dialog', '0.5.4', '0.5.5', UpgradeAuthRecoveryDialog::class),
             new UpgradeDefinition('auth_secondary_details', '0.5.5', '0.5.6', UpgradeAuthSecondaryDetails::class),
             new UpgradeDefinition('auth_factor_dialogs', '0.5.6', '0.5.7', UpgradeAuthFactorDialogs::class),
-            new UpgradeDefinition('auth_all_preferences', '0.5.7', '0.5.8', UpgradeAuthAllPreferences::class)];
+            new UpgradeDefinition('auth_all_preferences', '0.5.7', '0.5.8', UpgradeAuthAllPreferences::class),
+            new UpgradeDefinition('auth_refresh', '0.5.8', '0.5.9', UpgradeAuthRefresh::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

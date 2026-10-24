@@ -53,3 +53,9 @@ Ship working defaults and documented public presentation seams together; keep
 platform behavior and reusable orchestration in src/runa and customer composition
 in src/app. Review the minimal scaffold and update/clone preservation in the same
 point. This rule applies to all modules, including those added after Auth.
+
+For data views, follow the public forms guide's automatic read reconciliation
+contract: refresh reads in place, merge clean/disjoint values, preserve dirty drafts
+and use local decisions only for overlapping/ambiguous changes. Share aggregate
+mutation queues/revisions. Never replay failed writes, advance an unreconciled token,
+reinitialize an edited form or demand a page reload after a successful refresh.

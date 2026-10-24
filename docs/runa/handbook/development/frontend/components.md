@@ -258,8 +258,9 @@ IdentityProvider keeps its existing reactive subtree contract. Normal applicatio
 Public `accountPreferences` and `createAccountPreferenceStore` complement the
 existing PreferenceStore/usePreference contract. Display/navigation/statistics/table
 consumers subscribe to account hydration and keep guest values separate. Public `PreferenceFeedback` (`AppPreferenceFeedback.vue`) is reused by both layouts
-and shows save/load/conflict feedback through existing Alert/Button components with an
-explicit reload action; feedback is static and announced, with no added motion.
+and shows save/load/conflict feedback through shared notifications. Rejected writes
+refresh the server snapshot automatically without replay. Retry loading appears only
+when synchronization fails; feedback is static and announced, with no added motion.
 See [Auth preferences](../../modules/auth/preferences.md) for exact declarations,
 revisions, safe legacy adoption and logout/late-response behavior. Custom standalone
 stores remain opt-in; standalone components initialize no account session.
@@ -341,3 +342,15 @@ The parent owns the accessible name, identity authorization and safe image URL.
 No fetching/profile storage, motion or global state lives in this primitive.
 ApplicationLayout accepts optional userAvatar (default empty) alongside userName/
 userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
+
+## Form conflict decisions
+
+`FormConflict` (`AppFormConflict.vue`) composes the shared Alert and Button without
+extra motion. It renders localized current values (`current`), `locale`, `busy` and
+optional `allowKeep` (default true), and emits `accept`/`keep`; its default slot can show the current server image or
+other feature-owned comparison content. It never fetches,
+discards, rebases or saves by itself. Place it inside the affected form, following
+[automatic reconciliation](forms.md#automatic-read-reconciliation); disable Keep
+when the edited target has disappeared. Preserve normal field errors. Explicit
+resolution restores lost focus to the containing form when its decision buttons
+unmount; background refresh never moves focus.

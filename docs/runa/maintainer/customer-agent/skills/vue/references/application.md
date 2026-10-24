@@ -36,3 +36,7 @@ left: RequestCancelledError from @/runa/http cancels observation and must not be
 false error feedback or an automatic write retry. Preserve real network/API errors,
 synchronous dirty-form guards and explicit state reload after interrupted writes.
 Do not add page-local raw fetch/unload handlers to bypass the shared lifecycle.
+
+For view refresh, follow the public forms guide's automatic read reconciliation.
+Coalesce reads, fence late snapshots, clean up listeners, merge against confirmed
+baselines and preserve dirty refs; component remount/reset is not reconciliation.

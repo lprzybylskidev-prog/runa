@@ -8,10 +8,7 @@ defineProps<{ locale: Locale }>();
 const status = useAccountPreferenceStatus();
 function reload() {
   const account = accountPreferences.currentAccount();
-  if (account)
-    void accountPreferences
-      .connect(account, accountPreferences.application())
-      .catch(() => {});
+  if (account) void accountPreferences.refresh().catch(() => {});
 }
 </script>
 <template>
@@ -20,12 +17,16 @@ function reload() {
     :error="
       status.error
         ? locale === 'pl'
-          ? 'Nie zapisano preferencji lub są nieaktualne. Wczytaj zapisane ustawienia i spróbuj ponownie.'
-          : 'Preferences could not be saved or are out of date. Reload saved settings and try again.'
+          ? status.error === 'conflict'
+            ? 'Nie zapisano tej zmiany. Aktualne preferencje pobrano automatycznie; wybierz ustawienie ponownie.'
+            : 'Nie udało się zsynchronizować preferencji. Spróbuj ponownie.'
+          : status.error === 'conflict'
+            ? 'This change was not saved. Current preferences were loaded automatically; choose the setting again.'
+            : 'Unable to synchronize preferences. Try again.'
         : ''
     "
   >
-    <template #actions
+    <template v-if="status.error !== 'conflict'" #actions
       ><AppButton @click="reload">{{
         locale === 'pl' ? 'Wczytaj ustawienia' : 'Reload settings'
       }}</AppButton></template

@@ -18,3 +18,7 @@ stacks, explicit security-method actions and confirmed destructive removal.
 Integrated editable collections retain their own draft and submit boundary; use
 the public feature controller without temporarily rebinding the parent form's
 fields during collection requests. See Auth's saveSecondary presentation contract.
+
+Use the public forms guide's automatic read reconciliation and shared FormConflict
+for current/future data views. Refresh current reads without discarding drafts;
+resolve only overlapping/ambiguous changes locally and never retry writes silently.

@@ -54,6 +54,7 @@ export function createAccountPreferenceStore(
   let application = 'runa';
   let generation = 0;
   let revision = 0;
+  let mutationEpoch = 0;
   let ready = false;
   let legacyClaimed = true;
   let abort = new AbortController();
@@ -109,6 +110,7 @@ export function createAccountPreferenceStore(
         stored: value.stored,
       });
     }
+    if (ready && Number(data.revision) < revision) return;
     entries.clear();
     next.forEach((value, key) => entries.set(key, value));
     revision = Number(data.revision);
@@ -117,6 +119,7 @@ export function createAccountPreferenceStore(
     notify();
   }
   async function connect(next: string, app = 'runa') {
+    if (next === account && app === application) return refresh();
     clear(next, app);
     const epoch = generation,
       signal = abort.signal;
@@ -139,8 +142,15 @@ export function createAccountPreferenceStore(
       throw error;
     }
   }
-  function schedule(input: Record<string, unknown>) {
+  function refresh() {
+    return schedule({ operation: 'snapshot' });
+  }
+  function schedule(
+    input: Record<string, unknown>,
+    mutate?: (revision: number, signal: AbortSignal) => Promise<unknown>,
+  ) {
     const epoch = generation,
+      ownMutation = mutationEpoch,
       target = account,
       app = application,
       signal = abort.signal;
@@ -149,15 +159,26 @@ export function createAccountPreferenceStore(
     const task = queue
       .then(async () => {
         if (epoch !== generation || target === null) return;
-        if (!ready) throw new Error('Account preferences unavailable.');
+        if (input.operation !== 'snapshot' && ownMutation !== mutationEpoch)
+          throw new RequestCancelledError();
+        if (!ready && input.operation !== 'snapshot') {
+          const fresh = envelope(
+            await send({ operation: 'snapshot', application: app }, signal),
+          );
+          if (epoch !== generation) return;
+          snapshot(fresh);
+        }
         const data = envelope(
-          await send({ ...input, application: app, revision }, signal),
+          mutate
+            ? await mutate(revision, signal)
+            : await send({ ...input, application: app, revision }, signal),
         );
         if (epoch !== generation) return;
         if (data.account !== target || !Number.isSafeInteger(data.revision))
           throw new Error('Invalid preference result.');
         revision = Number(data.revision);
-        if (input.operation === 'write') {
+        if (input.operation === 'snapshot') snapshot(data);
+        else if (input.operation === 'write') {
           if (
             data.scope !== id(input as ReturnType<typeof serverScope>) ||
             !Number.isSafeInteger(data.version)
@@ -180,17 +201,43 @@ export function createAccountPreferenceStore(
         pending--;
         updateStatus();
       })
-      .catch((error: unknown) => {
+      .catch(async (error: unknown) => {
         if (epoch !== generation) return;
-        // Do not replay a stale write against a newer revision.
+        if (error instanceof RequestCancelledError) {
+          pending--;
+          updateStatus(status.error);
+          throw error;
+        }
+        // Refresh reads, never replay the rejected mutation with a new revision.
         ready = false;
+        mutationEpoch++;
+        if (error instanceof ApiError && error.status === 409) {
+          try {
+            const fresh = envelope(
+              await send({ operation: 'snapshot', application: app }, signal),
+            );
+            if (epoch !== generation) return;
+            snapshot(fresh);
+          } catch {
+            if (epoch !== generation) return;
+          }
+        }
+        if (epoch !== generation) return;
         pending--;
         updateStatus(
           error instanceof RequestCancelledError
             ? null
             : error instanceof ApiError && error.status === 409
-              ? 'conflict'
-              : 'save_failed',
+              ? !ready
+                ? 'load_failed'
+                : input.operation === 'external'
+                  ? null
+                  : 'conflict'
+              : input.operation === 'snapshot'
+                ? 'load_failed'
+                : input.operation === 'external'
+                  ? null
+                  : 'save_failed',
         );
         throw error;
       });
@@ -254,6 +301,11 @@ export function createAccountPreferenceStore(
   return {
     store,
     connect,
+    refresh,
+    /** Share the account preference revision/queue with feature-owned delivery writes. */
+    mutate: (
+      action: (revision: number, signal: AbortSignal) => Promise<unknown>,
+    ) => schedule({ operation: 'external' }, action),
     disconnect: () => clear(null, application),
     hold: (next: string, app = 'runa') => clear(next, app),
     signedIn: () => account !== null,
@@ -312,7 +364,7 @@ export function bindPreferenceSession(
       const current = store.currentAccount();
       if (event.path === '/runa/auth/logout' && current)
         store.hold(current, store.application());
-      else store.disconnect();
+      else if (event.path !== '/runa/auth/session') store.disconnect();
       return authGeneration;
     }
     if (event.phase !== 'end') return;
@@ -329,6 +381,12 @@ export function bindPreferenceSession(
     }
     if (event.status === 401 || event.path === '/runa/auth/logout') {
       store.disconnect();
+      return;
+    }
+    if (event.path === '/runa/auth/session' && event.status === 403) {
+      const current = store.currentAccount();
+      if (current) store.hold(current, store.application());
+      else store.disconnect();
       return;
     }
     if (

@@ -125,7 +125,7 @@ it('renders localized rejected-save feedback through the shared layout control',
   await accountPreferences.flush();
   await nextTick();
   expect(wrapper.get('[role="alert"]').text()).toContain(
-    'Nie zapisano preferencji',
+    'Nie udało się zsynchronizować preferencji',
   );
   await wrapper.setProps({ locale: 'en' });
   expect(wrapper.get('button').text()).toBe('Reload settings');
@@ -248,4 +248,119 @@ it('full reset uses its distinct queued operation and reloads authoritative defa
     3,
   );
   expect(store.store.read(scope, 'runa.theme', theme)).toBe('system');
+});
+
+it('shares revisions between display and delivery mutations and refreshes a failed write without replay', async () => {
+  let revision = 3;
+  let value = 'system';
+  const inputs: Record<string, unknown>[] = [];
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    inputs.push(input);
+    if (input.operation === 'snapshot') return snapshot('A', value, revision);
+    expect(input.revision).toBe(revision);
+    revision++;
+    value = String(input.value);
+    return {
+      data: {
+        account: 'A',
+        revision,
+        scope: 'runa:runa.auth:global:theme',
+        version: 1,
+        value,
+      },
+    };
+  });
+  await store.connect('A');
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  let deliveryRevision = 0;
+  await store.mutate(async (current) => {
+    deliveryRevision = current;
+    revision++;
+    return { data: { account: 'A', revision } };
+  });
+  expect(deliveryRevision).toBe(4);
+  expect(store.store.read(scope, 'runa.theme', theme)).toBe('dark');
+  let attempts = 0;
+  await expect(
+    store.mutate(async () => {
+      attempts++;
+      revision++;
+      value = 'light';
+      throw new ApiError(409, {});
+    }),
+  ).rejects.toBeInstanceOf(ApiError);
+  expect(attempts).toBe(1);
+  expect(store.store.read(scope, 'runa.theme', theme)).toBe('light');
+  expect(inputs.filter((input) => input.operation === 'write')).toHaveLength(1);
+  store.disconnect();
+});
+
+it('cancels already queued mutations after a conflict instead of rebasing old intents', async () => {
+  let attempts = 0;
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    if (input.operation === 'snapshot') return snapshot('A', 'system', 4);
+    attempts++;
+    throw new ApiError(409, {});
+  });
+  await store.connect('A');
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  store.store.write(scope, 'runa.theme', theme, 'light');
+  await store.flush();
+  expect(attempts).toBe(1);
+  expect(store.status()).toEqual({ pending: false, error: 'conflict' });
+  store.disconnect();
+});
+
+it('same-account refresh retains cached values and fences a late snapshot after logout', async () => {
+  let release!: (value: unknown) => void;
+  let reads = 0;
+  const store = createAccountPreferenceStore(guest(), async () => {
+    if (reads++ === 0) return snapshot('A', 'dark', 3);
+    return new Promise((done) => {
+      release = done;
+    });
+  });
+  await store.connect('A');
+  const refreshing = store.connect('A');
+  await Promise.resolve();
+  expect(store.store.read(scope, 'runa.theme', theme)).toBe('dark');
+  store.disconnect();
+  release(snapshot('A', 'light', 4));
+  await refreshing;
+  expect(store.currentAccount()).toBeNull();
+  expect(store.store.read(scope, 'runa.theme', theme)).toBe('system');
+});
+
+it('a forbidden session refresh clears cached account preferences into a restricted hold', async () => {
+  const { vi } = await import('vitest');
+  const { accountPreferences } =
+    await import('../../resources/js/lib/preferenceStore');
+  const { request } = await import('../../resources/js/lib/http');
+  const account = '00000000-0000-7000-8000-000000000001';
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/session')
+      ? new Response(
+          JSON.stringify({ error: { code: 'account_restricted' } }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } },
+        )
+      : new Response(JSON.stringify(snapshot(account, 'dark', 3)), {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+  );
+  try {
+    await accountPreferences.connect(account);
+    expect(accountPreferences.store.read(scope, 'runa.theme', theme)).toBe(
+      'dark',
+    );
+    await expect(request('/runa/auth/session')).rejects.toBeInstanceOf(
+      ApiError,
+    );
+    expect(accountPreferences.store.read(scope, 'runa.theme', theme)).toBe(
+      'system',
+    );
+    expect(accountPreferences.currentAccount()).toBe(account);
+  } finally {
+    accountPreferences.disconnect();
+    fetch.mockRestore();
+  }
 });

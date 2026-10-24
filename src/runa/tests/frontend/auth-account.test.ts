@@ -1710,6 +1710,27 @@ function preferenceDeliveryFixture() {
   ];
   const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
   vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).split('?')[0]!.endsWith('/preferences')) {
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      if (body.operation === 'snapshot')
+        return json({
+          account: id,
+          revision,
+          legacy_claimed: true,
+          values: [],
+        });
+      if (body.operation === 'write') {
+        if (body.revision !== revision) return json('version_conflict', 409);
+        revision++;
+        return json({
+          account: id,
+          revision,
+          scope: `${body.application}:${body.module}:${body.view}:${body.key}`,
+          version: 1,
+          value: body.value,
+        });
+      }
+    }
     if (String(input).split('?')[0]!.endsWith('/delivery-preferences')) {
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
       if (body.operation === 'read')
@@ -1723,12 +1744,14 @@ function preferenceDeliveryFixture() {
   });
   write = (path, body) => {
     if (path.endsWith('/delivery-preferences')) {
+      if (body.revision !== revision) return json('version_conflict', 409);
       const category = categories.find(
         (choice) => choice.key === body.category,
       )!;
       category.enabled = body.enabled as boolean;
       category.recipients = body.recipients as string[];
       revision++;
+      return json({ account: id, revision });
     }
     return json({ accepted: true });
   };
@@ -1870,8 +1893,8 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
   expect(another.getComponent(Switch).props('modelValue')).toBe(false);
 });
 
-it('inline delivery conflicts reload only on request without replaying the edited write', async () => {
-  preferenceDeliveryFixture();
+it('inline delivery conflicts refresh automatically and preserve the draft without replay', async () => {
+  const categories = preferenceDeliveryFixture();
   const w = mount(AuthAccount, {
     props: { accountId: id },
     attachTo: document.body,
@@ -1879,23 +1902,24 @@ it('inline delivery conflicts reload only on request without replaying the edite
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
   await row.get('input[role=switch]').setValue(false);
+  row.getComponent(Select).vm.$emit('update:modelValue', ['primary', other]);
+  await flushPromises();
+  categories[0]!.recipients = [other];
   write = () => json('version_conflict', 409);
   await row.trigger('submit');
   await vi.waitFor(() =>
-    expect(
-      row
-        .findAll('button')
-        .some((button) => button.text() === 'Wczytaj zapisane'),
-    ).toBe(true),
+    expect(row.find('[data-form-conflict]').exists()).toBe(true),
   );
-  expect(writes).toHaveLength(1);
+  expect(writes).toHaveLength(0);
+  expect(row.getComponent(Switch).props('modelValue')).toBe(false);
+  expect(row.text()).not.toContain('Wczytaj zapisane');
   await row
     .findAll('button')
-    .find((button) => button.text() === 'Wczytaj zapisane')!
+    .find((button) => button.text() === 'Zachowaj moje zmiany')!
     .trigger('click');
-  await flushPromises();
-  expect(writes).toHaveLength(1);
-  expect(row.attributes('data-dirty')).toBe('false');
+  expect(row.find('[data-form-conflict]').exists()).toBe(false);
+  expect(row.attributes('data-dirty')).toBe('true');
+  expect(writes).toHaveLength(0);
 });
 
 it('header preference reset requires confirmation and cancel never resets the account', async () => {
@@ -1994,5 +2018,167 @@ it('preference categories recover from failed reads without losing their card or
   await vi.waitFor(() =>
     expect(w.find('[data-delivery-category=optional]').exists()).toBe(true),
   );
+  expect(writes).toHaveLength(0);
+});
+
+it('account refresh merges untouched fields and preserves dirty identity, password and avatar drafts', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'My unsaved name';
+  state.sectionFields.password.password = 'Private unsaved password';
+  const file = new File(['image'], 'draft.png', { type: 'image/png' });
+  state.files.value = [file];
+  currentProfile = { ...currentProfile, version: 6, login: 'updated-login' };
+  await state.refresh();
+  expect(state.fields.name).toBe('My unsaved name');
+  expect(state.fields.login).toBe('updated-login');
+  expect(state.sectionFields.password.password).toBe(
+    'Private unsaved password',
+  );
+  expect(state.files.value[0]).toBe(file);
+  expect(state.profile.value?.version).toBe(6);
+  expect(Object.keys(state.detailConflicts)).toHaveLength(0);
+  expect(state.avatarConflict.value).toBe(true);
+  expect(writes).toHaveLength(0);
+});
+
+it('overlapping identity refresh requires a local decision before a versioned save and never replays writes', async () => {
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'My name';
+  currentProfile = { ...currentProfile, version: 6, name: 'Remote name' };
+  window.dispatchEvent(new Event('focus'));
+  await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  await flushPromises();
+  const details = w.get('[data-account-section=details]');
+  expect(details.get('[data-form-conflict]').text()).toContain('Remote name');
+  await details.trigger('submit');
+  expect(writes).toHaveLength(0);
+  await details
+    .findAll('button')
+    .find((button) => button.text() === 'Zachowaj moje zmiany')!
+    .trigger('click');
+  expect(state.fields.name).toBe('My name');
+  write = (_path, body) => {
+    currentProfile = { ...currentProfile, version: 7, name: String(body.name) };
+    return json({ accepted: true });
+  };
+  await details.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]!.body).toMatchObject({ version: 6, name: 'My name' });
+});
+
+it('preference refresh merges disjoint delivery changes without replacing local switches', async () => {
+  const categories = preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  const row = w.get('[data-delivery-category=optional]');
+  await row.get('input[role=switch]').setValue(false);
+  categories[0]!.recipients = [other];
+  await w.getComponent(AuthAccountPreferences).props('account').refresh();
+  await flushPromises();
+  expect(row.getComponent(Switch).props('modelValue')).toBe(false);
+  expect(row.getComponent(Select).props('modelValue')).toEqual([other]);
+  expect(row.find('[data-form-conflict]').exists()).toBe(false);
+  expect(writes).toHaveLength(0);
+});
+
+it('inline delivery rejection refreshes reads without replay or a reload action', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  const row = w.get('[data-delivery-category=optional]');
+  await row.get('input[role=switch]').setValue(false);
+  write = () => json('version_conflict', 409);
+  await row.trigger('submit');
+  const state = w.getComponent(AuthAccountPreferences).props('account');
+  await vi.waitFor(() => expect(state.busy.value).toBe(false));
+  expect(state.failure.value).toBe('conflict');
+  expect(writes).toHaveLength(1);
+  expect(row.getComponent(Switch).props('modelValue')).toBe(false);
+  expect(w.text()).not.toContain('Wczytaj aktualne dane');
+  expect(row.find('[data-form-conflict]').exists()).toBe(false);
+});
+
+it('secondary address refresh preserves dirty email and resolves only that editor', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, {
+    secondary_self_add: true,
+    secondary_self_change: true,
+  });
+  Object.assign(currentProfile, {
+    secondary_emails: [
+      { public_id: other, email: 'before@example.test', verified_at: null },
+    ],
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w
+    .get('button[aria-label="Edytuj adres: before@example.test"]')
+    .trigger('click');
+  await w.get('[name=secondary_email]').setValue('mine@example.test');
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'Unsaved identity';
+  Object.assign(currentProfile, {
+    version: 6,
+    secondary_emails: [
+      { public_id: other, email: 'remote@example.test', verified_at: null },
+    ],
+  });
+  await state.refresh();
+  await flushPromises();
+  const collection = w.get('[data-secondary-emails]');
+  expect(collection.get('[data-form-conflict]').text()).toContain(
+    'remote@example.test',
+  );
+  await collection.get('form').trigger('submit');
+  expect(writes).toHaveLength(0);
+  await collection
+    .findAll('button')
+    .find((button) => button.text() === 'Użyj aktualnych danych')!
+    .trigger('click');
+  expect(
+    (w.get('[name=secondary_email]').element as HTMLInputElement).value,
+  ).toBe('remote@example.test');
+  expect(state.fields.name).toBe('Unsaved identity');
+});
+
+it('account refresh retains a trailing focus invalidation while an earlier read is pending', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'My pending draft';
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let release: ((response: Response) => void) | undefined;
+  let delayed = true;
+  vi.mocked(window.fetch).mockImplementation((input, init) => {
+    if (delayed && String(input).endsWith('/profile')) {
+      delayed = false;
+      return new Promise<Response>((done) => {
+        release = done;
+      });
+    }
+    return original(input, init);
+  });
+  const first = state.refresh();
+  await vi.waitFor(() => expect(release).toBeDefined());
+  currentProfile = { ...currentProfile, version: 6, name: 'Remote update' };
+  window.dispatchEvent(new Event('focus'));
+  release!(json(profile));
+  await first;
+  await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  expect(state.fields.name).toBe('My pending draft');
+  expect(state.detailConflicts.name).toBe('Remote update');
   expect(writes).toHaveLength(0);
 });
