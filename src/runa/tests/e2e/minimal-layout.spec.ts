@@ -65,7 +65,7 @@ for (const [device, width, height] of [
             1,
         );
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page
@@ -83,7 +83,7 @@ for (const [device, width, height] of [
           .click();
         await expect(page.locator('.runa-art')).toBeVisible();
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-illustration-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-illustration-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page
@@ -109,7 +109,7 @@ for (const [device, width, height] of [
         });
         expect(flow).toBe(true);
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-long-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-long-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page

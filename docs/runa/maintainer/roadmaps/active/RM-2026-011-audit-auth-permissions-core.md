@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests relocating root browser artifacts, pnpm store and
+  Python bytecode into the workspace-root .runtime tree. Point 19v updates all
+  live browser consumers, workspace pnpm store configuration and development
+  Python cache environment; preserve existing evidence/cache bytes and installed
+  dependency links. Existing processes need environment activation; do not disrupt
+  the manual-review environment or start final point 20. Feature 0.5.0 unchanged.
+
 - 2026-10-24 — Owner accepts header placement but requires quiet ordinary text
   links instead of prominent buttons for welcome authentication/application entry.
   Point 19d applies this visual correction with accessible hover/focus/touch states
@@ -1017,6 +1024,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19s. Align alert icons, move avatar confirmation and recovery-code acknowledgement into modal bodies, then reset the identified local development database for a fresh manual review.
 - [x] 19t. Integrate secondary notification addresses into Account details with clear status/actions and isolated versioned submissions; remove the separate default navigation tab.
 - [x] 19u. Apply the existing shared native Markdown email layout to all direct Auth mail, preserving private delivery, text alternatives and single-attempt guards.
+- [x] 19v. Consolidate browser evidence, pnpm store and Python bytecode under workspace-root .runtime; preserve existing artifacts and configure future writes.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3096,3 +3104,32 @@ architectural premise requires discussion before dependent work.
   need no changes. No Docker resources created/removed; development data, owner
   accounts/sessions/2FA, files, caches, backups and reports preserved. No database
   reset or broad/final verification; point 20 still awaits owner acceptance.
+
+## Point 19v delivery
+
+- Relocated artifacts to .runtime/artifacts, pnpm store to .runtime/pnpm-store,
+  and nine first-party Python cache directories to .runtime/python/pycache using
+  Python's absolute-source prefix layout. Verified file sizes and SHA-256 before
+  and after every move: 1,211 browser files, 6,726 package-store files and 117
+  bytecode files preserved. Evidence: .runtime/artifacts/relocation-RM-2026-011.json.
+- Updated application/owner Playwright and Vitest outputs, explicit E2E screenshots/
+  exports, browser diagnostic output, installation evidence collection and error
+  fallback report paths. Old roadmap delivery paths remain historical evidence;
+  their contents now reside under the corresponding .runtime/artifacts paths.
+- pnpm-workspace.yaml owns the relative storeDir, including isolated build workspaces.
+  Updated only the generated installed-modules store path after moving the same
+  store; dependencies, lockfile and existing hardlinks were preserved. No install
+  or package update was needed.
+- Development image, Compose environments and devcontainer remote environment
+  select PYTHONPYCACHEPREFIX. Current processes retain their inherited environment;
+  export the prefix in existing terminals or reload the devcontainer environment.
+  No live application restart/rebuild is performed during manual frontend review.
+- Synchronized public artifact placement/testing/command docs, owner testing skill
+  reference and both owner/customer root instruction products. Existing Docker/
+  frontend skills and customer references already link to the updated placement
+  source; they need no duplicate procedure. No module or public API/version change.
+- Focused validation checks configuration path resolution, pnpm's selected store,
+  Python prefix resolution, changed JavaScript/Python syntax and byte integrity.
+  Full browser suites/builds/scanners remain deferred to gated point 20.
+- No Docker resources were created or removed. Preserved all development/test data,
+  sessions, Qdrant/model caches, backups, reports and unrelated runtime state.

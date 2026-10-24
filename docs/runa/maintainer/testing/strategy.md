@@ -178,7 +178,7 @@ The final gate normally includes:
 
 ## Scratch browser work
 
-Temporary Playwright exploration belongs in visible project scratch locations rather than hidden local junk.
+Keep temporary Playwright exploration in project scratch locations and generated browser evidence in the workspace-root runtime tree.
 
 Generated browser artifacts such as:
 
@@ -186,7 +186,7 @@ Generated browser artifacts such as:
 - videos,
 - traces,
 
-belong under a gitignored `artifacts/playwright/`.
+belong under a gitignored `.runtime/artifacts/playwright/`.
 
 Scratch test/code files must be removed before roadmap closure or promoted to durable tests/tools.
 
@@ -271,7 +271,7 @@ From the host, `php artisan runa:test:e2e --critical` starts the testing profile
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-The owner `python3 tools/maintainer/test-e2e` entrypoint starts and waits for this testing profile when invoked on the host; the owner browser quality gate explicitly uses the host coordinator. Direct execution inside the container still requires the host startup above. This lifecycle keeps Docker sockets out of the devcontainer. Application Playwright targets `http://nginx-test:8080` directly; `RUNA_E2E_BASE_URL` can select another already provisioned HTTP(S) application test endpoint. The runner does not start a PHP server, create synthetic routes or reset data. It finalizes emergency assets before execution and uses one worker because projects share the test endpoint. Each test gets a fresh browser context. The application welcome smoke runs in Chromium, Firefox and mobile Chromium; failures retain screenshots/traces and an HTML report under `artifacts/playwright/application/`. Build first with `pnpm --dir src run build`. Owner harness acceptance is separate below.
+The owner `python3 tools/maintainer/test-e2e` entrypoint starts and waits for this testing profile when invoked on the host; the owner browser quality gate explicitly uses the host coordinator. Direct execution inside the container still requires the host startup above. This lifecycle keeps Docker sockets out of the devcontainer. Application Playwright targets `http://nginx-test:8080` directly; `RUNA_E2E_BASE_URL` can select another already provisioned HTTP(S) application test endpoint. The runner does not start a PHP server, create synthetic routes or reset data. It finalizes emergency assets before execution and uses one worker because projects share the test endpoint. Each test gets a fresh browser context. The application welcome smoke runs in Chromium, Firefox and mobile Chromium; failures retain screenshots/traces and an HTML report under `.runtime/artifacts/playwright/application/`. Build first with `pnpm --dir src run build`. Owner harness acceptance is separate below.
 
 ## UI foundations and isolated browser tests
 
@@ -286,7 +286,7 @@ python3 tools/maintainer/test-e2e --critical
 
 The owner E2E runner first finalizes static emergency documents with `php src/runa/resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The owner test command uses isolated testing Nginx/PHP-FPM. Its private Playwright configuration owns `src/runa/tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
 
-The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored artifacts/playwright/runa; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `src/runa/tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against their independent application/platform manifests.
+The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored .runtime/artifacts/playwright/runa; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `src/runa/tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against their independent application/platform manifests.
 
 ### Layouts, forms and interactions
 

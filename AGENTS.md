@@ -235,6 +235,9 @@ Public built assets, Laravel storage and supported verification evidence keep
 their documented locations. Follow
 [artifact placement](docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state);
 preserve reports, caches, backups and operation/recovery state during cleanup.
+Browser evidence uses `.runtime/artifacts/playwright`, pnpm uses
+`.runtime/pnpm-store`, and development Python bytecode uses
+`.runtime/python/pycache`; see the placement contract for environment activation.
 
 ## Temporary Docker resources
 

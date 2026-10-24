@@ -35,12 +35,12 @@ for (const [device, width, height] of [
           ),
         ).toBe(true);
         await page.screenshot({
-          path: `../artifacts/playwright/tables-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/tables-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         expect(errors).toEqual([]);
         await info.attach('table preview', {
-          path: `../artifacts/playwright/tables-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/tables-${device}-${locale}-${theme}.png`,
           contentType: 'image/png',
         });
       });

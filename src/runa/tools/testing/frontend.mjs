@@ -10,7 +10,7 @@ const version = (await readFile('../VERSION', 'utf8')).trim();
 const applicationVersion = JSON.parse(
   await readFile('app/application.json', 'utf8'),
 ).version;
-const artifacts = '../artifacts/playwright/foundation';
+const artifacts = '../.runtime/artifacts/playwright/foundation';
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch();
 const errors = [];

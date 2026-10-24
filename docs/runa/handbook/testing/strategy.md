@@ -24,7 +24,7 @@ docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compos
 
 Then run `php artisan runa:test:e2e` inside the development container. The initial/recovery host `./bin/artisan runa:test:e2e` also starts that profile. src/playwright.config.mjs selects only src/app/tests/e2e and targets real Nginx/PHP-FPM at http://nginx-test:8080, never artisan serve or the owner fixture harness. RUNA_E2E_BASE_URL may select another provisioned HTTP(S) application test endpoint. No data reset is performed by the browser runner.
 
-Chromium, Firefox and mobile Chromium use one worker and fresh contexts. The retained --critical spelling runs the application suite; use normal Playwright filters for specific cases. HTML report, screenshots and failure traces live under artifacts/playwright/application. Browser binaries are supplied by the development image; production contains no browser/test tooling.
+Chromium, Firefox and mobile Chromium use one worker and fresh contexts. The retained --critical spelling runs the application suite; use normal Playwright filters for specific cases. HTML report, screenshots and failure traces live under .runtime/artifacts/playwright/application. Browser binaries are supplied by the development image; production contains no browser/test tooling.
 
 ## Concurrency and acceptance
 

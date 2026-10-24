@@ -42,6 +42,7 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && chown -R runa:runa /opt/corepack
 ENV COREPACK_HOME=/opt/corepack
 ENV COMPOSER_HOME=/home/runa/.config/composer
+ENV PYTHONPYCACHEPREFIX=/workspace/.runtime/python/pycache
 USER runa
 RUN pnpm --version
 

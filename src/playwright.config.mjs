@@ -11,13 +11,13 @@ if (!['http:', 'https:'].includes(new URL(baseURL).protocol)) {
 
 export default defineConfig({
   testDir: './app/tests/e2e',
-  outputDir: '../artifacts/playwright/application/results',
+  outputDir: '../.runtime/artifacts/playwright/application/results',
   reporter: [
     ['list'],
     [
       'html',
       {
-        outputFolder: '../artifacts/playwright/application/report',
+        outputFolder: '../.runtime/artifacts/playwright/application/report',
         open: 'never',
       },
     ],

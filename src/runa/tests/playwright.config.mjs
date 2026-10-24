@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   testDir: './e2e',
-  outputDir: '../../../artifacts/playwright/runa/results',
+  outputDir: '../../../.runtime/artifacts/playwright/runa/results',
   fullyParallel: false,
   workers: 1,
   forbidOnly: true,

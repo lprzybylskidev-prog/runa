@@ -1,2 +1,3 @@
+storeDir: ../.runtime/pnpm-store
 minimumReleaseAgeExclude:
   - eslint@10.13.0

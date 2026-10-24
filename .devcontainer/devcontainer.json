@@ -4,6 +4,7 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "runa",
+  "remoteEnv": { "PYTHONPYCACHEPREFIX": "/workspace/.runtime/python/pycache" },
   "updateRemoteUserUID": false,
   "overrideCommand": false,
   "shutdownAction": "none",

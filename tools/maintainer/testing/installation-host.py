@@ -218,10 +218,10 @@ def main():
             check(not (dev / 'src/tests').exists() and (dev / 'src/runa/Testing/TestCase.php').is_file(), 'generated PHPUnit/Pest tests and native/wrapped parallel customer suites use delivered guarded testing infrastructure without src/tests or owner tools')
             call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
             call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
-            browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)
-            shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
+            browser_evidence = ROOT / '.runtime/artifacts/playwright' / ('installation-' + token)
+            shutil.copytree(dev / '.runtime/artifacts/playwright/application', browser_evidence)
             report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
-            check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
+            check((dev / '.runtime/artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
 
             if '--customer-knowledge' in sys.argv[1:]:
                 runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-knowledge.py'))['exercise'](

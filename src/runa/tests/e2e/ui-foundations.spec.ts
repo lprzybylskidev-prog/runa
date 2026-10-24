@@ -65,7 +65,7 @@ for (const [device, width, height] of [
           ),
         ).toBe(true);
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/root-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/root-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         expect(errors).toEqual([]);

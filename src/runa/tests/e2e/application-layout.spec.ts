@@ -47,7 +47,7 @@ for (const [device, width, height] of [
           ),
         ).toBe(true);
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/application-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/application-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         if (width < 1024) {
@@ -58,7 +58,7 @@ for (const [device, width, height] of [
             .click();
           await expect(page.getByRole('dialog')).toBeVisible();
           await page.screenshot({
-            path: `../artifacts/playwright/ui-foundations/application-drawer-${locale}-${theme}.png`,
+            path: `../.runtime/artifacts/playwright/ui-foundations/application-drawer-${locale}-${theme}.png`,
             fullPage: true,
           });
           await page.keyboard.press('Escape');
@@ -389,7 +389,7 @@ test('compact top navigation keeps its scrollbar at the header bottom and owns w
       .toBe(true);
     expect(await page.evaluate(() => scrollY)).toBe(before);
     await page.screenshot({
-      path: `../artifacts/playwright/ui-foundations/top-navigation-compact-${width}.png`,
+      path: `../.runtime/artifacts/playwright/ui-foundations/top-navigation-compact-${width}.png`,
       fullPage: true,
     });
   }
@@ -421,7 +421,7 @@ test('top dropdown floats outside the scrolling nav without changing header size
       panel.getByRole('link', { name: 'Archiwum', exact: true }),
     ).toBeFocused();
     await page.screenshot({
-      path: `../artifacts/playwright/ui-foundations/top-dropdown-${width}.png`,
+      path: `../.runtime/artifacts/playwright/ui-foundations/top-dropdown-${width}.png`,
     });
     await page.keyboard.press('Shift+Tab');
     await expect(trigger).toBeFocused();

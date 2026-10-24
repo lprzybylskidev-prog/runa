@@ -19,7 +19,7 @@ test('downloads real bounded files, selects across pages and recovers partial op
       .first()
       .click();
     const download = await pending;
-    const path = `../artifacts/playwright/exports/projects.${format.toLowerCase()}`;
+    const path = `../.runtime/artifacts/playwright/exports/projects.${format.toLowerCase()}`;
     await download.saveAs(path);
     expect(await download.failure()).toBeNull();
     expect(download.suggestedFilename()).toBe(
@@ -148,13 +148,13 @@ test('opens an isolated print document with the complete filtered result', async
     expect(border.color).toBe('rgb(119, 119, 119)');
   }
   await printPage.screenshot({
-    path: '../artifacts/playwright/exports/print-uniform-lines.png',
+    path: '../.runtime/artifacts/playwright/exports/print-uniform-lines.png',
     fullPage: true,
   });
   // Playwright PDF generation is available only in headless Chromium.
   if (browserName === 'chromium') {
     const pdf = await printPage.pdf({
-      path: '../artifacts/playwright/exports/print-uniform-lines.pdf',
+      path: '../.runtime/artifacts/playwright/exports/print-uniform-lines.pdf',
       format: 'A4',
       printBackground: true,
     });
@@ -207,7 +207,7 @@ for (const [device, width, height] of [
         ).toBe(true);
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({
-          path: `../artifacts/playwright/exports/states-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/exports/states-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
       });

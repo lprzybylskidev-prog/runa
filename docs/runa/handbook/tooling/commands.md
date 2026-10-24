@@ -121,7 +121,7 @@ Run only application Vitest/Vue component tests from `src/app/tests/frontend`, u
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; recovery host transport starts it automatically. `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; recovery host transport starts it automatically. `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 

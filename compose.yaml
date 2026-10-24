@@ -14,7 +14,9 @@ x-development: &development
       RUNA_GID: ${RUNA_GID:-1000}
   init: true
   working_dir: /workspace
-  environment: { APP_ENV: local }
+  environment: &development-environment
+    APP_ENV: local
+    PYTHONPYCACHEPREFIX: /workspace/.runtime/python/pycache
   logging: *logging
   volumes:
     - .:/workspace
@@ -27,6 +29,7 @@ services:
       - .:/workspace
       - composer-cache:/home/runa/.cache/composer
     environment:
+      <<: *development-environment
       APP_ENV: local
       TEST_WORKERS: ${TEST_WORKERS:-4}
       PLAYWRIGHT_WORKERS: ${PLAYWRIGHT_WORKERS:-2}
@@ -57,6 +60,7 @@ services:
     profiles: [testing]
     env_file: .env.testing
     environment:
+      <<: *development-environment
       APP_ENV: testing
       LARAVEL_STORAGE_PATH: /workspace/.runtime/src/runa/tests/e2e
     command:

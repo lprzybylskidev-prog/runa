@@ -125,7 +125,7 @@ for (const locale of ['pl', 'en'])
           }
           if (scale === 2)
             await page.screenshot({
-              path: `../artifacts/playwright/integrated/${category}-${locale}-${theme}-200.png`,
+              path: `../.runtime/artifacts/playwright/integrated/${category}-${locale}-${theme}-200.png`,
               fullPage: true,
             });
         }
@@ -315,7 +315,7 @@ for (const locale of ['pl', 'en'])
         `/__fixtures/standalone/standalone.html?locale=${locale}&theme=${theme}`,
       );
       await page.screenshot({
-        path: `../artifacts/playwright/integrated/standalone-${locale}-${theme}.png`,
+        path: `../.runtime/artifacts/playwright/integrated/standalone-${locale}-${theme}.png`,
         fullPage: true,
       });
       await expect(page.locator('.minimal-page,.application-page')).toHaveCount(

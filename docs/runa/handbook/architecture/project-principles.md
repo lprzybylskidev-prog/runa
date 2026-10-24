@@ -79,6 +79,15 @@ and src/public/runa-error; Laravel storage/cache and durable application data re
 their documented locations. Supported verification evidence also retains its
 documented artifact paths. This rule does not move those existing contracts.
 
+Browser screenshots, traces, videos, HTML reports and Vitest attachments use
+.runtime/artifacts/playwright/. The pnpm workspace config selects
+.runtime/pnpm-store/; development Python uses PYTHONPYCACHEPREFIX at
+/workspace/.runtime/python/pycache. The devcontainer remote environment also
+sets this prefix; existing terminals/processes need a reload or an explicit
+export before subsequent Python invocations. Native host Python commands may
+set PYTHONPYCACHEPREFIX to the absolute checkout .runtime/python/pycache path.
+Preserve package caches and browser evidence during relocation and cleanup.
+
 Private error build output uses .runtime/frontend/errors/renderer and generated
 HTML templates use .runtime/frontend/errors/templates. Only required generated
 HTML is copied explicitly into production PHP images at the matching workspace
