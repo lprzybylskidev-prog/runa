@@ -92,3 +92,8 @@ and independent operations in separate forms with their own outlined submits.
 Preserve explicit security steps and scoped credential drafts/validation/cleanup;
 use public account orchestration and AuthAvatarCropper rather than private copies.
 Forward ApplicationLayout's width prop in wrappers; the supplied account shell is fluid.
+
+Host avatar adjustment in the shared Dialog with explicit local Apply/Cancel.
+Use a dimmed surrounding image and bright circular frame, direct pointer panning,
+wheel/pinch zoom and keyboard alternatives; do not add redundant position sliders.
+Applying a crop prepares the card preview; the card's Save owns the upload.

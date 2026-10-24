@@ -1,14 +1,6 @@
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onScopeDispose,
-  ref,
-  shallowRef,
-  watch,
-} from 'vue';
+import { nextTick, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { Alert, Spinner } from '@/runa/ui';
-import AppPickerSlider from '../../../resources/js/components/AppPickerSlider.vue';
 const props = defineProps<{
   file: File;
   locale: 'pl' | 'en';
@@ -23,29 +15,6 @@ const loading = ref(false),
 const zoom = ref(100),
   horizontal = ref(50),
   vertical = ref(50);
-const controls = computed(() => [
-  {
-    key: 'zoom',
-    label: text('Powiększenie', 'Zoom'),
-    value: zoom,
-    min: 100,
-    max: 300,
-  },
-  {
-    key: 'horizontal',
-    label: text('Pozycja pozioma', 'Horizontal position'),
-    value: horizontal,
-    min: 0,
-    max: 100,
-  },
-  {
-    key: 'vertical',
-    label: text('Pozycja pionowa', 'Vertical position'),
-    value: vertical,
-    min: 0,
-    max: 100,
-  },
-]);
 let epoch = 0,
   objectUrl = '',
   pendingImage: HTMLImageElement | undefined;
@@ -62,30 +31,60 @@ function release() {
   }
   pendingImage = undefined;
 }
-function draw() {
-  const source = image.value,
-    target = canvas.value;
-  if (!source || !target) return;
+const viewSize = 512;
+const cropDiameter = 360;
+function geometry() {
+  const source = image.value;
+  if (!source) return;
   const side =
     (Math.min(source.naturalWidth, source.naturalHeight) * 100) / zoom.value;
+  return {
+    side,
+    x: ((source.naturalWidth - side) * horizontal.value) / 100,
+    y: ((source.naturalHeight - side) * vertical.value) / 100,
+  };
+}
+function draw() {
+  const source = image.value,
+    target = canvas.value,
+    frame = geometry();
+  if (!source || !target || !frame) return;
   const context = target.getContext('2d');
   if (!context) {
     failure.value = true;
     emit('ready', false);
     return;
   }
-  context.clearRect(0, 0, 512, 512);
+  const scale = cropDiameter / frame.side;
+  const inset = (viewSize - cropDiameter) / 2;
+  context.clearRect(0, 0, viewSize, viewSize);
+  context.fillStyle = '#111321';
+  context.fillRect(0, 0, viewSize, viewSize);
   context.drawImage(
     source,
-    ((source.naturalWidth - side) * horizontal.value) / 100,
-    ((source.naturalHeight - side) * vertical.value) / 100,
-    side,
-    side,
-    0,
-    0,
-    512,
-    512,
+    inset - frame.x * scale,
+    inset - frame.y * scale,
+    source.naturalWidth * scale,
+    source.naturalHeight * scale,
   );
+  // Only the circular avatar remains bright; the surrounding image stays visible.
+  context.fillStyle = 'rgba(0, 0, 0, 0.64)';
+  context.beginPath();
+  context.rect(0, 0, viewSize, viewSize);
+  context.arc(
+    viewSize / 2,
+    viewSize / 2,
+    cropDiameter / 2,
+    0,
+    Math.PI * 2,
+    true,
+  );
+  context.fill('evenodd');
+  context.beginPath();
+  context.arc(viewSize / 2, viewSize / 2, cropDiameter / 2, 0, Math.PI * 2);
+  context.strokeStyle = '#ffffff';
+  context.lineWidth = 2;
+  context.stroke();
 }
 watch(
   () => props.file,
@@ -160,30 +159,140 @@ function start(event: PointerEvent) {
   };
 }
 function move(event: PointerEvent) {
+  const source = image.value,
+    frame = geometry(),
+    target = canvas.value;
   if (
     !drag ||
     drag.id !== event.pointerId ||
-    !canvas.value ||
-    canvas.value.closest('fieldset:disabled, [inert]')
+    !target ||
+    !source ||
+    !frame ||
+    target.closest('fieldset:disabled, [inert]')
   )
     return;
-  const width = canvas.value.getBoundingClientRect().width;
-  horizontal.value = Math.max(
-    0,
-    Math.min(100, drag.horizontal - ((event.clientX - drag.x) * 100) / width),
+  const scale =
+    ((cropDiameter / frame.side) * target.getBoundingClientRect().width) /
+    viewSize;
+  const xRange = source.naturalWidth - frame.side,
+    yRange = source.naturalHeight - frame.side;
+  horizontal.value =
+    xRange > 0
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            drag.horizontal -
+              ((event.clientX - drag.x) * 100) / (scale * xRange),
+          ),
+        )
+      : 50;
+  vertical.value =
+    yRange > 0
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            drag.vertical - ((event.clientY - drag.y) * 100) / (scale * yRange),
+          ),
+        )
+      : 50;
+}
+function changeZoom(value: number) {
+  const source = image.value,
+    old = geometry();
+  if (!source || !old) return;
+  zoom.value = Math.max(100, Math.min(400, value));
+  const next = geometry()!;
+  horizontal.value =
+    source.naturalWidth > next.side
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            ((old.x + old.side / 2 - next.side / 2) * 100) /
+              (source.naturalWidth - next.side),
+          ),
+        )
+      : 50;
+  vertical.value =
+    source.naturalHeight > next.side
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            ((old.y + old.side / 2 - next.side / 2) * 100) /
+              (source.naturalHeight - next.side),
+          ),
+        )
+      : 50;
+}
+function wheel(event: WheelEvent) {
+  if (event.ctrlKey || canvas.value?.closest('fieldset:disabled, [inert]'))
+    return;
+  event.preventDefault();
+  changeZoom(
+    zoom.value * Math.exp(-Math.max(-100, Math.min(100, event.deltaY)) * 0.002),
   );
-  vertical.value = Math.max(
-    0,
-    Math.min(100, drag.vertical - ((event.clientY - drag.y) * 100) / width),
-  );
+}
+function key(event: KeyboardEvent) {
+  if (canvas.value?.closest('fieldset:disabled, [inert]')) return;
+  const step = event.shiftKey ? 10 : 2;
+  if (event.key === '+' || event.key === '=') changeZoom(zoom.value * 1.1);
+  else if (event.key === '-') changeZoom(zoom.value / 1.1);
+  else if (event.key === 'ArrowLeft')
+    horizontal.value = Math.max(0, horizontal.value - step);
+  else if (event.key === 'ArrowRight')
+    horizontal.value = Math.min(100, horizontal.value + step);
+  else if (event.key === 'ArrowUp')
+    vertical.value = Math.max(0, vertical.value - step);
+  else if (event.key === 'ArrowDown')
+    vertical.value = Math.min(100, vertical.value + step);
+  else if (event.key === 'Home') {
+    zoom.value = 100;
+    horizontal.value = vertical.value = 50;
+  } else return;
+  event.preventDefault();
+}
+let pinch: { distance: number; zoom: number } | undefined;
+function touch(event: TouchEvent) {
+  if (
+    event.touches.length !== 2 ||
+    canvas.value?.closest('fieldset:disabled, [inert]')
+  )
+    return;
+  event.preventDefault();
+  drag = undefined;
+  const a = event.touches[0]!,
+    b = event.touches[1]!;
+  const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  if (!pinch || event.type === 'touchstart')
+    pinch = { distance, zoom: zoom.value };
+  else if (pinch.distance > 0)
+    changeZoom((pinch.zoom * distance) / pinch.distance);
 }
 async function crop(): Promise<File> {
   if (!image.value || !canvas.value || loading.value || failure.value)
     throw new Error('Image is not ready.');
   const current = epoch;
-  draw();
+  const frame = geometry()!;
+  const output = document.createElement('canvas');
+  output.width = output.height = 512;
+  const context = output.getContext('2d');
+  if (!context) throw new Error('Image export unavailable.');
+  context.drawImage(
+    image.value,
+    frame.x,
+    frame.y,
+    frame.side,
+    frame.side,
+    0,
+    0,
+    512,
+    512,
+  );
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.value!.toBlob(resolve, 'image/png'),
+    output.toBlob(resolve, 'image/png'),
   );
   if (current !== epoch || !image.value) throw new Error('Image changed.');
   if (!blob || blob.size > props.maxBytes)
@@ -216,6 +325,19 @@ onScopeDispose(() => {
         width="512"
         height="512"
         role="img"
+        tabindex="0"
+        :aria-description="
+          text(
+            'Przeciągnij zdjęcie. Kółko myszy lub klawisze plus i minus zmieniają powiększenie, strzałki przesuwają, Home resetuje kadr.',
+            'Drag the image. Use the mouse wheel or plus and minus keys to zoom, arrow keys to move, Home to reset.',
+          )
+        "
+        @wheel="wheel"
+        @keydown="key"
+        @touchstart="touch"
+        @touchmove="touch"
+        @touchend="pinch = undefined"
+        @touchcancel="pinch = undefined"
         :aria-label="
           text(
             'Podgląd kadru zdjęcia profilowego',
@@ -232,36 +354,30 @@ onScopeDispose(() => {
       <p class="text-xs text-muted">
         {{
           text(
-            'Przesuń zdjęcie lub użyj suwaków, aby ustawić kadr.',
-            'Drag the image or use the sliders to adjust the crop.',
+            'Przeciągnij zdjęcie, aby ustawić kadr. Przybliżaj kółkiem myszy lub gestem dwóch palców.',
+            'Drag to position the image. Zoom with the mouse wheel or a two-finger pinch.',
           )
         }}
       </p>
-      <div class="grid gap-4 sm:grid-cols-3">
-        <AppPickerSlider
-          v-for="control in controls"
-          :key="control.key"
-          v-model="control.value.value"
-          :min="control.min"
-          :max="control.max"
-          :label="control.label"
-          unit="%"
-          gradient="linear-gradient(to right, var(--runa-surface-muted), var(--runa-primary-solid))"
-        />
-      </div>
     </template>
   </div>
 </template>
 <style scoped>
 .avatar-crop-preview {
   display: block;
-  width: min(100%, 280px);
+  width: 100%;
+  max-width: 512px;
+  margin-inline: auto;
   height: auto;
   aspect-ratio: 1;
   border: 1px solid var(--runa-control-border);
   border-radius: 4px;
   touch-action: none;
   cursor: grab;
+}
+.avatar-crop-preview:focus-visible {
+  outline: 2px solid var(--runa-focus-ring);
+  outline-offset: 3px;
 }
 .avatar-crop-preview:active {
   cursor: grabbing;

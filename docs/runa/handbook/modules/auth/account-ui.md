@@ -76,9 +76,13 @@ displays a key, requires the app code and fresh proof, then requires acknowledge
 of recovery codes. Account lifecycle operations retain explicit confirmation.
 
 The avatar card accepts a local JPEG, PNG or WebP original up to 20 MiB, 40 million
-pixels and 12000 pixels per side. It provides a square preview, pointer panning and
-keyboard/pointer zoom/position sliders. Saving exports a 512x512 PNG, without original
-metadata; only that cropped image is sent to the existing bounded upload API. Invalid
+pixels and 12000 pixels per side. Selecting an original opens the shared Dialog. The surrounding image is dimmed
+outside a bright circular avatar frame. Drag with mouse/touch to position it;
+use the mouse wheel or a two-finger pinch to zoom, without sliders. Keyboard
+arrows move, +/- zoom and Home resets. Ctrl+wheel keeps browser zoom native.
+Apply crop prepares the circular preview on the card; Cancel/Escape dismiss
+without upload. An accepted crop survives canceled readjustment. Saving exports
+a 512x512 PNG, without original metadata or the preview's dark mask; only that cropped image is sent to the existing bounded upload API. Invalid
 files, decode failures and output above the server's current avatar_max_kib stop
 submission. Original files/object URLs stay in memory and are released on replacement
 or unmount. The backend remains authoritative for MIME, size, dimensions and storage.

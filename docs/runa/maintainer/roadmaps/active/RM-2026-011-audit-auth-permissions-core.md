@@ -991,6 +991,11 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     image/storage/security bounds and sessions/preferences behavior intact.
   - Synchronize public and owner/customer patterns, module metadata and focused
     checks; publish and inspect real desktop/mobile themed states before commit.
+- [x] 19l. Replace inline avatar sliders with modal direct manipulation.
+  - Owner requests shared Dialog on file selection, a dimmed surrounding image
+    and circular avatar preview, pointer dragging and wheel zoom without sliders.
+  - Preserve keyboard/touch access, cancel/confirm without implicit upload, public
+    crop export and bounded-file cleanup; inspect rendered modal and focused tests.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2666,3 +2671,39 @@ architectural premise requires discussion before dependent work.
   apply. No Docker resources created/removed. Preserved development services/data,
   caches, reports, backups and rollback material. Point 20 still requires explicit
   owner frontend appearance acceptance.
+
+## Point 19l delivery
+
+- Owner requests modal cropping with a dimmed surrounding image, circular avatar
+  frame, mouse dragging and wheel zoom instead of sliders. The account card now
+  opens public Dialog on file selection, with local Apply crop/Cancel and Adjust
+  crop for an accepted selection. Apply prepares a circular card preview; only the
+  existing card Save uploads. Cancel/Escape never upload and canceled readjustment
+  preserves the accepted crop. Object URLs are released on replacement/unmount.
+- Public AuthAvatarCropper retains File/locale/maxBytes, ready and crop() contracts.
+  Its canvas shows the source and a dimmed outside area around the bright circle.
+  Dragging maps pointer distance to actual image coordinates and clamps boundaries;
+  wheel zoom preserves the center. Ctrl+wheel retains native browser zoom. Touch
+  supports single-finger pan and pinch zoom; keyboard arrows, +/- and Home provide
+  alternatives without sliders. Export uses a separate canvas so masking never
+  enters the 512px PNG. Existing file limits, stale export fencing and cleanup stay.
+- Reused Dialog lifecycle, focus containment/return, busy state and reduced-motion
+  transitions; direct manipulation remains immediate. Shared color sliders remain
+  unchanged. Auth PATCH 0.14.0 -> 0.14.1 has a source-only forward edge/changelog,
+  compatible Permissions ^0.14.0, local forward preparation and published assets.
+  All Core source/version diagnostics passed; no data/settings/schema changes.
+- Four focused frontend cases cover apply-before-save, independent drafts, modal
+  cancel/readjustment, wheel/pinch/keyboard output, dimmed-preview isolation and
+  invalid/oversized originals. Adapted teleported-modal selectors and real Touch
+  event fixtures before receiving passing results. Actual served authenticated
+  Chromium checks exercised drag/wheel and Apply/Escape in 1440/390 light/dark,
+  zero sliders, no overflow/JS errors and zero upload requests on Apply/Cancel.
+  Inspected retained screenshots under .runtime/dev/manual-auth/avatar-modal.
+- Replaced obsolete slider/inline preview claims in account/customization/component
+  docs, updated both frontend instruction products. Root AGENTS, primary frontend/
+  Vue/Tailwind/security guidance already requires public primitives, accessibility
+  and cleanup; no duplicate rule needed. Backend upload/storage contracts unchanged.
+- No broad suites/static analysis/image/scanner/final quality ran; mandatory hooks
+  apply. No Docker resources or live avatar/data changes; existing services/data,
+  caches, reports, backups and rollback material preserved. Point 20 remains gated
+  by explicit owner appearance acceptance.

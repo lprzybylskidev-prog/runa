@@ -310,6 +310,9 @@ only in the user dropdown; the default /app workspace has no placeholder content
 The default account view composes four existing Cards with independent Forms and
 shared Alert/ToastViewport success feedback. AuthAvatarCropper exports a local,
 bounded square crop through `@/runa/auth`; see [the account UI contract](../../modules/auth/account-ui.md)
-and [public customization](customization.md). It reuses internal AppPickerSlider
-with its optional min (default 0), max, gradient and unit contracts, just like the
-color picker; disabled fieldsets/inert ancestors block pointer and keyboard edits.
+and [public customization](customization.md). The account card hosts it in the
+shared Dialog with explicit Apply/Cancel. The canvas displays a circular bright
+frame and dimmed surrounding image; direct mouse/touch dragging, wheel/pinch
+zoom and keyboard alternatives replace sliders. Mask pixels never enter export.
+AppPickerSlider remains the internal color-picker control, with optional min=0;
+disabled fieldsets/inert ancestors block edits.

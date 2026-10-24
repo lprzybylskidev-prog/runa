@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Alert,
   Button,
   Card,
+  Dialog,
   Checkbox,
   FileInput,
   Form,
@@ -47,6 +48,23 @@ const avatarForm = ref<{ focusInvalid: () => void }>();
 const passwordForm = ref<{ focusInvalid: () => void }>();
 const securityForm = ref<{ focusInvalid: () => void }>();
 const originals = ref<readonly File[]>([]);
+const cropOpen = ref(false);
+const previewUrl = ref('');
+function clearPreview() {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+  previewUrl.value = '';
+}
+watch(originals, (value) => {
+  cropError.value = '';
+  cropReady.value = false;
+  if (value[0]) cropOpen.value = true;
+  else {
+    cropOpen.value = false;
+    files.value = [];
+    clearPreview();
+  }
+});
+onScopeDispose(clearPreview);
 const cropper = ref<InstanceType<typeof AuthAvatarCropper>>();
 const cropReady = ref(false),
   cropError = ref(''),
@@ -133,22 +151,6 @@ async function save(section: AccountSection) {
     password: passwordForm,
     security: securityForm,
   }[section].value;
-  if (section === 'avatar' && originals.value[0]) {
-    cropError.value = '';
-    cropping.value = true;
-    try {
-      if (!cropper.value || !cropReady.value) return;
-      files.value = [await cropper.value.crop()];
-    } catch {
-      cropError.value = text(
-        'Nie udało się przygotować zdjęcia. Wybierz inny plik lub szerszy kadr.',
-        'Could not prepare the image. Choose another file or a wider crop.',
-      );
-      return;
-    } finally {
-      cropping.value = false;
-    }
-  }
   await saveSection(section);
   if (
     section === 'avatar' &&
@@ -157,6 +159,31 @@ async function save(section: AccountSection) {
     notice.value
   )
     originals.value = [];
+}
+async function applyCrop() {
+  if (!cropper.value || !cropReady.value || cropping.value) return;
+  cropError.value = '';
+  cropping.value = true;
+  try {
+    const cropped = await cropper.value.crop();
+    files.value = [cropped];
+    clearPreview();
+    previewUrl.value = URL.createObjectURL(cropped);
+    removeAvatar.value = false;
+    cropOpen.value = false;
+  } catch {
+    cropError.value = text(
+      'Nie udało się przygotować zdjęcia. Wybierz inny plik.',
+      'Could not prepare the image. Choose another file.',
+    );
+  } finally {
+    cropping.value = false;
+  }
+}
+function closeCrop(value: boolean) {
+  if (cropping.value) return;
+  cropOpen.value = value;
+  if (!value && !files.value.length) originals.value = [];
 }
 </script>
 <template>
@@ -273,9 +300,11 @@ async function save(section: AccountSection) {
       >
         <div class="flex items-center gap-4">
           <img
-            v-if="profile.has_avatar"
+            v-if="previewUrl || profile.has_avatar"
             :key="profile.version"
-            :src="`/api/runa/auth/profile/avatar?v=${profile.version}`"
+            :src="
+              previewUrl || `/api/runa/auth/profile/avatar?v=${profile.version}`
+            "
             :alt="text('Twoje zdjęcie profilowe', 'Your profile image')"
             class="h-20 w-20 shrink-0 rounded-full object-cover"
           />
@@ -321,14 +350,11 @@ async function save(section: AccountSection) {
               delete sectionErrors.avatar.avatar;
             "
           />
-          <AuthAvatarCropper
-            v-if="originals[0]"
-            ref="cropper"
-            :file="originals[0]"
-            :locale="locale"
-            :max-bytes="Number(profile.capabilities.avatar_max_kib) * 1024"
-            @ready="cropReady = $event"
-          />
+          <Button
+            v-if="originals[0] && files.length"
+            @click="cropOpen = true"
+            >{{ text('Popraw kadr', 'Adjust crop') }}</Button
+          >
           <Alert v-if="cropError" tone="danger">{{ cropError }}</Alert>
           <Checkbox
             v-if="profile.has_avatar"
@@ -342,11 +368,7 @@ async function save(section: AccountSection) {
             type="submit"
             variant="outline"
             :busy="busy || cropping"
-            :disabled="
-              !canAvatar ||
-              (originals.length > 0 && !cropReady) ||
-              (!originals.length && !removeAvatar)
-            "
+            :disabled="!canAvatar || (!files.length && !removeAvatar)"
             >{{ text('Zapisz zdjęcie', 'Save image') }}</Button
           ></template
         >
@@ -494,6 +516,37 @@ async function save(section: AccountSection) {
       }}</Alert>
     </Card>
   </div>
+  <Dialog
+    :model-value="cropOpen"
+    :title="text('Kadrowanie zdjęcia', 'Crop image')"
+    :locale="locale"
+    size="lg"
+    :busy="cropping"
+    :error="cropError"
+    initial-focus="canvas"
+    @update:model-value="closeCrop"
+  >
+    <AuthAvatarCropper
+      v-if="cropOpen && originals[0] && profile"
+      ref="cropper"
+      :file="originals[0]"
+      :locale="locale"
+      :max-bytes="Number(profile.capabilities.avatar_max_kib) * 1024"
+      @ready="cropReady = $event"
+    />
+    <template #footer>
+      <Button :disabled="cropping" @click="closeCrop(false)">{{
+        text('Anuluj', 'Cancel')
+      }}</Button>
+      <Button
+        variant="outline"
+        :busy="cropping"
+        :disabled="!cropReady"
+        @click="applyCrop"
+        >{{ text('Zastosuj kadr', 'Apply crop') }}</Button
+      >
+    </template>
+  </Dialog>
 </template>
 <style scoped>
 @media print {

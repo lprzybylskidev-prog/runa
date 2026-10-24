@@ -115,9 +115,10 @@ AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 AuthAvatarCropper is also public through `@/runa/auth`: pass a local File, locale
 and current maxBytes, wait for ready(true), then await the exposed crop() method
 for a 512x512 PNG File. ready(false) invalidates the previous crop. The component
-owns source decoding, bounded original limits, preview, pointer/keyboard crop and
-object-URL cleanup; it never uploads. Pass the resulting File to the account
-controller's files ref and explicitly saveSection('avatar'). Dispose it with the
+owns source decoding, bounded original limits, circular masked preview, pointer/keyboard
+panning, wheel/pinch zoom and object-URL cleanup; it never uploads. Pass the resulting File to the account
+controller's files ref and explicitly saveSection('avatar'). Compose it inside public
+Dialog with explicit Apply/Cancel; export only on Apply and upload only on Save. Dispose it with the
 account/page; do not copy its private implementation.
 
 Keep private forms scoped to the current account and unmount them on pause/switch.

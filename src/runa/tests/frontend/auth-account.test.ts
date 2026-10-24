@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
 import AuthAvatarCropper from '../../modules/auth/frontend/AuthAvatarCropper.vue';
-import { FileInput, Select } from '@/runa/ui';
+import { Button, Dialog, FileInput, Select } from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
 import CustomerApplication from './fixtures/customization/CustomerApplication.vue';
@@ -562,15 +562,20 @@ it('account avatar card crops and saves independently without clearing other car
   w.getComponent(FileInput).vm.$emit('update:modelValue', [
     await cropImageFile(),
   ]);
-  await vi.waitFor(() => expect(w.find('canvas').exists()).toBe(true));
+  const dialog = w.getComponent(Dialog);
   await vi.waitFor(() =>
-    expect(
-      w
-        .findAll('button')
-        .find((button) => button.text() === 'Zapisz zdjęcie')!
-        .attributes('disabled'),
-    ).toBeUndefined(),
+    expect(w.getComponent(AuthAvatarCropper).find('canvas').exists()).toBe(
+      true,
+    ),
   );
+  const apply = dialog
+    .findAllComponents(Button)
+    .find((button) => button.text() === 'Zastosuj kadr')!;
+  await vi.waitFor(() => expect(apply.attributes('disabled')).toBeUndefined());
+  expect(writes).toHaveLength(0);
+  await apply.trigger('click');
+  await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
+  expect(writes).toHaveLength(0);
   write = () => {
     currentProfile = { ...currentProfile, version: 6 };
     return json({ accepted: true });
@@ -623,8 +628,11 @@ it('avatar cropper exports the selected square and refuses invalid or oversized 
     props: { file: await cropImageFile(), locale: 'pl', maxBytes: 2048 * 1024 },
   });
   await vi.waitFor(() => expect(w.find('canvas').exists()).toBe(true));
-  const sliders = w.findAll('[role=slider]');
-  await sliders[1]!.trigger('keydown', { key: 'End' });
+  expect(w.findAll('[role=slider]')).toHaveLength(0);
+  for (let i = 0; i < 5; i++)
+    await w
+      .get('canvas')
+      .trigger('keydown', { key: 'ArrowRight', shiftKey: true });
   const output = await w.vm.crop();
   const image = await createImageBitmap(output);
   expect([image.width, image.height]).toEqual([512, 512]);
@@ -647,4 +655,100 @@ it('avatar cropper exports the selected square and refuses invalid or oversized 
   });
   expect(w.get('[role=alert]').text()).toContain('20 MB');
   expect(w.find('canvas').exists()).toBe(false);
+});
+
+it('avatar crop modal cancels without upload and preserves an accepted crop when readjustment is canceled', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const picker = w.getComponent(FileInput);
+  picker.vm.$emit('update:modelValue', [await cropImageFile()]);
+  await flushPromises();
+  let dialog = w.getComponent(Dialog);
+  await vi.waitFor(() =>
+    expect(w.getComponent(AuthAvatarCropper).find('canvas').exists()).toBe(
+      true,
+    ),
+  );
+  dialog.vm.$emit('update:modelValue', false);
+  await flushPromises();
+  expect(picker.props('modelValue')).toHaveLength(0);
+  expect(writes).toHaveLength(0);
+  picker.vm.$emit('update:modelValue', [await cropImageFile()]);
+  await flushPromises();
+  dialog = w.getComponent(Dialog);
+  const apply = dialog
+    .findAllComponents(Button)
+    .find((button) => button.text() === 'Zastosuj kadr')!;
+  await vi.waitFor(() => expect(apply.attributes('disabled')).toBeUndefined());
+  await apply.trigger('click');
+  await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
+  const preview = w.get('[data-account-section=avatar] img').attributes('src');
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Popraw kadr')!
+    .trigger('click');
+  dialog.vm.$emit('update:modelValue', false);
+  await flushPromises();
+  expect(w.get('[data-account-section=avatar] img').attributes('src')).toBe(
+    preview,
+  );
+  expect(writes).toHaveLength(0);
+});
+it('avatar crop supports wheel zoom and keeps the dimmed preview out of exported pixels', async () => {
+  const w = mount(AuthAvatarCropper, {
+    props: { file: await cropImageFile(), locale: 'pl', maxBytes: 2048 * 1024 },
+  });
+  await vi.waitFor(() => expect(w.find('canvas').exists()).toBe(true));
+  const view = w.get('canvas');
+  const bytesBefore = await (await w.vm.crop()).arrayBuffer();
+  await view.trigger('wheel', { deltaY: -100 });
+  const bytesAfter = await (await w.vm.crop()).arrayBuffer();
+  expect(bytesAfter.byteLength).toBeGreaterThan(0);
+  expect(new Uint8Array(bytesAfter)).not.toEqual(new Uint8Array(bytesBefore));
+  const bitmap = await createImageBitmap(await w.vm.crop());
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 512;
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0);
+  const corner = canvas.getContext('2d')!.getImageData(0, 0, 1, 1).data;
+  expect(Array.from(corner)).toEqual([255, 0, 0, 255]);
+  bitmap.close();
+  const previewCorner = (view.element as HTMLCanvasElement)
+    .getContext('2d')!
+    .getImageData(0, 0, 1, 1).data;
+  expect(previewCorner[0]).toBeLessThan(150);
+  await view.trigger('touchstart', {
+    touches: [
+      new Touch({
+        identifier: 1,
+        target: view.element,
+        clientX: 100,
+        clientY: 100,
+      }),
+      new Touch({
+        identifier: 2,
+        target: view.element,
+        clientX: 200,
+        clientY: 100,
+      }),
+    ],
+  });
+  await view.trigger('touchmove', {
+    touches: [
+      new Touch({
+        identifier: 1,
+        target: view.element,
+        clientX: 50,
+        clientY: 100,
+      }),
+      new Touch({
+        identifier: 2,
+        target: view.element,
+        clientX: 250,
+        clientY: 100,
+      }),
+    ],
+  });
+  expect(new Uint8Array(await (await w.vm.crop()).arrayBuffer())).not.toEqual(
+    new Uint8Array(bytesAfter),
+  );
 });

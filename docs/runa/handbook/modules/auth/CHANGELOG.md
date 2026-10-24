@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.14.1
+
+Open avatar cropping in the shared modal with a bright circular frame and dimmed
+surrounding image. Replace sliders with dragging, wheel/pinch zoom and keyboard
+alternatives. Apply/Cancel remain local; only Save uploads the accepted crop.
+Preserve public crop() output and bounded-file cleanup; source-only forward edge.
+
 ## 0.14.0
 
 Add four shared account cards with independently scoped submits/credential drafts,
