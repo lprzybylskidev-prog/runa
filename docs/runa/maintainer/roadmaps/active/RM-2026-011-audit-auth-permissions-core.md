@@ -1015,6 +1015,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19q. Polish account card flow, confirm avatar removal, expose clear two-factor method controls and enable local full-feature manual review.
 - [x] 19r. Add private local TOTP QR enrollment alongside manual keys in account and required enrollment views.
 - [x] 19s. Align alert icons, move avatar confirmation and recovery-code acknowledgement into modal bodies, then reset the identified local development database for a fresh manual review.
+- [x] 19t. Integrate secondary notification addresses into Account details with clear status/actions and isolated versioned submissions; remove the separate default navigation tab.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3012,3 +3013,51 @@ architectural premise requires discussion before dependent work.
   backups and verification evidence. No Docker resources created or removed.
   Point 20 remains gated by explicit owner appearance acceptance; no broad/final
   quality gate was run.
+
+## Point 19t delivery
+
+- Owner requests removing the separate secondary-address tab and integrating it
+  into Account details with a clearer presentation. The default navigation now
+  omits addresses; the details Card contains the collection below its identity
+  Form. Status badges, current count/limit, quiet per-row edit/reissue/remove
+  actions and compact independent add/edit fields use existing public UI controls.
+  Unverified addresses alone offer explicit reissue; unchanged edits cannot submit.
+  Removal uses a shared confirmation modal with body text and one modal-bound
+  failure/recovery notification. Editing focuses its field through its owned ID.
+- New public saveSecondary/secondaryErrors orchestration uses the existing guarded
+  versioned notification-address endpoint and authoritative profile reload. It
+  validates known email format, feature/operation flags, limits, current address
+  identity and explicit removal confirmation. It never rebinds the parent identity
+  fields, clears unrelated credential/avatar/security drafts or silently retries
+  conflicts. Legacy addresses/choose/submit controller seams remain available for
+  customer presentations. No backend policy, verification/routing or API change.
+- Auth advances additively to 0.18.0 through secondary_details; Permissions 0.5.6
+  aligns ^0.18.0 through auth_secondary_details. Both source-only forward edges
+  applied locally; Audit remains 0.5.0 and framework/platform release versions
+  remain unchanged. No dependencies, schema/settings/credentials reset.
+- Six focused secondary-address Chromium regressions pass: edit/delete identity
+  and fresh revision with confirmation/cancel, known email rejection and draft
+  preservation throughout a deliberately pending request, feature permissions/
+  limit/verified state, reissue preserving an unsent address, conflict preservation
+  without replay, and one modal failure preserving its address. The existing
+  account-card validation/partial-failure regression also passes after extracting
+  shared email validation; its assertions now await completion of the actual
+  sequential request chain rather than assuming flushPromises completes network work. The TextInput has no focus() exposure; owned-ID focus
+  replaced that initial assumption. Core source/runtime/version diagnostics pass;
+  current Vite assets published for manual review.
+- Rendered the actual served client against explicit test-only Auth/profile/
+  preference/activity fixtures; the owner's administrator now has TOTP, so preview
+  did not create a real session, retrieve a factor secret or change owner data.
+  Verified default navigation, integrated mixed verified/pending list, add/edit,
+  confirmation/cancel, focus and 390px with no horizontal overflow. No page errors
+  or error notifications in the corrected preview. Screenshots retained privately
+  in .runtime/dev/manual-auth/secondary-details; dark/light desktop and mobile
+  presentation inspected.
+- Updated account/public-controller/module changelog and manual-review seeding
+  guidance to remove the obsolete separate-tab claim. Owner/customer form guidance
+  records independent collection drafts/submissions through public orchestration.
+  Root/security rules need no change; server authority and verified-recipient rules
+  already cover this capability. No Docker resources created/removed; databases,
+  active owner sessions/2FA, settings, files, caches, backups and reports preserved.
+  No database reset was requested or performed in this point. Point 20 remains
+  gated by explicit owner appearance acceptance; no broad/final gate was run.

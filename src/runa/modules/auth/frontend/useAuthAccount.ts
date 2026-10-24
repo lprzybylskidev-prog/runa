@@ -88,6 +88,7 @@ export function useAuthAccount(accountId: string) {
     feedback = ref<HTMLElement>();
   const fields = reactive<Record<string, string>>({});
   const errors = reactive<Record<string, string>>({});
+  const secondaryErrors = reactive<Record<string, string>>({});
   const naming = ref('single'),
     method = ref('totp'),
     target = ref('totp');
@@ -247,6 +248,13 @@ export function useAuthAccount(accountId: string) {
     target.value = security.value?.enrolled[0] ?? 'totp';
     if (next === 'details') fillDetails();
   }
+  function emailError(value: string): string {
+    return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
+      value.length > 254 ||
+      /[^\x21-\x7e]/.test(value)
+      ? text('Podaj poprawny adres e-mail.', 'Enter a valid email address.')
+      : '';
+  }
   function validate() {
     cleanErrors();
     for (const key of fieldNames.value) {
@@ -256,16 +264,7 @@ export function useAuthAccount(accountId: string) {
         !(key === 'login' && options.value?.identifier_mode !== 'login')
       )
         errors[key] = text('Wypełnij to pole.', 'Complete this field.');
-      if (
-        key === 'email' &&
-        (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
-          value.length > 254 ||
-          /[^\x21-\x7e]/.test(value))
-      )
-        errors[key] = text(
-          'Podaj poprawny adres e-mail.',
-          'Enter a valid email address.',
-        );
+      if (key === 'email' && emailError(value)) errors[key] = emailError(value);
       if (
         ['name', 'first_name', 'surname'].includes(key) &&
         (value.trim() !== value ||
@@ -315,7 +314,11 @@ export function useAuthAccount(accountId: string) {
   async function perform(action: () => Promise<void>) {
     await performTask(action);
   }
-  async function performTask(action: () => Promise<void>, clearSecrets = true) {
+  async function performTask(
+    action: () => Promise<void>,
+    clearSecrets = true,
+    acceptedFields?: readonly string[],
+  ) {
     if (busy.value || !alive) return;
     busy.value = true;
     cleanErrors();
@@ -329,7 +332,7 @@ export function useAuthAccount(accountId: string) {
       result.fields
         .filter(
           (k) =>
-            fieldNames.value.includes(k) ||
+            (acceptedFields ?? fieldNames.value).includes(k) ||
             (task.value === 'avatar' && k === 'avatar'),
         )
         .forEach(
@@ -786,6 +789,95 @@ export function useAuthAccount(accountId: string) {
       task.value = originalTask;
     }
   }
+  async function saveSecondary(
+    action: 'secondaryAdd' | 'secondaryChange' | 'secondaryRemove',
+    input: { email?: string; address_id?: string; confirmed?: boolean },
+  ): Promise<boolean> {
+    if (!alive || !ready.value || busy.value || codes.value.length)
+      return false;
+    cleanErrors();
+    Object.keys(secondaryErrors).forEach((key) => delete secondaryErrors[key]);
+    const capability = {
+      secondaryAdd: 'secondary_self_add',
+      secondaryChange: 'secondary_self_change',
+      secondaryRemove: 'secondary_self_remove',
+    }[action];
+    if (
+      !profile.value ||
+      !has('secondary_emails_enabled') ||
+      !has(capability)
+    ) {
+      failure.value = 'unavailable';
+      return false;
+    }
+    if (
+      action === 'secondaryAdd' &&
+      profile.value.secondary_emails.length >=
+        Number(caps.value.secondary_email_limit)
+    ) {
+      errors.email = secondaryErrors.email = text(
+        'Osiągnięto limit dodatkowych adresów.',
+        'The secondary address limit has been reached.',
+      );
+      return false;
+    }
+    if (
+      action !== 'secondaryAdd' &&
+      !profile.value.secondary_emails.some(
+        (address) => address.public_id === input.address_id,
+      )
+    ) {
+      failure.value = 'conflict';
+      return false;
+    }
+    if (action === 'secondaryRemove' && !input.confirmed) {
+      failure.value = 'confirmation';
+      return false;
+    }
+    if (action !== 'secondaryRemove') {
+      const message = emailError(input.email ?? '');
+      if (message) {
+        errors.email = secondaryErrors.email = message;
+        return false;
+      }
+    }
+    const body = {
+      version: profile.value.version,
+      ...(action !== 'secondaryRemove' ? { email: input.email } : {}),
+      ...(action !== 'secondaryAdd' ? { address_id: input.address_id } : {}),
+    };
+    const saved = await performTask(
+      async () => {
+        await accountRequest(
+          'profile/secondary-emails',
+          action === 'secondaryAdd'
+            ? 'POST'
+            : action === 'secondaryChange'
+              ? 'PATCH'
+              : 'DELETE',
+          body,
+          abort.signal,
+        );
+        if (!alive) return;
+        await loadProfile();
+        if (alive)
+          notice.value =
+            action === 'secondaryRemove'
+              ? text(
+                  'Dodatkowy adres e-mail został usunięty.',
+                  'Secondary email address removed.',
+                )
+              : text(
+                  'Sprawdź pocztę, aby potwierdzić adres.',
+                  'Check your email to confirm the address.',
+                );
+      },
+      false,
+      ['email', 'address_id'],
+    );
+    if (alive) Object.assign(secondaryErrors, errors);
+    return saved === true;
+  }
   async function revoke(publicId: string) {
     const own = rows.value.find((row) => row.public_id === publicId)?.current;
     await perform(async () => {
@@ -950,6 +1042,8 @@ export function useAuthAccount(accountId: string) {
     saveSection,
     sectionFields,
     sectionErrors,
+    secondaryErrors,
+    saveSecondary,
     overviewAction,
     overviewNeedsProof,
     removeAvatar,

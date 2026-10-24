@@ -118,3 +118,8 @@ to external QR services or persist them as preferences/assets.
 Use public AuthRecoveryCodesDialog for first/replacement recovery codes, preserving
 explicit saved acknowledgement and controller cleanup. Keep confirmation questions
 in the dialog body when the title already identifies the action.
+
+Compose secondary notification addresses inside account details through public
+saveSecondary/secondaryErrors. Keep the collection's draft and submissions
+independent from identity/password/avatar edits, including while requests are
+pending; retain verified-recipient and explicit removal confirmation rules.

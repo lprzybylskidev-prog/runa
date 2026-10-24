@@ -1,5 +1,15 @@
 # Auth module changelog
 
+## 0.18.0
+
+Integrate secondary notification addresses into the Account details card and remove
+its separate default navigation tab. Add status badges, compact add/edit fields,
+explicit verification reissue and modal-confirmed removal. Expose saveSecondary
+and secondaryErrors for isolated versioned writes that preserve identity,
+credential and avatar drafts throughout pending requests and failures. Retain
+legacy addresses/choose/submit controller seams for customer presentations.
+Source-only forward edge; existing backend policy, verification and routing remain.
+
 ## 0.17.0
 
 Use public AuthRecoveryCodesDialog for both first TOTP enrollment and recovery-code

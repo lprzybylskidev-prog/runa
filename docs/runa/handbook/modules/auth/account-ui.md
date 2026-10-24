@@ -75,6 +75,16 @@ the top-right viewport, with explicit operation descriptions and recovery action
 Persistent errors do not duplicate a banner above the form; linked field errors
 remain beside controls. Entry, avatar/crop and preference outcomes share this rule.
 
+The details Card also contains secondary notification addresses below its primary
+identity form. The default navigation has no separate secondary-address tab.
+Verified/pending badges and quiet per-address edit/reissue/remove actions accompany
+a counter/limit; the compact add/edit Form is independent. Only unverified addresses
+offer reissue. Removal requires shared modal confirmation, with failures retained
+inside its focus boundary. Feature/self-service flags and the configured limit
+control availability. Writes use the current profile version and reload it, never
+mutating the identity form's draft (including during a pending request), passwords,
+selected avatar or security setup. See saveSecondary in the public controller.
+
 The details card validates its selected name/login/email edits before writing,
 then uses the existing guarded endpoints sequentially with refreshed profile
 versions. These writes are not one transaction: failure stops the sequence,
@@ -119,7 +129,8 @@ Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/
 - Versioned exclusive naming/login edits and protected primary email change.
 - Password change, optional authenticator/email enrollment, factor removal and
   recovery-code replacement, honoring the current required method and proof policy.
-- Feature-gated secondary addresses, change/reissue verification and removal.
+- Feature-gated secondary addresses inside Account details, with verification
+  status, independent compact add/edit, explicit reissue and confirmed removal.
 - Private JPEG/PNG/WebP avatar, size constraints, removal and initials fallback.
 - Bounded own sessions and trusted devices, revocation, explicit trust issuance
   using a fresh factor, and explicit older-page loading.

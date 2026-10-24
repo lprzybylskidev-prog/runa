@@ -112,6 +112,16 @@ AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 | `useAuthWelcome()`                   | Render loading/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                      |
 | `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                      |
 
+`useAuthAccount.saveSecondary(action, input)` accepts secondaryAdd/secondaryChange/
+secondaryRemove with email/address_id and explicit confirmed=true for removal;
+it returns whether the write and authoritative profile reload completed.
+Bind secondaryErrors.email to the independent email field. It honors public
+capabilities and limits, uses existing guarded versioned endpoints and preserves
+all other drafts throughout the request/failure. Confirm removal deliberately,
+keep retry/reload explicit and render the normal top-right feedback. The supplied
+view integrates this collection into Account details; legacy addresses tab and
+choose/submit controller contracts remain available to replacement presentations.
+
 AuthRecoveryCodesDialog is public through `@/runa/auth`: pass the current
 `codes`/`recoveryCodes` array, locale and busy state; handle `acknowledge` by clearing
 account codes or calling entry `codesSaved`. It opens only for a nonempty array,

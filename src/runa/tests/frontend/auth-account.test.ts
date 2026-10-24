@@ -325,8 +325,7 @@ it('account boundary diagnostic: application uses the existing dropdown for both
   );
 });
 
-// Prepared optional-feature regressions run with the integrated final frontend selection.
-it('uses secondary address identity and account revision for change and explicit removal', async () => {
+it('edits secondary addresses in account details with identity, revision and explicit deletion confirmation', async () => {
   currentProfile.capabilities.secondary_emails_enabled = true;
   Object.assign(currentProfile.capabilities, {
     secondary_self_add: true,
@@ -341,30 +340,53 @@ it('uses secondary address identity and account revision for change and explicit
   Object.assign(currentProfile, { secondary_emails: [address] });
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Dodatkowe adresy e-mail')!
+  expect(w.find('nav').text()).not.toContain('Dodatkowe adresy e-mail');
+  const section = w.get('[data-secondary-emails]');
+  expect(
+    section.element.closest('section')?.querySelector('h4')?.textContent,
+  ).toContain('Dodatkowe adresy');
+  await section
+    .get('[aria-label="Edytuj adres: secondary@example.test"]')
     .trigger('click');
-  await flushPromises();
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Zmień / ponów')!
-    .trigger('click');
-  await w.get('input[name="email"]').setValue('changed@example.test');
-  await w.get('form').trigger('submit');
-  await flushPromises();
+  const form = section.get('[data-account-section=secondary]');
+  await form.get('[name=secondary_email]').setValue('changed@example.test');
+  write = () => {
+    currentProfile = { ...currentProfile, version: 6 };
+    return json({ accepted: true });
+  };
+  await form.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  await vi.waitFor(() =>
+    expect(
+      form.findAll('button').some((button) => button.text() === 'Dodaj adres'),
+    ).toBe(true),
+  );
   expect(writes[0]?.body).toMatchObject({
     address_id: other,
     email: 'changed@example.test',
     version: 5,
   });
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Usuń')!
+  await section
+    .get('[aria-label="Usuń adres: secondary@example.test"]')
     .trigger('click');
-  await w.get('form').trigger('submit');
+  const modal = w
+    .findAllComponents(ConfirmDialog)
+    .find((dialog) => dialog.props('title') === 'Usunąć dodatkowy adres?')!;
+  expect(modal.props('modelValue')).toBe(true);
+  expect(writes).toHaveLength(1);
+  modal.vm.$emit('update:modelValue', false);
   await flushPromises();
   expect(writes).toHaveLength(1);
+  await section
+    .get('[aria-label="Usuń adres: secondary@example.test"]')
+    .trigger('click');
+  write = () => {
+    currentProfile = { ...currentProfile, version: 7, secondary_emails: [] };
+    return json({ accepted: true });
+  };
+  modal.vm.$emit('confirm');
+  await vi.waitFor(() => expect(modal.props('modelValue')).toBe(false));
+  expect(writes[1]?.body).toMatchObject({ address_id: other, version: 6 });
 });
 it('optional TOTP setup retains its private key only until confirmation and requires saved-code acknowledgement', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
@@ -552,16 +574,20 @@ it('account cards validate their changes before writing and stops after a partia
   };
   await w.get('form').trigger('submit');
   await flushPromises();
-  expect(writes.map((item) => item.path)).toEqual([
-    '/api/runa/auth/profile',
-    '/api/runa/auth/profile/email',
-  ]);
+  await vi.waitFor(() =>
+    expect(writes.map((item) => item.path)).toEqual([
+      '/api/runa/auth/profile',
+      '/api/runa/auth/profile/email',
+    ]),
+  );
   expect(writes[1]?.body).toMatchObject({
     version: 6,
     email: 'next@example.test',
   });
-  expect(w.text() + document.body.textContent).toContain(
-    'Część zmian zapisano',
+  await vi.waitFor(() =>
+    expect(w.text() + document.body.textContent).toContain(
+      'Część zmian zapisano',
+    ),
   );
   expect(w.text() + document.body.textContent).toContain('Dane zmieniły się');
   expect(
@@ -1099,4 +1125,205 @@ it('recovery-code replacement uses a guarded modal and requires explicit saved a
   ]);
   await modal.getComponent(Button).trigger('click');
   await vi.waitFor(() => expect(modal.props('codes')).toHaveLength(0));
+});
+
+it('secondary additions validate locally and preserve unrelated identity, password and avatar drafts', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, {
+    secondary_self_add: true,
+    secondary_self_change: true,
+    secondary_self_remove: true,
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w
+    .get('[data-account-section=details] [name=name]')
+    .setValue('Unsaved name');
+  await w
+    .get('[data-account-section=details] [name=email]')
+    .setValue('unsaved-primary@example.test');
+  await w
+    .get('[data-account-section=password] [name=password]')
+    .setValue('unsaved-password-draft');
+  const controller = w.getComponent(AuthAccountEditor).props('account');
+  const image = new File(['pending'], 'avatar.png', { type: 'image/png' });
+  controller.files.value = [image];
+  const form = w.get('[data-account-section=secondary]');
+  await form.get('[name=secondary_email]').setValue('invalid');
+  await form.trigger('submit');
+  await flushPromises();
+  expect(writes).toHaveLength(0);
+  expect(form.get('[name=secondary_email]').attributes('aria-invalid')).toBe(
+    'true',
+  );
+  await form
+    .get('[name=secondary_email]')
+    .setValue('notifications@example.test');
+  let finish: (() => void) | undefined;
+  write = () =>
+    new Promise<Response>((resolve) => {
+      finish = () => {
+        Object.assign(currentProfile, {
+          version: 6,
+          secondary_emails: [
+            {
+              public_id: other,
+              email: 'notifications@example.test',
+              verified_at: null,
+            },
+          ],
+        });
+        resolve(json({ accepted: true }));
+      };
+    });
+  await form.trigger('submit');
+  await vi.waitFor(() => expect(finish).toBeDefined());
+  expect(
+    (
+      w.get('[data-account-section=details] [name=email]')
+        .element as HTMLInputElement
+    ).value,
+  ).toBe('unsaved-primary@example.test');
+  finish!();
+  await vi.waitFor(() =>
+    expect(w.find('[data-secondary-address]').exists()).toBe(true),
+  );
+  expect(writes[0]).toMatchObject({
+    path: '/api/runa/auth/profile/secondary-emails',
+    body: { email: 'notifications@example.test', version: 5 },
+  });
+  expect(
+    (
+      w.get('[data-account-section=details] [name=name]')
+        .element as HTMLInputElement
+    ).value,
+  ).toBe('Unsaved name');
+  expect(
+    (
+      w.get('[data-account-section=details] [name=email]')
+        .element as HTMLInputElement
+    ).value,
+  ).toBe('unsaved-primary@example.test');
+  expect(
+    (
+      w.get('[data-account-section=password] [name=password]')
+        .element as HTMLInputElement
+    ).value,
+  ).toBe('unsaved-password-draft');
+  expect(controller.files.value).toHaveLength(1);
+  expect(controller.files.value[0]).toBe(image);
+});
+it('secondary address controls honor feature permissions, limit and verified state', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, {
+    secondary_self_add: true,
+    secondary_self_change: true,
+    secondary_self_remove: false,
+    secondary_email_limit: 1,
+  });
+  Object.assign(currentProfile, {
+    secondary_emails: [
+      {
+        public_id: other,
+        email: 'verified@example.test',
+        verified_at: '2026-10-24T12:00:00Z',
+      },
+    ],
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const section = w.get('[data-secondary-emails]');
+  expect(section.text()).toContain('Potwierdzony');
+  expect(section.find('[data-account-section=secondary]').exists()).toBe(false);
+  expect(section.text()).not.toContain('Wyślij ponownie');
+  expect(section.text()).not.toContain('Usuń');
+  await section
+    .get('[aria-label="Edytuj adres: verified@example.test"]')
+    .trigger('click');
+  expect(section.find('[data-account-section=secondary]').exists()).toBe(true);
+});
+it('secondary verification reissue preserves an unsent new-address draft and uses the existing address identity', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, {
+    secondary_self_add: true,
+    secondary_self_change: true,
+    secondary_self_remove: true,
+  });
+  Object.assign(currentProfile, {
+    secondary_emails: [
+      { public_id: other, email: 'pending@example.test', verified_at: null },
+    ],
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w.get('[name=secondary_email]').setValue('unsent@example.test');
+  await w
+    .get(
+      '[aria-label="Wyślij ponownie potwierdzenie na: pending@example.test"]',
+    )
+    .trigger('click');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]?.body).toMatchObject({
+    address_id: other,
+    email: 'pending@example.test',
+    version: 5,
+  });
+  expect(
+    (w.get('[name=secondary_email]').element as HTMLInputElement).value,
+  ).toBe('unsent@example.test');
+});
+
+it('secondary address conflicts keep both drafts and never replay the write automatically', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, { secondary_self_add: true });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w
+    .get('[data-account-section=details] [name=name]')
+    .setValue('Unsaved identity');
+  await w.get('[name=secondary_email]').setValue('pending@example.test');
+  write = () => json('conflict', 409);
+  await w.get('[data-account-section=secondary]').trigger('submit');
+  await vi.waitFor(() =>
+    expect(
+      w.getComponent(AuthAccountEditor).props('account').failure.value,
+    ).toBe('conflict'),
+  );
+  expect(writes).toHaveLength(1);
+  expect(
+    (w.get('[name=secondary_email]').element as HTMLInputElement).value,
+  ).toBe('pending@example.test');
+  expect((w.get('[name=name]').element as HTMLInputElement).value).toBe(
+    'Unsaved identity',
+  );
+});
+it('secondary deletion failure stays in its confirmation modal with one error and preserves the address', async () => {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  Object.assign(currentProfile.capabilities, {
+    secondary_self_add: true,
+    secondary_self_remove: true,
+  });
+  Object.assign(currentProfile, {
+    secondary_emails: [
+      { public_id: other, email: 'keep@example.test', verified_at: null },
+    ],
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w.get('[aria-label="Usuń adres: keep@example.test"]').trigger('click');
+  const modal = w
+    .findAllComponents(ConfirmDialog)
+    .find((dialog) => dialog.props('title') === 'Usunąć dodatkowy adres?')!;
+  write = () => json('unexpected', 500);
+  modal.vm.$emit('confirm');
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.app-toast > .app-alert[data-tone=danger]'),
+    ).toHaveLength(1),
+  );
+  expect(modal.props('modelValue')).toBe(true);
+  expect(writes).toHaveLength(1);
+  expect(w.find('[data-secondary-address]').text()).toContain(
+    'keep@example.test',
+  );
 });

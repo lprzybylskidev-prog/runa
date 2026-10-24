@@ -152,7 +152,9 @@ const formVisible = computed(
     (tab.value === 'trust' && proofMethods.value.length > 0),
 );
 const visibleTabs = computed(() =>
-  tabs.value.filter((value) => value !== 'security' && value !== 'avatar'),
+  tabs.value.filter(
+    (value) => !['security', 'avatar', 'addresses'].includes(value),
+  ),
 );
 const history = computed(() => tab.value.endsWith('History'));
 const query = ref<TableQuery>({
@@ -337,44 +339,6 @@ const passwordHint = computed(() =>
           text('Wróć do danych konta', 'Back to account details')
         }}</Button>
       </div>
-      <FormSection v-if="tab === 'addresses'" :title="titles.addresses">
-        <p v-if="!profile.secondary_emails.length" class="text-sm text-muted">
-          {{ text('Brak dodatkowych adresów.', 'No secondary addresses.') }}
-        </p>
-        <div
-          v-for="address in profile.secondary_emails"
-          :key="address.public_id"
-          class="flex flex-wrap items-center gap-3 text-sm"
-        >
-          <span class="[overflow-wrap:anywhere]"
-            >{{ address.email }} ·
-            {{
-              address.verified_at
-                ? text('Potwierdzony', 'Verified')
-                : text('Oczekuje na potwierdzenie', 'Awaiting verification')
-            }}</span
-          >
-          <Button
-            v-if="has('secondary_self_change')"
-            @click="choose('secondaryChange', address)"
-            >{{ text('Zmień / ponów', 'Change / reissue') }}</Button
-          >
-          <Button
-            v-if="has('secondary_self_remove')"
-            tone="danger"
-            @click="choose('secondaryRemove', address)"
-            >{{ text('Usuń', 'Remove') }}</Button
-          >
-        </div>
-        <Button
-          v-if="
-            has('secondary_self_add') &&
-            profile.secondary_emails.length < Number(caps.secondary_email_limit)
-          "
-          @click="selectTask('secondaryAdd')"
-          >{{ text('Dodaj adres', 'Add address') }}</Button
-        >
-      </FormSection>
 
       <Form
         v-if="

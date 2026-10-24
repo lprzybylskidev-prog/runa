@@ -315,7 +315,8 @@ expiry merely to expose controls. Preserve last-superadministrator protection.
 Audit and Permissions have no independent settings declarations for these user
 views; verify their mandatory Core availability and current grants instead.
 
-Additional addresses appear in **Dodatkowe adresy e-mail**. After verification,
+Additional addresses appear inside **Konto i zabezpieczenia → Dane konta**, below
+the primary-email form; there is no separate address tab in the default panel. After verification,
 they are selectable under **Preferencje** for categories that allow secondary
 recipients. Mandatory/sensitive security categories remain primary-only. Trusted
 device issuance and recovery-code controls depend on actual enrolled factors;

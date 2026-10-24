@@ -16,6 +16,7 @@ import type { AccountSection, useAuthAccount } from './useAuthAccount';
 import AuthAccountProof from './AuthAccountProof.vue';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
 import AuthTotpSetup from './AuthTotpSetup.vue';
+import AuthSecondaryEmails from './AuthSecondaryEmails.vue';
 const props = defineProps<{
   account: ReturnType<typeof useAuthAccount>;
   passwordHint: string;
@@ -54,11 +55,15 @@ const securityForm = ref<{ focusInvalid: () => void }>();
 const originals = ref<readonly File[]>([]);
 const cropOpen = ref(false);
 const removeOpen = ref(false);
+const secondaryModalOpen = ref(false);
 const removalAttempt = ref(0);
 watch(removeOpen, (value) => {
   if (value) removalAttempt.value = 0;
-  emit('feedback-modal', value);
 });
+watch(
+  () => removeOpen.value || secondaryModalOpen.value,
+  (value) => emit('feedback-modal', value),
+);
 onScopeDispose(() => emit('feedback-modal', false));
 const previewUrl = ref('');
 function clearPreview() {
@@ -368,6 +373,10 @@ function closeCrop(value: boolean) {
             ></template
           >
         </Form>
+        <AuthSecondaryEmails
+          :account="account"
+          @feedback-modal="secondaryModalOpen = $event"
+        />
       </Card>
       <Card>
         <template #header
