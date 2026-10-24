@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 0.21.4
+
+Place secondary-address status badges beside the email, wrapping when necessary
+on narrow screens. Source-only forward edge; no behavior/schema change.
+
 ## 0.21.3
 
 Remove the redundant trusted-device heading inside the two-factor Card. Retain

@@ -85,7 +85,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('account_refresh', '0.20.1', '0.21.0', UpgradeAccountRefresh::class),
             new UpgradeDefinition('account_copy', '0.21.0', '0.21.1', UpgradeAccountCopy::class),
             new UpgradeDefinition('factor_spacing', '0.21.1', '0.21.2', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('trust_heading', '0.21.2', '0.21.3', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('trust_heading', '0.21.2', '0.21.3', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('secondary_status_layout', '0.21.3', '0.21.4', UpgradeFactorSpacing::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

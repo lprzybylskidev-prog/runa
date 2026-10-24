@@ -65,6 +65,9 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests inline secondary-email status badges beside the
+  address rather than below it. Point 19zh preserves wrapping on narrow screens.
+
 - 2026-10-25 — Owner requests removing the trusted-device subsection title from
   the two-factor Card. Point 19zg retains actions and dialog titles unchanged.
 
@@ -1106,6 +1109,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19ze. Remove duplicate spacing below the final two-factor method row.
 - [x] 19zf. Keep shared form actions with their fields without a separator.
 - [x] 19zg. Remove the redundant trusted-device subsection heading.
+- [x] 19zh. Place secondary email status badges beside their addresses.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3574,3 +3578,22 @@ architectural premise requires discussion before dependent work.
 - Existing owner/customer guidance already requires concise copy and delegates to
   the updated public account guide; no new reusable instruction is necessary.
   No dependency or Docker resources changed. Final point 20 remains gated.
+
+### Point 19zh — Inline secondary-address statuses
+
+- Placed existing status Badges beside each secondary email using a wrapping,
+  vertically centered flex row. Long addresses break within the available width;
+  statuses can wrap on narrow screens. Static layout, no motion/behavior change.
+- Auth PATCH 0.21.3 -> 0.21.4 with a source-only edge using the existing no-op
+  presentation handler; central module changelog/README and public account UI guide
+  synchronized. Permissions ^0.21.0 remains compatible. Existing owner/customer
+  references already delegate to that guide; no new reusable instruction needed.
+- Published Vite assets and applied only the pending source-only update through
+  the existing local ModuleUpdates diagnostic (no scoped module-update CLI).
+  Runtime source contracts and prior-HEAD version checks passed. Focused served
+  synthetic-API browser diagnostics confirmed verified/pending badges beside emails
+  at desktop/light width and long-address wrapping without overflow at mobile/dark
+  width; no page errors. Inspected desktop evidence under
+  .runtime/dev/manual-auth/secondary-status. No new tests for this class-only fix.
+- No dependencies, schemas, security policies or Docker resources changed. Final
+  point 20 remains appearance-gated; no broad verification/release started.

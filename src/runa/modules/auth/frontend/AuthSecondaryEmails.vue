@@ -174,8 +174,10 @@ async function remove() {
         class="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3"
         :data-secondary-address="address.public_id"
       >
-        <div class="min-w-0 space-y-2">
-          <p class="text-sm [overflow-wrap:anywhere]">{{ address.email }}</p>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <p class="min-w-0 text-sm [overflow-wrap:anywhere]">
+            {{ address.email }}
+          </p>
           <Badge
             :tone="address.verified_at ? 'success' : 'warning'"
             size="sm"

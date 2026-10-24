@@ -79,7 +79,8 @@ remain beside controls. Entry, avatar/crop and preference outcomes share this ru
 
 The details Card also contains secondary notification addresses below its primary
 identity form. The default navigation has no separate secondary-address tab.
-Verified/pending badges and quiet per-address edit/reissue/remove actions accompany
+Verified/pending badges sit beside each address and wrap when space is limited.
+Quiet per-address edit/reissue/remove actions accompany
 a counter/limit; the compact add/edit Form is independent. Only unverified addresses
 offer reissue. Removal requires shared modal confirmation, with failures retained
 inside its focus boundary. Feature/self-service flags and the configured limit

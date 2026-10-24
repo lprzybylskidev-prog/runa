@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.21.3`, requiring
+Core `runa.auth` ships at independent version `0.21.4`, requiring
 `runa.audit ^0.5.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
