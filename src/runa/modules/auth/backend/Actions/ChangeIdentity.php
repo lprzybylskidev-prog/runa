@@ -75,7 +75,9 @@ final readonly class ChangeIdentity implements AuthLifecycle
             if ($user->version !== $expectedVersion) {
                 throw new IdentityConflict('identity_stale');
             }
-            $this->guard($connection, [$publicId]);
+            // Only explicit lifecycle removal excludes this identity from the invariant.
+            // Activation, restore and profile-independent security locks must remain recoverable.
+            $this->guard($connection, in_array($change->operation, ['deactivate', 'delete'], true) ? [$publicId] : []);
             if ($user->trashed() && $change->operation !== 'restore') {
                 throw new IdentityConflict('identity_deleted');
             }

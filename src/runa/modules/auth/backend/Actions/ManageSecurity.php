@@ -35,7 +35,7 @@ final readonly class ManageSecurity implements AuthSecurity
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;
             }
-            $this->authority->assertMayRemove($connection, [$publicId]);
+            $this->authority->assertMayRemove($connection, $factors ? [$publicId] : []);
             $this->sessions->revokeUser($connection, $user);
             $user->security_version++;
             $user->version++;

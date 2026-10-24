@@ -10,6 +10,7 @@ use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\AuthorityLock;
 
 /** Registry -> settings -> authority -> Auth user -> token; one default connection. */
@@ -19,13 +20,21 @@ final readonly class EntryTransaction
 
     public function run(Closure $work): mixed
     {
-        return $this->database->connection()->transaction(function (Connection $connection) use ($work): mixed {
-            // Exclusive up front: durable ModuleWork enqueue shares this registry lock.
-            $connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first()
-                ?? throw new \RuntimeException('Module registry unavailable.');
+        $root = $this->database->connection()->transactionLevel() === 0;
+        try {
+            return $this->database->connection()->transaction(function (Connection $connection) use ($work): mixed {
+                // Exclusive up front: durable ModuleWork enqueue shares this registry lock.
+                $connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first()
+                    ?? throw new \RuntimeException('Module registry unavailable.');
 
-            return $work($connection);
-        });
+                return $work($connection);
+            });
+        } catch (OperationRejected $error) {
+            if ($root && $error->reason === 'last_superadmin_required') {
+                $this->authorityRefused();
+            }
+            throw $error;
+        }
     }
 
     public function lockAuthority(Connection $connection): void
@@ -41,6 +50,12 @@ final readonly class EntryTransaction
     public function securityRefused(): void
     {
         $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.auth', 'security.refused', 'refused'));
+    }
+
+    private function authorityRefused(): void
+    {
+        $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.auth', 'authority.refused', 'refused',
+            context: ['reason' => 'last_superadmin_required']));
     }
 
     public function record(string $action, User $user): void

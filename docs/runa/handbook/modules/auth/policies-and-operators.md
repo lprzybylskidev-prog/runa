@@ -86,8 +86,13 @@ when both dates are due; activation preserves a future deactivation date.
 Applied transitions clear only consumed schedules, advance security/account
 versions, revoke sessions/trust and synchronously audit the transition. Replay of
 already materialized dates does nothing. Eligibility still evaluates the actual
-current dates before the scheduler runs. Authority changes remain denied until
-the neutral last-administrator guard is integrated with Permissions.
+current dates before the scheduler runs. The neutral guard now participates in
+Permissions' [last-superadministrator invariant](../permissions/authority.md).
+Last-admin materialization refusal rolls back that account's changes, records
+independent `authority.refused` and continues unrelated due accounts. A due date
+still blocks ingress before materialization; inspect future schedule/expiry lockout
+consequences and retain the trusted operator recovery path. OperatorAuthority and
+first-administrator installer wiring remain separate cross-module integration.
 
 ## Operator commands and initialization contract
 

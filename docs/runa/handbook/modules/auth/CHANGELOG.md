@@ -1,5 +1,15 @@
 # Auth module changelog
 
+## 0.10.1
+
+Correct neutral authority participation to distinguish actual deactivation/deletion,
+factor reset and forced reverification from non-removing creation/activation/restore
+and profile/invitation/avatar work. Integrate the trusted Permissions invariant
+without a reverse dependency. Scheduled last-admin refusal records independent
+Audit and continues other due accounts; self-service persists its refusal after
+root rollback. Add source-only 0.10.0 -> 0.10.1 edge; public Auth API signatures,
+storage and policies remain compatible. Security locks/time expiry remain independent.
+
 ## 0.10.0
 
 Add source-owned localized administrative permission declarations and the trusted non-recursive AuthorizationIdentity eligibility contract for the framework authorization bridge. Add source-only 0.9.0 -> 0.10.0 upgrade and require Audit ^0.4.0. No reverse Permissions dependency, new schema, credential exposure or automatic grant.

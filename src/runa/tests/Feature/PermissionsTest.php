@@ -18,6 +18,9 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Audit\Storage\AppendEvents;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
+use Runa\Modules\Auth\Actions\ScheduledLifecycle;
+use Runa\Modules\Auth\Contracts\IdentityConflict;
+use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
@@ -25,6 +28,7 @@ use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\DefinitionInput;
 use Runa\Modules\Permissions\Contracts\Permissions;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
+use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 use Runa\Modules\Permissions\Support\DeclarationCatalog;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\ModuleDeclarations;
@@ -32,13 +36,17 @@ use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\PrincipalScope;
+use Runa\Support\Modules\Api\ProtectedAuthority;
 use Runa\Support\Modules\Data\AuthorityLock;
+use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Management\ModuleManagement;
 use Runa\Support\Modules\ModuleAutoloader;
 use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Updates\ModuleUpdates;
+use Symfony\Component\Process\InputStream;
+use Symfony\Component\Process\Process;
 use Tests\Fixtures\CoreModuleStorage;
 use Tests\Fixtures\ModuleSources;
 
@@ -290,9 +298,9 @@ function permissionAccessManager($test): array
     return $codes;
 }
 
-function permissionAccessProof($test, string $code): void
+function permissionAccessProof($test, string $code, string $action = 'runa.permissions.access.manage'): void
 {
-    $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
+    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'both',
         'current_password' => 'permission-access-password', 'method' => 'recovery', 'code' => $code])->assertOk();
     $request = Request::create('/', 'POST');
     $request->setLaravelSession(app('session')->driver());
@@ -314,7 +322,7 @@ it('applies reviewed ordinary access snapshots with real step up and preserves d
         $api = $this->permissionAccess;
         $management = app(ModuleManagement::class)->read('runa.permissions');
         expect($management->diagnostics)->not->toContain('management_declaration_unavailable')
-            ->and(array_keys($management->entities))->toBe(['assignment', 'preset', 'role']);
+            ->and(array_keys($management->entities))->toBe(['assignment', 'authority', 'preset', 'role']);
         expect($api->definition('permission', $read)['dictionary']['code'])->toBe('runa.audit.read')
             ->and(collect($api->definitions('permission')['items'])->pluck('public_id')->all())->toContain($read);
         expect($this->permissionApi->allows('runa.audit.read'))->toBeFalse();
@@ -432,7 +440,7 @@ it('copies exact ordinary assignments without flattening roles or replacing prot
         $role = $api->saveDefinition($draft);
         $system = DB::table('runa_permissions.roles')->where('system', true)->value('id');
         $roleId = DB::table('runa_permissions.roles')->where('public_id', $role['public_id'])->value('id');
-        // Exact fixture-only privileged assignments; no public system-role writer is introduced.
+        // Exact fixture-only assignments isolate ordinary-copy semantics from the dedicated writer.
         foreach ([$source->publicId, $target->publicId] as $user) {
             DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $user, 'role_id' => $system, 'created_at' => now(), 'updated_at' => now()]);
         }
@@ -487,3 +495,234 @@ it('denies access writers without native grants and bounds public assignment inp
     expect(fn () => new AssignmentSet(array_fill(0, 101, (string) Str::uuid7())))->toThrow(InvalidArgumentException::class)
         ->and(fn () => new AssignmentSet(['invalid']))->toThrow(InvalidArgumentException::class);
 })->group('permissions-access');
+
+/** Test-only bootstrap; production initialization remains the operator integration's responsibility. */
+function permissionSystemMember(string $user): void
+{
+    $role = DB::table('runa_permissions.roles')->where('system', true)->value('id');
+    DB::table('runa_permissions.user_roles')->insert(['role_id' => $role, 'user_public_id' => $user, 'created_at' => now(), 'updated_at' => now()]);
+}
+
+it('preserves last eligible authority across lifecycle changes without blocking activation or harmless edits', function (): void {
+    $contracts = new ModuleContractSuite(base_path(), true);
+    foreach (['runa.auth', 'runa.permissions'] as $module) {
+        expect($contracts->runtime(app(ModuleRegistry::class)->snapshot()->modules[$module]))->toBe([]);
+    }
+    permissionSystemMember($this->permissionUser->publicId);
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    $changes = app(ChangeIdentity::class);
+    foreach (['deactivate', 'delete'] as $operation) {
+        expect(fn () => $changes->change($this->permissionUser->publicId, 1, new LifecycleChange($operation)))
+            ->toThrow(IdentityConflict::class, 'authority_change_refused');
+    }
+    expect(User::where('public_id', $this->permissionUser->publicId)->value('version'))->toBe(1)
+        ->and(DB::table('runa_audit.events')->where('outcome', 'refused')->where('action', 'like', 'identity.%')->count())->toBe(2);
+    // Existing authority does not prevent creating a new identity or activating it.
+    $other = $changes->create(new NewIdentity('authority-backup@example.test', name: 'Backup'));
+    $other = $changes->change($other->publicId, 1, new LifecycleChange('approve'));
+    $other = $changes->change($other->publicId, $other->version, new LifecycleChange('activate'));
+    permissionSystemMember($other->publicId);
+    // A blocked second administrator is not a usable survivor.
+    DB::transaction(function () use ($other): void {
+        User::where('public_id', $other->publicId)->first()->forceFill(['security_locked' => true])->save();
+    });
+    expect(fn () => $changes->change($this->permissionUser->publicId, 1, new LifecycleChange('delete')))->toThrow(IdentityConflict::class);
+    $changes->change($other->publicId, $other->version, new LifecycleChange('set_security_lock', enabled: false));
+    $changes->change($this->permissionUser->publicId, 1, new LifecycleChange('deactivate'));
+    expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeFalse();
+    expect(fn () => DB::transaction(fn () => app(AuthorityGuard::class)->assertMayRemove(DB::connection(), [$other->publicId, $this->permissionUser->publicId])))
+        ->toThrow(OperationRejected::class);
+    $changes->change($this->permissionUser->publicId, 2, new LifecycleChange('activate'));
+    expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue();
+    ($this->asPermissionUser)(function (): void {
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '1.0.0');
+        expect($api->assignments($this->permissionUser->publicId)['super_admin'])->toBeTrue();
+    });
+})->group('permissions-authority');
+
+it('requires dedicated authority grants and real both factor proof while rejecting self escalation and last removal', function (): void {
+    $codes = permissionAccessManager($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-target@example.test', name: 'Authority target', active: true, approved: true));
+    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
+    ($this->asPermissionUser)(function () use ($codes, $target, $api): void {
+        expect(fn () => $api->previewAuthority($target->publicId, true))->toThrow(OperationRejected::class);
+        ($this->directPermission)('runa.permissions.authority.manage');
+        expect(fn () => $api->previewAuthority($this->permissionUser->publicId, true))->toThrow(OperationRejected::class);
+        $preview = $api->previewAuthority($target->publicId, true);
+        expect(fn () => $api->applyAuthority($preview))->toThrow(OperationRejected::class);
+        permissionAccessProof($this, $codes[0], 'runa.permissions.authority.manage');
+        $result = $api->applyAuthority($preview);
+        expect($result['super_admin'])->toBeTrue()->and($result['revision'])->toBe(1);
+        expect(fn () => $api->applyAuthority($preview))->toThrow(OperationRejected::class);
+        $remove = $api->previewAuthority($target->publicId, false);
+        permissionAccessProof($this, $codes[1], 'runa.permissions.authority.manage');
+        expect(fn () => $api->applyAuthority($remove))->toThrow(OperationRejected::class)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->value('consumed_at'))->toBeNull();
+        // A second usable member permits removal, and the refused proof was rolled back.
+        permissionSystemMember($this->permissionUser->publicId);
+        $result = $api->applyAuthority($remove);
+        expect($result['super_admin'])->toBeFalse()->and($result['revision'])->toBe(2)
+            ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(1)
+            ->and(DB::table('runa_audit.events')->where('action', 'access.refused')->count())->toBeGreaterThanOrEqual(3);
+    });
+})->group('permissions-authority');
+
+it('binds force role deletion to practical effects references confirmation and transactional history', function (): void {
+    $codes = permissionAccessManager($this);
+    ($this->directPermission)('runa.permissions.roles.force_delete');
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-role@example.test', name: 'Role recipient', active: true, approved: true));
+    $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
+    ($this->asPermissionUser)(function () use ($api, $codes, $target, $read): void {
+        $ordinary = $this->permissionAccess;
+        permissionAccessProof($this, $codes[0]);
+        $role = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('role', 'force_reader', [$read])));
+        permissionAccessProof($this, $codes[1]);
+        $preset = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('preset', 'force_template', roles: [$role['public_id']])));
+        permissionAccessProof($this, $codes[2]);
+        $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']])));
+        $preview = $api->previewRoleDeletion($role['public_id'], 1);
+        expect($preview->users)->toHaveCount(1)->and($preview->presets)->toHaveCount(1)
+            ->and($preview->users[0]['permission_removed'])->toBe(['runa.audit.read']);
+        permissionAccessProof($this, $codes[3], 'runa.permissions.roles.force_delete');
+        expect(fn () => $api->forceDeleteRole($preview, false))->toThrow(OperationRejected::class);
+        // Audit fails only after assignment/preset histories and actual unlinking have occurred.
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT force_delete_refusal CHECK (action <> 'role.force_deleted') NOT VALID");
+        expect(fn () => $api->forceDeleteRole($preview, true))->toThrow(AuditUnavailable::class);
+        expect($ordinary->assignments($target->publicId)['assigned']['roles'])->toBe([$role['public_id']])
+            ->and($ordinary->definition('preset', $preset['public_id'])['version'])->toBe(1)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.roles.force_delete')->value('consumed_at'))->toBeNull();
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT force_delete_refusal');
+        $api->forceDeleteRole($preview, true);
+        expect($ordinary->assignments($target->publicId)['assigned']['roles'])->toBe([])
+            ->and($ordinary->definition('preset', $preset['public_id'])['assigned']['roles'])->toBe([])
+            ->and($ordinary->definition('preset', $preset['public_id'])['version'])->toBe(2)
+            ->and(DB::table('runa_audit.events')->where('action', 'role.force_deleted')->count())->toBe(1);
+        $system = DB::table('runa_permissions.roles')->where('system', true)->first();
+        expect(fn () => $api->previewRoleDeletion($system->public_id, 1))->toThrow(OperationRejected::class);
+    });
+})->group('permissions-authority');
+
+it('refuses stale force deletion after recipient changes and preserves other effective grant sources', function (): void {
+    $codes = permissionAccessManager($this);
+    ($this->directPermission)('runa.permissions.roles.force_delete');
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-stale@example.test', name: 'Stale recipient', active: true, approved: true));
+    $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
+        $ordinary = $this->permissionAccess;
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
+        permissionAccessProof($this, $codes[0]);
+        $role = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('role', 'stale_force', [$read])));
+        permissionAccessProof($this, $codes[1]);
+        $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']])));
+        $stale = $api->previewRoleDeletion($role['public_id'], 1);
+        permissionAccessProof($this, $codes[2]);
+        $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read])));
+        permissionAccessProof($this, $codes[3], 'runa.permissions.roles.force_delete');
+        expect(fn () => $api->forceDeleteRole($stale, true))->toThrow(OperationRejected::class);
+        $fresh = $api->previewRoleDeletion($role['public_id'], 1);
+        expect($fresh->users[0]['permission_removed'])->toBe([]);
+        $api->forceDeleteRole($fresh, true);
+        expect($ordinary->assignments($target->publicId)['assigned']['permissions'])->toBe([$read]);
+    });
+})->group('permissions-authority');
+
+it('audits scheduled last authority refusal without starving unrelated lifecycle work', function (): void {
+    permissionSystemMember($this->permissionUser->publicId);
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    $changes = app(ChangeIdentity::class);
+    $other = $changes->create(new NewIdentity('scheduled-other@example.test', name: 'Scheduled', active: true, approved: true));
+    $at = now('UTC')->addMinute()->format('Y-m-d\TH:i:s\Z');
+    foreach ([$this->permissionUser->publicId, $other->publicId] as $id) {
+        $changes->change($id, 1, new LifecycleChange('schedule_deactivation', at: $at));
+    }
+    $this->travel(2)->minutes();
+    app(ScheduledLifecycle::class)->run();
+    expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue()
+        ->and(User::where('public_id', $other->publicId)->value('active'))->toBeFalse()
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.refused')->where('outcome', 'refused')->count())->toBe(1);
+    $this->travelBack();
+})->group('permissions-authority');
+
+it('serializes two real concurrent last authority removals under the shared transaction lock', function (): void {
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('parallel-authority@example.test', name: 'Parallel', active: true, approved: true));
+    foreach ([$this->permissionUser->publicId, $other->publicId] as $id) {
+        permissionSystemMember($id);
+    }
+    $workers = [];
+    $inputs = [];
+    DB::beginTransaction();
+    app(AuthorityLock::class)->acquire(DB::connection());
+    try {
+        foreach ([$this->permissionUser->publicId, $other->publicId] as $id) {
+            $input = new InputStream;
+            $process = new Process([PHP_BINARY, 'runa/tests/Fixtures/authority-worker.php', $id, '1'], base_path(),
+                ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
+            $process->setTimeout(null);
+            $process->setInput($input);
+            $process->start();
+            $workers[] = $process;
+            $inputs[] = $input;
+        }
+        foreach ($workers as $worker) {
+            expect($worker->waitUntil(fn ($type, $output) => str_contains($output, 'ready')))->toBeTrue($worker->getErrorOutput());
+        }
+        foreach ($inputs as $input) {
+            $input->write("go\n");
+            $input->close();
+        }
+        DB::commit();
+        $results = [];
+        foreach ($workers as $worker) {
+            expect($worker->wait())->toBe(0, $worker->getErrorOutput());
+            $results[] = trim(str_replace('ready', '', $worker->getOutput()));
+        }
+        sort($results);
+        expect($results)->toBe(['authority_change_refused', 'changed'])
+            ->and(User::where('active', true)->count())->toBe(1)
+            ->and(DB::table('runa_audit.events')->where('action', 'identity.deactivate')->where('outcome', 'refused')->count())->toBe(1);
+    } finally {
+        while (DB::connection()->transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        foreach ($workers as $worker) {
+            if ($worker->isRunning()) {
+                $worker->stop();
+            }
+        }
+    }
+})->group('permissions-authority');
+
+it('keeps the last superadministrator active through self service and rolls back consumed proof before refusal history', function (): void {
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['self_deactivate' => true], $settings['revision'], $settings['generation']);
+    permissionAccessManager($this);
+    permissionSystemMember($this->permissionUser->publicId);
+    app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.deactivate', 'requirement' => 'password',
+        'current_password' => 'permission-access-password'])->assertOk();
+    $version = User::where('public_id', $this->permissionUser->publicId)->value('version');
+    $this->postJson('/api/runa/auth/profile/lifecycle', ['version' => $version, 'operation' => 'deactivate'])
+        ->assertConflict()->assertJsonPath('error.code', 'authority_change_refused');
+    expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue()
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.self.deactivate')->value('consumed_at'))->toBeNull()
+        ->and(DB::table('runa_audit.events')->where('action', 'security.refused')->where('outcome', 'refused')->count())->toBe(1);
+})->group('permissions-authority');
+
+it('rolls back dedicated authority membership revision and proof after required grant history fails', function (): void {
+    $codes = permissionAccessManager($this);
+    ($this->directPermission)('runa.permissions.authority.manage');
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-rollback@example.test', name: 'Rollback', active: true, approved: true));
+    ($this->asPermissionUser)(function () use ($codes, $target): void {
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
+        $preview = $api->previewAuthority($target->publicId, true);
+        permissionAccessProof($this, $codes[0], 'runa.permissions.authority.manage');
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT authority_history_refusal CHECK (action <> 'authority.granted') NOT VALID");
+        expect(fn () => $api->applyAuthority($preview))->toThrow(AuditUnavailable::class)
+            ->and(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->value('consumed_at'))->toBeNull();
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT authority_history_refusal');
+        expect($api->applyAuthority($preview)['super_admin'])->toBeTrue();
+    });
+})->group('permissions-authority');

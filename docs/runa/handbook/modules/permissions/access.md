@@ -119,7 +119,8 @@ proof/version checks. A role referenced by a user or preset refuses with
 `access_role_referenced` (409). A preset removes only its own membership pivots.
 Unreferenced custom roles remove their own permission pivots. Foreign keys remain
 RESTRICT/RESTRICT. Source-owned and system definitions cannot be edited or deleted.
-Explicit force-delete and protected superadmin writers belong to later delivery.
+Explicit force-delete and protected superadmin writers use the separate
+[protected authority contract](authority.md), dedicated capabilities and proofs.
 
 ## Audit, recovery and management metadata
 

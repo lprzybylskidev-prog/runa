@@ -57,8 +57,9 @@ Owning Actions and Audit success persistence share the exact default PostgreSQL
 Connection and transaction. Independent refusal history belongs after root rollback,
 never in the rejected transaction/savepoint or an afterCommit listener. The [Audit module](../modules/audit/README.md) owns manual event/redaction APIs, opt-in transactional model capture and permission-protected bounded reads.
 
-AuthorityGuard is the neutral lifecycle integration awaiting protected-authority participation. Its
-default denies changes requiring administrative authority. AuthorityLock requires
+AuthorityGuard is the neutral lifecycle integration with the trusted Permissions
+[last-superadministrator participant](../modules/permissions/authority.md). Its lazy
+framework bridge denies missing/unavailable integration. AuthorityLock requires
 an active PostgreSQL transaction: registry shared row lock first (or an already
 held stronger lock), then transaction advisory key `(1381322305, 11)`, then Auth
 rows in UUID order, then Permissions rows in stable order. All authority-affecting

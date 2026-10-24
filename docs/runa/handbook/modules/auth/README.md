@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.10.0`, requiring
+Core `runa.auth` ships at independent version `0.10.1`, requiring
 `runa.audit ^0.4.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
@@ -15,8 +15,10 @@ are delivered, along with [private profile, verified address changes, avatar and
 [Account preferences and security delivery](preferences.md) are delivered.
 [Policy history, account exceptions, bulk sessions and operator contracts](policies-and-operators.md) are delivered.
 [Entry/restricted screens](entry-ui.md) and [welcome/application/account screens](account-ui.md)
-are delivered. [Permissions action grants and introspection](../permissions/README.md) are delivered; ordinary assignment/preset/copy operations are also delivered; last-superadmin/bootstrap integration follows in its owning points.
-There is no management UI. Protected administrative contracts still deny by default.
+are delivered. [Permissions action grants and introspection](../permissions/README.md),
+ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
+are delivered. First-administrator bootstrap integration remains separate.
+There is no management UI. Administrative operations require current native grants.
 
 ## Public values and access
 
@@ -44,7 +46,9 @@ Permission checks use the current Permissions grants; missing readiness or grant
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
 requiring `runa.auth.users.manage`. These are administrative backend contracts,
 without HTTP routes. A permission does not substitute for the separate authority
-invariant participant; the supplied default `AuthorityGuard` refuses mutations.
+invariant participant; `AuthorityGuard` lazily resolves the trusted Permissions
+participant and refuses missing/stale integration. Deactivate/delete exclude the
+target from usable administrators; non-removing work uses an empty exclusion set.
 Owning private identity lookup is independent of protected APIs, so account
 policy/permission resolution need not authorize its own identity recursively.
 

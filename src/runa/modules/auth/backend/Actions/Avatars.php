@@ -143,7 +143,7 @@ final readonly class Avatars
                 $publicId = $request->string('public_id')->toString();
                 new TrustedPrincipal($publicId);
                 $user = User::where('public_id', $publicId)->lockForUpdate()->first() ?? throw new IdentityConflict('identity_missing');
-                $this->authority->assertMayRemove($connection, [$publicId]);
+                $this->authority->assertMayRemove($connection, []);
             }
             $this->profiles->version($user, $request->integer('version'));
 

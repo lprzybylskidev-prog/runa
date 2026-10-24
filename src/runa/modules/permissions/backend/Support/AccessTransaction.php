@@ -20,19 +20,19 @@ final readonly class AccessTransaction
 {
     public function __construct(private DatabaseManager $database, private AuthorityLock $authority, private ModuleApis $apis, private OperationGuard $guard) {}
 
-    public function run(Closure $work, bool $write = false): mixed
+    public function run(Closure $work, bool $write = false, string $permission = 'runa.permissions.access.manage'): mixed
     {
         // Savepoint also rolls back writes/proof consumption when an outer caller catches a refusal.
         $root = $this->database->connection()->transactionLevel() === 0;
         try {
-            return $this->database->connection()->transaction(function (Connection $connection) use ($work, $write): mixed {
+            return $this->database->connection()->transaction(function (Connection $connection) use ($work, $write, $permission): mixed {
                 // Exclusive before authority: Auth step-up/outbox uses the same registry row.
                 $connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first()
                     ?? throw new \RuntimeException('Module registry unavailable.');
                 $this->authority->acquire($connection);
-                $this->guard->enter('runa.permissions', new ApiOperation('access.manage', 'runa.permissions.access.manage'));
+                $this->guard->enter('runa.permissions', new ApiOperation('access.manage', $permission));
                 if ($write) {
-                    $this->apis->resolve('runa.auth', AuthStepUp::class, '1.0.0')->assertVerified('runa.permissions.access.manage', 'both', everyAction: true);
+                    $this->apis->resolve('runa.auth', AuthStepUp::class, '1.0.0')->assertVerified($permission, 'both', everyAction: true);
                 }
 
                 return $work($connection);

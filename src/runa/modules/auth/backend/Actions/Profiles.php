@@ -62,16 +62,24 @@ final readonly class Profiles
 
     public function selfLifecycle(Request $request): array
     {
-        return $this->context->run($request, function (Connection $connection, User $user) use ($request): array {
-            $operation = $request->string('operation')->toString();
-            if (! in_array($operation, ['deactivate', 'delete'], true) || ! $this->value('self_'.$operation)) {
-                $this->refuse('self_change_disabled');
-            }
-            $this->stepUp->assertVerified('runa.auth.self.'.$operation, 'password', everyAction: true);
-            $this->lifecycle->change($user->public_id, $request->integer('version'), new LifecycleChange($operation));
+        $root = app('db')->connection()->transactionLevel() === 0;
+        try {
+            return $this->context->run($request, function (Connection $connection, User $user) use ($request): array {
+                $operation = $request->string('operation')->toString();
+                if (! in_array($operation, ['deactivate', 'delete'], true) || ! $this->value('self_'.$operation)) {
+                    $this->refuse('self_change_disabled');
+                }
+                $this->stepUp->assertVerified('runa.auth.self.'.$operation, 'password', everyAction: true);
+                $this->lifecycle->change($user->public_id, $request->integer('version'), new LifecycleChange($operation));
 
-            return ['updated' => true, 'reauthenticate' => true];
-        }, count: false, unrestricted: true);
+                return ['updated' => true, 'reauthenticate' => true];
+            }, count: false, unrestricted: true);
+        } catch (IdentityConflict $error) {
+            if ($root && $error->getMessage() === 'authority_change_refused') {
+                $this->transactions->securityRefused();
+            }
+            throw $error;
+        }
     }
 
     public function history(Request $request): array

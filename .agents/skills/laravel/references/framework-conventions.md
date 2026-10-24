@@ -58,3 +58,9 @@ trust or recent login never substitutes for required fresh proof. Never expose
 factor secrets, password history or OTPs through module APIs, logs or Audit.
 
 Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.

@@ -1,5 +1,17 @@
 # Permissions module changelog
 
+## 0.3.0
+
+Add compatible PermissionsAuthority 1.0.0 for dedicated reviewed superadministrator
+grant/removal and confirmed custom-role force deletion. Require dedicated current
+grants and fresh both-factor proofs, prevent self-escalation, preserve at least one
+eligible superadministrator under the shared lifecycle transaction lock, and record
+atomic membership/reference/revision/proof/Audit histories. Bind force deletion to
+complete bounded user/preset effects and reject stale previews. Add source-only
+0.2.0 -> 0.3.0 edge and require corrected Auth ^0.10.1; framework API remains 1.0.0.
+First-administrator operator/installer integration remains separate. No new storage,
+dependency package, Admin UI, foreign persistence access or general policy bypass.
+
 ## 0.2.0
 
 Add compatible PermissionsAccess 1.0.0 for versioned custom-role/preset CRUD,

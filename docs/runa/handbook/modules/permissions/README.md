@@ -1,7 +1,7 @@
 # Permissions
 
-Core `runa.permissions` has independent version `0.2.0`, requiring
-`runa.auth ^0.10.0`, `runa.audit ^0.4.0` and framework API `^1.0.0`.
+Core `runa.permissions` has independent version `0.3.0`, requiring
+`runa.auth ^0.10.1`, `runa.audit ^0.4.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -125,10 +125,12 @@ effective is still false without a grant and current eligibility/availability.
 
 Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
 1.0.0 under the [ordinary access contract](access.md). Protected superadmin
-assignment/removal, last-superadmin participation and first-administrator installer
-wiring remain in their owning roadmap points. The neutral AuthorityGuard still refuses
-authority-affecting changes until that integration is supplied. No temporary admin
-boolean, automatic bootstrap grant or security bypass is introduced here.
+assignment/removal, last-superadmin participation and confirmed custom-role force
+deletion use the separate [protected authority contract](authority.md). The neutral
+AuthorityGuard now resolves the trusted Permissions participant and refuses missing
+integration. First-administrator installer/OperatorAuthority wiring remains in its
+cross-module integration point. No temporary admin boolean, automatic bootstrap
+grant or security bypass is introduced.
 
 See [CHANGELOG](CHANGELOG.md), [module foundations](../../architecture/module-foundations.md)
 and [Auth](../auth/README.md). Full integration/security/installation verification

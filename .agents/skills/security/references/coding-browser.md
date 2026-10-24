@@ -78,3 +78,9 @@ customer's infrastructure boundary. Do not grant a temporary administrator flag 
 call guarded business gateways behind a settings/update fence.
 
 Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.

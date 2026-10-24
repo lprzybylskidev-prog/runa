@@ -113,7 +113,7 @@ final readonly class ManageProfiles implements AuthProfiles
             }
             $user = User::where('public_id', $publicId)->lockForUpdate()->first() ?? throw new IdentityConflict('identity_missing');
             $this->profiles->version($user, $version);
-            $this->authority->assertMayRemove($connection, [$publicId]);
+            $this->authority->assertMayRemove($connection, $proofAction === 'runa.auth.email.require_verification' ? [$publicId] : []);
 
             return $work($connection, $user);
         });

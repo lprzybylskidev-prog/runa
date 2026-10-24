@@ -794,7 +794,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     implicit superadmin escalation; authorized admins may grant ordinary rights
     beyond their own. Provide safe future-management metadata, no pages.
   - Synchronize public API/security examples and declaration review guidance.
-- [ ] 15. Integrate protected authority and last-superadmin invariants.
+- [x] 15. Integrate protected authority and last-superadmin invariants.
   - Requires 14. Implement dedicated superadmin grant/remove, fixed shared lock
     protocol and Auth lifecycle participation; cover self/bulk/scheduled deactivation,
     soft deletion and equivalent assignment changes. Enforce eligibility/2FA/step-up/
@@ -907,7 +907,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 is next: protected authority and last-superadmin invariants.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 is next: cross-module bootstrap, lifecycle and management integration. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1780,3 +1780,85 @@ architectural premise requires discussion before dependent work.
   module tables/schemas and Auth work were removed by the supported test lifecycle.
   No temporary Docker resource was created; development/test service data, existing
   images/networks/volumes, Qdrant/model caches, backups and reports are preserved.
+
+## Point 15 delivery
+
+- Permissions advances compatibly 0.2.0 -> 0.3.0 for additive guarded
+  PermissionsAuthority 1.0.0, dedicated authority.manage / roles.force_delete
+  declarations and source-only forward preparation. Auth advances PATCH
+  0.10.0 -> 0.10.1 to correct neutral authority participation and root-refusal
+  persistence; its public API signatures/data/policies are unchanged. Permissions
+  now requires Auth ^0.10.1; Audit ^0.4.0, framework API 1.0.0 and platform VERSION
+  0.4.2 remain unchanged. No dependency package, migration or runtime setting added.
+- Dedicated reviewed superadministrator grant/removal binds target current identity,
+  security/eligibility, protected role, exact membership and monotonic assignment
+  revision. Prevents self-escalation by a nonmember, requires its separate current
+  grant and fresh session/action-bound both-factor proof, and preserves ordinary
+  copy/preset/replace exclusions. Complete authority membership/revision/proof/Audit
+  changes commit together; no-op reviews create no duplicate membership history.
+- The framework lazy ProtectedAuthority bridge validates exact default transaction
+  connection and available source/data before resolving the trusted Permissions
+  AuthorityGuard. Registry -> shared authority advisory -> owned Auth -> owned
+  Permissions lock ordering serializes prospective removal and writes. Auth never
+  imports Permissions models/SQL; the trusted participant consumes Auth's designated
+  public non-recursive AuthorizationIdentity contract. Application callers retain
+  guarded ingress. The invariant accepts a complete bulk exclusion set and requires
+  another current eligible system-role member, with bounded-page survivor lookup.
+- Auth deactivation/soft deletion, self-service, scheduled deactivation and protected
+  assignment removal participate in the same invariant. Empty exclusion sets keep
+  non-removing creation/activation/restore/profile/avatar/invitation work available;
+  forced reverification/factor reset conservatively protect usable authority.
+  Security/abuse locks, policy restrictions and time expiry remain independent and
+  can temporarily remove every usable administrator. Documented schedule/expiry
+  lockout consequences and trusted emergency recovery; actual operator authority,
+  first-administrator installer and privileged bulk selection wiring remain point 16.
+- Scheduled last-admin refusal rolls back only that account, persists independent
+  authority.refused at the root and continues unrelated due accounts. Self-service
+  root refusal persists security.refused after its proof/business rollback; direct
+  lifecycle conflicts retain their independent identity refusal. Nested callers
+  retain the root-rollback obligation; no savepoint claims independent persistence.
+- Default referenced-role deletion remains refused. Dedicated force deletion requires
+  a current version/review, extra explicit confirmation and fresh dedicated both-factor
+  proof. Complete bounded affected-user assignment/revision/effective-permission
+  effects and preset-reference/version lists bind execution; changed references,
+  grants, eligibility or effective losses invalidate it. Explicit same-schema pivot
+  cleanup advances affected assignment/preset revisions and soft-deletes only a
+  custom role. Module/system definitions and RESTRICT FKs remain protected. Required
+  assignment/preset/role Audit and proofs roll back with every owned write.
+- Extended existing management metadata with the separate authority entity and
+  force-delete confirmation/capabilities/preview/proof requirements. No new Admin UI,
+  routes, renderer or generic authorization bypass. Existing current-grant resolver
+  still enforces availability/eligibility and leaves record/domain/factor checks intact.
+- Prepared meaningful regressions for dedicated proof/grants, self-escalation,
+  last-member removal, multi-target exclusion, unavailable survivors, activation,
+  independent refusals, full force-delete rollback and stale recipient changes,
+  alternate effective grant preservation, scheduled progress, real self-service
+  proof rollback, authority-history failure and two real concurrent lifecycle workers.
+  The concurrency fixture uses guarded owner-test storage and the real shared lock;
+  its parallel acceptance and remaining scenarios are reserved for final verification.
+- Necessary focused diagnostics through supported test-backend: dedicated real
+  authority proof plus confirmed force-role deletion/Audit failure PASS (2 cases,
+  38 assertions); lifecycle/activation/trusted bridge and changed-module runtime
+  descriptors PASS (1 case, 13 assertions); scheduled root-refusal persistence and
+  continuation PASS (1 case, 3 assertions). Repeated the lifecycle diagnostic after
+  bounded survivor lookup replaced full materialization; it passed. These answer
+  concrete cross-module ingress/proof/transaction/runtime/lockout uncertainties.
+  No broad suites, concurrency acceptance, static analysis, builds, scanners or
+  final quality workflow ran; those remain point 20 after frontend acceptance.
+- Supported source checks for runa modules and module_versions.py --owner runa
+  --base HEAD passed. Read-only development --runtime initially reported all three
+  modules not registered; no application registration/bootstrap was performed to
+  manufacture a pass. The isolated lifecycle diagnostic instead validates actual
+  registered Auth/Permissions runtime descriptors after supported fixture install.
+- Synchronized public Permissions authority/access/API/security/module-foundation
+  and Auth lifecycle/scheduled/recovery guidance, independent central changelogs,
+  owner current-state/deferred descriptions and both backend/Laravel/PostgreSQL/
+  security instruction reference products. Root owner/customer AGENTS already
+  require guarded APIs, server authority and atomic meaningful Audit; no duplicate
+  root procedure is needed. Frontend/Vue/Tailwind products are unaffected because
+  there is no view/component/style or frontend extension change in this point.
+- Only guarded disposable owner-test schemas/work were installed and removed through
+  the supported fixture lifecycle. No development/production migration/reset or
+  manual Docker resource operation ran. No temporary container/network/image/volume
+  was created; active development/test data, existing services/images/volumes,
+  Qdrant/model caches, backups, reports and rollback material remain preserved.

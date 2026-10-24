@@ -31,7 +31,7 @@ final readonly class EntryTokens implements AuthInvitations
             if ($user === null || $user->version !== $expectedVersion || $user->password !== null) {
                 return false;
             }
-            $this->authority->assertMayRemove($connection, [$publicId]);
+            $this->authority->assertMayRemove($connection, []);
 
             return $this->issueLocked($connection, $user, 'invitation');
         });
@@ -47,7 +47,7 @@ final readonly class EntryTokens implements AuthInvitations
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;
             }
-            $this->authority->assertMayRemove($connection, [$publicId]);
+            $this->authority->assertMayRemove($connection, []);
             $changed = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')
                 ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
             if ($changed) {

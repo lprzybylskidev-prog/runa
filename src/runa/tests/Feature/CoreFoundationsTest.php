@@ -36,7 +36,7 @@ it('denies authenticated restricted and authority operations before domain integ
     foreach ([HttpAccess::Authenticated, HttpAccess::Restricted] as $access) {
         expect(fn () => $policy->principal(Request::create('/'), 'app.example', 'read', $access))->toThrow(OperationRejected::class);
     }
-    expect(fn () => app(AuthorityGuard::class)->assertMayRemove(DB::connection(), [(string) Str::uuid7()]))->toThrow(RuntimeException::class, 'unavailable');
+    expect(fn () => DB::transaction(fn () => app(AuthorityGuard::class)->assertMayRemove(DB::connection(), [(string) Str::uuid7()])))->toThrow(RuntimeException::class, 'unavailable');
     expect(fn () => app(AuthorityLock::class)->acquire(DB::connection()))->toThrow(RuntimeException::class, 'active PostgreSQL transaction');
 });
 

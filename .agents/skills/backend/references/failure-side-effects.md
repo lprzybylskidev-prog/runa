@@ -48,3 +48,9 @@ for reviewed assignment/custom-role/preset/copy mutations, fresh both-factor pro
 source/target revision checks and complete aggregate Audit. Preserve assigned
 roles/directs, snapshot independence and protected system membership. Do not use
 private grant writers or flatten role-derived effective grants into direct grants.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.
