@@ -521,6 +521,30 @@ function credentialEnroll($test, User $user): array
     return [$begin['secret'], $codes];
 }
 
+it('returns a locally rendered private TOTP QR alongside the manual key without activating the factor', function (): void {
+    $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'a-long-test-password'])->assertUnauthorized();
+    $user = entryUser('qr-enrollment@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'wrong-password'])->assertStatus(422);
+    $response = $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'a-long-test-password'])->assertOk();
+    expect($response->headers->get('Cache-Control'))->toContain('no-store');
+    $begin = $response->json('data');
+    expect($begin['qr_code'])->toStartWith('data:image/svg+xml;base64,');
+    $svg = base64_decode(substr($begin['qr_code'], strlen('data:image/svg+xml;base64,')), true);
+    $document = new DOMDocument;
+    expect($document->loadXML($svg, LIBXML_NONET))->toBeTrue();
+    expect($document->documentElement->localName)->toBe('svg');
+    expect($document->documentElement->getAttribute('width'))->toBe('256');
+    expect($document->getElementsByTagName('path')->length)->toBeGreaterThan(0);
+    expect($svg)->not->toContain('<script', '<image', 'href=');
+    parse_str(parse_url($begin['uri'], PHP_URL_QUERY), $parameters);
+    expect($parameters['secret'])->toBe($begin['secret']);
+    $user->refresh();
+    expect($user->totp_secret)->toBeNull();
+    expect(Crypt::decryptString($user->totp_pending))->toBe($begin['secret']);
+    expect($user->totp_pending_until->isFuture())->toBeTrue();
+});
+
 it('enforces mandatory TOTP enrollment and transactional replay protection with single use recovery', function (): void {
     CarbonImmutable::setTestNow('2026-10-23 12:00:00 UTC');
     entryPolicy(['two_factor_required' => 'totp', 'email_otp_enabled' => true]);

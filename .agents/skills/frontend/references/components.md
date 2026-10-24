@@ -12,3 +12,6 @@ Use public Avatar for repeated profile-image/initials presentation. Forward the
 ApplicationLayout userAvatar prop in wrappers, and consume current profile display
 through useApplicationSession rather than copying private profile orchestration.
 Profile/image presentation is never authentication or authorization state.
+
+Auth authenticator setup uses public AuthTotpSetup from `@/runa/auth` for private
+QR/manual-key presentation; see the [presentation contract](../../../../docs/runa/handbook/development/frontend/customization.md).

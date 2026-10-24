@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
+import { enrollmentQrCode } from '../../modules/auth/frontend/totpEnrollment';
 import AuthAvatarCropper from '../../modules/auth/frontend/AuthAvatarCropper.vue';
 import {
   Avatar,
@@ -373,10 +374,15 @@ it('optional TOTP setup retains its private key only until confirmation and requ
     .find((button) => button.text() === 'Skonfiguruj')!
     .trigger('click');
   await flushPromises();
+  const qrImage =
+    'data:image/svg+xml;base64,' +
+    btoa(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="white"/></svg>',
+    );
   write = (path) =>
     json(
       path.endsWith('/totp-begin')
-        ? { secret: 'ABCDEFGHIJKLMNOP' }
+        ? { secret: 'ABCDEFGHIJKLMNOP', qr_code: qrImage }
         : { recovery_codes: ['a'.repeat(32)] },
     );
   await w
@@ -385,6 +391,8 @@ it('optional TOTP setup retains its private key only until confirmation and requ
   await w.get('[data-account-section=security]').trigger('submit');
   await flushPromises();
   expect(w.get('[data-enrollment-secret]').text()).toBe('ABCDEFGHIJKLMNOP');
+  expect(w.get('[data-enrollment-qr]').attributes('src')).toBe(qrImage);
+  expect(w.get('[data-enrollment-qr]').attributes('alt')).toContain('Kod QR');
   expect(
     (
       w.get('[data-account-section=security] input[name="current_password"]')
@@ -398,6 +406,7 @@ it('optional TOTP setup retains its private key only until confirmation and requ
   await w.get('[data-account-section=security]').trigger('submit');
   await flushPromises();
   expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
+  expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
   expect(w.get('[data-recovery-code]').text()).toBe('a'.repeat(32));
   expect(w.find('[data-account-section=security]').exists()).toBe(false);
   await w
@@ -994,4 +1003,45 @@ it('two-factor disable acts on the chosen enrolled method and retains current-fa
       current_password: 'a-long-test-password',
     },
   });
+});
+
+it('TOTP QR accepts only bounded local image data and cancellation clears both enrollment values', async () => {
+  for (const image of [
+    'https://qr.example.test/render?secret=private',
+    'data:text/html;base64,PHNjcmlwdD4=',
+    'data:image/svg+xml;base64,' + 'A'.repeat(131072),
+  ])
+    expect(() => enrollmentQrCode(image)).toThrow();
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const form = w.get('[data-account-section=security]');
+  await form
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!
+    .trigger('click');
+  write = () =>
+    json({
+      secret: 'ABCDEFGHIJKLMNOP',
+      qr_code: 'data:image/svg+xml;base64,PHN2Zy8+',
+    });
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.trigger('submit');
+  await vi.waitFor(() =>
+    expect(w.find('[data-enrollment-qr]').exists()).toBe(true),
+  );
+  await form
+    .findAll('button')
+    .find((button) => button.text() === 'Anuluj')!
+    .trigger('click');
+  expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
+  expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
+  expect(w.getComponent(AuthAccountEditor).props('account').qrCode.value).toBe(
+    '',
+  );
+  expect(writes).toHaveLength(1);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.secret.value = 'ABCDEFGHIJKLMNOP';
+  state.qrCode.value = 'data:image/svg+xml;base64,PHN2Zy8+';
+  w.unmount();
+  expect(state.qrCode.value).toBe('');
 });

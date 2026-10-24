@@ -321,11 +321,19 @@ it('shows TOTP material and recovery codes only in the current flow, with delibe
       data: {
         secret: 'A'.repeat(32),
         uri: 'otpauth://totp/test',
+        qr_code:
+          'data:image/svg+xml;base64,' +
+          btoa(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="white"/></svg>',
+          ),
       },
     });
   await w.get('form').trigger('submit');
   await settled(w);
   expect(w.get('[data-enrollment-secret]').text()).toBe('A'.repeat(32));
+  expect(w.get('[data-enrollment-qr]').attributes('src')).toMatch(
+    /^data:image\/svg\+xml;base64,/,
+  );
   expect(w.get('[name=current_password]').element).toHaveProperty('value', '');
   await w.get('[name=current_password]').setValue('a-long-password');
   await w.get('[name=enrollment_code]').setValue('123456');
@@ -336,6 +344,7 @@ it('shows TOTP material and recovery codes only in the current flow, with delibe
   expect(w.get('h1').text()).toBe('Zapisz kody odzyskiwania');
   expect(w.text() + document.body.textContent).toContain('b'.repeat(32));
   expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
+  expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
   restrictions = ['password_change_required'];
   currentSecurity.enrolled = ['totp'];
   await w

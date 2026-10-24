@@ -16,6 +16,7 @@ import {
 import type { AccountSection, useAuthAccount } from './useAuthAccount';
 import AuthAccountProof from './AuthAccountProof.vue';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
+import AuthTotpSetup from './AuthTotpSetup.vue';
 const props = defineProps<{
   account: ReturnType<typeof useAuthAccount>;
   passwordHint: string;
@@ -32,6 +33,7 @@ const {
   naming,
   target,
   secret,
+  qrCode,
   codes,
   files,
   has,
@@ -574,19 +576,11 @@ function closeCrop(value: boolean) {
             v-if="secret && overviewAction === 'totpConfirm'"
             class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"
           >
-            <p class="text-sm">
-              {{
-                text(
-                  'Dodaj ten klucz w aplikacji uwierzytelniającej, a następnie potwierdź kodem.',
-                  'Add this key to your authenticator, then confirm with its code.',
-                )
-              }}
-            </p>
-            <code
-              class="select-all text-sm [overflow-wrap:anywhere]"
-              data-enrollment-secret
-              >{{ secret }}</code
-            >
+            <AuthTotpSetup
+              :secret="secret"
+              :qr-code="qrCode"
+              :locale="locale"
+            />
             <TextInput
               :model-value="sectionFields.security.enrollment_code ?? ''"
               name="enrollment_code"

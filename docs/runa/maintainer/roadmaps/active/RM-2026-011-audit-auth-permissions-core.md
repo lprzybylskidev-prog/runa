@@ -1013,6 +1013,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Owner requests no pixelated-looking border around the top-bar avatar.
     Preserve its circular image, touch target and visible keyboard focus.
 - [x] 19q. Polish account card flow, confirm avatar removal, expose clear two-factor method controls and enable local full-feature manual review.
+- [x] 19r. Add private local TOTP QR enrollment alongside manual keys in account and required enrollment views.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2897,3 +2898,45 @@ architectural premise requires discussion before dependent work.
   on the owner's account. No Docker resources created/removed; active services,
   databases, caches, reports and backups preserved. Point 20 remains gated by
   explicit owner frontend appearance acceptance; no full quality gate was run.
+
+## Point 19r delivery
+
+- Owner requests a scannable QR alongside the manual authenticator setup key.
+  The existing guarded no-store TOTP begin response now adds qr_code, an SVG data
+  URI generated locally from exactly the existing otpauth URI using BaconQrCode
+  3.1.1, already installed by Fortify 1.36.2. No dependency, remote QR service,
+  separate image endpoint, credential-bearing request URL or stored QR file added.
+  Existing password/current-factor proofs, pending-secret TTL, activation, replay
+  counters, Audit and recovery-code acknowledgement remain unchanged.
+- Shared AuthTotpSetup is public through @/runa/auth and reused by account and
+  required-entry enrollment. It shows a black/white 256px QR with four-module quiet
+  margin, manual key and localized instructions/alternative text. The presentation
+  is static, responsive and print-hidden. Public controllers expose private
+  qrCode/enrollmentQr state, accept only bounded SVG base64 image data, preserve
+  manual fallback for older begin payloads and clear the image with its secret on
+  completion/cancel/method switch/logout/disposal, including after effects stop.
+- Auth advances additively to 0.16.0; Permissions advances to 0.5.4 to align its Auth
+  dependency with ^0.16.0. Both source-only forward edges are applied locally;
+  no schema, settings or owner credential/avatar changes. Audit remains 0.5.0;
+  framework API/platform release versions remain unchanged until point 20.
+- Focused backend QR regression passes with 17 assertions: unauthenticated and
+  incorrect-password refusal, no-store response, parseable local SVG with no
+  external/script content, matching URI/key and encrypted pending-only enrollment.
+  Three focused Chromium regressions pass for account/required enrollment QR,
+  manual fallback rendering, recovery transition, bounded/local image inputs,
+  cancellation and disposal cleanup. Core source/runtime and module-version
+  diagnostics pass. Current client assets published for manual review.
+- Real served browser with a locally generated, explicitly fake enrollment payload
+  confirms a decoded 256x256 image, 390px layout without horizontal overflow,
+  cancellation cleanup, print exclusion and no page errors. Inspected dark desktop,
+  dark mobile and light-theme screenshots; private evidence stays under
+  .runtime/dev/manual-auth/totp-qr. Preview intercepts only TOTP begin and never
+  starts/enrolls a real factor on the owner's account. Smartphone scan acceptance
+  remains part of the owner's manual review; no independent QR decoder was added.
+- Synchronized security, account/entry UI, public presentation and module changelog
+  docs. Owner component catalogue and customer frontend guidance reference the
+  shared private setup contract. Existing root/security guidance already forbids
+  secret persistence/disclosure; no constitutional change needed. No Docker test
+  resources created/removed; active services, databases, caches, backups and reports
+  preserved. Point 20 remains gated by explicit owner appearance acceptance;
+  no full quality gate was run.

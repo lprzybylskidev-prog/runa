@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 0.5.4
+
+Align Auth dependency with compatible 0.16.0 TOTP QR presentation additions.
+Source-only forward edge; no Permissions API, behavior or stored changes.
+
 ## 0.5.3
 
 Align Auth dependency with compatible 0.15.0 shell profile presentation contracts.

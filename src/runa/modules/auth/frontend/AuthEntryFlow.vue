@@ -18,6 +18,7 @@ import type { EntryCopyKey } from './messages';
 import { useLocale } from '../../../resources/js/composables/useLocale';
 const { locale } = useLocale();
 import { useAuthEntry } from './useAuthEntry';
+import AuthTotpSetup from './AuthTotpSetup.vue';
 const presentation = useAuthPresentation();
 const feedbackAttempt = ref(0);
 const props = defineProps<{
@@ -47,6 +48,7 @@ const {
   needsProof,
   newPassword,
   enrollmentSecret,
+  enrollmentQr,
   recoveryCodes,
   isTokenPage,
   returnPath,
@@ -250,13 +252,11 @@ const submitLabel = computed(() => {
               v-if="enrollmentSecret"
               class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"
             >
-              <p class="text-sm font-semibold">{{ t('secretLabel') }}</p>
-              <code
-                class="block select-all text-sm [overflow-wrap:anywhere]"
-                data-enrollment-secret
-                >{{ enrollmentSecret }}</code
-              >
-              <p class="text-xs leading-6 text-muted">{{ t('secretHelp') }}</p>
+              <AuthTotpSetup
+                :secret="enrollmentSecret"
+                :qr-code="enrollmentQr"
+                :locale="locale"
+              />
             </div>
             <Checkbox
               v-if="screen === 'login' && options?.remember_enabled"

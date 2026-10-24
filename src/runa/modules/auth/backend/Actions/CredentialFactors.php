@@ -2,6 +2,10 @@
 
 namespace Runa\Modules\Auth\Actions;
 
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
@@ -112,7 +116,10 @@ final readonly class CredentialFactors
                 $user->save();
                 $this->transactions->record('two_factor.enrollment_started', $user);
 
-                return ['secret' => $secret, 'uri' => $this->totp->qrCodeUrl(config('app.name'), $user->email, $secret)];
+                $uri = $this->totp->qrCodeUrl(config('app.name'), $user->email, $secret);
+                $svg = (new Writer(new ImageRenderer(new RendererStyle(256, 4), new SvgImageBackEnd)))->writeString($uri);
+
+                return ['secret' => $secret, 'uri' => $uri, 'qr_code' => 'data:image/svg+xml;base64,'.base64_encode($svg)];
             }
             $recovery = [];
             if ($operation === 'totp_confirm') {

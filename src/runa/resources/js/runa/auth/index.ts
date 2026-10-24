@@ -22,6 +22,9 @@ export const DefaultApplication = defineAsyncComponent(
 export const AuthAccount = defineAsyncComponent(
   () => import('../../../../modules/auth/frontend/AuthAccount.vue'),
 );
+export const AuthTotpSetup = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/AuthTotpSetup.vue'),
+);
 export const AuthAvatarCropper = defineAsyncComponent(
   () => import('../../../../modules/auth/frontend/AuthAvatarCropper.vue'),
 );

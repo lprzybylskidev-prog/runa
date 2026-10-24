@@ -64,15 +64,17 @@ email OTP. An account without a suitable method gets
 restrictions supplement independent lifecycle/password/verification checks.
 
 Enrollment requires the current password and a fresh existing permitted factor
-when one is enrolled. Starting TOTP returns a secret and otpauth URI only in the
-authorized no-store response. The encrypted pending secret expires after ten
+when one is enrolled. Starting TOTP returns a secret, otpauth URI and `qr_code` SVG data URI only in
+the authorized no-store response. BaconQrCode, already installed through Fortify,
+renders the same URI locally with black/white contrast and a quiet margin. No
+external QR service, separate image request or persisted QR file is involved. The encrypted pending secret expires after ten
 minutes. Confirmation requires its six-digit `enrollment_code`; only then does it
 become active. The first eight random 128-bit recovery codes are returned once;
 only their SHA-256 hashes persist. Rotation requires the same current-password and
 factor proof, replaces all older codes and returns the new values once. Disabling
 a method requires these proofs and is refused while policy requires 2FA. Existing
 material remains retained when a policy disables a method; it cannot authenticate
-while disabled. There is no WebAuthn or QR image generation endpoint.
+while disabled. There is no WebAuthn or separate QR image generation endpoint.
 
 TOTP permits a one-step clock window and persists the exact accepted counter under
 the user lock. Its next accepted counter must be newer, including across workers,

@@ -1,6 +1,8 @@
+import { enrollmentQrCode } from './totpEnrollment';
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
   computed,
+  watch,
   nextTick,
   onMounted,
   onScopeDispose,
@@ -90,6 +92,7 @@ export function useAuthAccount(accountId: string) {
     method = ref('totp'),
     target = ref('totp');
   const secret = ref(''),
+    qrCode = ref(''),
     codes = ref<string[]>([]),
     files = ref<readonly File[]>([]);
   const overviewAction = ref<
@@ -559,6 +562,7 @@ export function useAuthAccount(accountId: string) {
           !/^[A-Z2-7]{16,128}$/.test(result.secret)
         )
           throw new TypeError('Invalid enrollment.');
+        qrCode.value = enrollmentQrCode(result.qr_code);
         secret.value = result.secret;
         task.value = 'totpConfirm';
       } else {
@@ -875,6 +879,13 @@ export function useAuthAccount(accountId: string) {
                 ),
   );
   onMounted(initialize);
+  watch(
+    secret,
+    (value) => {
+      if (!value) qrCode.value = '';
+    },
+    { flush: 'sync' },
+  );
   onScopeDispose(() => {
     if (
       task.value === 'details' &&
@@ -891,6 +902,7 @@ export function useAuthAccount(accountId: string) {
     for (const values of Object.values(sectionFields))
       for (const key of Object.keys(values)) values[key] = '';
     secret.value = '';
+    qrCode.value = '';
     codes.value = [];
   });
   return {
@@ -913,6 +925,7 @@ export function useAuthAccount(accountId: string) {
     method,
     target,
     secret,
+    qrCode,
     codes,
     files,
     rows,

@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.16.0
+
+Add a locally rendered, private SVG QR image to the existing no-store TOTP
+begin response, using Fortify's installed BaconQrCode dependency. Keep the manual
+key/otpauth URI and activation proofs unchanged. Expose ephemeral qrCode/enrollmentQr
+controller refs and public AuthTotpSetup for account and required enrollment;
+clear images with secrets on completion/cancel/switch/logout/disposal and omit
+setup material from print. No external QR service, new dependency or stored changes.
+
 ## 0.15.1
 
 Stack account details/password independently of avatar/security card heights.

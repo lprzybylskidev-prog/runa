@@ -118,3 +118,9 @@ modules. DefaultApplication owns supplied path composition; App.vue is thin wiri
 Programmatic heading focus announces the current Auth step/tab to assistive
 technology. These headings retain tabindex=-1 and suppress only their own outline;
 inputs, links, buttons and error-feedback focus retain visible keyboard indicators.
+
+TOTP enrollment shares public AuthTotpSetup with the user panel: scan its locally
+rendered QR image or enter the manual key, then confirm the authenticator code.
+The private image uses the existing no-store begin response and no external QR
+service. Setup images/keys are omitted from print and cleared with enrollment
+state on completion, method change, sign-out and disposal.

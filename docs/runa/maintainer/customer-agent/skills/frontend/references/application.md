@@ -110,3 +110,7 @@ Profile/image presentation is never authentication or authorization state.
 
 Follow the public forms guide for independent Card forms, uneven-height column
 stacks, explicit security-method actions and confirmed destructive removal.
+
+For authenticator setup, reuse public AuthTotpSetup with the controller's private
+QR/manual-key state; see the presentation contract. Do not send enrollment keys
+to external QR services or persist them as preferences/assets.

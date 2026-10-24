@@ -105,7 +105,10 @@ The two-factor card lists each policy-available method with its enabled/disabled
 state, explanation and explicit Set up/Disable action, rather than an operation
 select. Selecting a method reveals its current-password/proof fields and a named
 submit; Cancel clears the local setup/proof draft. Authenticator enrollment still
-requires confirming its code and acknowledging recovery codes. Email enrollment
+shows a scannable QR plus a manual key, then requires confirming its code and
+acknowledging recovery codes. The QR stays in memory only with the current setup
+secret and is cleared on cancellation/completion; setup material is excluded from
+printing. Email enrollment
 requires a verified primary address; replacing recovery codes remains explicit.
 
 Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/Table:

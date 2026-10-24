@@ -1,6 +1,8 @@
+import { enrollmentQrCode } from './totpEnrollment';
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
   computed,
+  watch,
   nextTick,
   onMounted,
   onScopeDispose,
@@ -47,6 +49,7 @@ export function useAuthEntry(
     notice = ref<EntryCopyKey>();
   const complete = ref(false),
     enrollmentSecret = ref(''),
+    enrollmentQr = ref(''),
     recoveryCodes = ref<string[]>([]);
   const token = ref(takeEntryToken());
   const returnPath = safeReturnPath(
@@ -421,6 +424,7 @@ export function useAuthEntry(
           !/^[A-Z2-7]{16,128}$/.test(response.secret)
         )
           throw new TypeError('Invalid enrollment.');
+        enrollmentQr.value = enrollmentQrCode(response.qr_code);
         enrollmentSecret.value = response.secret;
       } else if (currentScreen === 'enrollment') {
         enrollmentSecret.value = '';
@@ -526,12 +530,20 @@ export function useAuthEntry(
     ),
   );
   onMounted(initialize);
+  watch(
+    enrollmentSecret,
+    (value) => {
+      if (!value) enrollmentQr.value = '';
+    },
+    { flush: 'sync' },
+  );
   onScopeDispose(() => {
     alive = false;
     abort.abort();
     clearSecrets();
     token.value = '';
     enrollmentSecret.value = '';
+    enrollmentQr.value = '';
     recoveryCodes.value = [];
   });
   return {
@@ -559,6 +571,7 @@ export function useAuthEntry(
     needsProof,
     newPassword,
     enrollmentSecret,
+    enrollmentQr,
     recoveryCodes,
     token,
     isTokenPage,
