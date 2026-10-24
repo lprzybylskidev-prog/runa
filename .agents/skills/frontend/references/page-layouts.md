@@ -15,3 +15,8 @@ Default screens, composition and full customer presentation are supported levels
 Maintain public seams and account/security cleanup; application examples stay in
 owner fixtures rather than enlarging the delivered scaffold. Native errors and
 emergency output share one static build-time presentation contract.
+
+Use the single workspace-root .runtime tree for private generated build/tooling
+state; see [artifact placement](../../../../docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state). Resolve paths consistently
+from src and build stages. Keep only required generated runtime assets in explicit
+production copies; preserve unrelated caches/reports/backups/operation state.

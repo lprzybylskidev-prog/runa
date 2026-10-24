@@ -39,7 +39,9 @@ export default defineConfig({
   plugins: [vue(), tailwindcss()],
   build: {
     ssr: 'runa/resources/errors/render.mjs',
-    outDir: '.runtime/error-renderer',
+    outDir: fileURLToPath(
+      new URL('../.runtime/frontend/errors/renderer', import.meta.url),
+    ),
     emptyOutDir: true,
     ssrEmitAssets: true,
     cssCodeSplit: false,

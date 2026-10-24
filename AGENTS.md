@@ -227,6 +227,15 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/maintainer/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
+## Generated tooling state
+
+Keep generated private build/tooling artifacts under the single workspace-root
+`.runtime/<area>/` tree; never introduce src/.runtime or per-module runtime roots.
+Public built assets, Laravel storage and supported verification evidence keep
+their documented locations. Follow
+[artifact placement](docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state);
+preserve reports, caches, backups and operation/recovery state during cleanup.
+
 ## Temporary Docker resources
 
 After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/runa/handbook/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.

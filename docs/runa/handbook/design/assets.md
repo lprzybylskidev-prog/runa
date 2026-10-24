@@ -51,7 +51,7 @@ Regenerate after building the root entry with `./bin/pnpm exec node runa/tools/a
 
 ## Standalone HTTP error assets
 
-The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `src/public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `src/.runtime/runa-errors/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.
+The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `src/public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `.runtime/frontend/errors/templates/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.
 
 ## Table export icons
 

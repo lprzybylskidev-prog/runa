@@ -18,6 +18,4 @@ __pycache__/
 /src/storage/*.key
 /src/bootstrap/cache/*.php
 
-/src/.runtime/
-
 .pnpm-store/

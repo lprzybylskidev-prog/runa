@@ -48,3 +48,8 @@ reauthentication and explicit retries; never copy private security orchestration
 Native errors and generated emergency 503 share one static, CSP-constrained
 presentation build. Keep the application scaffold minimal; domain pages are added
 only for real customer requirements.
+
+Use docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state
+for generated private build/tooling artifacts: one workspace-root .runtime/<area>,
+no src/.runtime or module-local runtime roots. Preserve public asset/Laravel storage
+contracts and unrelated reports, backups, caches and operation/recovery state.

@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests one workspace-root .runtime location for generated
+  tooling/build state. Add point 19a before final verification to consolidate the
+  src/.runtime error renderer/templates under .runtime/frontend/errors, synchronize
+  PHP/build/image consumers and durable owner/customer guidance, and preserve
+  existing reports, backups, caches and operation state. This does not accept the
+  frontend appearance or authorize entry into point 20.
+
 - 2026-10-24 — Owner reaffirmed during point 19 that frontend cleanup is a general
   requirement for every current/future Runa module view, not Auth-only work. Ship
   usable defaults plus public presentation replacement/composition, keep src/app
@@ -885,6 +892,15 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     minimal scaffold and update/clone preservation. Keep examples in owner fixtures,
     not shipped src/app beyond reference. Run only necessary focused diagnostics
     here; broad rendering/integration/installation/security acceptance belongs to 20.
+- [x] 19a. Consolidate generated runtime artifacts at workspace root.
+  - Requires 19. Move error renderer/templates from src/.runtime to the root
+    .runtime/frontend/errors subtree; synchronize frontend scripts, native PHP
+    lookup, standalone finalization and explicit production image copies.
+  - Preserve generated native views during local relocation and all unrelated
+    reports/caches/backups/operation state. Keep public assets and Laravel storage
+    in their existing roles. Record one-root placement in owner/customer guidance.
+  - Prepare path/build/runtime regressions; run only necessary focused diagnostics.
+    Broad builds/images/acceptance remain in 20 after explicit visual acceptance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -913,7 +929,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 20 is next, gated by explicit owner appearance acceptance. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, which remains gated by explicit owner appearance acceptance. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -2164,3 +2180,44 @@ architectural premise requires discussion before dependent work.
   point records. Owner manual frontend inspection and explicit appearance
   acceptance are still pending. Do not begin full verification/release finalization
   until that acceptance; implementation completion and silence do not grant it.
+
+## Point 19a delivery
+
+- Owner requested one workspace-root .runtime location after noticing both root
+  and src variants. Inspection found general tool/cache/report/operation state in
+  root .runtime (about 2.3 GB) and only generated error renderer/templates in
+  src/.runtime (about 1.4 MB). The latter came from package commands running in src.
+- Consolidated private error build artifacts under .runtime/frontend/errors:
+  renderer and templates have separate owned subdirectories. Vite resolves its
+  output from the config location, both composed/platform package scripts use the
+  root output, and SSR generation/native PHP/standalone finalization agree on the
+  workspace location. Explicit Node -> PHP build -> production PHP copies follow
+  the new path; only required HTML enters the runtime image. Public CSS/assets,
+  Laravel storage and supported verification-evidence locations remain unchanged.
+- Moved exactly five existing renderer files (465764 bytes) and 72 existing
+  templates (814980 bytes) to absent destinations; all 77 per-file SHA256 hashes
+  matched after relocation. Removed only the now-empty src/.runtime directory.
+  Preserved every unrelated root runtime subtree, including older artifacts,
+  caches, operation/recovery state, reports and backups. No blanket cleanup or
+  overwrite was performed. Removed obsolete ignore entries for src/.runtime;
+  the canonical root remains Git/Docker-ignored and builds generate fresh output.
+- Necessary focused diagnostics PASS: imported Vite config and both package
+  entrypoints resolve the canonical root; the supported owner native-error case
+  (12 status/locale variants, 104 assertions) reads relocated templates and retains
+  responses/headers; the documented standalone PHP finalizer emits all six locale/
+  theme 503 documents without recreating src/.runtime. Retained isolated finalizer
+  evidence under .runtime/tests/error-artifact-relocation. Existing native-error,
+  browser, clean image and production-fallback regressions remain in final point
+  20; no broad suite, frontend/image build, scanner or final quality was run.
+- Updated authoritative artifact placement, frontend/design/production and owner
+  architecture/update guidance, both owner/customer AGENTS, Docker and frontend
+  reference products. This is a reusable placement rule for all future tooling,
+  not an Auth-only convention. Other skills already inherit the root placement
+  contract and need no duplicate rule. No module-owned implementation/API/storage
+  contract changed, so Audit 0.5.0/Auth 0.13.0/Permissions 0.5.1 and platform VERSION
+  0.4.2 remain unchanged. No dependency or migration was introduced.
+- Mandatory commit hooks and incremental staged knowledge freshness apply. No
+  Docker container/network/image/volume was created or removed; development/test
+  data/services, Qdrant/model/build caches, backups, rollback resources and reports
+  are preserved. Point 20 remains open and cannot start before explicit owner
+  appearance acceptance; this cleanup does not grant that acceptance.

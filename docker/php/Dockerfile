@@ -141,7 +141,7 @@ COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 RUN pnpm run build
 
 FROM php-dependencies AS error-pages-build
-COPY --chown=runa:runa --from=frontend-build /build/src/.runtime/runa-errors/ .runtime/runa-errors/
+COPY --chown=runa:runa --from=frontend-build /build/.runtime/frontend/errors/templates/ /tmp/runa-build/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa --from=frontend-build /build/src/public/runa-error/ public/runa-error/
 RUN php runa/resources/errors/build.php
 
@@ -167,7 +167,7 @@ COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
 COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/
 COPY --chown=runa:runa src/runa/resources/css/light-palette.css /workspace/src/runa/resources/css/light-palette.css
 COPY --chown=runa:runa src/runa/resources/views/ /workspace/src/runa/resources/views/
-COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/.runtime/runa-errors/ /workspace/src/.runtime/runa-errors/
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/.runtime/frontend/errors/templates/ /workspace/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa src/runa/resources/errors/messages.json /workspace/src/runa/resources/errors/messages.json
 COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/
 COPY --chown=runa:runa src/runa/resources/images/runa-mail-logo.png /workspace/src/runa/resources/images/runa-mail-logo.png

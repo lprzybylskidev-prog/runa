@@ -16,16 +16,18 @@ import copy from './messages.json';
 import '../css/app.css';
 
 const codes = copy.codes;
-const templates = resolve('.runtime/runa-errors');
+// The package build runs from src; all private generated state belongs to the workspace root.
+const errorRuntime = resolve('../.runtime/frontend/errors');
+const templates = resolve(errorRuntime, 'templates');
 const assets = resolve('public/runa-error');
 await rm(templates, { recursive: true, force: true });
 await rm(assets, { recursive: true, force: true });
 await mkdir(templates, { recursive: true });
 await mkdir(assets, { recursive: true });
-for (const file of await readdir('.runtime/error-renderer')) {
+for (const file of await readdir(resolve(errorRuntime, 'renderer'))) {
   if (/\.(css|png|woff2)$/.test(file)) {
     await copyFile(
-      resolve('.runtime/error-renderer', file),
+      resolve(errorRuntime, 'renderer', file),
       resolve(assets, file.endsWith('.css') ? 'styles.css' : file),
     );
   }

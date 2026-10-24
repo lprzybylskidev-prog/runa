@@ -158,7 +158,7 @@ Platform src/runa/{composer.json,package.json} and optional application src/app/
 
 Runtime-independent management explicitly loads command classes and stays outside Composer classmap scanning. The Compose setup helper prepares dependencies before Composer exists; knowledge-init is an independent optional Python path without PHP/vendor/application-kernel prerequisites. The PHP Artisan entrypoint and named commands remain the public interface; Python executors implement host/quality/scanner/Git/RAG mechanics without another domain-command registry. See [commands](../../handbook/tooling/commands.md) and [host transport](../../handbook/tooling/host-executor.md).
 
-Vite builds src/app/resources/index.html into src/public/build. Platform error-renderer inputs live in src/runa; generated private shells live in src/.runtime/runa-errors, public emergency assets in src/public/runa-error. Production images contain generated documents/assets and required PHP views, outside persistent storage mounts. Browser reports and owner test harness output never enter production images.
+Vite builds src/app/resources/index.html into src/public/build. Platform error-renderer inputs live in src/runa; generated private shells live in .runtime/frontend/errors/templates, public emergency assets in src/public/runa-error. Production images contain generated documents/assets and required PHP views, outside persistent storage mounts. Browser reports and owner test harness output never enter production images.
 
 ### Identity and compatibility
 

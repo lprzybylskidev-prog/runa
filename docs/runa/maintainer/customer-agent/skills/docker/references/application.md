@@ -5,3 +5,8 @@ Read docs/runa/handbook/development/editor-and-agents.md and tooling/commands.md
 Reopen preserves database/storage/model/Qdrant caches and runs no migrations/seeding. Explicit runa:dev:initialize handles ordinary teammate clones; do not copy another workstation receipt. Optional AI startup is independent of app readiness. Production excludes AI/dev/owner tooling and deploys the complete customer commit from its explicitly configured repository. Preserve operation journals/maintenance on failure; image rollback does not reverse data. Cleanup only proven task-created disposable resources after showing exact identities; preserve durable data, caches, backups and reports. Infrastructure updates use the external reviewed release procedure, never a src/runa repair override.
 
 Environment creators/readers, template names and safe credential reconciliation are documented in docs/runa/handbook/development/environment-files.md. Preserve private backup configuration; no implicit credential rotation or volume reset. Development preparation checks both application and test credentials against initialization inputs.
+
+Use docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state
+for generated private build/tooling artifacts: one workspace-root .runtime/<area>,
+no src/.runtime or module-local runtime roots. Preserve public asset/Laravel storage
+contracts and unrelated reports, backups, caches and operation/recovery state.

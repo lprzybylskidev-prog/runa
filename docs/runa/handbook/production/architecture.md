@@ -164,6 +164,15 @@ The production Nginx image includes generated `src/public/runa-error` HTML/CSS/f
 
 `docker/nginx/production.conf` maps Nginx-generated upstream 502/504 and its explicit maintenance 503 to an internal static document with final status 503, Retry-After 120 and no-store. API paths or JSON Accept headers receive a safe English JSON response; web requests receive Polish by default or English from `lang=en`/an English-leading Accept-Language. The static documents use system CSS or whitelisted `theme=light|dark` variants, with native MinimalLayout preference forms. Their internal paths cannot be requested directly, while their local assets remain publicly readable. Normal root/API/PHP responses keep their existing behavior and Laravel status/retry/body contracts; `fastcgi_intercept_errors off` avoids replacing application-originated 503/502/404/403 responses. Security headers are shared through `docker/nginx/security-headers.conf` and retained by the internal location, with same-origin styles/fonts/images and no inline-script/style exception. Docker's embedded DNS resolver is used at request time, so Nginx can start without PHP and discover recreated app containers.
 
+## Private generated artifacts
+
+Private native-error templates live at
+/workspace/.runtime/frontend/errors/templates, generated freshly during image
+build and copied explicitly into PHP. The shared workspace-root artifact placement
+is defined in [project principles](../architecture/project-principles.md#generated-tooling-and-build-state).
+No host runtime directory, renderer bundle, report, backup or development cache is
+copied wholesale. Public generated error assets remain under src/public/runa-error.
+
 ## Runtime source paths
 
 The Laravel base path is /workspace/src. Explicit image copies include the customer source/config/views and required platform backend/config/data/routes, mail/error templates, localization, generated UI/error assets and production-only vendor. Management, tests, source frontend, Node/build tooling, Boost and AI are absent. No source/dependency bridges remain. Root artisan transports to src/artisan; per-container config-cache tmpfs mounts at /workspace/src/bootstrap/cache. The existing application-storage volume now mounts at /workspace/src/storage without changing its identity. Nginx mounts application/public and runa/public read-only at /storage/ and /runa-storage/. Startup creates missing directories without deleting data; no implicit legacy-storage migration occurs.

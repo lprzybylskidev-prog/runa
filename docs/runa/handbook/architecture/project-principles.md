@@ -67,3 +67,26 @@ Do not replace straightforward application behavior with dense SQL, metaprogramm
 ### Dependency approval boundary
 
 Use the dependency assessment and approval policy in `AGENTS.md`. Requirements for a tool family do not approve unrelated convenience packages. The initial roadmap explicitly identifies mandated families; unresolved provider/package choices remain unresolved until user approval. Every installed external component joins the maintenance registry. Normal installs use committed Composer/pnpm lockfiles; updates are deliberate roadmap work.
+
+## Generated tooling and build state
+
+Use the single workspace-root `.runtime/<area>/` tree for generated private
+build/tooling state, caches, locks and operational journals. Resolve its
+location from the workspace boundary; tools launched from src must target the same
+root. Do not create src/.runtime, module-local .runtime trees or generated files
+inside protected source. Public frontend assets still belong in src/public/build
+and src/public/runa-error; Laravel storage/cache and durable application data retain
+their documented locations. Supported verification evidence also retains its
+documented artifact paths. This rule does not move those existing contracts.
+
+Private error build output uses .runtime/frontend/errors/renderer and generated
+HTML templates use .runtime/frontend/errors/templates. Only required generated
+HTML is copied explicitly into production PHP images at the matching workspace
+path, outside persistent storage mounts. Renderer bundles, development/tool caches,
+reports, backups and operation state must not enter runtime images. Docker context
+excludes host .runtime; builds produce fresh artifacts in isolated stages.
+
+An ignored directory is not necessarily disposable. Preserve backups, reports,
+knowledge/model caches and operation/recovery state unless their exact cleanup is
+authorized. Relocation must preserve live consumers and refuse collisions rather
+than overwrite unrelated artifacts. Do not delete the whole root to clean one task.
