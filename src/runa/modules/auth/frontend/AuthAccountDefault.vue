@@ -21,6 +21,7 @@ import type { TableColumn, TableQuery } from '@/runa/ui';
 import type { AccountTab, AccountTask } from './useAuthAccount';
 import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
+import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
 const modalFeedback = ref(false);
@@ -374,29 +375,7 @@ const passwordHint = computed(() =>
           >{{ text('Dodaj adres', 'Add address') }}</Button
         >
       </FormSection>
-      <Alert v-if="codes.length" tone="warning">
-        <p class="font-semibold">
-          {{
-            text(
-              'Zapisz kody odzyskiwania w bezpiecznym miejscu.',
-              'Save recovery codes in a safe place.',
-            )
-          }}
-        </p>
-        <ul class="my-4 space-y-2 font-mono text-sm">
-          <li
-            v-for="code in codes"
-            :key="code"
-            class="select-all [overflow-wrap:anywhere]"
-            data-recovery-code
-          >
-            {{ code }}
-          </li>
-        </ul>
-        <Button @click="codes = []">{{
-          text('Kody zostały zapisane', 'I saved the codes')
-        }}</Button>
-      </Alert>
+
       <Form
         v-if="
           formVisible &&
@@ -672,8 +651,14 @@ const passwordHint = computed(() =>
       </FormSection>
     </template>
   </div>
+  <AuthRecoveryCodesDialog
+    :codes="codes"
+    :locale="locale"
+    :busy="busy"
+    @acknowledge="codes = []"
+  />
   <FormNotifications
-    v-if="!modalFeedback"
+    v-if="!modalFeedback && !codes.length"
     :attempt="feedbackAttempt"
     :error="failure ? failureText : ''"
     :success="notice"

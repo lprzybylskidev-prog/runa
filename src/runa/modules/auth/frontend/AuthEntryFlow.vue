@@ -19,6 +19,7 @@ import { useLocale } from '../../../resources/js/composables/useLocale';
 const { locale } = useLocale();
 import { useAuthEntry } from './useAuthEntry';
 import AuthTotpSetup from './AuthTotpSetup.vue';
+import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const presentation = useAuthPresentation();
 const feedbackAttempt = ref(0);
 const props = defineProps<{
@@ -160,20 +161,13 @@ const submitLabel = computed(() => {
           <Alert v-else-if="screen === 'missingToken'" tone="warning">{{
             t('missingToken')
           }}</Alert>
-          <template v-else-if="screen === 'recoveryCodes'">
-            <p class="text-sm leading-7 text-muted">{{ t('recoveryHelp') }}</p>
-            <ul
-              class="space-y-2 rounded border border-line bg-surface p-4 text-xs [overflow-wrap:anywhere]"
-              :aria-label="t('recoveryTitle')"
-            >
-              <li v-for="code in recoveryCodes" :key="code">
-                <code>{{ code }}</code>
-              </li>
-            </ul>
-            <Button variant="outline" @click="codesSaved">{{
-              t('savedCodes')
-            }}</Button>
-          </template>
+          <AuthRecoveryCodesDialog
+            v-else-if="screen === 'recoveryCodes'"
+            :codes="recoveryCodes"
+            :locale="locale"
+            :busy="busy"
+            @acknowledge="codesSaved"
+          />
           <template v-else-if="screen === 'signedIn'">
             <p class="break-words text-sm text-muted">
               {{ session?.display_name }}

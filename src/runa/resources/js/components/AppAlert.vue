@@ -91,6 +91,7 @@ const tone = useFeedbackTone(() => props.tone, 'info');
   border-left-width: 1px;
 }
 .alert-symbol {
+  align-self: center;
   display: inline-flex;
   width: 20px;
   height: 20px;

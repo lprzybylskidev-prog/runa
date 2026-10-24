@@ -114,3 +114,7 @@ stacks, explicit security-method actions and confirmed destructive removal.
 For authenticator setup, reuse public AuthTotpSetup with the controller's private
 QR/manual-key state; see the presentation contract. Do not send enrollment keys
 to external QR services or persist them as preferences/assets.
+
+Use public AuthRecoveryCodesDialog for first/replacement recovery codes, preserving
+explicit saved acknowledgement and controller cleanup. Keep confirmation questions
+in the dialog body when the title already identifies the action.

@@ -96,7 +96,7 @@ files, decode failures and output above the server's current avatar_max_kib stop
 submission. Original files/object URLs stay in memory and are released on replacement
 or unmount. The backend remains authoritative for MIME, size, dimensions and storage.
 
-Avatar removal uses an outlined danger button and shared ConfirmDialog. Cancel
+Avatar removal uses an outlined danger button and shared ConfirmDialog; its question is body content beneath the modal title. Cancel
 preserves the current image; confirming sends only the versioned deletion and
 reports its result through the existing top-right notifications. Pending image
 selection must first be saved or discarded before removing the stored image.
@@ -106,7 +106,10 @@ state, explanation and explicit Set up/Disable action, rather than an operation
 select. Selecting a method reveals its current-password/proof fields and a named
 submit; Cancel clears the local setup/proof draft. Authenticator enrollment still
 shows a scannable QR plus a manual key, then requires confirming its code and
-acknowledging recovery codes. The QR stays in memory only with the current setup
+acknowledging recovery codes in the shared recovery-code Dialog. Initial enrollment
+and replacing codes use the same modal: the warning and codes are in its body,
+with only an explicit saved acknowledgement in the footer. Escape/outside/X cannot
+silently discard these one-time values. The QR stays in memory only with the current setup
 secret and is cleared on cancellation/completion; setup material is excluded from
 printing. Email enrollment
 requires a verified primary address; replacing recovery codes remains explicit.

@@ -1,3 +1,5 @@
+import { Button } from '@/runa/ui';
+import AuthRecoveryCodesDialog from '../../modules/auth/frontend/AuthRecoveryCodesDialog.vue';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import {
   enableAutoUnmount,
@@ -348,8 +350,8 @@ it('shows TOTP material and recovery codes only in the current flow, with delibe
   restrictions = ['password_change_required'];
   currentSecurity.enrolled = ['totp'];
   await w
-    .findAll('button')
-    .find((b) => b.text().startsWith('Kody zostały zapisane'))!
+    .getComponent(AuthRecoveryCodesDialog)
+    .getComponent(Button)
     .trigger('click');
   await settled(w);
   expect(w.get('h1').text()).toBe('Zmień hasło');

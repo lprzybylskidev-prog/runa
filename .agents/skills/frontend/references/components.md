@@ -15,3 +15,8 @@ Profile/image presentation is never authentication or authorization state.
 
 Auth authenticator setup uses public AuthTotpSetup from `@/runa/auth` for private
 QR/manual-key presentation; see the [presentation contract](../../../../docs/runa/handbook/development/frontend/customization.md).
+
+Auth one-time recovery values use public AuthRecoveryCodesDialog from `@/runa/auth`
+for both initial enrollment and replacement; its acknowledgement/cleanup contract
+is in the public presentation guide. Alert icons center vertically against content
+without forcing centered message text.

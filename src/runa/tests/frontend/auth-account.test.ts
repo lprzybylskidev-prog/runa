@@ -1,3 +1,4 @@
+import AuthRecoveryCodesDialog from '../../modules/auth/frontend/AuthRecoveryCodesDialog.vue';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
@@ -407,11 +408,20 @@ it('optional TOTP setup retains its private key only until confirmation and requ
   await flushPromises();
   expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
   expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
-  expect(w.get('[data-recovery-code]').text()).toBe('a'.repeat(32));
+  await vi.waitFor(() =>
+    expect(document.querySelector('[data-recovery-code]')?.textContent).toBe(
+      'a'.repeat(32),
+    ),
+  );
+  const recovery = w.getComponent(AuthRecoveryCodesDialog);
+  await vi.waitFor(() => expect(recovery.props('busy')).toBe(false));
+  expect(
+    document.querySelector('[data-recovery-code]')?.closest('[role=dialog]'),
+  ).not.toBeNull();
   expect(w.find('[data-account-section=security]').exists()).toBe(false);
   await w
-    .findAll('button')
-    .find((b) => b.text() === 'Kody zostały zapisane')!
+    .getComponent(AuthRecoveryCodesDialog)
+    .getComponent(Button)
     .trigger('click');
   expect(w.find('[data-recovery-code]').exists()).toBe(false);
 });
@@ -1044,4 +1054,49 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
   state.qrCode.value = 'data:image/svg+xml;base64,PHN2Zy8+';
   w.unmount();
   expect(state.qrCode.value).toBe('');
+});
+
+it('recovery-code replacement uses a guarded modal and requires explicit saved acknowledgement', async () => {
+  currentSecurity = { ...security, enrolled: ['totp'] };
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const form = w.get('[data-account-section=security]');
+  await form
+    .findAll('button')
+    .find((button) => button.text() === 'Wygeneruj nowe kody odzyskiwania')!
+    .trigger('click');
+  write = () => json({ recovery_codes: ['c'.repeat(32), 'd'.repeat(32)] });
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.get('[name=code]').setValue('123456');
+  await form.trigger('submit');
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('[data-recovery-code]')).toHaveLength(2),
+  );
+  const modal = w.getComponent(AuthRecoveryCodesDialog);
+  await vi.waitFor(() => expect(modal.props('busy')).toBe(false));
+  const dialog = modal.getComponent(Dialog);
+  await vi.waitFor(() =>
+    expect(
+      document.activeElement?.hasAttribute('data-recovery-acknowledge'),
+    ).toBe(true),
+  );
+  expect(dialog.props()).toMatchObject({
+    modelValue: true,
+    closable: false,
+    closeOnEscape: false,
+    closeOnOutside: false,
+  });
+  expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+    'Zapisz kody odzyskiwania w bezpiecznym miejscu.',
+  );
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await flushPromises();
+  expect(modal.props('codes')).toHaveLength(2);
+  expect(writes.map((item) => item.path)).toEqual([
+    '/api/runa/auth/security/recovery-rotate',
+  ]);
+  await modal.getComponent(Button).trigger('click');
+  await vi.waitFor(() => expect(modal.props('codes')).toHaveLength(0));
 });

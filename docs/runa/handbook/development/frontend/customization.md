@@ -112,6 +112,13 @@ AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 | `useAuthWelcome()`                   | Render loading/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                      |
 | `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                      |
 
+AuthRecoveryCodesDialog is public through `@/runa/auth`: pass the current
+`codes`/`recoveryCodes` array, locale and busy state; handle `acknowledge` by clearing
+account codes or calling entry `codesSaved`. It opens only for a nonempty array,
+traps focus and requires explicit saved acknowledgement; never save codes as
+preferences or replay generation when closing. Initial enrollment and replacement
+share this presentation.
+
 AuthTotpSetup is public through `@/runa/auth`: pass `secret`, `qrCode` and locale
 from the current account controller (`secret`/`qrCode`) or entry controller
 (`enrollmentSecret`/`enrollmentQr`). It displays the server-provided bounded SVG

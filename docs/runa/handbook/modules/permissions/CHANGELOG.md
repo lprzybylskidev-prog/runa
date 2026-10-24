@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 0.5.5
+
+Align Auth dependency with compatible 0.17.0 recovery-code modal presentation.
+Source-only forward edge; no Permissions behavior or stored changes.
+
 ## 0.5.4
 
 Align Auth dependency with compatible 0.16.0 TOTP QR presentation additions.

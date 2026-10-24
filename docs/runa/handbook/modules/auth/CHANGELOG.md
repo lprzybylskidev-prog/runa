@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.17.0
+
+Use public AuthRecoveryCodesDialog for both first TOTP enrollment and recovery-code
+replacement, including required entry flows. Require explicit saved acknowledgement;
+keep codes private, print-hidden and modal-bound. Move avatar deletion confirmation
+copy into the modal body. Source-only forward edge; no authority/data changes.
+
 ## 0.16.0
 
 Add a locally rendered, private SVG QR image to the existing no-store TOTP

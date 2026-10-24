@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
-  Alert,
   Avatar,
   Button,
   Card,
@@ -609,30 +608,26 @@ function closeCrop(value: boolean) {
             }}</Button>
           </template>
         </Form>
-        <Alert v-else tone="warning">{{
-          text(
-            'Zapisz i potwierdź kody odzyskiwania poniżej.',
-            'Save and acknowledge the recovery codes below.',
-          )
-        }}</Alert>
       </Card>
     </div>
   </div>
   <ConfirmDialog
     v-model="removeOpen"
     :title="text('Usunąć avatar?', 'Remove avatar?')"
-    :description="
-      text(
-        'Czy na pewno chcesz usunąć swoje zdjęcie profilowe?',
-        'Are you sure you want to remove your profile image?',
-      )
-    "
     :confirm-label="text('Usuń avatar', 'Remove avatar')"
     confirm-tone="danger"
     :locale="locale"
     :busy="busy"
     @confirm="confirmRemoval"
   >
+    <p class="text-sm leading-7">
+      {{
+        text(
+          'Czy na pewno chcesz usunąć swoje zdjęcie profilowe?',
+          'Are you sure you want to remove your profile image?',
+        )
+      }}
+    </p>
     <FormNotifications
       v-if="removeOpen && removalAttempt"
       :attempt="removalAttempt"

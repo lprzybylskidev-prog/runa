@@ -25,6 +25,7 @@ use Runa\Modules\Auth\UpgradePolicy;
 use Runa\Modules\Auth\UpgradePreferences;
 use Runa\Modules\Auth\UpgradePresentation;
 use Runa\Modules\Auth\UpgradeProfiles;
+use Runa\Modules\Auth\UpgradeRecoveryDialog;
 use Runa\Modules\Auth\UpgradeSessions;
 use Runa\Modules\Auth\UpgradeShellAvatar;
 use Runa\Modules\Auth\UpgradeTotpQr;
@@ -62,7 +63,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('form_notifications', '0.14.1', '0.14.2', UpgradeFormNotifications::class),
             new UpgradeDefinition('shell_avatar', '0.14.2', '0.15.0', UpgradeShellAvatar::class),
             new UpgradeDefinition('account_methods', '0.15.0', '0.15.1', UpgradeAccountMethods::class),
-            new UpgradeDefinition('totp_qr', '0.15.1', '0.16.0', UpgradeTotpQr::class)];
+            new UpgradeDefinition('totp_qr', '0.15.1', '0.16.0', UpgradeTotpQr::class),
+            new UpgradeDefinition('recovery_dialog', '0.16.0', '0.17.0', UpgradeRecoveryDialog::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

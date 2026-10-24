@@ -1014,6 +1014,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     Preserve its circular image, touch target and visible keyboard focus.
 - [x] 19q. Polish account card flow, confirm avatar removal, expose clear two-factor method controls and enable local full-feature manual review.
 - [x] 19r. Add private local TOTP QR enrollment alongside manual keys in account and required enrollment views.
+- [x] 19s. Align alert icons, move avatar confirmation and recovery-code acknowledgement into modal bodies, then reset the identified local development database for a fresh manual review.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2940,3 +2941,74 @@ architectural premise requires discussion before dependent work.
   resources created/removed; active services, databases, caches, backups and reports
   preserved. Point 20 remains gated by explicit owner appearance acceptance;
   no full quality gate was run.
+
+## Point 19s reset scope
+
+- Owner explicitly requests a clean manual-review start after these frontend fixes.
+  Inspected the actual local environment: APP_ENV local, PostgreSQL host postgres
+  at 172.27.0.7, database/owner runa, 43 tables confined to shared/runa_audit/
+  runa_auth/runa_permissions, 15 development fixture accounts, zero non-fixture
+  accounts and one session. The postgres maintenance connection reaches the same
+  server. Database locale is ICU pl-PL, LC_COLLATE C, LC_CTYPE C.UTF-8.
+- Native migrate:fresh is application-owned and preserves Core; its isolated-test
+  guard must not be disabled or spoofed for development. No supported whole-dev
+  reset command exists. Use a one-off trusted operator reset of ONLY database runa
+  from the postgres maintenance connection, preserving role/locale/privileges,
+  then the supported forward platform initializer, application migrate/seed,
+  module development corpus and hidden interactive initial-password setup.
+  This implements the explicitly requested preproduction database recreation;
+  it does not change native guards or add a bypass command.
+- Scope discards this database's fixture accounts, sessions/factors/preferences,
+  Audit, grants, queue/cache and module installation/settings state, all rebuildable
+  from current source/seeders. Preserve postgres and every runa_test* database,
+  database roles, Docker resources/volumes, private storage files, .env files,
+  administrator-password, Qdrant/model caches, backups and verification evidence.
+  Restore the previously requested full-feature local Auth review switches after
+  initialization. Reuse the existing private password without exposing it.
+
+## Point 19s delivery
+
+- Shared Alert symbols now align vertically to the center independently of message
+  text alignment. Avatar deletion keeps its title in the header and the confirmation
+  question in the modal body. No change to the reported operation's error handling.
+- Public AuthRecoveryCodesDialog is shared by optional/required enrollment and
+  replacement. The modal body holds the storage instruction and one-time codes;
+  its footer requires explicit saved acknowledgement. Escape/outside/X do not
+  discard codes. The dialog focuses its acknowledgement after the generating
+  request finishes; background inline recovery banners/lists are removed.
+  Codes remain in memory and print-hidden, with existing controller cleanup.
+- Auth advances to 0.17.0 for the additive shared presentation export; Permissions
+  0.5.5 aligns ^0.17.0. Source-only edges applied; no schema/API-authority changes.
+  Synchronized module changelogs, account/entry and public presentation guidance,
+  owner catalogue and customer frontend references. Root policies need no change.
+- Four focused Chromium regressions pass: optional TOTP codes in a modal, required
+  enrollment acknowledgement, avatar deletion confirmation and replacement with
+  proof/explicit acknowledgement, dismissal guards and focus. Assertions now use
+  teleported dialog content rather than the old inline page list. Core runtime/
+  source/version diagnostics pass and current client assets were published.
+- The scoped database recreation above completed: only local database runa was
+  dropped/recreated with its original owner/ICU locale/privileges. Ran the supported
+  forward platform initializer, application migrate --seed and both Core development
+  contributors. Native migrate:fresh guards remain untouched. Maintenance protected
+  the destructive/forward phase and was disabled before guarded module seeding;
+  all guarded seeding completed successfully after that precondition was satisfied.
+- Reinitialized the fixture superadministrator through the supported hidden
+  interactive setup command, supplying the existing mode-0600 password file only
+  after terminal echo was disabled. No credential entered argv/logs. Restored all
+  full-feature local Auth review switches, including registration, secondary
+  addresses, histories, trust, email OTP, lifecycle actions, notices and remembered
+  sign-in. Fifteen fixture accounts are restored; administrator has no avatar or
+  pending/enrolled TOTP. Login with the preserved password and normal logout pass.
+- Real served browser preview used fake enrollment/replacement payloads only;
+  no real factor was enrolled. Confirmed body-only avatar question, eight codes in
+  both initial and replacement modals, explicit acknowledgement, Escape refusal,
+  action focus and 390px without overflow. Inspected dark/light desktop/mobile
+  screenshots under .runtime/dev/manual-auth/recovery-modal. Shared alert icon's
+  center matches the alert center exactly (0px delta). Preview sessions were revoked
+  through own-session controls and signed out; no active administrator preview
+  sessions remain. The separate seeded session scenario is retained.
+- Preserved every other database (postgres/runa_test*), database roles, private
+  storage files, password/.env files, Docker volumes/services, Qdrant/model caches,
+  backups and verification evidence. No Docker resources created or removed.
+  Point 20 remains gated by explicit owner appearance acceptance; no broad/final
+  quality gate was run.

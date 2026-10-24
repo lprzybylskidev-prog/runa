@@ -124,3 +124,8 @@ rendered QR image or enter the manual key, then confirm the authenticator code.
 The private image uses the existing no-store begin response and no external QR
 service. Setup images/keys are omitted from print and cleared with enrollment
 state on completion, method change, sign-out and disposal.
+
+Recovery codes use the same AuthRecoveryCodesDialog as account enrollment and
+replacement. The modal body contains the one-time codes and storage instructions;
+its sole close path is the explicit saved acknowledgement, after which the normal
+restricted-session refresh resumes. Codes stay print-hidden and in memory only.
