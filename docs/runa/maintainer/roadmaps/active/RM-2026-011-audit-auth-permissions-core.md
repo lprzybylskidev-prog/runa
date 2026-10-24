@@ -42,9 +42,11 @@ VERSION remains 0.4.2 until release finalization.
 
 Audit and Permissions deliver backend, schemas, contracts, authorized APIs and
 future-management declarations only. Auth additionally delivers the necessary
-public authentication and own-account views. Profile access belongs in the
-existing ApplicationLayout user dropdown; authentication/recovery uses the
-existing MinimalLayout where appropriate. No parallel application shell.
+public authentication, an authenticated application entry view and own-account
+views. Profile access and the sign-out button belong together in the existing
+ApplicationLayout user dropdown; authentication/recovery uses the existing
+MinimalLayout where appropriate. The public welcome page exposes session-aware
+entry links. No parallel application shell.
 
 No Admin Panel, generic Admin renderer, placeholder administration pages, Audit
 viewer UI, role/preset/assignment management UI or user administration pages.
@@ -61,6 +63,15 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 ## Specification
 
 ### Decisions and requirement authority
+
+- 2026-10-24 — Owner confirmed completion of the public-to-authenticated navigation
+  path within this roadmap. Point 12 adds session-aware welcome links, the actual
+  application entry view using ApplicationLayout, post-login navigation after all
+  required security steps, and a sign-out button in the same user dropdown as the
+  profile link. Point 17 supplies discoverable development accounts and prepares
+  the complete manual sign-in/application/profile/sign-out scenario. This clarifies
+  the existing Auth UI scope; feature 0.5.0 and the final-verification order remain
+  unchanged. No Admin UI or separate shell is authorized.
 
 - 2026-10-23 — Owner corrected the production responsibility boundary and emergency
   recovery requirements before point 10 implementation. Runa supplies a minimal
@@ -694,15 +705,33 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     safe redirect, CSRF, keyboard/focus/announcements, PL/EN, responsive light/dark
     and reduced motion. Update public Auth UI contracts and affected shared pattern
     references in this point; no management shell or placeholder admin route.
-- [ ] 12. Deliver own-account UI and session-expiry integration.
-  - Requires 11. Add profile link inside ApplicationLayout user dropdown; own details,
-    password/2FA, secondary email, avatar, sessions/trusted devices, preferences and
-    optional own histories reuse existing layouts/table/form components.
+- [ ] 12. Deliver application entry, own-account UI and session-expiry integration.
+  - Requires 11. Complete the public-to-authenticated navigation path: `/` offers
+    sign-in and, only when enabled, registration for guests, and application access
+    for authenticated users. Add the actual authenticated application entry view
+    using the existing ApplicationLayout, current identity and available navigation.
+    After sign-in and all required verification/2FA/password steps, navigate to a
+    validated internal return path or this application entry by default, rather
+    than returning to the public welcome page. Preserve direct-entry/refresh behavior
+    and server-enforced session/eligibility boundaries; no speculative business
+    dashboard, Admin page or replacement shell.
+  - Put the profile link and sign-out button together inside ApplicationLayout's
+    existing user dropdown. Sign-out uses the guarded CSRF-protected POST, handles
+    pending/failure states, and on success clears account-bound frontend state/drafts
+    and returns to the public welcome page. Navigation/back/refresh cannot restore
+    authenticated access after revocation.
+  - Implement own-account views for details, password/2FA, secondary email, avatar,
+    sessions/trusted devices, preferences and optional own histories, reusing
+    existing layouts/table/form components.
   - Handle 401/restricted responses, configurable idle warning/activity extension,
     safe account-bound in-memory drafts and deliberate resubmission after login.
   - Acceptance/tests prepared: real activity versus polling, no write replay,
     account switch/reset isolation, hide disabled features, private history only,
     responsive/theme/localization/accessibility and existing shell compatibility.
+    Include guest/authenticated welcome links, disabled-registration visibility,
+    post-login/restricted-flow destinations, application direct entry/refresh,
+    keyboard/focus access to profile/sign-out in the same dropdown, and actual
+    session invalidation plus state cleanup on sign-out.
     Synchronize component catalogue and user-facing guides; no admin views.
 - [ ] 13. Deliver Permissions dictionaries, declaration sync and authorization.
   - Requires 12. Add Core manifest requiring Auth/Audit, owned runa_permissions
@@ -753,6 +782,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     modules explicitly contribute deterministic idempotent scenarios and dependencies.
     Add representative administrator/roles/direct/preset/Auth states, guarded local
     account discovery and independent config-based counts/random/seed tuning.
+    Provide a discoverable usable development account and supported private initial
+    credential/setup procedure so the owner can exercise the delivered UI locally.
+    Document and prepare the manual path from `/` through sign-in and required
+    security steps to ApplicationLayout, profile access and dropdown sign-out back
+    to `/`, including refusal of authenticated access after sign-out. This uses real
+    supplied Auth/Permissions state and no distributed source-coded password.
   - Acceptance/tests prepared: repeat no duplicates/credential overwrite, missing/
     cyclic contributor refusal before mutation, real production refusal even through
     explicit CLI, no demo knobs in prod templates and no owner harness dependency in
@@ -794,7 +829,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 is next: own-account UI and session-expiry integration. Permissions stays assigned to subsequent points.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 is next: application entry, own-account UI, dropdown sign-out and session-expiry integration. Permissions stays assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
