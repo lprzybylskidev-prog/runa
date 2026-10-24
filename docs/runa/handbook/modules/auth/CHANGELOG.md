@@ -1,5 +1,9 @@
 # Auth module changelog
 
+## 0.11.0
+
+Integrate trusted first-administrator/recovery authority with the actual Permissions system role and guarded Permissions-selected bulk sessions. Add resumable encrypted initial invitations alongside private no-mail CLI handoff, safe identity/session/policy metadata, and source-only 0.10.1 -> 0.11.0 preparation. Audit ^0.5.0 supplies metadata; public API signatures remain unchanged and no reverse required Permissions dependency is added.
+
 ## 0.10.1
 
 Correct neutral authority participation to distinguish actual deactivation/deletion,

@@ -10,7 +10,7 @@ use Throwable;
 /** Native trusted operator command; never queued, no infrastructure capability. */
 final class ManageAuthOperator extends Command
 {
-    protected $signature = 'runa:auth:recover {--email= : Initial primary email} {--name= : Initial display name} {--login= : Initial login when required} {--user= : Existing administrator UUIDv7} {--revision= : Historical policy revision} {--output= : New private absolute handoff file in this PHP filesystem} {--confirm : Explicit operator confirmation}';
+    protected $signature = 'runa:auth:recover {--email= : Initial primary email} {--name= : Initial display name} {--login= : Initial login when required} {--user= : Existing administrator UUIDv7} {--revision= : Historical policy revision} {--output= : New private absolute handoff file in this PHP filesystem} {--invite : Queue the initial setup invitation instead of a private handoff} {--confirm : Explicit operator confirmation}';
 
     protected $description = 'Initialize the first administrator or recover an existing administrator through a private one-time handoff';
 
@@ -39,6 +39,16 @@ final class ManageAuthOperator extends Command
                 $this->error('This changes administrator security state. Review operation and target; repeat with --confirm.');
 
                 return self::FAILURE;
+            }
+            if ($this->option('invite')) {
+                if ($operation !== 'initialize' || $this->option('output') !== null || $this->option('user') !== null
+                    || $this->option('revision') !== null || ! is_string($this->option('email')) || ! is_string($this->option('name'))) {
+                    throw new \InvalidArgumentException;
+                }
+                $accounts->initializeInvitation(new NewIdentity($this->option('email'), name: $this->option('name'), login: $this->option('login')));
+                $this->info('Administrator setup invitation queued; delivery does not create a session.');
+
+                return self::SUCCESS;
             }
             if ($operation === 'restore-policy') {
                 $revision = $this->option('revision');

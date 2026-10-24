@@ -15,6 +15,7 @@ use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Audit\Storage\AppendEvents;
+use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Support\Logging\LogContext;
 use Runa\Support\Logging\QueueLogContext;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -45,7 +46,7 @@ beforeEach(function (): void {
     $migration = require base_path('runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php');
     $migration->up();
     $this->auditFixtureCreated = true;
-    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => '0.4.0']);
+    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.audit']->sourceVersion]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 });
 
@@ -217,4 +218,17 @@ it('attributes sequential queue work without inheriting human actors or request 
     });
     DB::transaction(fn ($connection) => app(AppendEvents::class)->record($connection, new AuditEvent('app.sales', 'system.record')));
     expect(DB::table('runa_audit.events')->orderByDesc('id')->value('actor_public_id'))->toBeNull();
+});
+
+it('keeps independent Audit available when optional Auth actor enrichment cannot resolve', function (): void {
+    app()->bind(AuthorizationIdentity::class, function (): never {
+        throw new RuntimeException('Optional Auth source unavailable.');
+    });
+    $principal = new TrustedPrincipal((string) Str::uuid7());
+    app(PrincipalScope::class)->run($principal, function (): void {
+        DB::transaction(fn () => app(AppendEvents::class)->record(DB::connection(), new AuditEvent('app.sales', 'order.changed')));
+    });
+    $event = DB::table('runa_audit.events')->first();
+    expect($event->actor_kind)->toBe('human')->and($event->actor_public_id)->toBe($principal->publicId)
+        ->and($event->actor_label)->toBeNull();
 });

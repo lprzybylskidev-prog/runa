@@ -167,3 +167,13 @@ The production Nginx image includes generated `src/public/runa-error` HTML/CSS/f
 ## Runtime source paths
 
 The Laravel base path is /workspace/src. Explicit image copies include the customer source/config/views and required platform backend/config/data/routes, mail/error templates, localization, generated UI/error assets and production-only vendor. Management, tests, source frontend, Node/build tooling, Boost and AI are absent. No source/dependency bridges remain. Root artisan transports to src/artisan; per-container config-cache tmpfs mounts at /workspace/src/bootstrap/cache. The existing application-storage volume now mounts at /workspace/src/storage without changing its identity. Nginx mounts application/public and runa/public read-only at /storage/ and /runa-storage/. Startup creates missing directories without deleting data; no implicit legacy-storage migration occurs.
+
+## First administrator
+
+Use the [trusted Auth operator procedure](../modules/auth/policies-and-operators.md)
+after Core data preparation. The production installer can admit an initial emailed
+invitation using explicit administrator settings; no-mail setup uses the private
+one-time handoff command in the configured application PHP environment. Both grant
+the actual Permissions system role under the same singleton/transaction protocol.
+Reopen, ordinary deployment and customer-clone initialization never grant new
+administrators. Host/CLI access protection remains the customer's responsibility.

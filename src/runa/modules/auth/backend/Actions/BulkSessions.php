@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Illuminate\Database\Connection;
 use Runa\Modules\Auth\Contracts\AuthBulkSessions;
+use Runa\Modules\Auth\Contracts\BulkUserSelection;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -11,12 +12,13 @@ use Runa\Support\Modules\Api\OperationRejected;
 
 final readonly class BulkSessions implements AuthBulkSessions
 {
-    public function __construct(private EntryTransaction $transactions, private StepUp $stepUp) {}
+    public function __construct(private EntryTransaction $transactions, private StepUp $stepUp, private BulkUserSelection $selection) {}
 
     public function preview(SessionSelection $selection, bool $trust = false): array
     {
         return $this->transactions->run(function (Connection $connection) use ($selection, $trust): array {
             $this->transactions->lockAuthority($connection);
+            $this->selection->authorize($selection);
 
             return $this->snapshot($connection, $selection, $trust);
         });
@@ -26,6 +28,7 @@ final readonly class BulkSessions implements AuthBulkSessions
     {
         return $this->transactions->run(function (Connection $connection) use ($selection, $trust, $fingerprint): array {
             $this->transactions->lockAuthority($connection);
+            $this->selection->authorize($selection);
             $this->stepUp->assertVerified('runa.auth.sessions.bulk_revoke', 'both', everyAction: true);
             $preview = $this->snapshot($connection, $selection, $trust);
             if (! hash_equals($preview['fingerprint'], $fingerprint)) {

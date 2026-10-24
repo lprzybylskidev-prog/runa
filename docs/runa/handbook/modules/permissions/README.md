@@ -1,7 +1,7 @@
 # Permissions
 
-Core `runa.permissions` has independent version `0.3.0`, requiring
-`runa.auth ^0.10.1`, `runa.audit ^0.4.0` and framework API `^1.0.0`.
+Core `runa.permissions` has independent version `0.4.0`, requiring
+`runa.auth ^0.11.0`, `runa.audit ^0.5.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -15,8 +15,7 @@ optimistic versions, timestamps and soft deletion. Codes remain globally unique,
 including retained rows. Source-owned codes start with their module ID plus `.`;
 custom dictionaries use their own distinct code space. The system role is protected
 and nondeletable. Guarded [ordinary assignment, custom-role, preset and access-copy
-operations](access.md) are delivered. Dedicated protected-authority management remains
-separate.
+operations](access.md) are delivered. Dedicated [protected-authority management](authority.md) is delivered.
 
 `role_permissions`, `user_roles` and `user_permissions` use unique assignment pairs,
 bigint identity keys and same-schema RESTRICT/RESTRICT foreign keys. Auth subjects
@@ -128,10 +127,30 @@ Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsA
 assignment/removal, last-superadmin participation and confirmed custom-role force
 deletion use the separate [protected authority contract](authority.md). The neutral
 AuthorityGuard now resolves the trusted Permissions participant and refuses missing
-integration. First-administrator installer/OperatorAuthority wiring remains in its
-cross-module integration point. No temporary admin boolean, automatic bootstrap
-grant or security bypass is introduced.
+integration. Trusted OperatorAuthority assigns the real system role exactly once
+under Auth's initialization ownership and the common registry/authority transaction.
+Installer invitations and private no-mail CLI setup use that same participant.
+No request-boot grant or security bypass is introduced.
 
 See [CHANGELOG](CHANGELOG.md), [module foundations](../../architecture/module-foundations.md)
 and [Auth](../auth/README.md). Full integration/security/installation verification
 belongs to the roadmap's final verification point.
+
+## Public user selection
+
+Resolve PermissionsSelections 1.0.0 through ModuleApis and pass UserSelection with
+one/selected UUIDv7 publicIds (unique, at most 100), or empty publicIds and explicit
+all=true. `users` requires current `runa.permissions.users.select`; it returns
+canonical sorted selection intent, never a durable authorization or resolved Auth
+model. AuthBulkSessions rechecks this public operation on preview AND execution
+through its neutral BulkUserSelection bridge. The independent Auth bulk capability,
+fresh session/action-bound both-factor proof, exact impact fingerprint and atomic
+limits remain mandatory. The owning Auth operation expands all accounts inside its
+transaction; unknown selected identities or overflow refuse the complete operation.
+There is no foreign SQL, copied identity store or implicit role-management grant.
+
+Source-only 0.3.0 -> 0.4.0 preparation introduces this API, operator participation
+and localized selection declaration; it transforms no retained assignments.
+Matching-source preparation is a no-op. Missing Core source/data or an unresolved
+reservation refuses operator recovery; ordinary business gateways also enforce
+availability and current Auth eligibility. Fix source/update recovery first.

@@ -80,3 +80,9 @@ preview-bound bulk revocation and trusted CLI initialization/recovery. Keep priv
 one-time material out of command arguments/output and logs; operator access is the
 customer's infrastructure boundary. Do not grant a temporary administrator flag or
 call guarded business gateways behind a settings/update fence.
+
+Use the [Core operator/selection contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for actual first-administrator membership, resumable invitation admission, private
+no-mail setup and Auth bulk selection. Use guarded PermissionsSelections at ordinary
+ingress; the trusted operator adapter is local infrastructure access, not a public
+authorization bypass. Preserve source/data/update fences and atomic Audit.

@@ -50,6 +50,7 @@ use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
+use Runa\Modules\Auth\Contracts\BulkUserSelection;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
@@ -138,7 +139,7 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.10.0' : '0.4.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.'.$code]->sourceVersion]);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -1366,6 +1367,10 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
 })->group('auth-policy-operators');
 
 it('rejects stale bulk revocation previews and rolls back proof and sessions with Audit', function (): void {
+    app()->bind(BulkUserSelection::class, fn () => new class implements BulkUserSelection
+    {
+        public function authorize(SessionSelection $selection): void {}
+    });
     $actor = profileVerified('bulk-actor@example.test');
     $target = profileVerified('bulk-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();

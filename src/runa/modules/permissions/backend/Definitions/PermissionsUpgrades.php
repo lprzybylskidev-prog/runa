@@ -7,6 +7,7 @@ use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Permissions\InitializePermissions;
 use Runa\Modules\Permissions\UpgradeAccess;
 use Runa\Modules\Permissions\UpgradeAuthority;
+use Runa\Modules\Permissions\UpgradeCoreIntegration;
 
 final class PermissionsUpgrades implements UpgradeProvider
 {
@@ -14,7 +15,8 @@ final class PermissionsUpgrades implements UpgradeProvider
     {
         return [new UpgradeDefinition('initialize', null, '0.1.0', InitializePermissions::class),
             new UpgradeDefinition('access', '0.1.0', '0.2.0', UpgradeAccess::class),
-            new UpgradeDefinition('authority', '0.2.0', '0.3.0', UpgradeAuthority::class)];
+            new UpgradeDefinition('authority', '0.2.0', '0.3.0', UpgradeAuthority::class),
+            new UpgradeDefinition('core_integration', '0.3.0', '0.4.0', UpgradeCoreIntegration::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

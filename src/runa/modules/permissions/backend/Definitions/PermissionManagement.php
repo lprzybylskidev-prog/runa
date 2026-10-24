@@ -14,6 +14,7 @@ final class PermissionManagement implements ManagementEntityProvider
     public function permissions(): array
     {
         return [
+            new ManagementPermission('users.select', ['pl' => 'Wybór użytkowników', 'en' => 'Select users'], ['pl' => 'Jawny wybór jednego, wybranych lub wszystkich kont do autoryzowanej operacji.', 'en' => 'Explicit one, selected or all-account intent for an authorized operation.']),
             new ManagementPermission('authority.manage', ['pl' => 'Zarządzanie superadministratorami', 'en' => 'Manage super administrators'], ['pl' => 'Osobne nadawanie i odbieranie roli systemowej z ochroną ostatniego administratora.', 'en' => 'Dedicated system-role grant and removal preserving the last eligible administrator.']),
             new ManagementPermission('roles.force_delete', ['pl' => 'Wymuszone usunięcie roli własnej', 'en' => 'Force delete custom roles'], ['pl' => 'Potwierdzone usunięcie po podglądzie użytkowników, presetów i utraty uprawnień.', 'en' => 'Confirmed deletion after reviewing users, presets and practical permission loss.']),
             new ManagementPermission('access.manage', ['pl' => 'Zarządzanie zwykłym dostępem', 'en' => 'Manage ordinary access'], ['pl' => 'Podgląd i zmiana zwykłych przypisań, ról własnych i presetów z potwierdzeniem obu składników.', 'en' => 'Preview and change ordinary assignments, custom roles and presets with fresh both-factor proof.']),
@@ -38,7 +39,7 @@ final class PermissionManagement implements ManagementEntityProvider
             $fields = [];
             foreach (['code', 'name_pl', 'name_en', 'description_pl', 'description_en'] as $key) {
                 $fields[] = new ManagementField($key, 'text', ['pl' => $key, 'en' => $key],
-                    ['pl' => 'Wartość słownika własnego.', 'en' => 'Custom dictionary value.'], writable: true);
+                    ['pl' => 'Wartość słownika własnego.', 'en' => 'Custom dictionary value.'], writable: true, required: true, maxLength: $key === 'code' ? 71 : (str_starts_with($key, 'name_') ? 160 : 1000));
             }
             $fields[] = new ManagementField('permission_public_id', 'uuid', ['pl' => 'Uprawnienie', 'en' => 'Permission'], ['pl' => 'Zwykły element przypisania; maksymalnie 100.', 'en' => 'Ordinary assignment member; at most 100.'], writable: true, referenceModule: 'runa.permissions', referenceOperation: 'access.definition');
             $fields[] = new ManagementField('public_id', 'uuid', ['pl' => 'Identyfikator', 'en' => 'Public ID'], ['pl' => 'Niezmienny UUIDv7.', 'en' => 'Immutable UUIDv7.']);

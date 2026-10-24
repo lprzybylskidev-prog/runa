@@ -55,3 +55,9 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use `docs/runa/handbook/modules/auth/policies-and-operators.md` for delivered
+first-administrator/operator setup and Permissions-selected Auth bulk sessions.
+Consume guarded PermissionsSelections and current Auth bulk proof/preview contracts.
+Trusted local operator participation never authorizes a public bypass or protected
+platform edits; customer CLI/infrastructure access remains customer-owned.

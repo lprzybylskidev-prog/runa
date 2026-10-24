@@ -4,7 +4,7 @@ Read docs/runa/handbook/architecture/application-architecture.md and relevant ex
 
 Ordinary App code may consume module public Contracts through ModuleApis without becoming a module. For optional app modules load docs/runa/handbook/development/modules.md and the exact public adapter sections in architecture/module-framework.md. Use guarded API proxies, classified HTTP/work/event/console descriptors and explicit installed-version/lifecycle operations. Never call foreign implementations/models/SQL/storage directly. Module source version and installed data version differ. Assess independent module versions, central changelogs and dependent contracts. No phantom Auth/Audit/Permissions implementations.
 
-Use SettingsParticipant for mandatory transactional history; SettingsObserver remains best effort. Shared identity/transaction/preparation/management adapters are documented in docs/runa/handbook/architecture/module-foundations.md; Audit and Auth identity/lifecycle behavior come from their owned Core modules; Permissions declarations/current action grants are delivered; ordinary assignment/preset/copy operations are delivered; protected-authority integration follows separately. Use public guarded contracts and never turn trusted installation participation into a public bypass.
+Use SettingsParticipant for mandatory transactional history; SettingsObserver remains best effort. Shared identity/transaction/preparation/management adapters are documented in docs/runa/handbook/architecture/module-foundations.md; Audit and Auth identity/lifecycle behavior come from their owned Core modules; Permissions declarations/current action grants are delivered; ordinary assignment/preset/copy operations are delivered; protected authority and trusted operator/bootstrap integration are delivered. Use public guarded contracts and never turn trusted installation participation into a public bypass.
 
 Meaningful business/security mutations require Audit history. Use public Auditable Contracts with approved fields inside the default PostgreSQL transaction. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual Audit events in that same transaction; scoped automatic suppression never disables them. Follow docs/runa/handbook/modules/audit/README.md for guarded ModuleApis, redaction, rollback/refusal boundaries and permission-protected bounded reads. Never invoke the protected bootstrap/settings writer or assume arbitrary Eloquent writes are captured.
 
@@ -53,3 +53,9 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use `docs/runa/handbook/modules/auth/policies-and-operators.md` for delivered
+first-administrator/operator setup and Permissions-selected Auth bulk sessions.
+Consume guarded PermissionsSelections and current Auth bulk proof/preview contracts.
+Trusted local operator participation never authorizes a public bypass or protected
+platform edits; customer CLI/infrastructure access remains customer-owned.

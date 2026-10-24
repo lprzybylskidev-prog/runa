@@ -103,3 +103,9 @@ modules consume guarded public contracts; never expand security delivery to
 secondary recipients or expose general Audit detail for self-service history.
 
 Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+
+Use the [Core operator/selection contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for actual first-administrator membership, resumable invitation admission, private
+no-mail setup and Auth bulk selection. Use guarded PermissionsSelections at ordinary
+ingress; the trusted operator adapter is local infrastructure access, not a public
+authorization bypass. Preserve source/data/update fences and atomic Audit.

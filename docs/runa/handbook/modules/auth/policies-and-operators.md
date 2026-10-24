@@ -72,8 +72,10 @@ require a new preview. Other modules do not query Auth tables.
 
 Each operation is atomic and limited to 100 accounts and 10000 total session/trust
 rows. All-account mode exceeding these limits refuses before mutation; it never
-silently truncates or partially succeeds. Permissions' eventual authorized
-selection integration belongs to the cross-module integration point. Each target
+silently truncates or partially succeeds. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
+on both preview and execution, requiring current `runa.permissions.users.select`.
+Selection intent is never a reusable grant; Auth still resolves current targets
+and requires its own bulk permission and both-factor proof. Each target
 receives a manual Audit event in the same transaction; Audit failure rolls back
 revocations and proof consumption. No management UI is supplied.
 
@@ -91,8 +93,8 @@ Permissions' [last-superadministrator invariant](../permissions/authority.md).
 Last-admin materialization refusal rolls back that account's changes, records
 independent `authority.refused` and continues unrelated due accounts. A due date
 still blocks ingress before materialization; inspect future schedule/expiry lockout
-consequences and retain the trusted operator recovery path. OperatorAuthority and
-first-administrator installer wiring remain separate cross-module integration.
+consequences and retain the trusted operator recovery path. The trusted OperatorAuthority bridge supplies actual protected-role membership
+for first-administrator installation and emergency recovery.
 
 ## Operator commands and initialization contract
 
@@ -133,11 +135,33 @@ completed password setup refuses ordinary initialization. Initial token redempti
 attests the operator-supplied initial email, like invitation setup; it sets no
 forced-change flag merely for being a new account. There is no `is_admin` column.
 
-**Permissions integration is pending:** OperatorAuthority is intentionally unbound
-until the owning integration point. Initialization and account recovery refuse
-without it, before creating an identity or changing an account. The actual installer
-and role-assignment wiring follows in point 16. Policy restoration already uses the
-trusted ModuleSettings surface and does not grant any role.
+OperatorAuthority is bound to a lazy trusted framework bridge and Permissions'
+owned role participant. It validates the default transaction, current enabled
+Core source/data and absence of fences. It reads only Permissions-owned tables;
+Auth owns its identity, token and singleton state. Initialization commits exactly
+one protected membership/revision and authority.initialized event with the Auth
+identity/history/token. Audit failure rolls back all writes. Concurrent different
+recipients cannot both initialize. Recovery checks retained system membership
+without ordinary user grants, eligibility or the ordinary lifecycle guard, so an
+inactive/locked administrator or broken account policy remains recoverable.
+Source/data/update fences and Audit remain mandatory; repair them first.
+Policy restoration uses trusted ModuleSettings and grants no role.
+
+For working mail, use the same initialize command with `--invite --confirm` and
+omit `--output`. It queues the existing encrypted Auth invitation flow in the same
+transaction, invalidates the unused private setup material, and exposes no token
+in stdout/argv/installer state. Invitation redemption installs a password and
+attests the supplied email; ordinary login still enforces mandatory factors.
+Repeated invitation admission for the same email/login is a no-op while an
+unclaimed or successfully sent invitation is live, or after password setup.
+An expired/failed-attempt invitation can be reissued explicitly. A different
+recipient or lost system membership refuses. Normal private-file initialization
+continues to refuse after password setup; it is not a recovery shortcut.
+The production installer accepts optional `administrator: {email, name, login?}`
+settings, queues setup only after application/TLS/SMTP acceptance and records safe
+admission in its existing resumable journal. Omission leaves setup to trusted CLI.
+Development and customer clones initialize explicitly using the same local CLI;
+ordinary reopen/start/update never issues another administrator.
 
 Recovery targets an existing administrator, including an inactive one, but never
 restores a soft-deleted identity. It explicitly reactivates/approves/unlocks the

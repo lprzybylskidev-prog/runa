@@ -34,7 +34,7 @@ final readonly class OperatorAccounts
             $state = $connection->table('runa_auth.initialization')->where('id', 1)->lockForUpdate()->firstOrFail();
             if ($state->completed_at !== null) {
                 $user = User::where('public_id', $state->subject)->lockForUpdate()->firstOrFail();
-                if ($user->email !== $input->email || ! $authority->isAdministrator($connection, $user->public_id)
+                if ($user->email !== $input->email || $user->login !== $input->login || ! $authority->isAdministrator($connection, $user->public_id)
                     || $user->password !== null) {
                     throw new \RuntimeException('Administrator initialization is already complete.');
                 }
@@ -58,6 +58,36 @@ final readonly class OperatorAccounts
             $this->transactions->record('operator.initialized', $user);
 
             return $this->issueLocked($connection, $user, 'initialize');
+        });
+    }
+
+    public function initializeInvitation(NewIdentity $input): void
+    {
+        $this->transactions->run(function (Connection $connection) use ($input): void {
+            $this->ready($connection);
+            $state = $connection->table('runa_auth.initialization')->where('id', 1)->lockForUpdate()->firstOrFail();
+            if ($state->completed_at !== null) {
+                $existing = User::where('public_id', $state->subject)->lockForUpdate()->firstOrFail();
+                if ($existing->email !== $input->email || $existing->login !== $input->login
+                    || ! $this->authority()->isAdministrator($connection, $existing->public_id)) {
+                    throw new \RuntimeException('Administrator initialization is already owned.');
+                }
+                // Resume after admission/commit, including a recipient who already completed setup.
+                if ($existing->password !== null || $connection->table('runa_auth.entry_tokens')->where('user_id', $existing->id)
+                    ->where('purpose', 'invitation')->where('recipient', $existing->email)->where('security_version', $existing->security_version)
+                    ->whereNull('consumed_at')->whereNull('invalidated_at')->where('expires_at', '>', now())
+                    ->where(function ($query): void {
+                        $query->whereNull('claimed_at')->orWhereNotNull('sent_at');
+                    })->exists()) {
+                    return;
+                }
+            }
+            $material = $this->initialize($input);
+            $user = User::where('public_id', $material['public_id'])->lockForUpdate()->firstOrFail();
+            $connection->table('runa_auth.operator_tokens')->where('user_id', $user->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+            if (! app(EntryTokens::class)->issueLocked($connection, $user, 'invitation')) {
+                throw new \RuntimeException('Administrator invitation could not be prepared.');
+            }
         });
     }
 
@@ -173,7 +203,7 @@ final readonly class OperatorAccounts
     private function authority(): OperatorAuthority
     {
         if (! app()->bound(OperatorAuthority::class)) {
-            throw new \RuntimeException('Permissions operator authority is not integrated yet.');
+            throw new \RuntimeException('Permissions operator authority unavailable.');
         }
 
         return app(OperatorAuthority::class);

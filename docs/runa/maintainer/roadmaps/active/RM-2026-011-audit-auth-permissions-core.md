@@ -805,7 +805,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     refusals persist independently in Audit, ordinary copy/preset cannot escalate,
     backend introspection respects access and lock ordering avoids deadlocks.
     Document expiry/security-lock boundaries and emergency recovery requirements.
-- [ ] 16. Complete cross-module bootstrap, lifecycle and management integration.
+- [x] 16. Complete cross-module bootstrap, lifecycle and management integration.
   - Requires 15. Wire first administrator in real installer/local supported CLI to
     actual Permissions system role and secure invitation/no-mail setup, once under
     concurrent/repeated/resumed initialization. Complete privileged Auth bulk-user
@@ -907,7 +907,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 is next: cross-module bootstrap, lifecycle and management integration. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 is next: extensible development-only manual-testing corpus. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1862,3 +1862,97 @@ architectural premise requires discussion before dependent work.
   manual Docker resource operation ran. No temporary container/network/image/volume
   was created; active development/test data, existing services/images/volumes,
   Qdrant/model caches, backups, reports and rollback material remain preserved.
+
+## Point 16 delivery
+
+- Completed trusted first-administrator integration with the actual protected
+  Permissions system role. Framework OperatorPermissions validates enabled exact
+  Core source/data, default transaction and absence of update/settings fences,
+  then invokes only Permissions-owned OperatorAuthority. Auth owns identity/token/
+  singleton writes; Permissions owns membership and monotonic access revision.
+  Registry -> authority -> Auth -> Permissions lock order and atomic mandatory
+  Audit preserve one initial recipient under concurrent/repeated initialization.
+  Ordinary role/copy/preset writers cannot grant this role.
+- Native initialize supports existing private no-mail handoff and additive --invite
+  with explicit confirmation. Invitation admission uses encrypted reference-only
+  Auth work and existing POST redemption, invalidates unused private material and
+  never emits tokens to stdout/argv/installer journals. Same-recipient live admission
+  or completed password setup is idempotent; different recipients refuse. Expired
+  or failed-attempt invitations can be explicitly reissued without another grant.
+- Real production installer accepts optional administrator email/name/login, admits
+  the initial invitation after application/TLS/SMTP acceptance in the actual release
+  and records only safe admission in the existing journal. Failures remain resumable;
+  crash/repeat after successful admission does not create duplicate role/history.
+  Omission selects the documented trusted CLI setup path. Development/customer clones
+  use the same local CLI; ordinary reopen, update and startup never grant authority.
+  Extended native installation acceptance preparation with the actual invitation.
+- Trusted recovery checks retained real system membership including inactive/locked
+  administrators without ordinary grants, account eligibility or lifecycle guard.
+  Existing disable switch, private single-use token, revocations, security-generation
+  binding, required credential/factor enrollment and Audit stay authoritative.
+  Missing/stale Core source/data or unresolved fencing still refuses; this does not
+  repair source or bypass module update recovery. Scheduled last-admin refusal and
+  continuation reuse the point-15 shared participant unchanged.
+- Added guarded PermissionsSelections 1.0.0 / UserSelection and users.select native
+  capability. One/selected unique UUIDv7 IDs (at most 100) or explicit all intent
+  canonicalize without querying Auth storage. Neutral BulkUserSelection bridges
+  Auth preview AND execution through that public API; independent Auth bulk grant,
+  exact target/policy/security fingerprint, both-factor every-action proof and
+  100-account/10000-row atomic limits still apply. Removed grants invalidate the
+  next operation; a DTO is never durable authorization. No reverse required Auth
+  dependency, foreign SQL/model/FK or copied identity store was introduced.
+- Optional framework Audit actor enrichment snapshots trusted human display names
+  through the designated non-recursive public Auth identity contract, bounded to
+  160 UTF-8 bytes. Lazy resolution/failure preserves UUID-only attribution when Auth
+  is unavailable. Audit retains no Auth/Permissions dependency; historical snapshots
+  remain immutable. Guarded AuthIdentities includes deleted subjects for separately
+  authorized historical lookup, never changes Audit records or exposes credentials.
+- Completed safe version-1 management entities for immutable Audit summaries and
+  Auth identities/lifecycle, bulk sessions and policy; refined Permissions custom
+  dictionary controls. Additive ManagementField required/maxLength/choices/multiple
+  metadata stays bounded/static, rejects invalid shapes and unknown schema versions,
+  and leaves validation/security in backend contracts. References use public UUID
+  lookups; policy configuration reuses ModuleSettings. No Admin page, renderer,
+  management navigation, executable metadata or credential fields were added.
+- Independent additive MINOR versions: Audit 0.4.0 -> 0.5.0, Auth 0.10.1 -> 0.11.0,
+  Permissions 0.3.0 -> 0.4.0, each with an explicit source-only forward edge and
+  central changelog. Auth requires Audit ^0.5.0; Permissions requires Auth ^0.11.0
+  and Audit ^0.5.0. Initial null edges still own storage; source-only upgrades retain
+  data, preparation synchronizes declarations/history only on meaningful changes,
+  and exact installed-source repeat remains no-op. Reviewed existing reserved
+  preparation/Audit adapters: fenced policy/declaration writes already use exact
+  reservation/source/default connection, so no parallel bypass or new migration is
+  needed. Framework API 1.0.0 and platform VERSION 0.4.2 remain unchanged.
+- Prepared regressions for actual-role/Audit failure rollback, repeated/different
+  initialization recipients, invitation resume after password setup, disabled and
+  inactive/locked recovery without ordinary grants, selection grant removal and
+  bulk proof/history rollback, safe descriptors/runtime contracts, deleted identity
+  lookup/immutable history, missing Auth actor enrichment, and two real competing
+  initialization workers. Existing fenced forward-update, scheduled authority and
+  external upgrade/clone fixtures remain part of final acceptance. Refreshed isolated
+  source-only fixture versions rather than leaving obsolete installed-version claims.
+- Necessary focused diagnostics: actual-role initialization/recovery and native
+  selection/bulk proof/history PASS (2 cases, 28 assertions after fixture repair);
+  safe Core management/historical identity and all three installed runtime
+  descriptors PASS (1 case, 16 assertions); optional unavailable Auth enrichment
+  still permitting independent Audit PASS (1 case, 3 assertions). Two individually
+  selected Python installer settings/admission-failure/resume contracts PASS.
+  The first diagnostic exposed only fixture queue configuration and an invalid
+  active+deleted setup; repaired those fixtures and received passing results.
+  Supported runa:modules:check runa and module_versions.py --owner runa --base HEAD
+  PASS. No full suites, real concurrency/installation acceptance, analysis, builds,
+  scanners or final quality ran; they remain point 20 after appearance acceptance.
+- Synchronized public operator, API/module foundations, management, security and
+  production guidance, owner installer/current-delivery records and module changelogs.
+  Updated owner and customer backend/Laravel/security reference products to route to
+  delivered operator/selection contracts. Root AGENTS products already require guarded
+  APIs, trusted CLI responsibility, atomic Audit and customer source protection and
+  need no duplicate rule. Existing PostgreSQL references already cover the unchanged
+  lock/transaction protocol; frontend/Vue/Tailwind products have no view/style/extension
+  change in this point. Updated allowlisted knowledge incrementally before commit.
+- Only guarded disposable owner-test tables/work were installed and removed through
+  fixture lifecycle; no development/production migration/reset or Docker operation
+  ran. No temporary container/network/image/volume was created. Existing development/
+  test data, services, images/volumes, Qdrant/model caches, backups, reports and rollback
+  resources remain preserved. Final frontend acceptance remains pending; point 17
+  is next and point 20 must not start before the owner's explicit visual acceptance.

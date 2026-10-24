@@ -315,6 +315,8 @@ def main():
         settings = {'app_url': 'https://localhost:' + str(https_port), 'http_port': http_port, 'simulation_project': prod_project,
                     'tls': {'mode': 'builtin', 'certificate': str(certificates / 'certificate.pem'), 'private_key': str(certificates / 'private-key.pem'), 'ca_file': str(certificates / 'certificate.pem'), 'https_port': https_port, 'bind': '127.0.0.1'},
                     'smtp': {'host': 'smtp', 'port': 2465, 'scheme': 'smtps', 'username': '', 'password': '', 'from': 'fixture@example.invalid', 'recipient': 'verification@example.invalid'}}
+        if not team:
+            settings['administrator'] = {'email': 'initial-admin@example.invalid', 'name': 'Initial administrator'}
         settings_file = fixture_directory / 'settings.json'
         settings_file.write_text(json.dumps(settings))
         settings_file.chmod(0o600)
@@ -328,6 +330,8 @@ def main():
         call(command + ['--resume'], cwd=prod)
         journal = json.loads((prod / '.runtime/production/install-prod.json').read_text())
         deployment = json.loads((prod / '.runtime/production/deployment.json').read_text())
+        if not team:
+            check(journal.get('administrator_invited') is True, 'actual initial administrator invitation admitted through trusted native CLI after SMTP recovery')
         check(journal['state'] == 'complete' and deployment['current']['simulation'], 'explicit resume completes real isolated production topology through the same installer')
         check(all((prod / name).read_bytes() == value for name, value in secrets.items()), 'production recovery preserves all originally generated secrets/settings')
         check((mail_reports / 'accepted.eml').is_file() and 'Runa installation SMTP verification' in (mail_reports / 'accepted.eml').read_text(), 'SMTP fixture actually received the verification message over certificate-verified TLS')

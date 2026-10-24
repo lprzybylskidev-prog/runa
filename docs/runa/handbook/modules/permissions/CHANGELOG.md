@@ -1,5 +1,9 @@
 # Permissions module changelog
 
+## 0.4.0
+
+Add guarded PermissionsSelections 1.0.0 with explicit one/selected/all user intent and its native capability. Supply trusted actual-role first-administrator/recovery participation, safe management input controls and source-only 0.3.0 -> 0.4.0 preparation. Require Auth ^0.11.0 and Audit ^0.5.0; retain independent account/security checks, atomic Audit and existing ordinary-assignment protections.
+
 ## 0.3.0
 
 Add compatible PermissionsAuthority 1.0.0 for dedicated reviewed superadministrator

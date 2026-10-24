@@ -94,6 +94,15 @@ Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded 
 
 Trusted read-only module diagnostic for declaration-update impact: old/new dictionary/role memberships, distinct impacted users and source/state fingerprint. It changes no grants; actual synchronization belongs to explicit transactional module install/update. See [Permissions declarations](../modules/permissions/README.md).
 
+### Trusted Auth operator setup
+
+Native `runa:auth:initialize`, `runa:auth:recover` and `runa:auth:restore-policy`
+run in the configured application PHP environment. Initialization supports either
+`--invite --confirm` with email/name (working mail), or `--output=/private/setup.json --confirm` for a new private one-time no-mail handoff. Follow the exact options,
+private path, recovery disablement and token handling rules in the
+[operator guide](../modules/auth/policies-and-operators.md). These are local trusted
+operator commands, with no public issuance endpoint or development-only dependency.
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`

@@ -84,3 +84,9 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use the [Core operator/selection contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for actual first-administrator membership, resumable invitation admission, private
+no-mail setup and Auth bulk selection. Use guarded PermissionsSelections at ordinary
+ingress; the trusted operator adapter is local infrastructure access, not a public
+authorization bypass. Preserve source/data/update fences and atomic Audit.

@@ -450,6 +450,21 @@ Manifest `docs` references are documentation metadata, not executable paths. App
 
 Declare pure owned `ManagementProvider` classes under `declarations.management`. They return lists of schema-version-1 `ManagementPermission(key, names, descriptions)`, `ManagementAction(key, permission, names, descriptions, renderer: 'action', rendererVersion: 1)` and `ManagementComponent(key, component, permission, renderer: 'panel', rendererVersion: 1)`. Permission/action metadata requires bounded PL/EN text; future Admin selects English. Keys follow the public operation dot/snake_case grammar. Keys must be unique within each collection; each collection is limited to 128 entries. Action/component permission references must resolve to the same module's permission declarations. Permission identity is scoped by the owning module ID. An action and component may share a local key without hiding either permission reference.
 
+ManagementEntityProvider additionally declares bounded schema-version-1 entities
+with localized identity, read permission, safe fields and actual backend operations.
+ManagementField supports filterable/sortable/writable/sensitive flags, public UUID
+reference module/operation, and optional required/maxLength/choices/multiple input
+controls. Choices are bounded static codes; multiple applies only to UUID references.
+Sensitive fields cannot filter/sort; credentials and factor/token material are never
+declared. These controls describe supported input, with authoritative validation in
+the owning DTO/FormRequest/Action. Policy values/configuration reuse ModuleSettings'
+existing typed/validated/redacted projection. ManagementOperation declares input
+names, permission, independent step-up, revision, preview and atomic bulk requirements.
+Unknown schemas or invalid controls fail closed. Core metadata covers immutable
+Audit history, Auth identities/lifecycle/sessions/policy and Permissions definitions,
+assignments/authority; module/system definitions remain read-only to custom editing.
+No renderer, generic executor, management navigation or Admin UI is supplied.
+
 Component values are owner-prefixed build registry keys such as `app.example.settings_panel`. They cannot be paths, URLs, imports or executable expressions. The optional frontend build adapter maps these keys to owned local components; consumers check the current manifest hash before rendering. Source metadata cannot load arbitrary code. No component file or fabricated Admin screen is required to declare the future extension contract.
 
 `ManagementRenderers` is a trusted bootstrap compatibility catalogue with exact positive versions, separate `setting`, `action` and `component` kinds. Version 1 defines the six built-in setting types and the `action`/`panel` extension shapes. Additional types require explicit bootstrap registration with `register(kind, key, version)`; built-ins/duplicates cannot be replaced. A custom backend `SettingType` does not implicitly create an Admin renderer: register its setting descriptor compatibility at version 1 separately. Unknown types or unsupported renderer/schema versions produce an incomplete fail-closed metadata view. Catalogue registration describes the renderer contract, not an installed UI implementation.

@@ -1,7 +1,7 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.10.1`, requiring
-`runa.audit ^0.4.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
+Core `runa.auth` ships at independent version `0.11.0`, requiring
+`runa.audit ^0.5.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
@@ -17,7 +17,7 @@ are delivered, along with [private profile, verified address changes, avatar and
 [Entry/restricted screens](entry-ui.md) and [welcome/application/account screens](account-ui.md)
 are delivered. [Permissions action grants and introspection](../permissions/README.md),
 ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
-are delivered. First-administrator bootstrap integration remains separate.
+are delivered. First-administrator bootstrap grants the actual Permissions system role through the trusted operator adapter; installer invitations and private no-mail CLI setup are delivered.
 There is no management UI. Administrative operations require current native grants.
 
 ## Public values and access

@@ -1,6 +1,6 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `0.4.0`, with no
+`runa.audit` is a platform-owned Core module, version `0.5.0`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
 automatic model capture, local suppression and permission-protected reads. No Audit viewer or administration interface is supplied.
 
@@ -255,3 +255,15 @@ Auth independently controls its own login/account switches and action allowlists
 see the [private profile contract](../auth/profile.md). Other modules must choose
 their own source-controlled action list and confirm an identity-bound entity is
 appropriate; this contract is not record ACL or arbitrary subject authorization.
+
+## Core management and optional actor labels
+
+Version 0.5.0 adds source-only 0.4.0 -> 0.5.0 preparation and read-only `event`
+management metadata: safe summary fields/filters, no write operations, payloads
+only through guarded detail reads. Audit keeps no Auth/Permissions dependency.
+The framework optionally enriches trusted human actors through Auth's designated
+non-recursive AuthorizationIdentity contract, storing a safe display-name snapshot
+of at most 160 UTF-8 bytes. Missing/unavailable Auth preserves UUID actor identity
+without a label; it never blocks independent Audit persistence. Historical actor
+snapshots are immutable. Authorized current identity lookup uses AuthIdentities
+(including deleted subjects); it is separate from history and never rewrites it.

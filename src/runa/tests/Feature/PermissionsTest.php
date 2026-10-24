@@ -4,6 +4,7 @@ use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -18,10 +19,16 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Audit\Storage\AppendEvents;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
+use Runa\Modules\Auth\Actions\EntryTokens;
+use Runa\Modules\Auth\Actions\OperatorAccounts;
+use Runa\Modules\Auth\Actions\Passwords;
 use Runa\Modules\Auth\Actions\ScheduledLifecycle;
+use Runa\Modules\Auth\Contracts\AuthBulkSessions;
+use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -30,6 +37,8 @@ use Runa\Modules\Permissions\Contracts\Permissions;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 use Runa\Modules\Permissions\Support\DeclarationCatalog;
+use Runa\Support\Modules\Api\DenyAuthorityChanges;
+use Runa\Support\Modules\Api\DenyProtectedOperations;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\Api\ModuleHttp;
@@ -726,3 +735,146 @@ it('rolls back dedicated authority membership revision and proof after required 
         expect($api->applyAuthority($preview)['super_admin'])->toBeTrue();
     });
 })->group('permissions-authority');
+
+it('integrates first administrator authority once with atomic Audit and resumable invitation admission', function (): void {
+    config()->set('queue.default', 'database');
+    config()->set('hashing.bcrypt.rounds', 4);
+    $accounts = app(OperatorAccounts::class);
+    $input = new NewIdentity('initial-integrated@example.test', name: 'Initial administrator');
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT initial_audit_refusal CHECK (false) NOT VALID');
+    expect(fn () => $accounts->initialize($input))->toThrow(AuditUnavailable::class);
+    expect(User::where('email', $input->email)->exists())->toBeFalse()
+        ->and(DB::table('runa_permissions.user_roles')->count())->toBe(0)
+        ->and(DB::table('runa_auth.initialization')->value('completed_at'))->toBeNull();
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT initial_audit_refusal');
+    $material = $accounts->initialize($input);
+    $repeat = $accounts->initialize($input);
+    expect($repeat['public_id'])->toBe($material['public_id'])
+        ->and(DB::table('runa_permissions.user_roles')->count())->toBe(1)
+        ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $material['public_id'])->value('version'))->toBe(1)
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.initialized')->count())->toBe(1);
+    expect(fn () => $accounts->initialize(new NewIdentity('another-initial@example.test', name: 'Other')))->toThrow(RuntimeException::class);
+    $accounts->initializeInvitation($input);
+    $events = DB::table('runa_audit.events')->count();
+    $accounts->initializeInvitation($input);
+    expect(DB::table('runa_audit.events')->count())->toBe($events)
+        ->and(DB::table('runa_auth.entry_tokens')->where('purpose', 'invitation')->count())->toBe(1);
+    $token = DB::table('runa_auth.entry_tokens')->where('purpose', 'invitation')->first();
+    $secret = Crypt::decryptString($token->delivery_secret);
+    app(EntryTokens::class)->consume($secret, 'invitation', 'integrated-administrator-password');
+    $accounts->initializeInvitation($input); // Crash/resume after completed setup is a no-op.
+    expect(fn () => $accounts->initialize($input))->toThrow(RuntimeException::class);
+    $user = User::where('public_id', $material['public_id'])->firstOrFail();
+    DB::transaction(function () use ($user): void {
+        $user->active = false;
+        $user->security_locked = true;
+        $user->save();
+    });
+    app()->bind(OperationAuthorizer::class, DenyProtectedOperations::class);
+    app()->bind(AuthorityGuard::class, DenyAuthorityChanges::class);
+    $recovery = $accounts->recover($user->public_id);
+    app(Passwords::class)->reset($recovery['token'], 'integrated-recovered-password');
+    expect(User::find($user->id)->active)->toBeTrue()->and(User::find($user->id)->security_locked)->toBeFalse();
+    expect(DB::table('runa_audit.events')->get()->toJson())->not->toContain($material['token'], $repeat['token'], $secret, $recovery['token']);
+    config()->set('auth.operator_recovery_enabled', false);
+    expect(fn () => $accounts->recover($user->public_id))->toThrow(RuntimeException::class);
+})->group('core-integration');
+
+it('integrates Permissions selection grants with Auth bulk proof and rolls back failed history', function (): void {
+    $codes = permissionAccessManager($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('selected-bulk@example.test', name: 'Selected', active: true, approved: true));
+    $selection = new SessionSelection([$target->publicId]);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthBulkSessions::class, '1.0.0');
+    ($this->directPermission)('runa.auth.sessions.bulk_revoke');
+    ($this->asPermissionUser)(function () use ($selection, $api, $codes): void {
+        expect(fn () => $api->preview($selection))->toThrow(OperationRejected::class);
+        ($this->directPermission)('runa.permissions.users.select');
+        $preview = $api->preview($selection);
+        expect(count($preview['accounts']))->toBe(1);
+        expect(fn () => $api->revoke($selection, false, $preview['fingerprint']))->toThrow(OperationRejected::class);
+        permissionAccessProof($this, $codes[0], 'runa.auth.sessions.bulk_revoke');
+        DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT selection_audit_refusal CHECK (false) NOT VALID');
+        expect(fn () => $api->revoke($selection, false, $preview['fingerprint']))->toThrow(AuditUnavailable::class);
+        expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->value('consumed_at'))->toBeNull();
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT selection_audit_refusal');
+        expect($api->revoke($selection, false, $preview['fingerprint'])['accounts'])->toBe(1)
+            ->and(DB::table('runa_audit.events')->where('action', 'sessions.bulk_revoked')->value('actor_label'))->toBe('Permission fixture');
+        DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->permissionUser->publicId)
+            ->where('permission_id', DB::table('runa_permissions.permissions')->where('code', 'runa.permissions.users.select')->value('id'))->delete();
+        expect(fn () => $api->preview($selection))->toThrow(OperationRejected::class);
+    });
+})->group('core-integration');
+
+it('projects safe Core management and resolves historical Auth identity without rewriting Audit', function (): void {
+    foreach (['runa.audit' => ['event'], 'runa.auth' => ['policy', 'session', 'user'], 'runa.permissions' => ['assignment', 'authority', 'preset', 'role']] as $module => $keys) {
+        $record = app(ModuleRegistry::class)->snapshot()->modules[$module];
+        expect((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
+        $view = app(ModuleManagement::class)->read($module);
+        expect($view->diagnostics)->toBe([])->and(array_keys($view->entities))->toBe($keys);
+        $json = json_encode($view->entities, JSON_THROW_ON_ERROR);
+        expect($json)->not->toContain('totp_secret', 'password_history', 'token_hash', 'recovery_hashes');
+    }
+    ($this->directPermission)('runa.auth.identities.read');
+    ($this->directPermission)('runa.audit.read');
+    $lastId = DB::table('runa_audit.events')->max('id');
+    $historyBefore = DB::table('runa_audit.events')->where('id', '<=', $lastId)->orderBy('id')->get()->toJson();
+    DB::transaction(function (): void {
+        User::where('public_id', $this->permissionUser->publicId)->update(['name' => 'Historical name', 'deleted_at' => now(), 'active' => false]);
+    });
+    // Historical subjects do not need to be eligible; only the authorized reader does.
+    $reader = app(ChangeIdentity::class)->create(new NewIdentity('history-reader@example.test', name: 'Reader', active: true, approved: true));
+    $id = DB::table('runa_permissions.permissions')->where('code', 'runa.auth.identities.read')->value('id');
+    DB::table('runa_permissions.user_permissions')->insert(['user_public_id' => $reader->publicId, 'permission_id' => $id, 'created_at' => now(), 'updated_at' => now()]);
+    app(PrincipalScope::class)->run(new TrustedPrincipal($reader->publicId), function (): void {
+        $identity = app(ModuleApis::class)->resolve('runa.auth', AuthIdentities::class, '1.0.0')->identity($this->permissionUser->publicId);
+        expect($identity->deleted)->toBeTrue()->and($identity->displayName)->toBe('Historical name');
+    });
+    expect(DB::table('runa_audit.events')->where('action', 'identity.created')->count())->toBe(2)
+        ->and(DB::table('runa_audit.events')->where('id', '<=', $lastId)->orderBy('id')->get()->toJson())->toBe($historyBefore);
+})->group('core-integration');
+
+it('serializes competing first administrator recipients without duplicate authority', function (): void {
+    $workers = [];
+    $inputs = [];
+    DB::beginTransaction();
+    app(AuthorityLock::class)->acquire(DB::connection());
+    try {
+        foreach (['first-parallel@example.test', 'second-parallel@example.test'] as $id) {
+            $input = new InputStream;
+            $process = new Process([PHP_BINARY, 'runa/tests/Fixtures/initialization-worker.php', $id], base_path(),
+                ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
+            $process->setTimeout(null);
+            $process->setInput($input);
+            $process->start();
+            $workers[] = $process;
+            $inputs[] = $input;
+        }
+        foreach ($workers as $worker) {
+            expect($worker->waitUntil(fn ($type, $output) => str_contains($output, 'ready')))->toBeTrue($worker->getErrorOutput());
+        }
+        foreach ($inputs as $input) {
+            $input->write("go\n");
+            $input->close();
+        }
+        DB::commit();
+        $results = [];
+        foreach ($workers as $worker) {
+            expect($worker->wait())->toBe(0, $worker->getErrorOutput());
+            $results[] = trim(str_replace('ready', '', $worker->getOutput()));
+        }
+        sort($results);
+        expect($results)->toBe(['initialized', 'refused'])
+            ->and(DB::table('runa_permissions.user_roles')->count())->toBe(1)
+            ->and(DB::table('runa_audit.events')->where('action', 'authority.initialized')->count())->toBe(1)
+            ->and(User::whereIn('email', ['first-parallel@example.test', 'second-parallel@example.test'])->count())->toBe(1);
+    } finally {
+        while (DB::connection()->transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        foreach ($workers as $worker) {
+            if ($worker->isRunning()) {
+                $worker->stop();
+            }
+        }
+    }
+})->group('core-integration-concurrency');

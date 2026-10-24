@@ -73,8 +73,7 @@ The scheduled job refuses last-admin materialization, preserves the schedule,
 records independent `authority.refused` and continues unrelated due accounts.
 Repeated due refusals are meaningful attempts, not successful state changes.
 Use the [trusted operator recovery procedure](../auth/policies-and-operators.md)
-for lockout; actual OperatorAuthority/installer wiring belongs to the separate
-cross-module bootstrap integration. No temporary role flag or browser bypass exists.
+for lockout and the delivered trusted OperatorAuthority bootstrap integration. No temporary role flag or browser bypass exists.
 
 ## Explicit force deletion of custom roles
 

@@ -176,6 +176,29 @@ class InstallationContracts(unittest.TestCase):
         self.assertEqual(json.loads((self.state / 'install-prod.json').read_text())['state'], 'complete')
         self.assertFalse((self.state / 'first-deploy.json').exists())
 
+    def test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields(self):
+        administrator = {'email': 'initial@example.invalid', 'name': 'Initial administrator', 'login': 'a'}
+        self.assertEqual(installer.validate_settings(self.settings | {'administrator': administrator}, True)['administrator'], administrator)
+        for value in ([], {}, administrator | {'password': 'must-not-be-accepted'}, administrator | {'token': 'must-not-be-accepted'}, administrator | {'login': 'a b'}):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                installer.validate_settings(self.settings | {'administrator': value}, True)
+
+    def test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert(self):
+        self.settings['administrator'] = {'email': 'initial@example.invalid', 'name': 'Initial administrator'}
+        current = {'sha': self.sha, 'path': str(self.state / 'releases' / self.sha)}
+        with self.tools(), patch.object(ops, 'deploy'), patch.object(ops, 'read_state', return_value={'current': current}), patch.object(ops, 'health'), patch.object(installer, 'verify_endpoints'), patch.object(ops, 'artisan', side_effect=subprocess.CalledProcessError(1, ['synthetic'])):
+            with self.assertRaises(subprocess.CalledProcessError):
+                installer.install('prod', self.sha, simulation=True, settings_file=self.settings_file())
+        self.assertEqual(json.loads((self.state / 'install-prod.json').read_text())['state'], 'failed')
+        with self.tools(), patch.object(ops, 'read_state', return_value={'current': current}), patch.object(ops, 'health'), patch.object(installer, 'verify_endpoints'), patch.object(ops, 'artisan') as artisan:
+            installer.install('prod', self.sha, simulation=True, resume=True)
+            artisan.assert_called_once_with(['runa:auth:initialize', '--email=initial@example.invalid', '--name=Initial administrator', '--invite', '--confirm'], Path(current['path']))
+            installer.install('prod', self.sha, simulation=True)
+            self.assertEqual(artisan.call_count, 1)
+        journal = json.loads((self.state / 'install-prod.json').read_text())
+        self.assertTrue(journal['administrator_invited'])
+        self.assertEqual(journal['state'], 'complete')
+
     def test_resume_blocks_a_pending_update_or_another_target(self):
         ops.atomic(self.state / 'in-progress.json', {'target': 'b' * 40, 'previous': None})
         with self.assertRaisesRegex(ValueError, 'not this initial installation'):

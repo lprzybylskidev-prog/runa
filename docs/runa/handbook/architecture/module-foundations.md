@@ -76,9 +76,23 @@ source, change manifests or introduce translation catalogs for dictionary values
 ManagementEntityProvider optionally extends an existing ManagementProvider with
 version 1 ManagementEntity metadata. Bounded fields describe localized labels,
 types, sensitivity/editability, filters/sorts and UUID public reference lookups.
+Optional static required/maxLength/choices/multiple controls describe validated input
+without executable rules; configuration reuses ModuleSettings descriptors.
 ManagementOperation describes a permission-bound operation, declared writable input
 names, step-up, revision, preview and bulk requirements. ModuleManagement projects
 entities alongside existing declarations, checking permissions/duplicates/bounds.
 Invalid declarations produce a safe diagnostic. No renderer or execution endpoint
 is supplied. Actual Actions/FormRequests enforce validation and security, regardless
 of presentation metadata; secrets never belong in the projection.
+
+## Trusted operator and ordinary bulk selection
+
+The [Auth operator contract](../modules/auth/policies-and-operators.md) binds the
+neutral OperatorAuthority to Permissions-owned actual-role participation. This
+local trusted command boundary deliberately avoids ordinary account/permission
+health so a locked administrator can recover; exact Core source/data, the default
+transaction, registry/authority lock order, fences and Audit remain mandatory.
+Ordinary Auth bulk sessions instead use neutral BulkUserSelection -> guarded
+PermissionsSelections.users with current native selection and Auth bulk grants,
+preview and fresh both-factor proof. Never expose the operator participant as a
+public API or reuse a selection DTO as a persistent authorization decision.

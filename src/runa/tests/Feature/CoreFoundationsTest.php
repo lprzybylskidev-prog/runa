@@ -52,6 +52,9 @@ it('bounds entity metadata and projects database dictionary columns without exec
     expect(fn () => new ManagementEntity('account', 'account.read', $names, $descriptions, [], [$operation]))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ManagementEntity('account', 'account.read', $names, $descriptions, [$field, $field], []))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ManagementField('secret', 'text', $names, $descriptions, filterable: true, sensitive: true))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new ManagementField('name', 'text', $names, $descriptions, required: true))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new ManagementField('name', 'text', $names, $descriptions, choices: ['allowed', 'allowed']))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new ManagementField('name', 'text', $names, $descriptions, multiple: true))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ManagementOperation(new ApiOperation('update'), []))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ManagementField('owner', 'uuid', $names, $descriptions, referenceModule: 'runa.auth'))->toThrow(InvalidArgumentException::class);
 });

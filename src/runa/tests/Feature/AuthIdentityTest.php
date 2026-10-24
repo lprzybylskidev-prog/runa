@@ -43,7 +43,7 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.10.0' : '0.4.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.'.$code]->sourceVersion]);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -263,5 +263,5 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $updates->apply('runa', str_repeat('a', 40), static function (): void {});
     expect(DB::table('runa_audit.events')->count())->toBe($events)->and(DB::table('runa_auth.users')->count())->toBe(0);
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
-    expect($record->installedVersion)->toBe('0.10.0')->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
+    expect($record->installedVersion)->toBe($record->sourceVersion)->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });
