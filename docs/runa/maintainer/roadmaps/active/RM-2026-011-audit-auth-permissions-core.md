@@ -45,8 +45,9 @@ future-management declarations only. Auth additionally delivers the necessary
 public authentication, an authenticated application entry view and own-account
 views. Profile access and the sign-out button belong together in the existing
 ApplicationLayout user dropdown; authentication/recovery uses the existing
-MinimalLayout where appropriate. The public welcome page exposes session-aware
-entry links. No parallel application shell.
+MinimalLayout where appropriate. The optional public welcome page exposes
+session-aware entry links; disabling it sends `/` to sign-in. No parallel
+application shell.
 
 No Admin Panel, generic Admin renderer, placeholder administration pages, Audit
 viewer UI, role/preset/assignment management UI or user administration pages.
@@ -63,6 +64,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 ## Specification
 
 ### Decisions and requirement authority
+
+- 2026-10-24 — Owner requested an Auth setting to enable/disable the public welcome
+  page. Enabled by default, it preserves the welcome view at `/`; disabled, entering
+  `/` redirects directly to `/auth/login`. The login flow still resolves an existing
+  session into the application or required security steps, without redirect loops.
+  Point 12 owns this setting and navigation behavior; sign-out returns through `/`
+  and therefore reaches welcome or sign-in according to the current setting.
 
 - 2026-10-24 — Owner confirmed completion of the public-to-authenticated navigation
   path within this roadmap. Point 12 adds session-aware welcome links, the actual
@@ -706,9 +714,16 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     and reduced motion. Update public Auth UI contracts and affected shared pattern
     references in this point; no management shell or placeholder admin route.
 - [ ] 12. Deliver application entry, own-account UI and session-expiry integration.
-  - Requires 11. Complete the public-to-authenticated navigation path: `/` offers
-    sign-in and, only when enabled, registration for guests, and application access
-    for authenticated users. Add the actual authenticated application entry view
+  - Requires 11. Add a persisted boolean Auth setting for public welcome availability,
+    default enabled. When enabled, `/` keeps the welcome page with sign-in and,
+    only when enabled, registration for guests, and application access for
+    authenticated users. When disabled, entering `/` redirects directly to
+    `/auth/login`, including direct entry and refresh; an existing session continues
+    through the normal login-state resolution into the application or required
+    security steps, without loops. This presentation setting does not bypass Auth
+    checks or revoke sessions. Use the existing settings/public-projection contracts
+    and document install/upgrade defaults and how the operator changes the setting.
+  - Complete the public-to-authenticated navigation path. Add the actual authenticated application entry view
     using the existing ApplicationLayout, current identity and available navigation.
     After sign-in and all required verification/2FA/password steps, navigate to a
     validated internal return path or this application entry by default, rather
@@ -718,7 +733,8 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
   - Put the profile link and sign-out button together inside ApplicationLayout's
     existing user dropdown. Sign-out uses the guarded CSRF-protected POST, handles
     pending/failure states, and on success clears account-bound frontend state/drafts
-    and returns to the public welcome page. Navigation/back/refresh cannot restore
+    and returns to `/`, showing welcome or redirecting to sign-in according to the
+    current welcome setting. Navigation/back/refresh cannot restore
     authenticated access after revocation.
   - Implement own-account views for details, password/2FA, secondary email, avatar,
     sessions/trusted devices, preferences and optional own histories, reusing
@@ -728,7 +744,9 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
   - Acceptance/tests prepared: real activity versus polling, no write replay,
     account switch/reset isolation, hide disabled features, private history only,
     responsive/theme/localization/accessibility and existing shell compatibility.
-    Include guest/authenticated welcome links, disabled-registration visibility,
+    Include welcome-setting defaults and changes, enabled/disabled `/` entry and
+    refresh, existing-session resolution without loops, both sign-out destinations,
+    guest/authenticated welcome links, disabled-registration visibility,
     post-login/restricted-flow destinations, application direct entry/refresh,
     keyboard/focus access to profile/sign-out in the same dropdown, and actual
     session invalidation plus state cleanup on sign-out.
@@ -784,7 +802,8 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     account discovery and independent config-based counts/random/seed tuning.
     Provide a discoverable usable development account and supported private initial
     credential/setup procedure so the owner can exercise the delivered UI locally.
-    Document and prepare the manual path from `/` through sign-in and required
+    Document and prepare the manual path from `/` with welcome enabled and disabled,
+    through sign-in and required
     security steps to ApplicationLayout, profile access and dropdown sign-out back
     to `/`, including refusal of authenticated access after sign-out. This uses real
     supplied Auth/Permissions state and no distributed source-coded password.
