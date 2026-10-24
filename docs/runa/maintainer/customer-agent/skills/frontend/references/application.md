@@ -97,3 +97,8 @@ Host avatar adjustment in the shared Dialog with explicit local Apply/Cancel.
 Use a dimmed surrounding image and bright circular frame, direct pointer panning,
 wheel/pinch zoom and keyboard alternatives; do not add redundant position sliders.
 Applying a crop prepares the card preview; the card's Save owns the upload.
+
+Use public FormNotifications for successful saves and form-wide failures only in
+the top-right viewport. Do not duplicate outcome banners above forms. Preserve
+associated field errors, persistent failure/recovery actions and explicit retries;
+increment attempt on each submit. Modal notifications stay within modal focus.

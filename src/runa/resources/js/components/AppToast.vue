@@ -50,7 +50,13 @@ function focus(event: globalThis.FocusEvent) {
   }
 }
 watch(
-  () => [props.message.id, props.message.duration] as const,
+  () =>
+    [
+      props.message.id,
+      props.message.duration,
+      props.message.title,
+      props.message.description,
+    ] as const,
   () => {
     stop();
     remaining = props.message.duration;
@@ -79,8 +85,12 @@ onScopeDispose(stop);
       dismissible
       :close-label="closeLabel"
       @close="emit('close', message.id)"
-      >{{ message.description }}</AppAlert
     >
+      {{ message.description }}
+      <template v-if="$slots.actions" #actions
+        ><slot name="actions"
+      /></template>
+    </AppAlert>
   </div>
 </template>
 <style scoped>

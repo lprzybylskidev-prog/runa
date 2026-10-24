@@ -15,6 +15,7 @@ use Runa\Modules\Auth\UpgradeCredentials;
 use Runa\Modules\Auth\UpgradeDevelopmentFixtures;
 use Runa\Modules\Auth\UpgradeEntry;
 use Runa\Modules\Auth\UpgradeEntryUi;
+use Runa\Modules\Auth\UpgradeFormNotifications;
 use Runa\Modules\Auth\UpgradeFormPresentation;
 use Runa\Modules\Auth\UpgradeHeadingFocus;
 use Runa\Modules\Auth\UpgradeNavigationCancellation;
@@ -54,7 +55,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('navigation_cancellation', '0.13.5', '0.13.6', UpgradeNavigationCancellation::class),
             new UpgradeDefinition('account_editor', '0.13.6', '0.13.7', UpgradeAccountEditor::class),
             new UpgradeDefinition('account_cards', '0.13.7', '0.14.0', UpgradeAccountCards::class),
-            new UpgradeDefinition('avatar_modal', '0.14.0', '0.14.1', UpgradeAvatarModal::class)];
+            new UpgradeDefinition('avatar_modal', '0.14.0', '0.14.1', UpgradeAvatarModal::class),
+            new UpgradeDefinition('form_notifications', '0.14.1', '0.14.2', UpgradeFormNotifications::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

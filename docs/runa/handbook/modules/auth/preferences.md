@@ -90,7 +90,8 @@ Initial locale/theme application to document attributes is also read-only: mount
 a consumer while its account snapshot is pending must not write defaults back.
 Only subsequent deliberate value changes persist, with the existing hydration guard.
 Writes enqueue immediately in revision order and expose pending/error status;
-both layouts present PL/EN save/load/conflict feedback with explicit reload. A failed
+both layouts present PL/EN save/load/conflict feedback through top-right
+FormNotifications with explicit reload, without a duplicate inline banner. A failed
 save is never reported as persisted. Logout/account switch aborts requests, clears
 account caches and fences late responses and unsent writes. Components using
 injected custom stores retain responsibility for their own account boundaries.

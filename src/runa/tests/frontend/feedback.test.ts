@@ -13,6 +13,8 @@ import {
   Tooltip,
   Popover,
   ToastViewport,
+  FormNotifications,
+  Dialog,
   useToasts,
 } from '../../resources/js/runa/ui';
 import AppToast from '../../resources/js/components/AppToast.vue';
@@ -326,4 +328,74 @@ it('renders a matching retry action in every AsyncContent error', () => {
   });
   expect(wrapper.get('button').attributes('data-tone')).toBe('danger');
   expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
+});
+
+it('shows one top-right form result, keeps failures persistent with recovery actions and leaves no inline duplicate', async () => {
+  const retry = vi.fn();
+  const wrapper = mount(FormNotifications, {
+    props: { success: 'Zapisano dane.' },
+    slots: { actions: () => h(Button, { onClick: retry }, () => 'Ponów') },
+  });
+  await settle();
+  expect(wrapper.text()).toBe('');
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+  expect(document.querySelector('.app-toast')?.textContent).toContain(
+    'Zapisano dane.',
+  );
+  await wrapper.setProps({ success: '', error: 'Nie zapisano danych.' });
+  await settle();
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1),
+  );
+  const toast = wrapper.getComponent(AppToast);
+  expect(toast.props('message').duration).toBe(0);
+  const retryButton = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((button) => button.textContent?.trim() === 'Ponów')!;
+  retryButton.click();
+  expect(retry).toHaveBeenCalledOnce();
+  await wrapper.setProps({ error: '', invalid: true });
+  await settle();
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1),
+  );
+  expect(document.querySelector('.app-toast')?.textContent).toContain(
+    'Sprawdź zaznaczone pola',
+  );
+  wrapper
+    .getComponent(AppToast)
+    .vm.$emit('close', wrapper.getComponent(AppToast).props('message').id);
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(0),
+  );
+  await wrapper.setProps({ attempt: 1 });
+  await settle();
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+});
+it('keeps modal form notifications and their recovery buttons inside the active modal focus boundary', async () => {
+  const wrapper = mount(Dialog, {
+    attachTo: document.body,
+    props: { modelValue: true, title: 'Test' },
+    slots: {
+      default: () =>
+        h(
+          FormNotifications,
+          { error: 'Błąd kadrowania' },
+          { actions: () => h(Button, {}, () => 'Ponów') },
+        ),
+    },
+  });
+  await settle();
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('.dialog-backdrop .app-toast'),
+    ).not.toBeNull(),
+  );
+  const button = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((value) => value.textContent?.trim() === 'Ponów')!;
+  button.focus();
+  expect(document.activeElement).toBe(button);
+  expect(button.closest('[inert]')).toBeNull();
+  await wrapper.setProps({ modelValue: false });
 });

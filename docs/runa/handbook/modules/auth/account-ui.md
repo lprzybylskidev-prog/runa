@@ -63,8 +63,10 @@ settings in four shared Cards. Each Card has a visible Form and its own outlined
 save action, credential draft, validation and submission boundary. Wide screens
 use two columns; narrow screens use one. Saving one card does not submit or clear
 another card's draft. Sessions/preferences retain their separate navigation.
-Successful operations use shared Alert and ToastViewport feedback with an explicit
-operation description; actionable errors remain inline.
+Operation successes and form-wide failures use shared FormNotifications only in
+the top-right viewport, with explicit operation descriptions and recovery actions.
+Persistent errors do not duplicate a banner above the form; linked field errors
+remain beside controls. Entry, avatar/crop and preference outcomes share this rule.
 
 The details card validates its selected name/login/email edits before writing,
 then uses the existing guarded endpoints sequentially with refreshed profile

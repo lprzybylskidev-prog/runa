@@ -8,6 +8,7 @@ import {
   Checkbox,
   FileInput,
   Form,
+  FormNotifications,
   RadioGroup,
   Select,
   TextInput,
@@ -355,7 +356,6 @@ function closeCrop(value: boolean) {
             @click="cropOpen = true"
             >{{ text('Popraw kadr', 'Adjust crop') }}</Button
           >
-          <Alert v-if="cropError" tone="danger">{{ cropError }}</Alert>
           <Checkbox
             v-if="profile.has_avatar"
             v-model="removeAvatar"
@@ -522,10 +522,10 @@ function closeCrop(value: boolean) {
     :locale="locale"
     size="lg"
     :busy="cropping"
-    :error="cropError"
     initial-focus="canvas"
     @update:model-value="closeCrop"
   >
+    <FormNotifications :error="cropError" :locale="locale" />
     <AuthAvatarCropper
       v-if="cropOpen && originals[0] && profile"
       ref="cropper"

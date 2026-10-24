@@ -98,8 +98,9 @@ request and requires explicit resubmission. Conflicts preserve nonsecret values
 and offer an account refresh when relevant. Background reads never extend activity.
 
 Flow transitions are deliberately immediate and focus the heading; alerts announce
-results and form failures focus invalid controls or the feedback region after
-controls become enabled. Shared controls retain their reduced-motion feedback.
+results and form failures focus invalid controls after controls become enabled.
+Form-wide outcomes use top-right FormNotifications, with persistent failures and
+explicit CSRF/reload actions in the notification; do not duplicate form banners. Shared controls retain their reduced-motion feedback.
 The existing layout supplies responsive desktop/tablet/mobile, light/dark themes,
 language/theme controls and identity/footer. Browser acceptance fixtures cover
 locale, reduced motion, overflow, keyboard errors and private fragments; complete

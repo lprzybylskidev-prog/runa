@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { Alert, Spinner } from '@/runa/ui';
+import { FormNotifications, Spinner } from '@/runa/ui';
 const props = defineProps<{
   file: File;
   locale: 'pl' | 'en';
@@ -313,12 +313,17 @@ onScopeDispose(() => {
       v-if="loading"
       :label="text('Wczytywanie zdjęcia', 'Loading image')"
     />
-    <Alert v-if="failure" tone="danger">{{
-      text(
-        'Nie można wczytać zdjęcia. Wybierz JPEG, PNG lub WebP do 20 MB i 40 megapikseli (maks. 12000 px na bok).',
-        'Cannot load image. Choose JPEG, PNG or WebP up to 20 MB and 40 megapixels (max. 12000 px per side).',
-      )
-    }}</Alert>
+    <FormNotifications
+      :locale="locale"
+      :error="
+        failure
+          ? text(
+              'Nie można wczytać zdjęcia. Wybierz JPEG, PNG lub WebP do 20 MB i 40 megapikseli (maks. 12000 px na bok).',
+              'Cannot load image. Choose JPEG, PNG or WebP up to 20 MB and 40 megapixels (max. 12000 px per side).',
+            )
+          : ''
+      "
+    />
     <template v-if="image && !failure">
       <canvas
         ref="canvas"

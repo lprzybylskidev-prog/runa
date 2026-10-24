@@ -996,6 +996,11 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     and circular avatar preview, pointer dragging and wheel zoom without sliders.
   - Preserve keyboard/touch access, cancel/confirm without implicit upload, public
     crop export and bounded-file cleanup; inspect rendered modal and focused tests.
+- [x] 19m. Unify operation feedback in top-right notifications.
+  - Owner requests successes and form-wide failures in one top-right location,
+    without duplicate banners above forms. Keep associated field corrections.
+  - Reuse public notification presentation with persistent actionable failures,
+    shared account/entry/avatar/preference consumers, modal accessibility and docs.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2707,3 +2712,48 @@ architectural premise requires discussion before dependent work.
   apply. No Docker resources or live avatar/data changes; existing services/data,
   caches, reports, backups and rollback material preserved. Point 20 remains gated
   by explicit owner appearance acceptance.
+
+## Point 19m delivery
+
+- Owner requests all successful-save/form-wide error outcomes only at top right.
+  Added public FormNotifications over the existing local toast queue/viewport and
+  migrated Auth account/entry, crop/decode/export and shared account-preference
+  feedback. Removed duplicate outcome banners and moved CSRF/reload/retry actions
+  into persistent error notifications. Linked field corrections, static security
+  instructions, recovery-code acknowledgement and session warnings retain context.
+- FormNotifications owns one current outcome, error precedence, partial-completion
+  description, persistent failures, timed successes, PL/EN and optional actions.
+  attempt increments allow an identical dismissed validation error to be reported
+  on deliberate resubmission. Current outcomes update in place; title/description
+  updates reset success reading time. No HTTP interception/global error toast or
+  automatic retry was introduced; each feature retains its safe controller state.
+- ToastViewport exposes scoped actions and follows the active modal portal, waiting
+  until its target exists so it is never moved with stale inert state. Modal retry/
+  close controls stay within focus containment. One polite live region announces
+  additions/text changes. Existing dismissal, hover/focus pausing, focus restoration
+  and reduced-motion transitions remain; top-right stack sits above content.
+- Nine focused frontend cases passed: outcome replacement/repeated attempt, persistent
+  action recovery, modal keyboard access, account partial/conflict/CSRF, entry CSRF/
+  safe errors/token handling, crop invalid-file feedback and existing toast timers/
+  focus return. Updated prepared selectors for teleported notifications. Initial
+  modal test exposed an initially body-teleported inert node; deferred portal mount
+  fixed the issue and the received regression passed.
+- Actual served authenticated browser showed one success with zero inline success
+  banners; invalid password retained three associated field corrections and zero
+  inline failure banners. Intercepted conflict diagnostics at 1440/390 light/dark
+  showed one persistent top-right error, zero inline duplicate, no overflow/JS
+  errors and working explicit Reload current values. Inspected screenshots retained
+  in .runtime/dev/manual-auth/form-notifications. No real profile/avatar writes.
+- Auth PATCH 0.14.1 -> 0.14.2, source-only form_notifications edge and changelog;
+  existing Permissions ^0.14.0 remains compatible. Applied local forward preparation,
+  published current client assets and passed all Core source/version diagnostics.
+  No schema/settings/backend authority/credential changes or dependencies.
+- Replaced obsolete inline operation-error/success claims in visual direction,
+  frontend architecture/component/form guides and Auth account/entry/preferences
+  docs. Updated owner/customer frontend references. Root AGENTS and primary Vue/
+  Tailwind/security skills already require shared controls, accessible errors and
+  safe explicit recovery; no duplicate constitutional rule required.
+- No broad suites/static analysis/image/scanner/final quality ran; mandatory hooks
+  apply. No Docker resources created/removed. Preserved services/development data,
+  caches, reports, backups and rollback material. Point 20 remains gated by explicit
+  owner frontend appearance acceptance.

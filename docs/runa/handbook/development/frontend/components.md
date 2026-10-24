@@ -56,8 +56,22 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Sources: `AppToastViewport.vue`, internal `AppToast.vue`, `composables/useToasts.ts`; public `ToastViewport`, `useToasts`, ToastMessage/FeedbackTone types.
 - Local setup-scoped queue: `const { messages, show, dismiss } = useToasts()`. Pass messages to ToastViewport and bind dismiss. show accepts title, optional description/tone/duration and returns its ID. Default duration is 5000ms, danger defaults to persistent (0); invalid/nonfinite durations are persistent. This is transient feedback, not a notification center.
-- Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
-- Keep actionable/important errors inline as well as in transient feedback; the host feature owns that error state. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.
+- Viewport accepts an actions slot scoped with message; modal consumers teleport inside the active modal focus/inert boundary and wait for its target before rendering. Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
+- Form-wide outcomes use top-right notifications only; field-specific corrections remain associated with their controls. Persistent error notifications retain explicit recovery actions. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.
+
+## FormNotifications
+
+- Public FormNotifications composes the existing local toast queue/viewport. Props:
+  error/success strings, invalid boolean, locale (pl default) and attempt (0 default).
+  Error wins over success; simultaneous partial success is included as description.
+  Errors/invalid summaries are persistent, successes use the standard timeout.
+- Bind state owned by the form; increment attempt on each explicit submit so a
+  dismissed identical validation failure is reported again. One current result
+  replaces its predecessor. The actions slot supplies explicit recovery buttons.
+  The component never submits, reloads or retries by itself.
+- Use it for form outcomes instead of duplicating a banner near the form. Keep
+  linked field errors and normal static instructional/loading/empty states.
+  Modal consumers retain keyboard access and one polite live announcement.
 
 ## AppButton
 
@@ -308,7 +322,7 @@ The public Icon catalogue includes logout. Panel użytkownika/User panel appears
 only in the user dropdown; the default /app workspace has no placeholder content.
 
 The default account view composes four existing Cards with independent Forms and
-shared Alert/ToastViewport success feedback. AuthAvatarCropper exports a local,
+shared FormNotifications outcome feedback. AuthAvatarCropper exports a local,
 bounded square crop through `@/runa/auth`; see [the account UI contract](../../modules/auth/account-ui.md)
 and [public customization](customization.md). The account card hosts it in the
 shared Dialog with explicit Apply/Cancel. The canvas displays a circular bright

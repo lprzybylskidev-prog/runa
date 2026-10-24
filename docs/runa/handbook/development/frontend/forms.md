@@ -109,8 +109,13 @@ credential draft, validation, focus target and cleanup scoped to its form. Use
 FormSection for field groups within a form, not as a substitute for a Card.
 Saving one operation must not submit or discard another operation's draft.
 
-Use shared Alert for inline feedback and ToastViewport/useToasts for transient
-success, with specific operation descriptions. Preserve deliberate multi-step
+Use shared FormNotifications for both successful operations and form-wide errors,
+only in the top-right viewport. Do not duplicate these outcomes above the form.
+Keep associated field errors beside controls. Failures stay until dismissed and
+include recovery buttons where needed; successful notifications expire. Bind
+error/success/invalid/locale and increment attempt on deliberate submits so repeated
+identical validation failures can be announced after dismissal. The component
+retains one current outcome and never retries writes itself. Preserve deliberate multi-step
 security and destructive confirmation. Where one form needs multiple endpoints,
 validate first, respect each proof/version, stop on failure and report partial
 success without replay. The [account editor](../../modules/auth/account-ui.md)

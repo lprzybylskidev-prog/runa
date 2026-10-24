@@ -6,3 +6,8 @@ Use outlined submit buttons for forms, retaining destructive tone/busy/disabled
 states. Use public TextLink for quiet welcome/Auth form navigation: no permanent
 underline or button surface, hover underline and visible keyboard focus. Reuse the
 shared implementation; do not restore page-local copies.
+
+Use public FormNotifications for successful saves and form-wide failures only in
+the top-right viewport. Do not duplicate outcome banners above forms. Preserve
+associated field errors, persistent failure/recovery actions and explicit retries;
+increment attempt on each submit. Modal notifications stay within modal focus.

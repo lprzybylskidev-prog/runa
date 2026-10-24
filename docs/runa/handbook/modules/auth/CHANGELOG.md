@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.14.2
+
+Unify account, entry and avatar form outcomes through public top-right
+FormNotifications. Remove duplicate success/error banners, retain linked field
+validation, persistent failures and explicit recovery actions. Modal notifications
+remain inside their focus boundary. Source-only forward edge; no stored changes.
+
 ## 0.14.1
 
 Open avatar cropping in the shared modal with a bright circular frame and dimmed

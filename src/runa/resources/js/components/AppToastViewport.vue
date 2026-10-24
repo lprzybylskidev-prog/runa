@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppToast from './AppToast.vue';
+import { computed, inject } from 'vue';
+import { modalPortal } from '../lib/layers';
+const portal = inject(modalPortal, undefined);
+const target = computed(() => portal?.value ?? 'body');
+const available = computed(() => !portal || Boolean(portal.value));
 import type { ToastMessage } from '../runa/ui/feedback';
 withDefaults(
   defineProps<{
@@ -16,12 +21,12 @@ function leaving(element: globalThis.Element) {
 }
 </script>
 <template>
-  <Teleport to="body"
+  <Teleport v-if="available" :to="target"
     ><section
       class="toast-viewport"
       :aria-label="label"
       aria-live="polite"
-      aria-relevant="additions"
+      aria-relevant="additions text"
     >
       <TransitionGroup
         name="toast-fade"
@@ -33,7 +38,9 @@ function leaving(element: globalThis.Element) {
           :message="message"
           :close-label="closeLabel"
           @close="$emit('dismiss', $event)"
-      /></TransitionGroup></section
+          ><template v-if="$slots.actions" #actions
+            ><slot name="actions" :message="message" /></template></AppToast
+      ></TransitionGroup></section
   ></Teleport>
 </template>
 <style scoped>
@@ -41,7 +48,7 @@ function leaving(element: globalThis.Element) {
   position: fixed;
   top: 16px;
   right: 16px;
-  z-index: 60;
+  z-index: 80;
   display: flex;
   flex-direction: column;
   gap: 12px;

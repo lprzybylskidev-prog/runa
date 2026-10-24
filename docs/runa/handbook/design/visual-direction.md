@@ -150,9 +150,17 @@ User accepted (2026-10-17): remember the sidebar's expanded/collapsed preference
 
 ## Feedback and application states
 
-User accepted (2026-10-17): show field errors beside their fields and operation-wide errors near the form. Use brief notifications for confirmations. Establish consistent loading, empty-results and retry-after-error states.
+Owner correction (2026-10-24): show all form-operation outcomes, including successful
+saves and form-wide failures, only in the top-right notification area. Do not repeat
+them above the form. Keep field-specific validation beside the relevant controls.
+Use public FormNotifications for consistent presentation and recovery actions.
 
-Flash messages appear at the top right, offer an explicit close control and disappear automatically after a timeout. Exact timeout and stacking behavior remain to be determined. Adapt placement to narrow screens without covering essential controls. Make notifications accessible, allow enough reading time and pause dismissal while hovered or keyboard-focused; important recoverable errors must remain available in their relevant page/form context.
+Notifications offer explicit dismissal; successes expire after the shared timeout
+and pause on hover/focus. Errors remain until dismissed/replaced and retain explicit
+recovery actions. Modal notifications belong inside their modal's focus/inert
+boundary. Preserve accessible announcements, narrow-screen fit, field focus and
+explicit retries. Loading, empty states and instructional security warnings retain
+their contextual components; the HTTP client never globally toasts every error.
 
 ## Motion and transitions
 

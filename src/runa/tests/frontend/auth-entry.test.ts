@@ -231,11 +231,16 @@ it('keeps CSRF recovery deliberate, clears credentials and focuses safe server e
   await w.get('form').trigger('submit');
   await settled(w);
   expect(w.get('[name=password]').element).toHaveProperty('value', '');
-  expect(w.text()).toContain('Sesja formularza wygasła');
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Odśwież zabezpieczenie formularza')!
-    .trigger('click');
+  expect(w.text() + document.body.textContent).toContain(
+    'Sesja formularza wygasła',
+  );
+  const retry = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find(
+    (button) =>
+      button.textContent?.trim() === 'Odśwież zabezpieczenie formularza',
+  )!;
+  retry.click();
   await settled(w);
   expect(calls).toHaveLength(1);
   post = () =>
@@ -274,7 +279,9 @@ it('requires explicit token submission, checks password bytes and does not persi
   await w.get('form').trigger('submit');
   await settled(w);
   expect(calls[0]?.body.token).toBe('a'.repeat(64));
-  expect(w.text()).toContain('Operacja została zakończona');
+  expect(w.text() + document.body.textContent).toContain(
+    'Operacja została zakończona',
+  );
   expect(JSON.stringify({ ...localStorage, ...sessionStorage })).not.toContain(
     'a'.repeat(64),
   );
@@ -291,7 +298,9 @@ it.each([409, 429, 503])(
     await w.get('form').trigger('submit');
     await settled(w);
     expect(calls).toHaveLength(1);
-    expect(w.find('[role=alert]').exists()).toBe(true);
+    expect(
+      document.querySelector('.app-toast [data-tone=danger]'),
+    ).not.toBeNull();
     expect(w.get('[name=identifier]').element).toHaveProperty(
       'value',
       'test@example.test',
@@ -325,7 +334,7 @@ it('shows TOTP material and recovery codes only in the current flow, with delibe
   await w.get('form').trigger('submit');
   await settled(w);
   expect(w.get('h1').text()).toBe('Zapisz kody odzyskiwania');
-  expect(w.text()).toContain('b'.repeat(32));
+  expect(w.text() + document.body.textContent).toContain('b'.repeat(32));
   expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
   restrictions = ['password_change_required'];
   currentSecurity.enrolled = ['totp'];
@@ -347,7 +356,9 @@ it('hides disabled registration and never renders a writable registration form',
     props: { authenticated: () => {}, page: 'register' },
   });
   await settled(w);
-  expect(w.text()).toContain('Rejestracja jest wyłączona');
+  expect(w.text() + document.body.textContent).toContain(
+    'Rejestracja jest wyłączona',
+  );
   expect(w.find('[name=password]').exists()).toBe(false);
   expect(w.find('button[type=submit]').exists()).toBe(false);
 });
@@ -382,7 +393,7 @@ it('verifies a primary address before required email enrollment, even with verif
   await w.get('form').trigger('submit');
   await settled(w);
   expect(w.get('h1').text()).toBe('Potwierdź drugi składnik');
-  expect(w.text()).toContain('Wyślij kod e-mail');
+  expect(w.text() + document.body.textContent).toContain('Wyślij kod e-mail');
 });
 
 it('cancels old flow ownership when a pending token write settles after page navigation', async () => {

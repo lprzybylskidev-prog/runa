@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useAuthPresentation } from './presentation';
 import {
   Alert,
   Button,
   Checkbox,
   Form,
+  FormNotifications,
   MinimalLayout,
   RadioGroup,
   Spinner,
@@ -14,8 +15,11 @@ import {
 } from '@/runa/ui';
 import type { EntrySession, EntryPage } from './entry';
 import type { EntryCopyKey } from './messages';
+import { useLocale } from '../../../resources/js/composables/useLocale';
+const { locale } = useLocale();
 import { useAuthEntry } from './useAuthEntry';
 const presentation = useAuthPresentation();
+const feedbackAttempt = ref(0);
 const props = defineProps<{
   page: EntryPage;
   authenticated?: ((session: EntrySession) => void) | undefined;
@@ -137,19 +141,17 @@ const submitLabel = computed(() => {
       </div>
       <div v-if="!ready" class="space-y-5">
         <Spinner v-if="busy" :label="t('loading')" />
-        <Alert v-else tone="danger"
-          >{{ errorMessage
-          }}<template #actions
-            ><Button @click="initialize">{{ t('retry') }}</Button></template
-          ></Alert
-        >
       </div>
       <template v-else>
-        <Form ref="form" :label="title" :busy="busy" @submit="submit">
-          <template #feedback>
-            <Alert v-if="failure" tone="danger">{{ errorMessage }}</Alert>
-            <Alert v-if="notice" tone="success">{{ t(notice) }}</Alert>
-          </template>
+        <Form
+          ref="form"
+          :label="title"
+          :busy="busy"
+          @submit="
+            feedbackAttempt++;
+            submit();
+          "
+        >
           <Alert v-if="screen === 'disabled'" tone="info">{{
             t('disabled')
           }}</Alert>
@@ -282,16 +284,6 @@ const submitLabel = computed(() => {
               :busy="busy"
               >{{ submitLabel }}</Button
             >
-            <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
-              t('refreshCsrf')
-            }}</Button>
-            <Button
-              v-if="
-                session && ['conflict', 'account_restricted'].includes(failure)
-              "
-              @click="refresh"
-              >{{ t('refresh') }}</Button
-            >
           </template>
         </Form>
         <nav
@@ -324,6 +316,27 @@ const submitLabel = computed(() => {
       </template>
     </section>
   </component>
+  <FormNotifications
+    :attempt="feedbackAttempt"
+    :error="failure ? errorMessage : ''"
+    :success="notice ? t(notice) : ''"
+    :invalid="Object.keys(errors).length > 0"
+    :locale="locale"
+  >
+    <template #actions>
+      <Button v-if="!ready && failure" @click="initialize">{{
+        t('retry')
+      }}</Button>
+      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
+        t('refreshCsrf')
+      }}</Button>
+      <Button
+        v-if="session && ['conflict', 'account_restricted'].includes(failure)"
+        @click="refresh"
+        >{{ t('refresh') }}</Button
+      >
+    </template>
+  </FormNotifications>
 </template>
 
 <style scoped>

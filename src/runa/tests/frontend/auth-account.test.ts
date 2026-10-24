@@ -192,7 +192,9 @@ it('account boundary diagnostic: saves with the current revision and refuses sta
   await loaded(w);
   await w.get('input[name="name"]').setValue('Changed name');
   await w.get('form').trigger('submit');
-  await vi.waitFor(() => expect(w.text()).toContain('Dane zmieniły się'));
+  await vi.waitFor(() =>
+    expect(w.text() + document.body.textContent).toContain('Dane zmieniły się'),
+  );
   expect(writes).toHaveLength(1);
   expect(writes[0]?.body).toMatchObject({
     version: 5,
@@ -412,10 +414,10 @@ it('known password errors stop submission and a CSRF renewal does not replay the
   await w.get('[data-account-section=password]').trigger('submit');
   await flushPromises();
   expect(writes).toHaveLength(1);
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Odśwież zabezpieczenie')!
-    .trigger('click');
+  const retry = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((button) => button.textContent?.trim() === 'Odśwież zabezpieczenie')!;
+  retry.click();
   await flushPromises();
   expect(writes).toHaveLength(1);
   expect(
@@ -477,9 +479,11 @@ it('customization: account replacement consumes the public controller with curre
       components: { account: CustomerAccount },
     },
   });
-  await vi.waitFor(() => expect(w.text()).toContain('Test User'));
+  await vi.waitFor(() =>
+    expect(w.text() + document.body.textContent).toContain('Test User'),
+  );
   expect(w.find('[data-customer-account]').exists()).toBe(true);
-  expect(w.text()).toContain('details');
+  expect(w.text() + document.body.textContent).toContain('details');
   expect(w.text()).not.toContain('loginHistory');
 });
 
@@ -526,8 +530,10 @@ it('account cards validate their changes before writing and stops after a partia
     version: 6,
     email: 'next@example.test',
   });
-  expect(w.text()).toContain('Część zmian zapisano');
-  expect(w.text()).toContain('Dane zmieniły się');
+  expect(w.text() + document.body.textContent).toContain(
+    'Część zmian zapisano',
+  );
+  expect(w.text() + document.body.textContent).toContain('Dane zmieniły się');
   expect(
     (w.get('input[name="current_password"]').element as HTMLInputElement).value,
   ).toBe('');
@@ -596,7 +602,9 @@ it('account avatar card crops and saves independently without clearing other car
   expect((w.get('input[name="name"]').element as HTMLInputElement).value).toBe(
     'Changed name',
   );
-  expect(w.findAll('[data-tone="success"]').length).toBeGreaterThan(0);
+  expect(
+    document.querySelectorAll('.app-toast [data-tone="success"]').length,
+  ).toBeGreaterThan(0);
 });
 it('account password card submits independently of invalid account details', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
@@ -646,14 +654,18 @@ it('avatar cropper exports the selected square and refuses invalid or oversized 
   await w.setProps({
     file: new File(['bad'], 'bad.png', { type: 'image/png' }),
   });
-  await vi.waitFor(() => expect(w.get('[role=alert]').exists()).toBe(true));
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('.app-toast [data-tone=danger]'),
+    ).not.toBeNull(),
+  );
   await expect(w.vm.crop()).rejects.toThrow();
   await w.setProps({
     file: new File([new Uint8Array(21 * 1024 * 1024)], 'big.png', {
       type: 'image/png',
     }),
   });
-  expect(w.get('[role=alert]').text()).toContain('20 MB');
+  expect(document.querySelector('.app-toast')?.textContent).toContain('20 MB');
   expect(w.find('canvas').exists()).toBe(false);
 });
 

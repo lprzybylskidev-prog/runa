@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import {
   Alert,
   Button,
@@ -11,8 +11,7 @@ import {
   Spinner,
   Table,
   TextInput,
-  ToastViewport,
-  useToasts,
+  FormNotifications,
 } from '@/runa/ui';
 import AppLoadingOverlay from '../../../resources/js/components/AppLoadingOverlay.vue';
 import AppPreferenceControls from '../../../resources/js/components/AppPreferenceControls.vue';
@@ -59,7 +58,6 @@ const {
   needsProof,
   form,
   heading,
-  feedback,
   choose,
   initialize,
   selectTab,
@@ -75,11 +73,7 @@ const {
   sendVerification,
 } = account;
 const display = useDisplayPreferences();
-const toasts = useToasts();
-watch(notice, (value) => {
-  if (value)
-    toasts.show({ title: value, tone: failure.value ? 'warning' : 'success' });
-});
+const feedbackAttempt = ref(0);
 const titles = computed<Record<AccountTab, string>>(() => ({
   details: text('Konto i zabezpieczenia', 'Account and security'),
   security: text(
@@ -275,6 +269,7 @@ const passwordHint = computed(() =>
 <template>
   <div
     class="space-y-6"
+    @submit.capture="feedbackAttempt++"
     :aria-busy="busy"
     :inert="display.changingPreference.value || undefined"
   >
@@ -298,23 +293,6 @@ const passwordHint = computed(() =>
     <h2 ref="heading" tabindex="-1" class="auth-heading text-xl font-semibold">
       {{ titles[tab] }}
     </h2>
-    <div v-if="failure" ref="feedback" tabindex="-1" role="alert">
-      <Alert tone="danger">
-        {{ failureText }}
-        <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button>
-        <Button v-if="!ready || failure === 'conflict'" @click="initialize">{{
-          text('Wczytaj aktualne dane', 'Reload current values')
-        }}</Button>
-      </Alert>
-    </div>
-    <Alert
-      v-if="notice"
-      :tone="failure ? 'warning' : 'success'"
-      :announce="false"
-      >{{ notice }}</Alert
-    >
     <Spinner v-if="!ready && busy" :label="text('Wczytywanie', 'Loading')" />
     <template v-if="ready && profile">
       <Alert v-if="draft && tab === 'details'" tone="info">
@@ -692,12 +670,24 @@ const passwordHint = computed(() =>
       </FormSection>
     </template>
   </div>
-  <ToastViewport
-    :messages="toasts.messages.value"
-    :label="text('Powiadomienia', 'Notifications')"
-    :close-label="text('Zamknij', 'Close')"
-    @dismiss="toasts.dismiss"
-  />
+  <FormNotifications
+    :attempt="feedbackAttempt"
+    :error="failure ? failureText : ''"
+    :success="notice"
+    :invalid="Object.keys(errors).length > 0"
+    :locale="locale"
+  >
+    <template #actions>
+      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
+        text('Odśwież zabezpieczenie', 'Renew form security')
+      }}</Button>
+      <Button
+        v-if="failure && (!ready || failure === 'conflict')"
+        @click="initialize"
+        >{{ text('Wczytaj aktualne dane', 'Reload current values') }}</Button
+      >
+    </template>
+  </FormNotifications>
   <AppLoadingOverlay
     :active="display.coverVisible.value"
     :label="display.t('applyingPreferences')"
