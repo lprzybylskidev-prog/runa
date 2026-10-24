@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 0.5.7
+
+Align the required Auth range to ^0.19.0 for factor dialogs and the additive
+trusted-device controller contract. Existing grants/authority remain unchanged.
+Source-only forward edge; no data change.
+
 ## 0.5.6
 
 Align Auth dependency with compatible 0.18.0 secondary-address orchestration.

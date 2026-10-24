@@ -15,7 +15,12 @@ import {
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
 import CustomerApplication from './fixtures/customization/CustomerApplication.vue';
-import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
+import {
+  enableAutoUnmount,
+  flushPromises,
+  mount,
+  DOMWrapper,
+} from '@vue/test-utils';
 import AuthAccount from '../../modules/auth/frontend/AuthAccount.vue';
 import AuthWelcome from '../../modules/auth/frontend/AuthWelcome.vue';
 import AuthApplication from '../../modules/auth/frontend/AuthApplication.vue';
@@ -392,7 +397,7 @@ it('optional TOTP setup retains its private key only until confirmation and requ
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
   await w
-    .get('[data-account-section=security]')
+    .get('[data-account-security]')
     .findAll('button')
     .find((button) => button.text() === 'Skonfiguruj')!
     .trigger('click');
@@ -408,28 +413,45 @@ it('optional TOTP setup retains its private key only until confirmation and requ
         ? { secret: 'ABCDEFGHIJKLMNOP', qr_code: qrImage }
         : { recovery_codes: ['a'.repeat(32)] },
     );
-  await w
+  await new DOMWrapper(document.body)
     .get('[data-account-section=security] input[name="current_password"]')
     .setValue('a-long-test-password');
-  await w.get('[data-account-section=security]').trigger('submit');
+  await new DOMWrapper(document.body)
+    .get('[data-account-section=security]')
+    .trigger('submit');
   await flushPromises();
-  expect(w.get('[data-enrollment-secret]').text()).toBe('ABCDEFGHIJKLMNOP');
-  expect(w.get('[data-enrollment-qr]').attributes('src')).toBe(qrImage);
-  expect(w.get('[data-enrollment-qr]').attributes('alt')).toContain('Kod QR');
+  expect(
+    new DOMWrapper(document.body).get('[data-enrollment-secret]').text(),
+  ).toBe('ABCDEFGHIJKLMNOP');
+  expect(
+    new DOMWrapper(document.body).get('[data-enrollment-qr]').attributes('src'),
+  ).toBe(qrImage);
+  expect(
+    new DOMWrapper(document.body).get('[data-enrollment-qr]').attributes('alt'),
+  ).toContain('Kod QR');
   expect(
     (
-      w.get('[data-account-section=security] input[name="current_password"]')
-        .element as HTMLInputElement
+      new DOMWrapper(document.body).get(
+        '[data-account-section=security] input[name="current_password"]',
+      ).element as HTMLInputElement
     ).value,
   ).toBe('');
-  await w
+  await new DOMWrapper(document.body)
     .get('[data-account-section=security] input[name="current_password"]')
     .setValue('a-long-test-password');
-  await w.get('input[name="enrollment_code"]').setValue('123456');
-  await w.get('[data-account-section=security]').trigger('submit');
+  await new DOMWrapper(document.body)
+    .get('input[name="enrollment_code"]')
+    .setValue('123456');
+  await new DOMWrapper(document.body)
+    .get('[data-account-section=security]')
+    .trigger('submit');
   await flushPromises();
-  expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
-  expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
+  expect(
+    new DOMWrapper(document.body).find('[data-enrollment-secret]').exists(),
+  ).toBe(false);
+  expect(
+    new DOMWrapper(document.body).find('[data-enrollment-qr]').exists(),
+  ).toBe(false);
   await vi.waitFor(() =>
     expect(document.querySelector('[data-recovery-code]')?.textContent).toBe(
       'a'.repeat(32),
@@ -663,7 +685,7 @@ it('account password card submits independently of invalid account details', asy
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
   await w
-    .get('[data-account-section=security]')
+    .get('[data-account-security]')
     .findAll('button')
     .find((button) => button.text() === 'Skonfiguruj')!
     .trigger('click');
@@ -956,15 +978,22 @@ it('avatar removal requires confirmation, cancel preserves the image and confirm
   );
 });
 
-it('two-factor method controls enable email codes directly without an operation select', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+it('two-factor method controls open isolated email setup dialogs and cancel private drafts', async () => {
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
   await loaded(w);
-  const form = w.get('[data-account-section=security]');
-  expect(form.find('select').exists()).toBe(false);
-  await form
+  const card = w.get('[data-account-security]');
+  expect(card.find('form').exists()).toBe(false);
+  expect(card.find('[name=current_password]').exists()).toBe(false);
+  await card
     .findAll('button')
     .filter((button) => button.text() === 'Skonfiguruj')[0]!
     .trigger('click');
+  let form = new DOMWrapper(document.body).get(
+    '[data-account-section=security]',
+  );
   await form
     .get('[name=current_password]')
     .setValue('discard-this-security-draft');
@@ -972,12 +1001,17 @@ it('two-factor method controls enable email codes directly without an operation 
     .findAll('button')
     .find((button) => button.text() === 'Anuluj')!
     .trigger('click');
-  expect(form.find('[name=current_password]').exists()).toBe(false);
+  expect(
+    new DOMWrapper(document.body)
+      .find('[data-account-section=security]')
+      .exists(),
+  ).toBe(false);
   expect(writes).toHaveLength(0);
-  await form
+  await card
     .findAll('button')
     .filter((button) => button.text() === 'Skonfiguruj')[1]!
     .trigger('click');
+  form = new DOMWrapper(document.body).get('[data-account-section=security]');
   expect(
     (form.get('[name=current_password]').element as HTMLInputElement).value,
   ).toBe('');
@@ -1022,11 +1056,14 @@ it('two-factor disable acts on the chosen enrolled method and retains current-fa
   currentSecurity = { ...security, enrolled: ['totp', 'email'] };
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  const form = w.get('[data-account-section=security]');
-  await form
+  const card = w.get('[data-account-security]');
+  await card
     .findAll('button')
     .filter((button) => button.text() === 'Wyłącz')[1]!
     .trigger('click');
+  const form = new DOMWrapper(document.body).get(
+    '[data-account-section=security]',
+  );
   await form.get('[name=current_password]').setValue('a-long-test-password');
   await form.get('[name=code]').setValue('123456');
   await form.trigger('submit');
@@ -1050,11 +1087,14 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
     expect(() => enrollmentQrCode(image)).toThrow();
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  const form = w.get('[data-account-section=security]');
-  await form
+  const card = w.get('[data-account-security]');
+  await card
     .findAll('button')
     .find((button) => button.text() === 'Skonfiguruj')!
     .trigger('click');
+  const form = new DOMWrapper(document.body).get(
+    '[data-account-section=security]',
+  );
   write = () =>
     json({
       secret: 'ABCDEFGHIJKLMNOP',
@@ -1063,14 +1103,20 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
   await form.get('[name=current_password]').setValue('a-long-test-password');
   await form.trigger('submit');
   await vi.waitFor(() =>
-    expect(w.find('[data-enrollment-qr]').exists()).toBe(true),
+    expect(
+      new DOMWrapper(document.body).find('[data-enrollment-qr]').exists(),
+    ).toBe(true),
   );
   await form
     .findAll('button')
     .find((button) => button.text() === 'Anuluj')!
     .trigger('click');
-  expect(w.find('[data-enrollment-qr]').exists()).toBe(false);
-  expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
+  expect(
+    new DOMWrapper(document.body).find('[data-enrollment-qr]').exists(),
+  ).toBe(false);
+  expect(
+    new DOMWrapper(document.body).find('[data-enrollment-secret]').exists(),
+  ).toBe(false);
   expect(w.getComponent(AuthAccountEditor).props('account').qrCode.value).toBe(
     '',
   );
@@ -1086,11 +1132,14 @@ it('recovery-code replacement uses a guarded modal and requires explicit saved a
   currentSecurity = { ...security, enrolled: ['totp'] };
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  const form = w.get('[data-account-section=security]');
-  await form
+  const card = w.get('[data-account-security]');
+  await card
     .findAll('button')
     .find((button) => button.text() === 'Wygeneruj nowe kody odzyskiwania')!
     .trigger('click');
+  const form = new DOMWrapper(document.body).get(
+    '[data-account-section=security]',
+  );
   write = () => json({ recovery_codes: ['c'.repeat(32), 'd'.repeat(32)] });
   await form.get('[name=current_password]').setValue('a-long-test-password');
   await form.get('[name=code]').setValue('123456');
@@ -1378,4 +1427,254 @@ it('account session sorting uses instants across month boundaries and concise En
   await w.get('th[data-column-key="expires"] button').trigger('click');
   await flushPromises();
   expect(w.get('tbody tr').text()).toContain('Bieżąca');
+});
+
+it('trusted devices live inside two-factor settings and cannot be enabled without an enrolled factor', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  const nav = w.get('nav[aria-label="Ustawienia konta"]');
+  expect(nav.text()).not.toContain('Zaufane urządzenia');
+  const card = w.get('[data-account-security]');
+  const trigger = card
+    .findAll('button')
+    .find((button) => button.text() === 'Zaufaj tej przeglądarce')!;
+  expect(trigger.attributes('disabled')).toBeDefined();
+  expect(card.text()).toContain('Najpierw włącz uwierzytelnianie dwuetapowe');
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.overviewAction.value = 'trustIssue';
+  await state.saveSection('security');
+  expect(writes).toHaveLength(0);
+  expect(state.failure.value).toBe('unavailable');
+  state.overviewAction.value = 'none';
+  state.security.value = { ...state.security.value!, enrolled: ['email'] };
+  await flushPromises();
+  expect(trigger.attributes('disabled')).toBeUndefined();
+});
+
+it('trust issuance requires a fresh factor in its modal and leaves unrelated account drafts intact', async () => {
+  currentSecurity = {
+    ...security,
+    enrolled: ['email'],
+    trusted_devices_enabled: true,
+  };
+  const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (
+      String(input).split('?')[0]!.endsWith('/trusted-devices') &&
+      (!init?.method || init.method === 'GET')
+    )
+      return new Response(
+        JSON.stringify({ data: [], meta: { next_cursor: null } }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    return fetcher(input, init);
+  });
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  await w.get('input[name=name]').setValue('Unsaved identity');
+  await w
+    .get('[data-account-section=password] input[name=password]')
+    .setValue('unsaved-password');
+  await w
+    .get('[data-trusted-devices]')
+    .findAll('button')
+    .find((button) => button.text() === 'Zaufaj tej przeglądarce')!
+    .trigger('click');
+  const form = new DOMWrapper(document.body).get(
+    '[data-account-section=security]',
+  );
+  expect(form.element.closest('[role=dialog]')).not.toBeNull();
+  expect(form.find('[name=current_password]').exists()).toBe(false);
+  await form.trigger('submit');
+  expect(writes).toHaveLength(0);
+  await form.get('[name=code]').setValue('123456');
+  await form.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]).toMatchObject({
+    path: '/api/runa/auth/trusted-devices',
+    body: { method: 'email', code: '123456' },
+  });
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('[data-account-section=security]'),
+    ).toBeNull(),
+  );
+  expect((w.get('input[name=name]').element as HTMLInputElement).value).toBe(
+    'Unsaved identity',
+  );
+  expect(
+    (
+      w.get('[data-account-section=password] input[name=password]')
+        .element as HTMLInputElement
+    ).value,
+  ).toBe('unsaved-password');
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  expect(state.sectionFields.security.code).toBe('');
+});
+
+it('trusted device management keeps isolated cursor rows and confirms revocation inside a dialog', async () => {
+  currentSecurity = {
+    ...security,
+    enrolled: ['email'],
+    trusted_devices_enabled: true,
+  };
+  const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
+  let revoked = false;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    const url = new URL(String(input), window.location.origin);
+    if (
+      url.pathname.endsWith('/trusted-devices') &&
+      (!init?.method || init.method === 'GET')
+    )
+      return new Response(
+        JSON.stringify({
+          data: revoked
+            ? []
+            : [
+                {
+                  public_id: url.searchParams.has('before') ? other : id,
+                  created_at: '2026-10-01T12:00:00Z',
+                  expires_at: '2026-11-01T12:00:00Z',
+                },
+              ],
+          meta: {
+            next_cursor:
+              !revoked && !url.searchParams.has('before') ? id : null,
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    return fetcher(input, init);
+  });
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.rows.value = [{ public_id: other, current: true }];
+  await w
+    .get('[data-trusted-devices]')
+    .findAll('button')
+    .find((button) => button.text() === 'Zarządzaj urządzeniami')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('[role=dialog] tbody tr')).toHaveLength(1),
+  );
+  const body = new DOMWrapper(document.body);
+  await body
+    .findAll('[role=dialog] button')
+    .find((button) => button.text() === 'Wczytaj starsze')!
+    .trigger('click');
+  await vi.waitFor(() => expect(state.trustedRows.value).toHaveLength(2));
+  expect(state.rows.value).toEqual([{ public_id: other, current: true }]);
+  await body.get('[role=dialog] tbody button').trigger('click');
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('[role=dialog]')).toHaveLength(2),
+  );
+  expect(writes).toHaveLength(0);
+  write = () => json('csrf_token_mismatch', 419);
+  const confirmation = body.findAll('[role=dialog]')[1]!;
+  await confirmation
+    .findAll('button')
+    .find((button) => button.text() === 'Unieważnij')!
+    .trigger('click');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  await vi.waitFor(() => expect(state.failure.value).toBe('csrf'));
+  expect(state.trustedRows.value).toHaveLength(2);
+  await vi.waitFor(() =>
+    expect(
+      body
+        .findAll('.app-toast button')
+        .some((button) => button.text() === 'Odśwież zabezpieczenie'),
+    ).toBe(true),
+  );
+  await body
+    .findAll('.app-toast button')
+    .find((button) => button.text() === 'Odśwież zabezpieczenie')!
+    .trigger('click');
+  await flushPromises();
+  expect(writes).toHaveLength(1);
+  write = () => {
+    revoked = true;
+    return json({ revoked: true });
+  };
+  await confirmation
+    .findAll('button')
+    .find((button) => button.text() === 'Unieważnij')!
+    .trigger('click');
+  await vi.waitFor(() => expect(writes).toHaveLength(2));
+  expect(writes[1]).toMatchObject({
+    path: '/api/runa/auth/trusted-devices/revoke',
+    body: { public_id: id },
+  });
+  await vi.waitFor(() =>
+    expect(state.trustedRows.value.map((row) => row.public_id)).toEqual([
+      other,
+    ]),
+  );
+});
+
+it('factor dialogs keep failures inside their focus boundary and never replay after CSRF renewal', async () => {
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  const setup = w
+    .get('[data-account-security]')
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!;
+  await setup.trigger('click');
+  const body = new DOMWrapper(document.body);
+  let form = body.get('[data-account-section=security]');
+  expect(form.element.closest('[role=dialog]')).not.toBeNull();
+  write = () => json('csrf', 419);
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.trigger('submit');
+  await vi.waitFor(() =>
+    expect(
+      w.getComponent(AuthAccountEditor).props('account').failure.value,
+    ).toBe('csrf'),
+  );
+  expect(writes).toHaveLength(1);
+  await vi.waitFor(() =>
+    expect(
+      body
+        .findAll('.app-toast button')
+        .some((button) => button.text() === 'Odśwież zabezpieczenie'),
+    ).toBe(true),
+  );
+  const renewal = body
+    .findAll('.app-toast button')
+    .find((button) => button.text() === 'Odśwież zabezpieczenie')!;
+  expect(renewal.element.closest('.dialog-backdrop')).not.toBeNull();
+  await renewal.trigger('click');
+  await flushPromises();
+  expect(writes).toHaveLength(1);
+  await form.get('[name=current_password]').setValue('discard-on-escape');
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('[data-account-section=security]'),
+    ).toBeNull(),
+  );
+  expect(
+    w.getComponent(AuthAccountEditor).props('account').sectionFields.security
+      .current_password,
+  ).toBe('');
+  await setup.trigger('click');
+  form = body.get('[data-account-section=security]');
+  expect(
+    (form.get('[name=current_password]').element as HTMLInputElement).value,
+  ).toBe('');
 });

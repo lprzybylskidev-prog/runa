@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.19.0
+
+Move all two-factor actions into guarded dialogs; group trusted devices under the
+factor card with usable-enrollment gating. Add independent trustedRows/trustedCursor,
+canTrustDevice and explicit load/revoke controller methods; keep legacy trust tab
+seams for custom presentations. Preserve fresh factor proof and ephemeral secrets.
+Source-only forward edge; no data/security policy change.
+
 ## 0.18.2
 
 Use concise End actions for all own sessions and the global default table sorting

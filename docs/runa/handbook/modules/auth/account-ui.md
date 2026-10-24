@@ -64,8 +64,9 @@ account access, without speculative business statistics or management navigation
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
 The default account editor groups identity, private avatar, password and two-factor
-settings in four shared Cards. Each Card has a visible Form and an independent
-submission boundary, credential draft and validation. Wide screens use two
+settings in four shared Cards. Details, avatar and password have visible Forms;
+two-factor actions open shared dialogs. Each submission keeps its own credential
+draft, validation and pending state. Wide screens use two
 independent column stacks: details/password on the left, avatar/two-factor on the
 right. A taller neighboring card does not add space between details and password;
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
@@ -112,17 +113,28 @@ reports its result through the existing top-right notifications. Pending image
 selection must first be saved or discarded before removing the stored image.
 
 The two-factor card lists each policy-available method with its enabled/disabled
-state, explanation and explicit Set up/Disable action, rather than an operation
-select. Selecting a method reveals its current-password/proof fields and a named
-submit; Cancel clears the local setup/proof draft. Authenticator enrollment still
-shows a scannable QR plus a manual key, then requires confirming its code and
-acknowledging recovery codes in the shared recovery-code Dialog. Initial enrollment
-and replacing codes use the same modal: the warning and codes are in its body,
-with only an explicit saved acknowledgement in the footer. Escape/outside/X cannot
-silently discard these one-time values. The QR stays in memory only with the current setup
-secret and is cleared on cancellation/completion; setup material is excluded from
-printing. Email enrollment
-requires a verified primary address; replacing recovery codes remains explicit.
+state, explanation and explicit Set up/Disable action. Every factor action opens a
+shared Dialog containing its current-password/proof fields and named submission.
+Cancel, Escape and X clear the local proof, enrollment secret/QR and validation;
+pending submissions cannot be dismissed or replayed. Feedback/recovery actions
+stay inside the dialog focus layer. Other card drafts remain untouched.
+Authenticator enrollment keeps the same dialog through begin/confirm, displays the
+private QR/manual key and requires fresh proof at each stage. Success hands
+single-display recovery codes to the shared acknowledgement-only Dialog. Initial
+and replacement codes use the same modal; Escape/outside/X cannot discard them.
+Secrets/QR/codes remain memory-only and excluded from print. Email enrollment
+requires a verified primary address.
+
+Trusted devices appear within the two-factor card when policy enables the feature;
+there is no separate default navigation tab. Trust this browser is disabled until a
+usable factor is enrolled. Its Dialog accepts a fresh factor code through the
+existing backend boundary, without inventing an additional password requirement.
+Manage devices opens a bounded, sortable Table in a Dialog, with explicit older-page
+loading and refresh. Each revoke action requires modal confirmation. List errors
+retain the dialog and provide refresh; CSRF errors provide explicit renewal without
+write replay. Disabling/losing a factor never weakens the server's trust checks.
+Legacy trust tab/choose/submit seams remain for custom presentations; new independent
+trusted-device state/actions are documented in the public presentation contract.
 
 Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/Table:
 

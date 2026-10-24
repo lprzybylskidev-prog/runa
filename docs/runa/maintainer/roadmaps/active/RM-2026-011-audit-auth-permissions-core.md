@@ -65,6 +65,14 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests moving trusted-device management into Two-factor
+  authentication and allowing new trust only after a usable factor is enrolled.
+  Point 19x moves all factor and trust actions into shared dialogs, preserves
+  fresh server factor proof and existing authorization/Audit, clears private modal
+  drafts on cancel, and republishes the local client for continued visual review.
+  Keep legacy custom-presentation controller seams, add independent trusted-device
+  state/actions and review module/dependent versions. Final point 20 remains gated.
+
 - 2026-10-24 — Owner requests the concise End session label and global column
   sorting. Point 19w makes data columns sortable by default with explicit false
   opt-out, preserves server capability allowlists and the existing three-state
@@ -1033,6 +1041,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19u. Apply the existing shared native Markdown email layout to all direct Auth mail, preserving private delivery, text alternatives and single-attempt guards.
 - [x] 19v. Consolidate browser evidence, pnpm store and Python bytecode under workspace-root .runtime; preserve existing artifacts and configure future writes.
 - [x] 19w. Enable global default column sorting and repair active-session actions/date ordering.
+- [x] 19x. Move trusted devices into two-factor settings and use guarded dialogs for all factor/trust actions.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3178,3 +3187,58 @@ architectural premise requires discussion before dependent work.
 - No Docker resources created/removed; development/test data, existing sessions,
   credentials/2FA, Qdrant/model caches, backups and reports preserved. No broad
   tests/static analysis/scanners or final point 20; owner visual acceptance pending.
+
+## Point 19x delivery
+
+- Moved trusted-device presentation into the default Two-factor authentication
+  Card and removed its separate default navigation tab. Policy-disabled features
+  stay hidden; new browser trust remains disabled until a usable enrolled factor
+  exists. Management stays available for inspecting/revoking existing trust.
+- Extracted module-owned AuthAccountSecurity from the editor. Setup, confirmation,
+  email enablement, method removal, recovery replacement and trust issuance now
+  run in shared Dialogs; trusted-device lists use a Dialog and row revocation uses
+  ConfirmDialog. Existing password/factor requirements remain unchanged: factor
+  changes require the existing current password/proof; trust issuance needs the
+  existing fresh factor, without an invented password requirement.
+- Cancel/Escape/X clears modal password/code/enrollment-key/QR and validation.
+  Pending work cannot dismiss/replay. Begin/confirm remains in one dialog, then
+  hands one-time recovery codes to the existing acknowledgement-only dialog.
+  Shared modal motion/focus/feedback and reduced-motion/print contracts remain;
+  retained exit DOM completes the established transition before detaching.
+- Added public independent trustedRows/trustedCursor, canTrustDevice,
+  loadTrustedDevices and revokeTrustedDevice controller seams. Bounded explicit
+  older-page loading and successful-row removal preserve unrelated session/history
+  state and account/password/avatar drafts. Retain legacy trust tab/choose/submit
+  seams for customer replacements. Fresh browser issuance is additionally gated
+  in the controller; backend CredentialFactors already independently requires an
+  actual enrolled, permitted factor/code inside SecurityContext and Audit.
+- Auth MINOR 0.18.2 -> 0.19.0 records additive presentation/controller capabilities;
+  Permissions PATCH 0.5.6 -> 0.5.7 aligns its required Auth range to ^0.19.0.
+  Reviewed dependency compatibility, added source-only forward edges and applied
+  them locally through ModuleUpdates. Audit stays 0.5.0, platform VERSION 0.4.2 and
+  framework API 1.0.0; source/runtime/version diagnostics pass. No schema/settings,
+  policy, credential, public backend API or dependency change.
+- Ten selected browser-component regressions pass: TOTP lifecycle/QR cleanup,
+  recovery acknowledgement, chosen-method removal, email modal/cancel, independent
+  password submission, no-factor trust gating, fresh trust proof, isolated bounded
+  list/revoke confirmation and CSRF renewal without replay. Fixture selectors were
+  migrated to teleported forms/toasts; the optional proof component preserves its
+  existing default current-password field. One focused backend case passes with
+  17 assertions, including refusal before factor enrollment and preservation of
+  trust/step-up/password-change revocation rules.
+- Published current client assets with focused Vite builds for continued review.
+  Inspected synthetic read-only API previews of the served card/setup/trust/list/
+  revoke dialogs at 1440px/390px in both themes: no document overflow or page errors.
+  Evidence: .runtime/dev/manual-auth/factor-dialogs. Synthetic setup QR pixels are
+  a placeholder; existing private real QR generation is unchanged. No real email,
+  account mutation, session issuance or destructive reset was performed by previews.
+- Synchronized public account/security/presentation contracts, module READMEs and
+  changelogs, owner component guidance and customer frontend reference. Corrected
+  the stale Permissions README version/dependency claim. Existing owner/customer
+  root rules and Vue/security/backend skills already route to public contracts and
+  require server-side authority, so need no duplicate rule. No shell duplicate
+  factor controls require migration; the account editor uses the extracted Card.
+- No Docker resources created/removed; development/test data, current owner sessions,
+  credentials/2FA, Qdrant/model caches, backups and reports preserved. Full suites,
+  static analysis/scanners and final point 20 remain deferred; owner visual acceptance
+  is still pending.

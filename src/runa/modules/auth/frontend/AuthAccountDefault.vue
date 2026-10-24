@@ -153,7 +153,7 @@ const formVisible = computed(
 );
 const visibleTabs = computed(() =>
   tabs.value.filter(
-    (value) => !['security', 'avatar', 'addresses'].includes(value),
+    (value) => !['security', 'avatar', 'addresses', 'trust'].includes(value),
   ),
 );
 const history = computed(() => tab.value.endsWith('History'));

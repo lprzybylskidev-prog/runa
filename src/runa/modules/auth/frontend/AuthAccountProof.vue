@@ -2,10 +2,14 @@
 import { computed } from 'vue';
 import { Button, RadioGroup, TextInput } from '@/runa/ui';
 import type { AccountSection, useAuthAccount } from './useAuthAccount';
-const props = defineProps<{
-  account: ReturnType<typeof useAuthAccount>;
-  section: AccountSection;
-}>();
+const props = withDefaults(
+  defineProps<{
+    account: ReturnType<typeof useAuthAccount>;
+    section: AccountSection;
+    passwordRequired?: boolean;
+  }>(),
+  { passwordRequired: true },
+);
 const {
   text,
   method,
@@ -25,6 +29,7 @@ const needsProof = computed(
 </script>
 <template>
   <TextInput
+    v-if="passwordRequired !== false"
     :model-value="sectionFields[section].current_password ?? ''"
     name="current_password"
     type="password"

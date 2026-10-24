@@ -664,6 +664,8 @@ it('never uses trusted device bypass for mandatory step up and revokes trust on 
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/trusted-devices', ['method' => 'totp', 'code' => '123456'])->assertUnprocessable();
+    expect(DB::table('runa_auth.trusted_devices')->where('user_id', $user->id)->count())->toBe(0);
     [$secret, $codes] = credentialEnroll($this, $user);
     $issued = $this->postJson('/api/runa/auth/trusted-devices', ['method' => 'recovery', 'code' => $codes[0]])->assertOk();
     $cookie = collect($issued->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'runa_trust');

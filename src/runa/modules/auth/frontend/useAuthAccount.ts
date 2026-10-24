@@ -103,6 +103,7 @@ export function useAuthAccount(accountId: string) {
     | 'emailEnable'
     | 'disable'
     | 'recoveryRotate'
+    | 'trustIssue'
   >('none');
   const removeAvatar = ref(false);
   const sectionFields = reactive<
@@ -130,6 +131,14 @@ export function useAuthAccount(accountId: string) {
   );
   const rows = ref<AccountRow[]>([]),
     cursor = ref<string | null>(null);
+  const trustedRows = ref<AccountRow[]>([]),
+    trustedCursor = ref<string | null>(null);
+  let trustedReadEpoch = 0;
+  const canTrustDevice = computed(
+    () =>
+      security.value?.trusted_devices_enabled === true &&
+      proofMethods.value.length > 0,
+  );
   const delivery = ref<DeliveryChoice[]>([]),
     deliveryRevision = ref(0);
   const draft = shallowRef<Record<string, string> | null>(null);
@@ -401,6 +410,48 @@ export function useAuthAccount(accountId: string) {
       cursor.value = page.cursor;
     }
   }
+  async function readTrustedDevices(append = false) {
+    const own = ++trustedReadEpoch;
+    const input =
+      append && trustedCursor.value ? { before: trustedCursor.value } : {};
+    const page = pageResponse(
+      await accountRequest('trusted-devices', 'GET', input, abort.signal),
+    );
+    if (alive && own === trustedReadEpoch) {
+      trustedRows.value = append
+        ? [...trustedRows.value, ...page.rows]
+        : page.rows;
+      trustedCursor.value = page.cursor;
+    }
+  }
+  async function loadTrustedDevices(append = false) {
+    if (!security.value?.trusted_devices_enabled) return false;
+    return (await perform(() => readTrustedDevices(append), false)) === true;
+  }
+  async function revokeTrustedDevice(publicId: string) {
+    if (
+      !security.value?.trusted_devices_enabled ||
+      !trustedRows.value.some((row) => row.public_id === publicId)
+    )
+      return false;
+    return (
+      (await perform(async () => {
+        await authPost(
+          'trusted-devices/revoke',
+          { public_id: publicId },
+          abort.signal,
+        );
+        if (!alive) return;
+        trustedRows.value = trustedRows.value.filter(
+          (row) => row.public_id !== publicId,
+        );
+        notice.value = text(
+          'Zaufanie urządzeniu zostało unieważnione.',
+          'Device trust revoked.',
+        );
+      }, false)) === true
+    );
+  }
   async function readDelivery() {
     const p = data(
       await authPost(
@@ -670,6 +721,11 @@ export function useAuthAccount(accountId: string) {
       notice.value = text('Brak zmian do zapisania.', 'No changes to save.');
       return;
     }
+    if (plan.includes('trustIssue') && !canTrustDevice.value) {
+      cleanErrors();
+      failure.value = 'unavailable';
+      return;
+    }
     // A factor proof may be single-use. Never reuse it for a second protected write.
     if (
       plan.includes('password') &&
@@ -680,6 +736,7 @@ export function useAuthAccount(accountId: string) {
           'emailEnable',
           'disable',
           'recoveryRotate',
+          'trustIssue',
         ].includes(operation),
       )
     ) {
@@ -760,20 +817,25 @@ export function useAuthAccount(accountId: string) {
                 'Profile image saved.',
               ),
           password: text('Hasło zostało zmienione.', 'Password changed.'),
-          security: secret.value
+          security: plan.includes('trustIssue')
             ? text(
-                'Konfiguracja rozpoczęta. Potwierdź aplikację kodem.',
-                'Setup started. Confirm the authenticator with its code.',
+                'Ta przeglądarka została dodana do zaufanych.',
+                'This browser is now trusted.',
               )
-            : codes.value.length
+            : secret.value
               ? text(
-                  'Metoda została zapisana. Zachowaj kody odzyskiwania.',
-                  'Method saved. Save the recovery codes.',
+                  'Konfiguracja rozpoczęta. Potwierdź aplikację kodem.',
+                  'Setup started. Confirm the authenticator with its code.',
                 )
-              : text(
-                  'Ustawienia weryfikacji zostały zapisane.',
-                  'Verification settings saved.',
-                ),
+              : codes.value.length
+                ? text(
+                    'Metoda została zapisana. Zachowaj kody odzyskiwania.',
+                    'Method saved. Save the recovery codes.',
+                  )
+                : text(
+                    'Ustawienia weryfikacji zostały zapisane.',
+                    'Verification settings saved.',
+                  ),
         }[section];
       if (plan.includes('email'))
         notice.value = text(
@@ -989,6 +1051,9 @@ export function useAuthAccount(accountId: string) {
       rememberAccountDraft(accountId, fields, draftEpoch);
     alive = false;
     readEpoch++;
+    trustedReadEpoch++;
+    trustedRows.value = [];
+    trustedCursor.value = null;
     abort.abort();
     cleanSecrets();
     for (const values of Object.values(sectionFields))
@@ -1052,6 +1117,11 @@ export function useAuthAccount(accountId: string) {
     resetPreferences,
     restoreDraft,
     readPage,
+    trustedRows,
+    trustedCursor,
+    canTrustDevice,
+    loadTrustedDevices,
+    revokeTrustedDevice,
     perform,
     refreshCsrf: () =>
       perform(async () => {

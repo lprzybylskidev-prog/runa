@@ -111,6 +111,11 @@ by current policy: mandatory TOTP cannot become an email/password bypass.
 
 ## Trusted devices
 
+The default account view groups trust under Two-factor authentication. New trust
+requires a usable enrolled factor and a fresh factor proof; the UI disables issuance
+before enrollment and the backend independently refuses it. Management and factor
+actions use the shared dialog/focus/ephemeral-draft contract in [account UI](account-ui.md).
+
 `trusted_devices_enabled` defaults false; `trusted_device_days` defaults to 30
 (range 1–90). Issuance requires a fresh permitted second-factor proof. The native
 encrypted `runa_trust` cookie is host-only, HttpOnly, SameSite=Lax and Secure in

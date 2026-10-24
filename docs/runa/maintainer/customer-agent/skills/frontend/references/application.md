@@ -127,3 +127,8 @@ pending; retain verified-recipient and explicit removal confirmation rules.
 Table data columns sort by default; use sortable: false to opt out and preserve
 server capability allowlists. Compare date instants rather than localized text.
 Use the public tables guide for the complete contract.
+
+Account factor actions belong in shared dialogs; trusted-device management is part
+of two-factor settings and new trust requires an active factor plus fresh proof.
+Follow the public account UI/presentation guides for independent controller state,
+secret cleanup, feedback focus and legacy custom-presentation seams.

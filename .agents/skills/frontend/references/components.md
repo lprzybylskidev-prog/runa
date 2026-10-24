@@ -20,3 +20,8 @@ Auth one-time recovery values use public AuthRecoveryCodesDialog from `@/runa/au
 for both initial enrollment and replacement; its acknowledgement/cleanup contract
 is in the public presentation guide. Alert icons center vertically against content
 without forcing centered message text.
+
+Account factor actions belong in shared dialogs; trusted-device management is part
+of two-factor settings and new trust requires an active factor plus fresh proof.
+Follow the public account UI/presentation guides for independent controller state,
+secret cleanup, feedback focus and legacy custom-presentation seams.
