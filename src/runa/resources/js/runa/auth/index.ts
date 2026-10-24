@@ -22,6 +22,9 @@ export const DefaultApplication = defineAsyncComponent(
 export const AuthAccount = defineAsyncComponent(
   () => import('../../../../modules/auth/frontend/AuthAccount.vue'),
 );
+export const AuthAvatarCropper = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/AuthAvatarCropper.vue'),
+);
 export { default as AuthPresentationProvider } from '../../../../modules/auth/frontend/AuthPresentationProvider.vue';
 export type { AuthPresentation } from '../../../../modules/auth/frontend/presentation';
 export { useAuthEntry } from '../../../../modules/auth/frontend/useAuthEntry';
@@ -38,6 +41,7 @@ export type {
 export type {
   AccountTab,
   AccountTask,
+  AccountSection,
 } from '../../../../modules/auth/frontend/useAuthAccount';
 export type {
   Profile,

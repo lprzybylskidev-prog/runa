@@ -145,7 +145,13 @@ They are backend domain operations, with no administration UI.
 
 Uploads use native content/MIME/image/dimension validation for JPEG, PNG and WebP,
 1–4096 pixels per dimension, and `avatar_max_kib` (default 2048, range 1–5120).
-SVG, executable/HTML/script-like payloads and unsupported formats are refused.
+SVG and unsupported formats are refused. Container boundaries and nonpixel
+metadata are inspected for active PHP/HTML/SVG/script markers and appended payloads;
+compressed image pixels are never scanned as source text. Ordinary XML/XMP
+processing instructions remain valid metadata. This is not an image decoder or a
+general-purpose sanitizer; authenticated image content type, nosniff, restrictive
+CSP and private storage remain required. The default UI accepts larger local
+originals and sends a bounded 512px PNG crop; see [account UI](account-ui.md).
 Original names never become paths. The private ModuleStorage namespace uses the
 owning account UUIDv7 and a fresh UUIDv7 file name. Image bytes return only through
 the authenticated own route, with fixed validated content type, nosniff, restrictive

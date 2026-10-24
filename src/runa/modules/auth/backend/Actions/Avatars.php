@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\AvatarImageContent;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -48,10 +49,10 @@ final readonly class Avatars
             $this->refuse('avatar_invalid', 422);
         }
         $contents = $file->getContent();
-        if (preg_match('/<\?(?:php|=)?|<\s*(?:svg|script|html)\b/i', $contents)) {
+        $type = $file->getMimeType();
+        if (! is_string($type) || ! AvatarImageContent::safe($contents, $type)) {
             $this->refuse('avatar_invalid', 422);
         }
-        $type = $file->getMimeType();
         $extension = match ($type) {
             'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', default => throw new \InvalidArgumentException('Invalid avatar content.')
         };

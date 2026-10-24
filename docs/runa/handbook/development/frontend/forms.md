@@ -102,11 +102,17 @@ muted text without a permanent underline, underline/color on hover, visible focu
 
 ## Related settings in one editor
 
-Group related settings into one visible form rather than requiring task buttons
-to reveal ordinary editable fields. Use labelled sections and a responsive grid;
-keep the primary outlined save action clear. Preserve deliberate multi-step
-security confirmation and destructive-action confirmation. A unified presentation
-does not imply atomic backend writes: validate selected changes before requests,
-respect each endpoint's proofs/version, stop on failure and report partial success
-without replay. The [account editor](../../modules/auth/account-ui.md) supplies this
-pattern through its public controller; customer code does not copy orchestration.
+Group related settings into one visible editing area rather than requiring task
+buttons to reveal ordinary fields. Compose existing Card headers/bodies and give
+independent operations their own Form and outlined submit. Keep each operation's
+credential draft, validation, focus target and cleanup scoped to its form. Use
+FormSection for field groups within a form, not as a substitute for a Card.
+Saving one operation must not submit or discard another operation's draft.
+
+Use shared Alert for inline feedback and ToastViewport/useToasts for transient
+success, with specific operation descriptions. Preserve deliberate multi-step
+security and destructive confirmation. Where one form needs multiple endpoints,
+validate first, respect each proof/version, stop on failure and report partial
+success without replay. The [account editor](../../modules/auth/account-ui.md)
+supplies this pattern through its public controller; customer code does not copy
+orchestration.

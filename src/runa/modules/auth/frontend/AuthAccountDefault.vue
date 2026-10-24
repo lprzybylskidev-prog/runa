@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   Alert,
   Button,
@@ -11,6 +11,8 @@ import {
   Spinner,
   Table,
   TextInput,
+  ToastViewport,
+  useToasts,
 } from '@/runa/ui';
 import AppLoadingOverlay from '../../../resources/js/components/AppLoadingOverlay.vue';
 import AppPreferenceControls from '../../../resources/js/components/AppPreferenceControls.vue';
@@ -73,6 +75,11 @@ const {
   sendVerification,
 } = account;
 const display = useDisplayPreferences();
+const toasts = useToasts();
+watch(notice, (value) => {
+  if (value)
+    toasts.show({ title: value, tone: failure.value ? 'warning' : 'success' });
+});
 const titles = computed<Record<AccountTab, string>>(() => ({
   details: text('Konto i zabezpieczenia', 'Account and security'),
   security: text(
@@ -302,13 +309,12 @@ const passwordHint = computed(() =>
         }}</Button>
       </Alert>
     </div>
-    <p
+    <Alert
       v-if="notice"
-      class="text-sm text-[var(--runa-success-text)]"
-      role="status"
+      :tone="failure ? 'warning' : 'success'"
+      :announce="false"
+      >{{ notice }}</Alert
     >
-      {{ notice }}
-    </p>
     <Spinner v-if="!ready && busy" :label="text('Wczytywanie', 'Loading')" />
     <template v-if="ready && profile">
       <Alert v-if="draft && tab === 'details'" tone="info">
@@ -686,6 +692,12 @@ const passwordHint = computed(() =>
       </FormSection>
     </template>
   </div>
+  <ToastViewport
+    :messages="toasts.messages.value"
+    :label="text('Powiadomienia', 'Notifications')"
+    :close-label="text('Zamknij', 'Close')"
+    @dismiss="toasts.dismiss"
+  />
   <AppLoadingOverlay
     :active="display.coverVisible.value"
     :label="display.t('applyingPreferences')"

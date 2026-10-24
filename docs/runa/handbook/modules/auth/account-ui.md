@@ -59,22 +59,31 @@ account access, without speculative business statistics or management navigation
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
 The default account editor groups identity, private avatar, password and two-factor
-settings into one Form with visible fields, two columns on wide screens and one
-column on narrow screens. One outlined Save changes action replaces intermediate
-change-password/add-authenticator task buttons. Sessions, preferences and other
-self-service areas retain their separate navigation.
+settings in four shared Cards. Each Card has a visible Form and its own outlined
+save action, credential draft, validation and submission boundary. Wide screens
+use two columns; narrow screens use one. Saving one card does not submit or clear
+another card's draft. Sessions/preferences retain their separate navigation.
+Successful operations use shared Alert and ToastViewport feedback with an explicit
+operation description; actionable errors remain inline.
 
-The editor validates all selected changes before writing, then uses the existing
-guarded endpoints sequentially with refreshed profile versions. These writes are
-not one transaction: failure stops the sequence, reports any partial completion
-and never replays completed operations. A pending email change is requested once
-and still requires email confirmation. Password and factor changes are saved in
-separate submissions because factor proofs may be single-use; other profile edits
-can accompany either. TOTP setup still explicitly displays a key, requires the
-app code and fresh proof, then requires acknowledgement of recovery codes. Account
-lifecycle operations retain a separate explicit confirmation.
+The details card validates its selected name/login/email edits before writing,
+then uses the existing guarded endpoints sequentially with refreshed profile
+versions. These writes are not one transaction: failure stops the sequence,
+reports partial completion and never replays completed operations. A pending email
+change is requested once and still requires email confirmation. Password and factor
+changes each use their own fresh credential/proof submission. TOTP setup explicitly
+displays a key, requires the app code and fresh proof, then requires acknowledgement
+of recovery codes. Account lifecycle operations retain explicit confirmation.
 
-Own-account sections reuse Form/FormSection/TextInput/RadioGroup/Select/FileInput/Table:
+The avatar card accepts a local JPEG, PNG or WebP original up to 20 MiB, 40 million
+pixels and 12000 pixels per side. It provides a square preview, pointer panning and
+keyboard/pointer zoom/position sliders. Saving exports a 512x512 PNG, without original
+metadata; only that cropped image is sent to the existing bounded upload API. Invalid
+files, decode failures and output above the server's current avatar_max_kib stop
+submission. Original files/object URLs stay in memory and are released on replacement
+or unmount. The backend remains authoritative for MIME, size, dimensions and storage.
+
+Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/Select/FileInput/Table:
 
 - Versioned exclusive naming/login edits and protected primary email change.
 - Password change, optional authenticator/email enrollment, factor removal and

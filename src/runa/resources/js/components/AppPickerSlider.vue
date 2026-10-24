@@ -4,37 +4,54 @@ const props = withDefaults(
   defineProps<{
     modelValue: number;
     max: number;
+    min?: number;
     label: string;
     gradient: string;
     unit?: string;
   }>(),
-  { unit: '' },
+  { unit: '', min: 0 },
 );
 const emit = defineEmits<{ 'update:modelValue': [value: number] }>();
 const percent = computed(() =>
-  Math.max(0, Math.min(100, (props.modelValue / props.max) * 100)),
+  Math.max(
+    0,
+    Math.min(
+      100,
+      ((props.modelValue - props.min) / (props.max - props.min)) * 100,
+    ),
+  ),
 );
 function update(value: number) {
   emit(
     'update:modelValue',
-    Math.max(0, Math.min(props.max, Math.round(value))),
+    Math.max(props.min, Math.min(props.max, Math.round(value))),
   );
 }
 function pointer(event: globalThis.PointerEvent) {
   const target = event.currentTarget as globalThis.HTMLElement;
+  if (target.closest('fieldset:disabled, [inert]')) return;
   if (event.type === 'pointerdown') {
     if (event.button !== 0) return;
     target.setPointerCapture(event.pointerId);
     target.focus();
   } else if (!target.hasPointerCapture(event.pointerId)) return;
   const rect = target.getBoundingClientRect();
-  update(((event.clientX - rect.left) / rect.width) * props.max);
+  update(
+    props.min +
+      ((event.clientX - rect.left) / rect.width) * (props.max - props.min),
+  );
 }
 function key(event: globalThis.KeyboardEvent) {
+  if (
+    (event.currentTarget as globalThis.HTMLElement).closest(
+      'fieldset:disabled, [inert]',
+    )
+  )
+    return;
   let value = props.modelValue;
   if (['ArrowRight', 'ArrowUp'].includes(event.key)) value += 1;
   else if (['ArrowLeft', 'ArrowDown'].includes(event.key)) value -= 1;
-  else if (event.key === 'Home') value = 0;
+  else if (event.key === 'Home') value = props.min;
   else if (event.key === 'End') value = props.max;
   else if (event.key === 'PageUp') value += 10;
   else if (event.key === 'PageDown') value -= 10;
@@ -53,7 +70,7 @@ function key(event: globalThis.KeyboardEvent) {
       role="slider"
       tabindex="0"
       :aria-label="label"
-      aria-valuemin="0"
+      :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="modelValue"
       :aria-valuetext="`${modelValue}${unit}`"

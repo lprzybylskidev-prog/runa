@@ -5,6 +5,7 @@ namespace Runa\Modules\Auth\Definitions;
 use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Auth\InitializeAuth;
+use Runa\Modules\Auth\UpgradeAccountCards;
 use Runa\Modules\Auth\UpgradeAccountEditor;
 use Runa\Modules\Auth\UpgradeAccountUi;
 use Runa\Modules\Auth\UpgradeAuthorityParticipation;
@@ -50,7 +51,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('form_presentation', '0.13.3', '0.13.4', UpgradeFormPresentation::class),
             new UpgradeDefinition('user_panel', '0.13.4', '0.13.5', UpgradeUserPanel::class),
             new UpgradeDefinition('navigation_cancellation', '0.13.5', '0.13.6', UpgradeNavigationCancellation::class),
-            new UpgradeDefinition('account_editor', '0.13.6', '0.13.7', UpgradeAccountEditor::class)];
+            new UpgradeDefinition('account_editor', '0.13.6', '0.13.7', UpgradeAccountEditor::class),
+            new UpgradeDefinition('account_cards', '0.13.7', '0.14.0', UpgradeAccountCards::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

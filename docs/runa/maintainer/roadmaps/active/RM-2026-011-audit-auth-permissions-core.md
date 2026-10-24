@@ -983,6 +983,14 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Retain capability/proof/version boundaries, explicit enrollment/recovery steps
     and honest partial-save feedback; synchronize public/customer guidance and
     prepare focused editor diagnostics plus rendered desktop/mobile themed review.
+- [x] 19k. Separate account card submissions and prepare cropped avatars.
+  - Owner requests four existing Card compositions with independent submits for
+    identity, avatar, password and verification, plus shared success feedback.
+  - Diagnose real avatar upload, accept bounded larger local originals and provide
+    accessible square cropping before upload without new dependencies. Keep server
+    image/storage/security bounds and sessions/preferences behavior intact.
+  - Synchronize public and owner/customer patterns, module metadata and focused
+    checks; publish and inspect real desktop/mobile themed states before commit.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2601,3 +2609,60 @@ architectural premise requires discussion before dependent work.
   apply. No Docker resources were created or removed. Preserved existing development
   services/data, caches, reports, backups and rollback material. Point 20 remains
   gated by explicit owner frontend appearance acceptance.
+
+## Point 19k delivery
+
+- Owner replaces the previous single-save presentation with four existing Cards:
+  identity, avatar, password and verification. Each has its own Form and outlined
+  submit; ordinary fields remain directly visible. Retained fluid width, responsive
+  two/one-column layout and separate unchanged session/preference operations.
+  Success uses shared Alert/ToastViewport, specific operation descriptions and one
+  live announcement; actionable errors stay inline. Shared feedback owns motion.
+- Public saveSection/AccountSection and sectionFields/sectionErrors scope credentials,
+  errors, focus and cleanup to the submitting card. Saving one card preserves other
+  card drafts. Existing choose/submit/saveOverview APIs remain compatible. Details
+  still validates before sequential name/email operations with refreshed revisions,
+  explicit partial completion and no replay. Password/factor proofs remain separate;
+  TOTP/recovery acknowledgement and lifecycle confirmations remain explicit.
+- Reproduced avatar rejection with a real 902684-byte PNG: compressed pixels contained
+  27 literal <? sequences, triggering the previous whole-file code regex and 422.
+  A small image saved successfully, proving storage was writable. AvatarImageContent
+  now inspects PNG/JPEG/WebP container boundaries and nonpixel metadata, accepting
+  encoded pixel bytes while refusing active metadata and appended content. Retained
+  native MIME/size/dimension validation, private scoped storage, policy/version/Audit,
+  guarded reads and secure image headers. No new decoder/sanitizer claim/dependency.
+- Added public AuthAvatarCropper for customer composition without private copies.
+  Local originals are bounded to 20 MiB, 40M pixels and 12000px per side; accessible
+  square preview, panning and shared AppPickerSlider zoom/position export a 512px PNG.
+  Only the crop is uploaded under existing server limits. File/decode/export failures
+  block upload, URLs/decoded references are released and stale exports are fenced.
+  Reused the color picker's internal slider with compatible optional min=0 and
+  disabled-fieldset/inert guards. No crop animation; existing feedback honors reduced
+  motion. Enrollment/recovery secrets remain hidden from print.
+- Auth MINOR 0.13.7 -> 0.14.0 for additive card/cropping contracts; Permissions PATCH
+  0.5.1 -> 0.5.2 aligns Auth ^0.14.0. Explicit source-only forward edges/changelogs,
+  local preparation and current client build passed; all Core source/version checks
+  passed. No schema/settings/credential reset or external dependency added.
+- Nine selected frontend cases passed, covering independent drafts/submits, partial
+  failure/version/no replay, password validation, TOTP/recovery, actual crop output,
+  invalid/oversized files and existing color-slider behavior. Focused backend avatar
+  cases and the settings-upgrade fixture case passed. Added browser-generated small
+  JPEG/WebP fixtures containing code-like pixel bytes; real uploads/reads for all
+  three formats pass, malicious metadata/trailers refuse, and Audit rollback/private
+  cleanup remain covered. Initial backend runs exposed stale manual Core fixture
+  initialization/routes; replaced it with ModuleUpdates and source-route rebuild,
+  removed redundant cold reconstruction from its upgrade case and received passes.
+- Actual authenticated served browser saved a 6584980-byte 5000x1500 original through
+  crop/upload/read as a 512x512 avatar with HTTP 200 and shared success feedback.
+  Restored the prior avatar state through guarded API (HTTP 200). Inspected desktop,
+  mobile and success/crop screenshots in .runtime/dev/manual-auth/account-sections;
+  1440/390 light/dark checks show exactly four forms/submits, no overflow or JS errors.
+- Replaced obsolete one-form/one-save current guidance in account/form/customization
+  docs and both frontend instruction products. Added format-aware binary-validation
+  guidance to the public security baseline and both security reference products.
+  Root AGENTS, primary skills and Vue/Tailwind products already require shared public
+  components and proper cleanup; no duplicate constitutional rule needed.
+- No broad suites/static analysis/image/scanner/final quality ran; mandatory hooks
+  apply. No Docker resources created/removed. Preserved development services/data,
+  caches, reports, backups and rollback material. Point 20 still requires explicit
+  owner frontend appearance acceptance.

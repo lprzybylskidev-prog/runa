@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
+import AuthAvatarCropper from '../../modules/auth/frontend/AuthAvatarCropper.vue';
 import { FileInput, Select } from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
@@ -366,23 +367,26 @@ it('optional TOTP setup retains its private key only until confirmation and requ
         : { recovery_codes: ['a'.repeat(32)] },
     );
   await w
-    .get('input[name="current_password"]')
+    .get('[data-account-section=security] input[name="current_password"]')
     .setValue('a-long-test-password');
-  await w.get('form').trigger('submit');
+  await w.get('[data-account-section=security]').trigger('submit');
   await flushPromises();
   expect(w.get('[data-enrollment-secret]').text()).toBe('ABCDEFGHIJKLMNOP');
   expect(
-    (w.get('input[name="current_password"]').element as HTMLInputElement).value,
+    (
+      w.get('[data-account-section=security] input[name="current_password"]')
+        .element as HTMLInputElement
+    ).value,
   ).toBe('');
   await w
-    .get('input[name="current_password"]')
+    .get('[data-account-section=security] input[name="current_password"]')
     .setValue('a-long-test-password');
   await w.get('input[name="enrollment_code"]').setValue('123456');
-  await w.get('form').trigger('submit');
+  await w.get('[data-account-section=security]').trigger('submit');
   await flushPromises();
   expect(w.find('[data-enrollment-secret]').exists()).toBe(false);
   expect(w.get('[data-recovery-code]').text()).toBe('a'.repeat(32));
-  expect(w.find('form').exists()).toBe(false);
+  expect(w.find('[data-account-section=security]').exists()).toBe(false);
   await w
     .findAll('button')
     .find((b) => b.text() === 'Kody zostały zapisane')!
@@ -393,11 +397,11 @@ it('known password errors stop submission and a CSRF renewal does not replay the
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
   await w
-    .get('input[name="current_password"]')
+    .get('[data-account-section=password] input[name="current_password"]')
     .setValue('a-long-test-password');
   await w.get('input[name="password"]').setValue('short');
   await w.get('input[name="password_confirmation"]').setValue('different');
-  await w.get('form').trigger('submit');
+  await w.get('[data-account-section=password]').trigger('submit');
   await flushPromises();
   expect(writes).toHaveLength(0);
   await w.get('input[name="password"]').setValue('a-new-long-password');
@@ -405,7 +409,7 @@ it('known password errors stop submission and a CSRF renewal does not replay the
     .get('input[name="password_confirmation"]')
     .setValue('a-new-long-password');
   write = () => json('csrf_token_mismatch', 419);
-  await w.get('form').trigger('submit');
+  await w.get('[data-account-section=password]').trigger('submit');
   await flushPromises();
   expect(writes).toHaveLength(1);
   await w
@@ -479,10 +483,10 @@ it('customization: account replacement consumes the public controller with curre
   expect(w.text()).not.toContain('loginHistory');
 });
 
-it('unified account editor validates all changes before writing and stops after a partial failure without replay', async () => {
+it('account cards validate their changes before writing and stops after a partial failure without replay', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  expect(w.findAll('form')).toHaveLength(1);
+  expect(w.findAll('form')).toHaveLength(4);
   expect(
     w.findAll('button').some((button) => button.text() === 'Zmień hasło'),
   ).toBe(false);
@@ -531,7 +535,21 @@ it('unified account editor validates all changes before writing and stops after 
   expect(writes).toHaveLength(2);
 });
 
-it('unified account editor saves the selected avatar with the refreshed version and resets removal intent', async () => {
+async function cropImageFile() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 300;
+  const context = canvas.getContext('2d')!;
+  context.fillStyle = '#ff0000';
+  context.fillRect(0, 0, 300, 300);
+  context.fillStyle = '#0000ff';
+  context.fillRect(300, 0, 300, 300);
+  const blob = await new Promise<Blob>((resolve) =>
+    canvas.toBlob((value) => resolve(value!), 'image/png'),
+  );
+  return new File([blob], 'profile.png', { type: 'image/png' });
+}
+it('account avatar card crops and saves independently without clearing other card drafts or replaying removal', async () => {
   currentProfile.has_avatar = true;
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
@@ -539,31 +557,94 @@ it('unified account editor saves the selected avatar with the refreshed version 
     .findAll('label')
     .find((label) => label.text().includes('Usuń obecne zdjęcie'))!;
   await remove.get('input').setValue(true);
-  w.getComponent(FileInput).vm.$emit('update:modelValue', [
-    new File(['image'], 'profile.png', { type: 'image/png' }),
-  ]);
   await w.get('input[name="name"]').setValue('Changed name');
-  write = (path, body) => {
-    if (path.endsWith('/profile'))
-      currentProfile = {
-        ...currentProfile,
-        name: String(body.name),
-        version: 6,
-      };
-    else currentProfile = { ...currentProfile, version: 7 };
+  await w.get('input[name="password"]').setValue('unsaved-new-password');
+  w.getComponent(FileInput).vm.$emit('update:modelValue', [
+    await cropImageFile(),
+  ]);
+  await vi.waitFor(() => expect(w.find('canvas').exists()).toBe(true));
+  await vi.waitFor(() =>
+    expect(
+      w
+        .findAll('button')
+        .find((button) => button.text() === 'Zapisz zdjęcie')!
+        .attributes('disabled'),
+    ).toBeUndefined(),
+  );
+  write = () => {
+    currentProfile = { ...currentProfile, version: 6 };
     return json({ accepted: true });
   };
-  await w.get('form').trigger('submit');
+  await w.get('[data-account-section=avatar]').trigger('submit');
+  await flushPromises();
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  await vi.waitFor(() =>
+    expect(w.getComponent(FileInput).props('modelValue')).toHaveLength(0),
+  );
+  expect(writes[0]?.path).toBe('/api/runa/auth/profile/avatar');
+  expect(writes[0]?.body.version).toBe('5');
+  expect(writes[0]?.body.avatar).toBeInstanceOf(File);
+  expect((remove.get('input').element as HTMLInputElement).checked).toBe(false);
+  expect(
+    (w.get('input[name="password"]').element as HTMLInputElement).value,
+  ).toBe('unsaved-new-password');
+  expect((w.get('input[name="name"]').element as HTMLInputElement).value).toBe(
+    'Changed name',
+  );
+  expect(w.findAll('[data-tone="success"]').length).toBeGreaterThan(0);
+});
+it('account password card submits independently of invalid account details', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w.get('input[name="name"]').setValue('');
+  await w.get('input[name="email"]').setValue('invalid');
+  const form = w.get('[data-account-section=password]');
+  await form.get('[name=current_password]').setValue('a-long-test-password');
+  await form.get('[name=password]').setValue('a-new-long-password');
+  await form
+    .get('[name=password_confirmation]')
+    .setValue('a-new-long-password');
+  await form.trigger('submit');
   await flushPromises();
   expect(writes.map((item) => item.path)).toEqual([
-    '/api/runa/auth/profile',
-    '/api/runa/auth/profile/avatar',
+    '/api/runa/auth/password/change',
   ]);
-  expect(writes[1]?.body.version).toBe('6');
-  expect(writes[1]?.body.avatar).toBeInstanceOf(File);
-  expect(w.getComponent(FileInput).props('modelValue')).toHaveLength(0);
-  expect((remove.get('input').element as HTMLInputElement).checked).toBe(false);
-  await w.get('form').trigger('submit');
-  await flushPromises();
-  expect(writes).toHaveLength(2);
+  await vi.waitFor(() =>
+    expect(
+      (form.get('[name=password]').element as HTMLInputElement).value,
+    ).toBe(''),
+  );
+  expect((w.get('input[name="email"]').element as HTMLInputElement).value).toBe(
+    'invalid',
+  );
+});
+it('avatar cropper exports the selected square and refuses invalid or oversized originals', async () => {
+  const w = mount(AuthAvatarCropper, {
+    props: { file: await cropImageFile(), locale: 'pl', maxBytes: 2048 * 1024 },
+  });
+  await vi.waitFor(() => expect(w.find('canvas').exists()).toBe(true));
+  const sliders = w.findAll('[role=slider]');
+  await sliders[1]!.trigger('keydown', { key: 'End' });
+  const output = await w.vm.crop();
+  const image = await createImageBitmap(output);
+  expect([image.width, image.height]).toEqual([512, 512]);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  canvas.getContext('2d')!.drawImage(image, 0, 0, 1, 1);
+  expect(
+    Array.from(canvas.getContext('2d')!.getImageData(0, 0, 1, 1).data),
+  ).toEqual([0, 0, 255, 255]);
+  image.close();
+  await w.setProps({
+    file: new File(['bad'], 'bad.png', { type: 'image/png' }),
+  });
+  await vi.waitFor(() => expect(w.get('[role=alert]').exists()).toBe(true));
+  await expect(w.vm.crop()).rejects.toThrow();
+  await w.setProps({
+    file: new File([new Uint8Array(21 * 1024 * 1024)], 'big.png', {
+      type: 'image/png',
+    }),
+  });
+  expect(w.get('[role=alert]').text()).toContain('20 MB');
+  expect(w.find('canvas').exists()).toBe(false);
 });

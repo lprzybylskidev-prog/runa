@@ -76,3 +76,8 @@ reauthentication and explicit retries; never copy private security orchestration
 Native errors and generated emergency 503 share one static, CSP-constrained
 presentation build. Keep the application scaffold minimal; domain pages are added
 only for real customer requirements.
+
+For binary/image upload validation, use the format-aware input/output rule in
+`docs/runa/handbook/security/baseline.md#input-and-output`.
+Compressed pixels are binary data, not markup; preserve MIME, bounded inputs,
+private storage and secure response headers without claiming custom sanitization.

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -37,7 +38,6 @@ use Runa\Modules\Auth\Actions\ManageSessions;
 use Runa\Modules\Auth\Actions\OperatorAccounts;
 use Runa\Modules\Auth\Actions\Passwords;
 use Runa\Modules\Auth\Actions\Policies;
-use Runa\Modules\Auth\Actions\PolicyHistory;
 use Runa\Modules\Auth\Actions\ProfileMail;
 use Runa\Modules\Auth\Actions\Profiles;
 use Runa\Modules\Auth\Actions\ScheduledLifecycle;
@@ -134,23 +134,10 @@ beforeEach(function (): void {
         }
     }
     $this->permissionsStorageAbsent = true;
-    app(ModuleRegistry::class)->synchronize('runa');
-    foreach (['audit' => 'events', 'auth' => 'identities'] as $code => $table) {
-        $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
-        $migration->up();
-        $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.'.$code]->sourceVersion]);
-    }
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
-    DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
-    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
-    // Trusted test-only invariant participant. Real authority remains denied until Permissions.
+    // Initialize every mandatory Core module through its guarded forward workflow.
+    app(ModuleUpdates::class)->apply('runa', str_repeat('d', 40), static function (): void {});
+    $this->authSchemas = ['runa_audit', 'runa_auth'];
+    // Trusted invariant participant isolates Auth cases; dedicated integration tests cover real authority.
     config()->set('queue.default', 'database');
     config()->set('hashing.bcrypt.rounds', 4);
     app()->bind(AuthorityGuard::class, fn () => new class implements AuthorityGuard
@@ -161,6 +148,15 @@ beforeEach(function (): void {
             expect($connection->transactionLevel())->toBeGreaterThan(0);
         }
     });
+    // Core routes exist at boot even before disposable module fixtures are initialized.
+    // Rebuild their source-bound entries, retaining document/application routes.
+    $routes = new RouteCollection;
+    foreach (app('router')->getRoutes() as $route) {
+        if (! isset($route->defaults['_runa_module'])) {
+            $routes->add($route);
+        }
+    }
+    app('router')->setRoutes($routes);
     app(ModuleHttp::class)->register();
     app('router')->getRoutes()->refreshNameLookups();
 });
@@ -317,14 +313,8 @@ it('rejects a missing CSRF proof with the actual middleware even in the focused 
 });
 
 it('upgrades encrypted identity settings additively only inside the reserved updater', function (): void {
-    // Establish real migration/step history, then model the supported prior data version.
-    foreach (['runa_auth.development_fixtures', 'runa_auth.operator_tokens', 'runa_auth.initialization', 'runa_auth.policy_exceptions', 'runa_auth.policy_versions', 'runa_auth.notice_scan', 'runa_auth.known_browsers', 'runa_auth.notice_frequencies', 'runa_auth.security_notices', 'runa_auth.delivery_preferences', 'runa_auth.preferences', 'runa_auth.profile_mail', 'runa_auth.email_changes', 'runa_auth.secondary_emails', 'runa_auth.avatar_files', 'runa_auth.step_up_proofs', 'runa_auth.password_history', 'runa_auth.login_windows', 'runa_auth.sessions', 'runa_auth.trusted_devices', 'runa_auth.entry_tokens', 'runa_auth.users', 'runa_audit.entities', 'runa_audit.events'] as $table) {
-        DB::statement('DROP TABLE '.$table.' RESTRICT');
-    }
-    DB::statement('DROP SCHEMA runa_auth RESTRICT');
-    DB::statement('DROP SCHEMA runa_audit RESTRICT');
-    DB::table('shared.modules')->whereIn('module_id', ['runa.auth', 'runa.audit'])->update(['installed_version' => null]);
-    app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
+    // The Core fixture already established real migration/step history.
+    // Model the supported prior data version without recreating initialized storage.
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
     DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0', 'upgrade:account_ui:0.8.0:0.9.0', 'upgrade:permission_declarations:0.9.0:0.10.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
@@ -1018,6 +1008,38 @@ it('preserves disabled avatars and safely cleans replaced private blobs after Au
     $this->postJson('/api/runa/auth/logout')->assertOk();
     Auth::forgetGuards();
     $this->get('/api/runa/auth/profile/avatar', ['Accept' => 'application/json'])->assertUnauthorized();
+});
+
+it('accepts compressed avatar pixels containing code-like bytes and refuses active metadata or trailing payloads', function (): void {
+    $this->profileAvatarRoot = sys_get_temp_dir().'/runa-profile-avatar-'.bin2hex(random_bytes(8));
+    config()->set('filesystems.disks.runa_private', ['driver' => 'local', 'root' => $this->profileAvatarRoot, 'throw' => true]);
+    Storage::forgetDisk('runa_private');
+    $user = profileVerified('avatar-pixels@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $chunk = static fn (string $kind, string $data): string => pack('N', strlen($data)).$kind.$data.pack('N', crc32($kind.$data));
+    $header = "\x89PNG\r\n\x1a\n".$chunk('IHDR', pack('NNCCCCC', 1, 1, 8, 2, 0, 0, 0));
+    // Stored deflate deliberately retains the literal pixel bytes <? without being executable.
+    $pixels = $chunk('IDAT', gzcompress("\0<?A", 0));
+    $end = $chunk('IEND', '');
+    $png = $header.$pixels.$end;
+    expect(str_contains($png, '<?'))->toBeTrue();
+    $this->post('/api/runa/auth/profile/avatar', ['version' => 1, 'avatar' => UploadedFile::fake()->createWithContent('pixels.png', $png)], ['Accept' => 'application/json'])->assertOk();
+    $this->get('/api/runa/auth/profile/avatar')->assertOk()->assertContent($png);
+    foreach ([$png.'<?php echo 1;', $header.$chunk('tEXt', 'comment'."\0".'<script>bad</script>').$pixels.$end] as $unsafe) {
+        $this->post('/api/runa/auth/profile/avatar', ['version' => 2, 'avatar' => UploadedFile::fake()->createWithContent('unsafe.png', $unsafe)], ['Accept' => 'application/json'])->assertUnprocessable();
+    }
+    expect(User::find($user->id)->version)->toBe(2);
+    // Browser-generated noise fixtures contain the same sequence in encoded pixels.
+    foreach (['jpg' => 'image/jpeg', 'webp' => 'image/webp'] as $extension => $mime) {
+        $bytes = file_get_contents(__DIR__.'/../Fixtures/avatars/pixels.'.$extension);
+        if ($bytes === false) {
+            throw new RuntimeException('Avatar image fixture unavailable.');
+        }
+        expect(str_contains($bytes, '<?'))->toBeTrue();
+        $version = User::find($user->id)->version;
+        $this->post('/api/runa/auth/profile/avatar', ['version' => $version, 'avatar' => UploadedFile::fake()->createWithContent('pixels.'.$extension, $bytes)], ['Accept' => 'application/json'])->assertOk();
+        $this->get('/api/runa/auth/profile/avatar')->assertOk()->assertHeader('Content-Type', $mime)->assertContent($bytes);
+    }
 });
 
 it('keeps self deactivation disabled by default and consumes step up atomically with authority and Audit', function (): void {

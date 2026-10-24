@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.14.0
+
+Add four shared account cards with independently scoped submits/credential drafts,
+shared success alerts/toasts and local avatar cropping (20 MB originals, 512px PNG
+output). Add compatible saveSection/AccountSection headless contracts; retain the
+previous task and combined-submit APIs. Fix avatar false positives by inspecting
+container metadata and boundaries instead of scanning compressed pixels for code.
+Source-only 0.13.7 -> 0.14.0 edge; no settings, schema or external dependency change.
+
 ## 0.13.7
 
 Consolidate account details, avatar, password and verification into one fluid-width

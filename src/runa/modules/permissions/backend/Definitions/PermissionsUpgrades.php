@@ -6,6 +6,7 @@ use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Permissions\InitializePermissions;
 use Runa\Modules\Permissions\UpgradeAccess;
+use Runa\Modules\Permissions\UpgradeAuthCards;
 use Runa\Modules\Permissions\UpgradeAuthority;
 use Runa\Modules\Permissions\UpgradeAuthPresentation;
 use Runa\Modules\Permissions\UpgradeCoreIntegration;
@@ -20,7 +21,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('authority', '0.2.0', '0.3.0', UpgradeAuthority::class),
             new UpgradeDefinition('core_integration', '0.3.0', '0.4.0', UpgradeCoreIntegration::class),
             new UpgradeDefinition('development_fixtures', '0.4.0', '0.5.0', UpgradeDevelopmentFixtures::class),
-            new UpgradeDefinition('auth_presentation', '0.5.0', '0.5.1', UpgradeAuthPresentation::class)];
+            new UpgradeDefinition('auth_presentation', '0.5.0', '0.5.1', UpgradeAuthPresentation::class),
+            new UpgradeDefinition('auth_cards', '0.5.1', '0.5.2', UpgradeAuthCards::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

@@ -279,7 +279,7 @@ public identity hydration), `HttpErrorLayout`, `HttpErrorContent` and
 `HttpErrorLayoutProps`. Shared CSS is imported through `@/runa/ui/styles.css`.
 `@/runa/http` exports the single `request`/`ApiError` transport boundary.
 `@/runa/auth` exports DefaultApplication, AuthPresentationProvider and its typed
-component map, AuthEntry/AuthApplication/AuthAccount/AuthWelcome and the shared
+component map, AuthEntry/AuthApplication/AuthAccount/AuthWelcome/AuthAvatarCropper and the shared
 entry/account/welcome/session controllers. See [frontend adoption](customization.md)
 for supported props, slots, lifetime and security obligations. All future Runa
 module views follow the same usable-default/public-replacement requirement.
@@ -306,3 +306,10 @@ action slots. Dedicated Auth user-dropdown rows remain shell-local: compact
 initials/name identity, divider, 44px left-aligned icon/label navigation/sign-out.
 The public Icon catalogue includes logout. Panel użytkownika/User panel appears
 only in the user dropdown; the default /app workspace has no placeholder content.
+
+The default account view composes four existing Cards with independent Forms and
+shared Alert/ToastViewport success feedback. AuthAvatarCropper exports a local,
+bounded square crop through `@/runa/auth`; see [the account UI contract](../../modules/auth/account-ui.md)
+and [public customization](customization.md). It reuses internal AppPickerSlider
+with its optional min (default 0), max, gradient and unit contracts, just like the
+color picker; disabled fieldsets/inert ancestors block pointer and keyboard edits.

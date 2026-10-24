@@ -37,6 +37,13 @@ Do not disable framework escaping unless controlled/sanitized content explicitly
 
 Untrusted raw HTML is forbidden unless deliberate sanitization is part of the use case.
 
+Validate binary uploads with the format's MIME, size and structure boundaries.
+Do not scan compressed image pixels with source-code/markup regular expressions;
+ordinary binary bytes can resemble executable text. Keep format-aware metadata
+checks separate from pixel data, and do not claim a container check is a decoder
+or general sanitizer. Private image delivery retains fixed validated content type,
+nosniff and CSP; see [avatar storage](../modules/auth/profile.md#avatar-ownership-and-storage).
+
 ## SQL
 
 Use parameterized values/bindings for raw SQL.

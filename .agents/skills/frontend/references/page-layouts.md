@@ -42,8 +42,10 @@ dropdown rather than sidebar or placeholder welcome content. Keep menu identity
 and icon/action rows consistent with the shell; do not extract shell menus into
 universal content primitives.
 
-For related settings, use the visible combined-editor pattern in
+For related settings, use the visible card-editor pattern in
 [public form guidance](../../../../docs/runa/handbook/development/frontend/forms.md#related-settings-in-one-editor).
-Keep ordinary fields directly editable, preserve explicit security steps and use
-public account orchestration for capability/proof/version/partial-save handling.
+Use shared Card and feedback components; keep ordinary fields directly editable
+and independent operations in separate forms with their own outlined submits.
+Preserve explicit security steps and scoped credential drafts/validation/cleanup;
+use public account orchestration and AuthAvatarCropper rather than private copies.
 Forward ApplicationLayout's width prop in wrappers; the supplied account shell is fluid.

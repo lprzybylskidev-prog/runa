@@ -58,6 +58,7 @@ export type AccountTask =
   | 'trustIssue'
   | 'deactivate'
   | 'delete';
+export type AccountSection = 'details' | 'avatar' | 'password' | 'security';
 interface DeliveryChoice {
   module: string;
   key: string;
@@ -100,6 +101,22 @@ export function useAuthAccount(accountId: string) {
     | 'recoveryRotate'
   >('none');
   const removeAvatar = ref(false);
+  const sectionFields = reactive<
+    Record<AccountSection, Record<string, string>>
+  >({
+    details: { current_password: '' },
+    avatar: {},
+    password: {
+      current_password: '',
+      password: '',
+      password_confirmation: '',
+      code: '',
+    },
+    security: { current_password: '', code: '', enrollment_code: '' },
+  });
+  const sectionErrors = reactive<
+    Record<AccountSection, Record<string, string>>
+  >({ details: {}, avatar: {}, password: {}, security: {} });
   const overviewNeedsProof = computed(
     () =>
       proofMethods.value.length > 0 &&
@@ -137,7 +154,7 @@ export function useAuthAccount(accountId: string) {
     ...(has('own_login_history') ? ['loginHistory' as const] : []),
     ...(has('own_account_history') ? ['accountHistory' as const] : []),
   ]);
-  function cleanSecrets() {
+  function cleanSecrets(clearFiles = true) {
     for (const key of [
       'current_password',
       'password',
@@ -146,7 +163,7 @@ export function useAuthAccount(accountId: string) {
       'enrollment_code',
     ])
       fields[key] = '';
-    files.value = [];
+    if (clearFiles) files.value = [];
   }
   function cleanErrors() {
     Object.keys(errors).forEach((k) => delete errors[k]);
@@ -216,6 +233,8 @@ export function useAuthAccount(accountId: string) {
     task.value = next;
     overviewAction.value = 'none';
     removeAvatar.value = false;
+    for (const values of Object.values(sectionFields))
+      for (const key of Object.keys(values)) values[key] = '';
     fields.email =
       next === 'details'
         ? (profile.value?.email ?? '')
@@ -305,7 +324,11 @@ export function useAuthAccount(accountId: string) {
       const result = authFailure(error);
       failure.value = result.code;
       result.fields
-        .filter((k) => fieldNames.value.includes(k))
+        .filter(
+          (k) =>
+            fieldNames.value.includes(k) ||
+            (task.value === 'avatar' && k === 'avatar'),
+        )
         .forEach(
           (k) => (errors[k] = text('Sprawdź wartość.', 'Check this value.')),
         );
@@ -430,7 +453,7 @@ export function useAuthAccount(accountId: string) {
     await nextTick();
     heading.value?.focus();
   }
-  async function submitTask(preserveSecrets = false) {
+  async function submitTask(preserveSecrets = false, quiet = false) {
     if (!ready.value || busy.value || codes.value.length) return;
     if (!validate()) {
       await nextTick();
@@ -562,7 +585,7 @@ export function useAuthAccount(accountId: string) {
         if (tab.value === 'trust') await readPage();
         if (op === 'totpConfirm') task.value = 'password';
       }
-      if (alive)
+      if (alive && !quiet)
         notice.value = ['email', 'secondaryAdd', 'secondaryChange'].includes(op)
           ? text(
               'Sprawdź pocztę, aby potwierdzić adres.',
@@ -572,7 +595,19 @@ export function useAuthAccount(accountId: string) {
     }, !preserveSecrets);
     return saved === true && !reauthenticating;
   }
-  async function saveOverview() {
+  async function saveSection(section: AccountSection) {
+    if (busy.value || !ready.value) return;
+    cleanSecrets(false);
+    Object.assign(fields, sectionFields[section]);
+    Object.keys(sectionErrors[section]).forEach(
+      (key) => delete sectionErrors[section][key],
+    );
+    await saveChanges(section);
+    Object.assign(sectionErrors[section], errors);
+    await nextTick();
+    if (Object.keys(sectionErrors[section]).length) form.value?.focusInvalid();
+  }
+  async function saveChanges(section?: AccountSection) {
     if (!ready.value || busy.value || codes.value.length || !profile.value)
       return;
     const originalTask = task.value;
@@ -586,21 +621,43 @@ export function useAuthAccount(accountId: string) {
             surname: fields.surname || null,
           };
     if (
-      (has('own_name_editable') &&
+      (!section || section === 'details') &&
+      ((has('own_name_editable') &&
         Object.entries(names).some(
           ([key, value]) => value !== profile.value![key as 'name'],
         )) ||
-      (has('own_login_editable') &&
-        (fields.login || null) !== profile.value.login)
+        (has('own_login_editable') &&
+          (fields.login || null) !== profile.value.login))
     )
       plan.push('details');
-    if (has('own_email_editable') && fields.email !== profile.value.email)
+    if (
+      (!section || section === 'details') &&
+      has('own_email_editable') &&
+      fields.email !== profile.value.email
+    )
       plan.push('email');
-    if (canAvatar.value && files.value.length) plan.push('avatar');
-    else if (canAvatar.value && removeAvatar.value && profile.value.has_avatar)
+    if (
+      (!section || section === 'avatar') &&
+      canAvatar.value &&
+      files.value.length
+    )
+      plan.push('avatar');
+    else if (
+      (!section || section === 'avatar') &&
+      canAvatar.value &&
+      removeAvatar.value &&
+      profile.value.has_avatar
+    )
       plan.push('avatarRemove');
-    if (overviewAction.value !== 'none') plan.push(overviewAction.value);
-    if (fields.password || fields.password_confirmation) plan.push('password');
+    if ((!section || section === 'security') && overviewAction.value !== 'none')
+      plan.push(overviewAction.value);
+    if (
+      (!section || section === 'password') &&
+      (section === 'password' ||
+        fields.password ||
+        fields.password_confirmation)
+    )
+      plan.push('password');
     if (!plan.length) {
       cleanErrors();
       notice.value = text('Brak zmian do zapisania.', 'No changes to save.');
@@ -650,7 +707,7 @@ export function useAuthAccount(accountId: string) {
         task.value = operation;
         // Removal is explicitly selected in this editor; lifecycle operations are separate.
         confirmed.value = operation === 'avatarRemove';
-        if (!(await submitTask(true))) {
+        if (!(await submitTask(true, Boolean(section)))) {
           if (completed && failure.value)
             notice.value = text(
               'Część zmian zapisano. Pozostałe wymagają sprawdzenia przed ponowną próbą.',
@@ -669,13 +726,47 @@ export function useAuthAccount(accountId: string) {
           overviewAction.value =
             operation === 'totpBegin' ? 'totpConfirm' : 'none';
       }
+      if (section && !plan.includes('email'))
+        notice.value = {
+          details: text(
+            'Dane konta zostały zapisane.',
+            'Account details saved.',
+          ),
+          avatar: plan.includes('avatarRemove')
+            ? text(
+                'Zdjęcie profilowe zostało usunięte.',
+                'Profile image removed.',
+              )
+            : text(
+                'Zdjęcie profilowe zostało zapisane.',
+                'Profile image saved.',
+              ),
+          password: text('Hasło zostało zmienione.', 'Password changed.'),
+          security: secret.value
+            ? text(
+                'Konfiguracja rozpoczęta. Potwierdź aplikację kodem.',
+                'Setup started. Confirm the authenticator with its code.',
+              )
+            : codes.value.length
+              ? text(
+                  'Metoda została zapisana. Zachowaj kody odzyskiwania.',
+                  'Method saved. Save the recovery codes.',
+                )
+              : text(
+                  'Ustawienia weryfikacji zostały zapisane.',
+                  'Verification settings saved.',
+                ),
+        }[section];
       if (plan.includes('email'))
         notice.value = text(
           'Zapisano zmiany. Sprawdź pocztę, aby potwierdzić nowy adres.',
           'Changes saved. Check your email to confirm the new address.',
         );
     } finally {
-      cleanSecrets();
+      cleanSecrets(!section || section === 'avatar');
+      if (section)
+        for (const key of Object.keys(sectionFields[section]))
+          sectionFields[section][key] = '';
       confirmed.value = false;
       task.value = originalTask;
     }
@@ -786,6 +877,8 @@ export function useAuthAccount(accountId: string) {
     readEpoch++;
     abort.abort();
     cleanSecrets();
+    for (const values of Object.values(sectionFields))
+      for (const key of Object.keys(values)) values[key] = '';
     secret.value = '';
     codes.value = [];
   });
@@ -829,7 +922,10 @@ export function useAuthAccount(accountId: string) {
     initialize,
     selectTab,
     submit: () => submitTask(),
-    saveOverview,
+    saveOverview: () => saveChanges(),
+    saveSection,
+    sectionFields,
+    sectionErrors,
     overviewAction,
     overviewNeedsProof,
     removeAvatar,

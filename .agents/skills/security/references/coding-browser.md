@@ -104,3 +104,8 @@ Expose presentation seams while retaining reusable security/session/restriction
 controllers in Runa and backend guards. Review pause/switch unmounting, explicit
 proof/retry, fragment/secret cleanup and no write replay in custom consumers.
 Native/emergency customization uses the same CSP-constrained static renderer.
+
+For binary/image upload validation, use the format-aware input/output rule in
+[the public security baseline](../../../../docs/runa/handbook/security/baseline.md#input-and-output).
+Compressed pixels are binary data, not markup; preserve MIME, bounded inputs,
+private storage and secure response headers without claiming custom sanitization.

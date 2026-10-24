@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 0.5.2
+
+Align Auth dependency with compatible 0.14.0 account-card/cropping contracts.
+No Permissions API, data, settings or behavior change; source-only forward edge.
+
 ## 0.5.1
 
 Align the existing Auth dependency with compatible Auth 0.13.0 public presentation
