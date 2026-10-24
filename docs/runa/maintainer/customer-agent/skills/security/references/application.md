@@ -46,4 +46,4 @@ trusted CLI recovery. Consume public contracts; do not write Auth/Audit tables o
 implement alternate role flags. Operator handoff secrets never belong in arguments,
 output, logs or retrieval. Customer operators protect infrastructure/CLI access.
 
-Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.

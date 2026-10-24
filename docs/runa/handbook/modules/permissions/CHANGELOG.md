@@ -1,5 +1,17 @@
 # Permissions module changelog
 
+## 0.2.0
+
+Add compatible PermissionsAccess 1.0.0 for versioned custom-role/preset CRUD,
+from-user templates, reviewed add/replace assignments and direct access copy.
+Preserve ordinary role/direct meaning and protected system membership; bind
+execution to current revisions/memberships/eligibility and source snapshots.
+Require current native grants and fresh both-factor Auth step-up; commit complete
+aggregate Audit, pivots, dictionaries and monotonic assignment revisions atomically.
+Add relational preset storage, forward 0.1.0 -> 0.2.0 edge and safe management entity
+metadata. Refuse referenced-role deletion and all generic system/source edits.
+No new dependency, Admin UI, dedicated superadmin writer or first-admin grant.
+
 ## 0.1.0
 
 Initial Core dictionaries, source-owned permission/predefined-role declarations,

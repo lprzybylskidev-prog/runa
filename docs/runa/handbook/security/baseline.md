@@ -80,7 +80,7 @@ Do not use an unvalidated Host header as the authority for sensitive absolute UR
 
 ## Authentication-sensitive behavior
 
-Auth supplies [identity/entry transport](../modules/auth/transport.md) and [operational sessions/abuse defenses](../modules/auth/sessions.md). [Password/2FA security](../modules/auth/security.md) and [account/session UI](../modules/auth/account-ui.md) are delivered; Permissions integration follows its owning roadmap points. Secure defaults apply:
+Auth supplies [identity/entry transport](../modules/auth/transport.md) and [operational sessions/abuse defenses](../modules/auth/sessions.md). [Password/2FA security](../modules/auth/security.md) and [account/session UI](../modules/auth/account-ui.md) are delivered; [Permissions ordinary access management](../modules/permissions/access.md) is delivered with reviewed revisions, native grants, fresh both-factor proof and atomic Audit; protected-authority/bootstrap integration follows its owning roadmap points. Secure defaults apply:
 
 - avoid account-enumeration leaks in login/recovery flows where practical,
 - do not permanently lock an account based on a naive failed-login counter that enables denial-of-service,

@@ -778,7 +778,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Acceptance/tests: direct/role derivation, namespaces, sync/update impact previews/
     Audit, no auto grants, default denial before readiness, disabled Optional-module
     preservation and next-request changes. Publish declarations and public contracts.
-- [ ] 14. Deliver assignment, preset and access-copy backend operations.
+- [x] 14. Deliver assignment, preset and access-copy backend operations.
   - Requires 13. Add authorized versioned assignment CRUD, custom roles, preset CRUD/
     from-user and add/replace application/copy with bound preview and atomic changes.
     Use complete assignment Audit events and scoped automatic suppression.
@@ -896,7 +896,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 is next: assignment, preset and access-copy backend operations.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 is next: protected authority and last-superadmin invariants.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1703,3 +1703,69 @@ architectural premise requires discussion before dependent work.
   removed; development/test service data, knowledge/model caches and reports remain
   preserved. Assignment/preset/copy mutations, last-superadmin participation and
   first-admin integration remain points 14–16; their fail-closed seams are unchanged.
+
+## Point 14 delivery
+
+- Permissions advances compatibly 0.1.0 -> 0.2.0 with additive guarded
+  PermissionsAccess 1.0.0 and an explicit forward access edge. New owned preset
+  dictionaries, preset-role/permission RESTRICT pivots and per-user monotonic
+  assignment revisions use the existing transactional ModuleSchema updater.
+  Auth ^0.10.0, Audit ^0.4.0, framework API 1.0.0 and platform VERSION 0.4.2 remain
+  unchanged. No dependency or application runtime configuration change is added.
+- Ordinary access management covers bounded public-reference reads/list cursors,
+  versioned custom-role/preset creation/update/soft deletion, from-user presets,
+  direct assignment add/replace and reviewed preset application/user-to-user copy.
+  Roles/directs retain their assigned meaning; source system membership is excluded,
+  recipient system membership survives ordinary replace and no effective grant is
+  flattened into a direct assignment. Preset edits/deletion preserve recipients.
+  Referenced custom roles refuse ordinary deletion; force deletion and dedicated
+  superadmin assignment/removal remain point 15.
+- Previews bind request, source/preset/target, versions, role memberships, target
+  monotonic revision, current eligibility and practical availability-aware grant
+  differences. Execution recomputes the complete preview under registry -> shared
+  authority -> Auth proof/user -> owned data locks, rejects stale revisions and
+  rechecks native authorization. Authorized managers may grant ordinary rights they
+  do not hold. Public Auth eligibility lookup remains guarded; management requires
+  its explicit read capability. Reference/member/effect bounds refuse explicitly.
+- Every mutation uses real session/action-bound both-factor AuthStepUp proof consumed
+  inside the same default PostgreSQL transaction. Aggregate old/new assignment/
+  dictionary history and source provenance commit with pivots/revisions/proof;
+  savepoints prevent partial writes even if an outer caller catches Audit failure.
+  Query-builder pivots emit no automatic events, so there is no duplicate automatic
+  history to suppress. Root refusals record independent access.refused Audit after
+  rollback; nested consumers retain the public root-rollback/refusal obligation.
+- Extended existing management metadata with custom-role/preset/assignment entity,
+  dictionary/public-reference fields and revision/preview/both-factor declarations.
+  Provider-local permission keys are validated through the existing management
+  projection. No renderer, HTTP CRUD surface, administration page or frontend
+  component is introduced. Existing native authorization keeps reading current
+  committed grants on the next request without a cache/logout/polling requirement.
+- Prepared regressions cover real proof/session authorization, grants beyond the
+  actor's own, idempotent add, exact replace/protected membership, assigned-role
+  versus direct copy, source/preset independence, membership-version staleness,
+  assignment ABA, role/preset reference deletion, dictionary protections/bounds,
+  independent refused history and aggregate Audit/proof rollback. Updated exact
+  disposable storage cleanup and post-install test routing without weakening any
+  production adapter. Additional prepared cases remain for final verification.
+- Necessary focused diagnostics through the supported owner test-backend runner:
+  --filter='applies reviewed ordinary access snapshots|refuses stale access previews'
+  PASS (2 cases, 46 assertions). These resolve the public DTO/session/proof/Audit
+  transaction and management-projection uncertainties. Initial fixture diagnostics
+  exposed route registration after installation and an expected metadata ordering
+  mismatch; fixtures now use isolated current guarded routes and sorted metadata.
+  The final rollback diagnostic rejects only assignments.changed, allowing proof
+  consumption and pivot writes before required aggregate Audit fails. No broad
+  suites, concurrency/installation acceptance, static analysis, builds, scanners
+  or final quality gates ran; those remain point 20. Mandatory commit hooks apply.
+- Synchronized public Permissions access/API/security/database/module-foundation
+  guidance, central changelog and owner current-state/deferred descriptions, plus
+  both backend/Laravel/PostgreSQL/security instruction reference products. Root
+  owner/customer AGENTS already require guarded public APIs, server authority and
+  explicit aggregate Audit; their reusable rules remain sufficient without
+  duplicating this API procedure. Frontend/Vue/Tailwind products need no change
+  because this point adds no view, component, styling or frontend pattern.
+- The migration was exercised only in guarded disposable owner-test storage; no
+  development/production migration, reset or volume operation ran. Fixture-created
+  module tables/schemas and Auth work were removed by the supported test lifecycle.
+  No temporary Docker resource was created; development/test service data, existing
+  images/networks/volumes, Qdrant/model caches, backups and reports are preserved.

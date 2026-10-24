@@ -42,3 +42,9 @@ preview-bound bulk revocation and trusted CLI initialization/recovery. Keep priv
 one-time material out of command arguments/output and logs; operator access is the
 customer's infrastructure boundary. Do not grant a temporary administrator flag or
 call guarded business gateways behind a settings/update fence.
+
+Consume the [Permissions ordinary access contract](../../../../docs/runa/handbook/modules/permissions/access.md)
+for reviewed assignment/custom-role/preset/copy mutations, fresh both-factor proof,
+source/target revision checks and complete aggregate Audit. Preserve assigned
+roles/directs, snapshot independence and protected system membership. Do not use
+private grant writers or flatten role-derived effective grants into direct grants.

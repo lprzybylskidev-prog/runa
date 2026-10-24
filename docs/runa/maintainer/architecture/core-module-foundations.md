@@ -1,13 +1,13 @@
 # Audit, Auth and Permissions foundations
 
-RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Point 6 adds tracked sessions, deadlines, revocation, real-activity heartbeat and account/source abuse windows. Auth entry/account UI and Permissions dictionaries, declaration sync and current authorization are delivered; assignment, protected authority and cross-module bootstrap remain assigned to their owning points.
+RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Point 6 adds tracked sessions, deadlines, revocation, real-activity heartbeat and account/source abuse windows. Auth entry/account UI and Permissions dictionaries, declaration sync and current authorization are delivered; ordinary assignment/custom-role/preset/copy APIs are delivered; protected authority and cross-module bootstrap remain assigned to their owning points.
 See the [Auth transport contract](../../handbook/modules/auth/transport.md).
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).
 
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.4.0` for capture/reads, private own-history summaries and permission declarations; Auth advances to 0.10.0 for credentials, private profile/address/avatar, preferences, policy/operator contracts, entry/restricted/application/account UI and non-recursive authorization eligibility; Permissions starts at 0.1.0 with dictionaries/declarations and native grants. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.4.0` for capture/reads, private own-history summaries and permission declarations; Auth advances to 0.10.0 for credentials, private profile/address/avatar, preferences, policy/operator contracts, entry/restricted/application/account UI and non-recursive authorization eligibility; Permissions advances to 0.2.0 with dictionaries/declarations, native grants and ordinary access management. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
@@ -209,7 +209,7 @@ ownership with durable retryable cleanup candidates and optional step-up-protect
 self lifecycle. All business writes and consumed proofs are synchronous with Audit.
 Audit 0.3.0 supplies trusted-self summary queries without importing Auth or granting
 general Audit reads. Procedures and transport are owned by the public
-[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens and Permissions action authorization are delivered; assignment/authority integration remains subsequent work.
+[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; entry/account screens and Permissions action authorization are delivered; ordinary access management is delivered; protected-authority integration remains subsequent work.
 
 ## Policy publication and operator delivery
 

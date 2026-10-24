@@ -15,7 +15,7 @@ are delivered, along with [private profile, verified address changes, avatar and
 [Account preferences and security delivery](preferences.md) are delivered.
 [Policy history, account exceptions, bulk sessions and operator contracts](policies-and-operators.md) are delivered.
 [Entry/restricted screens](entry-ui.md) and [welcome/application/account screens](account-ui.md)
-are delivered. [Permissions action grants and introspection](../permissions/README.md) are delivered; assignment/last-superadmin/bootstrap integration follows in its owning points.
+are delivered. [Permissions action grants and introspection](../permissions/README.md) are delivered; ordinary assignment/preset/copy operations are also delivered; last-superadmin/bootstrap integration follows in its owning points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access

@@ -1,6 +1,6 @@
 # Permissions
 
-Core `runa.permissions` starts at independent version `0.1.0`, requiring
+Core `runa.permissions` has independent version `0.2.0`, requiring
 `runa.auth ^0.10.0`, `runa.audit ^0.4.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
@@ -14,8 +14,9 @@ versions are no-ops. No administration UI or new dependency is supplied.
 optimistic versions, timestamps and soft deletion. Codes remain globally unique,
 including retained rows. Source-owned codes start with their module ID plus `.`;
 custom dictionaries use their own distinct code space. The system role is protected
-and nondeletable. Assignment mutations and protected-authority management are
-delivered by their later roadmap points; this foundation supplies no grant writer.
+and nondeletable. Guarded [ordinary assignment, custom-role, preset and access-copy
+operations](access.md) are delivered. Dedicated protected-authority management remains
+separate.
 
 `role_permissions`, `user_roles` and `user_permissions` use unique assignment pairs,
 bigint identity keys and same-schema RESTRICT/RESTRICT foreign keys. Auth subjects
@@ -122,9 +123,10 @@ effective is still false without a grant and current eligibility/availability.
 
 ## Delivery boundary
 
-Protected superadmin assignment/removal, last-superadmin participation, custom-role
-and preset CRUD, assignment/copy previews and first-administrator installer wiring
-remain in their owning roadmap points. The neutral AuthorityGuard still refuses
+Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
+1.0.0 under the [ordinary access contract](access.md). Protected superadmin
+assignment/removal, last-superadmin participation and first-administrator installer
+wiring remain in their owning roadmap points. The neutral AuthorityGuard still refuses
 authority-affecting changes until that integration is supplied. No temporary admin
 boolean, automatic bootstrap grant or security bypass is introduced here.
 

@@ -82,4 +82,4 @@ one-time material out of command arguments/output and logs; operator access is t
 customer's infrastructure boundary. Do not grant a temporary administrator flag or
 call guarded business gateways behind a settings/update fence.
 
-Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants and guarded introspection. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
