@@ -19,7 +19,9 @@ import type { AccountRow } from './account';
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import type { AccountTab, AccountTask } from './useAuthAccount';
 import { useAuthAccount } from './useAuthAccount';
+import AuthAccountEditor from './AuthAccountEditor.vue';
 const props = defineProps<{ accountId: string }>();
+const account = useAuthAccount(props.accountId);
 const {
   text,
   locale,
@@ -69,10 +71,10 @@ const {
   refreshCsrf,
   sendCode,
   sendVerification,
-} = useAuthAccount(props.accountId);
+} = account;
 const display = useDisplayPreferences();
 const titles = computed<Record<AccountTab, string>>(() => ({
-  details: text('Dane konta', 'Account details'),
+  details: text('Konto i zabezpieczenia', 'Account and security'),
   security: text(
     'Hasło i weryfikacja dwuetapowa',
     'Password and two-factor authentication',
@@ -145,6 +147,9 @@ const formVisible = computed(
     ['details', 'security', 'addresses'].includes(tab.value) ||
     (tab.value === 'avatar' && canAvatar.value) ||
     (tab.value === 'trust' && proofMethods.value.length > 0),
+);
+const visibleTabs = computed(() =>
+  tabs.value.filter((value) => value !== 'security' && value !== 'avatar'),
 );
 const history = computed(() => tab.value.endsWith('History'));
 const query = ref<TableQuery>({
@@ -271,7 +276,7 @@ const passwordHint = computed(() =>
       :aria-label="text('Ustawienia konta', 'Account settings')"
     >
       <Button
-        v-for="item in tabs"
+        v-for="item in visibleTabs"
         :key="item"
         :variant="tab === item ? 'solid' : 'outline'"
         :aria-current="tab === item ? 'page' : undefined"
@@ -318,34 +323,17 @@ const passwordHint = computed(() =>
         }}</Button>
         <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
       </Alert>
-      <FormSection
-        v-if="tab === 'details'"
-        :legend="text('Tożsamość', 'Identity')"
+      <AuthAccountEditor
+        v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
+        :account="account"
+        :password-hint="passwordHint"
+      />
+      <div
+        v-if="
+          tab === 'details' && (has('self_deactivate') || has('self_delete'))
+        "
+        class="flex flex-wrap gap-3 border-t border-line pt-5"
       >
-        <p class="text-sm [overflow-wrap:anywhere]">
-          {{ profile.display_name }} · {{ profile.email }}
-        </p>
-        <p class="text-xs text-muted">
-          {{
-            profile.email_verified
-              ? text('Adres potwierdzony', 'Email verified')
-              : text('Adres niepotwierdzony', 'Email not verified')
-          }}
-        </p>
-        <Button
-          v-if="!profile.email_verified"
-          :busy="busy"
-          @click="sendVerification"
-          >{{
-            text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
-          }}</Button
-        >
-        <Button v-if="has('own_email_editable')" @click="selectTask('email')">{{
-          text('Zmień główny adres', 'Change primary email')
-        }}</Button>
-        <Button v-if="task !== 'details'" @click="selectTask('details')">{{
-          text('Edytuj dane', 'Edit details')
-        }}</Button>
         <Button
           v-if="has('self_deactivate')"
           tone="danger"
@@ -358,57 +346,11 @@ const passwordHint = computed(() =>
           @click="selectTask('delete')"
           >{{ text('Usuń konto', 'Delete account') }}</Button
         >
-      </FormSection>
-      <FormSection
-        v-if="tab === 'security'"
-        :legend="text('Dostępne zabezpieczenia', 'Available security options')"
-      >
-        <p class="text-sm">
-          {{ text('Włączone metody:', 'Enrolled methods:') }}
-          {{
-            security?.enrolled
-              .map((m) =>
-                m === 'totp' ? text('aplikacja', 'authenticator') : 'e-mail',
-              )
-              .join(', ') || text('brak', 'none')
-          }}
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <Button @click="selectTask('password')">{{
-            text('Zmień hasło', 'Change password')
-          }}</Button>
-          <Button
-            v-if="security?.totp_enabled && !security.enrolled.includes('totp')"
-            @click="selectTask('totpBegin')"
-            >{{ text('Dodaj aplikację', 'Add authenticator') }}</Button
-          >
-          <Button
-            v-if="
-              security?.email_otp_enabled &&
-              !security.enrolled.includes('email') &&
-              security.email_verified
-            "
-            @click="selectTask('emailEnable')"
-            >{{ text('Włącz kody e-mail', 'Enable email codes') }}</Button
-          >
-          <Button
-            v-if="security?.enrolled.length"
-            @click="selectTask('disable')"
-            >{{ text('Wyłącz metodę', 'Disable method') }}</Button
-          >
-          <Button
-            v-if="
-              security?.recovery_codes_enabled &&
-              security.enrolled.includes('totp')
-            "
-            @click="selectTask('recoveryRotate')"
-            >{{
-              text('Nowe kody odzyskiwania', 'Replace recovery codes')
-            }}</Button
-          >
-        </div>
-      </FormSection>
-      <FormSection v-if="tab === 'addresses'" :legend="titles.addresses">
+        <Button v-if="task !== 'details'" @click="selectTask('details')">{{
+          text('Wróć do danych konta', 'Back to account details')
+        }}</Button>
+      </div>
+      <FormSection v-if="tab === 'addresses'" :title="titles.addresses">
         <p v-if="!profile.secondary_emails.length" class="text-sm text-muted">
           {{ text('Brak dodatkowych adresów.', 'No secondary addresses.') }}
         </p>
@@ -446,31 +388,6 @@ const passwordHint = computed(() =>
           >{{ text('Dodaj adres', 'Add address') }}</Button
         >
       </FormSection>
-      <FormSection v-if="tab === 'avatar'" :legend="titles.avatar">
-        <img
-          v-if="profile.has_avatar"
-          :key="profile.version"
-          :src="`/api/runa/auth/profile/avatar?v=${profile.version}`"
-          :alt="text('Twoje zdjęcie profilowe', 'Your profile image')"
-          class="h-24 w-24 rounded-full object-cover"
-        />
-        <span
-          v-else
-          class="grid h-24 w-24 place-items-center rounded-full bg-[var(--runa-primary-subtle)] text-2xl font-semibold"
-          >{{ profile.initials }}</span
-        >
-        <div v-if="canAvatar" class="flex flex-wrap gap-2">
-          <Button @click="selectTask('avatar')">{{
-            text('Zmień zdjęcie', 'Change image')
-          }}</Button>
-          <Button
-            v-if="profile.has_avatar"
-            tone="danger"
-            @click="selectTask('avatarRemove')"
-            >{{ text('Usuń zdjęcie', 'Remove image') }}</Button
-          >
-        </div>
-      </FormSection>
       <Alert v-if="codes.length" tone="warning">
         <p class="font-semibold">
           {{
@@ -497,6 +414,7 @@ const passwordHint = computed(() =>
       <Form
         v-if="
           formVisible &&
+          (tab !== 'details' || ['deactivate', 'delete'].includes(task)) &&
           !codes.length &&
           (tab !== 'addresses' ||
             task !== 'secondaryAdd' ||
@@ -509,7 +427,7 @@ const passwordHint = computed(() =>
         :busy="busy"
         @submit="submit"
       >
-        <FormSection :legend="taskTitle">
+        <FormSection :title="taskTitle">
           <RadioGroup
             v-if="task === 'details' && has('own_name_editable')"
             v-model="naming"
@@ -680,7 +598,7 @@ const passwordHint = computed(() =>
       </template>
       <FormSection
         v-if="tab === 'preferences'"
-        :legend="text('Wygląd i język', 'Appearance and language')"
+        :title="text('Wygląd i język', 'Appearance and language')"
       >
         <AppPreferenceControls
           :locale="display.locale.value"
@@ -713,7 +631,7 @@ const passwordHint = computed(() =>
       </FormSection>
       <FormSection
         v-if="tab === 'preferences'"
-        :legend="text('Powiadomienia e-mail', 'Email notifications')"
+        :title="text('Powiadomienia e-mail', 'Email notifications')"
       >
         <Form
           v-for="choice in delivery"

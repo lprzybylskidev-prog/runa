@@ -57,7 +57,24 @@ before navigating through `/`, so welcome policy determines the destination.
 Back/refresh and direct entry recheck the server session. The entry page supplies
 account access, without speculative business statistics or management navigation.
 
-Own-account sections reuse Form/FormSection/TextInput/RadioGroup/FileInput/Table:
+The supplied application/account shell uses ApplicationLayout width="fluid".
+The default account editor groups identity, private avatar, password and two-factor
+settings into one Form with visible fields, two columns on wide screens and one
+column on narrow screens. One outlined Save changes action replaces intermediate
+change-password/add-authenticator task buttons. Sessions, preferences and other
+self-service areas retain their separate navigation.
+
+The editor validates all selected changes before writing, then uses the existing
+guarded endpoints sequentially with refreshed profile versions. These writes are
+not one transaction: failure stops the sequence, reports any partial completion
+and never replays completed operations. A pending email change is requested once
+and still requires email confirmation. Password and factor changes are saved in
+separate submissions because factor proofs may be single-use; other profile edits
+can accompany either. TOTP setup still explicitly displays a key, requires the
+app code and fresh proof, then requires acknowledgement of recovery codes. Account
+lifecycle operations retain a separate explicit confirmation.
+
+Own-account sections reuse Form/FormSection/TextInput/RadioGroup/Select/FileInput/Table:
 
 - Versioned exclusive naming/login edits and protected primary email change.
 - Password change, optional authenticator/email enrollment, factor removal and

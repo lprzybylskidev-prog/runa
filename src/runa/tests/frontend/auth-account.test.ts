@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
+import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
+import { FileInput, Select } from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
 import CustomerApplication from './fixtures/customization/CustomerApplication.vue';
@@ -128,7 +130,10 @@ beforeEach(() => {
         values: [],
       });
     if (init?.method && init.method !== 'GET') {
-      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      const body =
+        init.body instanceof FormData
+          ? Object.fromEntries(init.body)
+          : (JSON.parse(String(init.body)) as Record<string, unknown>);
       writes.push({ path, body });
       return write(path, body);
     }
@@ -352,15 +357,8 @@ it('uses secondary address identity and account revision for change and explicit
 it('optional TOTP setup retains its private key only until confirmation and requires saved-code acknowledgement', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Hasło i weryfikacja dwuetapowa')!
-    .trigger('click');
+  w.getComponent(Select).vm.$emit('update:modelValue', 'totpBegin');
   await flushPromises();
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Dodaj aplikację')!
-    .trigger('click');
   write = (path) =>
     json(
       path.endsWith('/totp-begin')
@@ -394,11 +392,6 @@ it('optional TOTP setup retains its private key only until confirmation and requ
 it('known password errors stop submission and a CSRF renewal does not replay the write', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  await w
-    .findAll('button')
-    .find((b) => b.text() === 'Hasło i weryfikacja dwuetapowa')!
-    .trigger('click');
-  await flushPromises();
   await w
     .get('input[name="current_password"]')
     .setValue('a-long-test-password');
@@ -484,4 +477,93 @@ it('customization: account replacement consumes the public controller with curre
   expect(w.find('[data-customer-account]').exists()).toBe(true);
   expect(w.text()).toContain('details');
   expect(w.text()).not.toContain('loginHistory');
+});
+
+it('unified account editor validates all changes before writing and stops after a partial failure without replay', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  expect(w.findAll('form')).toHaveLength(1);
+  expect(
+    w.findAll('button').some((button) => button.text() === 'Zmień hasło'),
+  ).toBe(false);
+  expect(
+    w.findAll('button').some((button) => button.text() === 'Dodaj aplikację'),
+  ).toBe(false);
+  expect(w.getComponent(AuthAccountEditor).exists()).toBe(true);
+  await w.get('input[name="name"]').setValue('Edited name');
+  await w.get('input[name="email"]').setValue('next@example.test');
+  await w.get('form').trigger('submit');
+  await flushPromises();
+  expect(writes).toHaveLength(0);
+  expect(
+    w.get('input[name="current_password"]').attributes('aria-invalid'),
+  ).toBe('true');
+  await w
+    .get('input[name="current_password"]')
+    .setValue('a-long-test-password');
+  write = (path, body) => {
+    if (path.endsWith('/profile')) {
+      currentProfile = {
+        ...currentProfile,
+        name: String(body.name),
+        version: 6,
+      };
+      return json({ accepted: true });
+    }
+    return json('identity_stale', 409);
+  };
+  await w.get('form').trigger('submit');
+  await flushPromises();
+  expect(writes.map((item) => item.path)).toEqual([
+    '/api/runa/auth/profile',
+    '/api/runa/auth/profile/email',
+  ]);
+  expect(writes[1]?.body).toMatchObject({
+    version: 6,
+    email: 'next@example.test',
+  });
+  expect(w.text()).toContain('Część zmian zapisano');
+  expect(w.text()).toContain('Dane zmieniły się');
+  expect(
+    (w.get('input[name="current_password"]').element as HTMLInputElement).value,
+  ).toBe('');
+  await flushPromises();
+  expect(writes).toHaveLength(2);
+});
+
+it('unified account editor saves the selected avatar with the refreshed version and resets removal intent', async () => {
+  currentProfile.has_avatar = true;
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const remove = w
+    .findAll('label')
+    .find((label) => label.text().includes('Usuń obecne zdjęcie'))!;
+  await remove.get('input').setValue(true);
+  w.getComponent(FileInput).vm.$emit('update:modelValue', [
+    new File(['image'], 'profile.png', { type: 'image/png' }),
+  ]);
+  await w.get('input[name="name"]').setValue('Changed name');
+  write = (path, body) => {
+    if (path.endsWith('/profile'))
+      currentProfile = {
+        ...currentProfile,
+        name: String(body.name),
+        version: 6,
+      };
+    else currentProfile = { ...currentProfile, version: 7 };
+    return json({ accepted: true });
+  };
+  await w.get('form').trigger('submit');
+  await flushPromises();
+  expect(writes.map((item) => item.path)).toEqual([
+    '/api/runa/auth/profile',
+    '/api/runa/auth/profile/avatar',
+  ]);
+  expect(writes[1]?.body.version).toBe('6');
+  expect(writes[1]?.body.avatar).toBeInstanceOf(File);
+  expect(w.getComponent(FileInput).props('modelValue')).toHaveLength(0);
+  expect((remove.get('input').element as HTMLInputElement).checked).toBe(false);
+  await w.get('form').trigger('submit');
+  await flushPromises();
+  expect(writes).toHaveLength(2);
 });

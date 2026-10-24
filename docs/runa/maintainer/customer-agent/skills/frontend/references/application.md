@@ -84,3 +84,9 @@ Self-service is Panel użytkownika/User panel, exposed through the dedicated use
 dropdown rather than sidebar or placeholder welcome content. Keep menu identity
 and icon/action rows consistent with the shell; do not extract shell menus into
 universal content primitives.
+
+For related settings, use the visible combined-editor pattern in
+`docs/runa/handbook/development/frontend/forms.md#related-settings-in-one-editor`.
+Keep ordinary fields directly editable, preserve explicit security steps and use
+public account orchestration for capability/proof/version/partial-save handling.
+Forward ApplicationLayout's width prop in wrappers; the supplied account shell is fluid.

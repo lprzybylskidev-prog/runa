@@ -976,6 +976,13 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     canceled navigation/resumed document behavior and publish assets for review.
   - Synchronize public HTTP/Auth lifecycle guidance, versions and meaningful focused
     cancellation regressions; no final point 20 or appearance approval inferred.
+- [x] 19j. Consolidate the user panel account editor.
+  - Owner requests one visible editor for identity, avatar, password and two-factor
+    verification, without task-switch buttons; use the existing fluid shell width.
+    Keep sessions and preferences unchanged for their separate manual review.
+  - Retain capability/proof/version boundaries, explicit enrollment/recovery steps
+    and honest partial-save feedback; synchronize public/customer guidance and
+    prepare focused editor diagnostics plus rendered desktop/mobile themed review.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2550,3 +2557,47 @@ architectural premise requires discussion before dependent work.
 - No Docker resources/reset/credential change. Existing data, services, caches,
   reports, backups and rollback material preserved. Point 20 remains gated by
   explicit owner frontend appearance acceptance.
+
+## Point 19j delivery
+
+- Owner requests combined identity/avatar/password/verification editing and full
+  available width, leaving sessions/preferences for later review. AuthApplication
+  now passes the existing width=fluid shell contract. Default account navigation
+  groups details/security/avatar into Account and security; existing public tab/
+  task methods remain compatible for custom presentations.
+- AuthAccountEditor composes shared controls in one Form, two desktop columns and
+  one narrow column, with directly visible profile/password fields, inline avatar
+  selection/removal and one outlined Save changes action. A labelled verification
+  Select replaces task-switch buttons. Corrected fieldset titles to the shared
+  FormSection title prop. Destructive account actions remain explicitly confirmed;
+  session/preference operations retain their behavior and separate navigation.
+- Public useAuthAccount owns saveOverview and typed overviewAction/removeAvatar/
+  overviewNeedsProof state. Validate all selected edits before writes, then call
+  existing guarded APIs with refreshed profile versions; stop on failure/cancellation/
+  reauthentication without replay and explicitly report partial completion. Reset
+  completed email/avatar intents. Password/factor edits require separate saves to
+  avoid reusing a one-time proof. Preserve TOTP begin/confirm, fresh proofs, explicit
+  recovery-code acknowledgement, account fencing, safe drafts and secret cleanup.
+  No backend permission/proof/transaction/schema/settings contract was changed.
+- Auth compatible PATCH 0.13.6 -> 0.13.7, source-only account_editor forward edge and
+  changelog. Permissions ^0.13.0 remains compatible. Applied the local forward step
+  and published current client assets for manual review; no credentials/reset/data
+  fixture changes. Module source/version diagnostics passed for all three Core modules.
+- Six selected frontend cases passed: stale version refusal, deliberate draft review,
+  TOTP confirmation/recovery acknowledgement, password validation/CSRF no replay,
+  prevalidated sequential writes/partial failure and avatar version/removal reset.
+  Real served authenticated Chromium checks passed at 1920/390 in both themes:
+  one form, no overflow or JS errors, no writes on an unchanged save, and workspace
+  width 1656px/max-width none at 1920. Inspected desktop/mobile screenshots retained
+  under .runtime/dev/manual-auth/account-editor. An initial browser attempt during
+  the source/installed-version mismatch was retried after forward preparation.
+- Synchronized account/customization/form guidance and both owner/customer frontend
+  references with the reusable visible-editor pattern. Root AGENTS, Vue/Tailwind
+  and security products already require shared public composition, responsive forms,
+  guarded proof/version handling and secret cleanup; no duplicate rule needed.
+  Added no page motion; shared controls retain their existing reduced-motion/focus
+  behavior and secret material remains hidden from print.
+- No broad suite/static analysis/image/scanner/final quality ran; mandatory hooks
+  apply. No Docker resources were created or removed. Preserved existing development
+  services/data, caches, reports, backups and rollback material. Point 20 remains
+  gated by explicit owner frontend appearance acceptance.

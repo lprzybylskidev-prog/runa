@@ -78,6 +78,7 @@ const initials = computed(
   <component
     :is="presentation.applicationLayout ?? ApplicationLayout"
     v-else
+    width="fluid"
     :navigation="navigation"
     :current="current"
     :title="account ? text('Panel użytkownika', 'User panel') : ''"

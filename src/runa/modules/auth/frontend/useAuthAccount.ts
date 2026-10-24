@@ -91,6 +91,22 @@ export function useAuthAccount(accountId: string) {
   const secret = ref(''),
     codes = ref<string[]>([]),
     files = ref<readonly File[]>([]);
+  const overviewAction = ref<
+    | 'none'
+    | 'totpBegin'
+    | 'totpConfirm'
+    | 'emailEnable'
+    | 'disable'
+    | 'recoveryRotate'
+  >('none');
+  const removeAvatar = ref(false);
+  const overviewNeedsProof = computed(
+    () =>
+      proofMethods.value.length > 0 &&
+      (overviewAction.value !== 'none' ||
+        (Boolean(fields.password || fields.password_confirmation) &&
+          security.value?.password_change_factor === true)),
+  );
   const rows = ref<AccountRow[]>([]),
     cursor = ref<string | null>(null);
   const delivery = ref<DeliveryChoice[]>([]),
@@ -198,7 +214,12 @@ export function useAuthAccount(accountId: string) {
     codes.value = [];
     confirmed.value = false;
     task.value = next;
-    fields.email = address?.email ?? '';
+    overviewAction.value = 'none';
+    removeAvatar.value = false;
+    fields.email =
+      next === 'details'
+        ? (profile.value?.email ?? '')
+        : (address?.email ?? '');
     fields.address_id = address?.public_id ?? '';
     method.value = proofMethods.value[0] ?? 'totp';
     target.value = security.value?.enrolled[0] ?? 'totp';
@@ -270,11 +291,15 @@ export function useAuthAccount(accountId: string) {
     return Object.keys(errors).length === 0;
   }
   async function perform(action: () => Promise<void>) {
+    await performTask(action);
+  }
+  async function performTask(action: () => Promise<void>, clearSecrets = true) {
     if (busy.value || !alive) return;
     busy.value = true;
     cleanErrors();
     try {
       await action();
+      return alive;
     } catch (error) {
       if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
@@ -287,7 +312,7 @@ export function useAuthAccount(accountId: string) {
     } finally {
       if (alive) {
         busy.value = false;
-        cleanSecrets();
+        if (clearSecrets) cleanSecrets();
         if (failure.value) {
           await nextTick();
           if (Object.keys(errors).length) form.value?.focusInvalid();
@@ -309,8 +334,12 @@ export function useAuthAccount(accountId: string) {
       if (!alive) return;
       options.value = o;
       security.value = s;
+      overviewAction.value = 'none';
+      removeAvatar.value = false;
+      secret.value = '';
       ready.value = true;
       fillDetails();
+      fields.email = profile.value?.email ?? '';
       draft.value = takeAccountDraft(accountId);
       method.value = proofMethods.value[0] ?? 'totp';
     });
@@ -401,7 +430,7 @@ export function useAuthAccount(accountId: string) {
     await nextTick();
     heading.value?.focus();
   }
-  async function submit() {
+  async function submitTask(preserveSecrets = false) {
     if (!ready.value || busy.value || codes.value.length) return;
     if (!validate()) {
       await nextTick();
@@ -426,7 +455,8 @@ export function useAuthAccount(accountId: string) {
       fieldNames.value.map((k) => [k, fields[k] ?? '']),
     );
     if (needsProof.value) input.method = method.value;
-    await perform(async () => {
+    let reauthenticating = false;
+    const saved = await performTask(async () => {
       let path = '',
         verb: 'POST' | 'PATCH' | 'DELETE' = 'POST';
       let body: Record<string, unknown> | FormData = input;
@@ -494,6 +524,7 @@ export function useAuthAccount(accountId: string) {
       const result = data(await accountRequest(path, verb, body, abort.signal));
       if (!alive) return;
       if (result.reauthenticate === true) {
+        reauthenticating = true;
         cleanSecrets();
         clearAccountDraft();
         await authGet('session', abort.signal);
@@ -538,7 +569,116 @@ export function useAuthAccount(accountId: string) {
               'Check your email to confirm the address.',
             )
           : text('Zapisano.', 'Saved.');
-    });
+    }, !preserveSecrets);
+    return saved === true && !reauthenticating;
+  }
+  async function saveOverview() {
+    if (!ready.value || busy.value || codes.value.length || !profile.value)
+      return;
+    const originalTask = task.value;
+    const plan: AccountTask[] = [];
+    const names =
+      naming.value === 'single'
+        ? { name: fields.name || null, first_name: null, surname: null }
+        : {
+            name: null,
+            first_name: fields.first_name || null,
+            surname: fields.surname || null,
+          };
+    if (
+      (has('own_name_editable') &&
+        Object.entries(names).some(
+          ([key, value]) => value !== profile.value![key as 'name'],
+        )) ||
+      (has('own_login_editable') &&
+        (fields.login || null) !== profile.value.login)
+    )
+      plan.push('details');
+    if (has('own_email_editable') && fields.email !== profile.value.email)
+      plan.push('email');
+    if (canAvatar.value && files.value.length) plan.push('avatar');
+    else if (canAvatar.value && removeAvatar.value && profile.value.has_avatar)
+      plan.push('avatarRemove');
+    if (overviewAction.value !== 'none') plan.push(overviewAction.value);
+    if (fields.password || fields.password_confirmation) plan.push('password');
+    if (!plan.length) {
+      cleanErrors();
+      notice.value = text('Brak zmian do zapisania.', 'No changes to save.');
+      return;
+    }
+    // A factor proof may be single-use. Never reuse it for a second protected write.
+    if (plan.includes('password') && overviewAction.value !== 'none') {
+      cleanErrors();
+      errors.password = text(
+        'Zapisz nowe hasło i zmianę weryfikacji osobno.',
+        'Save password and verification changes separately.',
+      );
+      await nextTick();
+      form.value?.focusInvalid();
+      return;
+    }
+    const validation: Record<string, string> = {};
+    for (const operation of plan) {
+      task.value = operation;
+      validate();
+      Object.assign(validation, errors);
+    }
+    task.value = originalTask;
+    cleanErrors();
+    if (plan.includes('avatar')) {
+      const file = files.value[0];
+      if (
+        files.value.length !== 1 ||
+        !file ||
+        file.size > Number(caps.value.avatar_max_kib) * 1024 ||
+        !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+      )
+        validation.avatar = text(
+          'Wybierz jeden obraz JPEG, PNG lub WebP w dozwolonym rozmiarze.',
+          'Choose one JPEG, PNG or WebP image within the size limit.',
+        );
+    }
+    Object.assign(errors, validation);
+    if (Object.keys(errors).length) {
+      await nextTick();
+      form.value?.focusInvalid();
+      return;
+    }
+    let completed = 0;
+    try {
+      for (const operation of plan) {
+        task.value = operation;
+        // Removal is explicitly selected in this editor; lifecycle operations are separate.
+        confirmed.value = operation === 'avatarRemove';
+        if (!(await submitTask(true))) {
+          if (completed && failure.value)
+            notice.value = text(
+              'Część zmian zapisano. Pozostałe wymagają sprawdzenia przed ponowną próbą.',
+              'Some changes were saved. Review the remaining changes before retrying.',
+            );
+          return;
+        }
+        completed++;
+        if (operation === 'email') fields.email = profile.value?.email ?? '';
+        if (operation === 'avatarRemove') removeAvatar.value = false;
+        if (operation === 'avatar') {
+          files.value = [];
+          removeAvatar.value = false;
+        }
+        if (operation === overviewAction.value)
+          overviewAction.value =
+            operation === 'totpBegin' ? 'totpConfirm' : 'none';
+      }
+      if (plan.includes('email'))
+        notice.value = text(
+          'Zapisano zmiany. Sprawdź pocztę, aby potwierdzić nowy adres.',
+          'Changes saved. Check your email to confirm the new address.',
+        );
+    } finally {
+      cleanSecrets();
+      confirmed.value = false;
+      task.value = originalTask;
+    }
   }
   async function revoke(publicId: string) {
     const own = rows.value.find((row) => row.public_id === publicId)?.current;
@@ -688,7 +828,11 @@ export function useAuthAccount(accountId: string) {
     choose,
     initialize,
     selectTab,
-    submit,
+    submit: () => submitTask(),
+    saveOverview,
+    overviewAction,
+    overviewNeedsProof,
+    removeAvatar,
     revoke,
     saveDelivery,
     resetPreferences,

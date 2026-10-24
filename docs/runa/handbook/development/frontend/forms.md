@@ -99,3 +99,14 @@ operations and existing busy/disabled behavior. Solid fills are not the default
 submit hierarchy. Navigation beside forms uses public TextLink like welcome:
 muted text without a permanent underline, underline/color on hover, visible focus,
 44px touch targets and reduced-motion support. Active tab selection is separate.
+
+## Related settings in one editor
+
+Group related settings into one visible form rather than requiring task buttons
+to reveal ordinary editable fields. Use labelled sections and a responsive grid;
+keep the primary outlined save action clear. Preserve deliberate multi-step
+security confirmation and destructive-action confirmation. A unified presentation
+does not imply atomic backend writes: validate selected changes before requests,
+respect each endpoint's proofs/version, stop on failure and report partial success
+without replay. The [account editor](../../modules/auth/account-ui.md) supplies this
+pattern through its public controller; customer code does not copy orchestration.

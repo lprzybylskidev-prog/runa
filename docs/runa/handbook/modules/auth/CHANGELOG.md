@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.13.7
+
+Consolidate account details, avatar, password and verification into one fluid-width
+editor with visible fields and one save action. Preserve guarded individual APIs,
+validate the complete edit before writes and stop on failure without replay;
+report partial completion explicitly. Keep sessions/preferences unchanged.
+Source-only forward edge; existing headless task APIs remain compatible.
+
 ## 0.13.6
 
 Recognize explicit shared-HTTP document cancellation in entry/account/welcome/session
