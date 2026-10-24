@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\SecurityMailDelivery;
+use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -167,7 +168,7 @@ final readonly class SecurityNotices
                     $body = $text.($notice->deadline === null ? '.' : ': '.CarbonImmutable::parse($notice->deadline)->toIso8601String());
                     $contract = SecurityMailDelivery::class;
                     $accepted = app()->bound($contract) && app($contract)->send($recipient, $text, $body);
-                    $sent = $accepted ? true : Mail::raw($body, static fn ($message) => $message->to($recipient)->subject($text));
+                    $sent = $accepted ? true : Mail::to($recipient)->send(new AuthMessage($text, $body, language: $locale === '"en"' ? 'en' : 'pl'));
                     if ($sent === null) {
                         throw new \RuntimeException('Mail cancelled.');
                     }

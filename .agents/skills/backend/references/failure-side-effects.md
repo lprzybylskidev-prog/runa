@@ -54,3 +54,10 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Module email presentation uses the shared native Runa Markdown layout described in
+`docs/runa/handbook/architecture/frontend.md` (Native email layout), including text
+alternatives and configured branding. Reusing that layout does not authorize
+changing a module's delivery, recipient, secret-handling or retry contract. Auth
+private mail stays at its guarded synchronous delivery boundary; do not queue its
+Mailable or move recovery into general notification routing.

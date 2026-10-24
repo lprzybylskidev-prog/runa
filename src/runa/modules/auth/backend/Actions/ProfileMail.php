@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -104,9 +105,12 @@ final readonly class ProfileMail
             }
             $notice = $mail->purpose === 'notice';
             $body = $notice ? 'Główny adres e-mail Twojego konta został zmieniony. Jeśli nie zlecono tej zmiany, skontaktuj się z administratorem.'
-                : "Potwierdź adres e-mail:\n".$origin.'/auth/confirm-address#token='.$claimed[0];
+                : 'Potwierdź adres e-mail przypisany do Twojego konta. Jeśli nie oczekujesz tej wiadomości, zignoruj ją.';
             try {
-                $sent = Mail::raw($body, static fn ($message) => $message->to($mail->recipient)->subject($notice ? 'Zmiana adresu e-mail' : 'Potwierdź adres e-mail'));
+                $sent = Mail::to($mail->recipient)->send(new AuthMessage(
+                    $notice ? 'Zmiana adresu e-mail' : 'Potwierdź adres e-mail', $body,
+                    $notice ? null : 'Potwierdź adres e-mail',
+                    $notice ? null : $origin.'/auth/confirm-address#token='.$claimed[0]));
                 if ($sent === null) {
                     throw new \RuntimeException('Auth mail cancelled.');
                 }

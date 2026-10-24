@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.18.1
+
+Apply the shared native Runa Markdown email layout to direct entry, profile/address
+and security-notice delivery. Reuse configured branding, footer, locale and automatic
+plain text; retain complete fragment URL fallbacks and readable OTP codes. Preserve
+private recipient rechecks, synchronous single-attempt delivery and the optional
+SecurityMailDelivery adapter contract. Source-only forward edge; no data change.
+
 ## 0.18.0
 
 Integrate secondary notification addresses into the Account details card and remove

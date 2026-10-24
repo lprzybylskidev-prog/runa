@@ -7,6 +7,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
@@ -62,12 +63,19 @@ final readonly class DeliverEntryMail
             $subject = match ($token->purpose) {
                 'invitation' => 'Zaproszenie do aplikacji', 'reset' => 'Zresetuj hasło', 'email_otp' => 'Kod uwierzytelniania', default => 'Potwierdź adres e-mail'
             };
-            $body = $token->purpose === 'email_otp' ? 'Kod uwierzytelniania: '.$secret : "Otwórz odnośnik, aby kontynuować:\n".$url."\nJeśli nie oczekujesz tej wiadomości, zignoruj ją.";
+            $body = $token->purpose === 'email_otp'
+                ? 'Wpisz poniższy kod, aby potwierdzić logowanie. Nie udostępniaj go innym osobom.'
+                : 'Otwórz odnośnik, aby kontynuować. Jeśli nie oczekujesz tej wiadomości, zignoruj ją.';
+            $action = match ($token->purpose) {
+                'invitation' => 'Przyjmij zaproszenie', 'reset' => 'Zresetuj hasło', default => 'Potwierdź adres e-mail'
+            };
             // User locks remain held through SMTP handoff to serialize lifecycle/invalidation.
             // No token retry is permitted even if SMTP succeeds and the final DB commit fails.
             try {
-                $sent = Mail::raw($body,
-                    static fn ($message) => $message->to($token->recipient)->subject($subject));
+                $sent = Mail::to($token->recipient)->send(new AuthMessage($subject, $body,
+                    $token->purpose === 'email_otp' ? null : $action,
+                    $token->purpose === 'email_otp' ? null : $url,
+                    $token->purpose === 'email_otp' ? $secret : null));
                 if ($sent === null) {
                     throw new \RuntimeException('Auth mail cancelled.');
                 }

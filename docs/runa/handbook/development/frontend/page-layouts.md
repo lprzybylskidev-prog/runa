@@ -32,7 +32,7 @@ Use public components directly; keep executable composition examples in the exis
 
 ## Email layout
 
-Native Laravel Markdown/non-Auth notification default: `config/mail.php`, `src/runa/resources/views/mail/{html,text}` and overridable `runa-mail` namespace. See `docs/runa/handbook/architecture/frontend.md` (Native email layout) for body/header/actions/footer/text/CID contracts. Use shared `src/runa/resources/css/light-palette.css` tokens, table layout, light theme and system monospace fallbacks; do not import Vue into mail. Branding is configured in `config/branding.php` with separate application/platform versions. Permanent test-only templates and array-transport browser adapters live under tests/Fixtures, with no application preview route. Browser screenshots do not prove Outlook/Gmail/Apple Mail compatibility.
+Native Laravel Markdown/default notification layout (including direct Auth mail): `config/mail.php`, `src/runa/resources/views/mail/{html,text}` and overridable `runa-mail` namespace. See `docs/runa/handbook/architecture/frontend.md` (Native email layout) for body/header/actions/footer/text/CID contracts. Use shared `src/runa/resources/css/light-palette.css` tokens, table layout, light theme and system monospace fallbacks; do not import Vue into mail. Branding is configured in `config/branding.php` with separate application/platform versions. Permanent test-only templates and array-transport browser adapters live under tests/Fixtures, with no application preview route. Browser screenshots do not prove Outlook/Gmail/Apple Mail compatibility.
 
 ## HTTP errors
 

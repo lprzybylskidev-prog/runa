@@ -1016,6 +1016,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19r. Add private local TOTP QR enrollment alongside manual keys in account and required enrollment views.
 - [x] 19s. Align alert icons, move avatar confirmation and recovery-code acknowledgement into modal bodies, then reset the identified local development database for a fresh manual review.
 - [x] 19t. Integrate secondary notification addresses into Account details with clear status/actions and isolated versioned submissions; remove the separate default navigation tab.
+- [x] 19u. Apply the existing shared native Markdown email layout to all direct Auth mail, preserving private delivery, text alternatives and single-attempt guards.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3061,3 +3062,37 @@ architectural premise requires discussion before dependent work.
   active owner sessions/2FA, settings, files, caches, backups and reports preserved.
   No database reset was requested or performed in this point. Point 20 remains
   gated by explicit owner appearance acceptance; no broad/final gate was run.
+
+### Point 19u — shared Auth mail presentation
+
+- Owner requested using the already delivered email template for Auth messages.
+  Entry invitations/reset/verification/email OTP, profile/address confirmation and
+  former-primary notices, and direct security-notice fallback now use one native
+  AuthMessage Markdown body with the existing Runa layout/theme/branding/footer.
+  Link messages include an action and complete fragment URL fallback; OTP codes
+  preserve leading zeroes without a link. Notice mail contains no token. Entry/
+  profile retain Polish copy; security notices retain PL/EN preference and layout
+  locale. The optional SecurityMailDelivery adapter contract remains unchanged.
+- Preserved private reference-only jobs, recipient/state rechecks, origin checks,
+  persisted single-attempt claims, locked synchronous handoff and static redacted
+  delivery failures. No new dependency, notification engine, queue payload or
+  schema/settings/credential change. Auth advances PATCH 0.18.0 -> 0.18.1 through
+  source-only mail_layout, applied locally. Permissions ^0.18.0 remains compatible
+  at 0.5.6; Audit stays 0.5.0. Source/runtime/version diagnostics pass. Cleared
+  compiled views and signalled queue worker restart for current PHP/templates.
+- Nine focused backend cases pass (157 assertions): actual entry/profile/security
+  delivery with duplicate/expired/obsolete suppression and current recipients,
+  native multipart branding and text, complete action URL, zero-prefixed OTP,
+  notice content, matching PL/EN and locale restoration. These cases use the owning
+  Auth fixture so they also run independently of other test files. Synthetic array-
+  transport previews inspected at 900px/390px for reset, OTP and notice, without
+  horizontal overflow; retained under .runtime/dev/manual-auth/auth-mail. Browser
+  previews do not certify external mail clients. No real email was sent by checks.
+- Synchronized native email architecture, public layout/Auth delivery guidance and
+  module changelog, correcting the stale Auth README version. Owner/customer
+  backend guidance now requires shared presentation while preserving each module's
+  delivery/security contracts. Existing frontend references link to the updated
+  public layout guide; root and security rules already cover this boundary and
+  need no changes. No Docker resources created/removed; development data, owner
+  accounts/sessions/2FA, files, caches, backups and reports preserved. No database
+  reset or broad/final verification; point 20 still awaits owner acceptance.

@@ -66,3 +66,10 @@ module-owned contributors. Keep application `seeding.register` separate from the
 module contributor map; declare module-ID dependencies, preserve fixture provenance
 and existing credentials/grants with atomic Audit, and reject production at every
 fixture entry. Customer workflows use delivered commands, never owner test tools.
+
+Module email presentation uses the shared native Runa Markdown layout described in
+`docs/runa/handbook/architecture/frontend.md` (Native email layout), including text
+alternatives and configured branding. Reusing that layout does not authorize
+changing a module's delivery, recipient, secret-handling or retry contract. Auth
+private mail stays at its guarded synchronous delivery boundary; do not queue its
+Mailable or move recovery into general notification routing.

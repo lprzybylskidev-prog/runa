@@ -156,6 +156,16 @@ optional `SecurityMailDelivery` binding can later adapt to Notifications; false
 means no send attempted and uses the direct Laravel Mail fallback. Throw after
 an ambiguous attempt; do not return false. Credential recovery remains direct.
 
+All direct Auth entry, profile/address and security-notice mail uses the existing
+[native Runa Markdown layout](../../architecture/frontend.md#native-email-layout),
+including branding, footer and automatic plain text. Link mail includes both a
+button and its complete fragment URL as a copyable fallback; email OTP mail shows
+the code without an actionable link. Notice mail contains no credential/token.
+Entry/profile copy remains Polish; notices retain the account's PL/EN preference
+with the matching layout locale. A trusted SecurityMailDelivery adapter retains
+its existing content/presentation responsibility; only the direct fallback uses
+the native layout. Never queue the rendered Mailable or its private content.
+
 Session cleanup removes up to 500 notice rows whose expiry is over 30 days old;
 this is technical outbox cleanup, never Audit retention. Audit history, current
 preference/address rows, developer databases and caches are preserved. Apply the

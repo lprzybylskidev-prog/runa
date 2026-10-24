@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -58,6 +59,7 @@ use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -811,7 +813,8 @@ it('delivers reset and email OTP once through private mail and suppresses expire
     $delivery->deliver($token->public_id);
     $delivery->deliver($token->public_id);
     $messages = app('mailer')->getSymfonyTransport()->messages();
-    expect($messages)->toHaveCount(1)->and($messages[0]->getOriginalMessage()->getTextBody())->toContain($code);
+    expect($messages)->toHaveCount(1)->and($messages[0]->getOriginalMessage()->getTextBody())->toContain($code, 'Oparte na Runa')
+        ->and($messages[0]->getOriginalMessage()->getHtmlBody())->toContain($code, '#8650ba', 'Oparte na Runa')->not->toContain('#token=');
     $this->postJson('/api/runa/auth/security/email-send')->assertOk();
     $pending = DB::table('runa_auth.entry_tokens')->where('purpose', 'email_otp')->latest('id')->first();
     CarbonImmutable::setTestNow('2026-10-23 12:01:00 UTC');
@@ -822,7 +825,8 @@ it('delivers reset and email OTP once through private mail and suppresses expire
     $delivery->deliver($reset->public_id);
     $delivery->deliver($reset->public_id);
     $messages = app('mailer')->getSymfonyTransport()->messages();
-    expect($messages)->toHaveCount(2)->and($messages[1]->getOriginalMessage()->getTextBody())->toContain('/auth/reset-password#token=');
+    expect($messages)->toHaveCount(2)->and($messages[1]->getOriginalMessage()->getTextBody())->toContain('/auth/reset-password#token=', 'Oparte na Runa')
+        ->and($messages[1]->getOriginalMessage()->getHtmlBody())->toContain('/auth/reset-password#token=', '#8650ba');
 });
 
 it('rejects an email step up proof after policy begins requiring TOTP even with a valid TOTP session', function (): void {
@@ -1094,7 +1098,8 @@ it('delivers private address links once and sends the completion notice only to 
     $delivery->deliver($mail->public_id);
     $messages = app('mailer')->getSymfonyTransport()->messages();
     expect($messages)->toHaveCount(1)->and($messages[0]->getOriginalMessage()->getTo()[0]->getAddress())->toBe('profile-mail-new@example.test')
-        ->and($messages[0]->getOriginalMessage()->getTextBody())->toContain('/auth/confirm-address#token='.$secret);
+        ->and($messages[0]->getOriginalMessage()->getTextBody())->toContain('/auth/confirm-address#token='.$secret, 'Oparte na Runa')
+        ->and($messages[0]->getOriginalMessage()->getHtmlBody())->toContain('/auth/confirm-address#token='.$secret, '#8650ba');
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertOk();
     $notice = DB::table('runa_auth.profile_mail')->where('purpose', 'notice')->first();
     $this->postJson('/api/runa/auth/profile/email', ['version' => 3, 'email' => 'profile-mail-stale@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
@@ -1103,7 +1108,8 @@ it('delivers private address links once and sends the completion notice only to 
     $delivery->deliver($notice->public_id);
     $delivery->deliver($notice->public_id);
     $messages = app('mailer')->getSymfonyTransport()->messages();
-    expect($messages)->toHaveCount(2)->and($messages[1]->getOriginalMessage()->getTo()[0]->getAddress())->toBe('profile-mail-old@example.test');
+    expect($messages)->toHaveCount(2)->and($messages[1]->getOriginalMessage()->getTo()[0]->getAddress())->toBe('profile-mail-old@example.test')
+        ->and($messages[1]->getOriginalMessage()->getHtmlBody())->toContain('#8650ba', 'Główny adres')->not->toContain('#token=');
     $delivery->deliver($stale->public_id);
     expect(app('mailer')->getSymfonyTransport()->messages())->toHaveCount(2)
         ->and(DB::table('runa_auth.profile_mail')->where('id', $stale->id)->value('delivery_secret'))->toBeNull();
@@ -1259,6 +1265,9 @@ it('protects mandatory routing and revalidates obsolete reminders with single SM
     $notices->deliver($passwordNotice->public_id);
     $notices->deliver($passwordNotice->public_id);
     expect($sent)->toBe(1)->and(DB::table('runa_auth.security_notices')->where('id', $passwordNotice->id)->value('sent_at'))->not->toBeNull();
+    $email = app('mailer')->getSymfonyTransport()->messages()->last()->getOriginalMessage();
+    expect($email->getHtmlBody())->toContain('#8650ba', 'Oparte na Runa', 'Hasło zostało zmienione');
+    expect($email->getTextBody())->toContain('Oparte na Runa', 'Hasło zostało zmienione');
 });
 
 it('rolls back delivery preferences and their revision when mandatory Audit persistence fails', function (): void {
@@ -1517,3 +1526,34 @@ it('persists welcome policy defaults and redirects only the public root through 
     entryPolicy(['public_welcome_enabled' => true]);
     expect($settings->value('runa.auth', 'public_welcome_enabled'))->toBeTrue();
 })->group('auth-account-ui');
+
+it('renders private Auth actions codes and notices through the shared multipart layout', function (string $kind, string $locale) {
+    app()->setLocale($locale === 'pl' ? 'en' : 'pl');
+    $previousLocale = app()->getLocale();
+    config(['branding.application_name' => 'Atlas', 'branding.application_version' => '2.4.1']);
+    $url = 'https://example.invalid/auth/reset-password#token=fixture-only-token';
+    $mail = new AuthMessage('Auth fixture', 'Private account message.',
+        $kind === 'link' ? 'Continue' : null, $kind === 'link' ? $url : null,
+        $kind === 'code' ? '001234' : null, $locale);
+    $email = Mail::mailer('array')->to('fixture@example.invalid')->send($mail)
+        ->getSymfonySentMessage()->getOriginalMessage();
+    $html = $email->getHtmlBody();
+    $text = $email->getTextBody();
+    $footer = $locale === 'pl' ? 'Oparte na Runa' : 'Powered by Runa';
+    expect($html)->toContain('Atlas', 'v2.4.1', $footer, '#8650ba', 'lang="'.$locale.'"', 'Private account message.');
+    expect($text)->toContain('Atlas', $footer, 'Private account message.')->not->toContain('<table', 'cid:');
+    expect($email->getAttachments())->toHaveCount(1);
+    expect(app()->getLocale())->toBe($previousLocale);
+    $fallback = $locale === 'pl' ? 'skopiuj' : 'copy this address';
+    if ($kind === 'link') {
+        expect($html)->toContain('href="'.$url.'"', 'Continue', $fallback, $url);
+        expect($text)->toContain('Continue', $url);
+        expect(preg_replace('/\s+/u', ' ', $text))->toContain($fallback);
+    } elseif ($kind === 'code') {
+        expect($html)->toContain('001234')->not->toContain('#token=');
+        expect($text)->toContain('001234')->not->toContain('#token=');
+    } else {
+        expect($html)->not->toContain('#token=', '001234', 'skopiuj');
+        expect($text)->not->toContain('#token=', '001234', 'skopiuj');
+    }
+})->with(['link', 'code', 'notice'])->with(['pl', 'en']);
