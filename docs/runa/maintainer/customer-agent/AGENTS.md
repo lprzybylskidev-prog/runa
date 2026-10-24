@@ -319,7 +319,7 @@ Constitution-level changes require user discussion: roadmap workflow, branch/mer
 
 ## Module development
 
-For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. The agent owns assessing and updating each changed module's independent PATCH/MINOR/MAJOR manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New application-owned modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly project-owner-approved MAJOR before implementation, regardless of how much code is rewritten. Application/platform versioning remains independent; this rule does not authorize changes to protected Runa modules. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming
 

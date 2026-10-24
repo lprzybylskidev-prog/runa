@@ -2,6 +2,10 @@
 
 The application version in `src/app/application.json` is independent of protected src/runa/platform.json; root VERSION is customer scaffold outside the Runa owner checkout. Preserve platform versions/source. Application release notes belong in `docs/app/CHANGELOG.md`; do not inherit platform release history. Repository/tag/publication conventions refer to the configured customer repository, never the Runa source upstream.
 
+## Module versions
+
+Application-owned modules follow the independent [module version policy](../development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible MAJOR changes require explicit project-owner approval before implementation. This does not promote the application or platform version or authorize protected Runa edits. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+
 ## Version semantics
 
 Runa uses three numeric components with project-specific meaning.

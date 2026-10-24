@@ -65,6 +65,14 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner approves creation-roadmap module stabilization: develop as
+  0.x.y, then release Audit, Auth and Permissions as 1.0.0 at verified closure of
+  this roadmap. Later compatible features use MINOR and corrections PATCH;
+  incompatible MAJOR changes require explicit owner approval before implementation,
+  independent of internal rewrite size. Platform feature 0.5.0 is unchanged.
+  Point 19za records the rule; point 20 prepares stable versions, dependency
+  constraints and install/update edges without bypassing its appearance gate.
+
 - 2026-10-24 — Owner requests a Preferences header reset action, dedicated explicit
   language/theme choices in this view and a more direct email editor. Point 19z
   replaces cycling controls only in Preferences, retaining shared cover/persistence;
@@ -251,7 +259,11 @@ records stay in maintainer. No module-local docs directory.
 Use existing generator previews and independent module manifests/version checks.
 Choose initial module versions and explicit install/update edges in point 1;
 record every later semantic change in the central module changelog. Platform
-0.5.0 does not automatically become each module's version. Keep the existing
+0.5.0 does not automatically become each module's version. The owner-approved
+creation-roadmap policy delivers Audit, Auth and Permissions as 1.0.0 at verified
+closure; reconcile manifests, central changelogs, required constraints and explicit
+upgrade/install edges in point 20. Until then their development versions remain
+0.x.y. Keep the existing
 framework API version unless a reviewed contract change actually requires a bump.
 
 Required graph: Auth requires Audit; Permissions requires Auth and Audit. Auth
@@ -1062,6 +1074,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19x. Move trusted devices into two-factor settings and use guarded dialogs for all factor/trust actions.
 - [x] 19y. Rebuild Preferences with account Card/dialog patterns and adjacent navigation.
 - [x] 19z. Refine Preferences header reset, explicit display choices and inline delivery editing.
+- [x] 19za. Record owner-approved module stabilization and later MINOR/PATCH/MAJOR policy in owner/customer guidance and closure requirements.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -1083,7 +1096,8 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Inspect and remove only identified task-created disposable resources, preserving
     development/test data, Qdrant/model caches, backups, reports and rollback material.
     Reconcile actual predecessor/version, finalize feature 0.5.0 and independent
-    module versions/changelog, synchronize closure docs, refresh knowledge and run
+    Audit/Auth/Permissions 1.0.0 manifests/changelogs, dependent constraints and
+    explicit install/update edges, synchronize closure docs, refresh knowledge and run
     focused release-metadata checks. Close, merge with merge commit, sanity-check
     main, create immutable tag/push/publish release and delete the roadmap branch
     under the established workflow. Report migrations/recovery and residual limits.
@@ -3371,3 +3385,17 @@ architectural premise requires discussion before dependent work.
 - No Docker resources created/removed. Preserved development/test data, owner
   sessions/credentials, Qdrant/model caches, backups and reports. Point 20 and full
   verification/release finalization still await explicit owner visual acceptance.
+
+### Point 19za — Module stabilization policy
+
+- Recorded the owner-approved creation-roadmap 0.x.y -> 1.0.0 rule, later
+  compatible MINOR/PATCH changes and explicit owner approval before incompatible
+  MAJOR implementation. Rewrite size alone does not determine compatibility.
+- Updated the canonical public module guide, owner/application release workflows
+  and both root instruction products. Existing backend skill references delegate
+  version assessment to that guide and need no duplicated procedure.
+- Point 20 now explicitly targets Audit/Auth/Permissions 1.0.0 and their dependent
+  constraints/install/update edges. No manifest, installed version or runtime code
+  changed; platform target remains feature 0.5.0 and final appearance gate remains.
+- Knowledge was current and queried before editing. Documentation-only change:
+  review the diff and run mandatory commit hooks; no runtime test is warranted.
