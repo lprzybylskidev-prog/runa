@@ -137,7 +137,7 @@ write replay. Disabling/losing a factor never weakens the server's trust checks.
 Legacy trust tab/choose/submit seams remain for custom presentations; new independent
 trusted-device state/actions are documented in the public presentation contract.
 
-Preferences has appearance/language and email Cards, with the confirmed full-reset
+Preferences stacks appearance/language and email Cards at every width, with the confirmed full-reset
 action at the right of its page heading. This view uses explicit language/theme
 RadioGroups rather than the shell's compact cycling buttons. It retains automatic
 account persistence and the same cover/apply/focus sequence; choosing the current
@@ -150,8 +150,9 @@ reverting or explicitly reloading one row preserves other unsaved row drafts.
 Incoming reloads update clean rows without overwriting dirty ones. Recipient
 selection is disabled while the category is off, preserving its configured values.
 Known empty-recipient errors stop locally; server revision/recipient/security rules
-remain authoritative. Required messages appear in a read-only Always enabled
-section with the primary address. Empty/loading/failed reads retain the Card/retry.
+remain authoritative. Required-message summaries are omitted from Preferences;
+mandatory/sensitive delivery remains primary-only on the server. Empty/loading/failed
+reads retain the Card/retry.
 Errors and explicit recovery use the shared notification area; no automatic replay.
 
 The header reset ConfirmDialog explains that presentation, navigation, declared

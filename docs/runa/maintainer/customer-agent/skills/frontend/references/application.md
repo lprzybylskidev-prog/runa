@@ -133,7 +133,8 @@ of two-factor settings and new trust requires an active factor plus fresh proof.
 Follow the public account UI/presentation guides for independent controller state,
 secret cleanup, feedback focus and legacy custom-presentation seams.
 
-Account Preferences has a header full-reset confirmation, explicit language/theme
+Account Preferences stacks its Cards at every width, with a header full-reset
+confirmation, explicit language/theme
 options sharing the existing preference cover, and independent inline email rows
 with Switch/recipient Select/Save/Revert. Preserve other dirty rows; confirm the
 atomic presentation-and-delivery reset. Shell controls still cycle compactly.

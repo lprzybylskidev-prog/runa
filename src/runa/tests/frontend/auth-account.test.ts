@@ -1769,10 +1769,17 @@ it('preferences expose header reset and explicit language/theme options with inl
   expect(
     w.get('[data-preferences-display]').findAll('input[type=radio]'),
   ).toHaveLength(5);
-  expect(
-    w.get('[data-delivery-category=required]').find('input').exists(),
-  ).toBe(false);
-  expect(w.get('[data-required-delivery]').text()).toContain('Zawsze włączone');
+  expect(w.find('[data-required-delivery]').exists()).toBe(false);
+  expect(w.find('[data-delivery-category=required]').exists()).toBe(false);
+  expect(w.get('[data-account-preferences]').classes()).not.toContain(
+    'xl:grid-cols-2',
+  );
+  expect(w.get('[data-preferences-display]').text()).not.toContain(
+    'Motyw systemowy dopasowuje się',
+  );
+  expect(w.get('[data-preferences-display]').text()).not.toContain(
+    'Zmiany zapisują się automatycznie',
+  );
   expect(
     w
       .get('[data-delivery-category=optional]')
@@ -1827,8 +1834,25 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
   await row.trigger('submit');
   expect(writes).toHaveLength(0);
   expect(row.text()).toContain('Wybierz co najmniej jeden adres e-mail.');
-  selection.vm.$emit('update:modelValue', [other]);
+  await selection.get('button').trigger('click');
   await flushPromises();
+  const chooseRecipient = async (label: string) => {
+    const option = Array.from(
+      document.querySelectorAll<HTMLElement>('[role=option]'),
+    ).find((element) => element.textContent?.includes(label));
+    expect(option).toBeDefined();
+    option!.click();
+    await flushPromises();
+  };
+  await chooseRecipient('test@example.test');
+  await chooseRecipient('verified@example.test');
+  expect(selection.props('modelValue')).toEqual(['primary', other]);
+  expect(
+    document
+      .querySelector('[role=listbox]')
+      ?.getAttribute('aria-multiselectable'),
+  ).toBe('true');
+  await selection.get('button').trigger('click');
   await row.trigger('submit');
   await vi.waitFor(() => expect(row.attributes('data-dirty')).toBe('false'));
   expect(writes).toHaveLength(1);
@@ -1839,7 +1863,7 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
       category: 'optional',
       revision: 3,
       enabled: true,
-      recipients: [other],
+      recipients: ['primary', other],
     },
   });
   expect(another.attributes('data-dirty')).toBe('true');

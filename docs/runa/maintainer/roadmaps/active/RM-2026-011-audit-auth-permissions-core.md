@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests stacked Preferences Cards, removal of theme/save
+  helper copy and the Always enabled summary, and actual multi-address recipient
+  selection. Point 19zb repairs only this presentation; mandatory security delivery
+  stays server-owned and unchanged. Final point 20 remains appearance-gated.
+
 - 2026-10-24 — Owner approves creation-roadmap module stabilization: develop as
   0.x.y, then release Audit, Auth and Permissions as 1.0.0 at verified closure of
   this roadmap. Later compatible features use MINOR and corrections PATCH;
@@ -1075,6 +1080,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19y. Rebuild Preferences with account Card/dialog patterns and adjacent navigation.
 - [x] 19z. Refine Preferences header reset, explicit display choices and inline delivery editing.
 - [x] 19za. Record owner-approved module stabilization and later MINOR/PATCH/MAJOR policy in owner/customer guidance and closure requirements.
+- [x] 19zb. Simplify and stack Preferences Cards; repair multi-address selection.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3399,3 +3405,25 @@ architectural premise requires discussion before dependent work.
   changed; platform target remains feature 0.5.0 and final appearance gate remains.
 - Knowledge was current and queried before editing. Documentation-only change:
   review the diff and run mandatory commit hooks; no runtime test is warranted.
+
+### Point 19zb — Simplified Preferences and recipient selection
+
+- Stacked both Cards at every viewport and removed the theme/save helper copy and
+  Always enabled summary. Mandatory/sensitive security delivery stays server-owned,
+  enabled and primary-only; no policy, API or account data change.
+- Bound Select's generic multiple prop explicitly to true; the bare attribute
+  was falsy at runtime. Verified actual option clicks retain two selected addresses
+  and submit their array with the existing revision, validation and isolated drafts.
+- Auth PATCH 0.20.0 -> 0.20.1, source-only upgrade edge and central changelog/README.
+  Permissions 0.5.8 and its Auth ^0.20.0 constraint remain compatible. Source/runtime
+  module diagnostics and module-version checks against the prior HEAD passed.
+  Applied only the local source-only update; preserved sessions and account data.
+- Two focused frontend cases passed, including actual two-recipient selection and
+  revisioned save. Published Vite assets for review. Served-browser diagnostics
+  with synthetic API passed at 1440/768/390px, light/dark and English mobile:
+  stacked Cards, multiple selection, reset/cover/focus/revert and no errors/overflow.
+  Inspected desktop screenshot; evidence remains in workspace-root .runtime.
+- Synchronized public account guidance and owner/customer page-pattern references.
+  Root/Vue/Tailwind/security guidance already covers these unchanged public seams
+  and needs no duplicate rule. No Docker resources created or removed. Final
+  verification and release remain gated by explicit owner appearance acceptance.

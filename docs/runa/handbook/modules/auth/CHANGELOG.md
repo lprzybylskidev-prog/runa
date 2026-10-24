@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.20.1
+
+Stack Preferences Cards at every width, remove redundant display/save helper text
+and the required-message summary, and repair multiple recipient selection with an
+explicit Boolean Select prop. Mandatory security delivery remains primary-only.
+Source-only forward edge; no schema, dependency or public API change.
+
 ## 0.20.0
 
 Add explicit own-account reset_all for presentation and delivery defaults in one

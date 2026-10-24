@@ -42,9 +42,6 @@ const forms = new Map<string, { focusInvalid: () => void }>();
 const optional = computed(() =>
   delivery.value.filter((choice) => !choice.mandatory && !choice.sensitive),
 );
-const required = computed(() =>
-  delivery.value.filter((choice) => choice.mandatory || choice.sensitive),
-);
 const recipientOptions = computed(() => [
   { value: 'primary', label: profile.value?.email ?? '' },
   ...(profile.value?.secondary_emails
@@ -180,7 +177,7 @@ defineExpose({ beginReset, reload });
 <template>
   <div
     v-if="profile"
-    class="grid min-w-0 items-start gap-6 xl:grid-cols-2"
+    class="grid min-w-0 items-start gap-6"
     data-account-preferences
   >
     <Card data-preferences-display>
@@ -209,22 +206,8 @@ defineExpose({ beginReset, reload });
             { value: 'light', label: text('Jasny', 'Light') },
             { value: 'dark', label: text('Ciemny', 'Dark') },
           ]"
-          :helper="
-            text(
-              'Motyw systemowy dopasowuje się do ustawień urządzenia.',
-              'System theme follows your device settings.',
-            )
-          "
           @update:model-value="selectDisplay('theme', $event)"
         />
-        <p class="text-xs leading-relaxed text-muted">
-          {{
-            text(
-              'Zmiany zapisują się automatycznie na Twoim koncie.',
-              'Changes are saved to your account automatically.',
-            )
-          }}
-        </p>
       </fieldset>
     </Card>
     <Card data-preferences-delivery>
@@ -297,7 +280,7 @@ defineExpose({ beginReset, reload });
             </div>
             <Select
               v-model="drafts[keyOf(choice)]!.recipients"
-              multiple
+              :multiple="true"
               size="sm"
               :label="text('Wyślij na', 'Send to')"
               :options="recipientOptions"
@@ -323,33 +306,6 @@ defineExpose({ beginReset, reload });
             </template>
           </Form>
         </div>
-        <section
-          v-if="required.length"
-          class="space-y-3 border-t border-line pt-5"
-          data-required-delivery
-        >
-          <h4 class="text-sm font-semibold">
-            {{ text('Zawsze włączone', 'Always enabled') }}
-          </h4>
-          <p class="text-xs leading-relaxed text-muted">
-            {{
-              text(
-                'Wymagane wiadomości bezpieczeństwa trafiają na główny adres e-mail:',
-                'Required security messages go to your primary email address:',
-              )
-            }}
-            <span class="[overflow-wrap:anywhere]">{{ profile.email }}</span>
-          </p>
-          <ul class="list-disc space-y-1 pl-4 text-xs text-muted">
-            <li
-              v-for="choice in required"
-              :key="keyOf(choice)"
-              :data-delivery-category="choice.key"
-            >
-              {{ choice.names[locale] }}
-            </li>
-          </ul>
-        </section>
       </div>
     </Card>
   </div>
