@@ -198,3 +198,9 @@ above left-aligned icon/action rows with a divider and preserved keyboard focus.
 ApplicationLayout omits its heading region when title, heading and actions are
 absent. Session warnings/errors remain available; custom application content still
 uses the public session-scoped slot.
+
+Own sessions use the concise End action for both current and other sessions.
+Account data tables consume the global default-sortable column contract. Date
+columns compare original instants while displaying localized dates; history sorting
+only covers rows already loaded through the existing cursor. Revocation permissions,
+current-session sign-out and trusted-device Revoke behavior remain unchanged.

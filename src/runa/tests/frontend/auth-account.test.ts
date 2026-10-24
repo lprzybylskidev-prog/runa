@@ -1327,3 +1327,55 @@ it('secondary deletion failure stays in its confirmation modal with one error an
     'keep@example.test',
   );
 });
+
+it('account session sorting uses instants across month boundaries and concise End actions', async () => {
+  const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).split('?')[0]!.endsWith('/sessions'))
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              public_id: id,
+              current: true,
+              authenticated_at: '2026-10-02T10:00:00Z',
+              expires_at: '2026-11-01T12:00:00Z',
+            },
+            {
+              public_id: other,
+              current: false,
+              authenticated_at: '2026-09-30T12:00:00+02:00',
+              expires_at: '2026-10-31T12:00:00Z',
+            },
+          ],
+          meta: { next_cursor: null },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    return fetcher(input, init);
+  });
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Aktywne sesje')!
+    .trigger('click');
+  await vi.waitFor(() => expect(w.findAll('tbody tr')).toHaveLength(2));
+  const end = () => w.findAll('tbody button').map((button) => button.text());
+  expect(end()).toEqual(['Zakończ', 'Zakończ']);
+  await w.get('th[data-column-key="created"] button').trigger('click');
+  await flushPromises();
+  expect(w.get('tbody tr').text()).toContain('Inna');
+  expect(w.get('th[data-column-key="created"]').attributes('aria-sort')).toBe(
+    'ascending',
+  );
+  await w.get('th[data-column-key="expires"] button').trigger('click');
+  await flushPromises();
+  expect(w.get('tbody tr').text()).toContain('Inna');
+  await w.get('th[data-column-key="expires"] button').trigger('click');
+  await flushPromises();
+  expect(w.get('tbody tr').text()).toContain('Bieżąca');
+});

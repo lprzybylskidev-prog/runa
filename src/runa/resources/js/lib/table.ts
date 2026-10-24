@@ -42,7 +42,7 @@ export function clientTablePage<Row>(
   query: TableQuery,
 ): TablePage<Row> {
   const capabilities = {
-    sort: columns.filter((c) => c.sortable).map((c) => c.key),
+    sort: columns.filter((c) => c.sortable !== false).map((c) => c.key),
     filter: columns.filter((c) => c.filter).map((c) => c.key),
     maxPerPage: 100,
   };
@@ -66,6 +66,18 @@ export function clientTablePage<Row>(
   };
 }
 
+function compareValues(
+  a: string | number | null,
+  b: string | number | null,
+): number {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return typeof a === 'number' && typeof b === 'number'
+    ? a - b
+    : String(a).localeCompare(String(b));
+}
+
 /** Already-loaded browser-local rows only. This helper performs no transport. */
 export function clientTableRows<Row>(
   rows: readonly Row[],
@@ -74,7 +86,7 @@ export function clientTableRows<Row>(
 ): Row[] {
   const state = normalizeTableQuery(
     query,
-    columns.filter((c) => c.sortable).map((c) => c.key),
+    columns.filter((c) => c.sortable !== false).map((c) => c.key),
     columns.filter((c) => c.filter).map((c) => c.key),
   );
   const terms =
@@ -102,9 +114,7 @@ export function clientTableRows<Row>(
         direction *
         (column.compare
           ? column.compare(a, b)
-          : String(column.value(a) ?? '').localeCompare(
-              String(column.value(b) ?? ''),
-            )),
+          : compareValues(column.value(a), column.value(b))),
     );
   }
   return matching;

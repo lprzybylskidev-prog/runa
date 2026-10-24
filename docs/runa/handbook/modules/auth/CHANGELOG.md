@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.18.2
+
+Use concise End actions for all own sessions and the global default table sorting
+contract. Sort created/expiry/history dates chronologically using original instants,
+independently of localized presentation. Trusted-device actions remain Revoke.
+Source-only forward edge; session authorization, revocation and data stay unchanged.
+
 ## 0.18.1
 
 Apply the shared native Runa Markdown email layout to direct entry, profile/address

@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests the concise End session label and global column
+  sorting. Point 19w makes data columns sortable by default with explicit false
+  opt-out, preserves server capability allowlists and the existing three-state
+  header cycle, adds chronological account-date ordering and republishes local
+  assets for manual review. Focused regressions/render inspection answer these
+  uncertainties; final verification/appearance acceptance remain gated at point 20.
+
 - 2026-10-24 — Owner requests relocating root browser artifacts, pnpm store and
   Python bytecode into the workspace-root .runtime tree. Point 19v updates all
   live browser consumers, workspace pnpm store configuration and development
@@ -1025,6 +1032,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19t. Integrate secondary notification addresses into Account details with clear status/actions and isolated versioned submissions; remove the separate default navigation tab.
 - [x] 19u. Apply the existing shared native Markdown email layout to all direct Auth mail, preserving private delivery, text alternatives and single-attempt guards.
 - [x] 19v. Consolidate browser evidence, pnpm store and Python bytecode under workspace-root .runtime; preserve existing artifacts and configure future writes.
+- [x] 19w. Enable global default column sorting and repair active-session actions/date ordering.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3133,3 +3141,40 @@ architectural premise requires discussion before dependent work.
   Full browser suites/builds/scanners remain deferred to gated point 20.
 - No Docker resources were created or removed. Preserved all development/test data,
   sessions, Qdrant/model caches, backups, reports and unrelated runtime state.
+
+## Point 19w delivery
+
+- Table columns sort by default with explicit sortable=false opt-out, consistently
+  across headers, client processing, controlled providers and named-view snapshots.
+  The existing ascending/descending/original-order cycle resets pagination and
+  retains semantic aria-sort. Server headers still require provider sort capability;
+  API allowlists/authorization remain independently enforced. Numeric values use
+  numeric ordering; explicit compare adapters retain precedence. No new dependency.
+- Account session actions now read End for current/other sessions; trusted-device
+  Revoke is unchanged. Created/expiry/history columns compare UTC instants while
+  keeping localized presentation. Cursor history sorting covers loaded rows only.
+  No revocation/session security, backend API, schema or settings change.
+- Auth PATCH 0.18.1 -> 0.18.2 records the account presentation repair and adds the
+  source-only session_sorting forward edge, applied to local development through
+  ModuleUpdates. Audit 0.5.0 and Permissions 0.5.6/^0.18.0 remain compatible.
+  Source/runtime module diagnostics and version/changelog checks against the
+  preceding commit pass. Platform VERSION/framework API remain unchanged.
+- Four selected browser-component regressions pass: default/opt-out numeric header
+  cycle, server capabilities/query forwarding, saved-view sort normalization and
+  account date ordering across month/timezone boundaries with concise actions.
+  The account fixture initially wrapped the native page envelope twice; fixed the
+  fixture and received the passing result. No backend behavior change/test required.
+- Published the current client with a focused Vite build for manual review. Inspected
+  the served account table at 1440px/390px in light/dark with synthetic read-only API
+  data, ascending dates and two End actions; no document overflow or page errors.
+  Evidence: .runtime/dev/manual-auth/session-sorting. The narrow preview creates no
+  real session and performs no real account mutation; it does not claim full E2E.
+- Updated the public table/component/account contracts, Auth version/changelog,
+  owner table reference and customer frontend reference. Existing owner/customer
+  root rules and Vue/Tailwind skills already require shared controls/public guidance
+  and need no duplicate instruction. Sorting stays immediate without row motion;
+  existing Button feedback and reduced-motion behavior remain shared. No shell
+  table duplicates were found; account/default and test consumer tables use Table.
+- No Docker resources created/removed; development/test data, existing sessions,
+  credentials/2FA, Qdrant/model caches, backups and reports preserved. No broad
+  tests/static analysis/scanners or final point 20; owner visual acceptance pending.

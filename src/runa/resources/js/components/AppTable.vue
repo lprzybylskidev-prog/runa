@@ -351,7 +351,7 @@ function changePage(value: number) {
             >
               <AppButton
                 v-if="
-                  column.sortable &&
+                  column.sortable !== false &&
                   page?.capabilities.sort.includes(column.key)
                 "
                 variant="ghost"

@@ -163,12 +163,26 @@ const query = ref<TableQuery>({
   sort: null,
   filters: {},
 });
+function timestamp(value: string | undefined): number | null {
+  if (!value) return null;
+  const time = new Date(
+    /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z',
+  ).getTime();
+  return Number.isNaN(time) ? null : time;
+}
 function date(value: string | undefined) {
-  if (!value) return '—';
-  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z');
-  return Number.isNaN(d.getTime())
+  const time = timestamp(value);
+  return time === null
     ? '—'
-    : d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+    : new Date(time).toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+}
+function compareDates(a: string | undefined, b: string | undefined): number {
+  const first = timestamp(a),
+    second = timestamp(b);
+  if (first === second) return 0;
+  if (first === null) return 1;
+  if (second === null) return -1;
+  return first - second;
 }
 const columns = computed<TableColumn<AccountRow>[]>(() =>
   history.value
@@ -177,6 +191,7 @@ const columns = computed<TableColumn<AccountRow>[]>(() =>
           key: 'date',
           label: text('Data', 'Date'),
           value: (r) => date(r.occurred_at),
+          compare: (a, b) => compareDates(a.occurred_at, b.occurred_at),
         },
         {
           key: 'action',
@@ -199,11 +214,17 @@ const columns = computed<TableColumn<AccountRow>[]>(() =>
           key: 'created',
           label: text('Utworzono', 'Created'),
           value: (r) => date(r.authenticated_at ?? r.created_at),
+          compare: (a, b) =>
+            compareDates(
+              a.authenticated_at ?? a.created_at,
+              b.authenticated_at ?? b.created_at,
+            ),
         },
         {
           key: 'expires',
           label: text('Wygasa', 'Expires'),
           value: (r) => date(r.expires_at),
+          compare: (a, b) => compareDates(a.expires_at, b.expires_at),
         },
         ...(tab.value === 'sessions'
           ? [
@@ -511,8 +532,8 @@ const passwordHint = computed(() =>
               :disabled="busy"
               @click="revoke(row.public_id)"
               >{{
-                row.current
-                  ? text('Zakończ bieżącą', 'End current')
+                tab === 'sessions'
+                  ? text('Zakończ', 'End')
                   : text('Unieważnij', 'Revoke')
               }}</Button
             ></template

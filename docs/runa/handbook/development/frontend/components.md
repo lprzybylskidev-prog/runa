@@ -204,7 +204,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 
 ### Table
 
-`Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
+`Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters (sorting defaults on with explicit `sortable: false` opt-out and server capability gating), async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
 
 ### Nested semantic colors
 

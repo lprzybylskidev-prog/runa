@@ -8,6 +8,7 @@ import {
   createApiTableProvider,
   type TableColumn,
   type TablePage,
+  type TableProvider,
   type TableQuery,
 } from '../../resources/js/runa/ui';
 const rows = [
@@ -264,4 +265,103 @@ it('passes global search as an encoded backend filter and allows disabling it', 
       window.location.origin,
     ).searchParams.has('filter[search]'),
   ).toBe(false);
+});
+
+it('sorting defaults support numeric ordering, opt-out and the controlled three-state cycle', async () => {
+  const defaults: TableColumn<Row>[] = [
+    { key: 'name', label: 'Name', value: (row) => row.name },
+    { key: 'count', label: 'Count', value: (row) => row.count },
+    {
+      key: 'disabled',
+      label: 'Disabled',
+      value: (row) => row.name,
+      sortable: false,
+    },
+  ];
+  expect(
+    clientTablePage(rows, defaults, {
+      ...query(),
+      sort: { key: 'count', direction: 'asc' },
+    }).rows[0]?.public_id,
+  ).toBe('b');
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'client',
+      rows,
+      columns: defaults,
+      rowKey: (row) => row.public_id,
+      query: { ...query(), perPage: 10 },
+      caption: 'Default sorting',
+    },
+    attachTo: document.body,
+  });
+  try {
+    await flushPromises();
+    expect(wrapper.findAll('thead button')).toHaveLength(2);
+    const header = () => wrapper.get('th[data-column-key="count"]');
+    for (const [direction, first] of [
+      ['asc', 'Alpha'],
+      ['desc', 'Beta'],
+      [null, 'Beta'],
+    ] as const) {
+      await header().get('button').trigger('click');
+      const emitted = wrapper.emitted('update:query')!.at(-1)![0] as TableQuery;
+      expect(emitted.sort).toEqual(
+        direction ? { key: 'count', direction } : null,
+      );
+      expect(emitted.page).toBe(1);
+      await wrapper.setProps({ query: emitted });
+      await flushPromises();
+      expect(wrapper.get('tbody tr').text()).toContain(first);
+      expect(header().attributes('aria-sort')).toBe(
+        direction === 'asc'
+          ? 'ascending'
+          : direction === 'desc'
+            ? 'descending'
+            : undefined,
+      );
+    }
+    expect(
+      wrapper.get('th[data-column-key="disabled"]').find('button').exists(),
+    ).toBe(false);
+  } finally {
+    wrapper.unmount();
+  }
+});
+
+it('sorting defaults keep server capability restrictions and forward supported queries', async () => {
+  const defaults = columns.map((column) => {
+    const copy = { ...column };
+    delete copy.sortable;
+    return copy;
+  });
+  const provider = vi.fn<TableProvider<Row>>(async () => ({
+    ...clientTablePage(rows, defaults, { ...query(), perPage: 10 }),
+    capabilities: { sort: ['name'], filter: [], maxPerPage: 100 },
+  }));
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'server',
+      provider,
+      columns: defaults,
+      rowKey: (row) => row.public_id,
+      query: query(),
+      caption: 'Server sorting',
+    },
+  });
+  try {
+    await flushPromises();
+    expect(
+      wrapper.get('th[data-column-key="count"]').find('button').exists(),
+    ).toBe(false);
+    await wrapper.get('th[data-column-key="name"] button').trigger('click');
+    const next = wrapper.emitted('update:query')!.at(-1)![0] as TableQuery;
+    await wrapper.setProps({ query: next });
+    await flushPromises();
+    expect(provider.mock.calls.at(-1)?.[0]).toMatchObject({
+      sort: { key: 'name', direction: 'asc' },
+    });
+  } finally {
+    wrapper.unmount();
+  }
 });

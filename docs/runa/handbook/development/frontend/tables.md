@@ -8,7 +8,17 @@ Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/emp
 
 `Table`, `useTable`, `TableColumn<Row>`, `TableQuery`, `TablePage<Row>` and the provider helpers are public through `@/runa/ui`. Table is controlled through `query` / `update:query` and `selection` / `update:selection` (legacy explicit `selected` / `update:selected` remains supported). Use a stable `rowKey`, normally the backend `public_id`. Selection supports explicit IDs or an all-matching query snapshot with exclusions.
 
-Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; use `compare` for numeric/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). Only exact matching counts drive numbered pagination. Unknown/stale counts use previous/next. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
+Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; numeric values compare numerically, strings use locale comparison and nulls follow populated values in ascending order. Use `compare` for dates/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). Only exact matching counts drive numbered pagination. Unknown/stale counts use previous/next. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
+
+Data columns are sortable by default; set `sortable: false` to opt out. Server
+headers additionally require the key in the returned `capabilities.sort`; providers
+and APIs still own supported sorting and authorization. Keep supported sort keys
+aligned with provider allowlists. Header clicks cycle ascending, descending and
+original order, reset page to 1 and expose `aria-sort`. Saved views retain sorting
+for default-sortable columns, including hidden ones. Action/selection columns are
+not sortable. Displayed dates need a `compare` adapter over their original instants;
+never sort localized date text. History loaded in bounded cursor batches sorts only
+the loaded rows; this does not claim global ordering of unloaded history.
 
 Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Async states reuse AsyncContent and retry; obsolete requests abort and their eventual replies are ignored. Filters remain usable when results are empty or fail.
 

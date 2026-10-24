@@ -123,3 +123,7 @@ Compose secondary notification addresses inside account details through public
 saveSecondary/secondaryErrors. Keep the collection's draft and submissions
 independent from identity/password/avatar edits, including while requests are
 pending; retain verified-recipient and explicit removal confirmation rules.
+
+Table data columns sort by default; use sortable: false to opt out and preserve
+server capability allowlists. Compare date instants rather than localized text.
+Use the public tables guide for the complete contract.
