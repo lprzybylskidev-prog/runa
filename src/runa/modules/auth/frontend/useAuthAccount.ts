@@ -982,13 +982,14 @@ export function useAuthAccount(accountId: string) {
       }
     });
   }
-  async function resetPreferences() {
+  async function resetPreferences(includeDelivery = false) {
     if (!confirmed.value) {
       failure.value = 'confirmation';
       return;
     }
     await perform(async () => {
-      await accountPreferences.reset();
+      if (includeDelivery) await accountPreferences.resetAll();
+      else await accountPreferences.reset();
       if (alive) {
         confirmed.value = false;
         await readDelivery();

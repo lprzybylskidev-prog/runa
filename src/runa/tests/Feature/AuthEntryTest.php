@@ -1559,3 +1559,58 @@ it('renders private Auth actions codes and notices through the shared multipart 
         expect($text)->not->toContain('#token=', '001234', 'skopiuj');
     }
 })->with(['link', 'code', 'notice'])->with(['pl', 'en']);
+
+it('fully resets only the current account preferences and delivery with one revision while preserving legacy reset semantics', function (): void {
+    entryPolicy(['email_verification' => 'disabled']);
+    $user = entryUser('full-preferences@example.test');
+    $other = entryUser('retained-preferences@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $endpoint = '/api/runa/auth/preferences';
+    $theme = ['application' => 'runa', 'module' => 'runa.auth', 'view' => 'global', 'key' => 'theme'];
+    $this->postJson($endpoint, $theme + ['operation' => 'write', 'value' => 'dark', 'revision' => 0])->assertOk();
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth', 'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 1])->assertOk();
+    foreach (['preferences', 'delivery_preferences'] as $table) {
+        $row = (array) DB::table('runa_auth.'.$table)->where('user_id', $user->id)->first();
+        unset($row['id']);
+        $row['user_id'] = $other->id;
+        DB::table('runa_auth.'.$table)->insert($row);
+    }
+    $this->postJson($endpoint, $theme + ['operation' => 'reset', 'revision' => 2])->assertOk()->assertJsonPath('data.revision', 3);
+    expect(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count())->toBe(1);
+    $this->postJson($endpoint, $theme + ['operation' => 'write', 'value' => 'dark', 'revision' => 3])->assertOk();
+    $full = ['application' => 'runa', 'operation' => 'reset_all'];
+    $this->postJson($endpoint, $full + ['revision' => 3])->assertStatus(409);
+    $this->postJson($endpoint, $full + ['revision' => 4, 'module' => 'runa.auth'])->assertUnprocessable();
+    expect(DB::table('runa_auth.preferences')->where('user_id', $user->id)->count())->toBe(1)
+        ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count())->toBe(1);
+    $this->postJson($endpoint, $full + ['revision' => 4])->assertOk()->assertJsonPath('data.revision', 5);
+    foreach (['preferences', 'delivery_preferences'] as $table) {
+        expect(DB::table('runa_auth.'.$table)->where('user_id', $user->id)->count())->toBe(0)
+            ->and(DB::table('runa_auth.'.$table)->where('user_id', $other->id)->count())->toBe(1);
+    }
+    $defaults = $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'read'])->assertOk()->json('data.categories');
+    $category = collect($defaults)->firstWhere('key', 'new_browser');
+    expect($category['enabled'])->toBeTrue()->and($category['recipients'])->toBe(['primary'])
+        ->and(DB::table('runa_audit.events')->where('action', 'preferences.reset_all')->count())->toBe(1)
+        ->and(User::find($other->id)->preference_revision)->toBe(0);
+    $this->getJson('/api/runa/auth/session')->assertOk();
+});
+
+it('rolls back the entire full preference reset and revision when Audit refuses persistence', function (): void {
+    entryPolicy(['email_verification' => 'disabled']);
+    $user = entryUser('full-reset-atomic@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'write', 'module' => 'runa.auth', 'view' => 'global', 'key' => 'theme', 'value' => 'dark', 'revision' => 0])->assertOk();
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth', 'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 1])->assertOk();
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT full_reset_fixture_refusal CHECK (false) NOT VALID');
+    try {
+        $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'reset_all', 'revision' => 2])->assertServiceUnavailable();
+        expect(DB::table('runa_auth.preferences')->where('user_id', $user->id)->count())->toBe(1)
+            ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count())->toBe(1)
+            ->and(User::find($user->id)->preference_revision)->toBe(2)
+            ->and(User::find($user->id)->preference_legacy_claimed)->toBeFalse();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT full_reset_fixture_refusal');
+    }
+    $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'reset_all', 'revision' => 2])->assertOk()->assertJsonPath('data.revision', 3);
+});

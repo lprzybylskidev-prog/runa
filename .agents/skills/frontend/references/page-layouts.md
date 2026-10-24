@@ -55,7 +55,8 @@ Use a dimmed surrounding image and bright circular frame, direct pointer panning
 wheel/pinch zoom and keyboard alternatives; do not add redundant position sliders.
 Applying a crop prepares the card preview; the card's Save owns the upload.
 
-Account Preferences uses the same independent Card/shared-dialog patterns as
-Account and security. Keep existing compact language/theme controls and account
-persistence; isolate optional notification drafts and confirm presentation resets.
+Account Preferences has a header full-reset confirmation, explicit language/theme
+options sharing the existing preference cover, and independent inline email rows
+with Switch/recipient Select/Save/Revert. Preserve other dirty rows; confirm the
+atomic presentation-and-delivery reset. Shell controls still cycle compactly.
 Use the public account UI/preferences guides for revision and recovery behavior.

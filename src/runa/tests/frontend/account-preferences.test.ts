@@ -222,3 +222,30 @@ it('does not turn explicit document cancellation into preference failures while 
   expect(store.status().error).toBe('load_failed');
   store.disconnect();
 });
+
+it('full reset uses its distinct queued operation and reloads authoritative defaults without changing legacy reset', async () => {
+  const sent: Record<string, unknown>[] = [];
+  let revision = 0;
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    sent.push(input);
+    if (input.operation === 'snapshot')
+      return snapshot('A', 'system', revision);
+    revision++;
+    return { data: { account: 'A', revision } };
+  });
+  await store.connect('A');
+  await store.resetAll();
+  await store.reset();
+  expect(
+    sent
+      .filter((input) => input.operation !== 'snapshot')
+      .map((input) => [input.operation, input.revision]),
+  ).toEqual([
+    ['reset_all', 0],
+    ['reset', 1],
+  ]);
+  expect(sent.filter((input) => input.operation === 'snapshot')).toHaveLength(
+    3,
+  );
+  expect(store.store.read(scope, 'runa.theme', theme)).toBe('system');
+});

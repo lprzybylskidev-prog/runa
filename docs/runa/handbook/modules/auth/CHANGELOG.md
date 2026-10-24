@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.20.0
+
+Add explicit own-account reset_all for presentation and delivery defaults in one
+revision-checked transaction with Audit. Preserve existing scoped/presentation
+reset semantics. Put confirmed full reset in the Preferences header; use direct
+language/theme choices and independent inline delivery drafts with Save/Revert.
+Source-only forward edge; no schema or external dependency change.
+
 ## 0.19.1
 
 Place Preferences beside Account and security and rebuild its default view with

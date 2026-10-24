@@ -65,6 +65,13 @@ final readonly class AccountPreferences implements AuthPreferences
 
     public function http(Connection $connection, User $user, array $input): array
     {
+        if ($input['operation'] === 'reset_all') {
+            if (isset($input['module']) || isset($input['view']) || isset($input['key'])) {
+                throw new OperationRejected('invalid_reset_scope', 'runa.auth', 'preferences', 422);
+            }
+
+            return $this->target(null, fn (Connection $connection, User $user): array => $this->resetLocked($connection, $user, null, null, $input['revision'], false, true));
+        }
         $scope = isset($input['key']) ? new PreferenceScope($input['application'], $input['module'], $input['view'], $input['key']) : null;
         if ($input['operation'] === 'write') {
             if ($scope === null) {
@@ -101,7 +108,7 @@ final readonly class AccountPreferences implements AuthPreferences
         return $this->snapshots->one($connection, $user, $scope);
     }
 
-    private function resetLocked(Connection $connection, User $user, ?string $module, ?PreferenceScope $scope, int $revision, bool $admin): array
+    private function resetLocked(Connection $connection, User $user, ?string $module, ?PreferenceScope $scope, int $revision, bool $admin, bool $includeDelivery = false): array
     {
         $this->revision($user, $revision);
         if ($scope !== null) {
@@ -115,11 +122,16 @@ final readonly class AccountPreferences implements AuthPreferences
             $query->where('scope', $scope->id());
         }
         $query->delete();
+        if ($includeDelivery) {
+            $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->delete();
+        }
         $user->preference_revision++;
         $user->preference_legacy_claimed = true;
         $user->save();
         if ($admin) {
             $this->transactions->record('preferences.admin_reset', $user);
+        } elseif ($includeDelivery) {
+            $this->transactions->record('preferences.reset_all', $user);
         }
 
         return ['account' => $user->public_id, 'revision' => $user->preference_revision];

@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 0.5.8
+
+Align the required Auth range to ^0.20.0 for the additive full-preferences reset
+capability. Existing permission/authority contracts remain unchanged.
+Source-only forward edge; no schema change.
+
 ## 0.5.7
 
 Align the required Auth range to ^0.19.0 for factor dialogs and the additive

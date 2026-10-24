@@ -2,6 +2,8 @@ import AuthRecoveryCodesDialog from '../../modules/auth/frontend/AuthRecoveryCod
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
+import AuthAccountPreferences from '../../modules/auth/frontend/AuthAccountPreferences.vue';
+import { useDisplayPreferences } from '../../resources/js/composables/useDisplayPreferences';
 import { enrollmentQrCode } from '../../modules/auth/frontend/totpEnrollment';
 import AuthAvatarCropper from '../../modules/auth/frontend/AuthAvatarCropper.vue';
 import {
@@ -11,6 +13,8 @@ import {
   Dialog,
   FileInput,
   ConfirmDialog,
+  Switch,
+  Select,
 } from '@/runa/ui';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerAccount from './fixtures/customization/CustomerAccount.vue';
@@ -164,17 +168,20 @@ afterEach(() => {
   accountPreferences.disconnect();
   clearAccountDraft();
 });
-function mountSession(navigate: (path: string) => void = vi.fn()) {
-  let state!: ReturnType<typeof useApplicationSession>;
+function mountController<T>(setup: () => T) {
+  let state!: T;
   const wrapper = mount(
     defineComponent({
       setup() {
-        state = useApplicationSession(navigate);
+        state = setup();
         return () => null;
       },
     }),
   );
   return { state, wrapper };
+}
+function mountSession(navigate: (path: string) => void = vi.fn()) {
+  return mountController(() => useApplicationSession(navigate));
 }
 async function loaded(w: ReturnType<typeof mount>) {
   await vi.waitFor(() => expect(w.find('form').exists()).toBe(true));
@@ -1739,7 +1746,7 @@ async function openPreferences(w: ReturnType<typeof mount>) {
   );
 }
 
-it('preferences follow account navigation with separate cards and mandatory delivery summaries', async () => {
+it('preferences expose header reset and explicit language/theme options with inline delivery', async () => {
   preferenceDeliveryFixture();
   const w = mount(AuthAccount, {
     props: { accountId: id },
@@ -1755,24 +1762,35 @@ it('preferences follow account navigation with separate cards and mandatory deli
     'Preferencje',
     'Aktywne sesje',
   ]);
-  expect(
-    w.findAll(
-      '[data-account-preferences] > section, [data-account-preferences] > div > section',
-    ),
-  ).toHaveLength(3);
-  expect(w.get('[data-preferences-display]').findAll('button')).toHaveLength(2);
-  expect(
-    w.get('[data-delivery-category=required]').find('button').exists(),
-  ).toBe(false);
-  expect(w.get('[data-delivery-category=required]').text()).toContain(
-    'Obowiązkowe',
+  expect(w.findAll('[data-account-preferences] > section')).toHaveLength(2);
+  expect(w.get('[data-account-heading] [data-preferences-reset]').text()).toBe(
+    'Przywróć domyślne',
   );
-  expect(w.find('[data-preferences-delivery] form').exists()).toBe(false);
+  expect(
+    w.get('[data-preferences-display]').findAll('input[type=radio]'),
+  ).toHaveLength(5);
+  expect(
+    w.get('[data-delivery-category=required]').find('input').exists(),
+  ).toBe(false);
+  expect(w.get('[data-required-delivery]').text()).toContain('Zawsze włączone');
+  expect(
+    w
+      .get('[data-delivery-category=optional]')
+      .find('input[role=switch]')
+      .exists(),
+  ).toBe(true);
+  expect(document.querySelector('[role=dialog]')).toBeNull();
   expect(writes).toHaveLength(0);
 });
 
-it('preference delivery modal validates recipients, isolates canceled drafts and saves one explicit category revision', async () => {
-  preferenceDeliveryFixture();
+it('inline delivery drafts validate recipients, revert one row and preserve another unsaved row after a revisioned save', async () => {
+  const categories = preferenceDeliveryFixture();
+  categories.push({
+    ...categories[0]!,
+    key: 'another',
+    names: { pl: 'Inne wiadomości', en: 'Other messages' },
+    recipients: ['primary'],
+  });
   currentProfile.secondary_emails = [
     {
       public_id: other,
@@ -1786,35 +1804,33 @@ it('preference delivery modal validates recipients, isolates canceled drafts and
     attachTo: document.body,
   });
   await openPreferences(w);
-  const edit = w.get('[data-delivery-category=optional] button');
-  await edit.trigger('click');
-  const body = new DOMWrapper(document.body);
-  let form = body.get('[data-delivery-editor]');
-  expect(form.text()).toContain('verified@example.test');
-  expect(form.text()).not.toContain('pending@example.test');
-  await form.get('input[role=switch]').setValue(false);
-  expect(w.get('[data-delivery-category=optional]').text()).toContain(
-    'Włączone',
-  );
-  await form
+  const state = w.getComponent(AuthAccountPreferences).props('account');
+  const row = w.get('[data-delivery-category=optional]');
+  const another = w.get('[data-delivery-category=another]');
+  await row.get('input[role=switch]').setValue(false);
+  await another.get('input[role=switch]').setValue(false);
+  expect(state.delivery.value[0]?.enabled).toBe(true);
+  await row
     .findAll('button')
-    .find((button) => button.text() === 'Anuluj')!
+    .find((button) => button.text() === 'Cofnij zmiany')!
     .trigger('click');
+  expect(row.attributes('data-dirty')).toBe('false');
+  expect(another.attributes('data-dirty')).toBe('true');
   expect(writes).toHaveLength(0);
-  await edit.trigger('click');
-  form = body.get('[data-delivery-editor]');
-  expect(
-    (form.get('input[role=switch]').element as HTMLInputElement).checked,
-  ).toBe(true);
-  await form.findAll('input[type=checkbox]')[1]!.setValue(false);
-  await form.trigger('submit');
+  const selection = row.getComponent(Select);
+  expect(selection.props('options').map((option) => option.label)).toEqual([
+    'test@example.test',
+    'verified@example.test',
+  ]);
+  selection.vm.$emit('update:modelValue', []);
+  await flushPromises();
+  await row.trigger('submit');
   expect(writes).toHaveLength(0);
-  expect(form.text()).toContain('Wybierz co najmniej jeden adres e-mail.');
-  await form.findAll('input[type=checkbox]')[2]!.setValue(true);
-  await form.trigger('submit');
-  await vi.waitFor(() =>
-    expect(document.querySelector('[data-delivery-editor]')).toBeNull(),
-  );
+  expect(row.text()).toContain('Wybierz co najmniej jeden adres e-mail.');
+  selection.vm.$emit('update:modelValue', [other]);
+  await flushPromises();
+  await row.trigger('submit');
+  await vi.waitFor(() => expect(row.attributes('data-dirty')).toBe('false'));
   expect(writes).toHaveLength(1);
   expect(writes[0]).toMatchObject({
     path: '/api/runa/auth/delivery-preferences',
@@ -1826,56 +1842,60 @@ it('preference delivery modal validates recipients, isolates canceled drafts and
       recipients: [other],
     },
   });
-  expect(w.get('[data-delivery-category=optional]').text()).toContain(
-    'verified@example.test',
-  );
+  expect(another.attributes('data-dirty')).toBe('true');
+  expect(another.getComponent(Switch).props('modelValue')).toBe(false);
 });
 
-it('preference delivery conflicts require an explicit reload and never replay the edited write', async () => {
+it('inline delivery conflicts reload only on request without replaying the edited write', async () => {
   preferenceDeliveryFixture();
   const w = mount(AuthAccount, {
     props: { accountId: id },
     attachTo: document.body,
   });
   await openPreferences(w);
-  await w.get('[data-delivery-category=optional] button').trigger('click');
-  const body = new DOMWrapper(document.body);
+  const row = w.get('[data-delivery-category=optional]');
+  await row.get('input[role=switch]').setValue(false);
   write = () => json('version_conflict', 409);
-  await body.get('[data-delivery-editor]').trigger('submit');
-  expect(w.findComponent(AuthAccountEditor).exists()).toBe(false);
-  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  await row.trigger('submit');
   await vi.waitFor(() =>
     expect(
-      body
-        .findAll('.app-toast button')
-        .some((button) => button.text() === 'Wczytaj aktualne dane'),
+      row
+        .findAll('button')
+        .some((button) => button.text() === 'Wczytaj zapisane'),
     ).toBe(true),
   );
-  await body
-    .findAll('.app-toast button')
-    .find((button) => button.text() === 'Wczytaj aktualne dane')!
+  expect(writes).toHaveLength(1);
+  await row
+    .findAll('button')
+    .find((button) => button.text() === 'Wczytaj zapisane')!
     .trigger('click');
   await flushPromises();
   expect(writes).toHaveLength(1);
-  expect(body.find('[data-delivery-editor]').exists()).toBe(true);
+  expect(row.attributes('data-dirty')).toBe('false');
 });
 
-it('preference reset requires modal confirmation and cancel never resets the account', async () => {
-  preferenceDeliveryFixture();
+it('header preference reset requires confirmation and cancel never resets the account', async () => {
+  const categories = preferenceDeliveryFixture();
+  categories[0]!.enabled = false;
   const reset = vi
-    .spyOn(accountPreferences, 'reset')
-    .mockResolvedValue(undefined);
+    .spyOn(accountPreferences, 'resetAll')
+    .mockImplementation(async () => {
+      categories[0]!.enabled = true;
+    });
   const w = mount(AuthAccount, {
     props: { accountId: id },
     attachTo: document.body,
   });
   await openPreferences(w);
-  await w.get('[data-preferences-reset] button').trigger('click');
+  const row = w.get('[data-delivery-category=optional]');
+  await row.get('input[role=switch]').setValue(true);
+  await w.get('[data-preferences-reset]').trigger('click');
   const body = new DOMWrapper(document.body);
   expect(body.get('[role=dialog]').text()).toContain('Zapisane układy kolumn');
   await body.get('[data-dialog-cancel]').trigger('click');
   expect(reset).not.toHaveBeenCalled();
-  await w.get('[data-preferences-reset] button').trigger('click');
+  expect(row.attributes('data-dirty')).toBe('true');
+  await w.get('[data-preferences-reset]').trigger('click');
   await body
     .findAll('[role=dialog] button')
     .find((button) => button.text() === 'Przywróć domyślne')!
@@ -1884,6 +1904,40 @@ it('preference reset requires modal confirmation and cancel never resets the acc
   await vi.waitFor(() =>
     expect(document.querySelector('[role=dialog]')).toBeNull(),
   );
+  expect(row.attributes('data-dirty')).toBe('false');
+  expect(row.getComponent(Switch).props('modelValue')).toBe(true);
+  const legacy = vi
+    .spyOn(accountPreferences, 'reset')
+    .mockResolvedValue(undefined);
+  const state = w.getComponent(AuthAccountPreferences).props('account');
+  state.confirmed.value = true;
+  await state.resetPreferences();
+  expect(legacy).toHaveBeenCalledTimes(1);
+  expect(reset).toHaveBeenCalledTimes(1);
+});
+
+it('explicit display choices apply their selected value only after the shared cover and preserve cycling controls', async () => {
+  const { state: display, wrapper: w } = mountController(() =>
+    useDisplayPreferences({ locale: 'pl', theme: 'system' }),
+  );
+  display.selectPreference('theme', 'system');
+  expect(display.changingPreference.value).toBe(false);
+  display.selectPreference('theme', 'dark');
+  expect(display.theme.value).toBe('system');
+  expect(display.coverVisible.value).toBe(true);
+  display.selectPreference('language', 'en');
+  await display.applyPreference();
+  expect(display.theme.value).toBe('dark');
+  expect(display.locale.value).toBe('pl');
+  await display.finishPreferenceChange();
+  display.changePreference('theme', new Event('click'));
+  await display.applyPreference();
+  expect(display.theme.value).toBe('system');
+  await display.finishPreferenceChange();
+  display.selectPreference('language', 'en');
+  await display.applyPreference();
+  expect(display.locale.value).toBe('en');
+  w.unmount();
 });
 
 it('preference categories recover from failed reads without losing their card or issuing writes', async () => {

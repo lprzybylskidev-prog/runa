@@ -65,6 +65,17 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-24 — Owner requests a Preferences header reset action, dedicated explicit
+  language/theme choices in this view and a more direct email editor. Point 19z
+  replaces cycling controls only in Preferences, retaining shared cover/persistence;
+  optional delivery uses independent inline drafts, switches and recipient selection
+  with explicit per-category Save/Revert. Keep shell controls and security/account
+  views unchanged. Clarify whether reset should additionally include delivery;
+  do not silently expand the existing presentation-only reset boundary.
+  Owner subsequently confirms email delivery must reset too: add a distinct atomic
+  reset_all operation with one account revision and manual Audit; preserve legacy
+  reset APIs and introduce no schema/dependency change.
+
 - 2026-10-24 — Owner limits the next visual revision to Preferences, places its
   navigation beside Account and security and requests a complete presentation
   rebuild using the accepted independent Card/shared-dialog patterns. Point 19y
@@ -1050,6 +1061,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19w. Enable global default column sorting and repair active-session actions/date ordering.
 - [x] 19x. Move trusted devices into two-factor settings and use guarded dialogs for all factor/trust actions.
 - [x] 19y. Rebuild Preferences with account Card/dialog patterns and adjacent navigation.
+- [x] 19z. Refine Preferences header reset, explicit display choices and inline delivery editing.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3298,3 +3310,64 @@ architectural premise requires discussion before dependent work.
 - No Docker resources created/removed; development/test data, sessions, credentials,
   Qdrant/model caches, backups and reports preserved. Broad final verification and
   point 20 remain gated by explicit owner frontend appearance acceptance.
+
+## Point 19z delivery
+
+- Moved confirmed reset to the right of the Preferences page heading and removed
+  its separate Card. Owner explicitly confirmed reset must include email delivery.
+  The dialog now names appearance/navigation/table views and email subscriptions/
+  recipients. Successful full reset discards unsaved delivery drafts and reloads
+  defaults; cancel neither writes nor discards those drafts.
+- Preferences now has explicit language and system/light/dark RadioGroups, using
+  the existing shared display controller/cover/persistence. Added exact-value
+  selection with validation/current-value no-op and origin focus restoration.
+  Shell/entry compact controls still cycle through the same helper. Recorded the
+  owner's scoped exception in visual-direction; no second preference store.
+- Replaced optional notification summaries/edit dialogs with independent inline
+  Form rows: Switch, multiple recipient Select and dirty-only Save/Revert actions.
+  Off categories keep their recipient selection disabled/preserved. Local drafts
+  never mutate read state; writes/revert/reload affect the selected row and preserve
+  other dirty rows, including across an authoritative array refresh. Required
+  messages have a read-only Always enabled/primary-address explanation.
+- Added own HTTP preferences reset_all with required revision and no module/key
+  scope. Existing SecurityContext/EntryTransaction and registry/authority/user locks
+  delete both user-owned preference tables, advance one revision/set adoption
+  fence and explicitly record preferences.reset_all Audit in one transaction.
+  Stale revisions/scoped full resets refuse; Audit failure rolls everything back.
+  No schema, policy, credentials/session mutation or new dependency. Other accounts
+  remain untouched. Existing PHP/scoped reset and no-argument controller reset
+  keep presentation-only semantics; the header explicitly calls resetPreferences(true).
+  The account adapter queues resetAll and reloads authoritative defaults, without
+  automatic replay on conflict/network observation failure.
+- Auth MINOR 0.19.1 -> 0.20.0 covers the additive full reset/controller option;
+  Permissions PATCH 0.5.7 -> 0.5.8 aligns Auth ^0.20.0. Added source-only forward
+  edges, reviewed dependent compatibility and applied them locally through
+  ModuleUpdates. Audit stays 0.5.0; PHP API/framework API remain 1.0.0 and platform
+  VERSION stays 0.4.2. Source/runtime/version diagnostics pass.
+- Seven selected frontend regressions pass for header/explicit controls/inline
+  structure, independent dirty rows/revert/recipient validation/revisioned save,
+  explicit conflict reload, reset/cancel/legacy reset compatibility, exact display
+  value/cover/cycle behavior, failed category reads and queued reset_all versus old
+  reset. Two selected backend cases pass (41 assertions), covering legacy scope,
+  owner isolation, stale/scoped refusal, defaults, one revision and Audit rollback.
+  The final focused header case was rerun after adding the backward-compatible
+  includeDelivery option; it passes. Shared the existing composable mount harness
+  to satisfy mandatory test-file lint; exact display selection and the existing
+  account-switch boundary case both pass with that harness. No broad suites/
+  static/scanner gates ran.
+- Published client assets and inspected served synthetic API previews at desktop,
+  tablet and mobile, light/dark plus English mobile. Verified header placement,
+  direct theme application/cover/focus return, dirty row/revert and complete reset
+  confirmation, without page errors or document overflow. Evidence remains in
+  .runtime/dev/manual-auth/preferences-inline. No real account reset, email or
+  browser-session mutation was performed by these previews.
+- Synchronized public preference/account/customization/design guidance, both module
+  READMEs/changelogs, owner page-pattern reference and customer frontend reference.
+  Existing owner/customer root and backend/security/Vue skills already require
+  transactional Audit, server authority and replaceable presentation, so need no
+  duplicate instruction. Knowledge became stale during source edits; original
+  sources were used. Boost docs lookup was attempted; installed Laravel validation
+  source and existing transaction patterns confirmed the narrow APIs used.
+- No Docker resources created/removed. Preserved development/test data, owner
+  sessions/credentials, Qdrant/model caches, backups and reports. Point 20 and full
+  verification/release finalization still await explicit owner visual acceptance.

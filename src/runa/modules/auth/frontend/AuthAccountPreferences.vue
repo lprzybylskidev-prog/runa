@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch, onScopeDispose, nextTick } from 'vue';
+import { computed, reactive, ref, watch, onScopeDispose, nextTick } from 'vue';
 import {
-  Badge,
   Button,
   Card,
-  Checkbox,
   ConfirmDialog,
-  Dialog,
   Form,
   FormNotifications,
+  RadioGroup,
+  Select,
   Spinner,
   Switch,
 } from '@/runa/ui';
-import AppPreferenceControls from '../../../resources/js/components/AppPreferenceControls.vue';
 import type { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
 import type { useAuthAccount } from './useAuthAccount';
 type Choice = ReturnType<typeof useAuthAccount>['delivery']['value'][number];
@@ -35,95 +33,114 @@ const {
   resetPreferences,
   selectTab,
 } = props.account;
-const editing = ref<Choice>();
-const resetOpen = ref(false);
-const attempt = ref(0);
-const recipientError = ref('');
-const form = ref<{ focusInvalid: () => void }>();
-const eligibleAddresses = computed(
-  () =>
-    profile.value?.secondary_emails.filter((address) => address.verified_at) ??
-    [],
-);
+const resetOpen = ref(false),
+  attempt = ref(0),
+  failedKey = ref<string>();
+const drafts = reactive<Record<string, Choice>>({});
+const recipientErrors = reactive<Record<string, string>>({});
+const forms = new Map<string, { focusInvalid: () => void }>();
 const optional = computed(() =>
   delivery.value.filter((choice) => !choice.mandatory && !choice.sensitive),
 );
 const required = computed(() =>
   delivery.value.filter((choice) => choice.mandatory || choice.sensitive),
 );
+const recipientOptions = computed(() => [
+  { value: 'primary', label: profile.value?.email ?? '' },
+  ...(profile.value?.secondary_emails
+    .filter((address) => address.verified_at)
+    .map((address) => ({ value: address.public_id, label: address.email })) ??
+    []),
+]);
+const keyOf = (choice: Choice) => choice.module + ':' + choice.key;
+const copy = (choice: Choice): Choice => ({
+  ...choice,
+  names: { ...choice.names },
+  recipients: [...choice.recipients],
+});
+function same(a: Choice | undefined, b: Choice | undefined) {
+  return Boolean(
+    a &&
+    b &&
+    a.enabled === b.enabled &&
+    [...a.recipients].sort().join('\0') === [...b.recipients].sort().join('\0'),
+  );
+}
+function dirty(choice: Choice) {
+  return !same(drafts[keyOf(choice)], choice);
+}
 watch(
-  () => Boolean(editing.value) || resetOpen.value,
-  (value) => emit('feedback-modal', value),
+  delivery,
+  (next, previous) => {
+    for (const choice of next) {
+      const key = keyOf(choice);
+      const before = previous?.find((item) => keyOf(item) === key);
+      if (!drafts[key] || same(drafts[key], before)) drafts[key] = copy(choice);
+    }
+    for (const key of Object.keys(drafts))
+      if (!next.some((item) => keyOf(item) === key)) {
+        delete drafts[key];
+        delete recipientErrors[key];
+        forms.delete(key);
+      }
+  },
+  { immediate: true },
 );
+watch(resetOpen, (value) => emit('feedback-modal', value));
 onScopeDispose(() => {
   confirmed.value = false;
+  forms.clear();
   emit('feedback-modal', false);
 });
-function recipientNames(choice: Choice) {
-  return choice.recipients.flatMap((id) => {
-    if (id === 'primary') return profile.value ? [profile.value.email] : [];
-    const address = eligibleAddresses.value.find(
-      (item) => item.public_id === id,
-    );
-    return address ? [address.email] : [];
-  });
+function selectDisplay(preference: 'language' | 'theme', value: string) {
+  const origin =
+    document.activeElement instanceof window.HTMLElement
+      ? document.activeElement
+      : undefined;
+  props.display.selectPreference(preference, value, origin);
 }
-function edit(choice: Choice) {
-  if (busy.value || choice.mandatory || choice.sensitive) return;
-  editing.value = {
-    ...choice,
-    names: { ...choice.names },
-    recipients: [...choice.recipients],
-  };
-  attempt.value = 0;
-  recipientError.value = '';
-  failure.value = '';
-  notice.value = '';
+function revert(choice: Choice) {
+  if (busy.value) return;
+  const key = keyOf(choice);
+  drafts[key] = copy(choice);
+  delete recipientErrors[key];
+  if (failedKey.value === key) {
+    failure.value = '';
+    notice.value = '';
+    failedKey.value = undefined;
+  }
 }
-function setRecipient(id: string, enabled: boolean) {
-  if (!editing.value) return;
-  editing.value = {
-    ...editing.value,
-    recipients: enabled
-      ? [...new Set([...editing.value.recipients, id])]
-      : editing.value.recipients.filter((value) => value !== id),
-  };
-  recipientError.value = '';
-}
-function close(value: boolean) {
-  if (value || busy.value) return;
-  editing.value = undefined;
-  recipientError.value = '';
-  failure.value = '';
-  notice.value = '';
-}
-async function save() {
-  if (busy.value || !editing.value) return;
-  attempt.value++;
-  if (!editing.value.recipients.length) {
-    recipientError.value = text(
+async function save(choice: Choice) {
+  if (busy.value) return;
+  const key = keyOf(choice),
+    draft = drafts[key];
+  if (!draft || !dirty(choice)) return;
+  failedKey.value = key;
+  if (!draft.recipients.length) {
+    recipientErrors[key] = text(
       'Wybierz co najmniej jeden adres e-mail.',
       'Select at least one email address.',
     );
     await nextTick();
-    form.value?.focusInvalid();
+    forms.get(key)?.focusInvalid();
     return;
   }
-  props.account.form.value = form.value;
-  await saveDelivery(editing.value);
-  if (!failure.value && notice.value) editing.value = undefined;
+  delete recipientErrors[key];
+  props.account.form.value = forms.get(key);
+  const submitted = copy(draft);
+  await saveDelivery(submitted);
+  if (!failure.value && notice.value) {
+    const current = delivery.value.find((item) => keyOf(item) === key);
+    if (current && same(drafts[key], submitted)) drafts[key] = copy(current);
+    failedKey.value = undefined;
+  }
 }
-async function reload() {
+async function reload(key = failedKey.value) {
   if (busy.value) return;
-  const selected = editing.value;
   await selectTab('preferences');
-  if (failure.value || !selected) return;
-  const current = delivery.value.find(
-    (choice) =>
-      choice.module === selected.module && choice.key === selected.key,
-  );
-  if (current && !current.mandatory && !current.sensitive) edit(current);
-  else editing.value = undefined;
+  if (failure.value) return;
+  const current = delivery.value.find((item) => keyOf(item) === key);
+  if (current) revert(current);
 }
 function beginReset() {
   if (busy.value) return;
@@ -147,10 +164,18 @@ async function reset() {
   if (busy.value) return;
   attempt.value++;
   confirmed.value = true;
-  await resetPreferences();
-  if (!failure.value && notice.value) resetOpen.value = false;
+  await resetPreferences(true);
+  if (!failure.value && notice.value) {
+    for (const choice of delivery.value) {
+      drafts[keyOf(choice)] = copy(choice);
+      delete recipientErrors[keyOf(choice)];
+    }
+    resetOpen.value = false;
+    failedKey.value = undefined;
+  }
   confirmed.value = false;
 }
+defineExpose({ beginReset, reload });
 </script>
 <template>
   <div
@@ -158,77 +183,50 @@ async function reset() {
     class="grid min-w-0 items-start gap-6 xl:grid-cols-2"
     data-account-preferences
   >
-    <div class="min-w-0 space-y-6">
-      <Card data-preferences-display>
-        <template #header
-          ><h3>
-            {{ text('Wygląd i język', 'Appearance and language') }}
-          </h3></template
-        >
-        <div class="space-y-5">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <dl class="grid min-w-0 gap-x-8 gap-y-4 sm:grid-cols-2">
-              <div class="space-y-1">
-                <dt class="text-xs text-muted">
-                  {{ text('Język', 'Language') }}
-                </dt>
-                <dd class="text-sm font-semibold">
-                  {{ locale === 'pl' ? 'Polski' : 'English' }}
-                </dd>
-              </div>
-              <div class="space-y-1">
-                <dt class="text-xs text-muted">{{ text('Motyw', 'Theme') }}</dt>
-                <dd class="text-sm font-semibold">
-                  {{ display.t(display.theme.value) }}
-                </dd>
-              </div>
-            </dl>
-            <fieldset :disabled="busy" class="min-w-0">
-              <AppPreferenceControls
-                :locale="display.locale.value"
-                :theme="display.theme.value"
-                :theme-label="display.themeLabel.value"
-                :language-label="display.languageLabel.value"
-                :t="display.t"
-                @change="display.changePreference"
-              />
-            </fieldset>
-          </div>
-          <p class="text-xs leading-relaxed text-muted">
-            {{
-              text(
-                'Zmiana języka lub motywu zapisuje się automatycznie na Twoim koncie.',
-                'Language and theme changes are saved to your account automatically.',
-              )
-            }}
-          </p>
-        </div>
-      </Card>
-      <Card data-preferences-reset>
-        <template #header
-          ><h3>
-            {{ text('Ustawienia domyślne', 'Default settings') }}
-          </h3></template
-        >
-        <div class="space-y-5">
-          <p class="text-sm leading-relaxed text-muted">
-            {{
-              text(
-                'Przywróć domyślne ustawienia wyglądu, nawigacji i tabel.',
-                'Restore default appearance, navigation and table settings.',
-              )
-            }}
-          </p>
-          <Button
-            variant="outline"
-            tone="danger"
-            :disabled="busy"
-            @click="beginReset"
-            >{{ text('Przywróć domyślne', 'Restore defaults') }}</Button
-          >
-        </div>
-      </Card>
-    </div>
+    <Card data-preferences-display>
+      <template #header
+        ><h3>
+          {{ text('Wygląd i język', 'Appearance and language') }}
+        </h3></template
+      >
+      <fieldset :disabled="busy" class="min-w-0 space-y-6">
+        <RadioGroup
+          :model-value="display.locale.value"
+          name="preference-language"
+          :label="text('Język interfejsu', 'Interface language')"
+          :options="[
+            { value: 'pl', label: 'Polski' },
+            { value: 'en', label: 'English' },
+          ]"
+          @update:model-value="selectDisplay('language', $event)"
+        />
+        <RadioGroup
+          :model-value="display.theme.value"
+          name="preference-theme"
+          :label="text('Motyw', 'Theme')"
+          :options="[
+            { value: 'system', label: text('Systemowy', 'System') },
+            { value: 'light', label: text('Jasny', 'Light') },
+            { value: 'dark', label: text('Ciemny', 'Dark') },
+          ]"
+          :helper="
+            text(
+              'Motyw systemowy dopasowuje się do ustawień urządzenia.',
+              'System theme follows your device settings.',
+            )
+          "
+          @update:model-value="selectDisplay('theme', $event)"
+        />
+        <p class="text-xs leading-relaxed text-muted">
+          {{
+            text(
+              'Zmiany zapisują się automatycznie na Twoim koncie.',
+              'Changes are saved to your account automatically.',
+            )
+          }}
+        </p>
+      </fieldset>
+    </Card>
     <Card data-preferences-delivery>
       <template #header
         ><h3>
@@ -239,8 +237,8 @@ async function reset() {
         <p class="text-xs leading-relaxed text-muted">
           {{
             text(
-              'Wybierz wiadomości, które chcesz otrzymywać, i adresy ich doręczenia.',
-              'Choose which emails to receive and where they should be delivered.',
+              'Włącz wybrane wiadomości, wskaż odbiorców i zapisz zmiany w danym wierszu.',
+              'Enable the emails you want, select recipients and save each row.',
             )
           }}
         </p>
@@ -266,164 +264,95 @@ async function reset() {
             v-if="failure"
             variant="outline"
             :disabled="busy"
-            @click="reload"
+            @click="reload()"
             >{{ text('Wczytaj ponownie', 'Reload') }}</Button
           >
         </div>
         <div v-if="optional.length" class="divide-y divide-line">
-          <div
+          <Form
             v-for="choice in optional"
-            :key="choice.module + ':' + choice.key"
-            class="space-y-3 py-4 first:pt-0 last:pb-0"
+            :key="keyOf(choice)"
+            :ref="
+              (value) => {
+                if (value)
+                  forms.set(
+                    keyOf(choice),
+                    value as { focusInvalid: () => void },
+                  );
+                else forms.delete(keyOf(choice));
+              }
+            "
+            :label="choice.names[locale]"
+            :dirty="dirty(choice)"
+            :busy="busy"
+            class="py-5 first:pt-0 last:pb-0"
             :data-delivery-category="choice.key"
+            @submit="save(choice)"
           >
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="min-w-0 space-y-2">
-                <h4 class="text-sm font-semibold [overflow-wrap:anywhere]">
-                  {{ choice.names[locale] }}
-                </h4>
-                <Badge
-                  size="sm"
-                  :tone="choice.enabled ? 'success' : undefined"
-                  >{{
-                    choice.enabled
-                      ? text('Włączone', 'Enabled')
-                      : text('Wyłączone', 'Disabled')
-                  }}</Badge
-                >
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                :aria-label="text('Zmień: ', 'Edit: ') + choice.names[locale]"
-                :disabled="busy"
-                @click="edit(choice)"
-                >{{ text('Zmień', 'Edit') }}</Button
-              >
+            <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
+              <Switch
+                v-model="drafts[keyOf(choice)]!.enabled"
+                :label="choice.names[locale]"
+              />
             </div>
-            <ul
-              v-if="choice.enabled"
-              class="space-y-1 text-xs text-muted"
-              :aria-label="text('Adresy odbiorców', 'Recipient addresses')"
-            >
-              <li
-                v-for="address in recipientNames(choice)"
-                :key="address"
-                class="[overflow-wrap:anywhere]"
+            <Select
+              v-model="drafts[keyOf(choice)]!.recipients"
+              multiple
+              size="sm"
+              :label="text('Wyślij na', 'Send to')"
+              :options="recipientOptions"
+              :locale="locale"
+              :disabled="!drafts[keyOf(choice)]!.enabled"
+              :error="recipientErrors[keyOf(choice)] ?? ''"
+              @update:model-value="delete recipientErrors[keyOf(choice)]"
+            />
+            <template v-if="dirty(choice)" #actions>
+              <Button type="submit" size="sm" variant="outline" :busy="busy">{{
+                text('Zapisz', 'Save')
+              }}</Button>
+              <Button size="sm" :disabled="busy" @click="revert(choice)">{{
+                text('Cofnij zmiany', 'Revert changes')
+              }}</Button>
+              <Button
+                v-if="failure && failedKey === keyOf(choice)"
+                size="sm"
+                :disabled="busy"
+                @click="reload(keyOf(choice))"
+                >{{ text('Wczytaj zapisane', 'Reload saved') }}</Button
               >
-                {{ address }}
-              </li>
-            </ul>
-          </div>
+            </template>
+          </Form>
         </div>
         <section
           v-if="required.length"
-          class="space-y-4"
-          :class="optional.length ? 'border-t border-line pt-5' : ''"
+          class="space-y-3 border-t border-line pt-5"
+          data-required-delivery
         >
-          <h4 class="text-xs font-semibold text-muted">
-            {{ text('Wiadomości wymagane', 'Required messages') }}
+          <h4 class="text-sm font-semibold">
+            {{ text('Zawsze włączone', 'Always enabled') }}
           </h4>
           <p class="text-xs leading-relaxed text-muted">
             {{
               text(
-                'Wymagane wiadomości bezpieczeństwa trafiają na główny adres e-mail.',
-                'Required security messages go to your primary email address.',
+                'Wymagane wiadomości bezpieczeństwa trafiają na główny adres e-mail:',
+                'Required security messages go to your primary email address:',
               )
             }}
+            <span class="[overflow-wrap:anywhere]">{{ profile.email }}</span>
           </p>
-          <div
-            v-for="choice in required"
-            :key="choice.module + ':' + choice.key"
-            class="flex min-w-0 flex-wrap items-center justify-between gap-2"
-            :data-delivery-category="choice.key"
-          >
-            <span class="text-sm [overflow-wrap:anywhere]">{{
-              choice.names[locale]
-            }}</span
-            ><Badge size="sm">{{ text('Obowiązkowe', 'Required') }}</Badge>
-          </div>
+          <ul class="list-disc space-y-1 pl-4 text-xs text-muted">
+            <li
+              v-for="choice in required"
+              :key="keyOf(choice)"
+              :data-delivery-category="choice.key"
+            >
+              {{ choice.names[locale] }}
+            </li>
+          </ul>
         </section>
       </div>
     </Card>
   </div>
-  <Dialog
-    :model-value="Boolean(editing)"
-    :title="
-      editing?.names[locale] ??
-      text('Powiadomienia e-mail', 'Email notifications')
-    "
-    :locale="locale"
-    :busy="busy"
-    @update:model-value="close"
-  >
-    <Form
-      v-if="editing"
-      ref="form"
-      :label="editing.names[locale]"
-      :busy="busy"
-      data-delivery-editor
-      @submit="save"
-    >
-      <Switch
-        v-model="editing.enabled"
-        :label="
-          text('Otrzymuj te powiadomienia', 'Receive these notifications')
-        "
-      />
-      <fieldset class="min-w-0 space-y-3 [overflow-wrap:anywhere]">
-        <legend class="mb-3 text-sm font-semibold">
-          {{ text('Adresy odbiorców', 'Recipient addresses') }}
-        </legend>
-        <Checkbox
-          :model-value="editing.recipients.includes('primary')"
-          :label="profile?.email ?? ''"
-          :helper="text('Główny adres e-mail', 'Primary email address')"
-          :error="recipientError"
-          @update:model-value="setRecipient('primary', $event)"
-        />
-        <Checkbox
-          v-for="address in eligibleAddresses"
-          :key="address.public_id"
-          :model-value="editing.recipients.includes(address.public_id)"
-          :label="address.email"
-          @update:model-value="setRecipient(address.public_id, $event)"
-        />
-      </fieldset>
-      <p class="text-xs leading-relaxed text-muted">
-        {{
-          text(
-            'Dodatkowe adresy dodasz i potwierdzisz w danych konta.',
-            'Add and verify secondary addresses in Account details.',
-          )
-        }}
-      </p>
-      <template #actions
-        ><Button type="submit" variant="outline" :busy="busy">{{
-          text('Zapisz ustawienia', 'Save settings')
-        }}</Button
-        ><Button :disabled="busy" @click="close(false)">{{
-          text('Anuluj', 'Cancel')
-        }}</Button></template
-      >
-    </Form>
-    <FormNotifications
-      v-if="editing"
-      :attempt="attempt"
-      :error="failure ? failureText : ''"
-      :invalid="Boolean(recipientError)"
-      :locale="locale"
-    >
-      <template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button
-        ><Button v-if="failure === 'conflict'" @click="reload">{{
-          text('Wczytaj aktualne dane', 'Reload current values')
-        }}</Button></template
-      >
-    </FormNotifications>
-  </Dialog>
   <ConfirmDialog
     :model-value="resetOpen"
     :title="
@@ -439,8 +368,8 @@ async function reset() {
     <p class="text-sm leading-7">
       {{
         text(
-          'Przywrócisz domyślny język, motyw i ustawienia nawigacji. Zapisane układy kolumn, filtry oraz widoki tabel zostaną usunięte.',
-          'This restores the default language, theme and navigation settings. Saved column layouts, filters and table views will be removed.',
+          'Przywrócisz domyślny język, motyw, nawigację oraz powiadomienia e-mail i ich odbiorców. Zapisane układy kolumn, filtry oraz widoki tabel zostaną usunięte.',
+          'This restores the default language, theme, navigation, email notifications and their recipients. Saved column layouts, filters and table views will be removed.',
         )
       }}
     </p>

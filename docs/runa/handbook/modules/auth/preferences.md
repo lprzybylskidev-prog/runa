@@ -46,7 +46,7 @@ preferences. `resetAccount(publicId, revision)` is permissioned by
 `runa.auth.preferences.reset` and emits synchronous `preferences.admin_reset`
 Audit history. It stays denied until trusted authorization is installed.
 
-Named `POST /api/runa/auth/preferences` accepts operation snapshot/write/reset/adopt
+Named `POST /api/runa/auth/preferences` accepts operation snapshot/write/reset/reset_all/adopt
 and application; write also needs module/view/key/value/revision. Reset accepts
 optional module and key scope. This POST read surface uses the normal cookie/CSRF
 transport. Both ingress and the Action recheck unrestricted tracked sessions.
@@ -55,14 +55,34 @@ current source defaults as well as stored values for the selected application an
 shared `runa` display namespace. Other devices converge on reload or new login;
 there is no polling or WebSocket synchronization.
 
+## Complete own-account reset
+
+`operation: reset_all` requires application and the current account revision,
+rejects module/view/key scoping and acts only on the unrestricted current principal.
+It resets both presentation preferences and email delivery overrides for that user
+inside the same default PostgreSQL transaction/lock order. One revision increment,
+legacy-adoption fence and explicit `preferences.reset_all` Audit event commit with
+both deletions; Audit failure rolls the entire change back. Source defaults restore
+optional categories to enabled/primary and retain mandatory/sensitive primary-only
+routing. Other accounts, identities, credentials, sessions and global policy do
+not change. No email is sent by resetting preferences.
+
+The browser account adapter exposes explicit `resetAll()` through its existing
+revision-ordered queue, followed by authoritative snapshot reload. The account
+controller's confirmed `resetPreferences(true)` uses this complete operation and reloads
+delivery categories. The no-argument `resetPreferences()` retains presentation-only
+behavior. Existing `reset(module)`/PreferenceStore scoped reset and the
+PHP AuthPreferences reset/admin-reset contracts remain presentation-only. A stale
+revision is an explicit conflict; no automatic retry with a newer revision.
+
 ## Default account presentation
 
-The default Preferences tab sits beside Account and security. Its Card/dialog
-composition is documented in [account UI](account-ui.md): automatic display controls,
-independent optional-category drafts, primary-only mandatory delivery and an
-explicit presentation-reset confirmation. Reuse existing account revision and
-preference hydration/error contracts; appearance changes and incoming snapshots
-must not create duplicate writes. Cancellation does not persist modal drafts.
+Preferences sits beside Account and security and uses explicit language/theme
+choices, independent inline email Form drafts and a header full-reset confirmation.
+See [account UI](account-ui.md). Keep the shared preference cover/persistence and
+current account revision/recipient rules. Save/Revert or explicit reload affects
+only its row; incoming snapshots must not overwrite other dirty rows or generate
+writes. The shell's compact preference controls retain their cycling contract.
 
 ## Browser integration and legacy ownership
 

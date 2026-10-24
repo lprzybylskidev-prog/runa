@@ -137,25 +137,30 @@ write replay. Disabling/losing a factor never weakens the server's trust checks.
 Legacy trust tab/choose/submit seams remain for custom presentations; new independent
 trusted-device state/actions are documented in the public presentation contract.
 
-Preferences reuses the same independent Card pattern: appearance/language and
-presentation reset form the left stack, with email categories on the right; narrow
-screens stack in the same reading order. Keep the existing two compact preference
-buttons and automatic account persistence/cover. Reset is an explicit ConfirmDialog
-for presentation settings, navigation and declared saved table views; it does not
-change notification subscriptions. Cancel does not write.
+Preferences has appearance/language and email Cards, with the confirmed full-reset
+action at the right of its page heading. This view uses explicit language/theme
+RadioGroups rather than the shell's compact cycling buttons. It retains automatic
+account persistence and the same cover/apply/focus sequence; choosing the current
+value does not save or animate. Shell controls retain their existing behavior.
 
-Email categories show compact status/recipient summaries. Mandatory/sensitive
-messages have no editable controls and remain primary-only. Each optional category
-opens a Dialog with its own copied enabled/recipient draft, a Switch, primary and
-verified secondary address choices, local nonempty-recipient validation and an
-explicit save. Cancel discards the draft. Save uses the existing current account
-revision and refreshes authoritative delivery/preferences; conflict reload is
-explicit and never replays a write. Errors/recovery actions stay in the modal focus
-layer; successful saves use the shared viewport notification. Reset conflict recovery
-explicitly reloads the page/account snapshot. Empty/loading/failed category reads
-retain a usable Card and explicit retry. Customer replacements retain the existing
-saveDelivery/resetPreferences/selectTab controller seams and public presentation
-provider; no copied persistence or protected-source edits are needed.
+Optional email categories are edited directly in independent Form rows: a Switch
+controls subscription, a multiple Select chooses primary/verified-secondary
+recipients, and dirty rows expose Save/Revert. Edits stay local until Save. Saving,
+reverting or explicitly reloading one row preserves other unsaved row drafts.
+Incoming reloads update clean rows without overwriting dirty ones. Recipient
+selection is disabled while the category is off, preserving its configured values.
+Known empty-recipient errors stop locally; server revision/recipient/security rules
+remain authoritative. Required messages appear in a read-only Always enabled
+section with the primary address. Empty/loading/failed reads retain the Card/retry.
+Errors and explicit recovery use the shared notification area; no automatic replay.
+
+The header reset ConfirmDialog explains that presentation, navigation, declared
+saved table layouts/filters/views and email subscriptions/recipients return to
+source defaults. Cancel does not write. Confirmation uses the distinct atomic
+reset_all operation with one optimistic revision and Audit; failure retains the
+modal and provides explicit recovery. Success discards unsaved delivery drafts and
+reloads authoritative defaults. Legacy scoped/presentation-only reset APIs remain
+available to replacement presentations. See [preferences](preferences.md).
 
 Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/Table:
 

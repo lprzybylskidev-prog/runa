@@ -25,6 +25,7 @@ import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
 const modalFeedback = ref(false);
+const preferencesView = ref<InstanceType<typeof AuthAccountPreferences>>();
 const {
   text,
   locale,
@@ -306,9 +307,28 @@ const passwordHint = computed(() =>
         >{{ titles[item] }}</Button
       >
     </nav>
-    <h2 ref="heading" tabindex="-1" class="auth-heading text-xl font-semibold">
-      {{ titles[tab] }}
-    </h2>
+    <div
+      class="flex flex-wrap items-center justify-between gap-3"
+      data-account-heading
+    >
+      <h2
+        ref="heading"
+        tabindex="-1"
+        class="auth-heading text-xl font-semibold"
+      >
+        {{ titles[tab] }}
+      </h2>
+      <Button
+        v-if="tab === 'preferences'"
+        size="sm"
+        variant="outline"
+        tone="danger"
+        :disabled="busy || !ready"
+        data-preferences-reset
+        @click="preferencesView?.beginReset()"
+        >{{ text('Przywróć domyślne', 'Restore defaults') }}</Button
+      >
+    </div>
     <Spinner v-if="!ready && busy" :label="text('Wczytywanie', 'Loading')" />
     <template v-if="ready && profile">
       <Alert v-if="draft && tab === 'details'" tone="info">
@@ -539,6 +559,7 @@ const passwordHint = computed(() =>
       </template>
       <AuthAccountPreferences
         v-if="tab === 'preferences'"
+        ref="preferencesView"
         :account="account"
         :display="display"
         @feedback-modal="modalFeedback = $event"
@@ -565,7 +586,9 @@ const passwordHint = computed(() =>
       }}</Button>
       <Button
         v-if="failure && (!ready || failure === 'conflict')"
-        @click="initialize"
+        @click="
+          tab === 'preferences' ? preferencesView?.reload() : initialize()
+        "
         >{{ text('Wczytaj aktualne dane', 'Reload current values') }}</Button
       >
     </template>

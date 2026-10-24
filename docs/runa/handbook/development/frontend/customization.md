@@ -113,13 +113,16 @@ AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 | `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                      |
 
 The default Preferences presentation uses the same public account replacement seam.
-Retain `saveDelivery(choice)`, `resetPreferences()` with explicit confirmation, and
-`selectTab('preferences')` for deliberate category reload. Copy each optional
-category's enabled/recipient values into a local modal draft instead of mutating
-controller read state before Save. Current revisions, verified-recipient and
-mandatory/sensitive primary-only rules remain server-owned. Reuse the existing
-shared display controller/controls and preference cover; do not add a second
-persistence adapter. Canceling or reloading a failed draft never replays a write.
+Use `saveDelivery(choice)` with a cloned per-row draft and explicit Save/Revert;
+`selectTab('preferences')` deliberately reloads categories. Preserve unrelated dirty
+rows across successful writes and reloads. Current revisions, verified recipients
+and mandatory/sensitive primary-only rules stay server-owned. The confirmed
+`resetPreferences(true)` resets presentation and delivery together through the
+adapter's explicit `resetAll()` operation. The no-argument `resetPreferences()` and existing scoped/presentation-only
+adapter/PHP reset APIs retain their old scope. Reuse the shared display controller
+and cover; Preferences offers explicit options while shell controls still cycle.
+Never duplicate persistence, replay a failed write or import protected source from
+customer code. See the public account UI/preferences contracts for behavior.
 
 `useAuthAccount` also exposes `trustedRows`, `trustedCursor`, `canTrustDevice`,
 `loadTrustedDevices(append = false)` and `revokeTrustedDevice(publicId)` for trusted

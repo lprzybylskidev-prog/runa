@@ -274,6 +274,8 @@ export function createAccountPreferenceStore(
     },
     subscribe: store.subscribe!,
     flush: () => queue,
+    /** Explicit own-account reset, including email delivery preferences. */
+    resetAll: () => schedule({ operation: 'reset_all' }),
     reset: (module: string | null = null) =>
       schedule({ operation: 'reset', module }),
     /** Caller has explicitly confirmed these unclaimed settings belong to this account. */
