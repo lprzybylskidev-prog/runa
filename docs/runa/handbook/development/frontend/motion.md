@@ -25,7 +25,7 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppDialog, AppToastViewport                                                                                     | Retained existing fade/scale/stack presentation; exiting roots inert immediately and interrupted enter restores interactivity.                                    |
 | AppDropdown                                                                                                     | Inherits Popover/Button motion; added rotating indicator.                                                                                                         |
 | AppTable                                                                                                        | Added row color easing only. Sorting, filtering, pagination, widths and selection data stay immediate, with no moving rows.                                       |
-| AppButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                                     | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.           |
+| AppButton, AppLinkButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                      | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.           |
 | AppCheckbox, AppRadioGroup                                                                                      | Inherit BooleanInput visual state easing.                                                                                                                         |
 | AppAlertDialog, AppConfirmDialog                                                                                | Inherit Dialog and action-control motion; no second entrance.                                                                                                     |
 | AppDateInput, AppDateRangeInput, AppDateTimeInput, AppTimeInput, AppTemporalInput, AppTimePicker, AppColorInput | Inherit field, Popover, CalendarPicker and control motion as composed; text/time/color input and pointer adjustment stay immediate.                               |
@@ -40,3 +40,7 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppIcon, RunaLogo, AppBrandIllustration, AppBackdrop, AppConstellation                                          | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
 
 Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
+
+AuthWelcome/AuthApplication/AuthAccount change page, restriction and form steps
+immediately. Their links, controls, dropdown and preference cover inherit existing
+motion and reduced-motion behavior; account tables do not animate rows.

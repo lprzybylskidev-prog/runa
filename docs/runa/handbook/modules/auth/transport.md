@@ -149,7 +149,7 @@ fragment (`/auth/invitation#token=...` or `/auth/verify-email#token=...`), which
 sent to access logs. The [Auth Vue screen](entry-ui.md) consumes and removes the fragment and POSTs
 the proof only after confirmation; no GET consumes a token.
 Credential security mail always targets the current primary email. The [profile address contract](profile.md) separately permits new/secondary-address verification and mandatory captured-old-primary change notices. Configurable localized
-security delivery and private account preferences remain separate later flows.
+security delivery and private account preferences use the [preference contract](preferences.md) and [account UI](account-ui.md).
 
 `runa:auth:entry.remind` is a declared operational command that enqueues bounded
 reminder work; its declared schedule runs each minute with overlap protection.

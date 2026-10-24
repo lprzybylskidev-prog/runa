@@ -98,7 +98,7 @@ final readonly class Profiles
         $secondary = $this->value('secondary_emails_enabled') ? app('db')->connection()->table('runa_auth.secondary_emails')
             ->where('user_id', $user->id)->whereNull('deleted_at')->orderBy('id')->get(['public_id', 'email', 'verified_at'])->toArray() : [];
         $capabilities = [];
-        foreach (['own_name_editable', 'own_login_editable', 'own_email_editable', 'secondary_emails_enabled', 'secondary_self_add', 'secondary_self_change', 'secondary_self_remove', 'avatar_enabled', 'avatar_editor', 'own_login_history', 'own_account_history', 'self_deactivate', 'self_delete'] as $key) {
+        foreach (['own_name_editable', 'own_login_editable', 'own_email_editable', 'secondary_emails_enabled', 'secondary_self_add', 'secondary_self_change', 'secondary_self_remove', 'avatar_enabled', 'avatar_editor', 'avatar_max_kib', 'secondary_email_limit', 'own_login_history', 'own_account_history', 'self_deactivate', 'self_delete'] as $key) {
             $capabilities[$key] = $this->value($key);
         }
 

@@ -5,6 +5,7 @@ async function entryTransport(page: Page) {
     const path = new URL(route.request().url()).pathname;
     const data = path.endsWith('/entry-options')
       ? {
+          public_welcome_enabled: true,
           public_registration: true,
           identifier_mode: 'email',
           remember_enabled: true,

@@ -1,6 +1,6 @@
 # Form Patterns
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
 
@@ -87,3 +87,8 @@ useWizard accepts stable keyed steps, validate(key), submit() and optional disab
 For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, restoring errors inline and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
 
 TextInput/NumberInput/Select expose optional size=sm for compact table/filter/toolbars (36px, matching small Buttons); their default md form size stays 44px. Select popup controls/options follow its size. TextInput hideLabel forwards to FormField's associated visually hidden label, keeping compact inline width controls accessible without a visible repeated heading. Form fields keep validation semantics and browser autofill in either size; do not shrink whole ordinary forms merely to demonstrate the variant.
+
+Account reauthentication preserves only explicitly safe name/login fields in memory,
+bound to the same account. Offer explicit restoration/review; never replay a write.
+Clear credentials, codes and files, fence late responses, and refresh stale revisions
+or CSRF only through deliberate actions. See [account UI](../../modules/auth/account-ui.md).

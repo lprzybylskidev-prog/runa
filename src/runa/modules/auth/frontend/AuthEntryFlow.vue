@@ -10,10 +10,13 @@ import {
   Spinner,
   TextInput,
 } from '@/runa/ui';
-import type { EntryPage } from './entry';
+import type { EntrySession, EntryPage } from './entry';
 import type { EntryCopyKey } from './messages';
 import { useAuthEntry } from './useAuthEntry';
-const props = defineProps<{ page: EntryPage }>();
+const props = defineProps<{
+  page: EntryPage;
+  authenticated?: ((session: EntrySession) => void) | undefined;
+}>();
 const {
   t,
   options,
@@ -53,7 +56,7 @@ const {
   logout,
   codesSaved,
   changeMethod,
-} = useAuthEntry(props.page);
+} = useAuthEntry(props.page, props.authenticated);
 const methodOptions = computed(() =>
   methods.value.map((value) => ({
     value,

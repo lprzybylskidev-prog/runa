@@ -103,7 +103,7 @@ function entryUser(string $email, bool $password = true): User
 it('projects safe entry form options without exposing private settings or account state', function (): void {
     $response = $this->getJson('/api/runa/auth/entry-options')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
     expect($response->json('data'))->toBe([
-        'public_registration' => false, 'identifier_mode' => 'email', 'remember_enabled' => false,
+        'public_welcome_enabled' => true, 'public_registration' => false, 'identifier_mode' => 'email', 'remember_enabled' => false,
         'password' => ['min_length' => 12, 'max_bytes' => 72, 'mixed_case' => false, 'numbers' => false, 'symbols' => false],
     ]);
     entryPolicy(['public_registration' => true, 'session_remember_minutes' => 60, 'password_numbers' => true]);
@@ -136,7 +136,7 @@ beforeEach(function (): void {
         $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
         $migration->up();
         $this->authSchemas[] = 'runa_'.$code;
-        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.8.0' : '0.3.0']);
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $code === 'auth' ? '0.9.0' : '0.3.0']);
     }
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
@@ -319,7 +319,7 @@ it('upgrades encrypted identity settings additively only inside the reserved upd
     DB::table('shared.modules')->whereIn('module_id', ['runa.auth', 'runa.audit'])->update(['installed_version' => null]);
     app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0'])->delete();
+    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0', 'upgrade:account_ui:0.8.0:0.9.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
     DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0', 'settings_revision' => 4,
         'settings_values' => app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false)]);
@@ -327,7 +327,8 @@ it('upgrades encrypted identity settings additively only inside the reserved upd
     $updates->apply('runa', str_repeat('b', 40), static function (): void {});
     $state = app(ModuleSettings::class)->read('runa.auth');
     expect($state['settings']['identifier_mode']['value'])->toBe('either')
-        ->and($state['settings']['public_registration']['value'])->toBeFalse()->and($state['revision'])->toBe(5);
+        ->and($state['settings']['public_registration']['value'])->toBeFalse()
+        ->and($state['settings']['public_welcome_enabled']['value'])->toBeTrue()->and($state['revision'])->toBe(5);
     $events = DB::table('runa_audit.events')->where('action', 'settings.upgrade')->count();
     expect($events)->toBe(1);
     $updates->apply('runa', str_repeat('b', 40), static function (): void {});
@@ -1439,3 +1440,23 @@ it('session cleanup and deadline projection respect unexpired account lifetime e
     app(CleanupSessions::class)->run();
     expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBeFalse();
 })->group('auth-policy-operators');
+
+it('persists welcome policy defaults and redirects only the public root through named sign-in', function (): void {
+    $settings = app(ModuleSettings::class);
+    expect($settings->value('runa.auth', 'public_welcome_enabled'))->toBeTrue();
+    entryPolicy(['public_welcome_enabled' => false]);
+    $this->getJson('/api/runa/auth/entry-options')->assertOk()->assertJsonPath('data.public_welcome_enabled', false);
+    $this->get('/')->assertRedirect(route('runa.auth.pages.login'));
+    // The setting never invalidates a session or bypasses its restricted-state resolver.
+    $user = profileVerified('welcome-setting@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->get('/')->assertRedirect(route('runa.auth.pages.login'));
+    $this->getJson('/api/runa/auth/session')->assertOk()->assertJsonPath('data.restrictions', []);
+    $this->postJson('/api/runa/auth/logout')->assertOk();
+    $this->getJson('/api/runa/auth/session')->assertUnauthorized();
+    foreach (['/app' => 'application', '/account' => 'account'] as $path => $name) {
+        expect(app('router')->getRoutes()->match(Request::create($path))->getName())->toBe('runa.auth.pages.'.$name);
+    }
+    entryPolicy(['public_welcome_enabled' => true]);
+    expect($settings->value('runa.auth', 'public_welcome_enabled'))->toBeTrue();
+})->group('auth-account-ui');

@@ -6,7 +6,7 @@ start their password age at the upgrade; hashes cannot prove previous complexity
 No dependency or service is added. Fortify's installed Google2FA engine generates
 and checks TOTP; native Laravel hashing, encryption, cookies and CSRF remain in use.
 Package routes remain disabled. Entry/restricted screens use the [Auth UI contract](entry-ui.md); optional own-account
-management is separate.
+management uses the [account UI contract](account-ui.md).
 
 ## Password policy and recovery
 

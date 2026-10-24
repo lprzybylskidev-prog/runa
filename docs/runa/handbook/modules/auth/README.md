@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.8.0`, requiring
+Core `runa.auth` ships at independent version `0.9.0`, requiring
 `runa.audit ^0.3.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
@@ -14,7 +14,8 @@ also available. [Password policy/recovery, 2FA, trusted devices and step-up](sec
 are delivered, along with [private profile, verified address changes, avatar and own history](profile.md).
 [Account preferences and security delivery](preferences.md) are delivered.
 [Policy history, account exceptions, bulk sessions and operator contracts](policies-and-operators.md) are delivered.
-Permissions integration and Auth screens follow in later points.
+[Entry/restricted screens](entry-ui.md) and [welcome/application/account screens](account-ui.md)
+are delivered. Permissions integration follows in later points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access

@@ -13,6 +13,7 @@ final readonly class EntryOptionsController
     public function __invoke(): JsonResponse
     {
         return response()->json(['data' => [
+            'public_welcome_enabled' => $this->policy->value('public_welcome_enabled'),
             'public_registration' => $this->policy->value('public_registration'),
             'identifier_mode' => $this->policy->value('identifier_mode'),
             'remember_enabled' => $this->policy->value('session_remember_minutes') > 0,

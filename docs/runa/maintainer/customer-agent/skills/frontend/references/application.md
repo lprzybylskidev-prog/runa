@@ -20,3 +20,8 @@ critical recovery retains direct mail. Application code consumes these contracts
 without requiring conversion into an app module; protected Runa remains read-only.
 
 Use the delivered AuthEntry component from @/runa/auth for entry and restricted-session flows; follow docs/runa/handbook/modules/auth/entry-ui.md. Preserve the application-owned App.vue integration when customizing navigation. Keep token proofs and credentials in component memory, honor server-declared restrictions and require explicit resubmission after CSRF/conflict failures; never edit protected Auth source.
+
+Use the [Auth application/account contract](../../../../../handbook/modules/auth/account-ui.md) for welcome policy, post-security
+navigation, shared-shell profile/sign-out, real-activity expiry and safe memory draft
+review. Preserve application-owned composition and server guards; never replay a
+write after login or persist credentials/drafts in browser preferences.

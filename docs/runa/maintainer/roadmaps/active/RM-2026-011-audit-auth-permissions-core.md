@@ -713,7 +713,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     safe redirect, CSRF, keyboard/focus/announcements, PL/EN, responsive light/dark
     and reduced motion. Update public Auth UI contracts and affected shared pattern
     references in this point; no management shell or placeholder admin route.
-- [ ] 12. Deliver application entry, own-account UI and session-expiry integration.
+- [x] 12. Deliver application entry, own-account UI and session-expiry integration.
   - Requires 11. Add a persisted boolean Auth setting for public welcome availability,
     default enabled. When enabled, `/` keeps the welcome page with sign-in and,
     only when enabled, registration for guests, and application access for
@@ -848,7 +848,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 is next: application entry, own-account UI, dropdown sign-out and session-expiry integration. Permissions stays assigned to subsequent points.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 is next: Permissions dictionaries, declarations and authorization.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1530,3 +1530,62 @@ architectural premise requires discussion before dependent work.
   Account dropdown/self-service, global expiry/activity/drafts and optional own
   security management remain point 12; Permissions and real operator integration
   remain their later points. Full acceptance remains point 19.
+
+## Point 12 delivery
+
+- Auth advances independently 0.8.0 -> 0.9.0 for welcome/application/account UI and
+  the persisted public_welcome_enabled boolean (default true). The explicit
+  account_ui upgrade adds settings defaults through existing transactional
+  history/Audit participation. Fresh installs use the same default. Audit ^0.3.0,
+  framework API ^1.0.0 and platform VERSION 0.4.2 remain unchanged. No migration,
+  dependency, infrastructure change, authority shortcut or Admin UI is added.
+- Public AuthWelcome and AuthApplication composition connects the app-owned App.vue
+  with MinimalLayout and the existing ApplicationLayout. Exact named /app and
+  /account document routes retain guarded no-store account data. Default public
+  root delegates its welcome policy to a platform controller; disabled welcome
+  redirects to named sign-in, with frontend projection handling loaded documents.
+  Guests see enabled sign-in/registration; authenticated visitors enter the app or
+  required security steps. Login/restricted completion selects validated internal
+  return paths or /app, avoiding a welcome/sign-in loop.
+- Profile link and pending/error-aware CSRF POST sign-out share the existing user
+  dropdown. Native LinkButton extracts shared styled navigation from welcome/app
+  consumers, inheriting control variants/focus/motion without replacing shell menus.
+  Own-account sections cover versioned identity and primary email, secondary
+  address verification/reissue/removal, password/factors/recovery, private avatar,
+  own sessions/trust, immediate account preferences/reset/email recipients and
+  independently enabled private history. Backend flags hide unavailable features;
+  required proofs, permissions and neutral authority refusal remain server-side.
+- The application boundary handles current 401/restricted responses with ordinary
+  reauthentication, fences late replies, refreshes on visible/history restoration,
+  warns from server idle/absolute timestamps and sends throttled heartbeats only
+  after actual typing/click/scroll/touch. Polling/mouse movement never extend idle.
+  Safe name/login drafts remain account-bound in memory and require explicit
+  restoration/review/resubmission. Account changes and logout clear them, including
+  late unmount ownership. Credentials/codes/files clear after attempts and unmount;
+  no automatic write replay or browser-storage drafts. Failed sign-out restores
+  account preference hydration instead of leaving the active account in guest mode.
+- Necessary focused diagnostics resolved new navigation/projection, request-epoch,
+  draft, logout and activity uncertainties: frontend auth-entry/auth-account PASS
+  (20 cases), revised account-boundary subset PASS (9 cases; three additional
+  optional-feature regressions prepared for final selection), backend projection/
+  named-page/welcome-policy subset PASS (3 cases, 44 assertions), and one Chromium
+  account/dropdown render diagnostic PASS for dark desktop and light mobile.
+  Inspected screenshots under artifacts/playwright/runa/results. Additional real
+  navigation with both welcome settings, optional-feature and final cross-browser
+  scenarios are prepared, not reported as passed. No full suite, static analysis,
+  production/application build, scanner or quality gate ran. The isolated browser
+  harness retains its existing large-chunk warning; production bundle acceptance
+  remains final verification. Mandatory commit hooks remain required.
+- Updated public Auth entry/account/profile/security/session/version and frontend
+  component/form/layout/motion guides, security baseline and owner foundations.
+  Owner/customer frontend references route to the shared account contract. Both
+  root AGENTS products and backend/Laravel/PostgreSQL/security skills already mandate
+  server authority, Audit, safe secrets and guarded contracts; this point changes
+  no reusable policy in those products. Customer guidance preserves its app-owned
+  composition and never permits protected platform edits.
+- No Docker resource was created by these container-local diagnostics; test
+  coordinator/browser processes close through their supported runner. Preserved
+  development/test database data, services, images/networks/volumes, Qdrant/model
+  caches, backups, reports and screenshots. No cleanup deletion was required.
+  Real discoverable development accounts/manual end-to-end preparation remains
+  point 17; Permissions/integration and full acceptance remain points 13–19.

@@ -50,8 +50,8 @@ cookies have an expiry. Old cookie replay cannot restore a removed/revoked row.
 ## Activity and own APIs
 
 All paths are under `/api/runa/auth/`, named `runa.auth.<operation>`, use the existing
-session/CSRF middleware and return no-store responses. UI integration follows in
-the Auth screen points. No automatic write replay or localStorage drafts exist here.
+session/CSRF middleware and return no-store responses. UI integration uses the [account/application boundary](account-ui.md), with real-activity
+heartbeats and expiry warnings. No automatic write replay or localStorage drafts are used.
 
 | Method | Path             | Operation        | Input/result                                                                |
 | ------ | ---------------- | ---------------- | --------------------------------------------------------------------------- |
@@ -66,7 +66,7 @@ is not an accepted activity kind. The server coalesces early heartbeats and chan
 only activity time, never authentication time or captured expiry. Disabling extension
 leaves activity time unchanged. A browser's claim of human interaction is not a
 cryptographic proof; the absolute server deadline remains binding for every client.
-`warning_seconds`, `idle_minutes` and `extension` are returned for future warning UX.
+`warning_seconds`, `idle_minutes` and `extension` are returned for the account warning UX.
 
 Resolve protected `AuthSessions` 1.0.0 through ModuleApis for administrative
 `listFor(publicId, before = null)`, `revoke(publicId, sessionId)` and

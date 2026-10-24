@@ -154,3 +154,5 @@ export { ModulePage, ModuleSlot } from '../modules';
 export { accountPreferences } from '../../lib/preferenceStore';
 export { createAccountPreferenceStore } from '../../lib/accountPreferences';
 export { default as PreferenceFeedback } from '../../components/AppPreferenceFeedback.vue';
+
+export { default as LinkButton } from '../../components/AppLinkButton.vue';

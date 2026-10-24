@@ -1,0 +1,719 @@
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onScopeDispose,
+  reactive,
+  ref,
+  shallowRef,
+} from 'vue';
+import { useLocale } from '../../../resources/js/composables/useLocale';
+import { accountPreferences } from '../../../resources/js/lib/preferenceStore';
+import {
+  authFailure,
+  authGet,
+  authPost,
+  data,
+  decodeOptions,
+  decodeSecurity,
+  factorMethods,
+  record,
+} from './entry';
+import type { EntryOptions, SecurityOptions } from './entry';
+import {
+  accountRequest,
+  profileResponse,
+  pageResponse,
+  rememberAccountDraft,
+  takeAccountDraft,
+  clearAccountDraft,
+  accountDraftEpoch,
+} from './account';
+import type { AccountRow, Profile } from './account';
+export type AccountTab =
+  | 'details'
+  | 'security'
+  | 'addresses'
+  | 'avatar'
+  | 'sessions'
+  | 'trust'
+  | 'preferences'
+  | 'loginHistory'
+  | 'accountHistory';
+export type AccountTask =
+  | 'details'
+  | 'password'
+  | 'email'
+  | 'secondaryAdd'
+  | 'secondaryChange'
+  | 'secondaryRemove'
+  | 'avatar'
+  | 'avatarRemove'
+  | 'totpBegin'
+  | 'totpConfirm'
+  | 'emailEnable'
+  | 'disable'
+  | 'recoveryRotate'
+  | 'trustIssue'
+  | 'deactivate'
+  | 'delete';
+interface DeliveryChoice {
+  module: string;
+  key: string;
+  names: { pl: string; en: string };
+  mandatory: boolean;
+  sensitive: boolean;
+  enabled: boolean;
+  recipients: string[];
+}
+export function useAuthAccount(accountId: string) {
+  const { locale } = useLocale();
+  const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
+  const profile = shallowRef<Profile>(),
+    security = shallowRef<SecurityOptions>(),
+    options = shallowRef<EntryOptions>();
+  const tab = ref<AccountTab>('details'),
+    task = ref<AccountTask>('details');
+  const busy = ref(false),
+    ready = ref(false),
+    failure = ref(''),
+    notice = ref(''),
+    confirmed = ref(false);
+  const form = ref<{ focusInvalid: () => void }>(),
+    heading = ref<HTMLElement>(),
+    feedback = ref<HTMLElement>();
+  const fields = reactive<Record<string, string>>({});
+  const errors = reactive<Record<string, string>>({});
+  const naming = ref('single'),
+    method = ref('totp'),
+    target = ref('totp');
+  const secret = ref(''),
+    codes = ref<string[]>([]),
+    files = ref<readonly File[]>([]);
+  const rows = ref<AccountRow[]>([]),
+    cursor = ref<string | null>(null);
+  const delivery = ref<DeliveryChoice[]>([]),
+    deliveryRevision = ref(0);
+  const draft = shallowRef<Record<string, string> | null>(null);
+  let draftEpoch = accountDraftEpoch();
+  const abort = new AbortController();
+  let alive = true,
+    readEpoch = 0;
+  const caps = computed(() => profile.value?.capabilities ?? {});
+  const has = (key: string) => caps.value[key] === true;
+  const canAvatar = computed(
+    () =>
+      has('avatar_enabled') &&
+      ['both', 'user'].includes(String(caps.value.avatar_editor)),
+  );
+  const proofMethods = computed(() =>
+    security.value ? factorMethods(security.value) : [],
+  );
+  const tabs = computed<AccountTab[]>(() => [
+    'details',
+    'security',
+    ...(has('secondary_emails_enabled') ? ['addresses' as const] : []),
+    ...(has('avatar_enabled') ? ['avatar' as const] : []),
+    'sessions',
+    ...(security.value?.trusted_devices_enabled ? ['trust' as const] : []),
+    'preferences',
+    ...(has('own_login_history') ? ['loginHistory' as const] : []),
+    ...(has('own_account_history') ? ['accountHistory' as const] : []),
+  ]);
+  function cleanSecrets() {
+    for (const key of [
+      'current_password',
+      'password',
+      'password_confirmation',
+      'code',
+      'enrollment_code',
+    ])
+      fields[key] = '';
+    files.value = [];
+  }
+  function cleanErrors() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    failure.value = '';
+    notice.value = '';
+  }
+  function fillDetails() {
+    if (!profile.value) return;
+    for (const key of ['name', 'first_name', 'surname', 'login'] as const)
+      fields[key] = profile.value[key] ?? '';
+    naming.value = profile.value.name === null ? 'full' : 'single';
+  }
+  const needsProof = computed(
+    () =>
+      proofMethods.value.length > 0 &&
+      ([
+        'totpBegin',
+        'totpConfirm',
+        'emailEnable',
+        'disable',
+        'recoveryRotate',
+        'trustIssue',
+      ].includes(task.value) ||
+        (task.value === 'password' && security.value?.password_change_factor)),
+  );
+  const fieldNames = computed(() => [
+    ...(task.value === 'details'
+      ? [
+          ...(has('own_name_editable')
+            ? naming.value === 'single'
+              ? ['name']
+              : ['first_name', 'surname']
+            : []),
+          ...(has('own_login_editable') ? ['login'] : []),
+        ]
+      : []),
+    ...(['email', 'secondaryAdd', 'secondaryChange'].includes(task.value)
+      ? ['email']
+      : []),
+    ...([
+      'password',
+      'email',
+      'totpBegin',
+      'totpConfirm',
+      'emailEnable',
+      'disable',
+      'recoveryRotate',
+      'deactivate',
+      'delete',
+    ].includes(task.value)
+      ? ['current_password']
+      : []),
+    ...(task.value === 'password' ? ['password', 'password_confirmation'] : []),
+    ...(needsProof.value ? ['code'] : []),
+    ...(task.value === 'totpConfirm' ? ['enrollment_code'] : []),
+  ]);
+  function choose(
+    next: AccountTask,
+    address?: { public_id: string; email: string },
+  ) {
+    if (busy.value) return;
+    cleanErrors();
+    cleanSecrets();
+    secret.value = '';
+    codes.value = [];
+    confirmed.value = false;
+    task.value = next;
+    fields.email = address?.email ?? '';
+    fields.address_id = address?.public_id ?? '';
+    method.value = proofMethods.value[0] ?? 'totp';
+    target.value = security.value?.enrolled[0] ?? 'totp';
+    if (next === 'details') fillDetails();
+  }
+  function validate() {
+    cleanErrors();
+    for (const key of fieldNames.value) {
+      const value = fields[key] ?? '';
+      if (
+        !value.trim() &&
+        !(key === 'login' && options.value?.identifier_mode !== 'login')
+      )
+        errors[key] = text('Wypełnij to pole.', 'Complete this field.');
+      if (
+        key === 'email' &&
+        (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
+          value.length > 254 ||
+          /[^\x21-\x7e]/.test(value))
+      )
+        errors[key] = text(
+          'Podaj poprawny adres e-mail.',
+          'Enter a valid email address.',
+        );
+      if (
+        ['name', 'first_name', 'surname'].includes(key) &&
+        (value.trim() !== value ||
+          [...value].length > 160 ||
+          /\p{C}/u.test(value))
+      )
+        errors[key] = text('Popraw dane.', 'Correct this value.');
+      if (
+        key === 'login' &&
+        value &&
+        !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(value)
+      )
+        errors[key] = text('Niepoprawny login.', 'Invalid login.');
+      if (
+        key === 'code' &&
+        !(method.value === 'recovery' ? /^[0-9a-f]{32}$/ : /^[0-9]{6}$/).test(
+          value,
+        )
+      )
+        errors[key] = text('Niepoprawny kod.', 'Invalid code.');
+      if (key === 'enrollment_code' && !/^[0-9]{6}$/.test(value))
+        errors[key] = text('Wpisz 6 cyfr.', 'Enter 6 digits.');
+    }
+    if (task.value === 'password' && options.value) {
+      const p = options.value.password,
+        v = fields.password ?? '';
+      if (
+        [...v].length < p.min_length ||
+        new TextEncoder().encode(v).length > p.max_bytes ||
+        v.includes('\0') ||
+        (p.mixed_case && (!/\p{Ll}/u.test(v) || !/\p{Lu}/u.test(v))) ||
+        (p.numbers && !/\p{N}/u.test(v)) ||
+        (p.symbols && !/[\p{S}\p{P}]/u.test(v))
+      )
+        errors.password = text(
+          'Hasło nie spełnia podanych wymagań.',
+          'Password does not meet the listed requirements.',
+        );
+      if (v !== fields.password_confirmation)
+        errors.password_confirmation = text(
+          'Hasła muszą być takie same.',
+          'Passwords must match.',
+        );
+    }
+    return Object.keys(errors).length === 0;
+  }
+  async function perform(action: () => Promise<void>) {
+    if (busy.value || !alive) return;
+    busy.value = true;
+    cleanErrors();
+    try {
+      await action();
+    } catch (error) {
+      if (!alive) return;
+      const result = authFailure(error);
+      failure.value = result.code;
+      result.fields
+        .filter((k) => fieldNames.value.includes(k))
+        .forEach(
+          (k) => (errors[k] = text('Sprawdź wartość.', 'Check this value.')),
+        );
+    } finally {
+      if (alive) {
+        busy.value = false;
+        cleanSecrets();
+        if (failure.value) {
+          await nextTick();
+          if (Object.keys(errors).length) form.value?.focusInvalid();
+          else feedback.value?.focus();
+        }
+      }
+    }
+  }
+  async function loadProfile() {
+    const p = profileResponse(await authGet('profile', abort.signal));
+    if (p.public_id !== accountId) throw new TypeError('Account changed.');
+    if (alive) profile.value = p;
+  }
+  async function initialize() {
+    await perform(async () => {
+      await loadProfile();
+      const o = decodeOptions(await authGet('entry-options', abort.signal));
+      const s = decodeSecurity(await authGet('security', abort.signal));
+      if (!alive) return;
+      options.value = o;
+      security.value = s;
+      ready.value = true;
+      fillDetails();
+      draft.value = takeAccountDraft(accountId);
+      method.value = proofMethods.value[0] ?? 'totp';
+    });
+  }
+  async function readPage(append = false) {
+    const own = ++readEpoch,
+      currentTab = tab.value;
+    const path =
+      currentTab === 'sessions'
+        ? 'sessions'
+        : currentTab === 'trust'
+          ? 'trusted-devices'
+          : 'profile/history';
+    const input: Record<string, string> = {};
+    if (currentTab.endsWith('History'))
+      input.kind = currentTab === 'loginHistory' ? 'login' : 'account';
+    if (append && cursor.value) input.before = cursor.value;
+    const response = await accountRequest(path, 'GET', input, abort.signal);
+    const page = currentTab.endsWith('History')
+      ? (() => {
+          const p = data(response);
+          return pageResponse({
+            data: p.entries,
+            meta: { next_cursor: p.next },
+          });
+        })()
+      : pageResponse(response);
+    if (alive && own === readEpoch) {
+      rows.value = append ? [...rows.value, ...page.rows] : page.rows;
+      cursor.value = page.cursor;
+    }
+  }
+  async function readDelivery() {
+    const p = data(
+      await authPost(
+        'delivery-preferences',
+        { operation: 'read' },
+        abort.signal,
+      ),
+    );
+    if (
+      p.account !== accountId ||
+      !Number.isSafeInteger(p.revision) ||
+      !Array.isArray(p.categories)
+    )
+      throw new TypeError('Invalid delivery preferences.');
+    const list = p.categories.map((item) => {
+      const row = record(item),
+        names = record(row.names);
+      if (
+        typeof row.module !== 'string' ||
+        typeof row.key !== 'string' ||
+        typeof names.pl !== 'string' ||
+        typeof names.en !== 'string' ||
+        ![row.mandatory, row.sensitive, row.enabled].every(
+          (v) => typeof v === 'boolean',
+        ) ||
+        !Array.isArray(row.recipients) ||
+        !row.recipients.every((v) => typeof v === 'string')
+      )
+        throw new TypeError('Invalid delivery category.');
+      return row as unknown as DeliveryChoice;
+    });
+    if (alive) {
+      deliveryRevision.value = Number(p.revision);
+      delivery.value = list;
+    }
+  }
+  async function selectTab(value: AccountTab) {
+    if (busy.value || !tabs.value.includes(value)) return;
+    tab.value = value;
+    rows.value = [];
+    cursor.value = null;
+    choose(
+      value === 'security'
+        ? 'password'
+        : value === 'addresses'
+          ? 'secondaryAdd'
+          : value === 'avatar'
+            ? 'avatar'
+            : value === 'trust'
+              ? 'trustIssue'
+              : 'details',
+    );
+    if (['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(value))
+      await perform(() => readPage());
+    if (value === 'preferences') await perform(readDelivery);
+    await nextTick();
+    heading.value?.focus();
+  }
+  async function submit() {
+    if (!ready.value || busy.value || codes.value.length) return;
+    if (!validate()) {
+      await nextTick();
+      form.value?.focusInvalid();
+      return;
+    }
+    if (
+      ['secondaryRemove', 'avatarRemove', 'deactivate', 'delete'].includes(
+        task.value,
+      ) &&
+      !confirmed.value
+    ) {
+      failure.value = 'confirmation';
+      return;
+    }
+    if (task.value === 'avatar' && !files.value[0]) {
+      failure.value = 'file_required';
+      return;
+    }
+    const op = task.value;
+    const input: Record<string, unknown> = Object.fromEntries(
+      fieldNames.value.map((k) => [k, fields[k] ?? '']),
+    );
+    if (needsProof.value) input.method = method.value;
+    await perform(async () => {
+      let path = '',
+        verb: 'POST' | 'PATCH' | 'DELETE' = 'POST';
+      let body: Record<string, unknown> | FormData = input;
+      if (op === 'details') {
+        path = 'profile';
+        verb = 'PATCH';
+        Object.assign(input, { version: profile.value!.version });
+        for (const key of ['name', 'first_name', 'surname', 'login'])
+          input[key] = fields[key] || null;
+        if (naming.value === 'single') {
+          input.first_name = null;
+          input.surname = null;
+        } else input.name = null;
+      } else if (op === 'email') {
+        path = 'profile/email';
+        input.version = profile.value!.version;
+      } else if (op.startsWith('secondary')) {
+        path = 'profile/secondary-emails';
+        verb =
+          op === 'secondaryRemove'
+            ? 'DELETE'
+            : op === 'secondaryChange'
+              ? 'PATCH'
+              : 'POST';
+        input.version = profile.value!.version;
+        if (op !== 'secondaryAdd') input.address_id = fields.address_id;
+      } else if (op === 'avatar' || op === 'avatarRemove') {
+        path = 'profile/avatar';
+        input.version = profile.value!.version;
+        if (op === 'avatarRemove') verb = 'DELETE';
+        else {
+          const form = new FormData();
+          form.set('version', String(profile.value!.version));
+          form.set('avatar', files.value[0]!);
+          body = form;
+        }
+      } else if (op === 'password') path = 'password/change';
+      else if (op === 'trustIssue') path = 'trusted-devices';
+      else if (op === 'deactivate' || op === 'delete') {
+        await authPost(
+          'step-up',
+          {
+            action: `runa.auth.self.${op}`,
+            requirement: 'password',
+            current_password: String(input.current_password),
+          },
+          abort.signal,
+        );
+        path = 'profile/lifecycle';
+        body = { operation: op, version: profile.value!.version };
+      } else {
+        const suffix = (
+          {
+            totpBegin: 'totp-begin',
+            totpConfirm: 'totp-confirm',
+            emailEnable: 'email-enable',
+            disable: 'disable',
+            recoveryRotate: 'recovery-rotate',
+          } as Partial<Record<AccountTask, string>>
+        )[op];
+        if (!suffix) throw new TypeError('Invalid security action.');
+        path = 'security/' + suffix;
+        if (op === 'disable') input.target = target.value;
+      }
+      const result = data(await accountRequest(path, verb, body, abort.signal));
+      if (!alive) return;
+      if (result.reauthenticate === true) {
+        cleanSecrets();
+        clearAccountDraft();
+        await authGet('session', abort.signal);
+        return;
+      }
+      if (op === 'totpBegin') {
+        if (
+          typeof result.secret !== 'string' ||
+          !/^[A-Z2-7]{16,128}$/.test(result.secret)
+        )
+          throw new TypeError('Invalid enrollment.');
+        secret.value = result.secret;
+        task.value = 'totpConfirm';
+      } else {
+        secret.value = '';
+        if (result.recovery_codes !== undefined) {
+          if (
+            !Array.isArray(result.recovery_codes) ||
+            !result.recovery_codes.every(
+              (v) => typeof v === 'string' && /^[0-9a-f]{32}$/.test(v),
+            )
+          )
+            throw new TypeError('Invalid recovery codes.');
+          codes.value = result.recovery_codes as string[];
+        }
+        await loadProfile();
+        const s = decodeSecurity(await authGet('security', abort.signal));
+        if (alive) security.value = s;
+        if (op === 'details') {
+          fillDetails();
+          clearAccountDraft();
+          draftEpoch = accountDraftEpoch();
+          draft.value = null;
+        }
+        if (tab.value === 'trust') await readPage();
+        if (op === 'totpConfirm') task.value = 'password';
+      }
+      if (alive)
+        notice.value = ['email', 'secondaryAdd', 'secondaryChange'].includes(op)
+          ? text(
+              'Sprawdź pocztę, aby potwierdzić adres.',
+              'Check your email to confirm the address.',
+            )
+          : text('Zapisano.', 'Saved.');
+    });
+  }
+  async function revoke(publicId: string) {
+    const own = rows.value.find((row) => row.public_id === publicId)?.current;
+    await perform(async () => {
+      await authPost(
+        tab.value === 'trust' ? 'trusted-devices/revoke' : 'sessions/revoke',
+        { public_id: publicId },
+        abort.signal,
+      );
+      if (own) {
+        clearAccountDraft();
+        await authGet('session', abort.signal);
+      } else if (alive) await readPage();
+    });
+  }
+  async function saveDelivery(choice: DeliveryChoice) {
+    await perform(async () => {
+      await accountRequest(
+        'delivery-preferences',
+        'POST',
+        {
+          operation: 'write',
+          module: choice.module,
+          category: choice.key,
+          revision: deliveryRevision.value,
+          enabled: choice.enabled,
+          recipients: choice.recipients,
+        },
+        abort.signal,
+      );
+      if (alive) {
+        await readDelivery();
+        await accountPreferences.connect(
+          accountId,
+          accountPreferences.application(),
+        );
+      }
+    });
+  }
+  async function resetPreferences() {
+    if (!confirmed.value) {
+      failure.value = 'confirmation';
+      return;
+    }
+    await perform(async () => {
+      await accountPreferences.reset();
+      if (alive) {
+        confirmed.value = false;
+        await readDelivery();
+        notice.value = text(
+          'Przywrócono domyślne preferencje.',
+          'Default preferences restored.',
+        );
+      }
+    });
+  }
+  function restoreDraft() {
+    if (!draft.value) return;
+    for (const key of ['name', 'first_name', 'surname'])
+      if (has('own_name_editable')) fields[key] = draft.value[key] ?? '';
+    if (has('own_login_editable')) fields.login = draft.value.login ?? '';
+    naming.value = fields.name ? 'single' : 'full';
+    draft.value = null;
+    notice.value = text(
+      'Przejrzyj dane i zapisz je ponownie.',
+      'Review the values and submit again.',
+    );
+  }
+  const failureText = computed(() =>
+    failure.value === 'conflict'
+      ? text(
+          'Dane zmieniły się. Wczytaj aktualne dane przed kolejnym zapisem.',
+          'Data changed. Reload current values before submitting again.',
+        )
+      : failure.value === 'csrf'
+        ? text(
+            'Odśwież zabezpieczenie formularza i ponów zapis.',
+            'Renew form security and submit again.',
+          )
+        : failure.value === 'confirmation'
+          ? text('Potwierdź operację.', 'Confirm the operation.')
+          : failure.value === 'file_required'
+            ? text('Wybierz obraz.', 'Choose an image.')
+            : failure.value === 'throttled'
+              ? text(
+                  'Zbyt wiele prób. Spróbuj później.',
+                  'Too many attempts. Try again later.',
+                )
+              : text(
+                  'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
+                  'The operation failed. Check your values and try again.',
+                ),
+  );
+  onMounted(initialize);
+  onScopeDispose(() => {
+    if (
+      task.value === 'details' &&
+      profile.value &&
+      ['name', 'first_name', 'surname', 'login'].some(
+        (k) => (fields[k] || null) !== profile.value![k as 'name'],
+      )
+    )
+      rememberAccountDraft(accountId, fields, draftEpoch);
+    alive = false;
+    readEpoch++;
+    abort.abort();
+    cleanSecrets();
+    secret.value = '';
+    codes.value = [];
+  });
+  return {
+    text,
+    locale,
+    profile,
+    security,
+    options,
+    tab,
+    task,
+    busy,
+    ready,
+    failure,
+    failureText,
+    notice,
+    confirmed,
+    fields,
+    errors,
+    naming,
+    method,
+    target,
+    secret,
+    codes,
+    files,
+    rows,
+    cursor,
+    delivery,
+    draft,
+    caps,
+    has,
+    canAvatar,
+    proofMethods,
+    tabs,
+    fieldNames,
+    needsProof,
+    form,
+    heading,
+    feedback,
+    choose,
+    initialize,
+    selectTab,
+    submit,
+    revoke,
+    saveDelivery,
+    resetPreferences,
+    restoreDraft,
+    readPage,
+    perform,
+    refreshCsrf: () =>
+      perform(async () => {
+        await authGet('csrf', abort.signal);
+        notice.value = text(
+          'Możesz ponownie zapisać formularz.',
+          'You can submit the form again.',
+        );
+      }),
+    sendVerification: () =>
+      perform(async () => {
+        await authPost('verification/resend', {}, abort.signal);
+        notice.value = text(
+          'Sprawdź pocztę, aby potwierdzić główny adres.',
+          'Check your email to verify the primary address.',
+        );
+      }),
+    sendCode: () =>
+      perform(async () => {
+        await authPost('security/email-send', {}, abort.signal);
+        notice.value = text('Kod został wysłany.', 'Code sent.');
+      }),
+  };
+}

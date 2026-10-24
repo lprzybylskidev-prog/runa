@@ -256,4 +256,18 @@ The lazy module-owned flow reuses MinimalLayout and the shared Form, TextInput,
 RadioGroup, Checkbox, Button, Spinner and Alert components. Changing page resets
 and cancels the old flow. See [entry screens](../../modules/auth/entry-ui.md) for
 exact routes, public form constraints, server restrictions, safe returns and
-in-memory one-time material. Account management/session-expiry UI is separate.
+in-memory one-time material. Account management/session-expiry UI uses AuthApplication below.
+
+## LinkButton and Auth application composition
+
+`LinkButton` maps to `AppLinkButton.vue`: a native anchor with required href and
+existing button variants/tone, preserving open-in-new-tab and keyboard semantics.
+Use Button for mutations and LinkButton for styled navigation; it inherits the
+shared control focus/color/motion without duplicating local button markup. Auth
+welcome and application dropdown/entry use it. It does not authorize a destination.
+
+Public `AuthEntry`, `AuthWelcome` and `AuthApplication` load lazily from `@/runa/auth`.
+The latter accepts optional account=true and composes the existing ApplicationLayout,
+profile/sign-out slot, self-service forms, bounded Table lists, real-activity/expiry
+boundary and explicit safe draft review. See the [account UI](../../modules/auth/account-ui.md).
+Custom shells/forms must preserve request/account ownership and never replay writes.

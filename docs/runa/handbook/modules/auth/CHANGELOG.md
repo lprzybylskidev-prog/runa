@@ -1,5 +1,16 @@
 # Auth module changelog
 
+## 0.9.0
+
+Add public welcome/application/account composition, exact named application/account
+GETs, session-aware welcome navigation and post-security internal returns. Add
+public_welcome_enabled (true by default) and the 0.8.0 -> 0.9.0 defaults upgrade.
+Compose profile/sign-out in the existing user dropdown and deliver versioned own
+profile/email/avatar/security/sessions/trust/preferences/private-history views.
+Add throttled real-activity/idle warnings, 401/restricted reauthentication, safe
+account-bound memory drafts with explicit review, and logout/late-response cleanup.
+No migration, new dependency, permission shortcut or Admin UI.
+
 ## 0.8.0
 
 Add lazy public AuthEntry composition and exact named entry pages, safe public form

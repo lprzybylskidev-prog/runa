@@ -18,6 +18,7 @@ export type Restriction =
   | 'password_change_required';
 export type FactorMethod = 'totp' | 'email' | 'recovery';
 export interface EntryOptions {
+  public_welcome_enabled: boolean;
   public_registration: boolean;
   identifier_mode: 'email' | 'login' | 'either';
   remember_enabled: boolean;
@@ -68,6 +69,7 @@ export function decodeOptions(value: unknown): EntryOptions {
   )
     throw new TypeError('Invalid Auth options.');
   return {
+    public_welcome_enabled: boolean(v.public_welcome_enabled),
     public_registration: boolean(v.public_registration),
     identifier_mode: v.identifier_mode as EntryOptions['identifier_mode'],
     remember_enabled: boolean(v.remember_enabled),
@@ -152,9 +154,10 @@ export function entryPage(path: string): EntryPage | null {
 export function safeReturnPath(value: string | null): string {
   return value &&
     /^\/(?:[a-zA-Z0-9_-]+\/?)*$/.test(value) &&
-    !/^\/(auth|api)(\/|$)/.test(value)
+    !/^\/(auth|api)(\/|$)/.test(value) &&
+    value !== '/'
     ? value
-    : '/';
+    : '/app';
 }
 export function takeEntryToken(
   location: Pick<Location, 'hash' | 'pathname' | 'search'> = window.location,

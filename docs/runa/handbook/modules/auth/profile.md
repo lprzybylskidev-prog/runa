@@ -3,8 +3,8 @@
 Auth 0.5.0 adds the additive `0.4.0 -> 0.5.0` profile/settings upgrade and requires
 Audit `^0.3.0` for its bounded own-history contract. Run normal fenced ModuleUpdates;
 do not run module migrations independently. Existing identity/lifecycle, entry,
-session and credential API signatures remain compatible. No profile UI or public
-profile is supplied by this backend capability.
+session and credential API signatures remain compatible. The private [account UI](account-ui.md) consumes this backend capability. No public
+profile is supplied.
 
 ## Own-account transport
 

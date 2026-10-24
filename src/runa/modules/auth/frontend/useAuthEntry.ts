@@ -27,10 +27,14 @@ import type {
   FactorMethod,
   SecurityOptions,
 } from './entry';
+import { clearAccountDraft } from './account';
 import { entryMessages } from './messages';
 import type { EntryCopyKey } from './messages';
 
-export function useAuthEntry(page: EntryPage) {
+export function useAuthEntry(
+  page: EntryPage,
+  authenticated?: (session: EntrySession) => void,
+) {
   const { locale } = useLocale();
   const t = (key: EntryCopyKey) => entryMessages[locale.value][key];
   const options = shallowRef<EntryOptions>();
@@ -316,6 +320,11 @@ export function useAuthEntry(page: EntryPage) {
     session.value = result;
     security.value = factors;
     method.value = methods.value[0] ?? 'totp';
+    if (result.restrictions.length === 0) {
+      clearSecrets();
+      if (authenticated) authenticated(result);
+      else window.location.assign(returnPath);
+    }
   }
   async function handleFailure(error: unknown) {
     if (!alive) return;
@@ -475,7 +484,8 @@ export function useAuthEntry(page: EntryPage) {
         security.value = undefined;
         enrollmentSecret.value = '';
         recoveryCodes.value = [];
-        await focusHeading();
+        clearAccountDraft();
+        window.location.assign('/');
       }
     });
   }

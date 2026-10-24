@@ -4,14 +4,14 @@ Auth 0.8.0 supplies entry and restricted-session Vue screens using the existing
 MinimalLayout, Polish/English copy, shared form controls and theme tokens. The
 explicit source-only `0.7.0 -> 0.8.0` update changes no stored data or settings.
 Apply through ModuleUpdates; unchanged installations remain no-ops. Account
-self-service and session-expiry integration are separate roadmap work.
+self-service and session-expiry integration are supplied by [Auth 0.9.0](account-ui.md).
 
 ## Composition and routes
 
 Import `AuthEntry`, `entryPage` and `EntryPage` from `@/runa/auth`. The component
 loads lazily, accepts one `page` prop and discards the previous flow when it changes.
-The bundled App selects it for exact Auth paths and retains its existing welcome
-view elsewhere. Custom applications can compose the same component; no router,
+The bundled App selects it for exact Auth paths and composes the public welcome
+and authenticated application/account views separately. Custom applications can compose the same component; no router,
 global state package or replacement shell is required. Preserve this integration
 when maintaining an application-owned App.vue.
 
@@ -44,7 +44,7 @@ const page = entryPage(window.location.pathname);
 
 Initialize CSRF through the shared same-origin HTTP wrapper. Public
 `GET /api/runa/auth/entry-options` (`runa.auth.entry.options`) projects only
-registration availability, identifier mode, remembered-session availability and
+public-welcome availability, registration availability, identifier mode, remembered-session availability and
 new-password constraints. It never returns the full encrypted settings, account
 existence, lifecycle blockers, secrets or policy history. The server remains the
 authority if policy changes after the form loads. Registration links/forms disappear
@@ -66,8 +66,8 @@ the user acknowledges saving them; then discard them and refresh session state.
 Email enrollment first directs unverified-primary accounts to confirmation and is
 followed by an emailed OTP challenge. Password changes preserve the configured
 session policy and honor `reauthenticate` instead of claiming an active session.
-Trust issuance, optional own-account factor management and reusable privileged
-step-up dialogs belong to account/integration work, not these entry screens.
+Trust issuance and optional own-account factor management use the [account UI](account-ui.md).
+General privileged administration dialogs remain deferred.
 
 ## Secrets, redirects and failures
 
@@ -83,8 +83,9 @@ cannot populate a new flow. Setup keys are excluded from print.
 
 `return` accepts a conservative local path of ordinary slash-separated letters,
 digits, underscores and hyphens. External URLs, encoded paths, dot segments,
-backslashes, queries and Auth/API destinations fall back to `/`. After all
-restrictions clear, the user follows an explicit application link. No external
+backslashes, queries, `/` and Auth/API destinations fall back to `/app`. After all
+restrictions clear, AuthEntry navigates to that validated destination. The optional
+`authenticated(session)` callback lets AuthApplication finish reauthentication in memory. No external
 redirect or automatic write replay occurs.
 
 Local validation handles required fields, exclusive naming, identifiers, password

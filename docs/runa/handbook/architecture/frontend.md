@@ -440,3 +440,9 @@ explicit CSRF/conflict retry and secret cleanup. HTTP GET pages supply presentat
 only; security remains at guarded module endpoints. The existing welcome remains
 at `/`. Account dropdown/self-service and global session-expiry handling are
 separate implementation points.
+
+The delivered [Auth application/account composition](../modules/auth/account-ui.md)
+connects welcome, guarded sign-in, ApplicationLayout, profile and dropdown sign-out.
+It uses the shared HTTP lifecycle for 401/restricted reauthentication, local expiry
+warnings and throttled real activity; account-bound safe memory drafts require
+explicit review and resubmission. No global state/router package is introduced.

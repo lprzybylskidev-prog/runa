@@ -29,6 +29,7 @@ async function settled(wrapper: VueWrapper) {
 }
 const publicId = '01900000-0000-7000-8000-000000000001';
 const options = {
+  public_welcome_enabled: true,
   public_registration: true,
   identifier_mode: 'email',
   remember_enabled: true,
@@ -119,7 +120,7 @@ it('rejects external, encoded, API and Auth return paths and consumes fragments 
     '/a?x=1',
     '/a/../b',
   ])
-    expect(safeReturnPath(value)).toBe('/');
+    expect(safeReturnPath(value)).toBe('/app');
   expect(safeReturnPath('/projects/item-1')).toBe('/projects/item-1');
   const replaceState = vi.fn();
   expect(
@@ -163,7 +164,7 @@ it('fails closed on unknown restrictions and filters methods by the server requi
 });
 it('follows fresh restrictions through verification, factor challenge and password change', async () => {
   const w = mount(AuthEntry, {
-    props: { page: 'login' },
+    props: { authenticated: () => {}, page: 'login' },
     attachTo: document.body,
   });
   await settled(w);
@@ -217,7 +218,7 @@ it('follows fresh restrictions through verification, factor challenge and passwo
 });
 it('keeps CSRF recovery deliberate, clears credentials and focuses safe server errors', async () => {
   const w = mount(AuthEntry, {
-    props: { page: 'login' },
+    props: { authenticated: () => {}, page: 'login' },
     attachTo: document.body,
   });
   await settled(w);
@@ -254,7 +255,9 @@ it('keeps CSRF recovery deliberate, clears credentials and focuses safe server e
 it('requires explicit token submission, checks password bytes and does not persist the proof', async () => {
   const original = window.location.pathname + window.location.search;
   window.history.replaceState(null, '', original + '#token=' + 'a'.repeat(64));
-  const w = mount(AuthEntry, { props: { page: 'invitation' } });
+  const w = mount(AuthEntry, {
+    props: { authenticated: () => {}, page: 'invitation' },
+  });
   await settled(w);
   expect(window.location.hash).toBe('');
   expect(calls).toHaveLength(0);
@@ -276,7 +279,9 @@ it('requires explicit token submission, checks password bytes and does not persi
 it.each([409, 429, 503])(
   'presents failed writes without retrying for status %s',
   async (status) => {
-    const w = mount(AuthEntry, { props: { page: 'forgot-password' } });
+    const w = mount(AuthEntry, {
+      props: { authenticated: () => {}, page: 'forgot-password' },
+    });
     await settled(w);
     await w.get('[name=identifier]').setValue('test@example.test');
     post = () => json({ error: { code: 'auth_unavailable' } }, status);
@@ -294,7 +299,9 @@ it.each([409, 429, 503])(
 it('shows TOTP material and recovery codes only in the current flow, with deliberate acknowledgement', async () => {
   restrictions = ['two_factor_enrollment_required', 'password_change_required'];
   currentSecurity.enrolled = [];
-  const w = mount(AuthEntry, { props: { page: 'security' } });
+  const w = mount(AuthEntry, {
+    props: { authenticated: () => {}, page: 'security' },
+  });
   await settled(w);
   await w.get('[name=current_password]').setValue('a-long-password');
   post = () =>
@@ -333,7 +340,9 @@ it('shows TOTP material and recovery codes only in the current flow, with delibe
 
 it('hides disabled registration and never renders a writable registration form', async () => {
   options.public_registration = false;
-  const w = mount(AuthEntry, { props: { page: 'register' } });
+  const w = mount(AuthEntry, {
+    props: { authenticated: () => {}, page: 'register' },
+  });
   await settled(w);
   expect(w.text()).toContain('Rejestracja jest wyłączona');
   expect(w.find('[name=password]').exists()).toBe(false);
@@ -348,7 +357,9 @@ it('verifies a primary address before required email enrollment, even with verif
     required: 'email',
     email_verified: false,
   };
-  const w = mount(AuthEntry, { props: { page: 'security' } });
+  const w = mount(AuthEntry, {
+    props: { authenticated: () => {}, page: 'security' },
+  });
   await settled(w);
   expect(w.get('h1').text()).toBe('Potwierdź adres e-mail');
   currentSecurity.email_verified = true;
@@ -380,7 +391,9 @@ it('cancels old flow ownership when a pending token write settles after page nav
       '#token=' +
       'a'.repeat(64),
   );
-  const w = mount(AuthEntry, { props: { page: 'verify-email' } });
+  const w = mount(AuthEntry, {
+    props: { authenticated: () => {}, page: 'verify-email' },
+  });
   await settled(w);
   let resolve!: (value: Response) => void;
   post = () =>

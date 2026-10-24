@@ -298,11 +298,24 @@ export function bindPreferenceSession(
     if (!boundary && event.status !== 401) return;
     if (event.phase === 'start' && boundary) {
       authGeneration++;
-      store.disconnect();
+      const current = store.currentAccount();
+      if (event.path === '/runa/auth/logout' && current)
+        store.hold(current, store.application());
+      else store.disconnect();
       return authGeneration;
     }
     if (event.phase !== 'end') return;
     if (event.context !== authGeneration) return;
+    if (
+      event.path === '/runa/auth/logout' &&
+      event.status !== 200 &&
+      event.status !== 401
+    ) {
+      const current = store.currentAccount();
+      if (current)
+        void store.connect(current, store.application()).catch(() => {});
+      return;
+    }
     if (event.status === 401 || event.path === '/runa/auth/logout') {
       store.disconnect();
       return;
