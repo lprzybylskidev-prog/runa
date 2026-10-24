@@ -26,6 +26,9 @@ withDefaults(
         d="M4 10a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"
       />
     </g>
+    <g v-if="name === 'logout'">
+      <path d="M9 5H5v14h4M13 8l4 4-4 4M9 12h11" />
+    </g>
     <g v-if="name === 'sun'">
       <path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
       <path

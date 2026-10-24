@@ -955,6 +955,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     publish local assets and inspect actual form/link states before further review.
   - Update component/form guidance and both frontend products, module version and
     commit; final point 20 remains gated by explicit owner appearance acceptance.
+- [x] 19g. Empty the default application and refine the user-panel dropdown.
+  - Owner requests empty /app without heading/welcome content or account sidebar
+    entry, self-service named Panel użytkownika/User panel and a polished dropdown.
+  - Preserve session/security feedback, public custom content slot and profile/
+    sign-out behavior; publish and inspect actual application/menu/panel states.
+    Synchronize module version, coverage and guidance; final appearance gate stays.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2432,3 +2438,35 @@ architectural premise requires discussion before dependent work.
   rule needed. No Docker resources/reset/credential changes; preserved all existing
   data, services, caches, reports, backups and rollback material. Point 20 remains
   gated by explicit owner appearance acceptance.
+
+## Point 19g delivery
+
+- Owner requests empty default application and self-service named Panel użytkownika/
+  User panel. Removed account sidebar descriptor and welcome card/content/account
+  link; default /app has no heading. Retained application navigation and session
+  warnings/failures/reauthentication. Public custom-content slot remains unchanged.
+  Shared ApplicationLayout omits the heading region when title/heading/actions are
+  absent, avoiding empty headings without copying the shell into Auth.
+- Refined dedicated dropdown identity with initials badge, compact wrapping name,
+  muted caption and divider. Left-aligned native link/sign-out rows have 18px icons,
+  consistent padding, 44px targets, hover/focus and reduced-motion treatment.
+  Added logout to the existing public icon catalogue. Native sign-out preserves
+  pending/disabled behavior and existing session/Audit handling. No universal menu
+  abstraction or generic UI-framework component introduced.
+- Auth PATCH 0.13.4 -> 0.13.5, source-only user_panel edge, central changelog and local
+  forward application; existing Permissions ^0.13.0 remains compatible. Published
+  current Vite assets without schema/settings/credential changes.
+- Selected empty-workspace/sidebar/dropdown frontend regression passed (1 case),
+  module version checks passed. Real served signed-in Chromium checks passed at
+  1440/390 in light/dark: empty workspace, no sidebar account link, renamed dropdown
+  entry and no overflow; actual dropdown -> renamed panel and sign-out passed.
+  Inspected final dark menu screenshot after popup entrance; retained safe evidence
+  under .runtime/dev/manual-auth/user-panel. No broad suites/static analysis/image/
+  scanner/final quality ran; mandatory hooks apply.
+- Updated prepared browser acceptance names and public account/customization/seeding/
+  component guidance, plus both frontend page/reference instruction products. Root
+  ownership and Vue/Tailwind interaction/style rules already apply without duplicate
+  changes. Default application is blank rather than a business/example screen.
+- No Docker resource creation/removal, reset or credential change. Existing data,
+  services, caches, reports, backups and rollback material preserved. Point 20
+  remains gated by explicit owner frontend appearance acceptance.

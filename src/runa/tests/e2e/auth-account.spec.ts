@@ -141,7 +141,7 @@ test('Auth account render diagnostic: profile and sign-out share the accessible 
     }, theme);
     await page.goto('/account');
     await expect(
-      page.getByRole('heading', { name: 'Moje konto', exact: true }),
+      page.getByRole('heading', { name: 'Panel użytkownika', exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole('textbox', { name: 'Nazwa wyświetlana', exact: true }),
@@ -161,7 +161,7 @@ test('Auth account render diagnostic: profile and sign-out share the accessible 
       page.getByRole('button', { name: 'Wyloguj się', exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole('link', { name: 'Moje konto', exact: true }).last(),
+      page.getByRole('link', { name: 'Panel użytkownika', exact: true }).last(),
     ).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.locator('.app-popover-panel')).toHaveCSS('opacity', '1');
@@ -210,7 +210,7 @@ for (const welcome of [true, false]) {
     await expect(page).toHaveURL('/app');
     await page.goto('/account');
     await expect(
-      page.getByRole('heading', { name: 'Moje konto', exact: true }),
+      page.getByRole('heading', { name: 'Panel użytkownika', exact: true }),
     ).toBeVisible();
     await page
       .getByRole('button', { name: 'Menu użytkownika: Anna Kowalska' })

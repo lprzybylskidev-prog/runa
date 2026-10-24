@@ -78,3 +78,9 @@ Use outlined submit buttons for forms, retaining destructive tone/busy/disabled
 states. Use public TextLink for quiet welcome/Auth form navigation: no permanent
 underline or button surface, hover underline and visible keyboard focus. Reuse the
 shared implementation; do not restore page-local copies.
+
+Keep the supplied /app workspace empty; customer content is explicit composition.
+Self-service is Panel użytkownika/User panel, exposed through the dedicated user
+dropdown rather than sidebar or placeholder welcome content. Keep menu identity
+and icon/action rows consistent with the shell; do not extract shell menus into
+universal content primitives.

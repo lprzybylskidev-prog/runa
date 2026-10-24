@@ -35,3 +35,9 @@ headers wrapping without overflow.
 Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
+
+Keep the supplied /app workspace empty; customer content is explicit composition.
+Self-service is Panel użytkownika/User panel, exposed through the dedicated user
+dropdown rather than sidebar or placeholder welcome content. Keep menu identity
+and icon/action rows consistent with the shell; do not extract shell menus into
+universal content primitives.

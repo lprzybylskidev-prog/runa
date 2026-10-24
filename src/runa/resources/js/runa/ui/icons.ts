@@ -7,4 +7,5 @@ export type IconName =
   | 'file-type-xls'
   | 'file-type-pdf'
   | 'printer'
-  | 'adjustments-horizontal';
+  | 'adjustments-horizontal'
+  | 'logout';

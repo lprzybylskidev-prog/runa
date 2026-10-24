@@ -293,12 +293,15 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
 it('account boundary diagnostic: application uses the existing dropdown for both profile and logout', async () => {
   const w = mount(AuthApplication);
   await vi.waitFor(() =>
-    expect(w.find('.app-layout').exists() || w.text().includes('Witaj,')).toBe(
-      true,
-    ),
+    expect(
+      w.find('.app-layout').exists() || w.find('.shell-workspace').exists(),
+    ).toBe(true),
   );
   const trigger = w.find('button[aria-label^="Menu użytkownika"]');
   expect(trigger.exists()).toBe(true);
+  expect(w.find('.shell-workspace h1').exists()).toBe(false);
+  expect(w.find('.shell-workspace a[href="/account"]').exists()).toBe(false);
+  expect(w.find('nav a[href="/account"]').exists()).toBe(false);
   await trigger.trigger('click');
   await vi.waitFor(() =>
     expect(document.body.textContent + w.text()).toContain('Wyloguj się'),

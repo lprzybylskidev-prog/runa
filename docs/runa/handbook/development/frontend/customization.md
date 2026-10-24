@@ -10,8 +10,7 @@ Application changes live in `src/app`; `src/runa` remains protected.
 
 The supplied `src/app/resources/js/App.vue` renders `DefaultApplication` from
 `@/runa/auth`. That platform component selects exact Auth pages, `/app`, `/account`
-and welcome. The default `/app` contains only an account entry, with no business
-screen or dashboard. Native unknown server paths remain 404 responses.
+and welcome. The default `/app` is empty: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
@@ -196,3 +195,11 @@ identity, entry and preference presentation. The default slot remains page conte
 Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
+
+The default authenticated application view is empty. Account self-service is named
+Panel użytkownika (User panel) and is reached only through the user dropdown,
+not the sidebar or a welcome card. The dropdown groups initials/name identity
+above left-aligned icon/action rows with a divider and preserved keyboard focus.
+ApplicationLayout omits its heading region when title, heading and actions are
+absent. Session warnings/errors remain available; custom application content still
+uses the public session-scoped slot.

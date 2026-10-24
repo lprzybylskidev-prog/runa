@@ -300,3 +300,9 @@ quiet muted 12px text, no surface/border or permanent underline, hover underline
 color, visible keyboard focus, 44px touch target and reduced-motion handling.
 Welcome and Auth entry navigation share this implementation. Form submits use
 Button outline variants; active tabs retain their independent selection styling.
+
+ApplicationLayout omits the heading region for an empty title without heading or
+action slots. Dedicated Auth user-dropdown rows remain shell-local: compact
+initials/name identity, divider, 44px left-aligned icon/label navigation/sign-out.
+The public Icon catalogue includes logout. Panel użytkownika/User panel appears
+only in the user dropdown; the default /app workspace has no placeholder content.

@@ -305,3 +305,11 @@ manual scenario; production defaults do not change. Read current readiness from
 the running application, not from owner fixtures or an old verification result.
 This targeted operational preparation does not constitute full integrated
 browser/installation acceptance or the owner's visual acceptance.
+
+The default authenticated application view is empty. Account self-service is named
+Panel użytkownika (User panel) and is reached only through the user dropdown,
+not the sidebar or a welcome card. The dropdown groups initials/name identity
+above left-aligned icon/action rows with a divider and preserved keyboard focus.
+ApplicationLayout omits its heading region when title, heading and actions are
+absent. Session warnings/errors remain available; custom application content still
+uses the public session-scoped slot.

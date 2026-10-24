@@ -446,7 +446,10 @@ onScopeDispose(() => {
       </header>
       <main :id="contentId" tabindex="-1" class="shell-workspace">
         <AppPreferenceFeedback :locale="locale" />
-        <header class="shell-heading">
+        <header
+          v-if="title || $slots.heading || $slots.actions"
+          class="shell-heading"
+        >
           <div>
             <slot name="heading" :t="t"
               ><h1>{{ title }}</h1>

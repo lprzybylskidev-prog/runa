@@ -122,3 +122,11 @@ modules. DefaultApplication owns supplied path composition; App.vue is thin wiri
 Programmatic heading focus announces the current Auth step/tab to assistive
 technology. These headings retain tabindex=-1 and suppress only their own outline;
 inputs, links, buttons and error-feedback focus retain visible keyboard indicators.
+
+The default authenticated application view is empty. Account self-service is named
+Panel użytkownika (User panel) and is reached only through the user dropdown,
+not the sidebar or a welcome card. The dropdown groups initials/name identity
+above left-aligned icon/action rows with a divider and preserved keyboard focus.
+ApplicationLayout omits its heading region when title, heading and actions are
+absent. Session warnings/errors remain available; custom application content still
+uses the public session-scoped slot.

@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.13.5
+
+Leave default application content empty, remove sidebar account navigation and name
+self-service User panel / Panel użytkownika. Refine dropdown identity/action rows
+with icons and accessible native navigation/sign-out. Source-only forward edge.
+
 ## 0.13.4
 
 Use outlined entry/account form actions and shared quiet TextLink navigation for
