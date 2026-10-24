@@ -7,13 +7,13 @@ The public usage contract is [module foundations](../../handbook/architecture/mo
 ## Module versions, graph and initial data
 
 Initial independent manifest versions are `0.1.0` for `runa.audit`, `runa.auth`
-and `runa.permissions`, each Core. Audit advances compatibly to `0.3.0` for capture/reads and private own-history summaries; Auth advances to 0.5.0 for credentials and private profile/address/avatar contracts; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
+and `runa.permissions`, each Core. Audit advances compatibly to `0.3.0` for capture/reads and private own-history summaries; Auth advances to 0.7.0 for credentials, private profile/address/avatar, preferences, policy history and operator contracts; Permissions retains its initial projection. Framework API remains `1.0.0`: new optional
 interfaces/default constructor arguments preserve existing consumers. Platform
 compatibility starts at `>=0.4.2 <0.6.0`, allowing development against the actual
 predecessor while the roadmap carries the new source. Shipping requires platform
 0.5.0, not a claim that the predecessor contains these capabilities.
 
-Auth requires Audit `^0.3.0`; Permissions must require the current compatible Auth baseline (now `^0.5.0`) and Audit `^0.3.0`.
+Auth requires Audit `^0.3.0`; Permissions must require the current compatible Auth baseline (now `^0.7.0`) and Audit `^0.3.0`.
 There is no reverse Auth dependency. Each manifest uses the normal source-owned
 lifecycle, upgrade and public adapter declarations. First installation declares an
 explicit transactional `null -> 0.1.0` initialization step. A matching installed
@@ -193,7 +193,7 @@ Point 4 delivers the [Auth identity contract](../../handbook/modules/auth/README
 owned Authenticatable ModuleModel, exclusive naming, normalized email/login claims,
 independent current-time eligibility, optimistic audited lifecycle operations and
 monotonic revocation generations. Guarded identity/lifecycle APIs are 1.0.0; initial
-The initial identity edge remains 0.1.0; Auth now targets 0.5.0, requiring Audit ^0.3.0. Default administrative authority remains
+The initial identity edge remains 0.1.0; Auth now targets 0.7.0, requiring Audit ^0.3.0. Default administrative authority remains
 denied. No Permissions dependency, is_admin flag, foreign data access or user seed.
 Identifier-reuse settings govern subsequent deletions without reclaiming ownership;
 operational session/trust revocation is delivered in point 6; point 7 delivers
@@ -210,5 +210,22 @@ ownership with durable retryable cleanup candidates and optional step-up-protect
 self lifecycle. All business writes and consumed proofs are synchronous with Audit.
 Audit 0.3.0 supplies trusted-self summary queries without importing Auth or granting
 general Audit reads. Procedures and transport are owned by the public
-[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category
-contracts, policy history, screens and Permissions remain subsequent points.
+[profile guide](../../handbook/modules/auth/profile.md). Preferences/delivery category contracts and policy history/operator contracts are delivered; screens and Permissions remain subsequent points.
+
+## Policy publication and operator delivery
+
+Point 10 supplies the [policy/operator procedure](../../handbook/modules/auth/policies-and-operators.md).
+SettingsAuthorization is an optional compatible participant extension: authorize and
+consume old-policy step-up before reservation creation, then persist actual revision
+history and Audit after the stored write in the same transaction. A history failure
+also rolls back proof consumption. Compensation creates new history without reversing
+prior security effects. Global revisions invalidate old bounded lifetime exceptions.
+
+Native operator commands trust access to execute CLI under the owner-confirmed
+production responsibility boundary. Private handoff files keep setup/recovery tokens
+out of stdout and recorded host transport; no extra container/service/DB credential
+is introduced. OperatorAuthority remains a neutral unbound contract until Permissions
+integration, so first-role grant/account recovery fail closed now. Initialization
+singleton ownership and exact same-subject pre-setup rotation prevent repeated normal
+initialization granting additional superadmins. An outstanding recovery blocks old
+password login; redemption issues no session and preserves required factor enrollment.

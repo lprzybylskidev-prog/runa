@@ -673,7 +673,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
     rejected save feedback, account/late-response isolation, reset defaults and
     obsolete/mandatory notice handling. No polling/WebSockets or fake in-app channel.
     Document module ownership/declaration/import and email routing conventions.
-- [ ] 10. Deliver policy history, privileged backend and operator initialization.
+- [x] 10. Deliver policy history, privileged backend and operator initialization.
   - Requires 9. Use ModuleSettings plus transactional history/Audit participation for
     security config preview/publish/restore, per-user allowlisted exceptions and
     revision checking; scheduled activation/deactivation uses current predicates.
@@ -794,7 +794,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–18.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–9 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 is next: policy history, privileged backend and operator initialization. Remaining Auth UI and Permissions stay assigned to subsequent points.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 is next: Auth entry and restricted-flow Vue screens. Remaining Auth UI and Permissions stay assigned to subsequent points.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -1350,3 +1350,71 @@ architectural premise requires discussion before dependent work.
   test data, management tooling image, Qdrant/model caches and verification/browser
   reports remain preserved. The small source diagnostics do not authorize a dev
   database reset or replace final installation/concurrency/browser acceptance.
+
+## Point 10 delivery
+
+- Auth advances independently 0.6.0 -> 0.7.0 with a forward storage/defaults edge;
+  AuthPolicies/AuthBulkSessions 1.0.0 are additive. Audit ^0.3.0, framework API
+  ^1.0.0 and platform VERSION 0.4.2 stay unchanged. Future Permissions must consume
+  Auth ^0.7.0 and Audit ^0.3.0. No dependency, recovery container or service added.
+- ModuleSettings remains the single writable current policy. Mandatory source-checked
+  participation stores immutable policy revision snapshots/changes/actor/consequences
+  atomically with Audit. Optional SettingsAuthorization consumes old-policy both-factor
+  step-up before the reservation fence in that same transaction; failure restores the
+  proof. The post-write participant never recursively uses an ordinary gateway behind
+  its own fence. Historical restore creates a new revision and preserves executed
+  security effects. Preview validates revision/generation and compares consequences;
+  future-only complexity is default, explicit force-change affects all password-bearing
+  non-deleted accounts because stored hashes cannot prove old complexity.
+- Account exceptions deliberately allow only password_expiry_days (1–3650) and
+  session_idle_minutes (1–43200), with reason, actor, UTC expiry within 30 days,
+  monotonic per-key mutation version, current policy revision, every-action both-factor
+  proof and synchronous Audit. Null revokes; expiry applies immediately; any global
+  policy publication revokes old exceptions for explicit reconsideration. Session
+  validation/projection/cleanup and expiry notices use effective account lifetimes.
+  Exceptions cannot disable expiry with zero or relax eligibility, absolute deadlines,
+  2FA, step-up or permission invariants.
+- Bulk session/trust preview captures exact targets and a version/state fingerprint.
+  Execution consumes fresh both-factor proof and refuses stale/missing/oversized
+  selections atomically: maximum 100 accounts and 10000 session/trust rows, including
+  explicit all-account mode. Audit and proof consumption roll back with revocations.
+  Final Permissions selection/permission wiring remains in point 16. Scheduled
+  activation/deactivation now has bounded managed work, current-predicate/authority
+  rechecks, revocation and Audit; activation preserves a future deactivation date
+  and repeating consumed dates creates no duplicate history.
+- Native fixed Artisan initialize/recover/restore-policy commands use trusted CLI
+  access under the owner's corrected production boundary. Explicit confirmation,
+  the external AUTH_OPERATOR_RECOVERY_ENABLED switch, private new mode-600 handoff
+  files and 15-minute hashed single-use tokens keep secrets out of arguments/output
+  and transport logs. A singleton serializes first-admin ownership and same-subject
+  pre-setup token rotation. OperatorAuthority is intentionally unbound until real
+  Permissions system-role integration in point 16; account commands fail closed now
+  and never invent an admin flag. Installer-callable local actions are prepared.
+  Policy restoration uses existing trusted settings publication. Account recovery
+  revokes old sessions/trust/factors, blocks old-password login while pending and
+  creates no session at redemption; ordinary ingress still requires email verification
+  and mandatory factor enrollment/challenge. Deleted identities are not restored.
+- Prepared regressions cover required-history/Audit rollback, proof rollback at
+  publication, restore/new revision/no effect reversal, exception versions/expiry/
+  revalidation, stale bulk previews, one-time ownership/token rotation/replay/expiry/
+  disablement/private CLI handoff, mandatory TOTP and scheduled idempotence. Existing
+  upgrade fixtures include new storage/version/teardown. Necessary focused diagnostic:
+  supported maintainer backend runner selecting the seven policy/operator scenarios
+  PASS (125 assertions); initial diagnostics exposed a test helper's unavailable
+  Mockery dependency (replaced with native Artisan calls) and step-up Audit behind
+  the publication fence (fixed by pre-publication transactional authorization).
+  No broad suites, installation/concurrency acceptance, static analysis, builds,
+  scanners or final gates run; those remain point 19. Mandatory hooks still apply.
+- Synchronized public policy/operator/security/database/configuration/command and
+  module-foundation guidance, central Auth changelog, owner foundations and both
+  backend/Laravel/PostgreSQL/security instruction reference products. Root owner and
+  customer AGENTS already carry the explicit CLI trust/production boundary and Audit
+  rules; no additional constitution text is needed. Frontend references are unchanged
+  because this point supplies no screens; UI belongs to points 11–12.
+- Restored the existing development stack nondestructively through runa:dev:up
+  after observing a stopped app; no development data migration/reset was run. Tests
+  use the existing isolated owner database and remove only exact fixture-created
+  tables/work and private handoff files. No task-specific disposable Docker resources
+  were created; development services/data, Qdrant/model caches and reports are
+  preserved. The forward policy migration is prepared, not applied to development
+  or production by this point.

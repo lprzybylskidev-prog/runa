@@ -105,6 +105,9 @@ final readonly class Passwords
 
     public function reset(#[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $password): void
     {
+        if (app(OperatorAccounts::class)->redeem($secret, $password)) {
+            return;
+        }
         $this->transactions->run(function (Connection $connection) use ($secret, $password): void {
             $this->transactions->lockAuthority($connection);
             $candidate = $connection->table('runa_auth.entry_tokens')->where('token_hash', hash('sha256', $secret))->where('purpose', 'reset')->first();

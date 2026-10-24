@@ -38,3 +38,10 @@ cache recipients across jobs, or import Auth private SQL/models. Reference-only
 managed security mail rechecks state and uses a persisted single SMTP attempt;
 critical recovery retains direct mail. Application code consumes these contracts
 without requiring conversion into an app module; protected Runa remains read-only.
+
+Use the public Auth policy/operator guide at
+`docs/runa/handbook/modules/auth/policies-and-operators.md` for versioned policy
+publication, bounded account exceptions, preview-bound session revocation and
+trusted CLI recovery. Consume public contracts; do not write Auth/Audit tables or
+implement alternate role flags. Operator handoff secrets never belong in arguments,
+output, logs or retrieval. Customer operators protect infrastructure/CLI access.

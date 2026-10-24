@@ -62,7 +62,7 @@ final readonly class CredentialPolicy
 
     public function passwordExpired(User $user): bool
     {
-        $days = $this->value('password_expiry_days');
+        $days = app(PolicyExceptions::class)->value($user, 'password_expiry_days');
 
         return $user->password !== null && $days > 0 && ($user->password_changed_at === null
             || CarbonImmutable::now('UTC')->gte($user->password_changed_at->addDays($days)));

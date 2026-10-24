@@ -32,3 +32,11 @@ idempotence/obsolescence and single SMTP attempt regressions. Browser-store test
 cover late account replies, logout cancellation, guest separation and rejected writes.
 See `docs/runa/handbook/modules/auth/preferences.md`; broad runtime/render/installation
 acceptance remains the final roadmap gate.
+
+AuthEntryTest prepares atomic settings/history/Audit/proof rollback, immutable
+restore, bounded exception version/expiry/revalidation, preview-bound bulk revoke,
+private CLI handoff/confirmation/disablement/replay, one-time initialization and
+mandatory-TOTP recovery regressions. It covers scheduled lifecycle idempotence and
+cleanup retaining live session extensions. Permissions uses a test-only authority
+adapter here; real installation/role/concurrency/transport acceptance stays final.
+See docs/runa/handbook/modules/auth/policies-and-operators.md.

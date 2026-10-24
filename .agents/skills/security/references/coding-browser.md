@@ -69,3 +69,10 @@ modules consume guarded public contracts; never expand security delivery to
 secondary recipients or expose general Audit detail for self-service history.
 
 Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.
+
+Follow the [Auth policy/operator contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for atomic settings/history/Audit/proof consumption, bounded account exceptions,
+preview-bound bulk revocation and trusted CLI initialization/recovery. Keep private
+one-time material out of command arguments/output and logs; operator access is the
+customer's infrastructure boundary. Do not grant a temporary administrator flag or
+call guarded business gateways behind a settings/update fence.

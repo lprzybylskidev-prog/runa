@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingChange;
 use Runa\Contracts\Modules\SettingDefinition;
 use Runa\Contracts\Modules\SettingsActor;
+use Runa\Contracts\Modules\SettingsAuthorization;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Contracts\Modules\SettingsParticipant;
@@ -162,6 +163,9 @@ final class ModuleSettings
                     'actor' => $actor === null ? null : ['kind' => $actor->kind, 'id' => $actor->id],
                     'occurred_at' => now()->utc()->toIso8601String(),
                 ];
+                if ($this->participant instanceof SettingsAuthorization) {
+                    $this->participant->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
+                }
                 $this->connection->table('shared.module_transitions')->insert([
                     'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $expectedGeneration,
                     'affected' => json_encode([$module], JSON_THROW_ON_ERROR), 'payload' => $this->encode($payload),

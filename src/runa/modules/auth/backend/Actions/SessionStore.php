@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
+use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Private owning store. Call mutations after registry -> authority -> user lock. */
@@ -46,7 +47,7 @@ final readonly class SessionStore
         return $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')
             ->where('security_version', $user->security_version)->where('expires_at', '>', $now)
             ->where('authenticated_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_absolute_minutes')))
-            ->where('activity_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_idle_minutes')))
+            ->where('activity_at', '>', $now->subMinutes(app(PolicyExceptions::class)->value($user, 'session_idle_minutes')))
             ->where(function ($query) use ($now): void {
                 $query->where(fn ($q) => $q->where('remembered', false)->where('authenticated_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_absolute_minutes'))))
                     ->orWhere(fn ($q) => $q->where('remembered', true)->where('authenticated_at', '>', $now->subMinutes($this->settings->value('runa.auth', 'session_remember_minutes'))));
@@ -66,6 +67,10 @@ final readonly class SessionStore
 
     public function live(object $row): bool
     {
+        $user = User::where('id', $row->user_id)->first();
+        if ($user === null) {
+            return false;
+        }
         $now = CarbonImmutable::now('UTC');
         // A stricter policy takes effect immediately; a relaxed policy never moves a captured absolute deadline.
         $policyDeadline = CarbonImmutable::parse($row->authenticated_at)->addMinutes($this->settings->value('runa.auth',
@@ -73,7 +78,7 @@ final readonly class SessionStore
         $absoluteDeadline = CarbonImmutable::parse($row->authenticated_at)->addMinutes($this->settings->value('runa.auth', 'session_absolute_minutes'));
 
         return $now->lt(CarbonImmutable::parse($row->expires_at)) && $now->lt($policyDeadline) && $now->lt($absoluteDeadline)
-            && $now->lt(CarbonImmutable::parse($row->activity_at)->addMinutes($this->settings->value('runa.auth', 'session_idle_minutes')));
+            && $now->lt(CarbonImmutable::parse($row->activity_at)->addMinutes(app(PolicyExceptions::class)->value($user, 'session_idle_minutes')));
     }
 
     public function revokeUser(Connection $connection, User $user): void

@@ -9,6 +9,7 @@ use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
+use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Own-session projection only; credentials and internal IDs never serialize. */
@@ -27,7 +28,7 @@ final class SessionResource extends JsonResource
             'session' => app(SessionStore::class)->projection(
                 app(SessionStore::class)->current($request, $user) ?? throw new \LogicException('Session unavailable.'), true),
             'activity' => ['heartbeat_seconds' => app(ModuleSettings::class)->value('runa.auth', 'session_heartbeat_seconds'),
-                'idle_minutes' => app(ModuleSettings::class)->value('runa.auth', 'session_idle_minutes'),
+                'idle_minutes' => app(PolicyExceptions::class)->value($user, 'session_idle_minutes'),
                 'warning_seconds' => app(ModuleSettings::class)->value('runa.auth', 'session_warning_seconds'),
                 'extension' => app(ModuleSettings::class)->value('runa.auth', 'session_extension')]];
     }

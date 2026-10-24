@@ -54,6 +54,9 @@ final readonly class LookupIdentity implements AuthIdentities
     {
         $blockers = [];
         $restrictions = [];
+        if ($user->operator_recovery_pending) {
+            $blockers[] = 'operator_recovery_required';
+        }
         if ($user->trashed()) {
             $blockers[] = 'deleted';
         }

@@ -11,6 +11,7 @@ use Runa\Modules\Auth\Contracts\SecurityMailDelivery;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
+use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
 
@@ -98,7 +99,7 @@ final readonly class SecurityNotices
         if ($category === 'account_expiry') {
             return $user->expires_at;
         }
-        $days = $this->settings->value('runa.auth', 'password_expiry_days');
+        $days = app(PolicyExceptions::class)->value($user, 'password_expiry_days');
 
         return $days > 0 && $user->password !== null && $user->password_changed_at !== null ? $user->password_changed_at->addDays($days) : null;
     }

@@ -299,7 +299,7 @@ ModuleWork command and a minute schedule with overlap protection. Reminders are
 disabled by default and bounded by encrypted module settings; see the
 [Auth transport procedure](../modules/auth/transport.md). Administrative invitation
 issue/resend/invalidation uses the protected typed contract, not credentials or raw
-tokens in CLI arguments. No Auth UI/operator-bootstrap command is delivered yet.
+tokens in CLI arguments. No Auth UI is delivered yet. Operator commands and their pending Permissions integration are described below.
 
 ### Auth session cleanup
 
@@ -316,3 +316,22 @@ zero means admission, not completion. Its minute schedule rotates through 100
 accounts, revalidating exact deadlines and current recipients before delivery.
 See [preferences and security delivery](../modules/auth/preferences.md). Normal
 recovery mail remains direct and independent of a Notifications module.
+
+### Auth policy and operator commands
+
+Native local `php artisan runa:auth:initialize`, `runa:auth:recover` and
+`runa:auth:restore-policy` perform the fixed trusted operator operations. Each
+requires `--confirm`; initialize accepts `--email`, `--name`, optional `--login`
+and a new absolute private `--output` file; recover takes `--user` UUIDv7 and
+`--output`; policy restoration takes `--revision`. Account commands refuse until
+the actual Permissions OperatorAuthority adapter is integrated. There is no
+temporary administrator flag or general web bypass. The external
+`AUTH_OPERATOR_RECOVERY_ENABLED=false` switch disables issuance/redemption and
+operator policy restoration. Secrets are written only to the private file, never
+stdout/stderr or command arguments. See the complete
+[policy/operator procedure](../modules/auth/policies-and-operators.md) for
+filesystem paths, 15-minute handoff, repeated initialization and recovery behavior.
+
+`php artisan runa:auth:lifecycle.apply` admits bounded current-predicate scheduled
+activation/deactivation work; zero means admission, not completion. Its minute
+schedule, authority integration and Audit semantics follow the same guide.

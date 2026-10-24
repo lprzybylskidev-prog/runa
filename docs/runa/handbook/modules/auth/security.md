@@ -15,7 +15,7 @@ never exceeds 72 bytes (bcrypt boundary); NUL is rejected. Mixed case, numbers a
 symbols are independently configurable. Complexity affects passwords chosen after
 publication; a stored hash cannot be retrospectively validated. Explicit forced
 change uses the existing lifecycle restriction. Versioned policy publication and
-bulk force-affected selection belong to the policy management workflow.
+explicit force-change consequences use the [policy management contract](policies-and-operators.md).
 
 Password history retains up to `password_history` previous hashes (default 5,
 0–24), plus comparison against the current hash. History is private credential

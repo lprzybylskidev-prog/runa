@@ -1,19 +1,20 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `0.5.0`, requiring
+Core `runa.auth` ships at independent version `0.7.0`, requiring
 `runa.audit ^0.3.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
 Permissions dependency or cross-module SQL, model, relationship or foreign key.
 
-RM-2026-011 points 4–8 supply identity/lifecycle foundations and
+RM-2026-011 points 4–10 supply identity/lifecycle foundations and
 [Fortify cookie/session/CSRF transport, registration and invitations](transport.md).
 [Operational sessions, remembered persistence and abuse defenses](sessions.md) are
 also available. [Password policy/recovery, 2FA, trusted devices and step-up](security.md)
 are delivered, along with [private profile, verified address changes, avatar and own history](profile.md).
 [Account preferences and security delivery](preferences.md) are delivered.
-Policy management, Permissions and Auth screens follow in later points.
+[Policy history, account exceptions, bulk sessions and operator contracts](policies-and-operators.md) are delivered.
+Permissions integration and Auth screens follow in later points.
 There is no management UI. Protected administrative contracts still deny by default.
 
 ## Public values and access

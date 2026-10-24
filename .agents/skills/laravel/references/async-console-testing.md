@@ -73,3 +73,10 @@ Use ModuleEvents with source-owned EventProvider declarations rather than raw mo
 Supplied logging scopes propagate only safe correlation metadata to native queues; managed module work/event subscribers retain their persisted ownership, correlation and event/work IDs. Never serialize request payloads into diagnostic queue metadata. Console scopes include command names only. Test actual HTTP/controller construction, Artisan events, sync/database workers and failed-scope cleanup when changing this boundary; Laravel suppresses Symfony command event rerouting during unit tests, so explicitly enable it for the isolated integration scenario. See the [structured logging contract](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-structured-logging-and-future-logs-read-boundary).
 
 Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.
+
+Follow the [Auth policy/operator contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for atomic settings/history/Audit/proof consumption, bounded account exceptions,
+preview-bound bulk revocation and trusted CLI initialization/recovery. Keep private
+one-time material out of command arguments/output and logs; operator access is the
+customer's infrastructure boundary. Do not grant a temporary administrator flag or
+call guarded business gateways behind a settings/update fence.

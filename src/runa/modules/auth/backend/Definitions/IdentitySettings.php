@@ -16,6 +16,7 @@ final class IdentitySettings implements DeliveryProvider, PreferenceProvider, Se
     public function settings(): array
     {
         return [
+            new SettingDefinition('password_policy_effect', 'string', 'future_only', ['pl' => 'Skutki zmiany polityki haseł', 'en' => 'Password policy effects'], ['pl' => 'Przyszłe hasła lub wymuszona zmiana istniejących.', 'en' => 'Future passwords or force existing accounts to change.'], rules: ['in:future_only,force_change']),
             new SettingDefinition('notice_new_browser', 'boolean', false, ['pl' => 'Nowa przeglądarka', 'en' => 'New browser'], ['pl' => 'Nowa przeglądarka.', 'en' => 'New browser notice.']),
             new SettingDefinition('notice_failed_login', 'boolean', false, ['pl' => 'Nieudane logowanie', 'en' => 'Failed login'], ['pl' => 'Nieudane logowanie.', 'en' => 'Failed login notice.']),
             new SettingDefinition('notice_locked', 'boolean', true, ['pl' => 'Blokada logowania', 'en' => 'Login lock'], ['pl' => 'Blokada logowania.', 'en' => 'Login lock notice.']),

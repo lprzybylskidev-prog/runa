@@ -1,5 +1,18 @@
 # Auth module changelog
 
+## 0.7.0
+
+Add AuthPolicies/AuthBulkSessions 1.0.0, mandatory transactional policy history
+and pre-publication step-up authorization, comparison/consequence previews, new-version
+restore, future-only/force-change complexity handling and bounded versioned account
+lifetime exceptions with immediate expiry/revalidation. Add atomic preview-bound
+bulk revocation, idempotent scheduled lifecycle materialization and trusted local
+operator initialize/recover/restore-policy commands with private single-use handoff,
+external disablement and pending-recovery login fencing. Add the explicit 0.6.0 ->
+0.7.0 storage/defaults edge and neutral OperatorAuthority integration contract;
+actual Permissions grants and installer wiring remain in their integration point.
+No new dependency, infrastructure service or Admin UI.
+
 ## 0.6.0
 
 Add AuthPreferences/AuthDelivery 1.0.0, source-owned versioned preference/category

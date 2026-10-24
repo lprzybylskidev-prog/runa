@@ -50,6 +50,7 @@ use Runa\Console\Commands\DescribeModuleManagement;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\MakeModule;
+use Runa\Console\Commands\ManageAuthOperator;
 use Runa\Console\Commands\ManageModuleSettings;
 use Runa\Console\Commands\PulseScheduler;
 use Runa\Console\Commands\RecoverModuleHealth;
@@ -199,6 +200,9 @@ final class RunaServiceProvider extends ServiceProvider
             CheckModules::class,
             RecoverModuleHealth::class,
             ManageModuleSettings::class,
+            new ManageAuthOperator('initialize'),
+            new ManageAuthOperator('recover'),
+            new ManageAuthOperator('restore-policy'),
             DescribeModuleManagement::class,
             CheckRuntimeHealth::class,
             CheckTestDatabase::class,

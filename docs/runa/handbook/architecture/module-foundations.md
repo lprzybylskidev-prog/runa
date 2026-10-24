@@ -1,6 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; operational session controls and administration screens remain undelivered.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; [operational sessions](../modules/auth/sessions.md), credentials, private profiles, preferences and [policy/operator contracts](../modules/auth/policies-and-operators.md) are delivered; administration screens remain deferred.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -14,6 +14,14 @@ Exceptions roll back the publication. Failed restoration retains the recovery
 fence until successfully retried. SettingsObserver keeps its independent best-effort
 semantics and cannot guarantee Audit/history persistence. Do not send external
 mail/network effects from transactional participants.
+
+`SettingsAuthorization::authorizing(Connection, SettingsContext): void` is an
+optional extension of the configured mandatory participant. It runs after revision/
+candidate validation, before storing the candidate or creating its fence, within
+the same transaction. Auth consumes actor-bound policy step-up against the old
+policy there; publication/history failure restores the unused proof. Post-write
+SettingsParticipant persists history/Audit without an ordinary gateway call behind
+the fence. Trusted system/CLI writes retain their explicit operator authority.
 
 `PreparationParticipant::preparing(PreparationContext): void` is a trusted
 framework update adapter for required Audit in a reserved transactional forward
