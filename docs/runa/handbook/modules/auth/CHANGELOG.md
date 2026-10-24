@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.13.6
+
+Recognize explicit shared-HTTP document cancellation in entry/account/welcome/session
+flows without false failure alerts on the departing page. Preserve live failures,
+secret cleanup and no automatic write replay. Source-only forward edge.
+
 ## 0.13.5
 
 Leave default application content empty, remove sidebar account navigation and name

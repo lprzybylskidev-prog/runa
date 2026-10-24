@@ -23,6 +23,35 @@ export class ApiError extends Error {
   }
 }
 
+/** The document stopped observing a request; write completion may be unknown. Never replay it. */
+export class RequestCancelledError extends Error {
+  constructor() {
+    super('Request cancelled by document navigation.');
+    this.name = 'RequestCancelledError';
+  }
+}
+let documentRequests = new AbortController();
+let pendingRequests = 0;
+function leavingDocument(event: BeforeUnloadEvent) {
+  const departing = documentRequests;
+  // Let synchronous dirty-form guards prevent navigation first.
+  queueMicrotask(() => {
+    if (!event.defaultPrevented) departing.abort();
+  });
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => documentRequests.abort());
+  window.addEventListener('pageshow', () => {
+    if (documentRequests.signal.aborted)
+      documentRequests = new AbortController();
+  });
+}
+function documentSignal(): AbortSignal {
+  // A canceled unload may leave the document alive. A new explicit request is valid.
+  if (documentRequests.signal.aborted) documentRequests = new AbortController();
+  return documentRequests.signal;
+}
+
 function csrfToken(): string | null {
   const cookie = document.cookie
     .split('; ')
@@ -65,16 +94,33 @@ export async function request(
       params.append(key, String(value));
   }
   const suffix = params.size ? `?${params}` : '';
-  const response = await fetch(`/api${path}${suffix}`, {
-    ...options,
-    headers,
-    credentials: 'same-origin',
-  });
-  const payload: unknown =
-    response.status === 204 ||
-    !response.headers.get('Content-Type')?.includes('application/json')
-      ? null
-      : await response.json();
+  const navigationSignal = documentSignal();
+  // Keep idle documents eligible for bfcache; only in-flight requests need this guard.
+  if (pendingRequests++ === 0)
+    window.addEventListener('beforeunload', leavingDocument);
+  let response: Response;
+  let payload: unknown;
+  try {
+    response = await fetch(`/api${path}${suffix}`, {
+      ...options,
+      signal: options.signal
+        ? AbortSignal.any([options.signal, navigationSignal])
+        : navigationSignal,
+      headers,
+      credentials: 'same-origin',
+    });
+    payload =
+      response.status === 204 ||
+      !response.headers.get('Content-Type')?.includes('application/json')
+        ? null
+        : await response.json();
+  } catch (error) {
+    if (navigationSignal.aborted) throw new RequestCancelledError();
+    throw error;
+  } finally {
+    if (--pendingRequests === 0)
+      window.removeEventListener('beforeunload', leavingDocument);
+  }
   contexts.forEach((context, observer) =>
     observer({ phase: 'end', path, status: response.status, payload, context }),
   );

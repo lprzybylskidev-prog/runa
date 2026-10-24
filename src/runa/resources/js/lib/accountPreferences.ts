@@ -1,4 +1,9 @@
-import { request, observeRequests, ApiError } from './http';
+import {
+  request,
+  observeRequests,
+  ApiError,
+  RequestCancelledError,
+} from './http';
 import type { PreferenceDefinition, PreferenceStore } from './preferenceStore';
 import type { PreferenceScope } from '../runa/ui/preferences';
 
@@ -128,7 +133,9 @@ export function createAccountPreferenceStore(
     } catch (error) {
       if (epoch !== generation) return;
       pending--;
-      updateStatus('load_failed');
+      updateStatus(
+        error instanceof RequestCancelledError ? null : 'load_failed',
+      );
       throw error;
     }
   }
@@ -179,9 +186,11 @@ export function createAccountPreferenceStore(
         ready = false;
         pending--;
         updateStatus(
-          error instanceof ApiError && error.status === 409
-            ? 'conflict'
-            : 'save_failed',
+          error instanceof RequestCancelledError
+            ? null
+            : error instanceof ApiError && error.status === 409
+              ? 'conflict'
+              : 'save_failed',
         );
         throw error;
       });

@@ -1,3 +1,4 @@
+import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
   computed,
   nextTick,
@@ -347,7 +348,7 @@ export function useAuthEntry(
     try {
       await action();
     } catch (error: unknown) {
-      await handleFailure(error);
+      if (!(error instanceof RequestCancelledError)) await handleFailure(error);
     } finally {
       if (alive) {
         busy.value = false;

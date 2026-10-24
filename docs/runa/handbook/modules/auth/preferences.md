@@ -160,3 +160,13 @@ this is technical outbox cleanup, never Audit retention. Audit history, current
 preference/address rows, developer databases and caches are preserved. Apply the
 forward migration and reserved 0.5.0 → 0.6.0 upgrade through supported module update
 or installation; normal application startup never migrates storage.
+
+Departing documents explicitly cancel in-flight shared HTTP requests before browser
+unload can turn them into generic network failures (including Firefox TypeError).
+RequestCancelledError from @/runa/http represents canceled observation, not a save
+success or a failed live read. Shared preference/session/Auth consumers do not
+publish failure feedback for this typed cancellation. Other network/HTTP errors
+remain visible. An interrupted write may already have committed server-side: never
+replay it automatically or claim it persisted; reload authoritative state on return.
+The guard respects synchronously prevented dirty-form navigation, detaches when no
+requests are pending, and permits new explicit requests or pageshow recovery.

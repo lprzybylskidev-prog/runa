@@ -968,6 +968,14 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Prepare focused delayed-hydration/remount/change regressions, publish assets
     and verify real authenticated navigation does not flash errors or write on read.
     Synchronize public/owner/customer guidance and commit; point 20 stays gated.
+- [x] 19i. Cancel departing-document requests without false error feedback.
+  - Owner reports remaining flashes on the old document. Firefox reproduction
+    confirms beforeunload cancels preference/profile/security/activity fetches before
+    pagehide, producing TypeError and false errors. Add explicit document-request
+    cancellation classification, preserve real errors and no write replay, verify
+    canceled navigation/resumed document behavior and publish assets for review.
+  - Synchronize public HTTP/Auth lifecycle guidance, versions and meaningful focused
+    cancellation regressions; no final point 20 or appearance approval inferred.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -2504,4 +2512,41 @@ architectural premise requires discussion before dependent work.
   behavior; no duplicate rule needed. Backend/database behavior unchanged.
 - No Docker resources/reset/credential changes; preserved development/test data,
   services, caches, reports, backups and rollback material. Point 20 still awaits
+  explicit owner frontend appearance acceptance.
+
+## Point 19i delivery
+
+- Owner clarified the remaining flash occurs on the departing document. Real Firefox
+  link navigation reproduced old-page preference, profile/security and activity
+  errors: beforeunload occurred first, fetch rejected with TypeError 2–5ms later,
+  pagehide followed tens of ms later. Chromium did not consistently expose this.
+  This is separate from fixed initial-hydration writes; no API failure was involved.
+- Shared HTTP now owns an explicit document AbortController covering both fetch and
+  response-body reads, combined with caller signals. In-flight requests attach a
+  beforeunload guard that waits for synchronous dirty-form prevention; pagehide
+  also cancels. Idle documents detach beforeunload for bfcache eligibility. Pageshow
+  and new explicit requests renew the controller if a document remains/resumes.
+  Cancellation is a public RequestCancelledError, never a server success.
+- Preference store/session discovery and Auth entry/account/welcome/application
+  consumers recognize explicit document cancellation without publishing danger
+  alerts. Genuine network/API/proof/conflict errors still report normally. Canceled
+  write completion may be unknown: no success claim or automatic replay; subsequent
+  work reconciles through authoritative reads. Existing secret cleanup, signals,
+  account epoch fencing, pending cleanup and server guards remain.
+- Auth PATCH 0.13.5 -> 0.13.6, source-only navigation_cancellation edge/changelog;
+  Permissions ^0.13.0 remains compatible. Local forward preparation and current
+  client publication preserve data/settings/credentials; framework API/platform
+  versions unchanged.
+- Focused HTTP regressions pass: document read/write cancellation rejects typed
+  errors without replay, new explicit requests work, prevented unload keeps requests
+  alive and real TypeError remains an error (2 cases). Selected preference regression
+  preserves null feedback on cancellation and reports real load failure (1 case).
+  Real Firefox and Chromium repeated link navigation passed with an observer spanning
+  old/new documents and no danger-alert flashes. Module versions pass. No broad
+  suite/static-analysis/image/scanner/final quality ran; mandatory hooks apply.
+- Updated authoritative preferences/public HTTP consumer guidance and owner/customer
+  Vue async reference products. Existing root/frontend/security contracts already
+  require supported transport, safe cancellation and no replay; no duplicate rule.
+- No Docker resources/reset/credential change. Existing data, services, caches,
+  reports, backups and rollback material preserved. Point 20 remains gated by
   explicit owner frontend appearance acceptance.

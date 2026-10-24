@@ -30,3 +30,9 @@ Mounting a locale/theme consumer while account hydration is pending must not wri
 defaults or manufacture save failures. Apply initial display once, subscribe to
 hydration without echo writes, and persist subsequent deliberate changes. Keep
 actual rejected-write feedback and account-switch/late-response fencing intact.
+
+Use the shared HTTP document-cancellation contract for requests on views being
+left: RequestCancelledError from @/runa/http cancels observation and must not become
+false error feedback or an automatic write retry. Preserve real network/API errors,
+synchronous dirty-form guards and explicit state reload after interrupted writes.
+Do not add page-local raw fetch/unload handlers to bypass the shared lifecycle.

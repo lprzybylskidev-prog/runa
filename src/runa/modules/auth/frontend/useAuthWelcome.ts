@@ -1,3 +1,4 @@
+import { RequestCancelledError } from '../../../resources/js/lib/http';
 import { onMounted, onScopeDispose, ref, shallowRef } from 'vue';
 import { useLocale } from '../../../resources/js/composables/useLocale';
 import { authFailure, authGet, decodeOptions, decodeSession } from './entry';
@@ -29,8 +30,9 @@ export function useAuthWelcome() {
         if (authFailure(error).code !== 'signed_out') throw error;
         session.value = undefined;
       }
-    } catch {
-      if (!abort.signal.aborted) failed.value = true;
+    } catch (error) {
+      if (!abort.signal.aborted && !(error instanceof RequestCancelledError))
+        failed.value = true;
     } finally {
       if (!abort.signal.aborted) loading.value = false;
     }

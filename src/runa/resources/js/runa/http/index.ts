@@ -1,1 +1,1 @@
-export { request, ApiError } from '../../lib/http';
+export { request, ApiError, RequestCancelledError } from '../../lib/http';

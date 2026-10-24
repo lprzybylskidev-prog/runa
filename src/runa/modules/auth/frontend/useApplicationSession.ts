@@ -1,3 +1,4 @@
+import { RequestCancelledError } from '../../../resources/js/lib/http';
 import { computed, onMounted, onScopeDispose, ref, shallowRef } from 'vue';
 import { observeRequests } from '../../../resources/js/lib/http';
 import { accountPreferences } from '../../../resources/js/lib/preferenceStore';
@@ -116,7 +117,7 @@ export function useApplicationSession(
       failure.value = '';
       if (next.restrictions.length) suspend();
     } catch (error) {
-      if (alive && own === epoch) {
+      if (alive && own === epoch && !(error instanceof RequestCancelledError)) {
         if (authFailure(error).code === 'signed_out') suspend();
         else failure.value = 'unavailable';
       }
@@ -146,7 +147,8 @@ export function useApplicationSession(
       session.value = undefined;
       navigate('/');
     } catch (error) {
-      failure.value = authFailure(error).code;
+      if (!(error instanceof RequestCancelledError))
+        failure.value = authFailure(error).code;
     } finally {
       if (alive) pending.value = false;
     }
@@ -179,7 +181,8 @@ export function useApplicationSession(
       if (alive && own === epoch && result.public_id === current.public_id)
         session.value = result;
     } catch (error) {
-      if (alive && own === epoch) failure.value = authFailure(error).code;
+      if (alive && own === epoch && !(error instanceof RequestCancelledError))
+        failure.value = authFailure(error).code;
     }
   }
   const activityTypes = {

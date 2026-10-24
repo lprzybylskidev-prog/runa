@@ -1,6 +1,6 @@
 import { onScopeDispose, shallowRef } from 'vue';
 import { accountPreferences } from '../lib/preferenceStore';
-import { request, ApiError } from '../lib/http';
+import { request, ApiError, RequestCancelledError } from '../lib/http';
 let initialized = false;
 
 /** The same lifecycle binding handles subsequent login/logout and reloads. */
@@ -18,7 +18,9 @@ export function initializePreferenceSession(): void {
     initialized = true;
     void request('/runa/auth/session').catch((error: unknown) => {
       if (!(
-        error instanceof ApiError && [401, 403, 404, 503].includes(error.status)
+        error instanceof RequestCancelledError ||
+        (error instanceof ApiError &&
+          [401, 403, 404, 503].includes(error.status))
       ))
         accountPreferences.reportLoadFailure();
     });

@@ -1,3 +1,4 @@
+import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
   computed,
   nextTick,
@@ -275,7 +276,7 @@ export function useAuthAccount(accountId: string) {
     try {
       await action();
     } catch (error) {
-      if (!alive) return;
+      if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
       failure.value = result.code;
       result.fields

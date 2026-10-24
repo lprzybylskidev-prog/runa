@@ -115,7 +115,7 @@ AccountTab/AccountTask and Profile/AccountRow are public types.
 Keep private forms scoped to the current account and unmount them on pause/switch.
 In a full customer shell, key the private subtree by session.public_id.
 The session controller fences responses, revokes preference ownership and observes
-shared HTTP failures. It never replays writes. Use `request` and `ApiError` from
+shared HTTP failures. It never replays writes. Use `request`, `ApiError` and `RequestCancelledError` from
 `@/runa/http` for application requests; relative paths are below `/api`. It retains
 same-origin CSRF/cookies and the session lifecycle observer. Do not scatter fetch,
 store credentials in browser persistence or implement a second session mechanism.
@@ -203,3 +203,10 @@ above left-aligned icon/action rows with a divider and preserved keyboard focus.
 ApplicationLayout omits its heading region when title, heading and actions are
 absent. Session warnings/errors remain available; custom application content still
 uses the public session-scoped slot.
+
+When consuming shared HTTP directly, treat RequestCancelledError as cancellation
+of a departing document's observation, not a server success. Avoid an error flash
+in that discarded view, retain real live errors, and never replay a canceled write:
+its server completion may be unknown. New explicit reads may reconcile state.
+The same lifecycle wraps response-body reads; idle pages carry no beforeunload
+request guard, and synchronous dirty-form guards take precedence.

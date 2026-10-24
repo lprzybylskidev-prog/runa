@@ -205,3 +205,20 @@ it('mounts display consumers during delayed hydration without writes and persist
     accountPreferences.disconnect();
   }
 });
+
+it('does not turn explicit document cancellation into preference failures while retaining real load errors', async () => {
+  const { RequestCancelledError } = await import('../../resources/js/lib/http');
+  let cancel = true;
+  const store = createAccountPreferenceStore(guest(), async () => {
+    if (cancel) throw new RequestCancelledError();
+    throw new TypeError('Synthetic live network failure');
+  });
+  await expect(store.connect('A')).rejects.toBeInstanceOf(
+    RequestCancelledError,
+  );
+  expect(store.status()).toEqual({ pending: false, error: null });
+  cancel = false;
+  await expect(store.connect('A')).rejects.toBeInstanceOf(TypeError);
+  expect(store.status().error).toBe('load_failed');
+  store.disconnect();
+});
