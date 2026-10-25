@@ -1,6 +1,7 @@
+import type { Profile } from '../../modules/auth/frontend/account';
 import AuthRecoveryCodesDialog from '../../modules/auth/frontend/AuthRecoveryCodesDialog.vue';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { defineComponent } from 'vue';
+import { defineComponent, type ComponentPublicInstance } from 'vue';
 import AuthAccountEditor from '../../modules/auth/frontend/AuthAccountEditor.vue';
 import AuthAccountPreferences from '../../modules/auth/frontend/AuthAccountPreferences.vue';
 import { useDisplayPreferences } from '../../resources/js/composables/useDisplayPreferences';
@@ -38,6 +39,10 @@ import {
 import { accountPreferences } from '../../resources/js/lib/preferenceStore';
 import { request } from '../../resources/js/lib/http';
 
+type MultiSelectInstance = ComponentPublicInstance<
+  Parameters<typeof Select<true>>[0]
+>;
+
 enableAutoUnmount(afterEach);
 const id = '01900000-0000-7000-8000-000000000001';
 const other = '01900000-0000-7000-8000-000000000002';
@@ -64,7 +69,7 @@ const security = {
   password_change_factor: false,
   trusted_devices_enabled: false,
 };
-const profile = {
+const profile: Profile = {
   public_id: id,
   version: 5,
   display_name: 'Test User',
@@ -308,7 +313,7 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
     expect(w.find('a[href="/auth/login"]').exists()).toBe(true),
   );
   expect(w.find('a[href="/auth/register"]').exists()).toBe(false);
-  expect(w.get('header a[href="/auth/login"]').exists()).toBe(true);
+  expect(w.find('header a[href="/auth/login"]').exists()).toBe(true);
   expect(w.find('main a[href="/auth/login"]').exists()).toBe(false);
   w.unmount();
   options.public_registration = true;
@@ -316,7 +321,7 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
   await vi.waitFor(() =>
     expect(w2.find('a[href="/auth/register"]').exists()).toBe(true),
   );
-  expect(w2.get('header a[href="/auth/register"]').exists()).toBe(true);
+  expect(w2.find('header a[href="/auth/register"]').exists()).toBe(true);
   w2.unmount();
   signedIn = true;
   sessionAccount = id;
@@ -583,7 +588,7 @@ it('account cards validate their changes before writing and stops after a partia
   expect(
     w.findAll('button').some((button) => button.text() === 'Dodaj aplikację'),
   ).toBe(false);
-  expect(w.getComponent(AuthAccountEditor).exists()).toBe(true);
+  expect(w.findComponent(AuthAccountEditor).exists()).toBe(true);
   await w.get('input[name="name"]').setValue('Edited name');
   await w.get('input[name="email"]').setValue('next@example.test');
   await w.get('form').trigger('submit');
@@ -870,7 +875,7 @@ it('shell avatar follows guarded profile reads immediately on replacement/remova
   expect(
     w
       .findAllComponents(Avatar)
-      .every((avatar) => avatar.props('src').includes('v=5')),
+      .every((avatar) => avatar.props('src')?.includes('v=5')),
   ).toBe(true);
   currentProfile = {
     ...currentProfile,
@@ -884,7 +889,7 @@ it('shell avatar follows guarded profile reads immediately on replacement/remova
   expect(
     w
       .findAllComponents(Avatar)
-      .every((avatar) => avatar.props('src').includes('v=6')),
+      .every((avatar) => avatar.props('src')?.includes('v=6')),
   ).toBe(true);
   currentProfile = { ...currentProfile, version: 4, has_avatar: false };
   await request('/runa/auth/profile');
@@ -1854,8 +1859,8 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
   expect(row.attributes('data-dirty')).toBe('false');
   expect(another.attributes('data-dirty')).toBe('true');
   expect(writes).toHaveLength(0);
-  const selection = row.getComponent(Select);
-  expect(selection.props('options').map((option) => option.label)).toEqual([
+  const selection = row.getComponent<MultiSelectInstance>(Select);
+  expect(selection.props('options')?.map((option) => option.label)).toEqual([
     'test@example.test',
     'verified@example.test',
   ]);
@@ -1909,7 +1914,9 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
   await row.get('input[role=switch]').setValue(false);
-  row.getComponent(Select).vm.$emit('update:modelValue', ['primary', other]);
+  row
+    .getComponent<MultiSelectInstance>(Select)
+    .vm.$emit('update:modelValue', ['primary', other]);
   await flushPromises();
   categories[0]!.recipients = [other];
   write = () => json('version_conflict', 409);
@@ -2093,7 +2100,9 @@ it('preference refresh merges disjoint delivery changes without replacing local 
   await w.getComponent(AuthAccountPreferences).props('account').refresh();
   await flushPromises();
   expect(row.getComponent(Switch).props('modelValue')).toBe(false);
-  expect(row.getComponent(Select).props('modelValue')).toEqual([other]);
+  expect(
+    row.getComponent<MultiSelectInstance>(Select).props('modelValue'),
+  ).toEqual([other]);
   expect(row.find('[data-form-conflict]').exists()).toBe(false);
   expect(writes).toHaveLength(0);
 });

@@ -214,7 +214,7 @@ it('follows fresh restrictions through verification, factor challenge and passwo
   await w.get('form').trigger('submit');
   await settled(w);
   expect(w.get('h1').text()).toBe('Logowanie zakończone.');
-  expect(w.get('a[href="/"]').exists()).toBe(true);
+  expect(w.find('a[href="/"]').exists()).toBe(true);
   expect(calls.map((c) => c.path)).toEqual([
     '/api/runa/auth/login',
     '/api/runa/auth/security/challenge',

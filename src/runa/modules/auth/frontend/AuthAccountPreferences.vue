@@ -32,7 +32,6 @@ const {
   notice,
   saveDelivery,
   resetPreferences,
-  selectTab,
 } = props.account;
 const resetOpen = ref(false),
   attempt = ref(0),
@@ -277,10 +276,7 @@ defineExpose({ beginReset, reload });
             :ref="
               (value) => {
                 if (value)
-                  forms.set(
-                    keyOf(choice),
-                    value as { focusInvalid: () => void },
-                  );
+                  forms.set(keyOf(choice), value as InstanceType<typeof Form>);
                 else forms.delete(keyOf(choice));
               }
             "

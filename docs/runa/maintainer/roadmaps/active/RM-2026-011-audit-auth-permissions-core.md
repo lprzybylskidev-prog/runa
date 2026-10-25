@@ -1110,6 +1110,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zf. Keep shared form actions with their fields without a separator.
 - [x] 19zg. Remove the redundant trusted-device subsection heading.
 - [x] 19zh. Place secondary email status badges beside their addresses.
+- [x] 19zi. Repair Auth frontend TypeScript errors blocking development setup.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3597,3 +3598,31 @@ architectural premise requires discussion before dependent work.
   .runtime/dev/manual-auth/secondary-status. No new tests for this class-only fix.
 - No dependencies, schemas, security policies or Docker resources changed. Final
   point 20 remains appearance-gated; no broad verification/release started.
+
+### Point 19zi — Restore development setup after Auth type errors
+
+- Fixed strict TypeScript failures in Auth defaults, custom-entry fixture and
+  existing Auth tests: explicit callback bindings preserve controller-owned form
+  and heading refs; preference form refs use the exposed Form instance type;
+  removed unused actions. Fixtures use the public Profile type, generic Select
+  wrappers retain their actual props and existence assertions use find wrappers.
+- Auth compatible PATCH 0.21.4 -> 0.21.5, with the existing no-op source-only
+  upgrade handler and a new explicit edge. Permissions ^0.21.0 remains compatible;
+  no public API, security, schema or dependency changes. Updated central Auth
+  version/changelog and public customization guidance. Owner/customer Vue guidance
+  already delegates to that public contract; no separate instruction change needed.
+- Concrete startup diagnostics: typecheck passed; four selected Chromium tests
+  passed (CSRF validation focus, inline recipients, avatar refresh and disjoint
+  delivery refresh). Existing tests cover the corrected behavior; no new test
+  harness needed. The supported development setup completed its previously failing
+  build successfully. Source/runtime module checks and prior-HEAD module version
+  checks passed. Full final verification remains pending behind point 20's owner
+  appearance acceptance gate.
+- Supported host development startup completed; setup exited 0, app/PostgreSQL,
+  Nginx, queue and scheduler are healthy; GET /auth/login returned HTTP 200.
+  Compose recreated app/setup/queue/scheduler/knowledge-init during startup;
+  no disposable Docker resources were created for tests or removed. Development
+  and test data, Qdrant/model caches, backups and reports were preserved.
+- Synchronized module metadata and applied only the pending Auth source-only edge
+  through a local guarded ModuleUpdates diagnostic (no scoped update CLI exists),
+  refusing pending migrations or unrelated upgrades. No reset/migration ran.

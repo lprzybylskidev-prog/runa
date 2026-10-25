@@ -132,7 +132,10 @@ const submitLabel = computed(() => {
       <div class="space-y-3">
         <h1
           id="auth-title"
-          ref="heading"
+          :ref="
+            (value) =>
+              (heading = (value as HTMLHeadingElement | null) ?? undefined)
+          "
           tabindex="-1"
           class="text-2xl font-semibold leading-tight tracking-tight auth-heading sm:text-3xl"
         >
@@ -147,7 +150,10 @@ const submitLabel = computed(() => {
       </div>
       <template v-else>
         <Form
-          ref="form"
+          :ref="
+            (value) =>
+              (form = (value as InstanceType<typeof Form> | null) ?? undefined)
+          "
           :label="title"
           :busy="busy"
           @submit="

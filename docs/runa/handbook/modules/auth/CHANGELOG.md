@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.21.5
+
+Repair strict TypeScript compilation of Auth presentation and its tests. Bind
+controller form/heading refs explicitly through callbacks and type the exposed
+Form instance used by delivery preferences. Preserve validation focus, public
+contracts and security behavior. Source-only forward edge; no schema change.
+
 ## 0.21.4
 
 Place secondary-address status badges beside the email, wrapping when necessary

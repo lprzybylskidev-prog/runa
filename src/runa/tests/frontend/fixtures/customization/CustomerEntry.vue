@@ -26,10 +26,25 @@ const {
 </script>
 <template>
   <main data-customer-entry :aria-busy="busy">
-    <h1 ref="heading" tabindex="-1">{{ title }}</h1>
+    <h1
+      :ref="
+        (value) => (heading = (value as HTMLHeadingElement | null) ?? undefined)
+      "
+      tabindex="-1"
+    >
+      {{ title }}
+    </h1>
     <p data-screen>{{ screen }}</p>
     <p v-if="failure" role="alert">{{ failure }}</p>
-    <Form v-if="ready" ref="form" :label="title" @submit="submit">
+    <Form
+      v-if="ready"
+      :ref="
+        (value) =>
+          (form = (value as InstanceType<typeof Form> | null) ?? undefined)
+      "
+      :label="title"
+      @submit="submit"
+    >
       <TextInput
         v-for="name in fieldNames"
         :key="name"

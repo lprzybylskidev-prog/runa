@@ -70,7 +70,6 @@ const {
   perform,
   refreshCsrf,
   sendCode,
-  sendVerification,
 } = account;
 const display = useDisplayPreferences();
 const feedbackAttempt = ref(0);
@@ -312,7 +311,10 @@ const passwordHint = computed(() =>
       data-account-heading
     >
       <h2
-        ref="heading"
+        :ref="
+          (value) =>
+            (heading = (value as HTMLHeadingElement | null) ?? undefined)
+        "
         tabindex="-1"
         class="auth-heading text-xl font-semibold"
       >
@@ -383,7 +385,10 @@ const passwordHint = computed(() =>
               profile.secondary_emails.length <
                 Number(caps.secondary_email_limit)))
         "
-        ref="form"
+        :ref="
+          (value) =>
+            (form = (value as InstanceType<typeof Form> | null) ?? undefined)
+        "
         :label="taskTitle"
         :busy="busy"
         @submit="submit"
