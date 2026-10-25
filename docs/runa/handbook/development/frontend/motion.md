@@ -52,3 +52,9 @@ previous point. It never moves links, geometry, gradients or artwork. Reduced
 motion, print, hidden tabs and static error rendering disable decorative glow;
 opt-out/unmount cancels timers and animations. This exception is specific to
 MinimalLayout and does not authorize animated ApplicationLayout backgrounds.
+
+Current owner preview temporarily overrides the sparse MinimalLayout cadence:
+all constellation points pulse together, first at three seconds and then every
+three seconds. The original opacity levels remain unchanged to judge visibility.
+ApplicationLayout, reduced motion, print and static output remain unaffected.
+This is a temporary appearance preview, not the accepted sparse-motion baseline.

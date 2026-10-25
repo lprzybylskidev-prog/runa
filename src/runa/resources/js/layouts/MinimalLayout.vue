@@ -67,6 +67,7 @@ const {
   >
     <AppBackdrop
       :constellation-glow="constellationGlow && !staticPreferences"
+      :glow-preview="true"
     />
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header

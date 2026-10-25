@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests a temporary visibility preview: every constellation
+  point pulses together every three seconds, exclusively in MinimalLayout. Point
+  19zo retains the sparse baseline behind the internal preview switch.
+
 - 2026-10-25 — Owner requests rare randomized subtle constellation-point glows
   exclusively in MinimalLayout. Point 19zn opts that layout into the shared
   backdrop effect; ApplicationLayout retains the same static backdrop.
@@ -1138,6 +1142,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zl. Load account table tabs once and center the spinner without visible text.
 - [x] 19zm. Show shared loading feedback on every table query transition.
 - [x] 19zn. Add sparse randomized constellation-point glow only to MinimalLayout.
+- [x] 19zo. Temporarily preview all MinimalLayout constellation points every three seconds.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3803,3 +3808,24 @@ architectural premise requires discussion before dependent work.
   No Docker resources created/removed; development/test data, active services,
   Qdrant/model caches, backups and evidence preserved. Full point 20 remains gated
   by owner appearance acceptance; no broad verification/release started.
+
+### Point 19zo — Temporary all-point glow preview
+
+- Owner-requested temporary MinimalLayout preview enables all 21 constellation
+  points together, first after three seconds and then every three seconds. Keep
+  the baseline three-second opacity pulse/levels so the owner can assess strength.
+  The internal backdrop preview flag defaults false; MinimalLayout alone enables
+  it. Sparse randomized baseline remains available when preview is removed.
+- ApplicationLayout remains static; reduced-motion/print/hidden-tab/static-output
+  cancellation and teardown are retained. Focused preview regression passes for
+  all circles, exact cadence and timer disposal; changed-file lint passes. Published
+  Vite assets. Served synthetic-API inspection on / passes desktop/light and mobile/
+  dark, all 21 points pulsing together, reduced-motion cancellation and static
+  ApplicationLayout, with no overflow/page errors. Evidence:
+  .runtime/artifacts/playwright/constellation-preview.
+- Public layout/motion docs distinguish the temporary preview from the sparse
+  baseline. Owner/customer guidance and root AGENTS need no new rule: this is a
+  temporary visual comparison, not a reusable policy or additional public API.
+  No module/version, dependency, runtime-configuration, database or Docker changes.
+  Existing services/data, Qdrant/model caches, backups and evidence preserved.
+  Final point 20 remains appearance-gated; no broad verification/release started.

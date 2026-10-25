@@ -92,3 +92,22 @@ it('cancels decorative glow and pending timers on reduced motion, print, hidden 
   expect(vi.getTimerCount()).toBe(0);
   wrapper.unmount();
 });
+
+it('previews all constellation points together every three seconds only when explicitly enabled', async () => {
+  vi.useFakeTimers();
+  vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+  const animate = vi.spyOn(Element.prototype, 'animate');
+  const wrapper = mount(AppBackdrop, {
+    props: { constellationGlow: true, glowPreview: true },
+    attachTo: document.body,
+  });
+  const circles = wrapper.findAll('svg g circle').length;
+  await vi.advanceTimersByTimeAsync(2999);
+  expect(animate).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(animate).toHaveBeenCalledTimes(circles);
+  await vi.advanceTimersByTimeAsync(3000);
+  expect(animate).toHaveBeenCalledTimes(circles * 2);
+  wrapper.unmount();
+  expect(vi.getTimerCount()).toBe(0);
+});

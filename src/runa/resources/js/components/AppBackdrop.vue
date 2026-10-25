@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onMounted, onScopeDispose, ref, watch } from 'vue';
 import AppConstellation from './AppConstellation.vue';
-const props = withDefaults(defineProps<{ constellationGlow?: boolean }>(), {
-  constellationGlow: false,
-});
+const props = withDefaults(
+  defineProps<{ constellationGlow?: boolean; glowPreview?: boolean }>(),
+  {
+    constellationGlow: false,
+    glowPreview: false,
+  },
+);
 const backdrop = ref<globalThis.HTMLElement>();
 let dispose = () => {};
 onMounted(() => {
@@ -26,7 +30,10 @@ onMounted(() => {
     stop();
     if (!permitted()) return;
     // One three-second pulse, then 7–15 seconds of quiet; no perpetual loops.
-    timer = globalThis.setTimeout(pulse, 7000 + Math.random() * 8000);
+    timer = globalThis.setTimeout(
+      pulse,
+      props.glowPreview ? 3000 : 7000 + Math.random() * 8000,
+    );
   }
   function pulse() {
     if (!permitted()) return;
@@ -34,6 +41,7 @@ onMounted(() => {
       ...(backdrop.value?.querySelectorAll<globalThis.SVGGElement>('svg g') ??
         []),
     ].filter((point) => {
+      if (props.glowPreview) return true;
       const bounds = point.getBoundingClientRect();
       return (
         point !== previous &&
@@ -51,19 +59,34 @@ onMounted(() => {
       return;
     }
     previous = point;
+    const selected = props.glowPreview ? points : [point];
     const levels = [
       [0.025, 0.1],
       [0.07, 0.22],
       [0.55, 0.95],
     ] as const;
-    animations = [...point.querySelectorAll('circle')].map((circle, index) => {
-      const [base, peak] = levels[index]!;
-      return circle.animate(
-        [{ opacity: base }, { opacity: peak, offset: 0.45 }, { opacity: base }],
-        { duration: 3000, easing: 'ease-in-out' },
-      );
-    });
-    timer = globalThis.setTimeout(schedule, 3000);
+    animations = selected.flatMap((selectedPoint) =>
+      [...selectedPoint.querySelectorAll('circle')].map((circle, index) => {
+        const [base, peak] = levels[index]!;
+        return circle.animate(
+          [
+            { opacity: base },
+            { opacity: peak, offset: 0.45 },
+            { opacity: base },
+          ],
+          { duration: 3000, easing: 'ease-in-out' },
+        );
+      }),
+    );
+    timer = globalThis.setTimeout(
+      props.glowPreview
+        ? () => {
+            stop();
+            pulse();
+          }
+        : schedule,
+      3000,
+    );
   }
   reduced.addEventListener('change', schedule);
   print.addEventListener('change', schedule);
