@@ -1222,7 +1222,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
 - [x] 19zy. Label preference changes and resets explicitly in account history.
 - [x] 19zz. Deliver safe details for every account-history event and capture approved changes.
-- [ ] 19zza. Complete concrete account changes, preference reset details and security-state history.
+- [x] 19zza. Complete concrete account changes, preference reset details and security-state history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4288,3 +4288,7 @@ architectural premise requires discussion before dependent work.
   only empty synthetic payloads. Browser screenshots under the existing history-
   details artifact paths were reviewed. The fixture correction and associative
   JSON assertion repair were verified by focused reruns. No broad gate was run.
+- Published exact source 5986bf34 to development and isolated base testing through
+  the Audit -> Auth -> Permissions source-only edges. Both forward preparations
+  and runtime checks pass, with no database reset or migration. Point 19zza is
+  complete; final point 20 remains appearance-gated.
