@@ -1213,7 +1213,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
 - [x] 19zy. Label preference changes and resets explicitly in account history.
-- [ ] 19zz. Deliver safe details for every account-history event and capture approved changes.
+- [x] 19zz. Deliver safe details for every account-history event and capture approved changes.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4226,3 +4226,7 @@ architectural premise requires discussion before dependent work.
 - Supported backend runners removed their disposable runa_test_test_1 database.
   No task Docker resources were created or removed; base development/testing
   databases, services, caches, backups and verification evidence are preserved.
+- Published exact source commit 04a99213 forward edges in development and isolated
+  base testing, in dependency order Audit -> Auth -> Permissions. Both preparations
+  and the runtime module check pass. No reset or migration was needed; point 19zz
+  is complete and point 20 remains appearance-gated.
