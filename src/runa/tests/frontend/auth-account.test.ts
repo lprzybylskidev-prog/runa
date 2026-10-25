@@ -198,12 +198,14 @@ async function loaded(w: ReturnType<typeof mount>) {
   await flushPromises();
 }
 
-it('shows a loading spinner instead of empty results while session rows are pending', async () => {
+it('loads session rows once with a centered spinner and no visible loading text', async () => {
   const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let reads = 0;
   let release!: () => void;
   const gate = new Promise<void>((resolve) => (release = resolve));
   vi.mocked(window.fetch).mockImplementation(async (input, init) => {
     if (String(input).split('?')[0]!.endsWith('/sessions')) {
+      reads++;
       await gate;
       return new Response(
         JSON.stringify({ data: [], meta: { next_cursor: null } }),
@@ -220,10 +222,14 @@ it('shows a loading spinner instead of empty results while session rows are pend
     .findAll('nav button')
     .find((item) => /Aktywne sesje|Active sessions/.test(item.text()))!;
   await button.trigger('click');
-  expect(w.text()).toMatch(/Ładowanie danych|Loading data/);
+  expect(w.find('[data-table-loading] [role="status"]').exists()).toBe(true);
+  expect(w.text()).not.toMatch(/Ładowanie danych|Loading data/);
   expect(w.text()).not.toMatch(/Brak wyników|No results/);
   release();
   await vi.waitFor(() => expect(w.text()).toMatch(/Brak wyników|No results/));
+  await flushPromises();
+  expect(reads).toBe(1);
+  expect(w.find('[data-table-loading]').exists()).toBe(false);
   expect(w.text()).not.toMatch(/Ładowanie danych|Loading data/);
 });
 

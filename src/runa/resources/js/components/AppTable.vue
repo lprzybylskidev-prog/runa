@@ -6,6 +6,7 @@ import AppSelect from './AppSelect.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppPagination from './AppPagination.vue';
 import AppAsyncContent from './AppAsyncContent.vue';
+import AppSpinner from './AppSpinner.vue';
 import type { RowSelection } from '../runa/ui/exports';
 import {
   selectionContains,
@@ -289,7 +290,16 @@ function changePage(value: number) {
         :empty-title="text('Brak wyników', 'No results')"
         :retry-label="text('Spróbuj ponownie', 'Retry')"
         @retry="reload"
-      />
+      >
+        <template #loading>
+          <div
+            class="flex min-h-32 items-center justify-center py-6 text-muted"
+            data-table-loading
+          >
+            <AppSpinner :label="text('Ładowanie danych', 'Loading data')" />
+          </div>
+        </template>
+      </AppAsyncContent>
     </div>
     <div
       v-else

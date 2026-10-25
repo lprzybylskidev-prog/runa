@@ -22,7 +22,8 @@ the loaded rows; this does not claim global ordering of unloaded history.
 
 Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Client tables whose rows are fetched by the caller accept `:loading="readPending"`.
 Keep it true for the request lifetime, including an initially empty rows array;
-the shared Spinner takes precedence over empty results. Server providers manage
+the shared Spinner takes precedence over empty results. It is centered within the
+loading area without visible text; its accessible status label remains available. Server providers manage
 loading internally; the optional external flag combines with that state.
 Use a dedicated read indicator rather than a mutation-wide busy flag.
 Async states reuse AsyncContent and retry; obsolete requests abort and their eventual replies are ignored. Filters remain usable when results are empty or fail.

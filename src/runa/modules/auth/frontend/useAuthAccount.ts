@@ -676,12 +676,21 @@ export function useAuthAccount(accountId: string) {
               ? 'trustIssue'
               : 'details',
     );
-    if (['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(value))
-      await perform(() => readPage());
-    if (value === 'preferences') await perform(readDelivery);
-    await refreshAccount().catch(() => {
-      if (alive) failure.value = 'refresh_failed';
-    });
+    if (
+      ['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(value)
+    ) {
+      pageLoading.value = true;
+      try {
+        await perform(() => refreshAccount(true));
+      } finally {
+        pageLoading.value = false;
+      }
+    } else {
+      if (value === 'preferences') await perform(readDelivery);
+      await refreshAccount().catch(() => {
+        if (alive) failure.value = 'refresh_failed';
+      });
+    }
     await nextTick();
     heading.value?.focus();
   }

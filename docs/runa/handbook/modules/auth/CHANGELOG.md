@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.21.8
+
+Use one account refresh pipeline when entering session/history table tabs instead
+of reading rows both before and during refresh. Keep one continuous loading state
+and center the shared table spinner without visible text, retaining its accessible
+label. Source-only forward edge; no schema or security-policy change.
+
 ## 0.21.7
 
 Show the shared Table loading spinner while sessions, account history or trusted

@@ -87,6 +87,8 @@ another card's draft. Preferences follows Account and security in the default na
 optional histories follow it.
 Session/history and trusted-device tables show the shared loading spinner during
 their guarded reads; empty-result text appears only after a completed read.
+Table-tab entry uses one refresh pipeline, without a second rows read after data
+appears. The centered spinner retains an accessible label without visible text.
 Operation successes and form-wide failures use shared FormNotifications only in
 the top-right viewport, with explicit operation descriptions and recovery actions.
 Persistent errors do not duplicate a banner above the form; linked field errors

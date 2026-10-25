@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner reports a second table-loading cycle after data appears
+  and requests a centered spinner without visible loading text. Point 19zl removes
+  the duplicated tab-entry read and adjusts shared Table presentation.
+
 - 2026-10-25 — Owner requests a spinner while table data loads; empty results
   must appear only after reads finish. Point 19zk wires external client reads into
   the existing shared Table loading presentation.
@@ -1122,6 +1126,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zi. Repair Auth frontend TypeScript errors blocking development setup.
 - [x] 19zj. Preserve the application shell during initial session loading and show structural account/notification skeletons; publish for owner review.
 - [x] 19zk. Show table loading spinners during account reads instead of premature empty results.
+- [x] 19zl. Load account table tabs once and center the spinner without visible text.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3698,3 +3703,31 @@ architectural premise requires discussion before dependent work.
   no constitution change or new universal skeleton policy. No dependencies or
   Docker resources created/removed; development/test data, services, Qdrant/model
   caches, backups and verification evidence preserved.
+
+### Point 19zl — One table read and centered spinner
+
+- Table-tab entry previously called readPage directly and then refreshAccount,
+  which called readPage again after profile/security reads. Use one refresh pipeline
+  under the operation boundary, keeping pageLoading true from tab selection through
+  the list response. Ordinary automatic account refresh remains available.
+- Shared Table overrides only AsyncContent's loading slot: centered Spinner in a
+  stable loading area with no visible text, retaining its localized status label.
+  Other AsyncContent consumers retain their existing presentation.
+- Auth PATCH 0.21.7 -> 0.21.8, source-only no-op forward edge. Permissions ^0.21.0
+  remains compatible; no foreign contracts, schema, dependency or security change.
+  Registry synchronized and exactly single_table_read applied through the existing
+  local guarded ModuleUpdates diagnostic (no scoped module update command).
+- Knowledge was current; focused retrieval and original account/table contracts
+  reviewed. Focused browser unit regression passes with a deferred response,
+  request-count assertion and accessible spinner/no visible loading text. Published
+  Vite assets; served synthetic-API diagnostics pass at 1440/768/390, light/dark,
+  PL/EN and normal/reduced motion, asserting one list request, spinner center on
+  both axes, absent visible label, completed empty result and no subsequent spinner.
+  No overflow/page errors; evidence: .runtime/artifacts/playwright/single-table-read.
+  Source/runtime and prior-HEAD module-version checks pass. Broad verification stays
+  gated at point 20.
+- Updated public tables/account docs and central Auth changelog/README. Owner and
+  customer instruction products already delegate table loading behavior to these
+  public guides and require correct asynchronous states; no new rule/API needed.
+  No Docker resources created/removed. Existing development/test data, services,
+  Qdrant/model caches, backups and verification evidence preserved.
