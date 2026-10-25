@@ -4580,6 +4580,15 @@ architectural premise requires discussion before dependent work.
   failure is suppressed. Public/owner quality and component contracts are updated.
   No module source/version or new customer operating policy changed; root owner
   rules/skill routing and customer products already route to those public contracts.
+- Firefox preference regression now passes 12 consecutive real browser runs after
+  the focus-aware fix. Full browser acceptance is running separately.
+- Source review of the previously blocked render diagnostic found obsolete Runa
+  heading/guest-session expectations and reliance on the preceding browser's
+  endpoint, which that runner correctly removes. Update the heading to .runa,
+  reuse the strict shared anonymous-session diagnostic and give check-frontend the
+  same journaled host endpoint lifecycle. The graph invokes render on the host;
+  scoped cleanup/manual ownership rules remain unchanged. These owner-only test
+  orchestration corrections need no new customer instruction product.
 - Remaining work: receive sequential browser/build/render, knowledge doctor/evals,
   native production/installation, exact repository/image scan and security/release
   contracts, fixing each actual failure before proceeding. Do not automatically

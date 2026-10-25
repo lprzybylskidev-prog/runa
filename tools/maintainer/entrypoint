@@ -15,6 +15,10 @@ if arguments == ['--help']:
 if name in CHECKS:
     if arguments:
         raise SystemExit('This diagnostic takes no arguments.')
+    if name == 'check-frontend' and not inside():
+        from test_resources import endpoint
+        with endpoint():
+            container(Path(sys.argv[0]).absolute(), arguments)
     container(Path(sys.argv[0]).absolute(), arguments)
     import checks
     area = CHECKS[name]

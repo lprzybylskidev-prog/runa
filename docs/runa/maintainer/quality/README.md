@@ -132,6 +132,11 @@ Steps that share mutable database/environment/migration/production-stack state m
 
 Every parallel process has its own log.
 
+Owner browser and render diagnostics both run through their native host entrypoints
+and own a separate journaled test endpoint lifecycle. Render diagnostics must not
+reuse an endpoint already cleaned up by the preceding browser suite. Existing
+manual endpoints remain externally owned.
+
 ## Timeouts
 
 Do not impose arbitrary automatic timeouts on quality commands.

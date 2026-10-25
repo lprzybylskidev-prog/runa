@@ -132,6 +132,7 @@ impact_areas:
       severity: hard_fail
 
     - id: frontend-render-diagnostics
+      execution_context: host
       depends_on: [frontend-browser]
       exclusive_group: testing-state
       command: python3 tools/maintainer/check-frontend
