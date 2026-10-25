@@ -7,6 +7,7 @@ export interface AuthPresentation {
   applicationLayout?: Component;
   entry?: Component;
   account?: Component;
+  accountLoading?: Component;
   welcome?: Component;
 }
 export const authPresentationKey: InjectionKey<ComputedRef<AuthPresentation>> =

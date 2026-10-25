@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests the destination shell immediately and structural
+  skeletons in place of initial layout/spinner flashes. Point 19zj supplies the
+  account Cards and notification rows using the existing Skeleton. A universal
+  future-view rule awaits explicit owner approval of the rendered result.
+
 - 2026-10-25 — Owner requests inline secondary-email status badges beside the
   address rather than below it. Point 19zh preserves wrapping on narrow screens.
 
@@ -1111,6 +1116,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zg. Remove the redundant trusted-device subsection heading.
 - [x] 19zh. Place secondary email status badges beside their addresses.
 - [x] 19zi. Repair Auth frontend TypeScript errors blocking development setup.
+- [x] 19zj. Preserve the application shell during initial session loading and show structural account/notification skeletons; publish for owner review.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3626,3 +3632,38 @@ architectural premise requires discussion before dependent work.
 - Synchronized module metadata and applied only the pending Auth source-only edge
   through a local guarded ModuleUpdates diagnostic (no scoped update CLI exists),
   refusing pending migrations or unrelated upgrades. No reset/migration ran.
+
+### Point 19zj — Structural initial account loading
+
+- Keep the destination ApplicationLayout mounted during the initial session read,
+  failure/retry and account initialization. Shared AuthAccountLoading uses the
+  existing Skeleton in four named Cards and navigation placeholders; preferences
+  render notification-row skeletons. No credentials/identity or protected forms
+  render before guarded session/account reads. Existing in-place read refresh and
+  reauthentication remain unchanged. Skeleton pulse stops for reduced motion/print;
+  content replacement is immediate, without entrance animation or artificial delay.
+- Public AuthAccountLoading, accountLoading presentation entry and application
+  loading slot preserve customer composition. Auth PATCH 0.21.5 -> 0.21.6 uses an
+  existing source-only no-op upgrade; no schema/security change. Permissions
+  ^0.21.0 remains compatible; Audit/Permissions contracts and versions unchanged.
+- Knowledge was current (175 sources/2659 chunks); focused retrieval and original
+  account/presentation/design/module/command sources reviewed. One focused browser
+  unit regression passes for deferred session/profile reads, persistent shell and
+  no early protected Forms. Published Vite assets for review. Served synthetic-API
+  diagnostics pass at 1440/768/390 widths, light/dark, PL/EN and normal/reduced
+  motion, including skeleton geometry and notification replacement; no page errors
+  or overflow. Inspected desktop screenshot. Evidence is under
+  .runtime/artifacts/playwright/structural-loading. Initial visual inspection found
+  child Skeleton selector specificity overriding placeholder sizes; fixed and
+  repeated the rendered diagnostics with explicit 44px field-height assertions.
+- Source/runtime module checks and prior-HEAD independent version checks pass.
+  The runtime check initially omitted its required owner argument; the supported
+  command with runa succeeds. Registry synchronized; applied exactly the pending
+  source-only Auth structural_loading edge using the existing local guarded
+  ModuleUpdates diagnostic (no scoped module-update CLI). No data reset.
+- Public account/presentation docs and both owner/customer frontend instruction
+  products describe the capability. Root AGENTS needs no change: the universal
+  future-view rule remains pending the owner's visual acceptance, as requested.
+  No dependency or Docker resources created/removed. Development/test data, running
+  services, Qdrant/model caches, backups and evidence preserved. Full verification,
+  release and final appearance acceptance remain gated at point 20.

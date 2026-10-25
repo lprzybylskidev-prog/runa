@@ -32,6 +32,8 @@ statically discoverable. See [branding/layouts](../../architecture/frontend.md).
 
 ## Compose with supplied screens
 
+`AuthApplication` also accepts a `loading` slot with `{ account: boolean }` for the destination page skeleton before session validation. Do not mount protected controllers or forms in this slot. Its default account loading presentation is shared with the default account screen.
+
 A customer page can render `AuthApplication` from `@/runa/auth` with a default
 scoped slot. It runs the existing application session boundary and supplies the
 current unrestricted `session`; account changes remount its content; the shell retains its profile/sign-out dropdown,
@@ -71,6 +73,7 @@ names, URLs or backend metadata. Keep the map stable during an active form.
 | `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward width/navigation/current/title/user identity (including userAvatar) and preserve the account/sign-out controls.                                                                                                           |
 | `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                |
 | `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                |
+| `accountLoading`    | Static initial account structure, without account props or reads. Used before session validation and while the default account controller initializes. Public `AuthAccountLoading` is the supplied fallback.                                                                                      |
 | `welcome`           | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                                                                                     |
 
 ```vue

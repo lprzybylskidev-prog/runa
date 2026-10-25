@@ -8,7 +8,6 @@ import {
   Form,
   FormSection,
   RadioGroup,
-  Spinner,
   Table,
   TextInput,
   FormNotifications,
@@ -21,6 +20,9 @@ import type { TableColumn, TableQuery } from '@/runa/ui';
 import type { AccountTab, AccountTask } from './useAuthAccount';
 import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
+import AuthAccountLoading from './AuthAccountLoading.vue';
+import { useAuthPresentation } from './presentation';
+const presentation = useAuthPresentation();
 import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
@@ -283,7 +285,12 @@ const passwordHint = computed(() =>
 );
 </script>
 <template>
+  <component
+    v-if="!ready && !failure"
+    :is="presentation.accountLoading ?? AuthAccountLoading"
+  />
   <div
+    v-else
     class="space-y-6"
     @submit.capture="feedbackAttempt++"
     :aria-busy="busy"
@@ -331,7 +338,6 @@ const passwordHint = computed(() =>
         >{{ text('Przywróć domyślne', 'Restore defaults') }}</Button
       >
     </div>
-    <Spinner v-if="!ready && busy" :label="text('Wczytywanie', 'Loading')" />
     <template v-if="ready && profile">
       <Alert v-if="draft && tab === 'details'" tone="info">
         {{

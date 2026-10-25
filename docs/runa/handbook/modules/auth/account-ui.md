@@ -63,6 +63,19 @@ Back/refresh and direct entry recheck the server session. The entry page supplie
 account access, without speculative business statistics or management navigation.
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
+It renders that shell immediately while the server session is checked. Account
+loading uses the existing Skeleton inside the four destination Cards, retaining
+that structure through account initialization instead of a spinner or a temporary
+MinimalLayout. Skeletons contain no identity values or interactive forms; protected
+content mounts only after session validation. Capability-dependent content is
+resolved from guarded reads. Loading failures expose retry without changing shells;
+expired/restricted sessions still enter AuthEntry. Existing loaded forms stay
+mounted during ordinary read refreshes. Notification preferences use skeleton rows
+inside their existing Card while their first read is pending.
+`AuthApplication` accepts a `loading` slot with `{ account: boolean }` for custom
+page structure. The account fallback is public `AuthAccountLoading`, replaceable
+through `AuthPresentationProvider.components.accountLoading`; both initialization
+stages use that same presentation.
 The default account editor groups identity, private avatar, password and two-factor
 settings in four shared Cards. Details, avatar and password have visible Forms;
 two-factor actions open shared dialogs. Each submission keeps its own credential

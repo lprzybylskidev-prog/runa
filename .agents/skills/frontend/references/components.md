@@ -29,3 +29,6 @@ secret cleanup, feedback focus and legacy custom-presentation seams.
 Use public FormConflict for local overlapping/ambiguous edit decisions; its current
 values and accept/keep events are presentation-only. Follow the public forms guide
 for baseline merging, shared revision queues and explicit subsequent saves.
+
+Public AuthAccountLoading and the accountLoading presentation entry supply the
+initial account structure; see the public account UI and customization guides.

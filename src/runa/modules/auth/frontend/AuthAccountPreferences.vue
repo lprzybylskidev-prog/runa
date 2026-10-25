@@ -9,7 +9,7 @@ import {
   FormConflict,
   RadioGroup,
   Select,
-  Spinner,
+  Skeleton,
   Switch,
 } from '@/runa/ui';
 import type { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
@@ -243,10 +243,12 @@ defineExpose({ beginReset, reload });
         </h3></template
       >
       <div class="space-y-5">
-        <Spinner
-          v-if="busy && !delivery.length"
-          :label="text('Wczytywanie powiadomień', 'Loading notifications')"
-        />
+        <div v-if="busy && !delivery.length" aria-busy="true" class="space-y-6">
+          <p role="status" class="sr-only">
+            {{ text('Wczytywanie powiadomień', 'Loading notifications') }}
+          </p>
+          <Skeleton v-for="row in 4" :key="row" :lines="2" />
+        </div>
         <div v-else-if="!delivery.length" class="space-y-3">
           <p class="text-sm text-muted">
             {{

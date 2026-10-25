@@ -43,7 +43,7 @@ const count = computed(() =>
     opacity: 0.45;
   }
 }
-@media (prefers-reduced-motion: reduce) {
+@media print, (prefers-reduced-motion: reduce) {
   .app-skeleton span {
     animation: none;
   }

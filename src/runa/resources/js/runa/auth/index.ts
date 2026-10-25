@@ -53,3 +53,5 @@ export type {
   Profile,
   AccountRow,
 } from '../../../../modules/auth/frontend/account';
+
+export { default as AuthAccountLoading } from '../../../../modules/auth/frontend/AuthAccountLoading.vue';

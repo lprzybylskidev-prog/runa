@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.21.6
+
+Keep ApplicationLayout mounted from the first session read, with structural account
+Card skeletons through account initialization and skeleton notification rows.
+Expose replaceable account loading presentation and a loading slot for custom
+application content. Protected forms still mount only after session validation.
+Source-only forward edge; no schema or security-policy change.
+
 ## 0.21.5
 
 Repair strict TypeScript compilation of Auth presentation and its tests. Bind

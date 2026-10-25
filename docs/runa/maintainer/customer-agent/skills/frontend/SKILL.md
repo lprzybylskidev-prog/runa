@@ -19,3 +19,8 @@ contract: refresh reads in place, merge clean/disjoint values, preserve dirty dr
 and use local decisions only for overlapping/ambiguous changes. Share aggregate
 mutation queues/revisions. Never replay failed writes, advance an unreconciled token,
 reinitialize an edited form or demand a page reload after a successful refresh.
+
+For custom initial account loading, use the public AuthAccountLoading or the
+accountLoading presentation entry; see the public Auth account UI/customization
+guides. Loading presentation must not mount protected controllers before session
+validation.

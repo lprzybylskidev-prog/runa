@@ -198,6 +198,38 @@ async function loaded(w: ReturnType<typeof mount>) {
   await flushPromises();
 }
 
+it('keeps the destination shell and account skeleton through session and account loading without mounting protected forms early', async () => {
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let releaseSession!: () => void;
+  let releaseProfile!: () => void;
+  const sessionGate = new Promise<void>(
+    (resolve) => (releaseSession = resolve),
+  );
+  const profileGate = new Promise<void>(
+    (resolve) => (releaseProfile = resolve),
+  );
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    const path = String(input).split('?')[0]!;
+    if (path.endsWith('/session')) await sessionGate;
+    if (path.endsWith('/profile')) await profileGate;
+    return original(input, init);
+  });
+  const w = mount(AuthApplication, { props: { account: true } });
+  const shell = w.getComponent(ApplicationLayout).element;
+  expect(w.find('[data-account-loading]').exists()).toBe(true);
+  expect(w.findAll('[data-account-loading] h3')).toHaveLength(4);
+  expect(w.find('form').exists()).toBe(false);
+  releaseSession();
+  await flushPromises();
+  expect(w.getComponent(ApplicationLayout).element).toBe(shell);
+  expect(w.find('[data-account-loading]').exists()).toBe(true);
+  expect(w.find('form').exists()).toBe(false);
+  releaseProfile();
+  await loaded(w);
+  expect(w.getComponent(ApplicationLayout).element).toBe(shell);
+  expect(w.find('[data-account-loading]').exists()).toBe(false);
+});
+
 it('account boundary diagnostic: preserves only safe drafts for the same account and fences explicit cleanup', () => {
   rememberAccountDraft(id, {
     name: 'Draft',

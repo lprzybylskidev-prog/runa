@@ -7,13 +7,13 @@ import {
   ApplicationLayout,
   Button,
   Icon,
-  MinimalLayout,
-  Spinner,
+  Skeleton,
 } from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import { useLocale } from '../../../resources/js/composables/useLocale';
 import AuthEntry from './AuthEntry.vue';
 import AuthAccount from './AuthAccount.vue';
+import AuthAccountLoading from './AuthAccountLoading.vue';
 import { useApplicationSession } from './useApplicationSession';
 const presentation = useAuthPresentation();
 const props = withDefaults(defineProps<{ account?: boolean }>(), {
@@ -75,19 +75,6 @@ const initials = computed(
 <template>
   <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
   <component
-    :is="presentation.minimalLayout ?? MinimalLayout"
-    v-else-if="loading || !session"
-  >
-    <Spinner
-      v-if="loading"
-      :label="text('Wczytywanie konta', 'Loading account')"
-    />
-    <Alert v-else tone="danger"
-      >{{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-      <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button></Alert
-    >
-  </component>
-  <component
     :is="presentation.applicationLayout ?? ApplicationLayout"
     v-else
     width="fluid"
@@ -98,7 +85,7 @@ const initials = computed(
     :user-avatar="avatar"
     :user-initials="initials"
   >
-    <template #user-menu>
+    <template v-if="session && !loading" #user-menu>
       <div class="account-menu">
         <div class="account-menu-identity">
           <Avatar :src="avatar" :initials="initials" :size="40" />
@@ -127,7 +114,24 @@ const initials = computed(
         </div>
       </div>
     </template>
+    <slot v-if="loading" name="loading" :account="account">
+      <component
+        v-if="account"
+        :is="presentation.accountLoading ?? AuthAccountLoading"
+      />
+      <div v-else aria-busy="true" class="space-y-6">
+        <p role="status" class="sr-only">
+          {{ text('Wczytywanie aplikacji', 'Loading application') }}
+        </p>
+        <Skeleton :lines="3" />
+      </div>
+    </slot>
+    <Alert v-else-if="!session" tone="danger">
+      {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
+      <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
+    </Alert>
     <div
+      v-else
       :key="session.public_id"
       class="space-y-6"
       :inert="pending || undefined"
