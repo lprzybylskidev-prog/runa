@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.21.13
+
+Target request limits at declared entry/proof operations, with independent source
+buckets. Ordinary preferences, profile/history and session activity do not consume
+the entry cap. A neutral optional adapter supports exclusive future Throttling
+ownership without disabling intrinsic Auth protections. Consolidate preference tab
+entry/refresh into one delivery read while preserving external invalidation/drafts.
+Source-only forward edge; no schema or permission changes.
+
 ## 0.21.12
 
 Remove the redundant account dropdown caption. Show account deactivation actions

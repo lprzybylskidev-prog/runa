@@ -109,3 +109,8 @@ For binary/image upload validation, use the format-aware input/output rule in
 [the public security baseline](../../../../docs/runa/handbook/security/baseline.md#input-and-output).
 Compressed pixels are binary data, not markup; preserve MIME, bounded inputs,
 private storage and secure response headers without claiming custom sanitization.
+
+For Auth request limits and optional module ownership, follow the public
+[targeted throttling contract](../../../../docs/runa/handbook/modules/auth/throttling.md).
+Review new entry/proof operations against its source-owned classification; normal
+account reads/writes must not consume a blanket unsafe-method Auth bucket.

@@ -11,7 +11,7 @@ Remove an entry when the responsible module is implemented and move its durable 
 | External integrations | Integrations module      | Provider credentials, adapter/retry/circuit and inbound/outbound contracts; LDAP/OIDC/SSO remain excluded                            | Integration policy is delivered                 |
 | Administration        | Admin module             | Audit viewer, user/role/preset/assignment UI and generic management renderer; typed backend contracts already exist                  | Approved Admin UI is delivered                  |
 | Notifications         | Notifications module     | General notifications and operational in-app delivery; direct Auth/security email is delivered                                       | Notifications runtime is delivered              |
-| Throttling            | Throttling module        | General reusable throttling; Auth already owns bounded login/OTP abuse defenses                                                      | General throttling contract is delivered        |
+| Throttling            | Throttling module        | Optional general request throttling; Auth retains intrinsic login/OTP safeguards and supplies an exclusive request adapter seam      | General throttling contract is delivered        |
 | Teams                 | Teams module             | Team membership and team-scoped grants                                                                                               | Teams policy is delivered                       |
 | Import                | Import module            | General import and CSV/XLSX user import                                                                                              | Import policy is delivered                      |
 | External factors      | Future Auth scope        | WebAuthn and external identity providers                                                                                             | Explicitly approved Auth extension is delivered |
@@ -40,3 +40,10 @@ PostgreSQL is authoritative for signed-in accounts, guest storage remains separa
 and legacy adoption requires explicit ownership confirmation. Future domain views
 must declare their exact table/statistics schemas; no generic undeclared JSON store
 or Notifications runtime is delivered. Own-account controls are delivered under the [account UI contract](../../handbook/modules/auth/account-ui.md).
+
+The future optional Throttling module must take exclusive Auth request-cap ownership
+when enabled, recheck lifecycle/availability per call and restore the local targeted
+fallback when disabled/absent. Failures of an enabled integration must not silently
+weaken enforcement. The delivered [Auth seam](../../handbook/modules/auth/throttling.md)
+is not the general module. Intrinsic credential/proof budgets and replay/eligibility
+rules remain Auth-owned; any later relocation requires its own agreed roadmap.

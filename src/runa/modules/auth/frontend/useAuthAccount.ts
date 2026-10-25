@@ -149,6 +149,7 @@ export function useAuthAccount(accountId: string) {
   let deliveryReadEpoch = 0;
   let refreshPromise: Promise<void> | undefined;
   let refreshAgain = false;
+  let refreshingPreferenceSnapshot = false;
   const delivery = ref<DeliveryChoice[]>([]);
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
@@ -481,8 +482,14 @@ export function useAuthAccount(accountId: string) {
       if (!alive) return;
       security.value = next;
       options.value = entry;
-      if (accountPreferences.currentAccount() === accountId)
-        await accountPreferences.refresh();
+      if (accountPreferences.currentAccount() === accountId) {
+        refreshingPreferenceSnapshot = true;
+        try {
+          await accountPreferences.refresh();
+        } finally {
+          refreshingPreferenceSnapshot = false;
+        }
+      }
       if (!alive) return;
       if (tab.value === 'preferences') await readDelivery();
       if (
@@ -677,7 +684,13 @@ export function useAuthAccount(accountId: string) {
               : 'details',
     );
     if (
-      ['sessions', 'trust', 'loginHistory', 'accountHistory'].includes(value)
+      [
+        'preferences',
+        'sessions',
+        'trust',
+        'loginHistory',
+        'accountHistory',
+      ].includes(value)
     ) {
       pageLoading.value = true;
       try {
@@ -686,7 +699,6 @@ export function useAuthAccount(accountId: string) {
         pageLoading.value = false;
       }
     } else {
-      if (value === 'preferences') await perform(readDelivery);
       await refreshAccount().catch(() => {
         if (alive) failure.value = 'refresh_failed';
       });
@@ -1296,6 +1308,7 @@ export function useAuthAccount(accountId: string) {
       alive &&
       ready.value &&
       !busy.value &&
+      !refreshingPreferenceSnapshot &&
       tab.value === 'preferences' &&
       accountPreferences.currentAccount() === accountId
     )

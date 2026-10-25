@@ -63,8 +63,10 @@ mutation; the administrative policy workflow is assigned to its later point.
 Auth responses use no-store, safe `{data: ...}` projections or `{error: {code: ...}}`.
 Validation returns bounded field names with fixed messages, never echoed input.
 Unexpected Auth failures return `auth_unavailable`; debug SQL/credential exception
-text is not rendered. Non-login unsafe entry operations retain the small source cap (30/minute), returning
-429 with Retry-After. Login has configurable account/source windows and bounded
+text is not rendered. Selected source-declared entry/proof operations use independent source caps
+(30/minute per operation), returning 429 with Retry-After. Ordinary account and
+preference requests do not consume those caps. See [targeted throttling and optional
+ownership](throttling.md). Login has configurable account/source windows and bounded
 temporary locks under the [session/abuse contract](sessions.md), with generic 422
 refusals and optional review escalation instead of permanent attacker-triggered locks.
 

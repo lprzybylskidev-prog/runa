@@ -115,8 +115,11 @@ lock or lifecycle change is triggered. Optional `login.abuse_escalated` Audit
 requests authorized review without making attacker-driven permanent lockout possible.
 Choose an escalation threshold within the failure limit to observe it before lock.
 
-The separate pre-controller unsafe-entry cap (30/minute, 429 with Retry-After)
-continues on non-login entry operations. Login uses the configurable DB defenses.
+The separate pre-controller [targeted entry cap](throttling.md) uses independent
+30/minute source buckets for selected entry/proof operations (429 with Retry-After).
+Ordinary account/preferences/session activity never consume it. Login keeps the
+configurable DB defenses. A future optional Throttling adapter exclusively owns
+request caps when enabled; Auth credential/proof safeguards remain independent.
 `runa:auth:sessions.cleanup` is an operational ModuleWork command scheduled every
 five minutes. Each run deletes at most 500 rows per technical table: expired/idle,
 revoked or stale-generation sessions, expired/revoked/stale-generation trust, and

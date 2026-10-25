@@ -2358,3 +2358,35 @@ it('shell waits for optional profile metadata before showing avatar initials', a
       .every((a) => !a.find('.avatar-skeleton').exists()),
   ).toBe(true);
 });
+
+it('reads delivery once per preference tab entry or account refresh while retaining external invalidation', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  const reads = () =>
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).endsWith('/delivery-preferences') &&
+          (JSON.parse(String(init?.body)) as { operation?: string })
+            .operation === 'read',
+      ).length;
+  await openPreferences(w);
+  await vi.waitFor(() =>
+    expect(
+      w.getComponent(AuthAccountPreferences).props('account').busy.value,
+    ).toBe(false),
+  );
+  await flushPromises();
+  expect(reads()).toBe(1);
+  const state = w.getComponent(AuthAccountPreferences).props('account');
+  await state.refresh();
+  await flushPromises();
+  expect(reads()).toBe(2);
+  await accountPreferences.refresh();
+  await flushPromises();
+  expect(reads()).toBe(3);
+});

@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner authorizes targeted Auth throttling instead of a blanket
+  unsafe-method cap, removal of redundant preference reads, and a narrow optional
+  Throttling handoff. Point 19zw retains intrinsic Auth proof/credential safeguards;
+  an active future adapter owns request throttling exclusively, and unavailable
+  integration restores the targeted local fallback. The general module remains
+  deferred; this is a correction within confirmed feature 0.5.0.
+
 - 2026-10-25 — Owner removes the redundant account dropdown caption and requests
   warning deactivation and error/danger deletion colors. Point 19zv preserves the
   existing outlined action design and behavior in feature 0.5.0.
@@ -1186,6 +1193,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
+- [ ] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4084,3 +4092,36 @@ architectural premise requires discussion before dependent work.
   needs no new tests; shared Button handles theme, interaction and reduced motion.
   No temporary Docker resources created/removed; data, services, caches, backups and
   evidence preserved. Final point 20 still awaits owner appearance acceptance.
+
+## Point 19zw delivery
+
+- Replaced the blanket non-login unsafe-method Auth cap with a source-owned list
+  of real entry/proof route operations. Normal preference reads/writes, profile,
+  history, avatar, activity, logout and session revocation never consume this cap.
+  Buckets are independent by operation/source, retaining 30/minute and safe 429/
+  Retry-After behavior; clients cannot opt out or forge module route metadata.
+- Added the neutral AuthRequestThrottle seam and no-integration binding. An active
+  future module handles a classified request exclusively; false means absent/disabled
+  before any enforcement. Rejections/faults propagate without weaker fallback.
+  Future bridges must check lifecycle/availability each call. Login reaches the hook
+  but keeps its transactional intrinsic account/source protections; proof budgets,
+  expiry, one-time use, eligibility/permissions and Audit remain Auth-owned.
+- Preferences now enter through one account refresh pipeline. Its own snapshot
+  suppresses only its redundant delivery subscriber read; external invalidation still
+  refreshes visible rows. Removed the separate tab-entry delivery read. Dirty drafts,
+  per-row conflict resolution and the shared mutation revision queue remain intact.
+- Auth PATCH 0.21.12 -> 0.21.13 with source-only edge; existing Permissions constraint
+  remains compatible. No dependency, schema migration or runtime configuration change.
+- Public throttling/transport/session/security/preferences contracts and owner/customer
+  security references synchronized. Deferred module register records optional exclusive
+  takeover; root and backend/Laravel/frontend skills already delegate to these guides.
+- Focused checks pass: nine request-cap cases cover targeted 429s, normal operations,
+  separate buckets/sources, adapter ownership/disable/failure and login distinction.
+  Two real Auth transport/abuse regressions pass, including 70 preference/delivery
+  reads plus persisted writes after registration exhausts its cap. Five browser unit
+  cases prove one delivery read per tab/refresh, retained external invalidation and
+  dirty/conflict behavior. Source/version checks pass; current client assets built.
+- Supported runner removed its disposable runa_test_test_1 worker after the focused
+  parallel run. No Docker resources created/removed. Base development/test databases,
+  services, caches, backups and evidence preserved. Local forward publication pending.
+  Final point 20 remains appearance-gated; no broad checks or release started.

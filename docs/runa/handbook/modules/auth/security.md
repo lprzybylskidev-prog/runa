@@ -95,7 +95,8 @@ is in the email body, never a URL. No actual OTP enters the job envelope.
 
 Unsafe security operations share an account-wide fixed five-minute window, capped
 by `security_attempt_limit` (default 10, range 1–30), across sessions/workers. The
-source cap also applies before controllers. Failed attempts commit their count
+targeted [entry/proof request cap](throttling.md) also applies before controllers
+for its declared operations, without counting ordinary account/preferences work. Failed attempts commit their count
 before a generic 422 `security_proof_invalid`; repeating a blocked request never
 extends the window or permanently locks/deactivates the account. Independent
 `security.refused` Audit records contain no submitted secret. More specific password

@@ -1,6 +1,9 @@
 <?php
 
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\RateLimiter;
+use Illuminate\Cache\Repository;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -1613,4 +1616,26 @@ it('rolls back the entire full preference reset and revision when Audit refuses 
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT full_reset_fixture_refusal');
     }
     $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'reset_all', 'revision' => 2])->assertOk()->assertJsonPath('data.revision', 3);
+});
+
+it('targeted auth transport keeps preference reads and writes usable after public entry is throttled', function (): void {
+    $user = profileVerified('targeted-preferences@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    Illuminate\Support\Facades\RateLimiter::swap(new RateLimiter(new Repository(new ArrayStore)));
+    for ($n = 0; $n < 30; $n++) {
+        $this->postJson('/api/runa/auth/register', [])->assertStatus(422);
+    }
+    $this->postJson('/api/runa/auth/register', [])->assertStatus(429)->assertHeader('Retry-After');
+    for ($n = 0; $n < 35; $n++) {
+        $this->postJson('/api/runa/auth/preferences', ['operation' => 'snapshot', 'application' => 'runa'])->assertOk();
+        $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'read'])->assertOk();
+    }
+    $this->postJson('/api/runa/auth/preferences', ['operation' => 'write', 'application' => 'runa', 'module' => 'runa.auth',
+        'view' => 'global', 'key' => 'locale', 'value' => 'en', 'revision' => 0])
+        ->assertOk()->assertJsonPath('data.value', 'en')->assertJsonPath('data.revision', 1);
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth',
+        'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 1])
+        ->assertOk()->assertJsonPath('data.revision', 2);
+    expect(DB::table('runa_auth.preferences')->where('user_id', $user->id)->where('scope', 'runa:runa.auth:global:locale')->value('value'))->toBe('"en"')
+        ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->where('category', 'new_browser')->value('enabled'))->toBeFalse();
 });

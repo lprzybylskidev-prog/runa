@@ -219,3 +219,9 @@ returns the normal account/revision envelope, and is followed by a queued snapsh
 All presentation/delivery writes share this queue. On 409, current reads refresh
 without replay; older queued mutations are canceled. Failed synchronization offers
 an explicit read retry. A successful refresh never calls the destructive form reset.
+
+Preferences tab entry and account refresh perform one delivery read per refresh
+pipeline. Its snapshot notification is suppressed only for that pipeline; external
+snapshot invalidations still reconcile visible rows. Preference reads/writes do not
+consume the [targeted Auth entry cap](throttling.md). Conflicts and genuine transport
+failures retain existing draft preservation and never trigger automatic write replay.
