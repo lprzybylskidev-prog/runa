@@ -1169,7 +1169,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zp. Restore sparse backdrop glow and animate full illustration-point orbits in MinimalLayout.
 - [x] 19zq. Animate only one randomly selected illustration point per cycle.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
-- [ ] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
+- [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3966,5 +3966,19 @@ architectural premise requires discussion before dependent work.
   seam without authorizing protected edits. Root AGENTS and other skills already
   delegate to these guides and need no duplicated procedure.
 - Source module and prior-HEAD version checks pass. Built current client assets for
-  owner review. Focused rendered welcome checks and local forward publication pending.
-  Final point 20 remains gated on owner appearance acceptance.
+  owner review with the existing Vite build entry through bin/pnpm. Applied the
+  source-only module edge in development and prepared the isolated base test module
+  state using the forward-only preparation primitive; no data reset or new migration.
+- Eight focused Chromium welcome cases pass: desktop/mobile, PL/EN, light/dark,
+  manifest copy, icon count, hover, keyboard tooltip transition, Escape and overflow.
+  Visually inspected actual desktop light/dark and mobile dark screenshots under
+  .runtime/artifacts/playwright/ui-foundations. Source/runtime descriptor checks pass.
+- Initial browser attempt could not resolve the absent optional nginx-test endpoint;
+  used the documented RUNA_E2E_UPSTREAM=http://nginx:8080 for this local check.
+  Updated the historical root assertion to allow only the expected signed-out session
+  endpoint 401 and its matching browser resource message. Tooltip assertions now await
+  the existing exit transition before matching the next item. No product error was
+  suppressed; other network/console errors still fail.
+- No temporary Docker resources were created or removed. Preserved development/test
+  databases, active services, caches, backups and browser evidence. No broad gate run;
+  final point 20 remains gated on owner appearance acceptance.

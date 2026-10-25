@@ -24,11 +24,22 @@ for (const [device, width, height] of [
         const errors: string[] = [];
         page.on('pageerror', (error) => errors.push(error.message));
         page.on('console', (message) => {
+          // Signed-out welcome probes the session endpoint by design.
+          if (
+            message.text().includes('401') &&
+            message.location().url.endsWith('/api/runa/auth/session')
+          )
+            return;
           if (['warning', 'error'].includes(message.type()))
             errors.push(message.text());
         });
         page.on('requestfailed', (request) => errors.push(request.url()));
         page.on('response', (response) => {
+          if (
+            response.status() === 401 &&
+            new URL(response.url()).pathname === '/api/runa/auth/session'
+          )
+            return;
           if (response.status() >= 400)
             errors.push(`${response.status()} ${response.url()}`);
         });
@@ -57,8 +68,13 @@ for (const [device, width, height] of [
             ? 'Audyt — Niezmienna historia operacji biznesowych i bezpieczeństwa.'
             : 'Audit — Append-only business and security history.',
         );
+        await page.mouse.move(0, 0);
+        await expect(page.getByRole('tooltip')).toHaveCount(0);
         await audit.focus();
         await page.keyboard.press('Tab');
+        await expect(
+          page.getByRole('tooltip', { name: /^(Audyt|Audit) —/ }),
+        ).toHaveCount(0);
         await expect(page.getByRole('tooltip')).toContainText(
           locale === 'pl' ? 'Uwierzytelnianie' : 'Authentication',
         );
@@ -80,6 +96,7 @@ for (const [device, width, height] of [
           expect(art!.height).toBe(240);
           expect(art!.y + art!.height).toBeLessThanOrEqual(content!.y);
         }
+        await modules.getByRole('img').nth(1).blur();
         await page.evaluate(() => document.fonts.ready);
         expect(
           await page.evaluate(
