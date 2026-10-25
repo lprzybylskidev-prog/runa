@@ -34,11 +34,13 @@ final readonly class AccountPreferences implements AuthPreferences
             $this->revision($user, $revision);
             [$provider, $definition] = $this->declarations->resolve($scope);
             $this->declarations->validate($provider, $definition, $value->value);
+            $before = $this->readLocked($connection, $user, $scope)['value'];
             $connection->table('runa_auth.preferences')->updateOrInsert(['user_id' => $user->id, 'scope' => $scope->id()],
                 ['module' => $scope->module, 'value' => json_encode($value->value, JSON_THROW_ON_ERROR), 'definition_version' => $definition->version,
                     'updated_at' => now(), 'created_at' => now()]);
             $user->preference_revision++;
             $user->save();
+            $this->recordPreference($user, $scope, $before, $value->value, 'preferences.changed');
 
             return $this->readLocked($connection, $user, $scope);
         });
@@ -121,22 +123,56 @@ final readonly class AccountPreferences implements AuthPreferences
         if ($scope !== null) {
             $query->where('scope', $scope->id());
         }
+        // Resolve old effective values before deletion, preserving source defaults and migrations.
+        $resets = [];
+        foreach ($query->get() as $row) {
+            [$application, $owner, $view, $key] = explode(':', $row->scope);
+            $candidate = new PreferenceScope($application, $owner, $view, $key);
+            if ($this->displayOnly($candidate)) {
+                continue;
+            }
+            // Unavailable/removed declarations have no trustworthy current default.
+            try {
+                [, $definition] = $this->declarations->resolve($candidate);
+                $before = $this->readLocked($connection, $user, $candidate)['value'];
+                $resets[] = [$candidate, $before, $definition->default];
+            } catch (OperationRejected) {
+                $resets[] = [$candidate, json_decode($row->value, true, flags: JSON_THROW_ON_ERROR), null];
+            }
+        }
         $query->delete();
+        foreach ($resets as [$candidate, $before, $after]) {
+            $this->recordPreference($user, $candidate, $before, $after, 'preferences.reset');
+        }
         $notificationOverrides = 0;
         if ($includeDelivery) {
             $notificationOverrides = $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count();
+            app(DeliveryRouting::class)->recordReset($connection, $user);
             $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->delete();
         }
         $user->preference_revision++;
         $user->preference_legacy_claimed = true;
         $user->save();
         if ($admin) {
-            $this->transactions->record('preferences.admin_reset', $user);
+            $this->transactions->record('preferences.admin_reset', $user, ['presentation_overrides' => ['old' => count($resets), 'new' => 0]]);
         } elseif ($includeDelivery) {
-            $this->transactions->record('preferences.reset_all', $user, ['notification_overrides' => ['old' => $notificationOverrides, 'new' => 0]]);
+            $this->transactions->record('preferences.reset_all', $user, ['notification_overrides' => ['old' => $notificationOverrides, 'new' => 0], 'presentation_overrides' => ['old' => count($resets), 'new' => 0]]);
         }
 
         return ['account' => $user->public_id, 'revision' => $user->preference_revision];
+    }
+
+    private function displayOnly(PreferenceScope $scope): bool
+    {
+        return $scope->module === 'runa.auth' && $scope->view === 'global' && in_array($scope->key, ['locale', 'theme'], true);
+    }
+
+    private function recordPreference(User $user, PreferenceScope $scope, mixed $before, mixed $after, string $action): void
+    {
+        if (! $this->displayOnly($scope) && $before !== $after) {
+            $this->transactions->record($action, $user, ['setting' => ['old' => $scope->id(), 'new' => $scope->id()],
+                'value' => ['old' => $before, 'new' => $after]]);
+        }
     }
 
     private function revision(User $user, int $revision): void

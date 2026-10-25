@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\AccountHistoryState;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
@@ -44,10 +45,11 @@ final readonly class CredentialFactors
             $hashes = $user->recovery_hashes;
             foreach ($hashes as $index => $stored) {
                 if (hash_equals($stored, $hash)) {
+                    $before = AccountHistoryState::factors($user);
                     unset($hashes[$index]);
                     $user->recovery_hashes = array_values($hashes);
                     $user->save();
-                    $this->transactions->record('two_factor.recovery_used', $user);
+                    $this->transactions->record('two_factor.recovery_used', $user, AccountHistoryState::pairs($before, AccountHistoryState::factors($user)));
 
                     return true;
                 }
@@ -106,6 +108,7 @@ final readonly class CredentialFactors
             if ($hasFactors && ! $this->verify($connection, $user, $session, $method, $code)) {
                 return null;
             }
+            $before = AccountHistoryState::factors($user);
             if ($operation === 'totp_begin') {
                 if (! $this->policy->permitted('totp') || $user->totp_secret !== null) {
                     return null;
@@ -114,7 +117,7 @@ final readonly class CredentialFactors
                 $user->totp_pending = Crypt::encryptString($secret);
                 $user->totp_pending_until = CarbonImmutable::now('UTC')->addMinutes(10);
                 $user->save();
-                $this->transactions->record('two_factor.enrollment_started', $user);
+                $this->transactions->record('two_factor.enrollment_started', $user, AccountHistoryState::pairs($before, AccountHistoryState::factors($user)));
 
                 $uri = $this->totp->qrCodeUrl(config('app.name'), $user->email, $secret);
                 $svg = (new Writer(new ImageRenderer(new RendererStyle(256, 4), new SvgImageBackEnd)))->writeString($uri);
@@ -171,7 +174,11 @@ final readonly class CredentialFactors
             $connection->table('runa_auth.sessions')->where('id', $session->id)->update([
                 'factor_method' => $operation === 'totp_confirm' ? 'totp' : null,
                 'factor_verified_at' => $operation === 'totp_confirm' ? now() : null]);
-            $this->transactions->record('two_factor.'.$operation, $user);
+            $changes = AccountHistoryState::pairs($before, AccountHistoryState::factors($user));
+            if ($operation === 'recovery_rotate') {
+                $changes['spare_codes_replaced'] = ['old' => false, 'new' => true];
+            }
+            $this->transactions->record('two_factor.'.$operation, $user, $changes);
 
             return ['updated' => true, 'recovery_codes' => $recovery];
         });

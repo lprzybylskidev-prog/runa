@@ -132,7 +132,13 @@ final readonly class Policies implements AuthPolicies
                     'policy_revision' => $policyRevision, 'expires_at' => $expires, 'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
-            $this->transactions->record($value === null ? 'policy.exception_revoked' : 'policy.exception_set', $user);
+            $previous = $row !== null && $row->revoked_at === null && CarbonImmutable::parse($row->expires_at)->isFuture() ? $row : null;
+            $this->transactions->record($value === null ? 'policy.exception_revoked' : 'policy.exception_set', $user, [
+                'policy_setting' => ['old' => $key, 'new' => $key],
+                'policy_value' => ['old' => $previous?->value, 'new' => $value],
+                'valid_until' => ['old' => $previous?->expires_at, 'new' => $value === null ? null : $expires->toIso8601String()],
+                'reason' => ['old' => $previous?->reason, 'new' => $value === null ? null : $reason],
+            ]);
 
             return ['public_id' => $id, 'version' => $version + 1];
         });

@@ -2413,6 +2413,11 @@ it('account history opens safe detail changes, handles retry and never restores 
             after: 'runa.auth.new_browser',
           },
           { field: 'enabled', before: true, after: false },
+          {
+            field: 'value',
+            before: { columns: ['name'] },
+            after: { columns: ['email'] },
+          },
         ],
       });
     }
@@ -2423,6 +2428,12 @@ it('account history opens safe detail changes, handles retry and never restores 
             public_id: eventId,
             occurred_at: '2026-10-25T12:00:00Z',
             action: 'delivery.preferences_changed',
+            outcome: 'success',
+          },
+          {
+            public_id: '01900000-0000-7000-8000-000000000098',
+            occurred_at: '2026-10-25T11:00:00Z',
+            action: 'password.changed',
             outcome: 'success',
           },
         ],
@@ -2454,11 +2465,16 @@ it('account history opens safe detail changes, handles retry and never restores 
       document.body.querySelector('[data-history-detail]')?.textContent,
     ).toContain('Nowa przeglądarka'),
   );
+  expect(
+    w.findAll('button').filter((button) => button.text() === 'Szczegóły'),
+  ).toHaveLength(1);
   const modal = document.body.querySelector('[role=dialog]')!;
   expect(modal.textContent).toContain('Przed');
   expect(modal.textContent).toContain('Po');
   expect(modal.textContent).toContain('Tak');
   expect(modal.textContent).toContain('Nie');
+  expect(modal.textContent).toContain('columns');
+  expect(modal.textContent).toContain('email');
   const close = [...modal.querySelectorAll('button')].find(
     (button) => button.textContent === 'Zamknij',
   )!;

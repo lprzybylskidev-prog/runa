@@ -52,6 +52,8 @@ beforeEach(function (): void {
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
+    // This fixture intentionally exercises Audit/Auth without installed Permissions.
+    CoreModuleStorage::removePermissions();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     // Trusted test-only invariant participant. Real authority remains denied until Permissions.

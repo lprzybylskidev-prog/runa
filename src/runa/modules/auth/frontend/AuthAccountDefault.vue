@@ -22,6 +22,7 @@ import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
 import AuthAccountLoading from './AuthAccountLoading.vue';
 import AuthHistoryDetail from './AuthHistoryDetail.vue';
+import { historyEventNames } from './historyDetails';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
 import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
@@ -245,15 +246,8 @@ const columns = computed<TableColumn<AccountRow>[]>(() =>
       ],
 );
 function eventLabel(action?: string) {
-  if (action === 'delivery.preferences_changed')
-    return text('Zmiana preferencji', 'Preferences changed');
-  if (action === 'preferences.reset_all')
-    return text('Reset preferencji', 'Preferences reset');
-  if (action === 'preferences.admin_reset')
-    return text(
-      'Administracyjny reset preferencji',
-      'Administrative preferences reset',
-    );
+  const exact = historyEventNames[action ?? ''];
+  if (exact) return text(exact[0], exact[1]);
   const prefix = action?.split('.')[0];
   return (
     (
@@ -581,7 +575,9 @@ const passwordHint = computed(() =>
         >
           <template #actions="{ row }">
             <Button
-              v-if="tab === 'accountHistory'"
+              v-if="
+                tab === 'accountHistory' && !row.action?.startsWith('password.')
+              "
               variant="outline"
               @click="account.openHistoryDetail(row.public_id)"
               >{{ text('Szczegóły', 'Details') }}</Button

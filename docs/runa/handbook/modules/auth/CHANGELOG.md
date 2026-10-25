@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 0.23.0
+
+Complete concrete non-display preference writes and per-setting resets, factor and verification state, account lifecycle and policy exception history. Show precise event labels; password summaries do not open value details.
+Source-only forward edge; no schema migration.
+
 ## 0.22.0
 
 Open details for every account-history event through a replaceable public dialog.

@@ -277,9 +277,10 @@ projection. Secret field names are rejected. Foreign, unknown and excluded event
 return null without revealing whether another account owns the event.
 
 Only public_id/occurred_at/action/outcome and approved old/new pairs from persisted
-changes are projected. Values are null, booleans, integers, strings up to 512
-characters or lists of at most 21 such scalars. SafePayload redaction is applied
-again; malformed pairs are omitted. Context, actors, entity graphs, internal IDs
+changes are projected. Audit 0.7.0 extends values to finite JSON scalars and nested arrays/maps for
+source-approved structured preference fields. Existing scalar projections remain
+compatible. Persisted SafePayload structural/byte/key limits and 8 KiB text limit
+apply; redaction is applied again before projection. Malformed pairs are omitted. Context, actors, entity graphs, internal IDs
 and raw Audit payloads are never returned. Empty fields permit a safe event-only
 detail for credential operations. This capability requires module availability and
 a trusted human, not general Audit read permission. The caller still enforces its

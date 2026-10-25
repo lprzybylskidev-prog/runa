@@ -123,6 +123,7 @@ final readonly class EntryTokens implements AuthInvitations
                 || ($purpose === 'invitation' && ($user->password !== null || $password === null))) {
                 throw new OperationRejected('entry_token_invalid', 'runa.auth', 'entry.complete', 422);
             }
+            $wasVerified = $user->email_verified_at !== null;
             if ($purpose === 'invitation') {
                 app(Passwords::class)->replaceLocked($connection, $user, $password);
                 $user->security_version++;
@@ -137,7 +138,7 @@ final readonly class EntryTokens implements AuthInvitations
             $connection->table('runa_auth.entry_tokens')->where('id', $token->id)->update(['consumed_at' => now(), 'delivery_secret' => null]);
             $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('id', '<>', $token->id)
                 ->whereNull('invalidated_at')->whereNull('consumed_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
-            $this->transactions->record($purpose.'.completed', $user);
+            $this->transactions->record($purpose.'.completed', $user, ['email' => ['old' => $user->email, 'new' => $user->email], 'verified' => ['old' => $wasVerified, 'new' => true]]);
         });
     }
 

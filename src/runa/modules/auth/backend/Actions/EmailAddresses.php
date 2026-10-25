@@ -58,7 +58,7 @@ final readonly class EmailAddresses
         }
         $user->version++;
         $user->save();
-        $this->transactions->record($admin ? 'email.admin_requested' : 'email.requested', $user);
+        $this->transactions->record($admin ? 'email.admin_requested' : 'email.requested', $user, ['email' => ['old' => $user->email, 'new' => $email]]);
     }
 
     public function complete(#[\SensitiveParameter] string $secret): void
@@ -101,6 +101,7 @@ final readonly class EmailAddresses
             $this->refuse('email_unchanged');
         }
         $old = $user->email;
+        $wasVerified = $user->email_verified_at !== null;
         $user->email = $email;
         $user->email_claim = $email;
         $user->email_verified_at = CarbonImmutable::now('UTC');
@@ -125,7 +126,7 @@ final readonly class EmailAddresses
         $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->delete();
         $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
         $this->mail->issueLocked($connection, $user, 'notice', $old);
-        $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user, ['email' => ['old' => $old, 'new' => $email]]);
+        $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user, ['email' => ['old' => $old, 'new' => $email], 'verified' => ['old' => $wasVerified, 'new' => true]]);
     }
 
     public function ownSecondary(Request $request, string $operation): array

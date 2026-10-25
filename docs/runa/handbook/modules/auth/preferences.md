@@ -226,12 +226,11 @@ snapshot invalidations still reconcile visible rows. Preference reads/writes do 
 consume the [targeted Auth entry cap](throttling.md). Conflicts and genuine transport
 failures retain existing draft preservation and never trigger automatic write replay.
 
-Own-account history includes recorded email-delivery preference changes and complete/
-administrative preference resets. Language/theme edits remain outside history.
-Existing events become visible through the expanded allowlist, without generating
-replacement events or exposing recipients, preference values or administrator data.
-
-New notification preference events record approved before/after category, enabled
-state and recipient addresses transactionally for [account history details](history.md).
-Complete reset records removed override count. No values are inferred for old events;
-language/theme edits remain excluded. The summary API still exposes no values.
+Own-account history records non-display preference writes, scoped/admin/complete
+resets and email delivery changes. Language/theme writes remain excluded. Summary
+pages never expose values or administrator identities. The separate
+[account-history details](history.md) show each setting's approved old/new value,
+including structured declared preferences. Complete reset emits individual setting
+and notification reset details plus an aggregate count, in the same transaction.
+Existing events are immutable; missing old values cannot be reconstructed. Audit
+structural/redaction limits apply and refusal rolls back both write and revision.

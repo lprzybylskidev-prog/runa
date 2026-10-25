@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 0.5.11
+
+Align Auth ^0.23.0 and Audit ^0.7.0 dependency ranges for complete account history capture.
+Source-only forward edge; no schema migration.
+
 ## 0.5.10
 
 Accept compatible Auth ^0.22.0 and Audit ^0.6.0 dependencies for own-history detail

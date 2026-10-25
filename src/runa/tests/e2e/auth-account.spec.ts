@@ -545,8 +545,8 @@ for (const [width, theme, locale] of [
     await details.click();
     await expect(page.getByRole('dialog')).toContainText(
       locale === 'pl'
-        ? 'nie zawiera zapisanych wartości'
-        : 'no recorded before and after values',
+        ? 'nie zapisano szczegółów zmiany'
+        : 'Change details were not recorded',
     );
   });
 }

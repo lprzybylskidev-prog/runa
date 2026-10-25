@@ -7,6 +7,7 @@ use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\AccountHistoryState;
 use Runa\Modules\Auth\Support\EntryTransaction;
 
 final readonly class ManageSecurity implements AuthSecurity
@@ -40,6 +41,7 @@ final readonly class ManageSecurity implements AuthSecurity
             $user->security_version++;
             $user->version++;
             $user->remember_token = null;
+            $before = AccountHistoryState::factors($user);
             if ($factors) {
                 $user->totp_secret = null;
                 $user->totp_pending = null;
@@ -53,7 +55,8 @@ final readonly class ManageSecurity implements AuthSecurity
             $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->whereNull('consumed_at')->whereNull('invalidated_at')
                 ->update(['invalidated_at' => now(), 'delivery_secret' => null]);
             $issued = $factors ? true : $this->tokens->issueLocked($connection, $user, 'reset');
-            $this->transactions->record($factors ? 'two_factor.admin_reset' : 'password.admin_reset', $user);
+            $this->transactions->record($factors ? 'two_factor.admin_reset' : 'password.admin_reset', $user,
+                $factors ? AccountHistoryState::pairs($before, AccountHistoryState::factors($user)) : []);
 
             return $issued;
         });

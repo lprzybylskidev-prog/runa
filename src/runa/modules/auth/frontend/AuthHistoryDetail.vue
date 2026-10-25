@@ -28,6 +28,44 @@ const fields: Record<string, readonly [string, string]> = {
   ],
   active: ['Konto aktywne', 'Account active'],
   deleted_at: ['Usunięto', 'Deleted at'],
+  setting: ['Ustawienie', 'Setting'],
+  value: ['Wartość', 'Value'],
+  presentation_overrides: [
+    'Zmienione ustawienia poza językiem i motywem',
+    'Non-display preference overrides',
+  ],
+  authenticator_enabled: [
+    'Aplikacja uwierzytelniająca włączona',
+    'Authenticator enabled',
+  ],
+  email_factor: [
+    'Drugi składnik przez e-mail włączony',
+    'Email second factor enabled',
+  ],
+  setup_pending: [
+    'Konfiguracja aplikacji w toku',
+    'Authenticator setup in progress',
+  ],
+  spare_codes_remaining: [
+    'Liczba dostępnych kodów zapasowych',
+    'Available backup codes',
+  ],
+  spare_codes_replaced: ['Zastąpiono kody zapasowe', 'Backup codes replaced'],
+  verification_required: [
+    'Wymagane potwierdzenie adresu',
+    'Email verification required',
+  ],
+  approved: ['Konto zatwierdzone', 'Account approved'],
+  activate_at: ['Termin aktywacji', 'Activation scheduled for'],
+  deactivate_at: ['Termin dezaktywacji', 'Deactivation scheduled for'],
+  expires_at: ['Termin ważności', 'Expires at'],
+  security_locked: ['Blokada bezpieczeństwa', 'Security lock'],
+  attempt_locked_until: ['Blokada logowania do', 'Login locked until'],
+  renewal_required: ['Wymagana zmiana hasła', 'Password change required'],
+  policy_setting: ['Ustawienie polityki', 'Policy setting'],
+  policy_value: ['Wartość wyjątku', 'Exception value'],
+  valid_until: ['Wyjątek ważny do', 'Exception valid until'],
+  reason: ['Powód wyjątku', 'Exception reason'],
 };
 const categories: Record<string, readonly [string, string]> = {
   'runa.auth.new_browser': ['Nowa przeglądarka', 'New browser'],
@@ -43,8 +81,18 @@ function label(pair: readonly [string, string] | undefined, fallback: string) {
 function value(v: HistoryValue): string {
   if (v === null) return '—';
   if (typeof v === 'boolean') return v ? text('Tak', 'Yes') : text('Nie', 'No');
-  if (Array.isArray(v))
+  if (
+    Array.isArray(v) &&
+    v.every((item) => item === null || typeof item !== 'object')
+  )
     return v.length ? v.map((item) => value(item)).join(', ') : '—';
+  if (typeof v === 'object') return JSON.stringify(v, null, 2);
+  const known = String(v).endsWith(':runa.auth:navigation:collapsed')
+    ? text('Zwinięcie nawigacji', 'Collapsed navigation')
+    : String(v).endsWith(':runa.auth:navigation:expanded')
+      ? text('Rozwinięte grupy nawigacji', 'Expanded navigation groups')
+      : undefined;
+  if (known) return known;
   return label(categories[String(v)], String(v));
 }
 </script>
@@ -114,34 +162,32 @@ function value(v: HistoryValue): string {
               <p class="mb-1 text-xs text-muted">
                 {{ text('Przed', 'Before') }}
               </p>
-              <p class="[overflow-wrap:anywhere]">{{ value(change.before) }}</p>
+              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {{ value(change.before) }}
+              </p>
             </div>
             <div>
               <p class="mb-1 text-xs text-muted">{{ text('Po', 'After') }}</p>
-              <p class="[overflow-wrap:anywhere]">{{ value(change.after) }}</p>
+              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {{ value(change.after) }}
+              </p>
             </div>
           </dd>
         </dl>
       </div>
       <p
-        v-else-if="
-          !detail.action.startsWith('password.') &&
-          detail.action !== 'two_factor.admin_reset'
-        "
+        v-else-if="!detail.action.startsWith('password.')"
         class="text-sm leading-7 text-muted"
       >
         {{
           text(
-            'To zdarzenie nie zawiera zapisanych wartości przed i po zmianie.',
-            'This event has no recorded before and after values.',
+            'Dla tego wpisu nie zapisano szczegółów zmiany. W starszych zdarzeniach nie można odtworzyć wartości przed i po.',
+            'Change details were not recorded for this entry. Before and after values cannot be reconstructed for older events.',
           )
         }}
       </p>
       <p
-        v-if="
-          detail.action.startsWith('password.') ||
-          detail.action === 'two_factor.admin_reset'
-        "
+        v-if="detail.action.startsWith('password.')"
         class="text-sm leading-7 text-muted"
       >
         {{

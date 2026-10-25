@@ -62,10 +62,11 @@ final readonly class ReadOwnHistoryDetails implements OwnHistoryDetails
     private function safeValue(mixed $value): bool
     {
         if (is_array($value)) {
-            return array_is_list($value) && count($value) <= 21 && array_all($value, fn ($v) => ! is_array($v) && $this->safeValue($v));
+            return array_all($value, fn ($v) => $this->safeValue($v));
         }
 
         return $value === null || is_bool($value) || is_int($value)
-            || (is_string($value) && mb_strlen($value) <= 512);
+            || (is_float($value) && is_finite($value))
+            || (is_string($value) && strlen($value) <= 8192);
     }
 }

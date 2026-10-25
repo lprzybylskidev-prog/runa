@@ -65,6 +65,14 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requires concrete changes throughout account history, with
+  credential values excluded. Point 19zza completes non-display preference and
+  per-setting reset capture, factor/verification/lifecycle state and readable
+  event names. Legacy missing values remain immutable; do not infer old state
+  from present state. Password events retain a summary without a detail button.
+  New safe structured preference values extend the bounded Audit projection;
+  existing scalar projections remain compatible. Final appearance gate remains.
+
 - 2026-10-25 — Owner confirms details for all account-history events. Point 19zz
   adds a bounded account-bound Audit projection and replaceable Auth modal, captures
   approved before/after values for future events, and describes security operations
@@ -1214,6 +1222,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
 - [x] 19zy. Label preference changes and resets explicitly in account history.
 - [x] 19zz. Deliver safe details for every account-history event and capture approved changes.
+- [ ] 19zza. Complete concrete account changes, preference reset details and security-state history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4230,3 +4239,52 @@ architectural premise requires discussion before dependent work.
   base testing, in dependency order Audit -> Auth -> Permissions. Both preparations
   and the runtime module check pass. No reset or migration was needed; point 19zz
   is complete and point 20 remains appearance-gated.
+
+## Point 19zza delivery
+
+- Read-only development diagnosis confirmed all six visible notification changes
+  predated detail capture and had empty changes. No recoverable old/new payload
+  exists in those events. Historical events remain untouched; the modal now
+  explains the legacy limitation instead of implying that missing detail is normal
+  for new mutations. No live account or preference was changed for verification.
+- Complete non-display preference writes now record declared effective values,
+  including structured navigation/table values. Scoped/admin/full resets emit
+  per-setting details; complete reset also emits each delivery category's old/new
+  enabled/recipient state and aggregate counts. Locale/theme remain excluded and
+  no-op preference writes produce no change event. Recipient resolution batches
+  owned address reads. All capture shares existing transaction/revision boundaries.
+- Added safe factor state/setup/use/rotation/admin-reset capture, address request/
+  verification values, lifecycle schedules/expiry/approval/locks/restoration and
+  account policy-exception values/deadline/reason. Exposed existing safe lifecycle
+  pairs while keeping internal revisions private. Password values, authenticator
+  secrets, backup-code values and tokens remain excluded. A password event keeps
+  its summary without a Details button; other events receive precise PL/EN labels.
+- Audit MINOR 0.6.0 -> 0.7.0 extends approved values to bounded redacted JSON.
+  Existing scalar projections remain compatible; the trusted fixed Auth map and
+  account-bound visibility guard remain unchanged. Auth MINOR 0.22.0 -> 0.23.0;
+  Permissions PATCH 0.5.10 -> 0.5.11 aligns dependency bounds. Source-only upgrade
+  edges; no schema/dependency/runtime-configuration change. Source/version checks
+  pass and current client assets build.
+- Focused regressions cover actual writes/resets, large/structured values, nested
+  redaction, factor enrollment/disable/code consumption, address verification,
+  lifecycle detail, all declared safe fields, foreign-account refusal, legacy
+  events and Audit rollback. The old identity-only fixture accidentally retained an
+  uninstalled required Permissions row; it now removes that row explicitly before
+  isolated baseline setup, matching its declared absence and existing teardown.
+  Its predicate test passes without bypassing runtime guards. No diagnostic code
+  remains. Frontend tests confirm structured rendering, password summary-only
+  behavior, read retry and cancellation/late-response fencing.
+- Public history/preferences/profile and Audit contracts/changelogs are updated.
+  Root AGENTS and owner/customer skills already delegate to these guarded public
+  history/presentation contracts; no new agent workflow or protected-edit
+  authority is introduced, so existing instruction references need no change.
+- Backend runners removed only their owned runa_test_test_1 workers. Base databases,
+  externally owned development/browser services, caches, backups and evidence are
+  preserved; no task Docker resources were created or removed. Full verification
+  point 20 remains gated on owner appearance acceptance.
+- Focused verification is green: 13 backend cases across the targeted runs, two
+  frontend cases and two Chromium presentation cases (PL/dark desktop and EN/light
+  mobile). API coverage checks every approved field for every listed event, not
+  only empty synthetic payloads. Browser screenshots under the existing history-
+  details artifact paths were reviewed. The fixture correction and associative
+  JSON assertion repair were verified by focused reruns. No broad gate was run.

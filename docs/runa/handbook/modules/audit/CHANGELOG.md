@@ -1,5 +1,10 @@
 # Audit module changelog
 
+## 0.7.0
+
+Extend approved own-history values to bounded redacted JSON for structured preferences; existing scalar projections remain compatible.
+Source-only forward edge; no schema migration.
+
 ## 0.6.0
 
 Add the guarded OwnHistoryDetails 1.0.0 API for account-bound, action/field-allowlisted

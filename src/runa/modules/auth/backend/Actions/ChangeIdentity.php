@@ -53,7 +53,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
             app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();
             // No names, addresses, login, password or token in lifecycle history.
-            $this->record('identity.created', $user, ['active' => $input->active, 'approved' => $input->approved]);
+            $this->record('identity.created', $user, ['active' => ['old' => null, 'new' => $input->active], 'approved' => ['old' => null, 'new' => $input->approved]]);
 
             return $user->identity();
         });
@@ -227,7 +227,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
         foreach (['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at', 'expires_at',
             'security_locked', 'attempt_locked_until', 'password_change_required', 'security_version', 'version'] as $key) {
             $value = $user->getAttribute($key);
-            $state[$key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s.u\Z') : $value;
+            $state[$key === 'password_change_required' ? 'renewal_required' : $key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s.u\Z') : $value;
         }
 
         return $state;

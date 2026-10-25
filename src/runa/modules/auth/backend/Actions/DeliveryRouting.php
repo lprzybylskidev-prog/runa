@@ -111,21 +111,33 @@ final readonly class DeliveryRouting implements AuthDelivery
             ['enabled' => $input['enabled'], 'recipients' => json_encode($input['recipients'], JSON_THROW_ON_ERROR), 'updated_at' => now(), 'created_at' => now()]);
         $user->preference_revision++;
         $user->save();
-        $resolve = function (array $ids) use ($connection, $user): array {
-            $addresses = [];
-            foreach ($ids as $id) {
-                $addresses[] = $id === 'primary' ? $user->email : $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->where('public_id', $id)->value('email');
-            }
-
-            return array_values(array_filter($addresses, 'is_string'));
-        };
         $this->transactions->record('delivery.preferences_changed', $user, [
             'category' => ['old' => $input['module'].'.'.$category->key, 'new' => $input['module'].'.'.$category->key],
             'enabled' => ['old' => $before?->enabled ?? true, 'new' => $input['enabled']],
-            'recipients' => ['old' => $resolve($before === null ? ['primary'] : json_decode($before->recipients, true, flags: JSON_THROW_ON_ERROR)), 'new' => $resolve($input['recipients'])],
+            'recipients' => ['old' => $this->recipientAddresses($connection, $user, $before === null ? ['primary'] : json_decode($before->recipients, true, flags: JSON_THROW_ON_ERROR)), 'new' => $this->recipientAddresses($connection, $user, $input['recipients'])],
         ]);
 
         return ['account' => $user->public_id, 'revision' => $user->preference_revision, 'channel' => 'email'];
+    }
+
+    /** Called before full-reset deletion inside its owning user transaction. */
+    public function recordReset(Connection $connection, User $user): void
+    {
+        foreach ($connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->get() as $row) {
+            $category = $row->module.'.'.$row->category;
+            $this->transactions->record('delivery.preferences_reset', $user, [
+                'category' => ['old' => $category, 'new' => $category],
+                'enabled' => ['old' => $row->enabled, 'new' => true],
+                'recipients' => ['old' => $this->recipientAddresses($connection, $user, json_decode($row->recipients, true, flags: JSON_THROW_ON_ERROR)), 'new' => [$user->email]],
+            ]);
+        }
+    }
+
+    private function recipientAddresses(Connection $connection, User $user, array $ids): array
+    {
+        $secondary = $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereIn('public_id', array_values(array_filter($ids, fn ($id) => $id !== 'primary')))->pluck('email', 'public_id')->all();
+
+        return array_values(array_filter(array_map(fn ($id) => $id === 'primary' ? $user->email : ($secondary[$id] ?? null), $ids), 'is_string'));
     }
 
     public function own(Connection $connection, User $user): array

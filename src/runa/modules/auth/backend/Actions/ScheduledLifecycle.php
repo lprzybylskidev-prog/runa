@@ -32,6 +32,7 @@ final readonly class ScheduledLifecycle
                         return;
                     }
                     $this->authority->assertMayRemove($connection, $deactivate ? [$id] : []);
+                    $wasActive = $user->active;
                     $user->active = ! $deactivate;
                     $user->activate_at = null;
                     if ($deactivate) {
@@ -42,7 +43,7 @@ final readonly class ScheduledLifecycle
                     $user->remember_token = null;
                     $user->save();
                     $this->sessions->revokeUser($connection, $user);
-                    $this->transactions->record($deactivate ? 'identity.scheduled_deactivated' : 'identity.scheduled_activated', $user);
+                    $this->transactions->record($deactivate ? 'identity.scheduled_deactivated' : 'identity.scheduled_activated', $user, ['active' => ['old' => $wasActive, 'new' => $user->active]]);
                 });
             } catch (OperationRejected $error) {
                 if (! $root || $error->reason !== 'last_superadmin_required') {

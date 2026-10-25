@@ -1008,6 +1008,10 @@ it('forces immediate reverification on an existing session and restores only cur
     $this->getJson('/api/runa/auth/profile')->assertForbidden();
     $this->postJson('/api/runa/auth/verification/complete', ['token' => Crypt::decryptString($token->delivery_secret)])->assertOk();
     $this->getJson('/api/runa/auth/profile')->assertOk();
+    foreach (['email.reverification_required' => [true, false], 'verification.completed' => [false, true]] as $action => [$old, $new]) {
+        $event = json_decode(DB::table('runa_audit.events')->where('action', $action)->latest('id')->value('changes'), true);
+        expect($event['verified'])->toEqual(['old' => $old, 'new' => $new]);
+    }
 });
 
 it('preserves disabled avatars and safely cleans replaced private blobs after Audit commit', function (): void {
@@ -1660,7 +1664,7 @@ it('account history includes existing notification preference events and resets 
     });
     $foreign = DB::table('runa_audit.events')->latest('id')->value('public_id');
     $history = $this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries');
-    expect(array_column($history, 'action'))->toBe(['preferences.admin_reset', 'preferences.reset_all', 'delivery.preferences_changed']);
+    expect(array_column($history, 'action'))->toBe(['preferences.admin_reset', 'preferences.reset_all', 'delivery.preferences_reset', 'delivery.preferences_changed']);
     foreach ($history as $entry) {
         expect(array_keys($entry))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
     }
@@ -1718,13 +1722,93 @@ it('account detail projection covers every declared action and rejects sensitive
     $user = profileVerified('all-details@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     foreach (AccountHistory::fields() as $action => $fields) {
-        DB::transaction(fn () => app(EntryTransaction::class)->record($action, $user));
+        $pairs = [];
+        foreach ($fields as $field) {
+            $pairs[$field] = ['old' => false, 'new' => true];
+        }
+        $pairs['unapproved'] = ['old' => 'private', 'new' => 'still-private'];
+        DB::transaction(fn () => app(EntryTransaction::class)->record($action, $user, $pairs));
         $id = DB::table('runa_audit.events')->latest('id')->value('public_id');
-        $this->getJson('/api/runa/auth/profile/history/detail?event='.$id)->assertOk()->assertJsonPath('data.action', $action)->assertJsonPath('data.changes', []);
+        $actual = $this->getJson('/api/runa/auth/profile/history/detail?event='.$id)->assertOk()->assertJsonPath('data.action', $action)->json('data.changes');
+        expect(array_column($actual, 'field'))->toBe($fields);
+        foreach ($actual as $pair) {
+            expect($pair['before'])->toBeFalse()->and($pair['after'])->toBeTrue();
+        }
     }
     $details = app(ModuleApis::class)->resolve('runa.audit', OwnHistoryDetails::class, '1.0.0');
     app(PrincipalScope::class)->run(new TrustedPrincipal($user->public_id), function () use ($details, $id): void {
         expect(fn () => $details->detail('runa.auth', 'user', $id, ['password.changed' => ['password']]))->toThrow(InvalidArgumentException::class);
     });
     expect(fn () => $details->detail('runa.auth', 'user', $id, ['profile.changed' => ['name']]))->toThrow(OperationRejected::class);
+});
+
+it('records concrete preference and factor changes with detailed resets without recording display changes or secrets', function (): void {
+    entryPolicy(['own_account_history' => true]);
+    $user = profileVerified('concrete-history@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $preference = ['application' => 'runa', 'module' => 'runa.auth', 'view' => 'navigation', 'key' => 'expanded'];
+    $expanded = array_map(fn ($i) => 'navigation-group-'.$i, range(1, 30));
+    $this->postJson('/api/runa/auth/preferences', $preference + ['operation' => 'write', 'value' => $expanded, 'revision' => 0])->assertOk();
+    $read = function (string $action): array {
+        $event = DB::table('runa_audit.events')->where('action', $action)->latest('id')->value('public_id');
+        expect($event)->not->toBeNull();
+
+        return $this->getJson('/api/runa/auth/profile/history/detail?event='.$event)->assertOk()->json('data.changes');
+    };
+    expect($read('preferences.changed'))->toContain(['field' => 'value', 'before' => [], 'after' => $expanded]);
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth',
+        'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 1])->assertOk();
+    $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'reset_all', 'revision' => 2])->assertOk();
+    expect($read('preferences.reset'))->toContain(['field' => 'value', 'before' => $expanded, 'after' => []]);
+    expect($read('delivery.preferences_reset'))->toContain(['field' => 'enabled', 'before' => false, 'after' => true]);
+    $count = DB::table('runa_audit.events')->where('action', 'preferences.changed')->count();
+    $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'write', 'module' => 'runa.auth',
+        'view' => 'global', 'key' => 'theme', 'value' => 'dark', 'revision' => 3])->assertOk();
+    expect(DB::table('runa_audit.events')->where('action', 'preferences.changed')->count())->toBe($count);
+    [$secret, $codes] = credentialEnroll($this, $user);
+    expect($read('two_factor.enrollment_started'))->toContain(['field' => 'setup_pending', 'before' => false, 'after' => true]);
+    $enabled = $read('two_factor.totp_confirm');
+    expect($enabled)->toContain(['field' => 'authenticator_enabled', 'before' => false, 'after' => true])
+        ->toContain(['field' => 'spare_codes_remaining', 'before' => 0, 'after' => 8]);
+    expect(json_encode($enabled))->not->toContain($secret, $codes[0], 'totp_secret', 'recovery_hashes');
+    $this->postJson('/api/runa/auth/security/disable', ['current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0], 'target' => 'totp'])->assertOk();
+    expect($read('two_factor.recovery_used'))->toContain(['field' => 'spare_codes_remaining', 'before' => 8, 'after' => 7]);
+    expect($read('two_factor.disable'))->toContain(['field' => 'authenticator_enabled', 'before' => true, 'after' => false]);
+    $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
+    expect($actions)->toContain('preferences.changed', 'preferences.reset', 'delivery.preferences_reset', 'two_factor.totp_confirm', 'two_factor.disable');
+});
+
+it('projects safe structured preference changes without leaking nested credentials and rolls preference writes back with Audit', function (): void {
+    entryPolicy(['own_account_history' => true]);
+    $user = profileVerified('structured-history@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    DB::transaction(fn () => app(EntryTransaction::class)->record('preferences.changed', $user, ['setting' => ['old' => 'table', 'new' => 'table'],
+        'value' => ['old' => ['columns' => ['name']], 'new' => ['columns' => ['email'], 'password' => 'never-return', 'token' => ['private']]]]));
+    $event = DB::table('runa_audit.events')->latest('id')->value('public_id');
+    $detail = $this->getJson('/api/runa/auth/profile/history/detail?event='.$event)->assertOk()->json('data.changes');
+    expect(collect($detail)->firstWhere('field', 'value'))->toEqual(['field' => 'value', 'before' => ['columns' => ['name']], 'after' => ['columns' => ['email'], 'password' => '[REDACTED]', 'token' => '[REDACTED]']]);
+    expect(json_encode($detail))->not->toContain('never-return', 'private');
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT preference_detail_refusal CHECK (false) NOT VALID');
+    try {
+        $this->postJson('/api/runa/auth/preferences', ['application' => 'runa', 'operation' => 'write', 'module' => 'runa.auth',
+            'view' => 'navigation', 'key' => 'collapsed', 'value' => true, 'revision' => 0])->assertServiceUnavailable();
+        expect(User::find($user->id)->preference_revision)->toBe(0)
+            ->and(DB::table('runa_auth.preferences')->where('user_id', $user->id)->count())->toBe(0);
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT preference_detail_refusal');
+    }
+});
+
+it('shows concrete account lifecycle values through own history without exposing internal revisions', function (): void {
+    entryPolicy(['own_account_history' => true]);
+    $user = profileVerified('lifecycle-detail@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $deadline = CarbonImmutable::now('UTC')->addDays(10)->format('Y-m-d\TH:i:s\Z');
+    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('set_expiry', $deadline));
+    $event = DB::table('runa_audit.events')->where('action', 'identity.set_expiry')->latest('id')->value('public_id');
+    $detail = $this->getJson('/api/runa/auth/profile/history/detail?event='.$event)->assertOk()->json('data.changes');
+    expect(array_column($detail, 'field'))->toBe(['expires_at'])->and($detail[0]['before'])->toBeNull()
+        ->and(CarbonImmutable::parse($detail[0]['after'])->format('Y-m-d\TH:i:s\Z'))->toBe($deadline);
+    $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
+    expect($actions)->toContain('identity.set_expiry');
 });
