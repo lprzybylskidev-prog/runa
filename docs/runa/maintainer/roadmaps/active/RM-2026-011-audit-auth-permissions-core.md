@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner removes the redundant account dropdown caption and requests
+  warning deactivation and error/danger deletion colors. Point 19zv preserves the
+  existing outlined action design and behavior in feature 0.5.0.
+
 - 2026-10-25 — Owner requires disabled welcome to remove Home from breadcrumbs
   and send brand links to /app, plus visibly pulsing avatar loading matching content
   skeletons. Point 19zu corrects both within the confirmed feature 0.5.0 release.
@@ -1181,6 +1185,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
+- [ ] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4061,3 +4066,19 @@ architectural premise requires discussion before dependent work.
 - No temporary Docker resources created/removed. Active development, both base
   databases, caches, backups and browser evidence preserved. Final point 20 remains
   behind owner appearance acceptance.
+
+## Point 19zv delivery
+
+- Removed the PL/EN account-menu caption and unused caption CSS. Avatar/name remain.
+- Account deactivation uses warning, deletion uses the existing danger/error palette.
+  Both entry buttons explicitly use outline because neutral variants do not display
+  semantic tones. Confirmation submits preserve the matching operation tone.
+- Auth cosmetic PATCH 0.21.11 -> 0.21.12 with source-only edge; dependent constraints
+  remain compatible. No behavior, schema, dependency or security-policy changes.
+- Public presentation guide/changelog synchronized. Existing root/owner/customer
+  skills already delegate to public presentation/components; no reusable contract
+  or new procedure requires duplicate instruction-product edits.
+- Client assets built; source and prior-HEAD module-version checks pass. This small color/copy change
+  needs no new tests; shared Button handles theme, interaction and reduced motion.
+  No temporary Docker resources created/removed; data, services, caches, backups and
+  evidence preserved. Final point 20 still awaits owner appearance acceptance.

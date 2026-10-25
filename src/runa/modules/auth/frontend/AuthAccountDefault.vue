@@ -366,12 +366,14 @@ const passwordHint = computed(() =>
       >
         <Button
           v-if="has('self_deactivate')"
-          tone="danger"
+          variant="outline"
+          tone="warning"
           @click="selectTask('deactivate')"
           >{{ text('Dezaktywuj konto', 'Deactivate account') }}</Button
         >
         <Button
           v-if="has('self_delete')"
+          variant="outline"
           tone="danger"
           @click="selectTask('delete')"
           >{{ text('Usuń konto', 'Delete account') }}</Button
@@ -532,7 +534,13 @@ const passwordHint = computed(() =>
             type="submit"
             variant="outline"
             :busy="busy"
-            :tone="destructive ? 'danger' : 'primary'"
+            :tone="
+              task === 'deactivate'
+                ? 'warning'
+                : destructive
+                  ? 'danger'
+                  : 'primary'
+            "
             :disabled="task === 'details' && !fieldNames.length"
             >{{ text('Zatwierdź', 'Submit') }}</Button
           ></template

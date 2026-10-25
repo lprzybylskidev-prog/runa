@@ -93,7 +93,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('single_table_read', '0.21.7', '0.21.8', UpgradeFactorSpacing::class),
             new UpgradeDefinition('welcome_modules', '0.21.8', '0.21.9', UpgradeFactorSpacing::class),
             new UpgradeDefinition('avatar_loading', '0.21.9', '0.21.10', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('welcome_navigation', '0.21.10', '0.21.11', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('welcome_navigation', '0.21.10', '0.21.11', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('account_action_tones', '0.21.11', '0.21.12', UpgradeFactorSpacing::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

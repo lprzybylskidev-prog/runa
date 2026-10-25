@@ -306,3 +306,7 @@ icons share the brand tile and support pointer hover and keyboard focus. This is
 a product catalogue, not a live availability dashboard. The existing `welcome`
 presentation replacement owns any customer-specific introduction/module catalogue;
 `useAuthWelcome()` continues to own session and welcome-policy behavior.
+
+The default account dropdown identity shows only avatar and display name, without
+a redundant account caption. Account deactivation uses warning outline actions;
+account deletion uses danger outline actions, including confirmation submits.

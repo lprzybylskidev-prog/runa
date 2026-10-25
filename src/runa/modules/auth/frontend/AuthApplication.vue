@@ -115,9 +115,6 @@ const initials = computed(
           />
           <div class="min-w-0">
             <p class="account-menu-name">{{ userName }}</p>
-            <p class="account-menu-caption">
-              {{ text('Twoje konto', 'Your account') }}
-            </p>
           </div>
         </div>
         <div class="account-menu-actions">
@@ -205,11 +202,6 @@ const initials = computed(
   font-weight: 600;
   line-height: 1.6;
   overflow-wrap: anywhere;
-}
-.account-menu-caption {
-  margin-top: 3px;
-  font-size: 11px;
-  color: var(--runa-text-secondary);
 }
 .account-menu-actions {
   display: grid;

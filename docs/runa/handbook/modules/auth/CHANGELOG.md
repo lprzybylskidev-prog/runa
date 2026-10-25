@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.21.12
+
+Remove the redundant account dropdown caption. Show account deactivation actions
+in warning outline and deletion in danger outline, including their confirmations.
+Source-only forward edge; no behavior, schema or security-policy changes.
+
 ## 0.21.11
 
 Respect disabled welcome policy in authenticated logo destinations and breadcrumbs,
