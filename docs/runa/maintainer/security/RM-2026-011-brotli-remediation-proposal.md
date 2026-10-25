@@ -1,6 +1,8 @@
 # RM-2026-011 Brotli remediation proposal — 2026-10-25
 
-Status: discussion; not an approved risk acceptance or runtime configuration.
+Status: owner selected waiting for a corrected official upstream image on
+2026-10-25. The derived-image proposal is not authorized; no new risk acceptance
+or runtime configuration change is approved.
 
 ## Observed failure
 
@@ -52,7 +54,18 @@ No production build, derived-image policy, Compose setting or customer default
 was changed. Database/locale/initialization compatibility is still to be tested
 against a disposable cluster after an implementation decision.
 
-## Decision requested
+## Owner decision — 2026-10-25
+
+The owner selects waiting for PostgreSQL upstream to publish a corrected official
+image. Keep current runtime configuration and exact-artifact gosu policy; do not
+introduce a derived PostgreSQL image or accept the Brotli finding. The owner also
+explicitly authorizes another complete all-group verification now. Run unchanged
+strict security checks and retain any known failure; this permission does not
+waive a hard gate, authorize release/merge with a failure or declare remediation
+complete. The earlier derived-image recommendation below remains an unapplied
+proposal, not the selected implementation.
+
+## Unapplied remediation proposal
 
 Recommended option: authorize a narrowly scoped Runa-derived PostgreSQL image
 using the current official exact base plus the tested Brotli correction, alongside

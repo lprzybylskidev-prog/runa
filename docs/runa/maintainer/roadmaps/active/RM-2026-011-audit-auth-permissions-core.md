@@ -1249,8 +1249,10 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Owner explicitly requests sequential testing during repair on 2026-10-25;
     this overrides the usual final-only broad-check sequencing for this correction.
     Fix/review/commit each coherent correction; run the supported failed/blocked
-    stages one at a time and receive their actual results. Do not automatically
-    start another complete background graph.
+    stages one at a time and receive their actual results. On 2026-10-25, after
+    receiving the sequential results and Brotli proposal, the owner explicitly
+    authorizes the complete graph again while waiting for PostgreSQL upstream.
+    Preserve all strict gates and the unresolved security/release blocker.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4580,8 +4582,8 @@ architectural premise requires discussion before dependent work.
   failure is suppressed. Public/owner quality and component contracts are updated.
   No module source/version or new customer operating policy changed; root owner
   rules/skill routing and customer products already route to those public contracts.
-- Firefox preference regression now passes 12 consecutive real browser runs after
-  the focus-aware fix. Full browser acceptance is running separately.
+- Firefox preference regression passes 12 consecutive real browser runs after
+  the focus-aware fix; complete browser acceptance subsequently passes below.
 - Source review of the previously blocked render diagnostic found obsolete Runa
   heading/guest-session expectations and reliance on the preceding browser's
   endpoint, which that runner correctly removes. Update the heading to .runa,
@@ -4612,6 +4614,13 @@ architectural premise requires discussion before dependent work.
   premise discussion rule: a derived PostgreSQL build and exact-artifact acceptance
   cannot silently inherit the previous official-image decision. See the concrete
   [Brotli remediation proposal](../../security/RM-2026-011-brotli-remediation-proposal.md).
-  Owner choice is needed between that scoped correction and waiting for a verified
-  upstream image. Changed-surface security/release final contracts and the complete
-  graph remain pending; point 19zze and 20 remain open. No automatic full rerun.
+  On 2026-10-25 the owner chooses waiting for a corrected official PostgreSQL
+  upstream image and explicitly authorizes a complete all-group verification now.
+  Do not implement the derived image or change runtime pins, Compose or acceptance
+  policy. The unchanged strict scanner can still fail on Brotli; this run records
+  that result without downgrading the blocker or authorizing release/merge. Final
+  security/release closure and points 19zze/20 remain open. Run the supported full
+  background graph after committing this decision and previewing the exact plan;
+  monitor through quality-status. Existing quality_groups: all and its rationale
+  remain unchanged. This owner-only verification decision adds no delivered
+  capability or new owner/customer instruction product.
