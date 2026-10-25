@@ -4413,3 +4413,17 @@ architectural premise requires discussion before dependent work.
   are recorded in .runtime/artifacts/RM-2026-011/security-review.md and content-bound
   evidence is refreshed after the committed candidate. Dependency/image scans remain
   separate mandatory selected checks. Point 20 remains open.
+
+### Point 19zzb final candidate
+
+- Committed correction candidate 714c466a with mandatory hooks passing. Applied
+  only upgrade:registration_confirmation:0.23.0:0.23.1 through the supported
+  forward preparation primitive in development and base testing; both passed.
+  No migration/reset, user mutation, dependency change or Docker cleanup was needed.
+  Supported worker cleanup removed only disposable workers; development/test base
+  databases, active services, Qdrant/model caches, backups and reports are preserved.
+- Scoped module-version comparison against the prior commit passes: Audit 0.7.0,
+  Auth 0.23.1, Permissions 0.5.11. Reviewed dependent ranges remain compatible.
+  The full all-group rerun preview is saved at
+  .runtime/artifacts/RM-2026-011/verification-attempt-2-plan.txt. The following
+  documentation-only commit records preparation results; point 20 remains open.
