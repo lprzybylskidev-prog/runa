@@ -162,7 +162,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `src/runa/resources/js/components/App*.vue`. `AsyncContentState` is loading/error/empty/success. No fetch/provider lifecycle is hidden in these primitives.
 - Spinner requires localized label; sm/md/lg are 14/24/44px. Standalone uses role=status; decorative removes announcement for an already named parent. Button busy state and LoadingOverlay now compose this shared spinner, preserving overlay timing/focus/color capture. Reduced motion removes rotation.
-- Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not implement avatars or imply actual data progress.
+- Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not fetch identity data or imply actual data progress.
 - Progress requires localized label; value null/absent/nonfinite is indeterminate. Finite value is clamped to 0..max (positive finite max, otherwise 100). ARIA uses actual value/max units; visible percentage is derived only for determinate progress. Optional valueText supplies a localized meaningful equivalent. FeedbackTone selects neutral/success/info/warning/danger; reduced motion stops travel/transition while leaving the status visible. The caller owns completion/failure/cancellation.
 - EmptyState requires title, optional description/icon; icon and actions slots support composition. It is static by default. AsyncContent announces its default empty state through role=status.
 - AsyncContent requires controlled state and offers loading/error/empty/success slots, with default slot as success fallback. Defaults compose Spinner, Alert and EmptyState; all text is configurable (English standalone defaults; application callers supply PL/EN). Optional retryLabel exposes a retry button and retry event; custom error slot receives retry(). Retry never invents success or fetches data. Only the active state is mounted, so hoist form/draft state if it must survive switching; network cancellation and stale-response handling belong to the caller. aria-busy reflects loading; custom slots own their appropriate accessible status semantics.
@@ -337,11 +337,14 @@ disabled fieldsets/inert ancestors block edits.
 
 Public Avatar from `@/runa/ui` renders a decorative circular image with initials
 fallback and object-fit cover. Props: initials (required), src (default empty),
-size in px (default 40). Image errors fall back to initials; changing src retries.
+size in px (default 40), loading (default false) for pending identity metadata.
+A shared circular Skeleton pulses while metadata or the image is loading; initials
+appear only after no image is known or an image fails. Source changes restart image
+readiness. Reduced motion/print inherit Skeleton's static fallback.
 The parent owns the accessible name, identity authorization and safe image URL.
-No fetching/profile storage, motion or global state lives in this primitive.
-ApplicationLayout accepts optional userAvatar (default empty) alongside userName/
-userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
+No fetching/profile storage or global state lives in this primitive.
+ApplicationLayout accepts optional userAvatar (default empty) and userLoading
+(default false) alongside userName/userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
 
 ## Form conflict decisions
 

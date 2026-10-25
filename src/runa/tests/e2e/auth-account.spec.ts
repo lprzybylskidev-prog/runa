@@ -1,6 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 const id = '01900000-0000-7000-8000-000000000001';
-async function accountTransport(page: Page, welcome = true) {
+async function accountTransport(
+  page: Page,
+  welcome = true,
+  presentation: { avatar?: boolean; profileReady?: Promise<void> } = {},
+) {
   let signedIn = true;
   let updates = 0;
   await page.route('**/api/runa/auth/**', async (route) => {
@@ -63,6 +67,7 @@ async function accountTransport(page: Page, welcome = true) {
         expires_at: new Date(Date.now() + 3600000).toISOString(),
       };
     else if (path.endsWith('/profile')) {
+      await presentation.profileReady;
       if (route.request().method() === 'PATCH') updates++;
       data = {
         public_id: id,
@@ -75,7 +80,7 @@ async function accountTransport(page: Page, welcome = true) {
         login: null,
         email: 'anna@example.test',
         email_verified: true,
-        has_avatar: false,
+        has_avatar: presentation.avatar ?? false,
         secondary_emails: [],
         capabilities: {
           own_name_editable: true,
@@ -279,5 +284,79 @@ for (const mode of ['composed', 'replacement']) {
       page.locator('[data-customer-brand], [data-customer-entry]').first(),
     ).toBeVisible();
     expect(errors).toEqual([]);
+  });
+}
+
+for (const [path, width, theme] of [
+  ['/app', 1440, 'dark'],
+  ['/account', 390, 'light'],
+] as const) {
+  test(`avatar loading and breadcrumbs: ${path}`, async ({ page }, info) => {
+    test.skip(
+      info.project.name !== 'chromium',
+      'Focused shell presentation diagnostic.',
+    );
+    let releaseProfile!: () => void;
+    let releaseImage!: () => void;
+    const profileReady = new Promise<void>((resolve) => {
+      releaseProfile = resolve;
+    });
+    const imageReady = new Promise<void>((resolve) => {
+      releaseImage = resolve;
+    });
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript((theme) => {
+      localStorage.setItem('runa.locale', 'pl');
+      localStorage.setItem('runa.theme', theme);
+    }, theme);
+    await accountTransport(page, true, { avatar: true, profileReady });
+    await page.route('**/api/runa/auth/profile/avatar**', async (route) => {
+      await imageReady;
+      await route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#9776b8"/><circle cx="20" cy="15" r="8" fill="#fff"/></svg>',
+      });
+    });
+    await page.goto(path);
+    const trigger = page.locator('.shell-avatar-button');
+    await expect(trigger).toHaveAttribute('aria-label', /Anna Kowalska/);
+    await expect(trigger.locator('.avatar-skeleton')).toBeVisible();
+    await expect(trigger).not.toContainText('AK');
+    await trigger.click();
+    const menuAvatar = page.locator('.account-menu-identity .runa-avatar');
+    await expect(menuAvatar.locator('.avatar-skeleton')).toBeVisible();
+    releaseProfile();
+    await expect(trigger.locator('img')).toHaveAttribute(
+      'src',
+      /profile\/avatar/,
+    );
+    await expect(trigger.locator('.avatar-skeleton')).toBeVisible();
+    await expect(menuAvatar.locator('.avatar-skeleton')).toBeVisible();
+    await page.screenshot({
+      path: `../.runtime/artifacts/playwright/avatar-${path.slice(1)}-loading.png`,
+      fullPage: true,
+    });
+    releaseImage();
+    await expect(trigger.locator('img')).toBeVisible();
+    await expect(menuAvatar.locator('img')).toBeVisible();
+    await expect(trigger.locator('.avatar-skeleton')).toHaveCount(0);
+    await expect(menuAvatar.locator('.avatar-skeleton')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    const breadcrumbs = page.getByRole('navigation', {
+      name: 'Ścieżka nawigacji',
+    });
+    await expect(breadcrumbs.locator('[aria-current="page"]')).toHaveText(
+      path === '/app' ? 'Aplikacja' : 'Panel użytkownika',
+    );
+    if (path === '/account')
+      await expect(
+        breadcrumbs.getByRole('link', { name: 'Aplikacja' }),
+      ).toHaveAttribute('href', '/app');
+    if (width > 1024)
+      await expect(page.locator('.shell-brand').first()).toHaveText('runa.');
+    await page.screenshot({
+      path: `../.runtime/artifacts/playwright/avatar-${path.slice(1)}-loaded.png`,
+      fullPage: true,
+    });
   });
 }

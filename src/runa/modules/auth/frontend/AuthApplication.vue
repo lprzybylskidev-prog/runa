@@ -4,6 +4,7 @@ import { useAuthPresentation } from './presentation';
 import {
   Alert,
   Avatar,
+  Breadcrumbs,
   ApplicationLayout,
   Button,
   Icon,
@@ -24,6 +25,7 @@ const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
 const {
   session,
   profile,
+  profileLoading,
   paused,
   loading,
   failure,
@@ -83,12 +85,30 @@ const initials = computed(
     :title="account ? text('Panel użytkownika', 'User panel') : ''"
     :user-name="userName"
     :user-avatar="avatar"
+    :user-loading="loading || profileLoading"
     :user-initials="initials"
   >
+    <template #breadcrumbs>
+      <Breadcrumbs
+        :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
+        :items="[
+          { label: text('Strona główna', 'Home'), href: '/' },
+          { label: text('Aplikacja', 'Application'), href: '/app' },
+          ...(account
+            ? [{ label: text('Panel użytkownika', 'User panel') }]
+            : []),
+        ]"
+      />
+    </template>
     <template v-if="session && !loading" #user-menu>
       <div class="account-menu">
         <div class="account-menu-identity">
-          <Avatar :src="avatar" :initials="initials" :size="40" />
+          <Avatar
+            :src="avatar"
+            :initials="initials"
+            :size="40"
+            :loading="loading || profileLoading"
+          />
           <div class="min-w-0">
             <p class="account-menu-name">{{ userName }}</p>
             <p class="account-menu-caption">

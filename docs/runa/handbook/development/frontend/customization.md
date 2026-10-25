@@ -10,7 +10,7 @@ Application changes live in `src/app`; `src/runa` remains protected.
 
 The supplied `src/app/resources/js/App.vue` renders `DefaultApplication` from
 `@/runa/auth`. That platform component selects exact Auth pages, `/app`, `/account`
-and welcome. The default `/app` is empty: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
+and welcome. The default `/app` has Home / Application breadcrumbs and an otherwise empty workspace: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
@@ -70,7 +70,7 @@ names, URLs or backend metadata. Keep the map stable during an active form.
 | Entry               | Customer component contract                                                                                                                                                                                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `minimalLayout`     | Accept and render the default content slot, including its `t` translator slot argument for welcome, and forward `header-actions` for the welcome entry links; accept layout props. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
-| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu slots. Forward width/navigation/current/title/user identity (including userAvatar) and preserve the account/sign-out controls.                                                                                                           |
+| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu/breadcrumbs slots. Forward width/navigation/current/title/user identity (including userAvatar/userLoading) and preserve the account/sign-out controls.                                                                                   |
 | `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                |
 | `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                |
 | `accountLoading`    | Static initial account structure, without account props or reads. Used before session validation and while the default account controller initializes. Public `AuthAccountLoading` is the supplied fallback.                                                                                      |
@@ -184,8 +184,12 @@ useApplicationSession also exposes optional reactive profile presentation from t
 guarded own-profile route. Subscribe through the public controller; same-account
 profile reads with a nonstale version refresh name/initials/avatar after edits.
 It clears presentation on pause/logout/switch and ignores foreign or stale responses.
-Custom ApplicationLayout wrappers forward userAvatar; use public Avatar for a
-custom user identity row. These presentation fields never establish authorization.
+The default /app and /account views supply localized Home / Application and
+Home / Application / User panel breadcrumbs through the shell slot.
+Custom ApplicationLayout wrappers forward userAvatar, userLoading and breadcrumbs; use public Avatar for a
+custom user identity row. The session controller exposes profileLoading for its
+optional presentation read; combine it with initial loading when passing Avatar
+loading. Image readiness is handled by Avatar itself. These presentation fields never establish authorization.
 
 Keep private forms scoped to the current account and unmount them on pause/switch.
 In a full customer shell, key the private subtree by session.public_id.
@@ -271,7 +275,7 @@ Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
 
-The default authenticated application view is empty. Account self-service is named
+The default authenticated application workspace is empty beneath its breadcrumbs. Account self-service is named
 Panel użytkownika (User panel) and is reached only through the user dropdown,
 not the sidebar or a welcome card. The dropdown groups initials/name identity
 above left-aligned icon/action rows with a divider and preserved keyboard focus.

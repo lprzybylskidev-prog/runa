@@ -406,6 +406,11 @@ it('account boundary diagnostic: application uses the existing dropdown for both
   const trigger = w.find('button[aria-label^="Menu użytkownika"]');
   expect(trigger.exists()).toBe(true);
   expect(w.find('.shell-workspace h1').exists()).toBe(false);
+  expect(w.get('nav[aria-label="Ścieżka nawigacji"]').text()).toContain(
+    'Strona główna',
+  );
+  expect(w.get('[aria-current="page"]').text()).toBe('Aplikacja');
+  expect(w.get('.shell-brand').text()).toBe('runa.');
   expect(w.find('.shell-workspace a[href="/account"]').exists()).toBe(false);
   expect(w.find('nav a[href="/account"]').exists()).toBe(false);
   await trigger.trigger('click');
@@ -983,12 +988,19 @@ it('shared avatar falls back on image errors and retries only when its source ch
   const w = mount(Avatar, {
     props: { src: '/missing-avatar-one.png', initials: 'TU', size: 40 },
   });
+  expect(w.find('.avatar-skeleton').exists()).toBe(true);
+  expect(w.text()).toBe('');
   await w.get('img').trigger('error');
+  expect(w.find('.avatar-skeleton').exists()).toBe(false);
   expect(w.find('img').exists()).toBe(false);
   expect(w.text()).toBe('TU');
   await w.setProps({ src: '/missing-avatar-two.png' });
   expect(w.get('img').attributes('src')).toBe('/missing-avatar-two.png');
   expect(w.get('img').attributes('alt')).toBe('');
+  expect(w.find('.avatar-skeleton').exists()).toBe(true);
+  await w.get('img').trigger('load');
+  expect(w.find('.avatar-skeleton').exists()).toBe(false);
+  expect(w.get('img').isVisible()).toBe(true);
 });
 it('session profile presentation clears on suspension instead of retaining the previous account image', async () => {
   currentProfile.has_avatar = true;
@@ -1013,6 +1025,7 @@ it('optional shell profile read never blocks the session and cannot restore pres
   await vi.waitFor(() => expect(state.loading.value).toBe(false));
   expect(state.session.value?.public_id).toBe(id);
   expect(state.profile.value).toBeUndefined();
+  expect(state.profileLoading.value).toBe(true);
   wrapper.unmount();
   finish(json({ ...currentProfile, has_avatar: true }));
   await flushPromises();
@@ -2300,4 +2313,46 @@ it('trusted management appears only while an active device exists and disappears
   await w.getComponent(AuthAccountEditor).props('account').refresh();
   await flushPromises();
   expect(card.text()).not.toContain('Zarządzaj urządzeniami');
+});
+
+it('shell waits for optional profile metadata before showing avatar initials', async () => {
+  const implementation = vi.mocked(window.fetch).getMockImplementation()!;
+  let releaseProfile!: () => void;
+  const profileGate = new Promise<void>((resolve) => {
+    releaseProfile = resolve;
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).endsWith('/profile')) await profileGate;
+    return implementation(input, init);
+  });
+  const w = mount(AuthApplication, { props: { account: true } });
+  const shell = w.getComponent(ApplicationLayout);
+  await vi.waitFor(() => expect(w.find('.account-menu').exists()).toBe(false));
+  await vi.waitFor(() =>
+    expect(
+      w.find('button[aria-label^="Menu użytkownika"]').attributes('aria-label'),
+    ).toContain('Test User'),
+  );
+  expect(shell.props('userLoading')).toBe(true);
+  expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(true);
+  expect(
+    w.get('nav[aria-label="Ścieżka nawigacji"] a[href="/app"]').text(),
+  ).toBe('Aplikacja');
+  expect(
+    w.get('nav[aria-label="Ścieżka nawigacji"] [aria-current="page"]').text(),
+  ).toBe('Panel użytkownika');
+  await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
+  await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
+  expect(
+    w
+      .findAllComponents(Avatar)
+      .every((a) => a.find('.avatar-skeleton').exists()),
+  ).toBe(true);
+  releaseProfile();
+  await vi.waitFor(() => expect(shell.props('userLoading')).toBe(false));
+  expect(
+    w
+      .findAllComponents(Avatar)
+      .every((a) => !a.find('.avatar-skeleton').exists()),
+  ).toBe(true);
 });

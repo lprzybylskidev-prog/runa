@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.21.10
+
+Keep a shared pulsing avatar placeholder through optional profile discovery and
+image loading in the application header and user dropdown. Add localized
+Home / Application / User panel breadcrumbs to the authenticated entry/account views. Initials appear only
+for absent/failed images; optional profile reads still never block the shell.
+Source-only forward edge; no schema, identity or security-policy change.
+
 ## 0.21.9
 
 Replace the welcome placeholder with the .runa heading, a concise PL/EN platform

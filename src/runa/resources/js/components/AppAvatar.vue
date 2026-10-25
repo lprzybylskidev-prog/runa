@@ -1,15 +1,27 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import AppSkeleton from './AppSkeleton.vue';
 const props = withDefaults(
-  defineProps<{ src?: string; initials: string; size?: number }>(),
-  { src: '', size: 40 },
+  defineProps<{
+    src?: string;
+    initials: string;
+    size?: number;
+    loading?: boolean;
+  }>(),
+  { src: '', size: 40, loading: false },
 );
 const failed = ref(false);
+const loaded = ref(false);
+const waiting = computed(
+  () => props.loading || (!!props.src && !failed.value && !loaded.value),
+);
 watch(
   () => props.src,
   () => {
     failed.value = false;
+    loaded.value = false;
   },
+  { flush: 'sync' },
 );
 </script>
 <template>
@@ -20,12 +32,15 @@ watch(
   >
     <img
       v-if="src && !failed"
+      v-show="!waiting"
       :key="src"
       :src="src"
       alt=""
+      @load="loaded = true"
       @error="failed = true"
     />
-    <span v-else>{{ initials }}</span>
+    <AppSkeleton v-if="waiting" shape="circle" class="avatar-skeleton" />
+    <span v-else-if="!src || failed">{{ initials }}</span>
   </span>
 </template>
 <style scoped>
@@ -44,5 +59,11 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.avatar-skeleton,
+.avatar-skeleton :deep(span) {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
 }
 </style>

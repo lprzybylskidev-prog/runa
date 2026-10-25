@@ -44,6 +44,7 @@ const props = withDefaults(
     userName?: string;
     userInitials?: string;
     userAvatar?: string;
+    userLoading?: boolean;
   }>(),
   {
     current: undefined,
@@ -57,6 +58,7 @@ const props = withDefaults(
     userName: 'Runa',
     userInitials: 'RU',
     userAvatar: '',
+    userLoading: false,
   },
 );
 const emit = defineEmits<{
@@ -64,6 +66,12 @@ const emit = defineEmits<{
   localeChange: [locale: Locale];
 }>();
 const identity = useIdentity();
+const brandName = computed(() =>
+  identity.value.applicationId === 'runa' &&
+  identity.value.applicationName === 'Runa'
+    ? 'runa'
+    : identity.value.applicationName,
+);
 const {
   locale,
   t,
@@ -316,7 +324,7 @@ onScopeDispose(() => {
             <RunaLogo v-else />
           </span>
           <span v-if="!sidebarCollapsed"
-            >{{ identity.applicationName
+            >{{ brandName
             }}<span class="text-primary" aria-hidden="true">.</span></span
           >
         </a>
@@ -384,7 +392,7 @@ onScopeDispose(() => {
           </AppButton>
           <a v-if="!sidebar" href="/" class="shell-brand"
             ><span class="brand-mark"><RunaLogo /></span
-            ><span>{{ identity.applicationName }}</span></a
+            ><span>{{ brandName }}</span></a
           >
           <div
             v-if="topbar"
@@ -435,6 +443,7 @@ onScopeDispose(() => {
                 @click="toggle"
                 ><AppAvatar
                   :src="userAvatar"
+                  :loading="userLoading"
                   :initials="userInitials"
                   :size="40"
               /></AppButton>

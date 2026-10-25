@@ -57,13 +57,15 @@ export function useApplicationSession(
   const profile = shallowRef<Profile>();
   const paused = ref(false),
     loading = ref(true),
+    profileLoading = ref(false),
     failure = ref(''),
     pending = ref(false),
     now = ref(Date.now());
   let epoch = 0,
     alive = true,
     lastActivity = 0,
-    refreshing = false;
+    refreshing = false,
+    profileRead = 0;
   let abort = new AbortController();
   const remaining = computed(() =>
     session.value
@@ -87,6 +89,7 @@ export function useApplicationSession(
   function suspend() {
     if (paused.value) return;
     paused.value = true;
+    profileLoading.value = false;
     profile.value = undefined;
     epoch++;
     abort.abort();
@@ -135,9 +138,16 @@ export function useApplicationSession(
       if (next.restrictions.length) suspend();
       else {
         // Optional presentation read; its failure must not invalidate a valid session.
-        void authGet('profile', abort.signal).catch(() => {
-          /* Initials remain available; optional presentation never blocks the shell. */
-        });
+        const read = ++profileRead;
+        profileLoading.value = !profile.value;
+        void authGet('profile', abort.signal)
+          .catch(() => {
+            /* Initials remain available; optional presentation never blocks the shell. */
+          })
+          .finally(() => {
+            if (alive && own === epoch && read === profileRead)
+              profileLoading.value = false;
+          });
       }
     } catch (error) {
       if (alive && own === epoch && !(error instanceof RequestCancelledError)) {
@@ -156,6 +166,7 @@ export function useApplicationSession(
     session.value = undefined;
     profile.value = undefined;
     loading.value = true;
+    profileLoading.value = false;
     await refresh();
   }
   async function logout() {
@@ -241,6 +252,7 @@ export function useApplicationSession(
   });
   onScopeDispose(() => {
     alive = false;
+    profileLoading.value = false;
     profile.value = undefined;
     epoch++;
     abort.abort();
@@ -255,6 +267,7 @@ export function useApplicationSession(
   return {
     session,
     profile,
+    profileLoading,
     paused,
     loading,
     failure,

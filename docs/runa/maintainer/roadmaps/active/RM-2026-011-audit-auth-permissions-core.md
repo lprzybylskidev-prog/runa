@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests consistent lowercase `runa.` ApplicationLayout
+  branding, avatar loading feedback through profile/image discovery in header and
+  dropdown, and breadcrumbs on /app and /account. Point 19zt keeps the existing
+  feature 0.5.0 scope and shared public component/presentation contracts.
+
 - 2026-10-25 — Owner requests a complete welcome introduction: `.runa`, concise
   localized Laravel/modular-monolith copy, brand-style module icons and localized
   name/description tooltips. Point 19zs also establishes the new-module welcome
@@ -1170,6 +1175,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zq. Animate only one randomly selected illustration point per cycle.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
+- [ ] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3982,3 +3988,34 @@ architectural premise requires discussion before dependent work.
 - No temporary Docker resources were created or removed. Preserved development/test
   databases, active services, caches, backups and browser evidence. No broad gate run;
   final point 20 remains gated on owner appearance acceptance.
+
+## Point 19zt delivery
+
+- ApplicationLayout presents the default Runa identity as lowercase `runa.` while
+  preserving custom application names. Both authenticated routes use the shared
+  Breadcrumbs slot: Home / Application and Home / Application / User panel.
+- Shared Avatar exposes additive loading metadata and uses the existing circular
+  Skeleton until profile discovery and image load complete. No blank-image/initials
+  intermediate state; absent/failed images retain initials. Source changes retry.
+  Header and dropdown share the primitive; account previews inherit image readiness.
+- The session controller exposes profileLoading without blocking optional profile
+  discovery or private workspace mounting. Epoch/disposal and request-generation
+  checks fence completion; existing identity/security behavior remains unchanged.
+- Auth compatible PATCH 0.21.9 -> 0.21.10, source-only forward edge. Current
+  Permissions dependency remains compatible; no schema, dependency or Docker change.
+- Public component/motion/customization guides and customer frontend reference
+  synchronized, including breadcrumbs and userLoading forwarding. Existing root
+  AGENTS/owner frontend/Vue/Tailwind references already delegate to these public
+  contracts; no duplicate procedure is necessary.
+- Four focused browser unit cases pass: image readiness/error/retry, delayed profile
+  metadata, existing dropdown integration and optional-read disposal fencing. Initial
+  delayed-profile test resolved only one of the account screen's concurrent reads;
+  a shared gate now releases all reads and preserves the actual optional behavior.
+- Two focused Playwright cases cover /app desktop and /account mobile with separately
+  delayed profile and image responses, both menu avatars, branding and breadcrumb
+  semantics. Current client assets built for review. Source and prior-HEAD module
+  version checks pass. Pulse duration and reduced-motion static fallback pass.
+  Local forward publication pending.
+- No temporary Docker resources created or removed. Development/test data, active
+  services, caches, backups and evidence preserved. Final point 20 remains open
+  behind explicit owner visual acceptance; no broad verification started.

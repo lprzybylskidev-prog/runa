@@ -61,3 +61,7 @@ AppBrandIllustration is static by default outside that layout. Both decorative
 effects share a private scheduler that cancels timers/animations on reduced motion,
 print, hidden documents, opt-out and disposal. Their public controls are
 MinimalLayout constellationGlow/orbitMotion; static errors never start scheduling.
+
+Avatar composes the shared circular Skeleton while identity metadata or image bytes
+are pending. It inherits Skeleton's 1600ms pulse and reduced-motion/print fallback;
+image/initials replacement is immediate without another fade or entrance.
