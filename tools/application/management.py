@@ -141,7 +141,10 @@ def execute_plan(plan, request):
                 json.dump(plan, stream)
                 stream.write('\n')
             # Fixed trusted executable and action, never instructions from release/retrieval text.
-            result = subprocess.run(execution_command(plan), cwd=ROOT)
+            browser = plan['operation'] == 'tooling.test' and plan['parameters'].get('arguments', [])[:1] == ['e2e']
+            from test_resources import endpoint
+            with endpoint() if browser else nullcontext():
+                result = subprocess.run(execution_command(plan), cwd=ROOT)
             return result.returncode
         finally:
             path.unlink()
@@ -196,8 +199,6 @@ def execution_command(plan):
             return ['python3', str(ROOT / 'tools/application/executors/production.py'), 'self-test']
         if not arguments or arguments == ['development']:
             host_stack_health()
-    if tool == 'test' and arguments and arguments[0] == 'e2e':
-        subprocess.run(compose() + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=ROOT, check=True)
     return app_command(['php', 'artisan', *public_command(tool, arguments)])
 
 

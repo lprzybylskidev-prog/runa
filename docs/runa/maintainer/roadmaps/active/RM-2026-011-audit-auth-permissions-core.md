@@ -65,6 +65,15 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner authorizes automatic scoped test-resource lifecycle and
+  cleanup of the audited existing database/container residue. Point 19zr preserves
+  the base test database, development data, caches, reports and other projects;
+  worker databases are disposable. Supported runners clean workers on success or
+  failure and recover inactive orphans under the suite lock. Browser startup owns
+  only its newly created testing containers; manually provisioned endpoints remain
+  externally owned. Extend owner/customer guidance in the same point. This is a
+  tooling correction within the confirmed feature 0.5.0 release.
+
 - 2026-10-25 — Owner refines illustration motion: animate only one randomly
   chosen point at a time. Point 19zq preserves the existing complete lap/pulse
   timing and excludes immediately repeating the preceding point.
@@ -1154,6 +1163,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zo. Temporarily preview all MinimalLayout constellation points every three seconds.
 - [x] 19zp. Restore sparse backdrop glow and animate full illustration-point orbits in MinimalLayout.
 - [x] 19zq. Animate only one randomly selected illustration point per cycle.
+- [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3890,3 +3900,45 @@ architectural premise requires discussion before dependent work.
   instruction rule or public API needed. No module/version, dependency, runtime
   configuration, database or Docker changes. Existing data/services, Qdrant/model
   caches, backups and evidence preserved. Full point 20 remains appearance-gated.
+
+### Point 19zr — Disposable test resource lifecycle and scoped retirement
+
+- Owner-approved tooling correction in the existing feature 0.5.0 scope. Knowledge
+  was current; reviewed the active point, testing/command/database ownership and
+  Docker safety sources. Loaded Docker, PostgreSQL, backend, Laravel and security
+  guidance; checked version-aware Boost parallel-testing documentation.
+- Supported owner/application backend runners and native Artisan test now share
+  suite-locked worker cleanup before/after runs. Preserve base runa_test and reject
+  foreign ownership or active worker connections before any removal. Canonical
+  worker names only; ordinary DROP DATABASE, no forced connection termination.
+  The child validates testing host/role/base and explicitly returns failure even
+  after Laravel installs its exception renderer. Failure never becomes PASS.
+  Read-only native discovery remains available inside an existing suite.
+- Automatic host browser startup records a unique run label before Compose starts,
+  labels only missing testing services and never recreates/adopts manual endpoints.
+  Exact project/checkout/service/run identity checks govern teardown and journaled
+  recovery after failure/interruption. Active suites block recovery. No Docker
+  socket, global prune, volume reset or application/production runtime changes.
+- Scoped retirement inspected actual database owners/connections and container
+  labels/mounts/state: removed 18 inactive test-role worker databases (13 ordinary
+  plus five historical double-suffix names), runa-dev-nginx-test-1 and the old
+  runa_devcontainer nginx/php pair, then its empty default network. Preserved runa,
+  runa_test, all volumes, nine healthy running development services, management
+  image/build caches, Qdrant/models, backups, reports and unrelated projects.
+  Evidence: .runtime/artifacts/test-resource-cleanup-2026-10-25.json.
+- Focused checks: eight TestResourceContracts cover ownership, manual preservation,
+  partial startup/interruption recovery, busy-suite refusal and runner failure
+  propagation. Four parallel owner regressions cover worker identity, active-worker
+  refusal, production refusal and native discovery/competing-run rejection. One
+  native application WelcomeTest passes in parallel and its worker is removed.
+  Owner test-e2e --list exercises real endpoint startup/health and exact teardown
+  of both newly created labeled containers, without executing browser acceptance.
+  Initial focused failures exposed Laravel's zero-exit exception renderer and a
+  native option-order requirement; corrected cleanup exit handling and used the
+  native without-tty option first. No broad gates or image builds were run.
+- Public testing/commands and maintainer strategy synchronized; owner/customer
+  AGENTS, Docker and Laravel references now delegate to the public lifecycle.
+  PostgreSQL/backend/security skills already route to these authoritative contracts
+  and require no duplicate procedure. No module contract/manifest/version,
+  dependency or schema migration changes. Final point 20 remains pending owner
+  frontend appearance acceptance; these focused results are not its final gate.

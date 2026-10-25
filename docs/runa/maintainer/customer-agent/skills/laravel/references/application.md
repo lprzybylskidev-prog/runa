@@ -68,3 +68,7 @@ module-owned contributors. Keep application `seeding.register` separate from the
 module contributor map; declare module-ID dependencies, preserve fixture provenance
 and existing credentials/grants with atomic Audit, and reject production at every
 fixture entry. Customer workflows use delivered commands, never owner test tools.
+
+Native test execution and supported test wrappers share the suite lock and guarded
+worker cleanup. Use the [test resource lifecycle](docs/runa/handbook/testing/strategy.md#test-resource-lifecycle);
+read-only discovery is exempt, while direct runners bypass protection.

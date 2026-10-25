@@ -35,6 +35,10 @@ version/files, stable credentials, repeat behavior and absence of real productio
 markers, then prints/removes only task-created disposable resources. Synthetic
 mail/TLS acceptance does not prove a real domain/provider or production deployment.
 
+## Disposable test resources
+
+Owner `test-backend` shares the [public worker lifecycle](../../handbook/testing/strategy.md#test-resource-lifecycle): suite-locked guarded cleanup before and after execution, preserving the base database and refusing active workers. Native application tests participate in the same lock. `test-e2e` host startup uses the delivered journaled endpoint lifecycle and removes only its newly created, labeled testing containers; manually provisioned endpoints remain externally owned. Do not bypass these entrypoints to run suites. `TestResourceContracts` in testing/management.py covers ownership, manual preservation, startup failure and interrupted recovery; WorkerCleanupTest covers active-worker and non-testing refusal. Broad live browser/installation acceptance remains in final verification.
+
 ## Backend test framework
 
 Pest 5.3.2 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.2 and ParaTest 7.27.2 are resolved testing dependencies in `src/composer.lock`.
@@ -51,7 +55,7 @@ Customer defaults are application-only: `php artisan test` and `php artisan runa
 
 Owner commands `python3 tools/maintainer/test-backend`, `test-frontend` and `test-e2e` select private configurations under `src/runa/tests`. The owner backend uses `Tests\PlatformTestCase`, a private fixture autoloader and explicit platform migration preparation. The shared customer base performs application migrations and bootstraps a fresh worker's missing technical platform history only through the delivered forward-only primitive, preserving guarded worker storage/database/cache isolation. Customer test setup never invokes owner distribution tools. Platform suites and `src/runa/tools` harnesses are excluded from customer acquisition; production images exclude both owners' tests.
 
-The three `runa:test*` wrappers and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native `php artisan test` and direct Pest/Node runners retain framework behavior and bypass that wrapper lock; avoid concurrent diagnostic runs against shared test state. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
+The three `runa:test*` wrappers, native `php artisan test` and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native read-only test discovery bypasses lifecycle mutation. Direct Pest/Node runners bypass the wrapper lock and cleanup; use supported runners for execution. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
 
 ## Test database and isolation
 
@@ -265,13 +269,13 @@ The test wrapper takes a nonblocking checkout-wide lock across backend, frontend
 
 The optional Compose `testing` profile starts `app-test` and `nginx-test`, using `.env.testing`, the dedicated PostgreSQL test role/database, native `LARAVEL_STORAGE_PATH=.runtime/tests/e2e`, synchronous queue and array mail. The PHP-FPM startup guard verifies its actual test database before serving. Nginx is reachable only on the internal Compose network at `http://nginx-test:8080`; no additional host port is published. Development remains at its own endpoint and database.
 
-From the host, `php artisan runa:test:e2e --critical` starts the testing profile and waits for readiness. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
+From the host, `./bin/artisan runa:test:e2e --critical` starts the testing profile, waits for readiness and tears down only its newly created labeled endpoint containers, including on failure. Existing manual endpoints remain externally owned. From the devcontainer, provision those siblings once from a host terminal before running the identical wrapper:
 
 ```sh
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-The owner `python3 tools/maintainer/test-e2e` entrypoint starts and waits for this testing profile when invoked on the host; the owner browser quality gate explicitly uses the host coordinator. Direct execution inside the container still requires the host startup above. This lifecycle keeps Docker sockets out of the devcontainer. Application Playwright targets `http://nginx-test:8080` directly; `RUNA_E2E_BASE_URL` can select another already provisioned HTTP(S) application test endpoint. The runner does not start a PHP server, create synthetic routes or reset data. It finalizes emergency assets before execution and uses one worker because projects share the test endpoint. Each test gets a fresh browser context. The application welcome smoke runs in Chromium, Firefox and mobile Chromium; failures retain screenshots/traces and an HTML report under `.runtime/artifacts/playwright/application/`. Build first with `pnpm --dir src run build`. Owner harness acceptance is separate below.
+The owner `python3 tools/maintainer/test-e2e` entrypoint starts, waits for and tears down its own labeled testing containers when invoked on the host; the owner browser quality gate explicitly uses the host coordinator. Direct execution inside the container still requires the host startup above. This lifecycle keeps Docker sockets out of the devcontainer. Application Playwright targets `http://nginx-test:8080` directly; `RUNA_E2E_BASE_URL` can select another already provisioned HTTP(S) application test endpoint. The runner does not start a PHP server, create synthetic routes or reset data. It finalizes emergency assets before execution and uses one worker because projects share the test endpoint. Each test gets a fresh browser context. The application welcome smoke runs in Chromium, Firefox and mobile Chromium; failures retain screenshots/traces and an HTML report under `.runtime/artifacts/playwright/application/`. Build first with `pnpm --dir src run build`. Owner harness acceptance is separate below.
 
 ## UI foundations and isolated browser tests
 

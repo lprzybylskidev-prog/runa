@@ -9,6 +9,12 @@ it('keeps native application test discovery independent of private owner bootstr
     expect($native->getOutput())->toContain('WelcomeTest')
         ->not->toContain('ManagementTest', 'DatabaseOwnershipTest', 'TestSuiteOwnershipTest');
 
+    foreach (['test', 'runa:test'] as $command) {
+        $competing = new Process([PHP_BINARY, 'artisan', $command, '--filter=WelcomeTest'], base_path());
+        expect($competing->run())->not->toBe(0);
+        expect($competing->getOutput().$competing->getErrorOutput())->toContain('Another test suite is running');
+    }
+
     $owner = new Process([PHP_BINARY, 'vendor/bin/pest', '--configuration=runa/tests/phpunit.xml', '--test-directory=runa/tests', '--list-tests'], base_path());
     $owner->mustRun();
     expect($owner->getOutput())->toContain('ManagementTest', 'DatabaseOwnershipTest')

@@ -38,8 +38,9 @@ elif name in QUALITY:
     runpy.run_path(str(ROOT / 'tools/application/executors/quality.py'), run_name='__main__')
 elif name in TESTS:
     if name == 'test-e2e' and not inside():
-        import subprocess
-        subprocess.run(compose() + ['--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=ROOT, check=True)
+        from test_resources import endpoint
+        with endpoint():
+            container(Path(sys.argv[0]).absolute(), arguments)
     container(Path(sys.argv[0]).absolute(), arguments)
     from owner_tests import execute
     raise SystemExit(execute(TESTS[name], arguments))

@@ -3,6 +3,7 @@
 namespace Runa\Management\Actions;
 
 use InvalidArgumentException;
+use Runa\Testing\TestRun;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class RunSourceChecks
@@ -32,15 +33,7 @@ final class RunSourceChecks
         if ($tool !== 'test') {
             throw new InvalidArgumentException('Unsupported source check.');
         }
-        $directory = $root.'/.runtime/tests';
-        if (! is_dir($directory) && ! mkdir($directory, 0775, true) && ! is_dir($directory)) {
-            throw new InvalidArgumentException('Cannot prepare test lock directory.');
-        }
-        $lock = fopen($directory.'/suite.lock', 'c');
-        if ($lock === false || ! flock($lock, LOCK_EX | LOCK_NB)) {
-            throw new InvalidArgumentException('Another test suite is running in this checkout.');
-        }
-        try {
+        $run = function () use ($arguments, $runner, $cwd, $output): int {
             if (($arguments[0] ?? null) === 'frontend') {
                 return $runner->process(['pnpm', 'exec', 'vitest', 'run', '--config=vitest.config.mjs', ...array_slice($arguments, 1)], $cwd, $output);
             }
@@ -57,9 +50,11 @@ final class RunSourceChecks
             }
 
             return $runner->process(['vendor/bin/pest', '--configuration=phpunit.xml', '--test-directory=app/tests', ...$arguments], $cwd, $output, ['APP_ENV' => 'testing']);
-        } finally {
-            flock($lock, LOCK_UN);
-            fclose($lock);
+        };
+        if (array_intersect($arguments, ['--list-tests', '--list-tests-xml', '--list-suites', '--list-groups']) !== []) {
+            return $run();
         }
+
+        return TestRun::execute($root, $output, $run, ! in_array($arguments[0] ?? null, ['frontend', 'e2e'], true));
     }
 }

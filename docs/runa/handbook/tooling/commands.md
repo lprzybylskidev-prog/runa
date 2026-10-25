@@ -113,7 +113,7 @@ operator commands, with no public issuance endpoint or development-only dependen
 
 ### `php artisan runa:test --parallel`
 
-Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration.
+Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration, suite lock and guarded worker cleanup. See [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle).
 
 ### `php artisan runa:test:frontend`
 
@@ -121,7 +121,7 @@ Run only application Vitest/Vue component tests from `src/app/tests/frontend`, u
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; recovery host transport starts it automatically. `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 

@@ -246,6 +246,8 @@ Browser evidence uses `.runtime/artifacts/playwright`, pnpm uses
 
 After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/runa/handbook/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
 
+Disposable worker databases are an explicit exception to test-data preservation: supported test runners own `runa_test_test_N`, clean inactive workers under the shared suite lock before and after backend runs, and preserve the base `runa_test`. Active connections or uncertain ownership block cleanup. Automatically started browser endpoints carry a run label and recovery journal; remove only those owned containers. Manually provisioned endpoints remain externally owned. Follow [test resource lifecycle](docs/runa/handbook/testing/strategy.md#test-resource-lifecycle); never substitute global Docker or database cleanup.
+
 ## Production responsibility boundary
 
 Runa supplies a minimal working production baseline with application security.

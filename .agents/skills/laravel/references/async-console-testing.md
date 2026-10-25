@@ -93,3 +93,7 @@ application production seeding separate, reject production even through direct
 fixture calls, exchange public references and preserve credentials/provenance with
 atomic Audit. Initial account passwords use hidden local prompts; never argv or
 distributed defaults.
+
+Native test execution and supported test wrappers share the suite lock and guarded
+worker cleanup. Use the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle);
+read-only discovery is exempt, while direct runners bypass protection.
