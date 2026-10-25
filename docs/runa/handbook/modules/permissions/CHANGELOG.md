@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 1.0.0
+
+Prepare the first stable Permissions release for verified closure of RM-2026-011.
+Preserve the delivered public contracts and add the source-only 0.5.11 -> 1.0.0
+update edge; no schema or data transformation. Align required Core module dependencies to ^1.0.0.
+
 ## 0.5.11
 
 Align Auth ^0.23.0 and Audit ^0.7.0 dependency ranges for complete account history capture.

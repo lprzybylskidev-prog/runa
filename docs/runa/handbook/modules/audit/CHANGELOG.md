@@ -1,5 +1,11 @@
 # Audit module changelog
 
+## 1.0.0
+
+Prepare the first stable Audit release for verified closure of RM-2026-011.
+Preserve the delivered public contracts and add the source-only 0.7.0 -> 1.0.0
+update edge; no schema or data transformation.
+
 ## 0.7.0
 
 Extend approved own-history values to bounded redacted JSON for structured preferences; existing scalar projections remain compatible.

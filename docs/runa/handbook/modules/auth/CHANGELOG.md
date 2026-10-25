@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 1.0.0
+
+Prepare the first stable Auth release for verified closure of RM-2026-011.
+Preserve the delivered public contracts and add the source-only 0.23.1 -> 1.0.0
+update edge; no schema or data transformation. Align required Core module dependencies to ^1.0.0.
+
 ## 0.23.1
 
 Preserve validated password confirmation through the registration adapter so the

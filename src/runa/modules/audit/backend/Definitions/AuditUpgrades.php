@@ -19,7 +19,8 @@ final class AuditUpgrades implements UpgradeProvider
             new UpgradeDefinition('permission_declarations', '0.3.0', '0.4.0', UpgradePermissionDeclarations::class),
             new UpgradeDefinition('management', '0.4.0', '0.5.0', UpgradeManagement::class),
             new UpgradeDefinition('own_history_details', '0.5.0', '0.6.0', UpgradeCapture::class),
-            new UpgradeDefinition('structured_history', '0.6.0', '0.7.0', UpgradeCapture::class)];
+            new UpgradeDefinition('structured_history', '0.6.0', '0.7.0', UpgradeCapture::class),
+            new UpgradeDefinition('stable_release', '0.7.0', '1.0.0', UpgradeCapture::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

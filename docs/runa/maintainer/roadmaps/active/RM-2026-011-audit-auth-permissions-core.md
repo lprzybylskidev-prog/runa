@@ -1270,6 +1270,10 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     obsolete current guidance after verified stable corrected replacements, both
     for the present PHP/PostgreSQL decision and future incidents. Synchronize root
     and customer instructions, security references and tracked removal inventory.
+- [x] 19zzi. Prepare stable Core module release candidates before final verification.
+  - Promote Audit, Auth and Permissions source manifests to 1.0.0 with compatible
+    dependent constraints, central changelogs and explicit source-only update edges.
+    Publication and closure remain conditional on the complete final graph.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4805,3 +4809,29 @@ architectural premise requires discussion before dependent work.
 - Current all-group final verification remains authorized and unchanged. Commit
   this documentation/policy-metadata follow-up with mandatory hooks, refresh the
   real source-review evidence and preview the exact graph before background start.
+
+## Point 19zzi — Stable Core release candidates
+
+- Owner requests roadmap closure after PHP rollback. The current candidate at
+  c3085f56 passed all 579 backend tests (5724 assertions), the native repository/
+  exact-image scan and dependency audits, 11 security contracts, eight gosu
+  contracts and actual changed-surface review. The earlier complete graph was
+  deliberately interrupted on owner instruction; these focused results do not
+  replace complete final verification. Evidence is preserved under
+  .runtime/artifacts/RM-2026-011/php-rollback/.
+- Prepare Audit 0.7.0, Auth 0.23.1 and Permissions 0.5.11 as 1.0.0 release
+  candidates before the final graph, so acceptance exercises the actual stable
+  manifests and their required ^1.0.0 dependencies. Each existing upgrade provider
+  gains an explicit source-only edge using its existing no-op compatible handler;
+  initialization and all earlier upgrade edges remain unchanged. No API, storage,
+  settings, authority or Audit behavior changes. Platform VERSION remains 0.4.2
+  pending successful verification and agreed feature 0.5.0 finalization.
+- Current-state review covers the module version policy, three manifests, upgrade
+  providers and central changelogs, plus roadmap/release workflow and current
+  quality evidence. Existing module guides describe the same delivered contracts.
+  Root/owner/customer instructions already require this creation-roadmap promotion;
+  no reusable rule or delivered capability changes, so those products need no edit.
+- Retain the existing all-group final selection and preview the exact graph after
+  committing this preparation. Publication, merge and closure require its PASS;
+  known owner-approved runtime risks retain their bounded policy and retirement
+  inventory. Native PHP root cause is not asserted by the rollback result.
