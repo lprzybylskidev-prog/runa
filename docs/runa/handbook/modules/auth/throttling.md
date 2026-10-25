@@ -14,7 +14,7 @@ completion/resend, password recovery/reset/change, step-up, trust issuance and
 second-factor challenge/send/enrollment/confirmation/disable/recovery rotation.
 Each operation has its own 30-per-minute source bucket. One exhausted operation
 cannot consume another operation's allowance. Denials return 429, Retry-After and
-private/no-store headers. Source addresses are hashed for cache keys; never log
+no-store headers. Source addresses are hashed for cache keys; never log
 request bodies, credential material or limiter fingerprints.
 
 Login is classified for the integration seam below but does not use the generic

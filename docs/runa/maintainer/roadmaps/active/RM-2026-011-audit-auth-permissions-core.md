@@ -1193,7 +1193,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
-- [ ] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
+- [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4123,5 +4123,9 @@ architectural premise requires discussion before dependent work.
   dirty/conflict behavior. Source/version checks pass; current client assets built.
 - Supported runner removed its disposable runa_test_test_1 worker after the focused
   parallel run. No Docker resources created/removed. Base development/test databases,
-  services, caches, backups and evidence preserved. Local forward publication pending.
+  services, caches, backups and evidence preserved. Published the exact-source
+  forward edge in development and isolated base testing; runtime module checks pass.
+- Recorded the substantial optional Throttling follow-up as draft RM-2026-012 in a
+  separate planning commit on this branch. Agent-proposed feature 0.6.0 remains
+  unconfirmed; the owner was explicitly asked. No second roadmap was activated.
   Final point 20 remains appearance-gated; no broad checks or release started.
