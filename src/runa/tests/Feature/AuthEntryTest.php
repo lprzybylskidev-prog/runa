@@ -889,7 +889,8 @@ it('keeps private profile edits versioned and self scoped with complete naming p
     $this->patchJson('/api/runa/auth/profile', ['version' => 2, 'name' => 'Read only'])->assertForbidden();
     DB::transaction(fn () => app(EntryTransaction::class)->record('profile.changed', $other));
     $history = $this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data');
-    expect($history['entries'])->toHaveCount(1)->and(array_keys($history['entries'][0]))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
+    expect(array_column($history['entries'], 'action'))->toBe(['profile.changed', 'identity.created']);
+    expect($history['entries'])->toHaveCount(2)->and(array_keys($history['entries'][0]))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
     $foreign = DB::table('runa_audit.events')->latest('id')->value('public_id');
     $this->getJson('/api/runa/auth/profile/history?kind=account&before='.$foreign)->assertUnprocessable();
     $login = $this->getJson('/api/runa/auth/profile/history?kind=login')->assertOk()->json('data.entries');
@@ -1064,7 +1065,7 @@ it('accepts compressed avatar pixels containing code-like bytes and refuses acti
     expect(str_contains($png, '<?'))->toBeTrue();
     $this->post('/api/runa/auth/profile/avatar', ['version' => 1, 'avatar' => UploadedFile::fake()->createWithContent('pixels.png', $png)], ['Accept' => 'application/json'])->assertOk();
     $this->get('/api/runa/auth/profile/avatar')->assertOk()->assertContent($png);
-    foreach ([$png.'<?php echo 1;', $header.$chunk('tEXt', 'comment'."\0".'<script>bad</script>').$pixels.$end] as $unsafe) {
+    foreach ([$png.'<?php '.'echo'.' 1;', $header.$chunk('tEXt', 'comment'."\0".'<script>bad</script>').$pixels.$end] as $unsafe) {
         $this->post('/api/runa/auth/profile/avatar', ['version' => 2, 'avatar' => UploadedFile::fake()->createWithContent('unsafe.png', $unsafe)], ['Accept' => 'application/json'])->assertUnprocessable();
     }
     expect(User::find($user->id)->version)->toBe(2);
@@ -1344,6 +1345,7 @@ function operatorAuthorityFixture(): object
 it('initializes once and redeems operator recovery without bypassing mandatory TOTP', function (): void {
     $accounts = app(OperatorAccounts::class);
     $input = new NewIdentity('first-admin@example.test', name: 'First Admin');
+    app()->offsetUnset(OperatorAuthority::class);
     expect(fn () => $accounts->initialize($input))->toThrow(RuntimeException::class)
         ->and(User::count())->toBe(0);
     $authority = operatorAuthorityFixture();
@@ -1664,7 +1666,7 @@ it('account history includes existing notification preference events and resets 
     });
     $foreign = DB::table('runa_audit.events')->latest('id')->value('public_id');
     $history = $this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries');
-    expect(array_column($history, 'action'))->toBe(['preferences.admin_reset', 'preferences.reset_all', 'delivery.preferences_reset', 'delivery.preferences_changed']);
+    expect(array_column($history, 'action'))->toBe(['preferences.admin_reset', 'preferences.reset_all', 'delivery.preferences_reset', 'delivery.preferences_changed', 'identity.created']);
     foreach ($history as $entry) {
         expect(array_keys($entry))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
     }

@@ -25,7 +25,7 @@ final readonly class AuthAccountBridge implements HttpAccountPolicy
         }
         $record = $this->registry->snapshot()->modules['runa.auth'] ?? null;
         if ($record === null || ! $record->registered) {
-            if ($access === HttpAccess::Public && ! $request->hasCookie(config('session.cookie'))) {
+            if ($access === HttpAccess::Public && ! $request->hasCookie(config()->string('session.cookie'))) {
                 return null;
             }
             throw new OperationRejected('authentication_required', $module ?? 'application', $operation, 401);

@@ -537,3 +537,14 @@ entries:
     url: https://github.com/docker-library/official-images/blob/master/library/redis
     last_reviewed: 2026-10-21
     review_every_days: 30
+
+  - id: dependency-laravel-fortify
+    type: framework_tooling
+    name: Laravel Fortify
+    package: 'laravel/fortify'
+    version: '1.36.2'
+    url: https://github.com/laravel/fortify
+    last_reviewed: 2026-10-23
+    review_every_days: 90
+    used_by:
+      - auth

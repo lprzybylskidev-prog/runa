@@ -22,7 +22,7 @@ final readonly class AuditParticipation implements PreparationParticipant, Setti
             return;
         }
         $version = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('installed_version');
-        if ($version === null || version_compare($version, '0.7.0', '<')) {
+        if (! is_string($version) || version_compare($version, '0.7.0', '<')) {
             return;
         }
         $record = $this->registry->snapshot()->modules['runa.auth'] ?? throw new \RuntimeException('Required Auth source unavailable.');
@@ -46,7 +46,7 @@ final readonly class AuditParticipation implements PreparationParticipant, Setti
             $version = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('installed_version');
             // The 0.7 upgrade creates storage before publishing added defaults.
             $hasHistory = $connection->getSchemaBuilder()->hasTable('runa_auth.policy_versions');
-            if ($hasHistory || ($version !== null && version_compare($version, '0.7.0', '>='))) {
+            if ($hasHistory || (is_string($version) && version_compare($version, '0.7.0', '>='))) {
                 $record = $this->registry->snapshot()->modules['runa.auth'] ?? throw new \RuntimeException('Required Auth policy source unavailable.');
                 $history = $this->declarations->make($record, 'Runa\\Modules\\Auth\\Actions\\PolicyHistory', SettingsParticipant::class);
                 if (! $history instanceof SettingsParticipant) {

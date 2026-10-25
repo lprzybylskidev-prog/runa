@@ -20,7 +20,9 @@ final class QueueLogContext
     /** @var array<int, array<string, string>> */
     private array $identities = [];
 
-    /** Safe execution identities only, no serialized job data. @return array<string, string> */
+    /** Safe execution identities only, no serialized job data.
+     * @return array<string, string>
+     */
     public function current(): array
     {
         return $this->identities === [] ? [] : $this->identities[array_key_last($this->identities)];

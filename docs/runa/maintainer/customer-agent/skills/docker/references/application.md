@@ -12,6 +12,6 @@ no src/.runtime or module-local runtime roots. Preserve public asset/Laravel sto
 contracts and unrelated reports, backups, caches and operation/recovery state.
 
 Supported test runners own disposable workers and automatically created browser
-containers according to the [test resource lifecycle](docs/runa/handbook/testing/strategy.md#test-resource-lifecycle).
+containers according to the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle).
 Use its guarded teardown/recovery; preserve manual endpoints, base test data,
 volumes and evidence. Do not replace it with broad cleanup.

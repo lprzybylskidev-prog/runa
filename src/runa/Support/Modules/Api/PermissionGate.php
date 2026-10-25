@@ -13,6 +13,7 @@ final readonly class PermissionGate
 {
     public function __construct(private PrincipalScope $principals, private OperationAuthorizer $authorizer, private ModuleRegistry $registry) {}
 
+    /** @param array<mixed> $arguments */
     public function before(?Authenticatable $user, string $ability, array $arguments = []): ?bool
     {
         if (preg_match('/\A((?:runa|app)\.[a-z][a-z0-9_]*)\.[a-z][a-z0-9_.]*\z/D', $ability, $match) !== 1) {

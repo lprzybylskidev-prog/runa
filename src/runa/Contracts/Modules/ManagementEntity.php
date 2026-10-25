@@ -7,14 +7,20 @@ use InvalidArgumentException;
 /** Versioned bounded metadata, with no renderer or executable destinations. */
 final readonly class ManagementEntity
 {
+    /** @var list<ManagementField> */
+    public array $fields;
+
+    /** @var list<ManagementOperation> */
+    public array $operations;
+
     /** @param array<string, string> $names
      * @param  array<string, string>  $descriptions
-     * @param  list<ManagementField>  $fields
-     * @param  list<ManagementOperation>  $operations
+     * @param  array<mixed>  $fields
+     * @param  array<mixed>  $operations
      */
     public function __construct(
         public string $key, public string $permission, public array $names, public array $descriptions,
-        public array $fields, public array $operations, public int $schemaVersion = 1,
+        array $fields, array $operations, public int $schemaVersion = 1,
     ) {
         new ApiOperation($key, $permission);
         ManagementAction::localization($names, $descriptions, $schemaVersion);
@@ -40,5 +46,9 @@ final readonly class ManagementEntity
                 }
             }
         }
+        /** @var list<ManagementField> $fields Validated above. */
+        $this->fields = $fields;
+        /** @var list<ManagementOperation> $operations Validated above. */
+        $this->operations = $operations;
     }
 }

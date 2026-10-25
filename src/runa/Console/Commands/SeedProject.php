@@ -41,7 +41,7 @@ final class SeedProject extends Command
             throw new \InvalidArgumentException('A seeder scenario must be a string.');
         }
         $graph = new SeedGraph(SeedGraph::registered());
-        if (in_array($mode, ['development', 'graph'], true) && $this->option('modules')) {
+        if (in_array($mode, ['development', 'graph'], true) && $this->input->getOption('modules')) {
             $graph = app(DevelopmentFixtures::class)->graph(SeedGraph::registered());
         }
         $plan = $graph->plan($mode, app()->environment(), $scenario);

@@ -5,7 +5,7 @@ namespace Runa\Contracts\Modules;
 /** Module-local permission keys only; declarations never assign users. */
 final readonly class RoleDefinition
 {
-    /** @param list<string> $permissions */
+    /** @param array<string> $permissions */
     public function __construct(public DictionaryEntry $dictionary, public array $permissions)
     {
         if (str_contains($dictionary->code, '.') || ! array_is_list($permissions)

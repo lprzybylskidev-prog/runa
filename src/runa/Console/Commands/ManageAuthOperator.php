@@ -105,8 +105,8 @@ final class ManageAuthOperator extends Command
             if (is_resource($file)) {
                 fclose($file);
             }
-            if ($created) {
-                @unlink($this->option('output'));
+            if ($created && isset($path)) {
+                @unlink($path);
             }
             try {
                 $accounts->refused();

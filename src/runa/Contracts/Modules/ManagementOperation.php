@@ -7,7 +7,7 @@ use InvalidArgumentException;
 /** Declarative safety requirements; backend Actions enforce these independently. */
 final readonly class ManagementOperation
 {
-    /** @param list<string> $inputs Names of declared writable fields; never validation code. */
+    /** @param array<string> $inputs Names of declared writable fields; never validation code. */
     public function __construct(
         public ApiOperation $operation, public array $inputs = [], public string $stepUp = 'none',
         public bool $revisionRequired = true, public bool $previewRequired = false, public bool $bulk = false,

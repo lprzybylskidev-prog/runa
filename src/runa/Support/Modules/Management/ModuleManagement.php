@@ -4,6 +4,7 @@ namespace Runa\Support\Modules\Management;
 
 use Runa\Contracts\Modules\ManagementEntity;
 use Runa\Contracts\Modules\ManagementEntityProvider;
+use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementProvider;
 use Runa\Contracts\Modules\ModuleManagement as ManagementView;
 use Runa\Support\Modules\Api\ModuleDeclarations;
@@ -38,6 +39,7 @@ final readonly class ModuleManagement
                         throw new RuntimeException;
                     }
                     if ($provider instanceof ManagementEntityProvider) {
+                        /** @var array<mixed> $declared Validated at this declaration boundary. */
                         $declared = $provider->entities();
                         if (! array_is_list($declared) || count($declared) > 32) {
                             throw new RuntimeException;
@@ -74,7 +76,7 @@ final readonly class ModuleManagement
                     }
                 }
                 foreach ($entities as $entity) {
-                    foreach ([$entity->permission, ...array_map(static fn ($operation): string => $operation->operation->permission ?? throw new RuntimeException('Management permission missing.'), $entity->operations)] as $permission) {
+                    foreach ([$entity->permission, ...array_map(static fn (ManagementOperation $operation): string => $operation->operation->permission ?? throw new RuntimeException('Management permission missing.'), $entity->operations)] as $permission) {
                         if (! isset($permissions[$permission])) {
                             throw new RuntimeException;
                         }

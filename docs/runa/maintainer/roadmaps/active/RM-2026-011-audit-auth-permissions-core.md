@@ -1231,6 +1231,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zy. Label preference changes and resets explicitly in account history.
 - [x] 19zz. Deliver safe details for every account-history event and capture approved changes.
 - [x] 19zza. Complete concrete account changes, preference reset details and security-state history.
+- [x] 19zzb. Repair first final-verification failures.
+  - Reconcile Core-aware backend fixtures, frontend account/preference assertions,
+    strict PHP types, owner/customer documentation and maintenance metadata, and
+    scoped host/tooling acceptance fixtures without weakening gates.
+  - Preserve failed-run evidence, receive focused diagnostics, synchronize public
+    contracts and module versions where affected, commit, then rerun all groups.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4336,39 +4342,74 @@ architectural premise requires discussion before dependent work.
 
 ## Execution handoff
 
-- Roadmap/current point: RM-2026-011, point 20; all implementation points including
-  19zza are complete. Branch roadmap/RM-2026-011-audit-auth-permissions-core;
-  accepted full-scope baseline ef14f03d. Handoff date 2026-10-25 UTC, container to
-  native Linux Docker host. Worktree was clean before the attempted launch; this
-  handoff is the only subsequent documentation change and is committed separately.
-- Reason/result: python3 tools/maintainer/quality-roadmap --all --background refused
-  startup with exit 1: selected production gates require the Docker host. This
-  container session cannot start the host coordinator. The full gate has not
-  started and has no PASS. The --all graph preview succeeded; owner appearance
-  acceptance and quality_groups/rationale are committed. Do not reduce scope or
-  replace host acceptance with internal/container-only runners.
-- Host checkout path: explicitly unknown; /workspace is only the container bind
-  path. Run from the actual Runa checkout on the host. Expected prerequisites:
-  Python 3, Git, Docker Engine/Compose and the existing running development app.
-  Development Compose context is runa-dev by default, with compose.yaml,
-  .devcontainer/compose.resources.yaml and private .env.dev.local; honor local
-  project overrides. Host resource identities cannot be inspected from this
-  container and must be confirmed by supported host tooling before mutations.
-- Exact host procedure (no editor reopen or stack rebuild is required just to
-  start the coordinator): first run git status --short and verify the roadmap
-  branch/checkout with all committed implementation; then run
-  python3 tools/maintainer/quality-roadmap --all --background. Expected output
-  confirms the background coordinator started. Inspect with
-  python3 tools/maintainer/quality-status and return its complete output before
-  dependent fixes/finalization. Do not infer completion from elapsed time.
-- Preserve existing development/test data, Qdrant/model caches, backups, reports
-  and rollback volumes. This failed startup created no task Docker resources and
-  performed no data reset. Supported suites own only their disposable workers and
-  labelled simulation resources, with scoped cleanup/evidence. Host completion
-  criteria: actual complete all-group PASS, or collected native failure/status
-  evidence. Failures require inserted fix points and a full rerun from the start.
-- Remaining work: full selected verification and any required fixes, actual
-  changed-surface security findings and scan disposition, then module/platform
-  release finalization, focused closure checks, merge/tag/publication. The roadmap
-  stays active and point 20 remains open. Return to the container is safe without
-  rebuilding it; no services/configuration were changed for this handoff.
+- Resumed on the native Linux Docker host on 2026-10-25, checkout
+  /home/lprzybylski/Documents/php/runa, roadmap/RM-2026-011-audit-auth-permissions-core.
+  Existing runa-dev services use compose.yaml and .devcontainer/compose.resources.yaml
+  plus editor-generated overrides; no stack rebuild/editor switch was required.
+- Attempt 1 on af2d2027 failed after 657.8s; its full coordinator evidence is preserved
+  under .runtime/artifacts/RM-2026-011/verification-attempt-1. Point 19zzb records
+  corrections. Resume the unchanged all-group graph only after its commit and exact
+  source-only Auth forward preparation in development/base testing.
+- Preserve active development/test data, Qdrant/model caches, backups, reports and
+  rollback material. The failed gate's supported fixtures removed their own labelled
+  containers/networks/volumes/images and worker databases. This correction uses only
+  disposable supported worker databases; it creates no other Docker resources.
+- Next host entrypoint: python3 tools/maintainer/quality-roadmap --all --background.
+  End the agent turn after startup; inspect with python3 tools/maintainer/quality-status.
+  Remaining work is actual all-group PASS, scan disposition, independent module 1.0.0
+  and platform 0.5.0 finalization, closure, merge/tag/publication. Returning to the
+  devcontainer remains safe; no runtime/container configuration was changed.
+
+## Point 19zzb — First final-verification corrections
+
+- Owner requested repair and a complete rerun on 2026-10-25. Attempt 1 failed
+  on af2d2027; evidence is preserved under
+  .runtime/artifacts/RM-2026-011/verification-attempt-1. Twelve steps failed;
+  dependent blocked steps are not PASS. The full all-group selection is unchanged.
+- Replaced Audit fixtures' partial Auth 0.2 installation with the real guarded
+  current Core update graph and exact disposable teardown. Clear only fixture-owned
+  initial Audit events for event-count assertions. The Audit reinstall case removes
+  its own completed update-step receipts before reinstalling; existing Core/data
+  invariants remain enforced. Permissions tests simulate missing Core source rather
+  than an impossible disabled Core row. Account history expectations include identity
+  creation; the operator-denial case explicitly removes the integrated adapter.
+- Fixed registration's missing validated password_confirmation between FormRequest
+  and Fortify CreatesNewUsers. Auth 0.23.1 has a source-only forward edge and a
+  central changelog entry; Permissions ^0.23.0 already admits it. No new dependency,
+  migration, credential exposure or policy change. Stable Audit/Auth/Permissions
+  1.0.0 at verified closure and platform feature 0.5.0 remain owner-confirmed,
+  reaffirmed on 2026-10-25 during this correction.
+- Corrected strict types without suppressions: validated management collections,
+  middleware responses, cookie config, Audit installed versions, recursive seeder
+  dependency types, contributor class checks and development-account rows. Retained
+  all declaration runtime validation. Removed the debug-check false match by building
+  the deliberate non-executable avatar fixture payload from separate string tokens.
+- Frontend tests now target the actual avatar crop/removal dialogs, observe portalled
+  feedback, expect current conflict copy/forms and await asynchronous table/write
+  completion. No rendered interface or controller/security behavior changed.
+- Owner README now identifies the active roadmap. Registered already-approved
+  Fortify 1.36.2 from its existing dependency review. Fixed installed customer skill
+  links in frontend/Docker/Laravel products. Root owner rules and other customer
+  products need no change: these corrections establish no new operating policy.
+- Updated owner process fixtures for Popen/session ownership and worker cleanup,
+  copied test_resources into native management acceptance, and derive the synthetic
+  deployment's next PATCH platform version from its installed baseline instead of
+  historical 0.3.0, preserving the independent version transition assertion.
+- Focused diagnostics received: registration/Audit capture/worker/readiness (4 cases),
+  Audit reinstall/authority/history/maintenance (6), Audit capture/storage samples
+  (11), repaired literal-runner/registration (2), account/preferences UI failures
+  including the final avatar-removal retry, public projection links, owner tooling
+  process assertions and the five previously uncertain PHPStan files all pass.
+  A direct base-database diagnostic refused pre-existing schemas without changing
+  them; disposable-worker diagnostics used the supported parallel runner. Selected
+  workers were removed by that runner; base test/development data remain preserved.
+  Full suites, native installation/production acceptance and complete analysis are
+  left to the new all-group final gate; focused diagnostics do not imply those PASS.
+- Reviewed changed security boundaries against actual source: native session/CSRF
+  middleware, AccountPolicy/SecurityContext, login/token/factor/step-up Actions,
+  guarded current Permissions resolution/assignment/protected authority, atomic
+  Audit writes/safe own-history details, private avatar and mail delivery, HTTP
+  credential transport and test-resource ownership. Concrete findings/disposition
+  are recorded in .runtime/artifacts/RM-2026-011/security-review.md and content-bound
+  evidence is refreshed after the committed candidate. Dependency/image scans remain
+  separate mandatory selected checks. Point 20 remains open.

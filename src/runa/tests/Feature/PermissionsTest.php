@@ -178,7 +178,7 @@ it('does not turn superadmin into an eligibility availability unknown-permission
         DB::table('runa_auth.users')->where('public_id', $this->permissionUser->publicId)->update(['security_locked' => true]);
         expect($this->permissionApi->allows('runa.audit.read'))->toBeFalse();
         DB::table('runa_auth.users')->where('public_id', $this->permissionUser->publicId)->update(['security_locked' => false]);
-        DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['enabled' => false]);
+        DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['source_present' => false]);
         DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
         $context = new OperationContext('runa.audit', 'permission.check', (string) Str::uuid7(), (string) Str::uuid7(), app(ModuleRegistry::class)->snapshot()->generation);
         expect(app(OperationAuthorizer::class)->allows($context, 'runa.audit.read'))->toBeFalse();

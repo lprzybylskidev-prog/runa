@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.23.1
+
+Preserve validated password confirmation through the registration adapter so the
+shared credential validator receives the complete confirmed input. Correct the
+typed development-account listing contract. Source-only forward edge; no schema change.
+
 ## 0.23.0
 
 Complete concrete non-display preference writes and per-setting resets, factor and verification state, account lifecycle and policy exception history. Show precise event labels; password summaries do not open value details.

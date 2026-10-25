@@ -78,10 +78,13 @@ final class DevelopmentFixtures
     public function graph(array $applicationClasses): SeedGraph
     {
         $classes = $this->registered();
+        /** @var array<class-string<ManagedSeeder>, list<class-string<ManagedSeeder>>> $dependencies */
         $dependencies = [];
         $state = [];
+        /** @var array<string, list<class-string<ManagedSeeder>>> $allSeeders */
         $allSeeders = [];
-        $visit = function (string $module) use (&$visit, &$state, &$dependencies, &$allSeeders): array {
+        /** @var Closure(string): list<class-string<ManagedSeeder>> $visit */
+        $visit = /** @return list<class-string<ManagedSeeder>> */ function (string $module) use (&$visit, &$state, &$dependencies, &$allSeeders): array {
             if (($state[$module] ?? 0) === 1) {
                 throw new RuntimeException('Module development contributor dependency cycle.');
             }
@@ -93,6 +96,7 @@ final class DevelopmentFixtures
             $allSeeders[$module] = $contributor->seeders();
             foreach ($contributor->dependsOn() as $dependency) {
                 // Retain transitive ordering even when an intermediate contributor has no seeders.
+                /** @var list<class-string<ManagedSeeder>> $required */
                 $required = $visit($dependency);
                 foreach ($contributor->seeders() as $class) {
                     $dependencies[$class] = [...($dependencies[$class] ?? []), ...$required];
@@ -103,7 +107,14 @@ final class DevelopmentFixtures
 
             return $allSeeders[$module];
         };
-        foreach (array_keys(config('seeding.contributors', [])) as $module) {
+        $modules = config('seeding.contributors', []);
+        if (! is_array($modules)) {
+            throw new RuntimeException('Module contributors must be an explicit module/class map.');
+        }
+        foreach (array_keys($modules) as $module) {
+            if (! is_string($module)) {
+                throw new RuntimeException('Module contributor keys must be module identifiers.');
+            }
             $visit($module);
         }
 
@@ -130,6 +141,9 @@ final class DevelopmentFixtures
 
     private function owned(string $class, string $root): void
     {
+        if (! class_exists($class)) {
+            throw new RuntimeException('Contributor class unavailable.');
+        }
         $file = (new ReflectionClass($class))->getFileName();
         if (! is_string($file)) {
             throw new RuntimeException('Contributor source must belong to its module.');

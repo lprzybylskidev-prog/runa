@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 /** Inside StartSession: cookie persistence follows the admitted session, never a recaller. */
 final class SessionPersistence
 {
+    /** @param Closure(Request): Response $next */
     public function handle(Request $request, Closure $next): Response
     {
         try {

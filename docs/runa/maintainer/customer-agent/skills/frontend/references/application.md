@@ -21,7 +21,7 @@ without requiring conversion into an app module; protected Runa remains read-onl
 
 Use the delivered AuthEntry component from @/runa/auth for entry and restricted-session flows; follow docs/runa/handbook/modules/auth/entry-ui.md. Preserve the application-owned App.vue integration when customizing navigation. Keep token proofs and credentials in component memory, honor server-declared restrictions and require explicit resubmission after CSRF/conflict failures; never edit protected Auth source.
 
-Use the [Auth application/account contract](../../../../../handbook/modules/auth/account-ui.md) for welcome policy, post-security
+Use the [Auth application/account contract](../../../../docs/runa/handbook/modules/auth/account-ui.md) for welcome policy, post-security
 navigation, shared-shell profile/sign-out, real-activity expiry and safe memory draft
 review. Preserve application-owned composition and server guards; never replay a
 write after login or persist credentials/drafts in browser preferences.
@@ -56,7 +56,7 @@ contracts and unrelated reports, backups, caches and operation/recovery state.
 
 Before handing over a frontend for manual review, prepare and inspect the actual
 served development environment, current assets, mandatory Core data and private
-fixture-account setup through [manual preparation](docs/runa/handbook/data/seeding.md#manual-auth-navigation-scenario).
+fixture-account setup through [manual preparation](../../../../docs/runa/handbook/data/seeding.md#manual-auth-navigation-scenario).
 Code/fixture coverage does not establish live readiness or owner appearance acceptance.
 
 Place public welcome sign-in/conditional registration and authenticated entry
@@ -156,7 +156,7 @@ sections or operations. See the public forms guide.
 The default welcome describes Runa and its delivered modules using public manifest
 metadata. Customize the introduction/catalogue through the public Auth `welcome`
 presentation replacement; keep application module presentation in src/app.
-See the [module development guide](docs/runa/handbook/development/modules.md#welcome-catalogue).
+See the [module development guide](../../../../docs/runa/handbook/development/modules.md#welcome-catalogue).
 
 Custom application shell wrappers forward the breadcrumbs slot and userLoading
 alongside userAvatar and homeHref. Use Avatar's loading prop for pending identity metadata;

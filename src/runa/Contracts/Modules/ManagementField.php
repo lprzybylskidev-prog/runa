@@ -7,6 +7,7 @@ use InvalidArgumentException;
 final readonly class ManagementField
 {
     /** Reference metadata describes a public UUIDv7 lookup, never a model/table/path.
+     * @param  array<mixed>  $choices
      * @param  array<string, string>  $names
      * @param  array<string, string>  $descriptions
      */

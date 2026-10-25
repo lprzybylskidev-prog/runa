@@ -292,7 +292,9 @@ it('account boundary diagnostic: saves with the current revision and refuses sta
   await w.get('input[name="name"]').setValue('Changed name');
   await w.get('form').trigger('submit');
   await vi.waitFor(() =>
-    expect(w.text() + document.body.textContent).toContain('Dane zmieniły się'),
+    expect(w.text() + document.body.textContent).toContain(
+      'Aktualne dane pobrano automatycznie',
+    ),
   );
   expect(writes).toHaveLength(1);
   expect(writes[0]?.body).toMatchObject({
@@ -656,7 +658,7 @@ it('customization: account replacement consumes the public controller with curre
 it('account cards validate their changes before writing and stops after a partial failure without replay', async () => {
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
-  expect(w.findAll('form')).toHaveLength(4);
+  expect(w.findAll('form')).toHaveLength(3);
   expect(
     w.findAll('button').some((button) => button.text() === 'Zmień hasło'),
   ).toBe(false);
@@ -703,7 +705,9 @@ it('account cards validate their changes before writing and stops after a partia
       'Część zmian zapisano',
     ),
   );
-  expect(w.text() + document.body.textContent).toContain('Dane zmieniły się');
+  expect(w.text() + document.body.textContent).toContain(
+    'Aktualne dane pobrano automatycznie',
+  );
   expect(
     (w.get('input[name="current_password"]').element as HTMLInputElement).value,
   ).toBe('');
@@ -847,7 +851,9 @@ it('avatar crop modal cancels without upload and preserves an accepted crop when
   const picker = w.getComponent(FileInput);
   picker.vm.$emit('update:modelValue', [await cropImageFile()]);
   await flushPromises();
-  let dialog = w.getComponent(Dialog);
+  let dialog = w
+    .findAllComponents(Dialog)
+    .find((dialog) => dialog.props('title') === 'Kadrowanie zdjęcia')!;
   await vi.waitFor(() =>
     expect(w.getComponent(AuthAvatarCropper).find('canvas').exists()).toBe(
       true,
@@ -859,7 +865,9 @@ it('avatar crop modal cancels without upload and preserves an accepted crop when
   expect(writes).toHaveLength(0);
   picker.vm.$emit('update:modelValue', [await cropImageFile()]);
   await flushPromises();
-  dialog = w.getComponent(Dialog);
+  dialog = w
+    .findAllComponents(Dialog)
+    .find((dialog) => dialog.props('title') === 'Kadrowanie zdjęcia')!;
   const apply = dialog
     .findAllComponents(Button)
     .find((button) => button.text() === 'Zastosuj kadr')!;
@@ -1045,7 +1053,9 @@ it('avatar removal requires confirmation, cancel preserves the image and confirm
       .findAll('button')
       .find((button) => button.text() === 'Usuń avatar')!;
   await remove().trigger('click');
-  const dialog = w.getComponent(ConfirmDialog);
+  const dialog = w
+    .findAllComponents(ConfirmDialog)
+    .find((dialog) => dialog.props('title') === 'Usunąć avatar?')!;
   expect(dialog.props('modelValue')).toBe(true);
   expect(writes).toHaveLength(0);
   dialog.vm.$emit('update:modelValue', false);
@@ -1058,8 +1068,7 @@ it('avatar removal requires confirmation, cancel preserves the image and confirm
     return json({ accepted: true });
   };
   dialog.vm.$emit('confirm');
-  await flushPromises();
-  expect(writes).toHaveLength(1);
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
   expect(writes[0]?.path).toContain('/profile/avatar');
   await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
   expect(currentProfile.has_avatar).toBe(false);
@@ -1133,7 +1142,9 @@ it('failed avatar deletion keeps confirmation open and reports one modal error b
     .findAll('button')
     .find((button) => button.text() === 'Usuń avatar')!
     .trigger('click');
-  const dialog = w.getComponent(ConfirmDialog);
+  const dialog = w
+    .findAllComponents(ConfirmDialog)
+    .find((dialog) => dialog.props('title') === 'Usunąć avatar?')!;
   write = () => json('unexpected', 500);
   dialog.vm.$emit('confirm');
   await vi.waitFor(() =>
@@ -1516,17 +1527,14 @@ it('account session sorting uses instants across month boundaries and concise En
   const end = () => w.findAll('tbody button').map((button) => button.text());
   expect(end()).toEqual(['Zakończ', 'Zakończ']);
   await w.get('th[data-column-key="created"] button').trigger('click');
-  await flushPromises();
-  expect(w.get('tbody tr').text()).toContain('Inna');
+  await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Inna'));
   expect(w.get('th[data-column-key="created"]').attributes('aria-sort')).toBe(
     'ascending',
   );
   await w.get('th[data-column-key="expires"] button').trigger('click');
-  await flushPromises();
-  expect(w.get('tbody tr').text()).toContain('Inna');
+  await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Inna'));
   await w.get('th[data-column-key="expires"] button').trigger('click');
-  await flushPromises();
-  expect(w.get('tbody tr').text()).toContain('Bieżąca');
+  await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Bieżąca'));
 });
 
 it('trusted devices live inside two-factor settings and cannot be enabled without an enrolled factor', async () => {

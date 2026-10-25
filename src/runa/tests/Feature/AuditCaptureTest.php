@@ -17,8 +17,9 @@ use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\PrincipalScope;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\Support\Modules\Updates\ModuleUpdates;
 use Tests\Fixtures\AuditCaptureFixture;
+use Tests\Fixtures\CoreModuleStorage;
 
 beforeEach(function (): void {
     // This fixture owns only the previously absent Audit schema in the guarded test DB.
@@ -33,19 +34,12 @@ beforeEach(function (): void {
         throw new RuntimeException('Audit fixture requires an absent disposable Auth schema.');
     }
     $this->authFixtureCreated = false;
-    app(ModuleRegistry::class)->synchronize('runa');
-    // The newly supplied Core must be genuinely ready, not a fabricated installed flag.
-    $authMigration = require base_path('runa/modules/auth/database/migrations/2026_10_23_000001_runa_auth_identities.php');
-    $authMigration->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
-    $this->authFixtureCreated = true;
-    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.2.0']);
-    $migration = require base_path('runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php');
-    $migration->up();
-    $this->auditFixtureCreated = true;
+    app(ModuleUpdates::class)->apply('runa', str_repeat('a', 40), static function (): void {});
+    $this->authFixtureCreated = $this->auditFixtureCreated = true;
+    DB::table('runa_audit.entities')->delete();
+    DB::table('runa_audit.events')->delete();
     DB::statement('CREATE SCHEMA app_audit_fixture');
     DB::statement('CREATE TABLE app_audit_fixture.records (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, public_id uuid NOT NULL UNIQUE, title text NOT NULL, details jsonb, created_at timestamptz, updated_at timestamptz, deleted_at timestamptz)');
-    DB::table('shared.modules')->where('module_id', 'runa.audit')->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.audit']->sourceVersion]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 });
 
@@ -54,8 +48,10 @@ afterEach(function (): void {
         DB::connection()->rollBack();
     }
     if ($this->authFixtureCreated ?? false) {
-        DB::statement('DROP TABLE runa_auth.entry_tokens RESTRICT');
-        DB::statement('DROP TABLE runa_auth.users RESTRICT');
+        CoreModuleStorage::removePermissions();
+        foreach (CoreModuleStorage::TABLES['auth'] as $table) {
+            DB::statement('DROP TABLE runa_auth.'.$table.' RESTRICT');
+        }
         DB::statement('DROP SCHEMA runa_auth RESTRICT');
         $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
         DB::table('shared.module_update_steps')->where('module_id', $authId)->delete();

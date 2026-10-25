@@ -120,15 +120,20 @@ it('renders localized rejected-save feedback through the shared layout control',
     await import('../../resources/js/components/AppPreferenceFeedback.vue')
   ).default;
   accountPreferences.hold('00000000-0000-7000-8000-000000000001');
-  const wrapper = mount(Feedback, { props: { locale: 'pl' } });
+  const wrapper = mount(Feedback, {
+    props: { locale: 'pl' },
+    attachTo: document.body,
+  });
   accountPreferences.store.write(scope, 'runa.theme', theme, 'dark');
   await accountPreferences.flush();
   await nextTick();
-  expect(wrapper.get('[role="alert"]').text()).toContain(
+  expect(document.body.textContent).toContain(
     'Nie udało się zsynchronizować preferencji',
   );
   await wrapper.setProps({ locale: 'en' });
-  expect(wrapper.get('button').text()).toBe('Reload settings');
+  expect(
+    document.body.querySelector('.toast-viewport button')?.textContent,
+  ).toBe('Reload settings');
   wrapper.unmount();
   accountPreferences.disconnect();
 });

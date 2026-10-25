@@ -99,7 +99,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('preference_history', '0.21.13', '0.21.14', UpgradeFactorSpacing::class),
             new UpgradeDefinition('preference_history_labels', '0.21.14', '0.21.15', UpgradeFactorSpacing::class),
             new UpgradeDefinition('history_details', '0.21.15', '0.22.0', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('concrete_history', '0.22.0', '0.23.0', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('concrete_history', '0.22.0', '0.23.0', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('registration_confirmation', '0.23.0', '0.23.1', UpgradeFactorSpacing::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

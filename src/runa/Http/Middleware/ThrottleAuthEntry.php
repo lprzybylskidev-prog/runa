@@ -22,6 +22,7 @@ final readonly class ThrottleAuthEntry
 
     public function __construct(private AuthRequestThrottle $external) {}
 
+    /** @param Closure(Request): Response $next */
     public function handle(Request $request, Closure $next): Response
     {
         $route = $request->route();

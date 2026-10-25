@@ -93,6 +93,10 @@ bcrypt's input boundary. The shared policy also enforces configured complexity/h
 Explicitly supplied activation/approval/verification flags are prohibited; unknown
 fields are never mass assigned. Known frontend validation and entry UI use the [screen contract](entry-ui.md). No management HTTP endpoints or placeholder pages are added.
 
+Registration passes the validated password and password_confirmation together to
+the Fortify creation adapter; the shared credential check requires both. Neither
+value enters Audit or response projections.
+
 ## Registration, verification and invitations
 
 | Module setting              | Default   | Bounds/meaning                  |
