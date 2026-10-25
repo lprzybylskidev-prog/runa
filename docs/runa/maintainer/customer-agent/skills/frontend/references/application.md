@@ -152,3 +152,8 @@ guide; do not infer authority or historical trust from button visibility.
 Keep form submits with their fields using spacing, without a horizontal separator
 above actions. Use the shared Form actions slot; reserve separators for independent
 sections or operations. See the public forms guide.
+
+The default welcome describes Runa and its delivered modules using public manifest
+metadata. Customize the introduction/catalogue through the public Auth `welcome`
+presentation replacement; keep application module presentation in src/app.
+See the [module development guide](docs/runa/handbook/development/modules.md#welcome-catalogue).

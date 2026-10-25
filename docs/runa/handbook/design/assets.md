@@ -64,3 +64,9 @@ Point 19 adds file-type-csv, file-type-xls, file-type-pdf, printer and adjustmen
 | resources/icons/file-type-pdf.svg          | `36ef668b02762697eb2d3e360ec13580651908ded26c08facfe3b99fc96ccebf` |
 | resources/icons/printer.svg                | `6f530e94836068b346f241313a6040c1d55ff1b677d326dc6c1b3c5b42c5c1eb` |
 | resources/icons/adjustments-horizontal.svg | `51c876babc598cf69ad1146f0fb621919a975758df0cc7abf45052006358a353` |
+
+## Module catalogue icons
+
+The clipboard-list, key and shield-lock paths in AppIcon are small, locally authored
+outline drawings for welcome module identity. They reuse the existing 24px viewbox,
+inherited color and 1.6px stroke; no upstream asset or dependency was introduced.

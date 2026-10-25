@@ -25,7 +25,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppIcon
 
 - Source: `src/runa/resources/js/components/AppIcon.vue`.
-- Typed subset of four Tabler outline icons with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
+- Typed outline icon set (including clipboard-list, key and shield-lock for module identity) with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
 - Local source assets, licenses and revision/hash provenance: `docs/runa/handbook/design/assets.md`.
 
 ## Root preference buttons

@@ -8,4 +8,7 @@ export type IconName =
   | 'file-type-pdf'
   | 'printer'
   | 'adjustments-horizontal'
-  | 'logout';
+  | 'logout'
+  | 'clipboard-list'
+  | 'key'
+  | 'shield-lock';

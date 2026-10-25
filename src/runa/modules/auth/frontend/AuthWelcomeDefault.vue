@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { Alert, Button, TextLink, MinimalLayout, Spinner } from '@/runa/ui';
+import {
+  Alert,
+  Button,
+  TextLink,
+  MinimalLayout,
+  Spinner,
+  Icon,
+  Tooltip,
+} from '@/runa/ui';
+import { welcomeModules } from '@runa/lib/welcomeModules';
 import { useAuthWelcome } from './useAuthWelcome';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
@@ -56,6 +65,49 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
       >
         {{ t('description') }}
       </p>
+      <ul
+        class="mt-7 flex flex-wrap gap-3"
+        :aria-label="text('Moduły Runa', 'Runa modules')"
+      >
+        <li v-for="module in welcomeModules" :key="module.id">
+          <Tooltip
+            :text="`${text(module.name.pl, module.name.en)} — ${text(module.description.pl, module.description.en)}`"
+          >
+            <template #default="{ descriptionId }">
+              <span
+                tabindex="0"
+                role="img"
+                class="brand-mark welcome-module"
+                :aria-label="text(module.name.pl, module.name.en)"
+                :aria-describedby="descriptionId"
+              >
+                <Icon :name="module.icon" :size="26" />
+              </span>
+            </template>
+          </Tooltip>
+        </li>
+      </ul>
     </template>
   </component>
 </template>
+
+<style scoped>
+.welcome-module {
+  transition:
+    border-color 160ms ease-out,
+    background-color 160ms ease-out;
+}
+.welcome-module:hover,
+.welcome-module:focus-visible {
+  border-color: var(--runa-primary-text);
+}
+.welcome-module:focus-visible {
+  outline: 2px solid var(--runa-focus-ring);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce), print {
+  .welcome-module {
+    transition: none;
+  }
+}
+</style>

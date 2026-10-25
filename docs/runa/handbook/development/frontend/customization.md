@@ -291,3 +291,10 @@ with its address identity to saveSecondary. Render local conflicts when the addr
 changes or disappears; do not replace its baseline merely because another form
 refreshed the aggregate profile version. This comparison is client UX; backend
 version/permission/verification rules remain authoritative.
+
+The default welcome uses `.runa`, a PL/EN platform introduction and a build-time
+catalogue of delivered Runa modules. Tooltips reuse manifest names/descriptions;
+icons share the brand tile and support pointer hover and keyboard focus. This is
+a product catalogue, not a live availability dashboard. The existing `welcome`
+presentation replacement owns any customer-specific introduction/module catalogue;
+`useAuthWelcome()` continues to own session and welcome-policy behavior.

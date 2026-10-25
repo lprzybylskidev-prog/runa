@@ -29,6 +29,19 @@ Existing files require an explicit repeated `--overwrite=repository/path=SHA256`
 
 Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation/check commands; no module-management HTTP write endpoint exists.
 
+## Welcome catalogue
+
+Every new Runa-owned module must also complete the default welcome page: supply
+PL/EN names and descriptions in its manifest, add its icon to the platform-owned
+`src/runa/resources/js/lib/welcomeModules.ts` map, and inspect its tooltip in both
+locales/themes with pointer and keyboard focus. The build-time catalogue discovers
+Runa manifests automatically and reuses their public descriptions; it does not
+represent installation/availability or disclose grants. A generic fallback avoids
+an empty icon during development but does not complete this requirement.
+Application modules and customer presentation are application-owned; customers
+may replace the welcome through the public Auth presentation contract without
+editing the protected catalogue.
+
 ## Contract checks and tests
 
 ```bash

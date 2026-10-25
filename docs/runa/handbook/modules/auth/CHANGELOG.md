@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 0.21.9
+
+Replace the welcome placeholder with the .runa heading, a concise PL/EN platform
+introduction and source-owned module icons with localized, keyboard-accessible
+tooltips. The platform catalogue reads public module manifests at build time;
+installation state, private grants and application modules are not exposed.
+Existing welcome presentation replacement and session orchestration are retained.
+Source-only forward edge; no schema or security-policy change.
+
 ## 0.21.8
 
 Use one account refresh pipeline when entering session/history table tabs instead

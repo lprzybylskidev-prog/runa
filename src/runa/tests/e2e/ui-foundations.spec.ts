@@ -36,13 +36,35 @@ for (const [device, width, height] of [
         await expect(page.locator('html')).toHaveAttribute('lang', locale);
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-          'Runa',
+          '.runa',
         );
         await expect(page.getByRole('main')).toContainText(
           locale === 'pl'
-            ? 'Aplikacja w przygotowaniu.'
-            : 'Application in development.',
+            ? 'Modularny monolit na bazie Laravela. Dostarcza w pełni konfigurowalne moduły do budowy aplikacji biznesowych.'
+            : 'A modular monolith built on Laravel. Fully configurable modules for building business applications.',
         );
+        const modules = page.getByRole('list', {
+          name: locale === 'pl' ? 'Moduły Runa' : 'Runa modules',
+        });
+        await expect(modules.getByRole('img')).toHaveCount(3);
+        const audit = modules.getByRole('img', {
+          name: locale === 'pl' ? 'Audyt' : 'Audit',
+          exact: true,
+        });
+        await audit.hover();
+        await expect(page.getByRole('tooltip')).toHaveText(
+          locale === 'pl'
+            ? 'Audyt — Niezmienna historia operacji biznesowych i bezpieczeństwa.'
+            : 'Audit — Append-only business and security history.',
+        );
+        await audit.focus();
+        await page.keyboard.press('Tab');
+        await expect(page.getByRole('tooltip')).toContainText(
+          locale === 'pl' ? 'Uwierzytelnianie' : 'Authentication',
+        );
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('tooltip')).toHaveCount(0);
+        await page.mouse.move(0, 0);
         await expect(page.getByRole('contentinfo')).toContainText(
           /Runa v\d+\.\d+\.\d+ \| (?:Powered by|Oparte na) Runa v\d+\.\d+\.\d+/,
         );

@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests a complete welcome introduction: `.runa`, concise
+  localized Laravel/modular-monolith copy, brand-style module icons and localized
+  name/description tooltips. Point 19zs also establishes the new-module welcome
+  maintenance requirement. Included in the existing confirmed feature 0.5.0 scope.
+
 - 2026-10-25 — Owner authorizes automatic scoped test-resource lifecycle and
   cleanup of the audited existing database/container residue. Point 19zr preserves
   the base test database, development data, caches, reports and other projects;
@@ -1164,6 +1169,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zp. Restore sparse backdrop glow and animate full illustration-point orbits in MinimalLayout.
 - [x] 19zq. Animate only one randomly selected illustration point per cycle.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
+- [ ] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3942,3 +3948,23 @@ architectural premise requires discussion before dependent work.
   and require no duplicate procedure. No module contract/manifest/version,
   dependency or schema migration changes. Final point 20 remains pending owner
   frontend appearance acceptance; these focused results are not its final gate.
+
+## Point 19zs delivery
+
+- Replaced the welcome placeholder with `.runa` and a concise PL/EN description of
+  the Laravel-based modular monolith. Delivered Audit/Auth/Permissions icon tiles
+  reuse brand-mark styling and shared Tooltip pointer/focus/Escape behavior.
+- Platform-owned build-time discovery reads only Runa public manifest metadata;
+  each catalogue item projects identity/name/description, never live installation,
+  availability or private permission state. Auth remains a presentation consumer.
+  Generic fallback protects development; authoring completion requires a module icon.
+- Auth compatible cosmetic PATCH 0.21.8 -> 0.21.9 with a source-only forward edge;
+  existing Permissions ^0.21.x dependency remains compatible. No API/session/security
+  behavior, schema, dependency or infrastructure changes.
+- Module development, public presentation/component/asset guides and owner frontend
+  reference synchronized. Customer frontend reference explains its public replacement
+  seam without authorizing protected edits. Root AGENTS and other skills already
+  delegate to these guides and need no duplicated procedure.
+- Source module and prior-HEAD version checks pass. Built current client assets for
+  owner review. Focused rendered welcome checks and local forward publication pending.
+  Final point 20 remains gated on owner appearance acceptance.

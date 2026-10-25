@@ -71,3 +71,7 @@ Only MinimalLayout opts into sparse constellation-point glow and occasional
 brand-illustration point laps. Preserve the static
 ApplicationLayout backdrop and the public opt-out/reduced-motion contract; see the
 public page-layouts and motion guides.
+
+For every new Runa module, complete its welcome icon and localized manifest metadata
+and inspect the default catalogue under the [module development guide](../../../../docs/runa/handbook/development/modules.md#welcome-catalogue).
+Customer welcome replacements remain application-owned.
