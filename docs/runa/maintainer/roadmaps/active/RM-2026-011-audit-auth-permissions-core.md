@@ -8,6 +8,8 @@ activated_at: 2026-10-23
 closed_at: null
 release_type: feature
 proposed_version: 0.5.0
+quality_groups: all
+quality_rationale: Full integrated Core delivery changes authentication, authorization, audit, database, frontend, installation and update contracts, container and production isolation, developer tooling and knowledge; all groups and mandatory prerequisites are required with no exclusions.
 impact_areas:
   - backend
   - frontend
@@ -64,6 +66,12 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 ## Specification
 
 ### Decisions and requirement authority
+
+- 2026-10-25 — Owner explicitly accepts the delivered frontend and account-history
+  correction and authorizes point 20 full verification. Point 19zza is complete;
+  the appearance entry gate is satisfied. Select all quality groups, with no
+  exclusions, through the supported background coordinator. Final point remains
+  open until verification and release finalization actually complete.
 
 - 2026-10-25 — Owner requires concrete changes throughout account history, with
   credential values excluded. Point 19zza completes non-display preference and
@@ -1226,8 +1234,8 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
-    of its appearance. Frontend acceptance is pending and must not be inferred
-    from implementation completion, prior approvals or silence.
+    of its appearance. Owner explicitly accepted it on 2026-10-25 and authorized
+    full point 20 execution; this entry gate is satisfied.
   - Requires 1–19 complete and committed. Record current-state documentation review
     sources/findings/disposition and actual changed-surface security review. Resolve
     a proportionate explicit final selection through the supported RM-010 interface;
@@ -1252,7 +1260,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, which remains gated by explicit owner appearance acceptance. Point 19b prepares the real development environment and seeded administrator for review. Before the final point, stop for the owner's manual frontend inspection and explicit appearance acceptance; acceptance is pending.
+Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, whose owner appearance gate is now satisfied. Point 19b prepares the real development environment and seeded administrator for review. The owner explicitly accepted the frontend on 2026-10-25 and authorized point 20 full verification. All implementation and correction points are committed; final verification/release remains open.
 Release metadata is owner-confirmed. Any newly discovered incompatible
 architectural premise requires discussion before dependent work.
 
@@ -4292,3 +4300,36 @@ architectural premise requires discussion before dependent work.
   the Audit -> Auth -> Permissions source-only edges. Both forward preparations
   and runtime checks pass, with no database reset or migration. Point 19zza is
   complete; final point 20 remains appearance-gated.
+
+## Point 20 verification entry
+
+- Owner appearance acceptance received on 2026-10-25; no additional appearance
+  approval is pending. Point 19zza was already committed and checked complete.
+- Selected quality_groups: all, with the frontmatter rationale. Previewed the exact
+  supported graph using python3 tools/maintainer/quality-plan --all: all 14 groups,
+  all mandatory baseline checks and real prerequisites, no exclusions. Execution
+  uses python3 tools/maintainer/quality-roadmap --all --background; selected-scope
+  evidence, failures and actual results belong to its coordinator/status output.
+- Refreshed current-state source review: root README; public documentation ownership;
+  Auth/Audit/Permissions module guides and current account-history/preferences/profile
+  contracts; frontend replacement/customization contract and its point 19 delivery;
+  development environment/startup guidance; production architecture/isolation;
+  owner quality catalogue, Core acceptance map, roadmap and release workflows;
+  owner README current-state references. These distinguish delivered Core/session/
+  history/grants/operator capabilities from deferred Admin UI and optional modules,
+  and retain the container/native host boundary and independent optional knowledge.
+  No additional capability/procedure correction was identified in this entry review.
+  Existing dated implementation delivery notes describe their historical pending
+  gates; only the current decision, checklist entry and execution status changed.
+- Security review scope remains the actual changed authentication/CSRF/session,
+  proof/replay, trusted principal/availability/current grants, transactional Audit,
+  approved own-history redaction/ownership, private avatar/mail and optional
+  throttling boundaries. Earlier point reviews and focused regressions are context,
+  not a substitute for selected security contracts, dependency/secret/image scans
+  and content-bound changed-surface findings. Those results remain pending in the
+  full gate; do not claim a final security PASS or create placeholder findings.
+- Knowledge status was current and focused retrieval refreshed the Core acceptance
+  map before execution preparation. No production deployment or data reset is
+  implied by this entry; supported simulations retain their resource ownership,
+  cleanup and evidence rules. Release metadata/module 1.0.0 finalization, closure,
+  merge and publication follow only after the complete gate passes.
