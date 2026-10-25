@@ -1180,7 +1180,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
-- [ ] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
+- [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4055,7 +4055,9 @@ architectural premise requires discussion before dependent work.
   separate delayed profile/image completion and breadcrumb/link semantics. Four
   browser unit regressions pass after awaiting the optional navigation policy.
   Source and prior-HEAD module version checks pass; current client assets built.
-  Local forward publication pending; no full quality gates started.
+  Published the exact-source forward edge locally in development and isolated base
+  testing; runtime module checks pass. No resets or new migrations. No full quality
+  gates started.
 - No temporary Docker resources created/removed. Active development, both base
   databases, caches, backups and browser evidence preserved. Final point 20 remains
   behind owner appearance acceptance.
