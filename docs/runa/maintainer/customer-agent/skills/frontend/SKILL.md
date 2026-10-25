@@ -30,3 +30,6 @@ the public loading prop; see the public tables guide.
 
 Shared Table owns query-change loading feedback in client/server mode. Do not add
 page-local loading timers or duplicate reads; follow the public tables guide.
+
+MinimalLayout alone enables sparse constellation-point glow. Keep ApplicationLayout
+static and use the public layout opt-out/motion contract when wrapping layouts.

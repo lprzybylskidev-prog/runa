@@ -115,8 +115,8 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppBackdrop
 
 - Source: `src/runa/resources/js/components/AppBackdrop.vue`.
-- Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture, animation or external assets.
-- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/runa/handbook/design/visual-direction.md`.
+- Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture or external assets. The backdrop stays static by default; MinimalLayout alone opts into sparse point glows.
+- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout and ApplicationLayout. Follow the current background direction in `docs/runa/handbook/design/visual-direction.md`.
 
 ## RunaLogo
 
@@ -127,7 +127,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppConstellation
 
 - Source: `src/runa/resources/js/components/AppConstellation.vue`.
-- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. No motion, randomness, image asset or dependency.
+- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. Geometry and links remain static; AppBackdrop can animate point opacity when explicitly enabled, without an image asset or dependency.
 - Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.
 
 ## ApplicationLayout and AppNavigation

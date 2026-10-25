@@ -37,10 +37,18 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppAlert, AppBadge, AppStatus, AppEmptyState                                                                    | Static semantic content; the owning feedback/async container animates state changes when appropriate. Avoid duplicate entrances/announcements.                    |
 | AppCard, AppDivider, AppBreadcrumbs, AppStatistic, AppStatistics, AppFooter                                     | Static structure/content; links/controls retain shared interaction feedback. No count tween or decorative mount animation.                                        |
 | AppForm, AppHiddenInput, AppIdentityProvider                                                                    | Behavioral/identity/form contracts; no independent visual transition.                                                                                             |
-| AppIcon, RunaLogo, AppBrandIllustration, AppBackdrop, AppConstellation                                          | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
+| AppIcon, RunaLogo, AppBrandIllustration, AppConstellation                                                       | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
 
-Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
+Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback, plus sparse randomized constellation-point opacity pulses in its backdrop. ApplicationLayout uses the same backdrop with the effect disabled. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
 
 AuthWelcome/AuthApplication/AuthAccount change page, restriction and form steps
 immediately. Their links, controls, dropdown and preference cover inherit existing
 motion and reduced-motion behavior; account tables do not animate rows.
+
+MinimalLayout constellation glow uses one point at a time: a 3000ms gentle
+opacity rise/fall across its three existing circle layers, then a random 7–15s
+quiet interval. It chooses among viewport-visible points without repeating the
+previous point. It never moves links, geometry, gradients or artwork. Reduced
+motion, print, hidden tabs and static error rendering disable decorative glow;
+opt-out/unmount cancels timers and animations. This exception is specific to
+MinimalLayout and does not authorize animated ApplicationLayout backgrounds.

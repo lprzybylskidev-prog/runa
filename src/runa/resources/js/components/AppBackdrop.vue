@@ -1,9 +1,89 @@
 <script setup lang="ts">
+import { onMounted, onScopeDispose, ref, watch } from 'vue';
 import AppConstellation from './AppConstellation.vue';
+const props = withDefaults(defineProps<{ constellationGlow?: boolean }>(), {
+  constellationGlow: false,
+});
+const backdrop = ref<globalThis.HTMLElement>();
+let dispose = () => {};
+onMounted(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const print = window.matchMedia('print');
+  let timer: ReturnType<typeof globalThis.setTimeout> | undefined;
+  let animations: globalThis.Animation[] = [];
+  let previous: globalThis.SVGGElement | undefined;
+  const permitted = () =>
+    props.constellationGlow &&
+    !reduced.matches &&
+    !print.matches &&
+    document.visibilityState === 'visible';
+  function stop() {
+    globalThis.clearTimeout(timer);
+    animations.forEach((animation) => animation.cancel());
+    animations = [];
+  }
+  function schedule() {
+    stop();
+    if (!permitted()) return;
+    // One three-second pulse, then 7–15 seconds of quiet; no perpetual loops.
+    timer = globalThis.setTimeout(pulse, 7000 + Math.random() * 8000);
+  }
+  function pulse() {
+    if (!permitted()) return;
+    const points = [
+      ...(backdrop.value?.querySelectorAll<globalThis.SVGGElement>('svg g') ??
+        []),
+    ].filter((point) => {
+      const bounds = point.getBoundingClientRect();
+      return (
+        point !== previous &&
+        bounds.width > 0 &&
+        bounds.height > 0 &&
+        bounds.right > 0 &&
+        bounds.left < window.innerWidth &&
+        bounds.bottom > 0 &&
+        bounds.top < window.innerHeight
+      );
+    });
+    const point = points[Math.floor(Math.random() * points.length)];
+    if (!point) {
+      schedule();
+      return;
+    }
+    previous = point;
+    const levels = [
+      [0.025, 0.1],
+      [0.07, 0.22],
+      [0.55, 0.95],
+    ] as const;
+    animations = [...point.querySelectorAll('circle')].map((circle, index) => {
+      const [base, peak] = levels[index]!;
+      return circle.animate(
+        [{ opacity: base }, { opacity: peak, offset: 0.45 }, { opacity: base }],
+        { duration: 3000, easing: 'ease-in-out' },
+      );
+    });
+    timer = globalThis.setTimeout(schedule, 3000);
+  }
+  reduced.addEventListener('change', schedule);
+  print.addEventListener('change', schedule);
+  document.addEventListener('visibilitychange', schedule);
+  const unwatch = watch(() => props.constellationGlow, schedule, {
+    immediate: true,
+  });
+  dispose = () => {
+    stop();
+    unwatch();
+    reduced.removeEventListener('change', schedule);
+    print.removeEventListener('change', schedule);
+    document.removeEventListener('visibilitychange', schedule);
+  };
+});
+onScopeDispose(() => dispose());
 </script>
 
 <template>
-  <div class="app-backdrop" aria-hidden="true">
+  <div ref="backdrop" class="app-backdrop" aria-hidden="true">
     <span class="backdrop-geometry" />
     <AppConstellation variant="one" class="constellation-one" />
     <AppConstellation variant="two" class="constellation-two" />

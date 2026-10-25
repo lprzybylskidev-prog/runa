@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests rare randomized subtle constellation-point glows
+  exclusively in MinimalLayout. Point 19zn opts that layout into the shared
+  backdrop effect; ApplicationLayout retains the same static backdrop.
+
 - 2026-10-25 — Owner requests shared loading feedback for table query changes:
   pagination/page size, sorting, search and filters. Point 19zm adds a 140ms
   presentation interval using the existing motion rhythm, without delaying local
@@ -1133,6 +1137,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zk. Show table loading spinners during account reads instead of premature empty results.
 - [x] 19zl. Load account table tabs once and center the spinner without visible text.
 - [x] 19zm. Show shared loading feedback on every table query transition.
+- [x] 19zn. Add sparse randomized constellation-point glow only to MinimalLayout.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3767,3 +3772,34 @@ architectural premise requires discussion before dependent work.
   No dependencies, runtime configuration, database or Docker resources changed.
   Existing services, development/test data, Qdrant/model caches, backups and evidence
   preserved. The separate universal page-skeleton rule still awaits owner approval.
+
+### Point 19zn — MinimalLayout constellation-point glow
+
+- MinimalLayout alone opts into the existing shared backdrop's constellationGlow
+  effect; public constellationGlow=false opts out. ApplicationLayout leaves the
+  backdrop default false. Static preferences/native-error output remain static.
+  Artwork, lines, positions and gradients are unchanged; no page entrance effect.
+- One randomly selected viewport-visible point brightens across its three existing
+  circles with a gentle 3000ms opacity pulse, then waits 7–15 seconds before the
+  next different point. No overlapping pulses or permanent animation loops.
+  Reduced motion, print, hidden documents and opt-out cancel animations/timers;
+  unmount also removes media/visibility listeners. No third-party dependency.
+- Knowledge was current; focused retrieval and original layout/backdrop/design/
+  motion contracts reviewed. Two focused browser unit regressions pass for static
+  default, one-point pulse, quiet interval/no immediate repeat, disposal and live
+  reduced-motion/print/visibility/opt-out cancellation. Focused changed-file lint
+  passes. Published Vite assets and inspected the desktop/light glow screenshot.
+- Served synthetic-API diagnostics with deterministic random selection pass for
+  desktop/light and mobile/dark MinimalLayout, reduced-motion MinimalLayout and
+  normal-motion ApplicationLayout. They observe actual point opacity animation,
+  live media cancellation and static ApplicationLayout, with no page errors or
+  overflow. The initial preview checked media cancellation before the asynchronous
+  browser change event; awaiting that event's observable result corrected the
+  diagnostic. Evidence: .runtime/artifacts/playwright/constellation-glow.
+- Public component/layout/motion/design guidance and owner/customer frontend
+  instruction products synchronized. Root AGENTS already covers shared-component
+  isolation/accessibility; no constitution edit needed. No Auth/module source/API
+  changes, independent version changes, runtime configuration or database changes.
+  No Docker resources created/removed; development/test data, active services,
+  Qdrant/model caches, backups and evidence preserved. Full point 20 remains gated
+  by owner appearance acceptance; no broad verification/release started.

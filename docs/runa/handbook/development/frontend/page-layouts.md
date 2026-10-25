@@ -8,6 +8,14 @@ Canonical source: `src/runa/resources/js/layouts/MinimalLayout.vue`, public impo
 
 Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, header-actions, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. The supplied Runa illustration is built in and visible by default; content occupies the left panel, the illustration the right at `lg`, with a compact 240px illustration above content on narrow screens. Set `illustration: false` explicitly for one column, or override the illustration slot. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
 
+MinimalLayout alone enables occasional constellation-point glows: a random visible
+point brightens gently for three seconds, followed by 7–15 seconds of quiet.
+It avoids repeating the preceding point and leaves geometry/links stationary.
+Set `constellationGlow: false` to opt out in a wrapper. Reduced motion, printing,
+hidden tabs and static-preference/native-error rendering remain static. Timers and
+animations cancel on opt-out/unmount. ApplicationLayout retains its static shared
+backdrop; this behavior must not be enabled there as a side effect of shared CSS.
+
 The layout owns locale/theme composables once. Consumers use scoped `t`, preserving guest compatibility keys, cover timing, inert content and focus restoration; signed-in display values use the shared account preference adapter. Identity overrides are scoped with `IdentityProvider`; no global installation is required. Custom headers replace the default brand and preferences together.
 
 ## Preserved root welcome view

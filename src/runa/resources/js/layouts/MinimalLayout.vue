@@ -18,9 +18,15 @@ const props = withDefaults(
   defineProps<{
     footer?: FooterOptions | undefined;
     illustration?: boolean;
+    constellationGlow?: boolean;
     staticPreferences?: { locale: Locale; theme: Theme } | undefined;
   }>(),
-  { illustration: true, footer: undefined, staticPreferences: undefined },
+  {
+    illustration: true,
+    constellationGlow: true,
+    footer: undefined,
+    staticPreferences: undefined,
+  },
 );
 const identity = useIdentity();
 const logoFailed = ref(false);
@@ -59,7 +65,9 @@ const {
     :inert="changingPreference"
     :aria-busy="changingPreference"
   >
-    <AppBackdrop />
+    <AppBackdrop
+      :constellation-glow="constellationGlow && !staticPreferences"
+    />
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header
       class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"

@@ -196,7 +196,14 @@ User decision: activating language or theme controls first covers the entire vie
 
 ## Background depth refinement
 
-Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep them static and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This background was accepted as part of the final root view on 2026-10-18.
+Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep their geometry stationary and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This background was accepted as part of the final root view on 2026-10-18.
+
+Owner direction on 2026-10-25 adds sparse, randomized, gentle point glows only in
+interactive MinimalLayout: one visible point brightens and fades for three seconds,
+then rests for 7–15 seconds before a different point is selected. ApplicationLayout
+retains the identical static artwork. Reduced motion, print, hidden tabs and static
+error output do not animate. Gradients, lines, geometry and the internal orbital
+illustration remain stationary.
 
 ## Project logo
 
