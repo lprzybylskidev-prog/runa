@@ -69,3 +69,21 @@ risk decisions with maintenance tracking. No generic permission or new broad
 suppression mechanism is added to those instructions. Customer instruction products
 need no change: the owner callback/policy is excluded from delivery and public
 runtime/security documentation describes the customer decision boundary.
+
+## Required retirement
+
+The owner explicitly requires removal of this incident's exception machinery once
+stable corrected PHP/PostgreSQL replacements pass compatibility and fresh strict
+security verification. Apply the [general retirement lifecycle](../../handbook/security/baseline.md#temporary-compatibility-and-security-exceptions)
+to this and future incidents; retire each resolved component without waiting for
+unrelated exceptions.
+
+Removal inventory: owner_runtime_disposition.py and runtime-pending-upstream.json;
+the installation-host.py callback selection; RuntimeRiskContracts and the dedicated
+Brotli test in gosu-disposition.py; and additional_findings support/OS signature
+normalization in the shared gosu helper when no active approved consumer remains.
+Restore the appropriate strict scanner selection, retire superseded runtime-risk
+claims and close MT-2026-002 with actual verification evidence. MT-2026-001 tracks
+retirement of the older PostgreSQL/gosu policy and its dedicated code/tests when
+its own corrected artifact is verified. Preserve historical reports and general
+security checks; no unused incident-specific tolerance remains.

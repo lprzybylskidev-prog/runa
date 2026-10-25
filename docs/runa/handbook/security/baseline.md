@@ -332,6 +332,28 @@ Do not add automatically:
 
 A higher-risk roadmap may explicitly add deeper security work.
 
+## Temporary compatibility and security exceptions
+
+Every temporary tool/version rollback, compatibility workaround or accepted security
+finding requires explicit authorization, a narrowly defined scope, an owner,
+maintenance tracking, a review date and a concrete removal condition. Record the
+exception code, policies/flags, dedicated tests and current documentation that must
+be retired. A new incident needs its own assessed decision; an existing exception
+never automatically authorizes another one.
+
+When a stable corrected replacement is available, adopt it through the applicable
+roadmap and verify compatibility plus fresh security results under the normal
+strict policy. Retire resolved exceptions independently as each component is
+corrected. Remove their bypass/tolerance code, policies, flags, exception-specific
+tests and obsolete current instructions in that same change. Remove shared
+temporary machinery when it has no remaining approved consumer. Do not leave
+an inactive bypass or obsolete regression fixture for a retired exception behind.
+
+Retain normal security checks and meaningful coverage of the restored strict
+behavior. Preserve immutable historical decisions and raw verification evidence;
+record the replacement, removal inventory and actual verification results before
+closing the maintenance item. This lifecycle applies to future exceptions too.
+
 ## Supplied scanner disposition
 
 The current exact-artifact PostgreSQL gosu disposition is delivered with the shared security scanner, together with [its public technical evidence](postgres-gosu-policy.md). It does not depend on owner maintenance reports. All original artifact/binary/finding/expiry binding checks remain mandatory, raw findings are retained, and changed or expired policy fails closed. Customer source never needs the owner's historical audit directory to run security checks.

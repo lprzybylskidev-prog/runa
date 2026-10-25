@@ -1265,6 +1265,11 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     PHP/PostgreSQL security findings pending stable upstream tools, removal of native
     diagnostic/process-isolation workarounds, and another complete verification.
     Keep unapproved findings, scanner failures, secrets and dependency audits strict.
+- [x] 19zzh. Define mandatory retirement of temporary compatibility/security exceptions.
+  - Owner requires removal of exception code, policies/flags, dedicated tests and
+    obsolete current guidance after verified stable corrected replacements, both
+    for the present PHP/PostgreSQL decision and future incidents. Synchronize root
+    and customer instructions, security references and tracked removal inventory.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4779,3 +4784,24 @@ architectural premise requires discussion before dependent work.
   contract, manifest version, dependency lock, schema or data reset changes. The
   previous native root-cause requirement is superseded by the owner decision to
   evaluate the rollback through the complete graph and reconsider only if it fails.
+
+## Point 19zzh — Mandatory exception retirement
+
+- Owner explicitly requires that corrected stable PHP/PostgreSQL adoption removes
+  the current exception code and dedicated tests instead of retaining dormant
+  tolerances. Establish the same lifecycle for future compatibility/security
+  incidents: explicit scoped approval, tracking/review date/removal inventory,
+  verified replacement, deletion of resolved exception machinery and synchronized
+  current guidance. Retain ordinary strict security coverage and historical evidence.
+- Update root AGENTS and the separately authored customer AGENTS/reference product,
+  the owner security review reference and the public security baseline. Customer
+  scope/protected-source boundaries remain intact; the rule does not authorize a
+  new exception. Both skill entrypoints retain progressive disclosure through their
+  existing references. No new skill, dependency or runtime acceptance is introduced.
+- MT-2026-001 and MT-2026-002 now require explicit deletion of their obsolete
+  policies, dedicated bypass code/tests and unused shared support. The runtime
+  policy and dated decision record the exact current removal inventory and permit
+  independent retirement as each affected component receives a verified fix.
+- Current all-group final verification remains authorized and unchanged. Commit
+  this documentation/policy-metadata follow-up with mandatory hooks, refresh the
+  real source-review evidence and preview the exact graph before background start.

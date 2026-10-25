@@ -222,6 +222,8 @@ Never:
 
 Use Gitleaks, Trivy, Composer audit, and pnpm audit as defined by project tooling.
 
+Every temporary compatibility workaround or security exception requires a tracked removal condition. After a stable corrected replacement passes verification, remove the workaround, its policy/flags, exception-specific tests and obsolete current guidance; retire shared temporary machinery when unused. Follow [temporary exception retirement](docs/runa/handbook/security/baseline.md#temporary-compatibility-and-security-exceptions).
+
 Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 ## Host execution

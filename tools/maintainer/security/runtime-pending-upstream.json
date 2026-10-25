@@ -20,6 +20,16 @@
   ],
   "source_hashes": {
     "docker/php/Dockerfile": "d7c8e7abc2e7adcb4c3ad99a749914e71ff48e3a9c8b079b7fda0aab86837d1e",
-    "docs/runa/maintainer/security/RM-2026-011-runtime-risk-acceptance.md": "c474e10981317c6f02e9721fab5092b0a3213c69dfb3cb801adc5926122bc8db"
-  }
+    "docs/runa/maintainer/security/RM-2026-011-runtime-risk-acceptance.md": "bb67bbe0df441a6bb2a15059e0590f251ebbe711fd5ef431767667f5b5d867ea"
+  },
+  "retire_when": "Each stable corrected component passes compatibility and fresh strict security verification; remove all incident-specific machinery once no approved consumer remains.",
+  "removal_inventory": [
+    "tools/maintainer/owner_runtime_disposition.py",
+    "tools/maintainer/security/runtime-pending-upstream.json",
+    "tools/maintainer/testing/installation-host.py: runtime callback selection",
+    "tools/maintainer/testing/security.py: RuntimeRiskContracts",
+    "tools/maintainer/testing/gosu-disposition.py: dedicated Brotli test",
+    "tools/application/gosu_disposition.py: temporary additional_findings and OS signature normalization when unused",
+    "obsolete current runtime-risk guidance"
+  ]
 }

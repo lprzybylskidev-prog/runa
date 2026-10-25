@@ -91,3 +91,6 @@ do not edit protected middleware or weaken credential/proof/security invariants.
 Account-history details use a bounded account-bound projection, not general Audit
 read access. Preserve policy/session checks and never broaden responses to raw
 changes/context or credential values. Follow docs/runa/handbook/modules/auth/history.md.
+
+For every temporary compatibility/security exception, follow
+`docs/runa/handbook/security/baseline.md#temporary-compatibility-and-security-exceptions`: record a removal condition and retire the exception code, policy/flags, dedicated tests and obsolete guidance when a stable corrected replacement passes verification. Keep customer changes within the authorized application/tooling scope; protected Runa source still requires the platform update workflow.
