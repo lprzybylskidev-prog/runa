@@ -1241,6 +1241,10 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Diagnose every failed browser family and native customer acceptance trigger;
     retain runtime authorization/error contracts, receive focused regressions,
     synchronize guidance, commit and rerun all groups from the beginning.
+- [x] 19zzd. Isolate destructive database acceptance and concurrent disposable endpoints; normalize Firefox cancellation diagnostics.
+  - Keep all guard/ownership/seeding assertions in disposable workers and retain
+    strict resource protection; restore identified base-testing Core structure,
+    receive focused regressions, commit and rerun every selected group.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4353,9 +4357,10 @@ architectural premise requires discussion before dependent work.
 - Attempts 1 and 2 failed; full coordinator evidence is preserved under
   .runtime/artifacts/RM-2026-011/verification-attempt-{1,2}. Point 19zzb records
   the first corrections and successful Auth source-only forward preparation;
-  point 19zzc records the second test/fixture corrections. Resume attempt 3 with
-  the unchanged all-group graph after its commit. No further data preparation is
-  needed for the test-only corrections.
+  points 19zzc/19zzd record later browser/resource/isolation corrections. Resume
+  attempt 4 with all groups after the committed fixes. Point 19zzd records exact
+  base-testing structure recovery and confirms that historical test rows were not
+  restored. Development data/services remain preserved.
 - Preserve active development/test data, Qdrant/model caches, backups, reports and
   rollback material. The failed gate's supported fixtures removed their own labelled
   containers/networks/volumes/images and worker databases. This correction uses only
@@ -4477,3 +4482,59 @@ architectural premise requires discussion before dependent work.
   source review with the test-only correction; content-bound evidence is renewed
   after formatting/commit. The next supported background coordinator owns full
   verification and cleanup; point 20 remains active/open.
+
+## Point 19zzd — Third final-verification corrections
+
+- Attempt 3 on 52d7ac44 passed 45 stages including the complete 577-test backend
+  suite and real production deployment acceptance. It failed frontend-browser
+  (four Firefox navigation cancellations), database-constraints (six ownership
+  cases on the base database), and installation-host-acceptance (concurrent
+  browser endpoint removal during the persistent-service preservation check).
+  Full logs/traces are preserved at
+  .runtime/artifacts/RM-2026-011/verification-attempt-3; blocked stages are not PASS.
+- Inspected the actual base: runa_test retained its three owned Core schema markers
+  but had no Core tables or module registrations after the ownership fixture's
+  platform wipe. The earlier claim that the gate preserved all base test data was
+  incorrect. The old guard/filtered ownership acceptance ran against the persistent
+  base; schema ownership correctly refused its later wipe after registry removal.
+  Development was not a target. No unavailable test records are claimed recovered.
+- Moved the existing native CLI guard cases into DatabaseTest, requiring a canonical
+  disposable worker before subprocess work. The existing database-guards entrypoint
+  delegates through supported test-backend --parallel --processes=1 under the suite
+  lock and cleanup. Database/Seeding filtered gates now use --parallel as well.
+  DatabaseOwnership rejects the persistent base before creating fixtures/mutating
+  data. This repairs execution isolation without dropping assertions, narrowing
+  selected groups, changing prerequisites or weakening hard gates. Runtime scoped
+  wipe/ownership policy remains unchanged.
+- After showing exact non-destructive scope, the supported forward modules phase
+  at source 52d7ac44 recreated Audit 0.7.0, Auth 0.23.1 and Permissions 0.5.11 in
+  runa_test. Existing owned empty schemas were retained; no reset/deletion was used
+  for recovery. This restores current structure, not lost historical test rows.
+- Browser diagnostics now normalize Firefox NS_BINDING_ABORTED alongside Chromium
+  net::ERR_ABORTED. The added real AbortController/connection-refusal regression
+  distinguishes intentional cancellation from genuine network failure. Other
+  warnings/HTTP errors remain strict.
+- Installation acceptance snapshots exclude only run-labelled automatic browser
+  containers managed by the existing endpoint runner/journal. Actual same-checkout
+  development and manual test endpoints remain protected; their disappearance or
+  unexpected restart still fails. No catch/ignore of failed Docker inspection was
+  added. This permits the existing independent quality nodes to run concurrently.
+- Updated owner quality/acceptance guidance. No delivered runtime capability,
+  module implementation/version/dependency, migration or customer operational rule
+  changed. Root AGENTS and customer products already require persistent-base
+  protection and guarded disposable cleanup; no policy change is needed there.
+- Focused native guard plus destructive ownership cases pass (two cases, 50
+  assertions) using the supported disposable-worker runner and scoped cleanup.
+  Final full selection remains all groups; point 20 stays open.
+- The focused Firefox cancellation/network-failure regression and original
+  integrated PL/light/reflow failure both pass (two browser cases). The supported
+  database-migrations entrypoint passes all eight native guard cases, and an exact
+  before/after fingerprint confirms persistent base Core versions/tables and
+  user/Audit counts are unchanged. Diagnostic workers/endpoints were removed by
+  their own scoped runners; reports, caches, development and base data after recovery
+  were preserved. No additional Docker resources or volume cleanup was introduced.
+- Reviewed the actual test-data isolation defect and its fix in the security report;
+  evidence is refreshed against the formatted candidate. Previewed the complete
+  unchanged group selection at
+  .runtime/artifacts/RM-2026-011/verification-attempt-4-plan.txt; updated worker
+  commands change its graph fingerprint and require the full rerun.

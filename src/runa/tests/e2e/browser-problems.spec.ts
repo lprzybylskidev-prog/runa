@@ -34,3 +34,55 @@ test('guest diagnostics accept only same-origin session 401 and retain other HTT
     .poll(() => guest.some((error) => error.startsWith('503 ')))
     .toBe(true);
 });
+
+test('browser diagnostics distinguish cancelled requests from network failures', async ({
+  page,
+}) => {
+  await page.goto('/__fixtures/ready');
+  const errors = recordBrowserProblems(page);
+  let release!: () => void;
+  let finished!: () => void;
+  const paused = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const routed = new Promise<void>((resolve) => {
+    finished = resolve;
+  });
+  await page.route('**/__diagnostics/cancel', async (route) => {
+    await paused;
+    await route.fulfill({ status: 204 });
+    finished();
+  });
+  const controller = await page.evaluateHandle(() => new AbortController());
+  const seen = page.waitForRequest((request) =>
+    request.url().endsWith('/__diagnostics/cancel'),
+  );
+  const cancelled = page.waitForEvent('requestfailed', (request) =>
+    request.url().endsWith('/__diagnostics/cancel'),
+  );
+  const pending = page.evaluate(
+    (controller) =>
+      fetch('/__diagnostics/cancel', { signal: controller.signal }).catch(
+        () => undefined,
+      ),
+    controller,
+  );
+  await seen;
+  await controller.evaluate((controller) => controller.abort());
+  await pending;
+  await cancelled;
+  release();
+  await routed;
+  expect(errors).toEqual([]);
+  await page.route('**/__diagnostics/refused', (route) =>
+    route.abort('connectionrefused'),
+  );
+  await page.evaluate(() =>
+    fetch('/__diagnostics/refused').catch(() => undefined),
+  );
+  await expect
+    .poll(() =>
+      errors.some((error) => error.includes('/__diagnostics/refused')),
+    )
+    .toBe(true);
+});

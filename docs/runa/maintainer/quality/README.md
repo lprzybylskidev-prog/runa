@@ -232,7 +232,7 @@ A stable OS file lock outside the latest-run directory prevents concurrent start
 
 ## Owner test routing
 
-Owner database-constraints and seeding-contract gates use the dedicated maintainer backend runner with Database and Seeding filters. Customer runa:doctor:database/seeding commands continue to select application tests only. The standalone platform browser document process loads the private test bootstrap, including its fixture autoloader; it does not add private fixtures to customer Composer autoloading.
+Owner database-constraints and seeding-contract gates use the dedicated maintainer backend runner with Database and Seeding filters in disposable parallel workers. The database-migrations native guard entrypoint delegates its full acceptance to DatabaseTest in one disposable worker under the same suite lock/cleanup; it never resets the persistent base runa_test. Destructive DatabaseOwnership fixtures refuse the base before any mutation. The selected assertions, prerequisites and hard-failure policy are unchanged. Customer runa:doctor:database/seeding commands continue to select application tests only. The standalone platform browser document process loads the private test bootstrap, including its fixture autoloader; it does not add private fixtures to customer Composer autoloading.
 
 ## Production fixture routing
 
@@ -251,3 +251,10 @@ Native updater acceptance derives its original release tag from the installed pl
 ## Stage timings
 
 The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual group selection does not change individual test bodies or add Playwright skip flags.
+
+Native installation acceptance protects persistent development and manually owned
+test containers belonging to this checkout. Containers carrying the automatic
+runa.testing.run label belong to the concurrent browser runner and its recovery
+journal; they are excluded from the persistent-service snapshot. Their own runner
+continues to verify exact ownership and cleanup. Missing or restarted persistent
+services still fail the installation preservation check.

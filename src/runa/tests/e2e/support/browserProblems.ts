@@ -30,7 +30,12 @@ export function recordBrowserProblems(
       errors.push(message.text());
   });
   page.on('requestfailed', (request) => {
-    if (request.failure()?.errorText !== 'net::ERR_ABORTED')
+    // Chromium and Firefox names for an intentionally cancelled request.
+    if (
+      !['net::ERR_ABORTED', 'NS_BINDING_ABORTED'].includes(
+        request.failure()?.errorText ?? '',
+      )
+    )
       errors.push(`${request.url()}: ${request.failure()?.errorText}`);
   });
   page.on('response', (response) => {

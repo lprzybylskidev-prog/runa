@@ -146,9 +146,11 @@ def main():
             raise RuntimeError(text)
         report['checks'].append(text)
         print('PASS: ' + text, flush=True)
-    active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev']).splitlines()
+    active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev', '--filter', 'label!=runa.testing.run']).splitlines()
     # Devcontainer images may carry inherited Compose labels into standalone
-    # test helpers. Track actual containers belonging to this checkout.
+    # test helpers. Track actual containers belonging to this checkout. Automatic
+    # browser endpoints carry run ownership and may finish concurrently; their
+    # own guarded runner verifies cleanup. Manual endpoints remain protected.
     active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
     observed_at = datetime.now(timezone.utc).isoformat()
     before = {item: json.loads(output(['docker', 'inspect', item]))[0] for item in active}

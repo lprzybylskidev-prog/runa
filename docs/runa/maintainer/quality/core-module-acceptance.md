@@ -140,7 +140,10 @@ Guest presentation suites use e2e/support/browserProblems.ts with explicit anony
 session probing enabled. Only HTTP 401 and its matching resource-console message
 from the same-origin /api/runa/auth/session are expected in that mode. Default
 diagnostics remain strict; other endpoints/statuses, page exceptions and warnings
-are recorded. browser-problems.spec.ts checks strict versus guest behavior and
+are recorded. Chromium net::ERR_ABORTED and Firefox NS_BINDING_ABORTED identify
+intentional request cancellation during navigation; genuine connection failures
+remain errors. browser-problems.spec.ts checks cancellation versus network failure,
+strict versus guest behavior and
 retention of foreign-endpoint 401 and session 503 failures. This does not change
 application authentication responses or permit ignoring arbitrary browser errors.
 Customer welcome assertions follow the delivered .runa heading. Production failure

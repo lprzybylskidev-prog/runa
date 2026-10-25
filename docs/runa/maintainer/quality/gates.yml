@@ -145,14 +145,14 @@ impact_areas:
     - id: database-constraints
       depends_on: [database-migrations]
       exclusive_group: testing-state
-      command: python3 tools/maintainer/test-backend --filter=Database
+      command: python3 tools/maintainer/test-backend --parallel --filter=Database
       severity: hard_fail
 
     - id: seeding-contract
       depends_on: [database-constraints]
       exclusive_group: testing-state
       description: Validate category isolation, dependency graph, idempotence and relevant development scenario coverage.
-      command: python3 tools/maintainer/test-backend --filter=Seeding
+      command: python3 tools/maintainer/test-backend --parallel --filter=Seeding
       severity: hard_fail
 
   production:
