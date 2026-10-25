@@ -1198,7 +1198,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
-- [ ] 19zx. Include non-display preference Audit events in own-account history.
+- [x] 19zx. Include non-display preference Audit events in own-account history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4151,4 +4151,5 @@ architectural premise requires discussion before dependent work.
   output, login-history separation and disabled-history refusal. Source/version
   checks pass. Supported runner removed runa_test_test_1; base databases, development
   services, caches, backups and evidence preserved. No Docker resources created or
-  removed. Local forward publication pending; final point 20 stays appearance-gated.
+  removed. Published the exact-source forward edge in development and isolated base
+  testing; runtime checks pass. Final point 20 stays appearance-gated.
