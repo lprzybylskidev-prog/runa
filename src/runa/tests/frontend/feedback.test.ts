@@ -103,6 +103,31 @@ it('keeps Escape dismissal through duplicate pointer entry until the hover sessi
   await settle();
   expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
 });
+it('keeps Escape dismissal when the first pointer entry arrives during existing keyboard focus', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Theme' },
+    slots: { default: '<button>Theme</button>' },
+  });
+  const button = wrapper.get('button').element as HTMLButtonElement;
+  button.focus();
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  await wrapper.get('.app-tooltip').trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await wrapper.get('.app-tooltip').trigger('pointerleave');
+  button.blur();
+  await vi.advanceTimersByTimeAsync(100);
+  button.focus();
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+});
 it('hides clicked preference tooltips even when the trigger retains pointer focus', async () => {
   const wrapper = mount(Tooltip, {
     attachTo: document.body,

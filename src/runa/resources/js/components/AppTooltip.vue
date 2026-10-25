@@ -32,14 +32,15 @@ function leave() {
 }
 function dismiss() {
   globalThis.clearTimeout(timer);
-  // Retain the current anchor hover session: Firefox may re-emit pointerenter
-  // while an escaped floating panel leaves, without a new pointer interaction.
+  // Preserve the current hover/focus session while the floating panel leaves.
   overPanel = false;
   dismissed = true;
   visible.value = false;
 }
 function enter() {
-  if (!overAnchor) dismissed = false;
+  // Firefox can deliver the first pointerenter after Escape following a reload.
+  // An existing keyboard focus still belongs to the dismissed interaction.
+  if (!overAnchor && !keyboardFocus()) dismissed = false;
   overAnchor = true;
   update();
 }

@@ -4565,8 +4565,15 @@ architectural premise requires discussion before dependent work.
 - Logout navigation tests now await the destination document and guest entry before
   explicitly visiting /app, so the test does not interrupt logout's own redirect.
 - Tooltip retains the current anchor hover identity on dismissal and only clears
-  its Escape latch for a new hover session. Duplicate pointerenter during Firefox
-  panel exit cannot reopen it. Existing click/hover/bridge behavior stays covered.
+  its Escape latch after the existing hover/keyboard-focus session ends. Initial
+  repeated acceptance still failed: captured browser events identify Firefox's
+  delayed first pointerenter after reload, arriving after Escape during the same
+  keyboard focus. Retaining hover alone was insufficient. Pointer entry now also
+  respects that focused dismissal; deterministic regression covers delayed entry
+  and reopening after blur. Existing click/hover/bridge behavior stays covered.
+  Temporary browser event instrumentation is removed; diagnostic traces/logs stay
+  under .runtime/artifacts/RM-2026-011/sequential-attempt-5. Five focused tooltip
+  regressions and the rebuilt production frontend pass.
 - All owner/customer quality nodes using the exclusive knowledge CLI lock, including
   development and hooks diagnostics, share knowledge-state serialization. Direct
   collection-only documentation acceptance remains separate; no CLI lock/freshness
