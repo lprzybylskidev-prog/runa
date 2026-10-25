@@ -1205,7 +1205,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
-- [ ] 19zy. Label preference changes and resets explicitly in account history.
+- [x] 19zy. Label preference changes and resets explicitly in account history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4173,6 +4173,7 @@ architectural premise requires discussion before dependent work.
 - Event detail scope remains under discussion: existing OwnHistory deliberately
   excludes changes/context, and notification events currently omit before/after
   payloads. Do not infer old values or implement a generic Audit detail viewer.
-- Local forward publication pending. No new migration/dependency/Docker resource;
+- Published the source-only edge in development and isolated base testing; runtime
+  checks pass. No new migration/dependency/Docker resource;
   data, services, caches, backups and evidence preserved. Final verification remains
   gated on owner appearance acceptance.
