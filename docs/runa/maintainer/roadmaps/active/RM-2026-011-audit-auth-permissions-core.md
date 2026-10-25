@@ -4589,7 +4589,29 @@ architectural premise requires discussion before dependent work.
   same journaled host endpoint lifecycle. The graph invokes render on the host;
   scoped cleanup/manual ownership rules remain unchanged. These owner-only test
   orchestration corrections need no new customer instruction product.
-- Remaining work: receive sequential browser/build/render, knowledge doctor/evals,
-  native production/installation, exact repository/image scan and security/release
-  contracts, fixing each actual failure before proceeding. Do not automatically
-  restart the complete graph.
+- Received sequential PASS: frontend build, five focused tooltip cases, twelve
+  repeated Firefox preference runs, all-browser acceptance (386 passed), render
+  diagnostics, knowledge doctor/evals, real production deployment/failure acceptance
+  (48 checks), customer installation/update/team/knowledge acceptance (75 checks)
+  and quality scheduler contracts (19 cases through the required container). The
+  initial direct host scheduler invocation was a transport error; no product fix
+  was needed for its temporary-file path mismatch.
+- Real repository/runtime scanning then finds new blocking CVE-2026-111497 in
+  brotli-libs 1.2.0-r1 in PostgreSQL and the production PHP image. Locked dependency,
+  repository, Nginx and Redis checks introduce no blocking finding. Existing gosu
+  acceptance correctly refuses the unrelated OS finding. Native fixture cleanup
+  passes; development identities are preserved, including one explicitly validated
+  natural hourly queue rollover. Reports and candidate scans remain under
+  .runtime/artifacts/RM-2026-011/sequential-attempt-5 and .runtime/ownership.
+- Latest official PostgreSQL still contains the Brotli issue. Disposable exact-base
+  candidates with upgraded Brotli remove it: PHP base has zero HIGH/CRITICAL/secret
+  findings; PostgreSQL retains only the same 26 assessed gosu signatures and exact
+  binary. These are diagnostic candidates, not production implementations or PASS
+  for a rebuilt application. No runtime pins/Compose/policies/database data changed.
+- Implementation pauses for the root AGENTS significant architecture/security-
+  premise discussion rule: a derived PostgreSQL build and exact-artifact acceptance
+  cannot silently inherit the previous official-image decision. See the concrete
+  [Brotli remediation proposal](../../security/RM-2026-011-brotli-remediation-proposal.md).
+  Owner choice is needed between that scoped correction and waiting for a verified
+  upstream image. Changed-surface security/release final contracts and the complete
+  graph remain pending; point 19zze and 20 remain open. No automatic full rerun.
