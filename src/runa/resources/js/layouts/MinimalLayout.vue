@@ -17,6 +17,7 @@ import type { FooterOptions } from '../runa/ui/identity';
 const props = withDefaults(
   defineProps<{
     footer?: FooterOptions | undefined;
+    homeHref?: string;
     illustration?: boolean;
     constellationGlow?: boolean;
     orbitMotion?: boolean;
@@ -27,6 +28,7 @@ const props = withDefaults(
     constellationGlow: true,
     orbitMotion: true,
     footer: undefined,
+    homeHref: '/',
     staticPreferences: undefined,
   },
 );
@@ -76,7 +78,7 @@ const {
     >
       <slot name="header" :t="t">
         <a
-          href="/"
+          :href="homeHref"
           :aria-label="identity.applicationName"
           class="brand flex min-h-11 items-center gap-3 text-xl font-semibold tracking-tight"
         >

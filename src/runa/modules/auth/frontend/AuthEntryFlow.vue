@@ -123,7 +123,10 @@ const submitLabel = computed(() => {
 </script>
 
 <template>
-  <component :is="presentation.minimalLayout ?? MinimalLayout">
+  <component
+    :is="presentation.minimalLayout ?? MinimalLayout"
+    :home-href="options?.public_welcome_enabled ? '/' : '/app'"
+  >
     <section
       class="mx-auto w-full max-w-md space-y-6"
       :aria-busy="busy"

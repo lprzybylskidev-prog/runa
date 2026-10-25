@@ -8,6 +8,7 @@ import {
   authPost,
   data,
   decodeSession,
+  decodeOptions,
   record,
 } from './entry';
 import type { EntrySession } from './entry';
@@ -58,6 +59,7 @@ export function useApplicationSession(
   const paused = ref(false),
     loading = ref(true),
     profileLoading = ref(false),
+    welcomeEnabled = ref(false),
     failure = ref(''),
     pending = ref(false),
     now = ref(Date.now());
@@ -65,7 +67,7 @@ export function useApplicationSession(
     alive = true,
     lastActivity = 0,
     refreshing = false,
-    profileRead = 0;
+    presentationRead = 0;
   let abort = new AbortController();
   const remaining = computed(() =>
     session.value
@@ -137,15 +139,26 @@ export function useApplicationSession(
       failure.value = '';
       if (next.restrictions.length) suspend();
       else {
+        const read = ++presentationRead;
+        // Public navigation policy is optional presentation, never session authority.
+        void authGet('entry-options', abort.signal)
+          .then((response) => {
+            const options = decodeOptions(response);
+            if (alive && own === epoch && read === presentationRead)
+              welcomeEnabled.value = options.public_welcome_enabled;
+          })
+          .catch(() => {
+            if (alive && own === epoch && read === presentationRead)
+              welcomeEnabled.value = false;
+          });
         // Optional presentation read; its failure must not invalidate a valid session.
-        const read = ++profileRead;
         profileLoading.value = !profile.value;
         void authGet('profile', abort.signal)
           .catch(() => {
             /* Initials remain available; optional presentation never blocks the shell. */
           })
           .finally(() => {
-            if (alive && own === epoch && read === profileRead)
+            if (alive && own === epoch && read === presentationRead)
               profileLoading.value = false;
           });
       }
@@ -268,6 +281,7 @@ export function useApplicationSession(
     session,
     profile,
     profileLoading,
+    welcomeEnabled,
     paused,
     loading,
     failure,

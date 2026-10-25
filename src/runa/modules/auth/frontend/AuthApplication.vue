@@ -26,6 +26,7 @@ const {
   session,
   profile,
   profileLoading,
+  welcomeEnabled,
   paused,
   loading,
   failure,
@@ -80,6 +81,7 @@ const initials = computed(
     :is="presentation.applicationLayout ?? ApplicationLayout"
     v-else
     width="fluid"
+    :home-href="welcomeEnabled ? '/' : '/app'"
     :navigation="navigation"
     :current="current"
     :title="account ? text('Panel użytkownika', 'User panel') : ''"
@@ -92,7 +94,9 @@ const initials = computed(
       <Breadcrumbs
         :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
         :items="[
-          { label: text('Strona główna', 'Home'), href: '/' },
+          ...(welcomeEnabled
+            ? [{ label: text('Strona główna', 'Home'), href: '/' }]
+            : []),
           { label: text('Aplikacja', 'Application'), href: '/app' },
           ...(account
             ? [{ label: text('Panel użytkownika', 'User panel') }]

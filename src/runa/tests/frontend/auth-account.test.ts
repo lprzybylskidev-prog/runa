@@ -406,8 +406,10 @@ it('account boundary diagnostic: application uses the existing dropdown for both
   const trigger = w.find('button[aria-label^="Menu użytkownika"]');
   expect(trigger.exists()).toBe(true);
   expect(w.find('.shell-workspace h1').exists()).toBe(false);
-  expect(w.get('nav[aria-label="Ścieżka nawigacji"]').text()).toContain(
-    'Strona główna',
+  await vi.waitFor(() =>
+    expect(w.get('nav[aria-label="Ścieżka nawigacji"]').text()).toContain(
+      'Strona główna',
+    ),
   );
   expect(w.get('[aria-current="page"]').text()).toBe('Aplikacja');
   expect(w.get('.shell-brand').text()).toBe('runa.');

@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.21.11
+
+Respect disabled welcome policy in authenticated logo destinations and breadcrumbs,
+and in public Auth layout branding. Until public navigation policy is available,
+use /app and omit Home. Make the avatar skeleton fill its exact circular bounds
+and pulse over a transparent loading background, matching content skeletons.
+Source-only forward edge; no schema or session/security-policy change.
+
 ## 0.21.10
 
 Keep a shared pulsing avatar placeholder through optional profile discovery and

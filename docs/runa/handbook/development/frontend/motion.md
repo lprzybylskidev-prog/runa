@@ -65,3 +65,5 @@ MinimalLayout constellationGlow/orbitMotion; static errors never start schedulin
 Avatar composes the shared circular Skeleton while identity metadata or image bytes
 are pending. It inherits Skeleton's 1600ms pulse and reduced-motion/print fallback;
 image/initials replacement is immediate without another fade or entrance.
+During loading the avatar has no steady backing fill, and the circular Skeleton
+uses the exact avatar bounds so its opacity pulse remains visible.

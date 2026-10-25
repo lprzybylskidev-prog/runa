@@ -15,7 +15,10 @@ const presentation = useAuthPresentation();
 const { text, options, session, failed, loading, load } = useAuthWelcome();
 </script>
 <template>
-  <component :is="presentation.minimalLayout ?? MinimalLayout">
+  <component
+    :is="presentation.minimalLayout ?? MinimalLayout"
+    :home-href="options?.public_welcome_enabled ? '/' : '/app'"
+  >
     <template #header-actions>
       <div class="max-w-full" aria-live="polite">
         <Spinner

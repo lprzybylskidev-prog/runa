@@ -40,6 +40,7 @@ const props = withDefaults(
     topbar?: boolean;
     width?: 'contained' | 'fluid';
     footer?: FooterOptions | undefined;
+    homeHref?: string;
     preferenceStore?: PreferenceStore | undefined;
     userName?: string;
     userInitials?: string;
@@ -54,6 +55,7 @@ const props = withDefaults(
     topbar: true,
     width: 'contained',
     footer: undefined,
+    homeHref: '/',
     preferenceStore: undefined,
     userName: 'Runa',
     userInitials: 'RU',
@@ -312,7 +314,11 @@ onScopeDispose(() => {
       :inert="mobile && !drawer"
     >
       <div class="shell-brand-row">
-        <a href="/" class="shell-brand" :aria-label="identity.applicationName">
+        <a
+          :href="homeHref"
+          class="shell-brand"
+          :aria-label="identity.applicationName"
+        >
           <span class="brand-mark">
             <img
               v-if="identity.logo && !logoFailed"
@@ -390,7 +396,7 @@ onScopeDispose(() => {
               ><span /><span /><span
             /></span>
           </AppButton>
-          <a v-if="!sidebar" href="/" class="shell-brand"
+          <a v-if="!sidebar" :href="homeHref" class="shell-brand"
             ><span class="brand-mark"><RunaLogo /></span
             ><span>{{ brandName }}</span></a
           >

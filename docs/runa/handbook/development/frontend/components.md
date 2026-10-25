@@ -343,6 +343,8 @@ appear only after no image is known or an image fails. Source changes restart im
 readiness. Reduced motion/print inherit Skeleton's static fallback.
 The parent owns the accessible name, identity authorization and safe image URL.
 No fetching/profile storage or global state lives in this primitive.
+During loading the Avatar background is transparent and the animated Skeleton
+fills its exact bounds, so the entire placeholder visibly pulses like content.
 ApplicationLayout accepts optional userAvatar (default empty) and userLoading
 (default false) alongside userName/userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
 
@@ -357,3 +359,8 @@ discards, rebases or saves by itself. Place it inside the affected form, followi
 when the edited target has disappeared. Preserve normal field errors. Explicit
 resolution restores lost focus to the containing form when its decision buttons
 unmount; background refresh never moves focus.
+
+MinimalLayout and ApplicationLayout accept homeHref (default /) for the brand link.
+Auth presentations supply /app while welcome is disabled or policy is unknown, and
+/ when enabled. Custom layout wrappers forward it; it is navigation presentation,
+not an authorization or server-routing decision.

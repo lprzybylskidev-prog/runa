@@ -159,5 +159,6 @@ presentation replacement; keep application module presentation in src/app.
 See the [module development guide](docs/runa/handbook/development/modules.md#welcome-catalogue).
 
 Custom application shell wrappers forward the breadcrumbs slot and userLoading
-alongside userAvatar. Use Avatar's loading prop for pending identity metadata;
-its shared skeleton also covers image loading. See the public component catalogue.
+alongside userAvatar and homeHref. Use Avatar's loading prop for pending identity metadata;
+its shared skeleton also covers image loading. Honor welcomeEnabled in custom
+breadcrumbs/home links: disabled welcome omits Home and links branding to /app. See the public component catalogue.

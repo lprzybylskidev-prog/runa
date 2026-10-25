@@ -27,6 +27,7 @@ watch(
 <template>
   <span
     class="runa-avatar"
+    :class="{ 'avatar-loading': waiting }"
     :style="{ width: `${size}px`, height: `${size}px` }"
     aria-hidden="true"
   >
@@ -45,6 +46,7 @@ watch(
 </template>
 <style scoped>
 .runa-avatar {
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
@@ -60,8 +62,17 @@ watch(
   height: 100%;
   object-fit: cover;
 }
-.avatar-skeleton,
-.avatar-skeleton :deep(span) {
+.runa-avatar.avatar-loading {
+  background: transparent;
+}
+.runa-avatar .avatar-skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+.runa-avatar .avatar-skeleton :deep(span) {
   width: 100%;
   height: 100%;
   border-radius: inherit;

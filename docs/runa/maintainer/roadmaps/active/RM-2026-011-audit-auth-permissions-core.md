@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requires disabled welcome to remove Home from breadcrumbs
+  and send brand links to /app, plus visibly pulsing avatar loading matching content
+  skeletons. Point 19zu corrects both within the confirmed feature 0.5.0 release.
+
 - 2026-10-25 — Owner requests consistent lowercase `runa.` ApplicationLayout
   branding, avatar loading feedback through profile/image discovery in header and
   dropdown, and breadcrumbs on /app and /account. Point 19zt keeps the existing
@@ -1176,6 +1180,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
+- [ ] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4014,7 +4019,8 @@ architectural premise requires discussion before dependent work.
 - Two focused Playwright cases cover /app desktop and /account mobile with separately
   delayed profile and image responses, both menu avatars, branding and breadcrumb
   semantics. Current client assets built for review. Source and prior-HEAD module
-  version checks pass. Pulse duration and reduced-motion static fallback pass.
+  version checks pass. The original loading-state checks did not establish visible
+  pulse geometry; point 19zu adds exact bounds/opacity/reduced-motion assertions.
   Applied the exact-source forward module edge in development and isolated base
   testing; runtime descriptor checks pass. No data reset or migration.
   Inspected rendered loading/loaded menu and account screenshots under
@@ -4022,3 +4028,34 @@ architectural premise requires discussion before dependent work.
 - No temporary Docker resources created or removed. Development/test data, active
   services, caches, backups and evidence preserved. Final point 20 remains open
   behind explicit owner visual acceptance; no broad verification started.
+
+## Point 19zu delivery
+
+- Verified that disabled welcome previously left brand links at / and retained Home
+  breadcrumbs. Auth now reads the existing public entry-options projection as an
+  optional, epoch/generation-fenced presentation read. welcomeEnabled controls the
+  shell homeHref and breadcrumb root without delaying session/workspace mounting.
+  Unknown/failed public policy conservatively uses /app and omits Home.
+- Both ApplicationLayout brand locations and MinimalLayout accept homeHref. Default
+  authenticated, public Auth entry and welcome presentations pass the destination;
+  generic layout defaults remain /. Server root-to-sign-in behavior is unchanged.
+- Diagnosed the avatar with a focused rendered probe: its animation was running,
+  but the Skeleton resolved to 44px over a steady avatar backing fill. Loading now
+  removes that fill and absolutely fits the shared Skeleton to the exact avatar
+  bounds; the full placeholder inherits content-skeleton pulse/reduced-motion rules.
+- Auth PATCH 0.21.10 -> 0.21.11, source-only forward edge; dependent Permissions
+  constraint remains compatible. No schema/dependency/authorization changes.
+- Public component, customization and motion contracts plus customer frontend
+  reference synchronized. Existing root/owner skills already delegate to these
+  contracts and need no duplicated rules. Corrected the prior point's overly broad
+  motion-evidence claim instead of treating CSS animation presence as visible proof.
+- Five focused Chromium cases pass: enabled/disabled welcome on /app and /account,
+  public Auth branding, both 40px menu placeholders, transparent loading backing,
+  actual opacity 1 -> 0.45 at the shared pulse midpoint, reduced-motion disable,
+  separate delayed profile/image completion and breadcrumb/link semantics. Four
+  browser unit regressions pass after awaiting the optional navigation policy.
+  Source and prior-HEAD module version checks pass; current client assets built.
+  Local forward publication pending; no full quality gates started.
+- No temporary Docker resources created/removed. Active development, both base
+  databases, caches, backups and browser evidence preserved. Final point 20 remains
+  behind owner appearance acceptance.
