@@ -36,7 +36,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('auth_secondary_details', '0.5.5', '0.5.6', UpgradeAuthSecondaryDetails::class),
             new UpgradeDefinition('auth_factor_dialogs', '0.5.6', '0.5.7', UpgradeAuthFactorDialogs::class),
             new UpgradeDefinition('auth_all_preferences', '0.5.7', '0.5.8', UpgradeAuthAllPreferences::class),
-            new UpgradeDefinition('auth_refresh', '0.5.8', '0.5.9', UpgradeAuthRefresh::class)];
+            new UpgradeDefinition('auth_refresh', '0.5.8', '0.5.9', UpgradeAuthRefresh::class),
+            new UpgradeDefinition('history_dependencies', '0.5.9', '0.5.10', UpgradeAuthRefresh::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

@@ -247,8 +247,8 @@ before)` requires a trusted human principal, binds the entity UUIDv7 to that
 principal, validates a bounded 1–64 action allowlist and returns at most 50 rows.
 Only public_id, occurred_at, action and outcome are projected; next is an opaque
 append cursor. Cursors must belong to that same filtered own-entity history.
-No caller-supplied subject, actor identity, entity graph, payload, correlation or
-detail access is available. General AuditReads still requires runa.audit.read.
+No caller-supplied subject, actor identity, entity graph, payload or correlation
+access is available through summaries. General AuditReads still requires runa.audit.read.
 Module availability remains mandatory; no Auth/Permissions dependency is added.
 Auth independently controls its own login/account switches and action allowlists;
 see the [private profile contract](../auth/profile.md). Other modules must choose
@@ -266,3 +266,26 @@ of at most 160 UTF-8 bytes. Missing/unavailable Auth preserves UUID actor identi
 without a label; it never blocks independent Audit persistence. Historical actor
 snapshots are immutable. Authorized current identity lookup uses AuthIdentities
 (including deleted subjects); it is separate from history and never rewrites it.
+
+## Bounded own-history details
+
+Audit 0.6.0 adds `OwnHistoryDetails` 1.0.0 without changing `OwnHistory` 1.0.0.
+`detail(module, entityType, publicId, fieldsByAction)` binds every lookup to the
+trusted current human entity and module. A trusted source supplies an action map
+(1–64 actions, at most 32 approved field names per action); never pass a browser
+projection. Secret field names are rejected. Foreign, unknown and excluded events
+return null without revealing whether another account owns the event.
+
+Only public_id/occurred_at/action/outcome and approved old/new pairs from persisted
+changes are projected. Values are null, booleans, integers, strings up to 512
+characters or lists of at most 21 such scalars. SafePayload redaction is applied
+again; malformed pairs are omitted. Context, actors, entity graphs, internal IDs
+and raw Audit payloads are never returned. Empty fields permit a safe event-only
+detail for credential operations. This capability requires module availability and
+a trusted human, not general Audit read permission. The caller still enforces its
+own visibility policy and chooses domain-safe fields; static checking cannot prove
+that a deliberately trusted source has not mislabeled sensitive data.
+
+The no-transform source upgrade retains old immutable events. Missing captured
+pairs remain missing. See the [Auth history contract](../auth/history.md) for its
+fixed action/field map, authorization, capture and presentation rules.

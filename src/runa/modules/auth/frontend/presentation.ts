@@ -8,6 +8,7 @@ export interface AuthPresentation {
   entry?: Component;
   account?: Component;
   accountLoading?: Component;
+  historyDetail?: Component;
   welcome?: Component;
 }
 export const authPresentationKey: InjectionKey<ComputedRef<AuthPresentation>> =

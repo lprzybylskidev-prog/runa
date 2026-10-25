@@ -64,7 +64,7 @@ factor secrets, password history or OTPs through module APIs, logs or Audit.
 
 Use the [private Auth profile/address contract](../../../../docs/runa/handbook/modules/auth/profile.md)
 for versioned own/admin changes, recipient-bound verification, notification-only
-secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
+secondary emails, avatar ownership/cleanup and safe own-history summaries and bounded details. Other
 modules consume guarded public contracts; never expand security delivery to
 secondary recipients or expose general Audit detail for self-service history.
 
@@ -114,3 +114,7 @@ For Auth request limits and optional module ownership, follow the public
 [targeted throttling contract](../../../../docs/runa/handbook/modules/auth/throttling.md).
 Review new entry/proof operations against its source-owned classification; normal
 account reads/writes must not consume a blanket unsafe-method Auth bucket.
+
+Own-account history details follow the explicit action/field projection in the
+[Auth history contract](../../../../docs/runa/handbook/modules/auth/history.md).
+Do not expose raw Audit changes/context or infer historical before-values.

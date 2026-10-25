@@ -23,6 +23,7 @@ final class ProfileHttp implements HttpProvider
             new HttpEndpoint('GET', 'profile', new ApiOperation('profile.show'), Http\ProfileShowController::class, HttpAccess::Authenticated),
             new HttpEndpoint('PATCH', 'profile', new ApiOperation('profile.edit'), Http\ProfileEditController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/lifecycle', new ApiOperation('profile.self_lifecycle'), Http\SelfLifecycleController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'profile/history/detail', new ApiOperation('profile.history_detail'), Http\OwnHistoryDetailController::class, HttpAccess::Authenticated),
             new HttpEndpoint('GET', 'profile/history', new ApiOperation('profile.history'), Http\OwnHistoryController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/email', new ApiOperation('email.change'), Http\EmailChangeController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/secondary-emails', new ApiOperation('secondary.add_own'), Http\SecondaryAddController::class, HttpAccess::Authenticated),

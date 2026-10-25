@@ -97,7 +97,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('account_action_tones', '0.21.11', '0.21.12', UpgradeFactorSpacing::class),
             new UpgradeDefinition('targeted_throttling', '0.21.12', '0.21.13', UpgradeFactorSpacing::class),
             new UpgradeDefinition('preference_history', '0.21.13', '0.21.14', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('preference_history_labels', '0.21.14', '0.21.15', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('preference_history_labels', '0.21.14', '0.21.15', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('history_details', '0.21.15', '0.22.0', UpgradeFactorSpacing::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

@@ -77,7 +77,7 @@ final readonly class Avatars
             if ($old !== null) {
                 $connection->table('runa_auth.avatar_files')->where('path', $old)->update(['available_at' => now()]);
             }
-            $this->transactions->record('avatar.changed', $user);
+            $this->transactions->record('avatar.changed', $user, ['has_avatar' => ['old' => $old !== null, 'new' => true]]);
 
             return ['updated' => true, 'version' => $user->version];
         });
@@ -102,7 +102,7 @@ final readonly class Avatars
                 $user->avatar_type = null;
                 $user->version++;
                 $user->save();
-                $this->transactions->record('avatar.removed', $user);
+                $this->transactions->record('avatar.removed', $user, ['has_avatar' => ['old' => true, 'new' => false]]);
             }
 
             return ['updated' => true, 'version' => $user->version];

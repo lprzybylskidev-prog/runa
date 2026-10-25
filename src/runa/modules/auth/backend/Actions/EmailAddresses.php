@@ -78,7 +78,7 @@ final readonly class EmailAddresses
                 $connection->table('runa_auth.secondary_emails')->where('id', $row->id)->update(['verified_at' => now(), 'updated_at' => now()]);
                 $user->version++;
                 $user->save();
-                $this->transactions->record('secondary.verified', $user);
+                $this->transactions->record('secondary.verified', $user, ['email' => ['old' => $row->email, 'new' => $row->email], 'verified' => ['old' => false, 'new' => true]]);
 
                 return;
             }
@@ -125,7 +125,7 @@ final readonly class EmailAddresses
         $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->delete();
         $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
         $this->mail->issueLocked($connection, $user, 'notice', $old);
-        $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user);
+        $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user, ['email' => ['old' => $old, 'new' => $email]]);
     }
 
     public function ownSecondary(Request $request, string $operation): array
@@ -177,7 +177,7 @@ final readonly class EmailAddresses
         $user->save();
         $this->transactions->record('secondary.'.match ($operation) {
             'add' => 'added', 'change' => 'changed', 'remove' => 'removed'
-        }, $user);
+        }, $user, ['email' => ['old' => $row?->email, 'new' => $operation === 'remove' ? null : $email]]);
 
         return $operation === 'remove' ? null : $publicId;
     }

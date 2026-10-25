@@ -162,3 +162,8 @@ Custom application shell wrappers forward the breadcrumbs slot and userLoading
 alongside userAvatar and homeHref. Use Avatar's loading prop for pending identity metadata;
 its shared skeleton also covers image loading. Honor welcomeEnabled in custom
 breadcrumbs/home links: disabled welcome omits Home and links branding to /app. See the public component catalogue.
+
+Account-history details can be replaced through the Auth `historyDetail` presentation
+entry. Reuse the public controller/types and accessible Dialog contract documented
+in docs/runa/handbook/modules/auth/history.md; never fetch general Audit payloads
+or reconstruct missing historical values from current account state.

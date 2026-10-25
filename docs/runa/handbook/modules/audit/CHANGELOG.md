@@ -1,5 +1,11 @@
 # Audit module changelog
 
+## 0.6.0
+
+Add the guarded OwnHistoryDetails 1.0.0 API for account-bound, action/field-allowlisted
+change pairs. Summaries remain unchanged. No actors, context, raw payloads or secrets
+are projected. Source-only forward edge; no storage migration.
+
 ## 0.5.0
 
 Add safe read-only future-management event metadata and a source-only 0.4.0 -> 0.5.0 edge. The framework optionally snapshots trusted human display names through Auth public identity participation without adding an Audit dependency. Existing APIs/store/history remain compatible and immutable.

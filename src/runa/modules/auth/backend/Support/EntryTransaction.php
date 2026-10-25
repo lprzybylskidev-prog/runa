@@ -58,9 +58,9 @@ final readonly class EntryTransaction
             context: ['reason' => 'last_superadmin_required']));
     }
 
-    public function record(string $action, User $user): void
+    public function record(string $action, User $user, array $changes = []): void
     {
         $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.auth', $action,
-            entities: [new AuditEntity('runa.auth', 'user', $user->public_id)]));
+            entities: [new AuditEntity('runa.auth', 'user', $user->public_id)], changes: $changes));
     }
 }

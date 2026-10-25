@@ -24,7 +24,7 @@ never substitutes for required fresh proof; keep credentials/OTP/history private
 
 Use `docs/runa/handbook/modules/auth/profile.md` for versioned private profile and
 address workflows, notification-only verified secondary emails, authenticated avatar
-ownership/cleanup and safe own-history summaries. Consume guarded public contracts;
+ownership/cleanup and safe own-history summaries and bounded details. Consume guarded public contracts;
 never route core security mail to secondaries or grant general Audit read access
 for an own-account history feature. Protected platform implementation remains read-only.
 
@@ -87,3 +87,7 @@ work does not consume them. A future optional Throttling integration takes exclu
 request-cap ownership through the public AuthRequestThrottle seam when enabled.
 Follow docs/runa/handbook/modules/auth/throttling.md and use public bindings/adapters;
 do not edit protected middleware or weaken credential/proof/security invariants.
+
+Account-history details use a bounded account-bound projection, not general Audit
+read access. Preserve policy/session checks and never broaden responses to raw
+changes/context or credential values. Follow docs/runa/handbook/modules/auth/history.md.

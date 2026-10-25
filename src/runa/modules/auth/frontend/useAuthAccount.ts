@@ -1,3 +1,5 @@
+import { historyDetailResponse } from './historyDetails';
+import type { AccountHistoryDetail } from './historyDetails';
 import { enrollmentQrCode } from './totpEnrollment';
 import {
   ApiError,
@@ -581,6 +583,54 @@ export function useAuthAccount(accountId: string) {
       if (own === readEpoch) pageLoading.value = false;
     }
   }
+  const historyDetail = shallowRef<AccountHistoryDetail>();
+  const historyDetailOpen = ref(false),
+    historyDetailLoading = ref(false),
+    historyDetailFailed = ref(false);
+  let historyDetailId = '',
+    historyDetailEpoch = 0;
+  let historyDetailAbort: AbortController | undefined;
+  function closeHistoryDetail() {
+    historyDetailEpoch++;
+    historyDetailAbort?.abort();
+    historyDetailOpen.value = false;
+    historyDetailLoading.value = false;
+    historyDetail.value = undefined;
+  }
+  async function openHistoryDetail(publicId: string) {
+    historyDetailAbort?.abort();
+    const own = ++historyDetailEpoch;
+    historyDetailId = publicId;
+    historyDetailAbort = new AbortController();
+    historyDetailOpen.value = true;
+    historyDetailLoading.value = true;
+    historyDetailFailed.value = false;
+    historyDetail.value = undefined;
+    try {
+      const response = await accountRequest(
+        'profile/history/detail',
+        'GET',
+        { event: publicId },
+        AbortSignal.any([abort.signal, historyDetailAbort.signal]),
+      );
+      if (alive && own === historyDetailEpoch)
+        historyDetail.value = historyDetailResponse(response, publicId);
+    } catch (error) {
+      if (
+        alive &&
+        own === historyDetailEpoch &&
+        !historyDetailAbort.signal.aborted &&
+        !(error instanceof RequestCancelledError)
+      )
+        historyDetailFailed.value = true;
+    } finally {
+      if (alive && own === historyDetailEpoch)
+        historyDetailLoading.value = false;
+    }
+  }
+  function retryHistoryDetail() {
+    return openHistoryDetail(historyDetailId);
+  }
   async function readTrustedDevices(append = false) {
     const own = ++trustedReadEpoch;
     trustedLoading.value = true;
@@ -669,6 +719,7 @@ export function useAuthAccount(accountId: string) {
   }
   async function selectTab(value: AccountTab) {
     if (busy.value || !tabs.value.includes(value)) return;
+    closeHistoryDetail();
     tab.value = value;
     rows.value = [];
     cursor.value = null;
@@ -1331,6 +1382,7 @@ export function useAuthAccount(accountId: string) {
     { flush: 'sync' },
   );
   onScopeDispose(() => {
+    closeHistoryDetail();
     if (
       task.value === 'details' &&
       profile.value &&
@@ -1358,6 +1410,13 @@ export function useAuthAccount(accountId: string) {
     codes.value = [];
   });
   return {
+    historyDetail,
+    historyDetailOpen,
+    historyDetailLoading,
+    historyDetailFailed,
+    openHistoryDetail,
+    closeHistoryDetail,
+    retryHistoryDetail,
     text,
     locale,
     profile,

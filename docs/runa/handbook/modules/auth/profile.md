@@ -182,7 +182,7 @@ reads call Audit's public OwnHistory 1.0.0 through ModuleApis, binding the trust
 human UUIDv7 to the Auth user entity and a fixed action allowlist. Each append-desc
 page has at most 50 entries and an opaque UUIDv7 continuation. A cursor outside
 that same account/filter is refused. Only event public_id, UTC occurred_at, action
-and outcome return: no actor identities, entity graph, changes, context, execution,
+and outcome return in summary pages: no actor identities, entity graph, changes, context, execution,
 correlation, secrets or general Audit detail/read permission. Administrative
 changes about the account can appear without disclosing the administrator.
 Account history includes `delivery.preferences_changed`, `preferences.reset_all`
@@ -192,3 +192,7 @@ administrative resets have explicit localized labels instead of Account change. 
 presentation-only preference changes are not recorded as account-history events.
 Unknown-account anonymous login refusals cannot be attributed to a user's history.
 No Audit viewer or user-management UI is included.
+
+The separate [account-history detail contract](history.md) supplies an account-bound
+allowlisted change projection and replaceable modal. The summary endpoint retains
+its existing four fields; it is not expanded with arbitrary Audit payloads.

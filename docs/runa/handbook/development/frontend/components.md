@@ -364,3 +364,12 @@ MinimalLayout and ApplicationLayout accept homeHref (default /) for the brand li
 Auth presentations supply /app while welcome is disabled or policy is unknown, and
 / when enabled. Custom layout wrappers forward it; it is navigation presentation,
 not an authorization or server-routing decision.
+
+## Account history detail
+
+AuthHistoryDetail composes public Dialog, Spinner, Alert and Button for an explicit
+read-only event modal, PL/EN before/after pairs and legacy/security explanations.
+The controller fences overlapping/closed reads and supports retry. Public presentation
+replacement and exported types are documented in the
+[history contract](../../modules/auth/history.md); custom application presentation
+lives in src/app. Existing Dialog owns motion/focus; no new transition is added.

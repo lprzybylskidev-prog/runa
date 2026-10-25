@@ -65,6 +65,13 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner confirms details for all account-history events. Point 19zz
+  adds a bounded account-bound Audit projection and replaceable Auth modal, captures
+  approved before/after values for future events, and describes security operations
+  without secrets. Old events never invent missing values. Compatible module feature
+  increments are Audit 0.6.0/Auth 0.22.0; Permissions 0.5.10 updates dependency bounds.
+  This remains the active platform feature 0.5.0, not a new roadmap.
+
 - 2026-10-25 — Owner requests readable preference-history labels and asks for event
   details. Point 19zy delivers explicit labels. Details require agreement on scope
   and a new safe projection/capture contract; old notification events lack before/
@@ -1206,6 +1213,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
 - [x] 19zy. Label preference changes and resets explicitly in account history.
+- [ ] 19zz. Deliver safe details for every account-history event and capture approved changes.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4177,3 +4185,44 @@ architectural premise requires discussion before dependent work.
   checks pass. No new migration/dependency/Docker resource;
   data, services, caches, backups and evidence preserved. Final verification remains
   gated on owner appearance acceptance.
+
+## Point 19zz delivery
+
+- Delivered Details for every account-history event through an ownership-scoped,
+  policy-checked Auth endpoint and a separate additive Audit OwnHistoryDetails
+  1.0.0 API. The existing OwnHistory summary contract and login history remain
+  unchanged. Auth fixes the allowed actions and fields server-side; foreign,
+  missing and excluded events share a 404 response. Detail responses are private
+  and no-store, with no actor, context, internal identifiers or credential data.
+- New profile, address, avatar and notification mutations capture approved pairs
+  atomically with Audit. Notification recipient addresses are immutable snapshots;
+  avatar details expose presence only and complete preference reset exposes the
+  removed override count. Existing lifecycle changes retain their approved state
+  projection. Legacy events explicitly report absent values; security operations
+  explain the operation without exposing passwords, codes or tokens. Language and
+  theme continue to produce no history event. No historical backfill is invented.
+- Supplied PL/EN Dialog supports loading, error/read retry, keyboard focus/Escape,
+  responsive layouts and shared motion. Independent cancellation and response
+  fencing prevent stale or closed selections from revealing values. The public
+  Auth controller/types and optional historyDetail presentation replacement let
+  applications compose their own UI without copying security logic.
+- Audit MINOR 0.5.0 -> 0.6.0; Auth MINOR 0.21.15 -> 0.22.0; Permissions PATCH
+  0.5.9 -> 0.5.10 aligns dependency ranges. All have source-only forward edges,
+  with no schema migration, new package or runtime configuration change. Module
+  source and per-HEAD version checks pass; current client assets build.
+- Focused supported checks pass: two API/security regressions (102 assertions),
+  four existing mutation/rollback regressions (76 assertions), two frontend
+  modal/controller tests and two Chromium cases (PL dark desktop, EN light mobile).
+  Browser review confirms rendering, bounded layout, focus return and legacy
+  state; screenshots remain under .runtime/artifacts/playwright/history-details-*.
+  These are scoped checks, not final quality acceptance. Point 20 remains gated
+  on owner appearance acceptance.
+- Current Auth/Audit guides, frontend public contract/catalogue and module
+  changelogs are synchronized. Owner frontend/security references and corresponding
+  customer application references link the delivered safe contract. Root AGENTS
+  needs no change: existing audit-awareness, guarded API and presentation rules
+  already cover this capability. Other customer skill procedures remain valid
+  and delegate to the same handbook without authorizing protected edits.
+- Supported backend runners removed their disposable runa_test_test_1 database.
+  No task Docker resources were created or removed; base development/testing
+  databases, services, caches, backups and verification evidence are preserved.

@@ -28,6 +28,7 @@ import {
 } from '@vue/test-utils';
 import AuthAccount from '../../modules/auth/frontend/AuthAccount.vue';
 import AuthWelcome from '../../modules/auth/frontend/AuthWelcome.vue';
+import { useAuthAccount } from '../../modules/auth/frontend/useAuthAccount';
 import AuthApplication from '../../modules/auth/frontend/AuthApplication.vue';
 import { useApplicationSession } from '../../modules/auth/frontend/useApplicationSession';
 import {
@@ -2389,4 +2390,133 @@ it('reads delivery once per preference tab entry or account refresh while retain
   await accountPreferences.refresh();
   await flushPromises();
   expect(reads()).toBe(3);
+});
+
+it('account history opens safe detail changes, handles retry and never restores a closed late response', async () => {
+  currentProfile.capabilities.own_account_history = true;
+  const eventId = '01900000-0000-7000-8000-000000000099';
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let fail = false;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    const url = String(input);
+    if (url.includes('/profile/history/detail')) {
+      if (fail) return json('unavailable', 503);
+      return json({
+        public_id: eventId,
+        occurred_at: '2026-10-25T12:00:00Z',
+        action: 'delivery.preferences_changed',
+        outcome: 'success',
+        changes: [
+          {
+            field: 'category',
+            before: 'runa.auth.new_browser',
+            after: 'runa.auth.new_browser',
+          },
+          { field: 'enabled', before: true, after: false },
+        ],
+      });
+    }
+    if (url.includes('/profile/history'))
+      return json({
+        entries: [
+          {
+            public_id: eventId,
+            occurred_at: '2026-10-25T12:00:00Z',
+            action: 'delivery.preferences_changed',
+            outcome: 'success',
+          },
+        ],
+        next: null,
+      });
+    return original(input, init);
+  });
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await loaded(w);
+  await w
+    .get('nav[aria-label="Ustawienia konta"]')
+    .findAll('button')
+    .find((button) => button.text() === 'Historia konta')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(
+      w.findAll('button').some((button) => button.text() === 'Szczegóły'),
+    ).toBe(true),
+  );
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Szczegóły')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(
+      document.body.querySelector('[data-history-detail]')?.textContent,
+    ).toContain('Nowa przeglądarka'),
+  );
+  const modal = document.body.querySelector('[role=dialog]')!;
+  expect(modal.textContent).toContain('Przed');
+  expect(modal.textContent).toContain('Po');
+  expect(modal.textContent).toContain('Tak');
+  expect(modal.textContent).toContain('Nie');
+  const close = [...modal.querySelectorAll('button')].find(
+    (button) => button.textContent === 'Zamknij',
+  )!;
+  close.click();
+  await flushPromises();
+  fail = true;
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Szczegóły')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(document.body.textContent).toContain(
+      'Nie udało się pobrać szczegółów',
+    ),
+  );
+  fail = false;
+  [...document.body.querySelectorAll('[role=dialog] button')]
+    .find((button) => button.textContent === 'Ponów')!
+    .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  await vi.waitFor(() =>
+    expect(
+      document.body.querySelector('[data-history-detail]')?.textContent,
+    ).toContain('Nowa przeglądarka'),
+  );
+});
+
+it('history detail controller discards closed and stale responses and clears on unmount', async () => {
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  const releases: ((response: Response) => void)[] = [];
+  vi.mocked(window.fetch).mockImplementation((input, init) =>
+    String(input).includes('/profile/history/detail')
+      ? new Promise((resolve) => releases.push(resolve))
+      : original(input, init),
+  );
+  const { state, wrapper } = mountController(() => useAuthAccount(id));
+  await vi.waitFor(() => expect(state.ready.value).toBe(true));
+  const firstId = '01900000-0000-7000-8000-000000000099';
+  const secondId = '01900000-0000-7000-8000-000000000098';
+  const response = (public_id: string) =>
+    json({
+      public_id,
+      occurred_at: '2026-10-25T12:00:00Z',
+      action: 'password.changed',
+      outcome: 'success',
+      changes: [],
+    });
+  const first = state.openHistoryDetail(firstId);
+  const second = state.openHistoryDetail(secondId);
+  releases[1]!(response(secondId));
+  await second;
+  releases[0]!(response(firstId));
+  await first;
+  expect(state.historyDetail.value?.public_id).toBe(secondId);
+  const late = state.openHistoryDetail(firstId);
+  state.closeHistoryDetail();
+  releases[2]!(response(firstId));
+  await late;
+  expect(state.historyDetailOpen.value).toBe(false);
+  expect(state.historyDetail.value).toBeUndefined();
+  wrapper.unmount();
 });

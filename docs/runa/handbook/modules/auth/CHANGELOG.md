@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 0.22.0
+
+Open details for every account-history event through a replaceable public dialog.
+Capture approved profile/address/avatar/notification changes atomically with Audit;
+security operations describe the event without credential values. Historical events
+without captured pairs remain explicit about missing details. Requires Audit ^0.6.0;
+source-only forward edge, no storage migration.
+
 ## 0.21.15
 
 Label notification preference history as Preferences changed, with distinct complete

@@ -27,6 +27,7 @@ use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
+use Runa\Modules\Audit\Contracts\OwnHistoryDetails;
 use Runa\Modules\Auth\Actions\AuthenticateSession;
 use Runa\Modules\Auth\Actions\Avatars;
 use Runa\Modules\Auth\Actions\BulkSessions;
@@ -65,6 +66,7 @@ use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
+use Runa\Modules\Auth\Support\AccountHistory;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -1668,4 +1670,61 @@ it('account history includes existing notification preference events and resets 
     expect(array_column($login, 'action'))->not->toContain('delivery.preferences_changed', 'preferences.reset_all', 'preferences.admin_reset');
     entryPolicy(['own_account_history' => false]);
     $this->getJson('/api/runa/auth/profile/history?kind=account')->assertForbidden();
+});
+
+it('account event details capture real changes and retain account binding, privacy and legacy behavior', function (): void {
+    entryPolicy(['own_account_history' => true]);
+    $user = profileVerified('detail-owner@example.test');
+    $other = profileVerified('detail-foreign@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->patchJson('/api/runa/auth/profile', ['version' => 1, 'name' => 'New display name'])->assertOk();
+    $profileId = DB::table('runa_audit.events')->where('action', 'profile.changed')->latest('id')->value('public_id');
+    $detailUrl = '/api/runa/auth/profile/history/detail?event=';
+    $profile = $this->getJson($detailUrl.$profileId)->assertOk()->assertHeader('Cache-Control', 'no-store, private')->json('data');
+    expect(array_keys($profile))->toBe(['public_id', 'occurred_at', 'action', 'outcome', 'changes'])
+        ->and($profile['changes'])->toContain(['field' => 'name', 'before' => 'Test User', 'after' => 'New display name']);
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth',
+        'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 0])->assertOk();
+    $notificationId = DB::table('runa_audit.events')->where('action', 'delivery.preferences_changed')->latest('id')->value('public_id');
+    $delivery = $this->getJson($detailUrl.$notificationId)->assertOk()->json('data.changes');
+    expect($delivery)->toContain(['field' => 'enabled', 'before' => true, 'after' => false])
+        ->toContain(['field' => 'recipients', 'before' => [$user->email], 'after' => [$user->email]])
+        ->toContain(['field' => 'category', 'before' => 'runa.auth.new_browser', 'after' => 'runa.auth.new_browser']);
+    DB::transaction(function () use ($user, $other): void {
+        app(EntryTransaction::class)->record('password.changed', $user, ['password' => ['old' => 'never-return-this', 'new' => 'nor-this'], 'email' => ['old' => 'forbidden@example.test', 'new' => 'other@example.test']]);
+        app(EntryTransaction::class)->record('profile.admin_changed', $user); // Legacy event without captured pairs.
+        app(EntryTransaction::class)->record('profile.changed', $other, ['name' => ['old' => 'Foreign', 'new' => 'Still foreign']]);
+    });
+    $security = DB::table('runa_audit.events')->where('action', 'password.changed')->latest('id')->value('public_id');
+    $this->getJson($detailUrl.$security)->assertOk()->assertJsonPath('data.changes', []);
+    $legacy = DB::table('runa_audit.events')->where('action', 'profile.admin_changed')->latest('id')->value('public_id');
+    $this->getJson($detailUrl.$legacy)->assertOk()->assertJsonPath('data.changes', []);
+    $foreign = DB::table('runa_audit.events')->latest('id')->value('public_id');
+    $this->getJson($detailUrl.$foreign)->assertNotFound()->assertJsonPath('error.code', 'history_event_not_found');
+    $this->getJson($detailUrl.Str::uuid7())->assertNotFound();
+    $this->getJson($detailUrl.'bad')->assertUnprocessable();
+    $login = DB::table('runa_audit.events')->where('action', 'login.succeeded')->latest('id')->value('public_id');
+    $this->getJson($detailUrl.$login)->assertNotFound();
+    $summary = $this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries');
+    foreach ($summary as $row) {
+        expect($row)->not->toHaveKey('changes');
+    }
+    entryPolicy(['own_account_history' => false]);
+    $this->getJson($detailUrl.$profileId)->assertForbidden();
+});
+
+it('account detail projection covers every declared action and rejects sensitive field requests', function (): void {
+    entryPolicy(['own_account_history' => true]);
+    $user = profileVerified('all-details@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    foreach (AccountHistory::fields() as $action => $fields) {
+        DB::transaction(fn () => app(EntryTransaction::class)->record($action, $user));
+        $id = DB::table('runa_audit.events')->latest('id')->value('public_id');
+        $this->getJson('/api/runa/auth/profile/history/detail?event='.$id)->assertOk()->assertJsonPath('data.action', $action)->assertJsonPath('data.changes', []);
+    }
+    $details = app(ModuleApis::class)->resolve('runa.audit', OwnHistoryDetails::class, '1.0.0');
+    app(PrincipalScope::class)->run(new TrustedPrincipal($user->public_id), function () use ($details, $id): void {
+        expect(fn () => $details->detail('runa.auth', 'user', $id, ['password.changed' => ['password']]))->toThrow(InvalidArgumentException::class);
+    });
+    expect(fn () => $details->detail('runa.auth', 'user', $id, ['profile.changed' => ['name']]))->toThrow(OperationRejected::class);
 });

@@ -106,11 +106,24 @@ final readonly class DeliveryRouting implements AuthDelivery
         if (array_diff($input['recipients'], $available) !== []) {
             throw new OperationRejected('recipient_unavailable', 'runa.auth', 'delivery', 422);
         }
+        $before = $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->where('module', $input['module'])->where('category', $category->key)->first();
         $connection->table('runa_auth.delivery_preferences')->updateOrInsert(['user_id' => $user->id, 'module' => $input['module'], 'category' => $category->key],
             ['enabled' => $input['enabled'], 'recipients' => json_encode($input['recipients'], JSON_THROW_ON_ERROR), 'updated_at' => now(), 'created_at' => now()]);
         $user->preference_revision++;
         $user->save();
-        $this->transactions->record('delivery.preferences_changed', $user);
+        $resolve = function (array $ids) use ($connection, $user): array {
+            $addresses = [];
+            foreach ($ids as $id) {
+                $addresses[] = $id === 'primary' ? $user->email : $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->where('public_id', $id)->value('email');
+            }
+
+            return array_values(array_filter($addresses, 'is_string'));
+        };
+        $this->transactions->record('delivery.preferences_changed', $user, [
+            'category' => ['old' => $input['module'].'.'.$category->key, 'new' => $input['module'].'.'.$category->key],
+            'enabled' => ['old' => $before?->enabled ?? true, 'new' => $input['enabled']],
+            'recipients' => ['old' => $resolve($before === null ? ['primary'] : json_decode($before->recipients, true, flags: JSON_THROW_ON_ERROR)), 'new' => $resolve($input['recipients'])],
+        ]);
 
         return ['account' => $user->public_id, 'revision' => $user->preference_revision, 'channel' => 'email'];
     }

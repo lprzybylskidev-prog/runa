@@ -122,7 +122,9 @@ final readonly class AccountPreferences implements AuthPreferences
             $query->where('scope', $scope->id());
         }
         $query->delete();
+        $notificationOverrides = 0;
         if ($includeDelivery) {
+            $notificationOverrides = $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->count();
             $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->delete();
         }
         $user->preference_revision++;
@@ -131,7 +133,7 @@ final readonly class AccountPreferences implements AuthPreferences
         if ($admin) {
             $this->transactions->record('preferences.admin_reset', $user);
         } elseif ($includeDelivery) {
-            $this->transactions->record('preferences.reset_all', $user);
+            $this->transactions->record('preferences.reset_all', $user, ['notification_overrides' => ['old' => $notificationOverrides, 'new' => 0]]);
         }
 
         return ['account' => $user->public_id, 'revision' => $user->preference_revision];

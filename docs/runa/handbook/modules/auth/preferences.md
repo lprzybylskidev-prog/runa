@@ -230,3 +230,8 @@ Own-account history includes recorded email-delivery preference changes and comp
 administrative preference resets. Language/theme edits remain outside history.
 Existing events become visible through the expanded allowlist, without generating
 replacement events or exposing recipients, preference values or administrator data.
+
+New notification preference events record approved before/after category, enabled
+state and recipient addresses transactionally for [account history details](history.md).
+Complete reset records removed override count. No values are inferred for old events;
+language/theme edits remain excluded. The summary API still exposes no values.

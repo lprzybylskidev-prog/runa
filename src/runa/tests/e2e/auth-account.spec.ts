@@ -3,7 +3,11 @@ const id = '01900000-0000-7000-8000-000000000001';
 async function accountTransport(
   page: Page,
   welcome = true,
-  presentation: { avatar?: boolean; profileReady?: Promise<void> } = {},
+  presentation: {
+    avatar?: boolean;
+    profileReady?: Promise<void>;
+    history?: boolean;
+  } = {},
 ) {
   let signedIn = true;
   let updates = 0;
@@ -92,7 +96,7 @@ async function accountTransport(
           avatar_editor: 'both',
           avatar_max_kib: 2048,
           own_login_history: false,
-          own_account_history: false,
+          own_account_history: presentation.history ?? false,
           self_deactivate: false,
           self_delete: false,
         },
@@ -408,3 +412,141 @@ test('disabled welcome keeps public Auth branding inside application entry', asy
   await page.goto('/auth/login');
   await expect(page.locator('.brand')).toHaveAttribute('href', '/app');
 });
+
+for (const [width, theme, locale] of [
+  [1440, 'dark', 'pl'],
+  [390, 'light', 'en'],
+] as const) {
+  test(`account history detail modal: ${width} ${locale}`, async ({
+    page,
+  }, info) => {
+    test.skip(
+      info.project.name !== 'chromium',
+      'Focused safe detail presentation.',
+    );
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript(
+      ({ theme, locale }) => {
+        localStorage.setItem('runa.theme', theme);
+        localStorage.setItem('runa.locale', locale);
+      },
+      { theme, locale },
+    );
+    await accountTransport(page, true, { history: true });
+    await page.route('**/api/runa/auth/preferences', (route) =>
+      route.fulfill({
+        json: {
+          data: {
+            account: id,
+            revision: 0,
+            legacy_claimed: true,
+            values: [
+              {
+                scope: 'runa:runa.auth:global:locale',
+                value: locale,
+                version: 1,
+                stored: true,
+              },
+              {
+                scope: 'runa:runa.auth:global:theme',
+                value: theme,
+                version: 1,
+                stored: true,
+              },
+            ],
+          },
+        },
+      }),
+    );
+    const event = '01900000-0000-7000-8000-000000000099';
+    await page.route('**/api/runa/auth/profile/history?*', (route) =>
+      route.fulfill({
+        json: {
+          data: {
+            entries: [
+              {
+                public_id: event,
+                occurred_at: '2026-10-25T12:00:00Z',
+                action: 'delivery.preferences_changed',
+                outcome: 'success',
+              },
+            ],
+            next: null,
+          },
+        },
+      }),
+    );
+    await page.route('**/api/runa/auth/profile/history/detail?*', (route) =>
+      route.fulfill({
+        json: {
+          data: {
+            public_id: event,
+            occurred_at: '2026-10-25T12:00:00Z',
+            action: 'delivery.preferences_changed',
+            outcome: 'success',
+            changes: [
+              {
+                field: 'category',
+                before: 'runa.auth.new_browser',
+                after: 'runa.auth.new_browser',
+              },
+              { field: 'enabled', before: true, after: false },
+            ],
+          },
+        },
+      }),
+    );
+    await page.goto('/account');
+    await page
+      .getByRole('button', {
+        name: locale === 'pl' ? 'Historia konta' : 'Account history',
+        exact: true,
+      })
+      .click();
+    const details = page.getByRole('button', {
+      name: locale === 'pl' ? 'Szczegóły' : 'Details',
+      exact: true,
+    });
+    await details.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', {
+      name: locale === 'pl' ? 'Szczegóły zdarzenia' : 'Event details',
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(
+      locale === 'pl' ? 'Nowa przeglądarka' : 'New browser',
+    );
+    await expect(dialog).toContainText(locale === 'pl' ? 'Przed' : 'Before');
+    await expect(dialog).toContainText(locale === 'pl' ? 'Po' : 'After');
+    expect(
+      await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth),
+    ).toBe(true);
+    await expect(page.locator('.dialog-backdrop')).toHaveCSS('opacity', '1');
+    await page.screenshot({
+      path: `../.runtime/artifacts/playwright/history-details-${width}-${locale}.png`,
+      fullPage: true,
+    });
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(details).toBeFocused();
+    await page.route('**/api/runa/auth/profile/history/detail?*', (route) =>
+      route.fulfill({
+        json: {
+          data: {
+            public_id: event,
+            occurred_at: '2026-10-25T12:00:00Z',
+            action: 'profile.changed',
+            outcome: 'success',
+            changes: [],
+          },
+        },
+      }),
+    );
+    await details.click();
+    await expect(page.getByRole('dialog')).toContainText(
+      locale === 'pl'
+        ? 'nie zawiera zapisanych wartości'
+        : 'no recorded before and after values',
+    );
+  });
+}

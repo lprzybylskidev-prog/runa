@@ -21,6 +21,7 @@ import type { AccountTab, AccountTask } from './useAuthAccount';
 import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
 import AuthAccountLoading from './AuthAccountLoading.vue';
+import AuthHistoryDetail from './AuthHistoryDetail.vue';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
 import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
@@ -296,6 +297,17 @@ const passwordHint = computed(() =>
 </script>
 <template>
   <component
+    :is="presentation.historyDetail ?? AuthHistoryDetail"
+    :open="account.historyDetailOpen.value"
+    :loading="account.historyDetailLoading.value"
+    :failed="account.historyDetailFailed.value"
+    :detail="account.historyDetail.value"
+    :locale="locale"
+    @close="account.closeHistoryDetail"
+    @retry="account.retryHistoryDetail"
+  />
+
+  <component
     v-if="!ready && !failure"
     :is="presentation.accountLoading ?? AuthAccountLoading"
   />
@@ -567,8 +579,15 @@ const passwordHint = computed(() =>
           :english="locale === 'en'"
           :searchable="false"
         >
-          <template v-if="!history" #actions="{ row }"
-            ><Button
+          <template #actions="{ row }">
+            <Button
+              v-if="tab === 'accountHistory'"
+              variant="outline"
+              @click="account.openHistoryDetail(row.public_id)"
+              >{{ text('Szczegóły', 'Details') }}</Button
+            >
+            <Button
+              v-else-if="!history"
               tone="danger"
               :disabled="busy"
               @click="revoke(row.public_id)"
@@ -577,8 +596,8 @@ const passwordHint = computed(() =>
                   ? text('Zakończ', 'End')
                   : text('Unieważnij', 'Revoke')
               }}</Button
-            ></template
-          >
+            >
+          </template>
         </Table>
         <Button
           v-if="cursor"

@@ -75,3 +75,7 @@ public page-layouts and motion guides.
 For every new Runa module, complete its welcome icon and localized manifest metadata
 and inspect the default catalogue under the [module development guide](../../../../docs/runa/handbook/development/modules.md#welcome-catalogue).
 Customer welcome replacements remain application-owned.
+
+Account-history event details follow the public
+[Auth history contract](../../../../docs/runa/handbook/modules/auth/history.md).
+Use the default or public presentation seam, not a generic Audit payload viewer.

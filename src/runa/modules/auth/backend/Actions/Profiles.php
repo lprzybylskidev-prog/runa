@@ -5,11 +5,13 @@ namespace Runa\Modules\Auth\Actions;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Runa\Modules\Audit\Contracts\OwnHistory;
+use Runa\Modules\Audit\Contracts\OwnHistoryDetails;
 use Runa\Modules\Auth\Contracts\Identity;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\AccountHistory;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -51,10 +53,17 @@ final readonly class Profiles
             throw new IdentityConflict('identifier_conflict');
         }
         if ($namesChanged || $loginChanged) {
+            $before = $user->only(['name', 'first_name', 'surname', 'login']);
             $user->forceFill(['name' => $change->name, 'first_name' => $change->firstName, 'surname' => $change->surname,
                 'login' => $change->login, 'login_claim' => $change->login, 'version' => $user->version + 1]);
             $user->save();
-            $this->transactions->record($own ? 'profile.changed' : 'profile.admin_changed', $user);
+            $changes = [];
+            foreach ($before as $field => $old) {
+                if ($old !== $user->$field) {
+                    $changes[$field] = ['old' => $old, 'new' => $user->$field];
+                }
+            }
+            $this->transactions->record($own ? 'profile.changed' : 'profile.admin_changed', $user, $changes);
         }
 
         return $user->identity();
@@ -89,14 +98,22 @@ final readonly class Profiles
             if (! in_array($kind, ['login', 'account'], true) || ! $this->value('own_'.$kind.'_history')) {
                 $this->refuse('own_history_disabled');
             }
-            $actions = $kind === 'login' ? ['login.succeeded', 'login.credentials_accepted', 'two_factor.confirmed', 'logout.completed', 'session.evicted', 'session.revoked', 'sessions.revoked'] : [
-                'profile.changed', 'profile.admin_changed', 'email.changed', 'email.admin_changed', 'email.reverification_required', 'verification.completed',
-                'secondary.added', 'secondary.changed', 'secondary.removed', 'secondary.verified', 'avatar.changed', 'avatar.removed',
-                'delivery.preferences_changed', 'preferences.reset_all', 'preferences.admin_reset',
-                'password.changed', 'password.reset', 'password.admin_reset', 'two_factor.admin_reset', 'identity.deactivate', 'identity.delete',
-            ];
+            $actions = $kind === 'login' ? ['login.succeeded', 'login.credentials_accepted', 'two_factor.confirmed', 'logout.completed', 'session.evicted', 'session.revoked', 'sessions.revoked'] : array_keys(AccountHistory::fields());
 
             return $this->apis->resolve('runa.audit', OwnHistory::class, '1.0.0')->page('runa.auth', 'user', $actions, $request->input('before'));
+        }, count: false, unrestricted: true);
+    }
+
+    public function historyDetail(Request $request): array
+    {
+        return $this->context->run($request, function () use ($request): array {
+            if (! $this->value('own_account_history')) {
+                $this->refuse('own_history_disabled');
+            }
+
+            return $this->apis->resolve('runa.audit', OwnHistoryDetails::class, '1.0.0')
+                ->detail('runa.auth', 'user', $request->string('event')->toString(), AccountHistory::fields())
+                ?? throw new OperationRejected('history_event_not_found', 'runa.auth', 'profile.history_detail', 404);
         }, count: false, unrestricted: true);
     }
 

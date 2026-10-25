@@ -310,3 +310,7 @@ presentation replacement owns any customer-specific introduction/module catalogu
 The default account dropdown identity shows only avatar and display name, without
 a redundant account caption. Account deactivation uses warning outline actions;
 account deletion uses danger outline actions, including confirmation submits.
+
+Account history provides a replaceable `historyDetail` presentation and typed detail
+controller state; follow the [Auth history contract](../../modules/auth/history.md)
+for props/events, lifecycle fencing, safe output and old-event limitations.

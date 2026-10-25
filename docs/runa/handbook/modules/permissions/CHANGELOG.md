@@ -1,5 +1,11 @@
 # Permissions module changelog
 
+## 0.5.10
+
+Accept compatible Auth ^0.22.0 and Audit ^0.6.0 dependencies for own-history detail
+contracts. Existing grants, authorization and assignment behavior are unchanged.
+Source-only forward edge; no storage migration.
+
 ## 0.5.9
 
 Align the required Auth constraint with compatible account refresh/controller
