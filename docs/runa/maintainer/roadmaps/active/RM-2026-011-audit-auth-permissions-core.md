@@ -1175,7 +1175,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zq. Animate only one randomly selected illustration point per cycle.
 - [x] 19zr. Enforce guarded worker database and test-container cleanup; retire audited obsolete local resources and synchronize owner/customer guidance.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
-- [ ] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
+- [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4015,7 +4015,10 @@ architectural premise requires discussion before dependent work.
   delayed profile and image responses, both menu avatars, branding and breadcrumb
   semantics. Current client assets built for review. Source and prior-HEAD module
   version checks pass. Pulse duration and reduced-motion static fallback pass.
-  Local forward publication pending.
+  Applied the exact-source forward module edge in development and isolated base
+  testing; runtime descriptor checks pass. No data reset or migration.
+  Inspected rendered loading/loaded menu and account screenshots under
+  .runtime/artifacts/playwright/avatar-*.png.
 - No temporary Docker resources created or removed. Development/test data, active
   services, caches, backups and evidence preserved. Final point 20 remains open
   behind explicit owner visual acceptance; no broad verification started.
