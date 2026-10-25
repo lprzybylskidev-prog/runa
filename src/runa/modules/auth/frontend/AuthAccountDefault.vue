@@ -244,6 +244,15 @@ const columns = computed<TableColumn<AccountRow>[]>(() =>
       ],
 );
 function eventLabel(action?: string) {
+  if (action === 'delivery.preferences_changed')
+    return text('Zmiana preferencji', 'Preferences changed');
+  if (action === 'preferences.reset_all')
+    return text('Reset preferencji', 'Preferences reset');
+  if (action === 'preferences.admin_reset')
+    return text(
+      'Administracyjny reset preferencji',
+      'Administrative preferences reset',
+    );
   const prefix = action?.split('.')[0];
   return (
     (

@@ -187,7 +187,8 @@ correlation, secrets or general Audit detail/read permission. Administrative
 changes about the account can appear without disclosing the administrator.
 Account history includes `delivery.preferences_changed`, `preferences.reset_all`
 and `preferences.admin_reset` alongside profile/security changes. Previously recorded
-events are visible through the same bounded filter. Language/theme edits and ordinary
+events are visible through the same bounded filter. Preference edits and complete/
+administrative resets have explicit localized labels instead of Account change. Language/theme edits and ordinary
 presentation-only preference changes are not recorded as account-history events.
 Unknown-account anonymous login refusals cannot be attributed to a user's history.
 No Audit viewer or user-management UI is included.

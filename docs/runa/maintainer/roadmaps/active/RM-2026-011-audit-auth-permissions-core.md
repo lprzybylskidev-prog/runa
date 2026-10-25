@@ -65,6 +65,12 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests readable preference-history labels and asks for event
+  details. Point 19zy delivers explicit labels. Details require agreement on scope
+  and a new safe projection/capture contract; old notification events lack before/
+  after values and cannot be reconstructed. No detail implementation is authorized
+  through the label-only point.
+
 - 2026-10-25 — Owner requests preference changes in account history, excluding
   language/theme edits. Point 19zx exposes already-audited email-delivery changes
   and complete/admin resets through the existing safe own-history projection.
@@ -1199,6 +1205,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
 - [x] 19zx. Include non-display preference Audit events in own-account history.
+- [ ] 19zy. Label preference changes and resets explicitly in account history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4153,3 +4160,19 @@ architectural premise requires discussion before dependent work.
   services, caches, backups and evidence preserved. No Docker resources created or
   removed. Published the exact-source forward edge in development and isolated base
   testing; runtime checks pass. Final point 20 stays appearance-gated.
+
+## Point 19zy delivery
+
+- Added explicit PL/EN labels for notification preference changes, complete resets
+  and administrative resets. Removed the misleading Account change fallback for
+  those known events without changing other event labels or the summary contract.
+- Auth cosmetic PATCH 0.21.14 -> 0.21.15 with source-only edge. Public profile guide
+  and changelog synchronized. Owner/customer instructions remain unaffected: no new
+  public contract, workflow or reusable rule. No additional tests needed for static
+  labels; source/version checks pass and current assets built for review.
+- Event detail scope remains under discussion: existing OwnHistory deliberately
+  excludes changes/context, and notification events currently omit before/after
+  payloads. Do not infer old values or implement a generic Audit detail viewer.
+- Local forward publication pending. No new migration/dependency/Docker resource;
+  data, services, caches, backups and evidence preserved. Final verification remains
+  gated on owner appearance acceptance.

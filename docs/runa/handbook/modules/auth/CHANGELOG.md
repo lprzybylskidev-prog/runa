@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 0.21.15
+
+Label notification preference history as Preferences changed, with distinct complete
+and administrative reset labels in PL/EN. Source-only forward edge; history remains
+a safe summary projection without a detail endpoint.
+
 ## 0.21.14
 
 Include recorded email notification preference changes, complete preference resets
