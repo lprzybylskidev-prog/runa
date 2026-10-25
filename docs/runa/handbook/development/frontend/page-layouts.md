@@ -16,9 +16,10 @@ hidden tabs and static-preference/native-error rendering remain static. Timers a
 animations cancel on opt-out/unmount. ApplicationLayout retains its static shared
 backdrop; this behavior must not be enabled there as a side effect of shared CSS.
 
-Its default brand illustration also moves its six points along the stationary
-ellipses for one six-second lap with gentle pulsation, then waits a random 8–14
-seconds. Every point returns to its original position. Set `orbitMotion: false`
+Its default brand illustration moves one randomly selected point at a time along
+its stationary ellipse for one six-second lap with gentle pulsation, then waits a
+random 8–14 seconds. The point returns to its original position; the next selection
+excludes the preceding point. The other five points stay still. Set `orbitMotion: false`
 to opt out; a custom illustration slot owns its own motion. Reduced motion, print,
 hidden tabs and static-preference/native-error output disable this effect too.
 ApplicationLayout does not opt into either decorative effect.

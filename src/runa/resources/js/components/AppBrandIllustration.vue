@@ -6,28 +6,31 @@ const props = withDefaults(defineProps<{ animated?: boolean }>(), {
   animated: false,
 });
 const illustration = ref<globalThis.HTMLElement>();
+let previous: globalThis.HTMLElement | undefined;
 useDecorativeMotion(
   () => props.animated,
   () => {
-    return [
+    const points = [
       ...(illustration.value?.querySelectorAll<globalThis.HTMLElement>(
         '.art-orbit-point',
       ) ?? []),
-    ].map((point) => {
-      const start = point.classList.contains('orbit-point-two')
-        ? -Math.PI / 3
-        : Math.PI;
-      const frames = Array.from({ length: 73 }, (_, step) => {
-        const progress = step / 72;
-        const angle = start + progress * Math.PI * 2;
-        return {
-          left: `${50 + 50 * Math.cos(angle)}%`,
-          top: `${50 + 50 * Math.sin(angle)}%`,
-          opacity: 0.7 + 0.25 * Math.sin(progress * Math.PI * 3) ** 2,
-        };
-      });
-      return point.animate(frames, { duration: 6000, easing: 'ease-in-out' });
+    ].filter((point) => point !== previous);
+    const point = points[Math.floor(Math.random() * points.length)];
+    if (!point) return [];
+    previous = point;
+    const start = point.classList.contains('orbit-point-two')
+      ? -Math.PI / 3
+      : Math.PI;
+    const frames = Array.from({ length: 73 }, (_, step) => {
+      const progress = step / 72;
+      const angle = start + progress * Math.PI * 2;
+      return {
+        left: `${50 + 50 * Math.cos(angle)}%`,
+        top: `${50 + 50 * Math.sin(angle)}%`,
+        opacity: 0.7 + 0.25 * Math.sin(progress * Math.PI * 3) ** 2,
+      };
     });
+    return [point.animate(frames, { duration: 6000, easing: 'ease-in-out' })];
   },
   6000,
   [8000, 14000],

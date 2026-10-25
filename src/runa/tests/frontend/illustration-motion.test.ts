@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import AppBrandIllustration from '../../resources/js/components/AppBrandIllustration.vue';
 
 afterEach(() => vi.useRealTimers());
-it('moves only the six illustration points through one closed lap and then rests', async () => {
+it('moves one random illustration point at a time through a closed lap without immediately repeating it', async () => {
   vi.useFakeTimers();
   vi.spyOn(Math, 'random').mockReturnValue(0);
   vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
@@ -18,7 +18,7 @@ it('moves only the six illustration points through one closed lap and then rests
   await vi.advanceTimersByTimeAsync(7999);
   expect(animate).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(1);
-  expect(animate).toHaveBeenCalledTimes(6);
+  expect(animate).toHaveBeenCalledTimes(1);
   for (const [index, call] of animate.mock.calls.entries()) {
     const frames = call[0] as Keyframe[];
     const first = frames[0]!,
@@ -42,8 +42,13 @@ it('moves only the six illustration points through one closed lap and then rests
   await vi.advanceTimersByTimeAsync(6000);
   expect(wrapper.element.getAnimations({ subtree: true })).toHaveLength(0);
   await vi.advanceTimersByTimeAsync(7999);
-  expect(animate).toHaveBeenCalledTimes(6);
+  expect(animate).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(animate).toHaveBeenCalledTimes(2);
+  expect(animate.mock.contexts[1]).not.toBe(animate.mock.contexts[0]);
+  expect(wrapper.element.getAnimations({ subtree: true })).toHaveLength(1);
   await wrapper.setProps({ animated: false });
+  expect(wrapper.element.getAnimations({ subtree: true })).toHaveLength(0);
   expect(vi.getTimerCount()).toBe(0);
   wrapper.unmount();
   staticArt.unmount();

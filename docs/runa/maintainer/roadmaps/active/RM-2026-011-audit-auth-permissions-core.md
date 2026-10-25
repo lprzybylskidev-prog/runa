@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner refines illustration motion: animate only one randomly
+  chosen point at a time. Point 19zq preserves the existing complete lap/pulse
+  timing and excludes immediately repeating the preceding point.
+
 - 2026-10-25 — Owner accepts sparse background glow and requests removal of the
   all-point preview. Point 19zp restores randomness and adds occasional full laps
   with gentle pulsation for the logo illustration points, returning to their
@@ -1149,6 +1153,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zn. Add sparse randomized constellation-point glow only to MinimalLayout.
 - [x] 19zo. Temporarily preview all MinimalLayout constellation points every three seconds.
 - [x] 19zp. Restore sparse backdrop glow and animate full illustration-point orbits in MinimalLayout.
+- [x] 19zq. Animate only one randomly selected illustration point per cycle.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3866,3 +3871,22 @@ architectural premise requires discussion before dependent work.
   dependency, runtime configuration or database changes. No Docker resources
   created/removed; existing services/data, Qdrant/model caches, backups and evidence
   preserved. Final point 20 remains gated by owner appearance acceptance.
+
+### Point 19zq — Single random illustration point
+
+- Illustration motion now randomly selects one of its six points, excluding the
+  previous selection. Only that point follows the existing six-second closed lap
+  and pulses; five others remain static. Existing 8–14 second quiet intervals,
+  MinimalLayout-only opt-in and lifecycle/reduced-motion guards are unchanged.
+- Knowledge was current and the current point/component/motion contracts reviewed.
+  Updated focused browser regression passes for one animation, complete path,
+  rest interval, a different second selection and cancellation. Published Vite
+  assets. Served synthetic-API diagnostics at desktop/dark and mobile/light verify
+  exactly one moving point, five stationary points, fixed lines/logo and return
+  to the original position. Reduced-motion/ApplicationLayout remain static, without
+  overflow/page errors. Evidence: .runtime/artifacts/playwright/single-orbit-motion.
+- Public layout/motion/design guidance synchronized. Existing component and owner/
+  customer frontend references already delegate to those contracts; no additional
+  instruction rule or public API needed. No module/version, dependency, runtime
+  configuration, database or Docker changes. Existing data/services, Qdrant/model
+  caches, backups and evidence preserved. Full point 20 remains appearance-gated.

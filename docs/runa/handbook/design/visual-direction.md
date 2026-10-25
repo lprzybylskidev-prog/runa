@@ -211,13 +211,13 @@ The user supplied `src/runa/resources/images/runa-logo.png`. Its transparent alp
 
 The logo illustration’s stationary orbital outlines also carry small glowing points, matching the constellation motif. Share their appearance across all orbit outlines, use violet/cyan theme colors and keep glow restrained in both themes.
 
-Owner direction on 2026-10-25 adds occasional complete laps of those six points,
-with gentle pulsation while travelling. Points follow their individual ellipses and
-return to their starting positions after six seconds, followed by 8–14 seconds of
-quiet. Only interactive MinimalLayout opts in; logo/orbit lines stay fixed. Both
-motion effects respect reduced motion, print, visibility and static output. The
-same owner approval restores sparse random background glow after its temporary
-all-point visibility preview.
+Owner direction on 2026-10-25 adds occasional complete laps with gentle pulsation
+while travelling. Only one randomly chosen point moves at a time, excluding the
+previous selection. It follows its ellipse and returns to its starting position
+after six seconds, followed by 8–14 seconds of quiet; the other five points stay
+still. Only interactive MinimalLayout opts in; logo/orbit lines stay fixed. Both
+motion effects respect reduced motion, print, visibility and static output. Sparse
+random background glow is the accepted backdrop behavior.
 
 ## Light-theme visibility refinement
 

@@ -53,9 +53,9 @@ motion, print, hidden tabs and static error rendering disable decorative glow;
 opt-out/unmount cancels timers and animations. This exception is specific to
 MinimalLayout and does not authorize animated ApplicationLayout backgrounds.
 
-The MinimalLayout default brand illustration opts into one six-second lap of its
-six points after each random 8–14 second quiet interval, with gentle opacity
-pulsation during travel. Orbit borders/logo stay fixed; point positions are sampled
+The MinimalLayout default brand illustration opts into one six-second lap of one
+random point after each random 8–14 second quiet interval, with gentle opacity
+pulsation during travel. Only one point moves at a time, without immediate repeats. Orbit borders/logo stay fixed; point positions are sampled
 along their own ellipse and return exactly to the static start. No continuous spin.
 AppBrandIllustration is static by default outside that layout. Both decorative
 effects share a private scheduler that cancels timers/animations on reduced motion,
