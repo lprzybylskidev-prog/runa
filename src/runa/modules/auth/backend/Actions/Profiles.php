@@ -92,6 +92,7 @@ final readonly class Profiles
             $actions = $kind === 'login' ? ['login.succeeded', 'login.credentials_accepted', 'two_factor.confirmed', 'logout.completed', 'session.evicted', 'session.revoked', 'sessions.revoked'] : [
                 'profile.changed', 'profile.admin_changed', 'email.changed', 'email.admin_changed', 'email.reverification_required', 'verification.completed',
                 'secondary.added', 'secondary.changed', 'secondary.removed', 'secondary.verified', 'avatar.changed', 'avatar.removed',
+                'delivery.preferences_changed', 'preferences.reset_all', 'preferences.admin_reset',
                 'password.changed', 'password.reset', 'password.admin_reset', 'two_factor.admin_reset', 'identity.deactivate', 'identity.delete',
             ];
 

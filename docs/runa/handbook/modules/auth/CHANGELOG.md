@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.21.14
+
+Include recorded email notification preference changes, complete preference resets
+and administrative resets in own-account history. Existing Audit entries become
+visible without backfilling events. Language/theme changes remain outside history.
+Source-only forward edge; no schema or Audit projection/authorization changes.
+
 ## 0.21.13
 
 Target request limits at declared entry/proof operations, with independent source

@@ -225,3 +225,8 @@ pipeline. Its snapshot notification is suppressed only for that pipeline; extern
 snapshot invalidations still reconcile visible rows. Preference reads/writes do not
 consume the [targeted Auth entry cap](throttling.md). Conflicts and genuine transport
 failures retain existing draft preservation and never trigger automatic write replay.
+
+Own-account history includes recorded email-delivery preference changes and complete/
+administrative preference resets. Language/theme edits remain outside history.
+Existing events become visible through the expanded allowlist, without generating
+replacement events or exposing recipients, preference values or administrator data.

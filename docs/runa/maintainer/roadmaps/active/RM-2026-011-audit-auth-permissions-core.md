@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests preference changes in account history, excluding
+  language/theme edits. Point 19zx exposes already-audited email-delivery changes
+  and complete/admin resets through the existing safe own-history projection.
+
 - 2026-10-25 — Owner authorizes targeted Auth throttling instead of a blanket
   unsafe-method cap, removal of redundant preference reads, and a narrow optional
   Throttling handoff. Point 19zw retains intrinsic Auth proof/credential safeguards;
@@ -1194,6 +1198,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
 - [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [x] 19zw. Target Auth request throttling, expose optional takeover and remove duplicate preference reads.
+- [ ] 19zx. Include non-display preference Audit events in own-account history.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4130,3 +4135,20 @@ architectural premise requires discussion before dependent work.
   ordering proposals. Retain only the deferred ownership constraint: modules will
   be planned incrementally, and Throttling remains distant and unscheduled.
   Final point 20 remains appearance-gated; no broad checks or release started.
+
+## Point 19zx delivery
+
+- Expanded the own-account action allowlist to include delivery.preferences_changed,
+  preferences.reset_all and preferences.admin_reset. Existing events become visible
+  without backfill; language/theme writes still create no history event. Existing
+  account binding, cursor validation, policy toggles and safe projection are retained.
+- Auth PATCH 0.21.13 -> 0.21.14 with a source-only forward edge; no migration,
+  dependency, UI or permission change. Profile/preferences guides and changelog
+  synchronized. Root/owner/customer instruction products already delegate to these
+  contracts; no reusable agent procedure or public API change needs duplicate edits.
+- Focused real API regression passes (21 assertions): notification write, display
+  writes excluded, full/admin reset history, foreign-account/cursor exclusion, safe
+  output, login-history separation and disabled-history refusal. Source/version
+  checks pass. Supported runner removed runa_test_test_1; base databases, development
+  services, caches, backups and evidence preserved. No Docker resources created or
+  removed. Local forward publication pending; final point 20 stays appearance-gated.

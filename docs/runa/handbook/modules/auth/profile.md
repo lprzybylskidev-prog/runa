@@ -185,5 +185,9 @@ that same account/filter is refused. Only event public_id, UTC occurred_at, acti
 and outcome return: no actor identities, entity graph, changes, context, execution,
 correlation, secrets or general Audit detail/read permission. Administrative
 changes about the account can appear without disclosing the administrator.
+Account history includes `delivery.preferences_changed`, `preferences.reset_all`
+and `preferences.admin_reset` alongside profile/security changes. Previously recorded
+events are visible through the same bounded filter. Language/theme edits and ordinary
+presentation-only preference changes are not recorded as account-history events.
 Unknown-account anonymous login refusals cannot be attributed to a user's history.
 No Audit viewer or user-management UI is included.

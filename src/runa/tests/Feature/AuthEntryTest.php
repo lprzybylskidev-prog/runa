@@ -1639,3 +1639,33 @@ it('targeted auth transport keeps preference reads and writes usable after publi
     expect(DB::table('runa_auth.preferences')->where('user_id', $user->id)->where('scope', 'runa:runa.auth:global:locale')->value('value'))->toBe('"en"')
         ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $user->id)->where('category', 'new_browser')->value('enabled'))->toBeFalse();
 });
+
+it('account history includes existing notification preference events and resets without exposing other accounts or display edits', function (): void {
+    entryPolicy(['own_account_history' => true, 'own_login_history' => true]);
+    $user = profileVerified('preference-history@example.test');
+    $other = profileVerified('foreign-preference-history@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/delivery-preferences', ['operation' => 'write', 'module' => 'runa.auth',
+        'category' => 'new_browser', 'enabled' => false, 'recipients' => ['primary'], 'revision' => 0])->assertOk();
+    $this->postJson('/api/runa/auth/preferences', ['operation' => 'write', 'application' => 'runa', 'module' => 'runa.auth',
+        'view' => 'global', 'key' => 'theme', 'value' => 'dark', 'revision' => 1])->assertOk();
+    $this->postJson('/api/runa/auth/preferences', ['operation' => 'write', 'application' => 'runa', 'module' => 'runa.auth',
+        'view' => 'global', 'key' => 'locale', 'value' => 'en', 'revision' => 2])->assertOk();
+    $this->postJson('/api/runa/auth/preferences', ['operation' => 'reset_all', 'application' => 'runa', 'revision' => 3])->assertOk();
+    DB::transaction(function () use ($user, $other): void {
+        app(EntryTransaction::class)->record('preferences.admin_reset', $user);
+        app(EntryTransaction::class)->record('delivery.preferences_changed', $other);
+    });
+    $foreign = DB::table('runa_audit.events')->latest('id')->value('public_id');
+    $history = $this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries');
+    expect(array_column($history, 'action'))->toBe(['preferences.admin_reset', 'preferences.reset_all', 'delivery.preferences_changed']);
+    foreach ($history as $entry) {
+        expect(array_keys($entry))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
+    }
+    expect(json_encode($history))->not->toContain($other->public_id, 'new_browser', 'primary', 'dark', 'actor', 'changes');
+    $this->getJson('/api/runa/auth/profile/history?kind=account&before='.$foreign)->assertUnprocessable();
+    $login = $this->getJson('/api/runa/auth/profile/history?kind=login')->assertOk()->json('data.entries');
+    expect(array_column($login, 'action'))->not->toContain('delivery.preferences_changed', 'preferences.reset_all', 'preferences.admin_reset');
+    entryPolicy(['own_account_history' => false]);
+    $this->getJson('/api/runa/auth/profile/history?kind=account')->assertForbidden();
+});
