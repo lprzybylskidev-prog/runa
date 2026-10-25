@@ -1185,7 +1185,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zs. Complete welcome branding, platform description and accessible module catalogue; synchronize module authoring guidance.
 - [x] 19zt. Normalize application branding, cover profile/image avatar loading and add application/account breadcrumbs.
 - [x] 19zu. Honor welcome policy in branding/breadcrumbs and make the avatar skeleton pulse visibly.
-- [ ] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
+- [x] 19zv. Remove redundant dropdown caption and apply semantic account-action colors.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4078,7 +4078,9 @@ architectural premise requires discussion before dependent work.
 - Public presentation guide/changelog synchronized. Existing root/owner/customer
   skills already delegate to public presentation/components; no reusable contract
   or new procedure requires duplicate instruction-product edits.
-- Client assets built; source and prior-HEAD module-version checks pass. This small color/copy change
+- Client assets built; source and prior-HEAD module-version checks pass. Published
+  the source-only forward edge in development and isolated base testing; runtime
+  module checks pass without reset or new migrations. This small color/copy change
   needs no new tests; shared Button handles theme, interaction and reduced motion.
   No temporary Docker resources created/removed; data, services, caches, backups and
   evidence preserved. Final point 20 still awaits owner appearance acceptance.
