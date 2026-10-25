@@ -1,8 +1,7 @@
 # RM-2026-011 Brotli remediation proposal — 2026-10-25
 
-Status: owner selected waiting for a corrected official upstream image on
-2026-10-25. The derived-image proposal is not authorized; no new risk acceptance
-or runtime configuration change is approved.
+Status: the initial wait-only decision below is superseded by the owner
+authorization recorded in [temporary runtime risk acceptance](RM-2026-011-runtime-risk-acceptance.md). The owner now requests PHP rollback and bounded known-risk acceptance while waiting for stable upstream artifacts. The derived PostgreSQL image proposal remains unselected. Earlier candidate evidence below is retained as historical investigation.
 
 ## Observed failure
 

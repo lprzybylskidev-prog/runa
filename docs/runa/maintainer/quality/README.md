@@ -137,13 +137,8 @@ and own a separate journaled test endpoint lifecycle. Render diagnostics must no
 reuse an endpoint already cleaned up by the preceding browser suite. Existing
 manual endpoints remain externally owned.
 
-Owner parallel backend tests default to one file per worker process through
-ParaTest's supported `--max-batch-size=1`, including the ordinary full graph and
-filtered database/seeding gates. Processes are recycled while guarded worker
-databases and the checkout suite lock retain the existing lifecycle. Every test,
-assertion and native failure code remains enforced; there is no crash retry.
-Explicit batch-size options remain available for controlled diagnostics. This is
-test-process isolation, not a claim to repair the PHP engine or production runtime.
+Owner parallel backend tests use the standard ParaTest worker lifecycle. Temporary
+native-crash process-isolation overrides and debugger shims are absent.
 Owner Core fixtures remove their own settings/transition history along with their
 owned schemas and registry identities. Cleanup requires a guarded disposable
 worker and an exact Core identity; foreign histories and the base database remain
@@ -283,3 +278,9 @@ that invoke that CLI share the knowledge-state exclusive group. Even read comman
 hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
 refusal. Serialization retains strict checks and requires no automatic retry or
 weaker freshness policy.
+
+RM-2026-011 owner verification temporarily accepts the exact PHP 8.4.26 core risks
+and current runtime Brotli finding after explicit owner authorization. The callback
+retains raw reports, image/binary/evidence binding and expiry; unknown findings,
+scanner errors, secrets and dependency audits remain hard failures. Customer
+scanners do not inherit owner acceptance. See the [runtime risk decision](../security/RM-2026-011-runtime-risk-acceptance.md).

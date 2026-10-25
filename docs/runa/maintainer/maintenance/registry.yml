@@ -90,8 +90,8 @@ entries:
   - id: php-runtime
     type: runtime
     name: PHP
-    version: 8.4.27
-    last_reviewed: 2026-10-21
+    version: 8.4.26
+    last_reviewed: 2026-10-25
     review_every_days: 90
 
   - id: node-runtime
@@ -104,17 +104,17 @@ entries:
   - id: docker-base-images
     type: security_runtime
     name: Production and development base images
-    version: php-8.4.27-fpm-bookworm-development-and-node-24.22.0-bookworm-slim
-    last_reviewed: 2026-10-21
+    version: php-8.4.26-fpm-bookworm-development-and-node-24.22.0-bookworm-slim
+    last_reviewed: 2026-10-25
     review_every_days: 30
 
   - id: php-production-base-image
     type: security_runtime
-    name: Official PHP 8.4.27 FPM Alpine 3.24 production candidate
-    version: 8.4.27-fpm-alpine3.24
-    pinned_revision: sha256:8193f7c711715c88452ebe51d4ee7769172a3fa917446a8820cf84192da2c555
+    name: Official PHP 8.4.26 FPM Alpine 3.24 production candidate
+    version: 8.4.26-fpm-alpine3.24
+    pinned_revision: sha256:78cd8de9970a9cd6ff4d98860a94eb5bf37dd2d5776b4785562dbfad01c29d5a
     source: docs/runa/handbook/production/architecture.md
-    last_reviewed: 2026-10-21
+    last_reviewed: 2026-10-25
     review_every_days: 30
 
   - id: composer

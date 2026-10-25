@@ -1,0 +1,25 @@
+{
+  "status": "accepted_risk_pending_upstream",
+  "owner": "Runa maintainer",
+  "approved_at": "2026-10-25",
+  "review_by": "2026-11-20",
+  "tracking": "MT-2026-002",
+  "architecture": "amd64",
+  "php_version": "8.4.26",
+  "php_binary_sha256": "ce8fa4b145d8e659796ca572443e7629b37868c543c917fa6c221ea80d261000",
+  "php_cves": ["CVE-2026-109618", "CVE-2026-109619"],
+  "os_findings": [
+    {
+      "target": "os:alpine",
+      "id": "CVE-2026-111497",
+      "package": "brotli-libs",
+      "version": "1.2.0-r1",
+      "severity": "HIGH",
+      "fixed_version": "1.2.1-r0"
+    }
+  ],
+  "source_hashes": {
+    "docker/php/Dockerfile": "d7c8e7abc2e7adcb4c3ad99a749914e71ff48e3a9c8b079b7fda0aab86837d1e",
+    "docs/runa/maintainer/security/RM-2026-011-runtime-risk-acceptance.md": "c474e10981317c6f02e9721fab5092b0a3213c69dfb3cb801adc5926122bc8db"
+  }
+}

@@ -17,6 +17,9 @@ sys.path.insert(0, str(ROOT / 'tools/application'))
 sys.path.insert(0, str(ROOT / 'tools/maintainer'))
 sys.path.insert(0, str(ROOT / 'distribution'))
 import security
+import owner_runtime_disposition as runtime_risk
+import copy
+import tarfile
 
 
 class ReviewContracts(unittest.TestCase):
@@ -137,6 +140,112 @@ class ReviewContracts(unittest.TestCase):
             report.write_text('Changed after review.')
             with self.assertRaisesRegex(ValueError, 'report is missing or changed'):
                 security.review()
+
+
+class RuntimeRiskContracts(unittest.TestCase):
+    def setUp(self):
+        self.policy = json.loads((ROOT / 'tools/maintainer/security/runtime-pending-upstream.json').read_text())
+
+    def fixture(self):
+        row = self.policy['os_findings'][0]
+        return {'Results': [{'Class': 'os-pkgs', 'Type': 'alpine', 'Target': '/private/image.tar (alpine 3.24.2)',
+                             'Vulnerabilities': [{'VulnerabilityID': row['id'], 'PkgName': row['package'],
+                                                  'InstalledVersion': row['version'], 'Severity': row['severity'],
+                                                  'FixedVersion': row['fixed_version']}]}]}
+
+    def test_known_core_and_brotli_findings_only(self):
+        report = self.fixture()
+        report['Results'].append({'Target': 'usr/local/bin/php', 'Vulnerabilities': [
+            {'VulnerabilityID': cve, 'PkgName': 'php-src', 'InstalledVersion': '8.4.26', 'Severity': 'CRITICAL', 'FixedVersion': '8.4.27'}
+            for cve in self.policy['php_cves']]})
+        self.assertEqual(len(runtime_risk.validate_findings(report, self.policy)), 3)
+        for field, value in [('VulnerabilityID', 'CVE-NEW'), ('PkgName', 'other'), ('InstalledVersion', '8.4.25')]:
+            changed = copy.deepcopy(report)
+            changed['Results'][-1]['Vulnerabilities'][0][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                runtime_risk.validate_findings(changed, self.policy)
+
+    def test_new_package_version_fix_and_secrets_stay_blocking(self):
+        for field, value in [('PkgName', 'libexpat'), ('InstalledVersion', '1.2.0-r2'),
+                             ('Severity', 'CRITICAL'), ('FixedVersion', 'new-fix')]:
+            report = self.fixture()
+            report['Results'][0]['Vulnerabilities'][0][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                runtime_risk.validate_findings(report, self.policy)
+        for key in ('Secrets', 'Misconfigurations', 'CustomResources'):
+            report = self.fixture()
+            report['Results'][0][key] = [{}]
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                runtime_risk.validate_findings(report, self.policy)
+        for report in ({}, {'Results': []}, {'Results': [{'Vulnerabilities': []}]}):
+            with self.subTest(report=report), self.assertRaises(ValueError):
+                runtime_risk.validate_findings(report, self.policy)
+
+    def test_receipt_refusal_precedes_docker_or_owner_policy(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'tools/maintainer').mkdir(parents=True)
+            (root / '.git').mkdir()
+            marker = root / '.git/runa-bootstrap.json'
+            with patch.object(runtime_risk, 'ROOT', root), patch.object(runtime_risk, 'run') as run:
+                marker.write_text('{}')
+                with self.assertRaisesRegex(ValueError, 'customer'):
+                    runtime_risk.apply('image', 'report', 'archive')
+                marker.unlink()
+                marker.symlink_to(root / 'missing')
+                with self.assertRaisesRegex(ValueError, 'customer'):
+                    runtime_risk.apply('image', 'report', 'archive')
+                run.assert_not_called()
+
+    def test_actual_archive_config_and_filesystem_are_bound_to_report_and_inspection(self):
+        config = {'architecture': 'amd64', 'os': 'linux', 'config': {'User': 'runa'}, 'rootfs': {'diff_ids': ['sha256:layer']}}
+        raw = json.dumps(config).encode()
+        installed = {'Architecture': 'amd64', 'Config': config['config'], 'RootFS': {'Layers': ['sha256:layer']}}
+        report = {'Metadata': {'ImageID': 'sha256:' + hashlib.sha256(raw).hexdigest(), 'ImageConfig': {'architecture': 'amd64'}}}
+        with tempfile.TemporaryDirectory() as folder:
+            archive = Path(folder) / 'image.tar'
+            with tarfile.open(archive, 'w') as saved:
+                for name, content in [('manifest.json', b'[{"Config":"config.json"}]'), ('config.json', raw)]:
+                    member = tarfile.TarInfo(name)
+                    member.size = len(content)
+                    saved.addfile(member, io.BytesIO(content))
+            self.assertEqual(runtime_risk.bind_php_report(report, installed, archive, self.policy), report['Metadata']['ImageID'])
+            for field, value in [('Architecture', 'arm64'), ('Config', {'User': 'root'}), ('RootFS', {'Layers': ['sha256:foreign']})]:
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    runtime_risk.bind_php_report(report, dict(installed, **{field: value}), archive, self.policy)
+            report['Metadata']['ImageID'] = 'sha256:other'
+            with self.assertRaises(ValueError):
+                runtime_risk.bind_php_report(report, installed, archive, self.policy)
+
+    def test_live_php_identity_source_drift_and_expiry_remain_required(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'tools/maintainer/security').mkdir(parents=True)
+            policy = dict(self.policy, source_hashes={})
+            path = root / 'tools/maintainer/security/runtime-pending-upstream.json'
+            path.write_text(json.dumps(policy))
+            (path.parent / 'postgres-gosu-pending-upstream.json').write_text('{"image":"postgres:exact"}')
+            report = root / 'report.json'
+            original = json.dumps(self.fixture())
+            report.write_text(original)
+            image = 'runa-production:' + 'a' * 40
+            identities = [['8.4.27', policy['php_binary_sha256']], ['8.4.26', 'wrong'], ['8.4.26', policy['php_binary_sha256']]]
+            for identity in identities:
+                outputs = [SimpleNamespace(stdout='[{"Id":"sha256:live"}]'), SimpleNamespace(stdout=json.dumps(identity))]
+                with patch.object(runtime_risk, 'ROOT', root), patch.object(runtime_risk, 'bind_php_report', return_value='sha256:config'), patch.object(runtime_risk, 'run', side_effect=outputs), contextlib.redirect_stdout(io.StringIO()):
+                    if identity == identities[-1]:
+                        self.assertTrue(runtime_risk.apply(image, report, root / 'archive'))
+                        self.assertEqual(report.read_text(), original)
+                        self.assertEqual(json.loads(report.with_suffix('.disposition.json').read_text())['status'], 'accepted_risk_pending_upstream')
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'binary/version'):
+                            runtime_risk.apply(image, report, root / 'archive')
+            for changes, message in [({'review_by': '2020-01-01'}, 'expired'), ({'source_hashes': {'report.json': 'wrong'}}, 'changed')]:
+                path.write_text(json.dumps(dict(policy, **changes)))
+                with patch.object(runtime_risk, 'ROOT', root), patch.object(runtime_risk, 'run') as run:
+                    with self.assertRaisesRegex(ValueError, message):
+                        runtime_risk.apply(image, report, root / 'archive')
+                    run.assert_not_called()
 
 
 if __name__ == '__main__':

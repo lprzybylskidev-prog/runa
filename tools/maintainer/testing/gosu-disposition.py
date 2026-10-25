@@ -27,6 +27,27 @@ def fixture():
 
 
 class DispositionContracts(unittest.TestCase):
+    def test_brotli_requires_explicit_exact_owner_risk_and_never_shared_not_affected(self):
+        runtime = json.loads((ROOT / 'tools/maintainer/security/runtime-pending-upstream.json').read_text())
+        report = self.owner_fixture()
+        row = runtime['os_findings'][0]
+        report['Results'].append({'Target': '/private/archive.tar (alpine 3.24.2)', 'Class': 'os-pkgs', 'Type': 'alpine',
+                                  'Vulnerabilities': [{'VulnerabilityID': row['id'], 'PkgName': row['package'],
+                                                       'InstalledVersion': row['version'], 'Severity': row['severity'],
+                                                       'FixedVersion': row['fixed_version']}]})
+        options = {'allowed_statuses': ('accepted_risk_pending_upstream',)}
+        with self.assertRaises(ValueError):
+            validate_report(report, OWNER_POLICY, date(2026, 10, 25), **options)
+        validate_report(report, OWNER_POLICY, date(2026, 10, 25), additional_findings=runtime['os_findings'], **options)
+        with self.assertRaises(ValueError):
+            validate_report(report, POLICY, date(2026, 10, 25), additional_findings=runtime['os_findings'])
+        for field, changed_value in [('VulnerabilityID', 'CVE-NEW'), ('InstalledVersion', '1.2.0-r2'),
+                                     ('Severity', 'CRITICAL'), ('FixedVersion', '1.2.2-r0')]:
+            changed = copy.deepcopy(report)
+            changed['Results'][-1]['Vulnerabilities'][0][field] = changed_value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_report(changed, OWNER_POLICY, date(2026, 10, 25), additional_findings=runtime['os_findings'], **options)
+
     def owner_fixture(self):
         report = fixture()
         report['Results'][0]['Vulnerabilities'] = [

@@ -1245,7 +1245,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Keep all guard/ownership/seeding assertions in disposable workers and retain
     strict resource protection; restore identified base-testing Core structure,
     receive focused regressions, commit and rerun every selected group.
-- [ ] 19zze. Repair remaining acceptance races and receive sequential stage results before another complete graph.
+- [x] 19zze. Repair remaining acceptance races and receive sequential stage results before another complete graph.
   - Owner explicitly requests sequential testing during repair on 2026-10-25;
     this overrides the usual final-only broad-check sequencing for this correction.
     Fix/review/commit each coherent correction; run the supported failed/blocked
@@ -1253,12 +1253,18 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     receiving the sequential results and Brotli proposal, the owner explicitly
     authorizes the complete graph again while waiting for PostgreSQL upstream.
     Preserve all strict gates and the unresolved security/release blocker.
-- [x] 19zzf. Diagnose and repair native PHP worker termination in Permissions acceptance.
+- [x] 19zzf. Investigate native PHP worker termination; supersede unsuccessful isolation with the owner-selected rollback in 19zzg.
   - Complete all-group run on 2e1bd15f passes other independent stages but the
     backend worker running PermissionsTest exits 139 without an assertion report.
     Preserve evidence, reproduce through supported isolated workers, identify the
-    native crash cause and receive focused regressions before another full rerun.
-    Keep the owner-selected upstream wait and strict Brotli blocker unchanged.
+    native crash cause and receive focused regressions. The owner subsequently
+    stops that investigation and replaces its remaining root-cause prerequisite
+    with the PHP rollback/full-rerun decision in 19zzg. No engine repair is claimed.
+- [x] 19zzg. Restore PHP 8.4.26 across runtime stages and apply owner-approved temporary runtime risk acceptance.
+  - Owner explicitly authorizes development/production rollback, nonblocking known
+    PHP/PostgreSQL security findings pending stable upstream tools, removal of native
+    diagnostic/process-isolation workarounds, and another complete verification.
+    Keep unapproved findings, scanner failures, secrets and dependency audits strict.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4649,9 +4655,9 @@ architectural premise requires discussion before dependent work.
   Do not downgrade a security-patched PHP, disable GC or call engine bugs fixed.
 - ParaTest source confirms max-batch-size=1 recycles a worker between files. The
   complete guarded backend passes with that isolation: 578 tests, 5719 assertions,
-  four processes, all disposable worker databases cleaned afterward. Set that as
-  the owner parallel runner default unless a batch size is explicitly supplied for
-  diagnostics. There is no retry, skipped test, changed assertion or dependency.
+  four processes, all disposable worker databases cleaned afterward. This was
+  temporarily made the owner parallel runner default, then removed in 19zzg after
+  a subsequent full graph reproduced the crash. There is no retry, skipped test, changed assertion or dependency.
 - RAG availability was current before the roadmap update; the subsequent query
   refuses the changed/stale index, so focused original-source review supplies this
   point. Incremental indexing remains required before commit/final verification.
@@ -4704,3 +4710,72 @@ architectural premise requires discussion before dependent work.
   under the owner's continuing full-verification request. The unresolved strict
   Brotli image failure remains expected; this is not permission to release/merge
   a failed graph. Point 19zze and release closure remain open.
+
+- Reopened after the complete graph on 4b406b8d reproduces exit 139 in
+  AuthEntryTest despite per-file isolation. The prior standalone PASS did not
+  establish a native repair. Owner requests only failing-stage diagnosis and
+  correction; capture the native stack before claiming a fix or rerunning the graph.
+
+## Point 19zzg — Owner-selected runtime rollback and bounded security acceptance
+
+- On 2026-10-25 the owner explicitly replaces the prior wait-only/no-new-acceptance
+  decision: select the previous PHP 8.4.26 release for development, production and
+  management; accept its known security findings and the current PostgreSQL image
+  findings temporarily while waiting for stable upstream replacements; rerun all
+  selected groups afterward. This is risk acceptance, not a clean raw scan or a
+  claim that PHP 8.4.26 contains the security fixes in 8.4.27.
+- The owner additionally requests removal of crash-mitigation experiments. Remove
+  the forced max-batch-size default and all visible debugger/native scratch sources;
+  preserve diagnostic reports and archived source evidence privately. Keep the
+  independently reproduced fixture-history and advisory-lock correctness repairs.
+- Native crash diagnosis remains inconclusive. The debugger captures SIGSEGV in
+  ordinary PHP execution; CPU-affinity comparison is diagnostic evidence, not proof
+  of damaged hardware. No BIOS, power, affinity or garbage-collector change becomes
+  runtime policy. No continued native diagnostic workload is running.
+- Security acceptance is owner-only, exact-version/artifact/finding-bound and due
+  for review by 2026-11-20. Raw scans remain intact; unknown findings and operational
+  scanner errors remain blocking. Customer scanner defaults retain their own
+  fail-closed risk decisions. Platform/module release versions stay unchanged.
+
+### Execution handoff for the PHP image replacement
+
+- Execute from the existing native Linux checkout. Build app through the supported
+  host entrypoint, then selectively recreate app/queue/scheduler from the new image.
+  Existing PostgreSQL, test/development volumes, storage, backups, model/Qdrant
+  caches and reports are preserved. No reset, migration, prune or BIOS change.
+- Inspect service prerequisites and active browser endpoints first; recreate any
+  explicitly active testing-profile PHP endpoint from the same rebuilt image.
+  Run idempotent setup in the replaced app and verify actual PHP version/health.
+- Finish source/security review, focused acceptance of exception boundaries and
+  required hooks, commit, preview all groups and start supported final background
+  verification. End the turn with quality-status instructions.
+
+- Rollback implementation and current-state review complete: both Docker runtime
+  bases are pinned to verified 8.4.26 registry digests; development/production
+  version assertions, toolchain/maintenance guidance and public runtime risk claims
+  are synchronized. The owner callback admits only the two known PHP core CVEs
+  and exact Brotli signature; the original 26 gosu checks and all other failures
+  retain their enforcement. MT-2026-002 tracks restoration of stable patched tools.
+- Focused acceptance PASS: 11 security and eight gosu contracts, including new-CVE,
+  version/fix/severity, secret, receipt, source/binary, archive identity and expiry
+  refusals. A real saved-image/config/rootfs comparison succeeds. Re-evaluation of
+  the retained PostgreSQL raw scan against the exact live image accepts only the
+  existing gosu set plus the newly authorized Brotli finding. This is not a fresh
+  clean scan; final verification performs every selected scan again.
+- Supported development image build and selective app/queue/scheduler recreation
+  complete. All three actual services and management report PHP 8.4.26. Setup is
+  current and restores Boost registration; installed Laravel/Pest/PHPUnit versions
+  match the unchanged Composer lock. No testing-profile endpoint was active. Nginx
+  initially retained the replaced upstream and returned 502; its configuration
+  validates and a supported restart restores health. All development services are
+  healthy; PostgreSQL identity/data and optional AI services remain preserved.
+- Seven visible native/debugger scratch sources are archived privately and removed;
+  no debugger, custom allocator, pinned CPU affinity, GC override, retry or forced
+  worker recycling remains in the normal runner. Original diagnostic reports and
+  caches are preserved. Probes use --rm; temporary identity-proof archives are
+  removed after checks. Development/management images are retained for active use.
+- Root AGENTS/owner skills already govern documented explicit risk decisions;
+  customer guidance and default scanner acceptance remain unaffected. No module
+  contract, manifest version, dependency lock, schema or data reset changes. The
+  previous native root-cause requirement is superseded by the owner decision to
+  evaluate the rollback through the complete graph and reconsider only if it fails.
