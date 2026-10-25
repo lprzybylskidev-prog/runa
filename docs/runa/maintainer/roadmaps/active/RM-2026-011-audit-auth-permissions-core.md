@@ -4333,3 +4333,42 @@ architectural premise requires discussion before dependent work.
   implied by this entry; supported simulations retain their resource ownership,
   cleanup and evidence rules. Release metadata/module 1.0.0 finalization, closure,
   merge and publication follow only after the complete gate passes.
+
+## Execution handoff
+
+- Roadmap/current point: RM-2026-011, point 20; all implementation points including
+  19zza are complete. Branch roadmap/RM-2026-011-audit-auth-permissions-core;
+  accepted full-scope baseline ef14f03d. Handoff date 2026-10-25 UTC, container to
+  native Linux Docker host. Worktree was clean before the attempted launch; this
+  handoff is the only subsequent documentation change and is committed separately.
+- Reason/result: python3 tools/maintainer/quality-roadmap --all --background refused
+  startup with exit 1: selected production gates require the Docker host. This
+  container session cannot start the host coordinator. The full gate has not
+  started and has no PASS. The --all graph preview succeeded; owner appearance
+  acceptance and quality_groups/rationale are committed. Do not reduce scope or
+  replace host acceptance with internal/container-only runners.
+- Host checkout path: explicitly unknown; /workspace is only the container bind
+  path. Run from the actual Runa checkout on the host. Expected prerequisites:
+  Python 3, Git, Docker Engine/Compose and the existing running development app.
+  Development Compose context is runa-dev by default, with compose.yaml,
+  .devcontainer/compose.resources.yaml and private .env.dev.local; honor local
+  project overrides. Host resource identities cannot be inspected from this
+  container and must be confirmed by supported host tooling before mutations.
+- Exact host procedure (no editor reopen or stack rebuild is required just to
+  start the coordinator): first run git status --short and verify the roadmap
+  branch/checkout with all committed implementation; then run
+  python3 tools/maintainer/quality-roadmap --all --background. Expected output
+  confirms the background coordinator started. Inspect with
+  python3 tools/maintainer/quality-status and return its complete output before
+  dependent fixes/finalization. Do not infer completion from elapsed time.
+- Preserve existing development/test data, Qdrant/model caches, backups, reports
+  and rollback volumes. This failed startup created no task Docker resources and
+  performed no data reset. Supported suites own only their disposable workers and
+  labelled simulation resources, with scoped cleanup/evidence. Host completion
+  criteria: actual complete all-group PASS, or collected native failure/status
+  evidence. Failures require inserted fix points and a full rerun from the start.
+- Remaining work: full selected verification and any required fixes, actual
+  changed-surface security findings and scan disposition, then module/platform
+  release finalization, focused closure checks, merge/tag/publication. The roadmap
+  stays active and point 20 remains open. Return to the container is safe without
+  rebuilding it; no services/configuration were changed for this handoff.
