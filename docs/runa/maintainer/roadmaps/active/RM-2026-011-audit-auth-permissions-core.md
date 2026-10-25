@@ -1237,6 +1237,10 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     scoped host/tooling acceptance fixtures without weakening gates.
   - Preserve failed-run evidence, receive focused diagnostics, synchronize public
     contracts and module versions where affected, commit, then rerun all groups.
+- [x] 19zzc. Repair second verification browser/customer fixture drift and JSON assertions.
+  - Diagnose every failed browser family and native customer acceptance trigger;
+    retain runtime authorization/error contracts, receive focused regressions,
+    synchronize guidance, commit and rerun all groups from the beginning.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4346,10 +4350,12 @@ architectural premise requires discussion before dependent work.
   /home/lprzybylski/Documents/php/runa, roadmap/RM-2026-011-audit-auth-permissions-core.
   Existing runa-dev services use compose.yaml and .devcontainer/compose.resources.yaml
   plus editor-generated overrides; no stack rebuild/editor switch was required.
-- Attempt 1 on af2d2027 failed after 657.8s; its full coordinator evidence is preserved
-  under .runtime/artifacts/RM-2026-011/verification-attempt-1. Point 19zzb records
-  corrections. Resume the unchanged all-group graph only after its commit and exact
-  source-only Auth forward preparation in development/base testing.
+- Attempts 1 and 2 failed; full coordinator evidence is preserved under
+  .runtime/artifacts/RM-2026-011/verification-attempt-{1,2}. Point 19zzb records
+  the first corrections and successful Auth source-only forward preparation;
+  point 19zzc records the second test/fixture corrections. Resume attempt 3 with
+  the unchanged all-group graph after its commit. No further data preparation is
+  needed for the test-only corrections.
 - Preserve active development/test data, Qdrant/model caches, backups, reports and
   rollback material. The failed gate's supported fixtures removed their own labelled
   containers/networks/volumes/images and worker databases. This correction uses only
@@ -4427,3 +4433,47 @@ architectural premise requires discussion before dependent work.
   The full all-group rerun preview is saved at
   .runtime/artifacts/RM-2026-011/verification-attempt-2-plan.txt. The following
   documentation-only commit records preparation results; point 20 remains open.
+
+## Point 19zzc — Second final-verification corrections
+
+- Attempt 2 on 173a492c passed 42 stages and failed backend-tests, frontend-browser,
+  production-acceptance and installation-host-acceptance; nine dependent stages
+  were blocked. Backend reached 576/577 passing tests. Full evidence and browser
+  failure traces are preserved under
+  .runtime/artifacts/RM-2026-011/verification-attempt-2. No failure is waived.
+- Corrected HttpErrorsTest to assert the delivered API 419 csrf_token_mismatch
+  envelope and no-store header, retaining generic message/header checks for other
+  statuses and negotiated non-API responses. All six focused JSON cases pass.
+- Consolidated guest browser diagnostics into the owner-only support/browserProblems.ts
+  helper. Default behavior is strict; explicit guest mode recognizes only same-origin
+  session-endpoint 401 and its matching resource-console message. Other response
+  statuses/endpoints, warnings and page errors remain failures. A real-browser
+  regression verifies strict/guest separation and retention of profile 401/session 503. Guest layout, root-preference and table representative diagnostics pass.
+- Updated the navigation scenario to inspect the delivered application breadcrumb
+  and locate the password input within the named sign-in form. The application
+  entry intentionally has no duplicate heading. Updated the delivered application
+  welcome unit assertion to the accepted .runa heading. No UI/security/runtime
+  behavior was changed to satisfy assertions.
+- Native production bad-health preparation now targets the actual named root route
+  with WelcomePageController and requires exactly one replacement. The previous
+  SpaController text no longer existed, leaving a healthy deployment instead of
+  exercising failure recovery. A focused source diagnostic confirms the real route
+  changes to the intended 503 handler; full deployment remains in the final gate.
+- Updated the owner Core acceptance map with the browser-diagnostic boundary. No
+  module implementation/version, public capability, runtime configuration, migration,
+  dependency or reusable customer operating rule changed; root AGENTS/skills and
+  customer instruction products therefore require no modification in this point.
+- Supported runners retain scope and locks. Disposable diagnostic browser endpoints
+  and worker databases are removed by their owning runners after showing identities;
+  active development, base test data, Qdrant/model caches, backups/reports and shared
+  image/build caches are preserved. Full all-group verification remains pending.
+- Focused completion: six backend JSON cases, the application welcome unit case,
+  four guest/diagnostic/table/root-browser cases and both welcome-policy Auth
+  sign-in/profile/sign-out browser scenarios pass. Initial navigation diagnostics
+  exposed one additional stale password-label selector, repaired within this point.
+  No native production/installation acceptance was run during implementation.
+- Previewed the unchanged --all graph for attempt 3 at
+  .runtime/artifacts/RM-2026-011/verification-attempt-3-plan.txt. Refreshed the actual
+  source review with the test-only correction; content-bound evidence is renewed
+  after formatting/commit. The next supported background coordinator owns full
+  verification and cleanup; point 20 remains active/open.

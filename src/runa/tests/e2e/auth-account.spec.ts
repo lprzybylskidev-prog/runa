@@ -192,7 +192,9 @@ for (const welcome of [true, false]) {
     await accountTransport(page, welcome);
     await page.goto('/app');
     await expect(
-      page.getByRole('heading', { name: 'Aplikacja', exact: true }),
+      page
+        .getByRole('navigation', { name: 'Ścieżka nawigacji' })
+        .getByText('Aplikacja', { exact: true }),
     ).toBeVisible();
     await page
       .getByRole('button', { name: 'Menu użytkownika: Anna Kowalska' })
@@ -211,7 +213,8 @@ for (const welcome of [true, false]) {
       .getByRole('textbox', { name: 'Adres e-mail', exact: true })
       .fill('anna@example.test');
     await page
-      .getByLabel('Hasło', { exact: true })
+      .getByRole('form', { name: 'Zaloguj się', exact: true })
+      .locator('input[name="password"]')
       .fill('a-long-test-password');
     await page
       .getByRole('button', { name: 'Zaloguj się', exact: true })

@@ -133,3 +133,16 @@ VERSION remains 0.4.2 until the authorized feature 0.5.0 finalization.
 Only necessary selected customization diagnostics run in point 19; full rendered,
 installation/update/clone and native/emergency acceptance stays in point 20 after
 explicit owner visual acceptance. No diagnostic claims full security acceptance.
+
+## Browser diagnostic boundaries
+
+Guest presentation suites use e2e/support/browserProblems.ts with explicit anonymous
+session probing enabled. Only HTTP 401 and its matching resource-console message
+from the same-origin /api/runa/auth/session are expected in that mode. Default
+diagnostics remain strict; other endpoints/statuses, page exceptions and warnings
+are recorded. browser-problems.spec.ts checks strict versus guest behavior and
+retention of foreign-endpoint 401 and session 503 failures. This does not change
+application authentication responses or permit ignoring arbitrary browser errors.
+Customer welcome assertions follow the delivered .runa heading. Production failure
+fixtures must verify that their intended current route mutation actually occurs
+before testing failure recovery.

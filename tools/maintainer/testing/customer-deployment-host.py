@@ -157,7 +157,11 @@ final class DatabaseSeeder extends Seeder {
     recover_fixture()
     call(['git', '-C', str(customer), 'checkout', '-B', 'bad-health', second])
     seed.write_text(seed_template.replace('LABEL', 'health-failure').replace('EXTRA', ''))
-    route.write_text(route.read_text().replace("Route::get('/', SpaController::class)", "Route::get('/', fn () => abort(503))"))
+    # Break the actual source-owned root route; fail if fixture wiring drifts.
+    root_route = "Route::get('/', WelcomePageController::class)"
+    route_source = route.read_text()
+    check(route_source.count(root_route) == 1, 'health fixture targets exactly one current root route')
+    route.write_text(route_source.replace(root_route, "Route::get('/', fn () => abort(503))"))
     commit(customer)
     execute('bad-health', success=False)
     assert_fenced('restart-and-health')

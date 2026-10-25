@@ -5,7 +5,7 @@ import WelcomePage from '@/App.vue';
 describe('application welcome', () => {
   it('renders the welcome page', async () => {
     const page = mount(WelcomePage);
-    await vi.waitFor(() => expect(page.get('main h1').text()).toBe('Runa'));
+    await vi.waitFor(() => expect(page.get('main h1').text()).toBe('.runa'));
     page.unmount();
   });
 });

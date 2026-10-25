@@ -1,12 +1,9 @@
+import { recordBrowserProblems } from './support/browserProblems';
 import { test, expect } from '@playwright/test';
 test('downloads real bounded files, selects across pages and recovers partial operations', async ({
   page,
 }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(message.text());
-  });
+  const errors = recordBrowserProblems(page, { anonymousSession: true });
   await page.addInitScript(() => {
     localStorage.setItem('runa.locale', 'en');
   });
