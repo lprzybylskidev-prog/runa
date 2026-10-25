@@ -48,7 +48,6 @@ weaken enforcement. The delivered [Auth seam](../../handbook/modules/auth/thrott
 is not the general module. Intrinsic credential/proof budgets and replay/eligibility
 rules remain Auth-owned; any later relocation requires its own agreed roadmap.
 
-The agreed optional-module follow-up is captured in
-[RM-2026-012](../roadmaps/draft/RM-2026-012-optional-throttling.md). Its release
-metadata remain provisional until the owner confirms them; the draft does not
-activate or implement the general module through RM-2026-011.
+The owner plans module development incrementally. Throttling is a distant,
+unscheduled concern; its optional nature and ownership boundary do not authorize
+a roadmap draft, implementation order or projected release version.

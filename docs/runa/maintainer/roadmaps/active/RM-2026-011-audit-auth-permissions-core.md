@@ -4125,7 +4125,8 @@ architectural premise requires discussion before dependent work.
   parallel run. No Docker resources created/removed. Base development/test databases,
   services, caches, backups and evidence preserved. Published the exact-source
   forward edge in development and isolated base testing; runtime module checks pass.
-- Recorded the substantial optional Throttling follow-up as draft RM-2026-012 in a
-  separate planning commit on this branch. Agent-proposed feature 0.6.0 remains
-  unconfirmed; the owner was explicitly asked. No second roadmap was activated.
+- Owner clarified that the future optional Throttling module was informational,
+  not agreed planning scope. Removed the prematurely authored draft and release/
+  ordering proposals. Retain only the deferred ownership constraint: modules will
+  be planned incrementally, and Throttling remains distant and unscheduled.
   Final point 20 remains appearance-gated; no broad checks or release started.
