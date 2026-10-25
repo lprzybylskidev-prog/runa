@@ -47,3 +47,8 @@ fallback when disabled/absent. Failures of an enabled integration must not silen
 weaken enforcement. The delivered [Auth seam](../../handbook/modules/auth/throttling.md)
 is not the general module. Intrinsic credential/proof budgets and replay/eligibility
 rules remain Auth-owned; any later relocation requires its own agreed roadmap.
+
+The agreed optional-module follow-up is captured in
+[RM-2026-012](../roadmaps/draft/RM-2026-012-optional-throttling.md). Its release
+metadata remain provisional until the owner confirms them; the draft does not
+activate or implement the general module through RM-2026-011.
