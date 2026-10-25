@@ -27,6 +27,16 @@ import repository_boundary
 
 
 class InstallationContracts(unittest.TestCase):
+    def test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs(self):
+        import runpy
+        module = runpy.run_path(str(ROOT / 'tools/maintainer/testing/installation-host.py'))
+        snapshot = module['persistent_development_containers']
+        listing = ('app-id\t\t' + str(ROOT) + '\nmanual-endpoint\t\t' + str(ROOT) +
+                   '\nautomatic-endpoint\t' + 'a' * 32 + '\t' + str(ROOT) +
+                   '\nforeign-checkout\t\t/other/project\n')
+        with patch.dict(snapshot.__globals__, call=lambda *args, **kwargs: subprocess.CompletedProcess(args, 0, stdout=listing)):
+            self.assertEqual(snapshot(), ['app-id', 'manual-endpoint'])
+
     def setUp(self):
         boundary = patch.object(repository_boundary, 'assert_installation', return_value={'mode': 'prod'})
         boundary.start()

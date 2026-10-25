@@ -1245,6 +1245,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Keep all guard/ownership/seeding assertions in disposable workers and retain
     strict resource protection; restore identified base-testing Core structure,
     receive focused regressions, commit and rerun every selected group.
+- [ ] 19zze. Repair remaining acceptance races and receive sequential stage results before another complete graph.
+  - Owner explicitly requests sequential testing during repair on 2026-10-25;
+    this overrides the usual final-only broad-check sequencing for this correction.
+    Fix/review/commit each coherent correction; run the supported failed/blocked
+    stages one at a time and receive their actual results. Do not automatically
+    start another complete background graph.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4538,3 +4544,36 @@ architectural premise requires discussion before dependent work.
   unchanged group selection at
   .runtime/artifacts/RM-2026-011/verification-attempt-4-plan.txt; updated worker
   commands change its graph fingerprint and require the full rerun.
+
+## Point 19zze — Sequential acceptance correction
+
+- On 2026-10-25 the owner explicitly requests running test stages one at a time
+  during repair until they pass, with the complete graph deferred afterward. This
+  authorizes broad sequential diagnostic acceptance in this correction instead of
+  another immediate background rerun. Final all-group evidence is still mandatory
+  for closure; sequential results are not a substitute. Point 20 remains open.
+- Attempt 4 on a5582802 passed 44 stages; browser navigation/tooltip races, invalid
+  Docker label-negation syntax in both native acceptance stages and overlapping
+  knowledge CLI users caused failures. Complete evidence/traces are preserved at
+  .runtime/artifacts/RM-2026-011/verification-attempt-4.
+- Replaced unsupported docker ps label negation with one supported formatted Docker
+  snapshot returning full IDs/run ownership/checkout labels. Filter those rows in
+  Python before inspecting persistent containers. This avoids the disposable
+  endpoint race while preserving manual endpoints/actual development protection.
+  Actual native enumeration and a persistent/manual/automatic/foreign-checkout
+  fixture regression pass; no container was created/deleted for that regression.
+- Logout navigation tests now await the destination document and guest entry before
+  explicitly visiting /app, so the test does not interrupt logout's own redirect.
+- Tooltip retains the current anchor hover identity on dismissal and only clears
+  its Escape latch for a new hover session. Duplicate pointerenter during Firefox
+  panel exit cannot reopen it. Existing click/hover/bridge behavior stays covered.
+- All owner/customer quality nodes using the exclusive knowledge CLI lock, including
+  development and hooks diagnostics, share knowledge-state serialization. Direct
+  collection-only documentation acceptance remains separate; no CLI lock/freshness
+  failure is suppressed. Public/owner quality and component contracts are updated.
+  No module source/version or new customer operating policy changed; root owner
+  rules/skill routing and customer products already route to those public contracts.
+- Remaining work: receive sequential browser/build/render, knowledge doctor/evals,
+  native production/installation, exact repository/image scan and security/release
+  contracts, fixing each actual failure before proceeding. Do not automatically
+  restart the complete graph.

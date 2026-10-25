@@ -210,3 +210,9 @@ The gate selects application roadmaps under docs/app/roadmaps. Run runa:quality:
 ## Stage timings
 
 The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual groups do not change test bodies or add Playwright skip flags.
+
+Knowledge CLI doctor/evaluation/freshness checks and development/hook diagnostics
+that invoke that CLI share the knowledge-state exclusive group. Even read commands
+hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
+refusal. Serialization retains strict checks and requires no automatic retry or
+weaker freshness policy.

@@ -93,6 +93,8 @@ base:
     severity: hard_fail
 
   - id: hook-contract
+
+    exclusive_group: knowledge-state
     depends_on: [configuration]
     description: Verify installed hooks and safe rejection behavior without creating permanent fixture commits.
     command: php artisan runa:doctor:hooks
@@ -187,6 +189,8 @@ impact_areas:
       severity: hard_fail
 
     - id: development-stack
+
+      exclusive_group: knowledge-state
       depends_on: [configuration]
       command: php artisan runa:doctor:development
       severity: hard_fail
@@ -202,11 +206,14 @@ impact_areas:
       command: python3 tools/maintainer/testing/documentation-live.py
       severity: hard_fail
     - id: knowledge-doctor
+      exclusive_group: knowledge-state
       depends_on: [configuration]
       command: php artisan runa:knowledge:doctor
       severity: hard_fail
 
     - id: knowledge-evals
+
+      exclusive_group: knowledge-state
       depends_on: [knowledge-doctor]
       command: php artisan runa:knowledge:eval
       severity: hard_fail
@@ -422,6 +429,7 @@ groups:
 
 group_steps:
   - id: knowledge-freshness
+    exclusive_group: knowledge-state
     depends_on: [repository-state]
     command: php artisan runa:knowledge:stale
     severity: hard_fail

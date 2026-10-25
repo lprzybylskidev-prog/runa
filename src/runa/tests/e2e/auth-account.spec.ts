@@ -230,6 +230,13 @@ for (const welcome of [true, false]) {
     await page
       .getByRole('button', { name: 'Wyloguj się', exact: true })
       .click();
+    // Finish logout's own document navigation before starting an explicit one.
+    await expect(page).toHaveURL(welcome ? '/' : '/auth/login');
+    await expect(
+      page
+        .getByRole('link', { name: 'Zaloguj się', exact: true })
+        .or(page.getByRole('heading', { name: 'Zaloguj się', exact: true })),
+    ).toBeVisible();
     await page.goto('/app');
     await expect(
       page.getByRole('heading', { name: 'Zaloguj się', exact: true }),

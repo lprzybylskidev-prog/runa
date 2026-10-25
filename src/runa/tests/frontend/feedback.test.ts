@@ -81,6 +81,28 @@ it('dismisses rapid tooltip hover, permits pointer entry into content and honors
   await settle();
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
 });
+it('keeps Escape dismissal through duplicate pointer entry until the hover session ends', async () => {
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Theme' },
+    slots: { default: '<button>Theme</button>' },
+  });
+  const anchor = wrapper.get('.app-tooltip');
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await anchor.trigger('pointerleave');
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+});
 it('hides clicked preference tooltips even when the trigger retains pointer focus', async () => {
   const wrapper = mount(Tooltip, {
     attachTo: document.body,

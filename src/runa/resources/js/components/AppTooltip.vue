@@ -32,20 +32,19 @@ function leave() {
 }
 function dismiss() {
   globalThis.clearTimeout(timer);
-  overAnchor = false;
+  // Retain the current anchor hover session: Firefox may re-emit pointerenter
+  // while an escaped floating panel leaves, without a new pointer interaction.
   overPanel = false;
   dismissed = true;
   visible.value = false;
 }
 function enter() {
+  if (!overAnchor) dismissed = false;
   overAnchor = true;
-  dismissed = false;
   update();
 }
 function click() {
   dismiss();
-  overAnchor = false;
-  overPanel = false;
 }
 const { position, ready, teleportTarget } = useFloatingLayer({
   open: visible,

@@ -132,6 +132,20 @@ def remove_project(project, report):
     report.setdefault('cleanup', []).append(resources)
 
 
+def persistent_development_containers():
+    # One Docker snapshot provides IDs and ownership labels, avoiding a race with
+    # the browser runner removing its own endpoints before a separate inspect.
+    listing = call(['docker', 'ps', '--no-trunc',
+                    '--filter', 'label=com.docker.compose.project=runa-dev',
+                    '--format', '{{.ID}}\t{{.Label "runa.testing.run"}}\t{{.Label "com.docker.compose.project.working_dir"}}'], capture=True).stdout
+    protected = []
+    for row in listing.splitlines():
+        identity, browser_run, directory = row.split('\t')
+        if directory == str(ROOT) and not browser_run:
+            protected.append(identity)
+    return protected
+
+
 def main():
     if Path('/.dockerenv').exists():
         raise SystemExit('Run this acceptance from the native Docker host.')
@@ -146,12 +160,7 @@ def main():
             raise RuntimeError(text)
         report['checks'].append(text)
         print('PASS: ' + text, flush=True)
-    active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev', '--filter', 'label!=runa.testing.run']).splitlines()
-    # Devcontainer images may carry inherited Compose labels into standalone
-    # test helpers. Track actual containers belonging to this checkout. Automatic
-    # browser endpoints carry run ownership and may finish concurrently; their
-    # own guarded runner verifies cleanup. Manual endpoints remain protected.
-    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
+    active = persistent_development_containers()
     observed_at = datetime.now(timezone.utc).isoformat()
     before = {item: json.loads(output(['docker', 'inspect', item]))[0] for item in active}
     team = None

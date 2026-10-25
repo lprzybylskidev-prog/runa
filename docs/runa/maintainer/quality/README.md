@@ -258,3 +258,9 @@ runa.testing.run label belong to the concurrent browser runner and its recovery
 journal; they are excluded from the persistent-service snapshot. Their own runner
 continues to verify exact ownership and cleanup. Missing or restarted persistent
 services still fail the installation preservation check.
+
+Knowledge CLI doctor/evaluation/freshness checks and development/hook diagnostics
+that invoke that CLI share the knowledge-state exclusive group. Even read commands
+hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
+refusal. Serialization retains strict checks and requires no automatic retry or
+weaker freshness policy.
