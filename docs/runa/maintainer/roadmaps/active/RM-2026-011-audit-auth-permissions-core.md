@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests shared loading feedback for table query changes:
+  pagination/page size, sorting, search and filters. Point 19zm adds a 140ms
+  presentation interval using the existing motion rhythm, without delaying local
+  processing or server requests. External/provider reads may keep it visible longer.
+
 - 2026-10-25 — Owner reports a second table-loading cycle after data appears
   and requests a centered spinner without visible loading text. Point 19zl removes
   the duplicated tab-entry read and adjusts shared Table presentation.
@@ -1127,6 +1132,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zj. Preserve the application shell during initial session loading and show structural account/notification skeletons; publish for owner review.
 - [x] 19zk. Show table loading spinners during account reads instead of premature empty results.
 - [x] 19zl. Load account table tabs once and center the spinner without visible text.
+- [x] 19zm. Show shared loading feedback on every table query transition.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3731,3 +3737,33 @@ architectural premise requires discussion before dependent work.
   public guides and require correct asynchronous states; no new rule/API needed.
   No Docker resources created/removed. Existing development/test data, services,
   Qdrant/model caches, backups and verification evidence preserved.
+
+### Point 19zm — Shared table query feedback
+
+- Shared Table observes controlled page/page-size/sort/search/filter identity and
+  displays one centered spinner for at least the existing 140ms motion interval.
+  Calculation/provider requests are not delayed; external/provider reads extend
+  the same loading state. Rapid query changes replace one presentation timer;
+  disposal clears it. Initial reads retain their existing behavior. Selection and
+  column visibility/width do not trigger query feedback. Reduced motion keeps the
+  spinner static. Sorting restores header focus only if focus was not moved away.
+- Knowledge was current; focused table retrieval and original public table/motion
+  guidance reviewed. Five necessary focused browser unit regressions pass for
+  all five query dimensions in client/server modes, one provider call per query,
+  rapid changes/slow responses, semantic empty recovery and existing sort contracts.
+  The existing local-sort test needed to await visible completion instead of
+  asserting rows during the newly requested spinner interval; corrected and rerun.
+- Published Vite assets. Served synthetic-API diagnostics at desktop/light and
+  mobile/dark, normal/reduced motion confirm sort/pagination spinners, retained
+  keyboard sort focus and exactly one initial API read for subsequent local
+  queries, without page errors/overflow. Evidence:
+  .runtime/artifacts/playwright/table-query-feedback. Final point 20 remains gated;
+  no broad verification or release started.
+- Public tables/motion docs and owner/customer frontend guidance synchronized;
+  consumers use the shared behavior without local timers or duplicate reads.
+  Root AGENTS already requires shared components and correct asynchronous states.
+  No Auth/module source or API changed, so independent module versions remain
+  unchanged; platform feature 0.5.0 is still projected under this active roadmap.
+  No dependencies, runtime configuration, database or Docker resources changed.
+  Existing services, development/test data, Qdrant/model caches, backups and evidence
+  preserved. The separate universal page-skeleton rule still awaits owner approval.

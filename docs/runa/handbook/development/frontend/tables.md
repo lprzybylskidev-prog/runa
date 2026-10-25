@@ -26,6 +26,16 @@ the shared Spinner takes precedence over empty results. It is centered within th
 loading area without visible text; its accessible status label remains available. Server providers manage
 loading internally; the optional external flag combines with that state.
 Use a dedicated read indicator rather than a mutation-wide busy flag.
+
+Changing the controlled query (page, page size, sort, search or filters) shows the
+same centered spinner for both client and server tables. Shared presentation keeps
+it visible for at least 140ms so immediate local processing can be seen; processing
+and provider calls start immediately. A pending external/provider read keeps it
+visible longer, without a second loading cycle. Rapid changes restart the single
+feedback interval; unmount clears it. Reduced motion keeps the status static. Column
+visibility/width and row selection are presentation changes, not query loading.
+Keyboard sorting restores focus to the corresponding header after loading only
+when the user has not moved focus elsewhere.
 Async states reuse AsyncContent and retry; obsolete requests abort and their eventual replies are ignored. Filters remain usable when results are empty or fail.
 
 `createApiTableProvider({ path, sort, filter, maxPerPage, decode })` uses the shared HTTP client with encoded `page`, `per_page`, `sort` (leading `-` for descending) and `filter[key]` parameters. `decode(unknown)` must validate the application's `data` + `meta` envelope, rows/public IDs, counts and capabilities and translate it to TablePage. Invalid payloads must throw. The backend must independently validate allowlists/page bounds, authorize records and return counts scoped to the same access/query rules; frontend capabilities are UX only. Custom providers translate their own wire contracts. No backend table engine is installed by this component.

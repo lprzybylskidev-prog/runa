@@ -8,3 +8,6 @@ Use the public tables guide for the complete contract.
 
 For externally fetched client rows, pass the request loading state to Table;
 see the public tables guide. Empty rows during a pending read are not an empty result.
+
+Table owns loading feedback for query changes in both processing modes; consumers
+should not add local timers or duplicate reads. See the public timing contract.
