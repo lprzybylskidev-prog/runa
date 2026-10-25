@@ -202,14 +202,22 @@ Owner direction on 2026-10-25 adds sparse, randomized, gentle point glows only i
 interactive MinimalLayout: one visible point brightens and fades for three seconds,
 then rests for 7–15 seconds before a different point is selected. ApplicationLayout
 retains the identical static artwork. Reduced motion, print, hidden tabs and static
-error output do not animate. Gradients, lines, geometry and the internal orbital
-illustration remain stationary.
+error output do not animate. Gradients, lines and geometry remain stationary; the internal illustration point
+motion is described below.
 
 ## Project logo
 
 The user supplied `src/runa/resources/images/runa-logo.png`. Its transparent alpha enables recoloring using a CSS mask; RunaLogo preserves the original and compensates for its transparent padding. The auth-layout header and central illustration now use this mark, inheriting the theme’s primary text color. No SVG tracing or generated reinterpretation is performed.
 
-The logo illustration’s orbital outlines also carry small static glowing points, matching the constellation motif. Share their appearance across all orbit outlines, use violet/cyan theme colors and keep glow restrained in both themes.
+The logo illustration’s stationary orbital outlines also carry small glowing points, matching the constellation motif. Share their appearance across all orbit outlines, use violet/cyan theme colors and keep glow restrained in both themes.
+
+Owner direction on 2026-10-25 adds occasional complete laps of those six points,
+with gentle pulsation while travelling. Points follow their individual ellipses and
+return to their starting positions after six seconds, followed by 8–14 seconds of
+quiet. Only interactive MinimalLayout opts in; logo/orbit lines stay fixed. Both
+motion effects respect reduced motion, print, visibility and static output. The
+same owner approval restores sparse random background glow after its temporary
+all-point visibility preview.
 
 ## Light-theme visibility refinement
 

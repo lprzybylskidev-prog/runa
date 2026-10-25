@@ -16,11 +16,12 @@ hidden tabs and static-preference/native-error rendering remain static. Timers a
 animations cancel on opt-out/unmount. ApplicationLayout retains its static shared
 backdrop; this behavior must not be enabled there as a side effect of shared CSS.
 
-Current owner preview temporarily overrides the sparse MinimalLayout cadence:
-all constellation points pulse together, first at three seconds and then every
-three seconds. The original opacity levels remain unchanged to judge visibility.
-ApplicationLayout, reduced motion, print and static output remain unaffected.
-This is a temporary appearance preview, not the accepted sparse-motion baseline.
+Its default brand illustration also moves its six points along the stationary
+ellipses for one six-second lap with gentle pulsation, then waits a random 8–14
+seconds. Every point returns to its original position. Set `orbitMotion: false`
+to opt out; a custom illustration slot owns its own motion. Reduced motion, print,
+hidden tabs and static-preference/native-error output disable this effect too.
+ApplicationLayout does not opt into either decorative effect.
 
 The layout owns locale/theme composables once. Consumers use scoped `t`, preserving guest compatibility keys, cover timing, inert content and focus restoration; signed-in display values use the shared account preference adapter. Identity overrides are scoped with `IdentityProvider`; no global installation is required. Custom headers replace the default brand and preferences together.
 

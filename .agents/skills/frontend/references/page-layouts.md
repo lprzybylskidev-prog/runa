@@ -67,6 +67,7 @@ appears only for a nonempty guarded active trusted-device list; refresh it throu
 the public controller and keep independent cursor/busy state. See the account UI
 guide; do not infer authority or historical trust from button visibility.
 
-Only MinimalLayout opts into sparse constellation-point glow. Preserve the static
+Only MinimalLayout opts into sparse constellation-point glow and occasional
+brand-illustration point laps. Preserve the static
 ApplicationLayout backdrop and the public opt-out/reduced-motion contract; see the
 public page-layouts and motion guides.

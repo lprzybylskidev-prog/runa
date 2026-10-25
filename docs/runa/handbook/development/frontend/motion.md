@@ -37,7 +37,7 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppAlert, AppBadge, AppStatus, AppEmptyState                                                                    | Static semantic content; the owning feedback/async container animates state changes when appropriate. Avoid duplicate entrances/announcements.                    |
 | AppCard, AppDivider, AppBreadcrumbs, AppStatistic, AppStatistics, AppFooter                                     | Static structure/content; links/controls retain shared interaction feedback. No count tween or decorative mount animation.                                        |
 | AppForm, AppHiddenInput, AppIdentityProvider                                                                    | Behavioral/identity/form contracts; no independent visual transition.                                                                                             |
-| AppIcon, RunaLogo, AppBrandIllustration, AppConstellation                                                       | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
+| AppIcon, RunaLogo, AppConstellation                                                                             | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
 
 Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback, plus sparse randomized constellation-point opacity pulses in its backdrop. ApplicationLayout uses the same backdrop with the effect disabled. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
 
@@ -53,8 +53,11 @@ motion, print, hidden tabs and static error rendering disable decorative glow;
 opt-out/unmount cancels timers and animations. This exception is specific to
 MinimalLayout and does not authorize animated ApplicationLayout backgrounds.
 
-Current owner preview temporarily overrides the sparse MinimalLayout cadence:
-all constellation points pulse together, first at three seconds and then every
-three seconds. The original opacity levels remain unchanged to judge visibility.
-ApplicationLayout, reduced motion, print and static output remain unaffected.
-This is a temporary appearance preview, not the accepted sparse-motion baseline.
+The MinimalLayout default brand illustration opts into one six-second lap of its
+six points after each random 8–14 second quiet interval, with gentle opacity
+pulsation during travel. Orbit borders/logo stay fixed; point positions are sampled
+along their own ellipse and return exactly to the static start. No continuous spin.
+AppBrandIllustration is static by default outside that layout. Both decorative
+effects share a private scheduler that cancels timers/animations on reduced motion,
+print, hidden documents, opt-out and disposal. Their public controls are
+MinimalLayout constellationGlow/orbitMotion; static errors never start scheduling.

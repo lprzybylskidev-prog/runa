@@ -104,7 +104,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppBrandIllustration
 
-- Source: `src/runa/resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
+- Source: `src/runa/resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it. Points are real child elements on stationary ellipses. The illustration is static by default; interactive MinimalLayout opts into occasional full point laps and pulsation, with `orbitMotion: false` as its public opt-out. See the layout/motion guides for timing and cancellation.
 
 ## AppLoadingOverlay
 

@@ -65,6 +65,11 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner accepts sparse background glow and requests removal of the
+  all-point preview. Point 19zp restores randomness and adds occasional full laps
+  with gentle pulsation for the logo illustration points, returning to their
+  starting positions. Both effects remain exclusive to interactive MinimalLayout.
+
 - 2026-10-25 — Owner requests a temporary visibility preview: every constellation
   point pulses together every three seconds, exclusively in MinimalLayout. Point
   19zo retains the sparse baseline behind the internal preview switch.
@@ -1143,6 +1148,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zm. Show shared loading feedback on every table query transition.
 - [x] 19zn. Add sparse randomized constellation-point glow only to MinimalLayout.
 - [x] 19zo. Temporarily preview all MinimalLayout constellation points every three seconds.
+- [x] 19zp. Restore sparse backdrop glow and animate full illustration-point orbits in MinimalLayout.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3829,3 +3835,34 @@ architectural premise requires discussion before dependent work.
   No module/version, dependency, runtime-configuration, database or Docker changes.
   Existing services/data, Qdrant/model caches, backups and evidence preserved.
   Final point 20 remains appearance-gated; no broad verification/release started.
+
+### Point 19zp — Restore sparse glow and add complete point orbits
+
+- Removed the temporary all-point preview flag/test and restored sparse randomized
+  background glow after owner acceptance. Interactive MinimalLayout alone also
+  opts its default illustration into six-point orbit motion, with public
+  orbitMotion=false opt-out; custom illustration slots own their presentation.
+- Replaced the illustration's decorative pseudo-points with matching real child
+  elements. Each follows its parent's stationary ellipse through one six-second
+  lap, using 73 percentage-position frames and three gentle opacity pulses, then
+  returns precisely to its original position. Logo/lines/art composition do not
+  rotate. Random quiet intervals are 8–14 seconds before/between laps.
+- Both effects reuse the private useDecorativeMotion scheduler rather than
+  duplicate lifecycle logic. Reduced motion, print, hidden documents, opt-out and
+  unmount cancel work; static-preference/native errors remain static. Default
+  illustration/backdrop remain static unless explicitly opted in by MinimalLayout.
+- Knowledge was current; focused retrieval/original illustration/layout/motion/CSS
+  contracts reviewed. Three focused browser unit regressions pass after extraction:
+  sparse glow/interval/no repeat, media/visibility/opt-out/disposal, and six closed
+  point paths/pulsation/rest. Changed-file lint passes. Published Vite assets.
+- Served synthetic-API inspection with controlled random selection passes for /
+  desktop/dark and mobile/light: sparse background, six travelling points, fixed
+  line/logo transforms and exact original point positions after completion. Reduced
+  motion and ApplicationLayout stay static; no page errors/overflow. Inspected
+  desktop during-motion screenshot. Evidence: .runtime/artifacts/playwright/orbit-motion.
+- Public component/layout/motion/design docs and owner/customer frontend references
+  synchronized, removing obsolete temporary-preview/current-static-point claims.
+  Root AGENTS requires no new constitution rule. No module source/API/version,
+  dependency, runtime configuration or database changes. No Docker resources
+  created/removed; existing services/data, Qdrant/model caches, backups and evidence
+  preserved. Final point 20 remains gated by owner appearance acceptance.

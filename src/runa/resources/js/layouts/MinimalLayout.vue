@@ -19,11 +19,13 @@ const props = withDefaults(
     footer?: FooterOptions | undefined;
     illustration?: boolean;
     constellationGlow?: boolean;
+    orbitMotion?: boolean;
     staticPreferences?: { locale: Locale; theme: Theme } | undefined;
   }>(),
   {
     illustration: true,
     constellationGlow: true,
+    orbitMotion: true,
     footer: undefined,
     staticPreferences: undefined,
   },
@@ -67,7 +69,6 @@ const {
   >
     <AppBackdrop
       :constellation-glow="constellationGlow && !staticPreferences"
-      :glow-preview="true"
     />
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header
@@ -139,7 +140,10 @@ const {
             v-if="props.illustration"
             class="order-1 flex min-w-0 lg:order-2"
           >
-            <slot name="illustration" :t="t"><AppBrandIllustration /></slot>
+            <slot name="illustration" :t="t"
+              ><AppBrandIllustration
+                :animated="orbitMotion && !staticPreferences"
+            /></slot>
           </div>
         </div>
       </div>

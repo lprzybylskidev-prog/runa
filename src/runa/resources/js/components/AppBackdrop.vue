@@ -1,47 +1,19 @@
 <script setup lang="ts">
-import { onMounted, onScopeDispose, ref, watch } from 'vue';
+import { ref } from 'vue';
+import { useDecorativeMotion } from '../composables/useDecorativeMotion';
 import AppConstellation from './AppConstellation.vue';
-const props = withDefaults(
-  defineProps<{ constellationGlow?: boolean; glowPreview?: boolean }>(),
-  {
-    constellationGlow: false,
-    glowPreview: false,
-  },
-);
+const props = withDefaults(defineProps<{ constellationGlow?: boolean }>(), {
+  constellationGlow: false,
+});
 const backdrop = ref<globalThis.HTMLElement>();
-let dispose = () => {};
-onMounted(() => {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const print = window.matchMedia('print');
-  let timer: ReturnType<typeof globalThis.setTimeout> | undefined;
-  let animations: globalThis.Animation[] = [];
-  let previous: globalThis.SVGGElement | undefined;
-  const permitted = () =>
-    props.constellationGlow &&
-    !reduced.matches &&
-    !print.matches &&
-    document.visibilityState === 'visible';
-  function stop() {
-    globalThis.clearTimeout(timer);
-    animations.forEach((animation) => animation.cancel());
-    animations = [];
-  }
-  function schedule() {
-    stop();
-    if (!permitted()) return;
-    // One three-second pulse, then 7–15 seconds of quiet; no perpetual loops.
-    timer = globalThis.setTimeout(
-      pulse,
-      props.glowPreview ? 3000 : 7000 + Math.random() * 8000,
-    );
-  }
-  function pulse() {
-    if (!permitted()) return;
+let previous: globalThis.SVGGElement | undefined;
+useDecorativeMotion(
+  () => props.constellationGlow,
+  () => {
     const points = [
       ...(backdrop.value?.querySelectorAll<globalThis.SVGGElement>('svg g') ??
         []),
     ].filter((point) => {
-      if (props.glowPreview) return true;
       const bounds = point.getBoundingClientRect();
       return (
         point !== previous &&
@@ -55,54 +27,25 @@ onMounted(() => {
     });
     const point = points[Math.floor(Math.random() * points.length)];
     if (!point) {
-      schedule();
-      return;
+      return [];
     }
     previous = point;
-    const selected = props.glowPreview ? points : [point];
     const levels = [
       [0.025, 0.1],
       [0.07, 0.22],
       [0.55, 0.95],
     ] as const;
-    animations = selected.flatMap((selectedPoint) =>
-      [...selectedPoint.querySelectorAll('circle')].map((circle, index) => {
-        const [base, peak] = levels[index]!;
-        return circle.animate(
-          [
-            { opacity: base },
-            { opacity: peak, offset: 0.45 },
-            { opacity: base },
-          ],
-          { duration: 3000, easing: 'ease-in-out' },
-        );
-      }),
-    );
-    timer = globalThis.setTimeout(
-      props.glowPreview
-        ? () => {
-            stop();
-            pulse();
-          }
-        : schedule,
-      3000,
-    );
-  }
-  reduced.addEventListener('change', schedule);
-  print.addEventListener('change', schedule);
-  document.addEventListener('visibilitychange', schedule);
-  const unwatch = watch(() => props.constellationGlow, schedule, {
-    immediate: true,
-  });
-  dispose = () => {
-    stop();
-    unwatch();
-    reduced.removeEventListener('change', schedule);
-    print.removeEventListener('change', schedule);
-    document.removeEventListener('visibilitychange', schedule);
-  };
-});
-onScopeDispose(() => dispose());
+    return [...point.querySelectorAll('circle')].map((circle, index) => {
+      const [base, peak] = levels[index]!;
+      return circle.animate(
+        [{ opacity: base }, { opacity: peak, offset: 0.45 }, { opacity: base }],
+        { duration: 3000, easing: 'ease-in-out' },
+      );
+    });
+  },
+  3000,
+  [7000, 15000],
+);
 </script>
 
 <template>
