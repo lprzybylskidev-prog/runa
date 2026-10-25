@@ -1253,6 +1253,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     receiving the sequential results and Brotli proposal, the owner explicitly
     authorizes the complete graph again while waiting for PostgreSQL upstream.
     Preserve all strict gates and the unresolved security/release blocker.
+- [x] 19zzf. Diagnose and repair native PHP worker termination in Permissions acceptance.
+  - Complete all-group run on 2e1bd15f passes other independent stages but the
+    backend worker running PermissionsTest exits 139 without an assertion report.
+    Preserve evidence, reproduce through supported isolated workers, identify the
+    native crash cause and receive focused regressions before another full rerun.
+    Keep the owner-selected upstream wait and strict Brotli blocker unchanged.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4624,3 +4630,77 @@ architectural premise requires discussion before dependent work.
   monitor through quality-status. Existing quality_groups: all and its rationale
   remain unchanged. This owner-only verification decision adds no delivered
   capability or new owner/customer instruction product.
+
+## Point 19zzf — Native backend worker isolation
+
+- Complete graph on 2e1bd15f passes all independent stages except native backend
+  execution and the intentionally unresolved Brotli image gate. Database and release
+  descendants are blocked, not failed assertions. Preserve the complete run at
+  .runtime/artifacts/RM-2026-011/verification-attempt-6.
+- Isolated PermissionsTest passes all 32 cases. Repeating the whole backend with
+  persistent workers reproduces exit 139 in AuthEntryTest instead; the native crash
+  is not specific to Permissions. Kernel evidence confirms invalid memory access,
+  not an assertion failure or an out-of-memory kill. CLI OPcache/JIT/Xdebug are not
+  active. The historical PHPStan stack issue is not established as this cause.
+- A separate minimal primary-source reproducer confirms the shipped PHP 8.4.27 has
+  the [SimpleXML GC regression](https://github.com/php/php-src/issues/24488), exiting
+  134 with zend_mm_heap corrupted. This does not establish that SimpleXML caused
+  the Runa crash; a complete native backtrace/root cause is not yet available.
+  Do not downgrade a security-patched PHP, disable GC or call engine bugs fixed.
+- ParaTest source confirms max-batch-size=1 recycles a worker between files. The
+  complete guarded backend passes with that isolation: 578 tests, 5719 assertions,
+  four processes, all disposable worker databases cleaned afterward. Set that as
+  the owner parallel runner default unless a batch size is explicitly supplied for
+  diagnostics. There is no retry, skipped test, changed assertion or dependency.
+- RAG availability was current before the roadmap update; the subsequent query
+  refuses the changed/stale index, so focused original-source review supplies this
+  point. Incremental indexing remains required before commit/final verification.
+- Owner quality documentation records the runner behavior. Root skills already
+  require supported runners and native failure propagation; the separately authored
+  customer instructions remain unaffected because tools/maintainer and owner tests
+  are excluded from delivery. No module/API version, runtime image, production
+  configuration, database schema, security acceptance or customer command changes.
+- Remaining acceptance: receive the canonical default backend run and previously
+  blocked database migration/constraint/seeding stages; synchronize evidence and
+  commit. Keep the selected official PostgreSQL upstream wait and hard Brotli gate.
+
+- The first canonical default-runner acceptance eliminates the segfault but exposes
+  an independent existing transition-recovery fixture race (577 pass, one failure).
+  The real child exits 23 before PostgreSQL necessarily observes its closed socket;
+  immediate resume can correctly refuse the still-held session advisory lock.
+  Synchronize the fixture with a blocking transaction advisory-lock barrier on the
+  same key, then commit/release it before the actual resume. No production retry,
+  forced lock release, arbitrary sleep or runtime behavior changes. The focused
+  recovery scenario passes 20 independent repetitions / 200 assertions; temporary
+  repetition instrumentation is removed before canonical full acceptance.
+
+- A further canonical run exposes order-dependent Core fixture residue: completed
+  Auth settings transitions survive AuthIdentityTest after its schemas/registry
+  identities are removed. When ModuleTransitionsTest later receives that worker,
+  its unchanged empty-history precondition fails for all cases. A forced one-worker
+  AuthIdentityTest -> ModuleTransitionsTest sequence reproduces exactly four
+  runa.auth/settings/succeeded records; this is not a new product transition error.
+- Core fixture teardown now removes history for the exact owned Core module being
+  removed. The helper refuses foreign module IDs and requires a guarded canonical
+  disposable worker, preserving base/development data and foreign module history.
+  A real-row regression verifies ownership refusal and preservation of Audit/foreign
+  rows when removing Auth history. The original failing file order plus foundation
+  coverage now passes (35 tests, 393 assertions). Improve empty-state assertion
+  diagnostics using identities/intent/status only, never encrypted payloads.
+- Canonical full backend acceptance is rerun after the fixture correction. Source,
+  runtime image, public API/module versions and customer product remain unchanged;
+  the fix is owner test lifecycle/fixture hygiene. No duplicate fixture cleanup is
+  added to production or normal runtime code.
+
+- Final canonical default backend PASS after both fixture corrections: 579 tests,
+  5724 assertions, four workers, 218.45s, normal exit zero and scoped worker cleanup.
+  Native migration/unsafe-database guard acceptance PASS: eight tests, 40 assertions.
+  Filtered database/ownership acceptance PASS: 26 tests, 214 assertions. Seeding
+  acceptance PASS: six tests, 30 assertions. All supported runs propagate real exit
+  codes and complete scoped worker cleanup; base/development data and all caches
+  remain preserved. Private logs are under
+  .runtime/artifacts/RM-2026-011/segfault-repair. Commit with mandatory hooks and
+  current knowledge, preview all groups and restart the complete supported graph
+  under the owner's continuing full-verification request. The unresolved strict
+  Brotli image failure remains expected; this is not permission to release/merge
+  a failed graph. Point 19zze and release closure remain open.

@@ -3,6 +3,7 @@
 namespace Tests\Fixtures;
 
 use Illuminate\Support\Facades\DB;
+use Runa\Support\TestDatabaseGuard;
 
 /** Exact disposable owner-test objects only. Never used against development data. */
 final class CoreModuleStorage
@@ -13,8 +14,21 @@ final class CoreModuleStorage
         'audit' => ['entities', 'events'],
     ];
 
+    public static function removeTransitions(string $moduleId): void
+    {
+        if (! in_array($moduleId, array_map(static fn (string $code): string => 'runa.'.$code, array_keys(self::TABLES)), true)) {
+            throw new \InvalidArgumentException('Core fixture cleanup refuses foreign module history.');
+        }
+        app(TestDatabaseGuard::class)->assertSafe();
+        if (! preg_match('/\Aruna_test_test_[1-9][0-9]{0,4}\z/D', DB::connection()->getDatabaseName())) {
+            throw new \RuntimeException('Core fixture history cleanup requires a disposable test worker.');
+        }
+        DB::table('shared.module_transitions')->where('target', $moduleId)->delete();
+    }
+
     public static function removePermissions(): void
     {
+        self::removeTransitions('runa.permissions');
         if (DB::selectOne("SELECT 1 FROM pg_namespace WHERE nspname = 'runa_permissions'")) {
             foreach (self::TABLES['permissions'] as $table) {
                 DB::statement('DROP TABLE IF EXISTS runa_permissions.'.$table.' RESTRICT');

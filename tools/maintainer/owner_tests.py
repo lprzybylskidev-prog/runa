@@ -24,6 +24,10 @@ def execute(suite, args):
             raise SystemExit('Use the dedicated test-backend/frontend/e2e entrypoint.')
         if '--parallel' in args and not any(a.startswith('--processes') for a in args):
             args.append('--processes=' + os.environ.get('TEST_WORKERS', '4'))
+        if '--parallel' in args and not any(a.startswith(('--max-batch-size', '-m')) for a in args):
+            # Owner integration files rebuild large application/module graphs. Do
+            # not retain native PHP state from another file in the same worker.
+            args.append('--max-batch-size=1')
         command = ['vendor/bin/pest', '--configuration=runa/tests/phpunit.xml', '--test-directory=runa/tests', *args]
     if (ROOT / 'src/bootstrap/cache/config.php').is_file():
         raise SystemExit('Clear cached development config before testing: php artisan config:clear')

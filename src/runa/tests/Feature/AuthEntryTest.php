@@ -192,6 +192,7 @@ afterEach(function (): void {
         }
         DB::statement('DROP SCHEMA '.$schema.' RESTRICT');
         $module = str_replace('runa_', 'runa.', $schema);
+        CoreModuleStorage::removeTransitions($module);
         $id = DB::table('shared.modules')->where('module_id', $module)->value('id');
         DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
         DB::table('shared.modules')->where('module_id', $module)->delete();

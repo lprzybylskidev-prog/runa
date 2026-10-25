@@ -27,8 +27,8 @@ use Tests\Fixtures\TransitionPolicy;
 
 beforeEach(function (): void {
     // Real commits are necessary to test durable ingress fences and hook transaction boundaries.
-    expect(DB::table('shared.modules')->count())->toBe(0);
-    expect(DB::table('shared.module_transitions')->count())->toBe(0);
+    expect(DB::table('shared.modules')->pluck('module_id')->all())->toBe([]);
+    expect(DB::table('shared.module_transitions')->get(['target', 'intent', 'status'])->map(fn ($row) => (array) $row)->all())->toBe([]);
     $this->sources = new ModuleSources;
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $this->policies = new LifecyclePolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true);
@@ -331,6 +331,9 @@ $transitions->apply($transitions->preview('enable', $argv[2]));
 WORKER;
     $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $id], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
     expect($process->run())->toBe(23, $process->getErrorOutput());
+    // Process exit can precede PostgreSQL observing the closed client socket.
+    // Wait for the actual session-lock release before testing a new runner.
+    DB::transaction(fn () => DB::selectOne('SELECT pg_advisory_xact_lock(1381322305, 4)'));
     $operation = DB::table('shared.module_transitions')->where('target', $id)->first();
     expect($operation->status)->toBe('preparing');
     expect($this->registry->snapshot()->fenced)->toBe([$id])->and($this->registry->snapshot()->modules[$id]->enabled)->toBeFalse();

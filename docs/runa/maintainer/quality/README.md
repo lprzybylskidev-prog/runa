@@ -137,6 +137,20 @@ and own a separate journaled test endpoint lifecycle. Render diagnostics must no
 reuse an endpoint already cleaned up by the preceding browser suite. Existing
 manual endpoints remain externally owned.
 
+Owner parallel backend tests default to one file per worker process through
+ParaTest's supported `--max-batch-size=1`, including the ordinary full graph and
+filtered database/seeding gates. Processes are recycled while guarded worker
+databases and the checkout suite lock retain the existing lifecycle. Every test,
+assertion and native failure code remains enforced; there is no crash retry.
+Explicit batch-size options remain available for controlled diagnostics. This is
+test-process isolation, not a claim to repair the PHP engine or production runtime.
+Owner Core fixtures remove their own settings/transition history along with their
+owned schemas and registry identities. Cleanup requires a guarded disposable
+worker and an exact Core identity; foreign histories and the base database remain
+protected. Process exit does not prove PostgreSQL has released a dead client's
+session lock: recovery fixtures synchronize with the actual lock release before
+invoking recovery once.
+
 ## Timeouts
 
 Do not impose arbitrary automatic timeouts on quality commands.

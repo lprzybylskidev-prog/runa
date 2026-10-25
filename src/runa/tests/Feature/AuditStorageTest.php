@@ -54,6 +54,7 @@ afterEach(function (): void {
             DB::statement('DROP TABLE runa_auth.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA runa_auth RESTRICT');
+        CoreModuleStorage::removeTransitions('runa.auth');
         $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
         DB::table('shared.module_update_steps')->where('module_id', $authId)->delete();
         DB::table('shared.modules')->where('module_id', 'runa.auth')->delete();
@@ -63,6 +64,7 @@ afterEach(function (): void {
         DB::statement('DROP TABLE runa_audit.entities RESTRICT');
         DB::statement('DROP TABLE runa_audit.events RESTRICT');
         DB::statement('DROP SCHEMA runa_audit RESTRICT');
+        CoreModuleStorage::removeTransitions('runa.audit');
         $id = DB::table('shared.modules')->where('module_id', 'runa.audit')->value('id');
         DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
         DB::table('shared.modules')->where('module_id', 'runa.audit')->delete();

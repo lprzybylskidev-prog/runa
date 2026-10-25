@@ -15,6 +15,7 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Api\PrincipalScope;
 use Runa\Support\Modules\Data\AuthorityLock;
+use Tests\Fixtures\CoreModuleStorage;
 
 it('unwinds trusted principal and recursive resolution across failed and sequential roots', function (): void {
     $scope = app(PrincipalScope::class);
@@ -74,5 +75,26 @@ it('holds the shared authority lock until transaction completion across connecti
             $connection->rollBack();
         }
         DB::purge('authority_probe');
+    }
+});
+
+it('cleans only the selected Core fixture history and refuses foreign module ownership', function (): void {
+    $ids = [(string) Str::uuid7(), (string) Str::uuid7(), (string) Str::uuid7()];
+    try {
+        foreach (['runa.auth', 'runa.audit', 'app.cleanup_fixture'] as $index => $target) {
+            DB::table('shared.module_transitions')->insert([
+                'public_id' => $ids[$index], 'intent' => 'settings', 'target' => $target,
+                'generation' => 0, 'affected' => '[]', 'payload' => 'fixture-only',
+                'status' => 'succeeded', 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        expect(fn () => CoreModuleStorage::removeTransitions('app.cleanup_fixture'))
+            ->toThrow(InvalidArgumentException::class, 'foreign');
+        CoreModuleStorage::removeTransitions('runa.auth');
+        expect(DB::table('shared.module_transitions')->where('public_id', $ids[0])->exists())->toBeFalse()
+            ->and(DB::table('shared.module_transitions')->where('public_id', $ids[1])->exists())->toBeTrue()
+            ->and(DB::table('shared.module_transitions')->where('public_id', $ids[2])->exists())->toBeTrue();
+    } finally {
+        DB::table('shared.module_transitions')->whereIn('public_id', $ids)->delete();
     }
 });

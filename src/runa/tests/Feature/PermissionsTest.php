@@ -115,6 +115,7 @@ afterEach(function (): void {
             DB::statement('DROP TABLE IF EXISTS runa_'.$code.'.'.$table.' RESTRICT');
         }
         DB::statement('DROP SCHEMA IF EXISTS runa_'.$code.' RESTRICT');
+        CoreModuleStorage::removeTransitions('runa.'.$code);
         $id = DB::table('shared.modules')->where('module_id', 'runa.'.$code)->value('id');
         DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
         DB::table('shared.modules')->where('module_id', 'runa.'.$code)->delete();
