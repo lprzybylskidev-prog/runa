@@ -133,6 +133,8 @@ export function useAuthAccount(accountId: string) {
         (Boolean(fields.password || fields.password_confirmation) &&
           security.value?.password_change_factor === true)),
   );
+  const pageLoading = ref(false),
+    trustedLoading = ref(false);
   const rows = ref<AccountRow[]>([]),
     cursor = ref<string | null>(null);
   const trustedRows = ref<AccountRow[]>([]),
@@ -542,43 +544,53 @@ export function useAuthAccount(accountId: string) {
   async function readPage(append = false) {
     const own = ++readEpoch,
       currentTab = tab.value;
-    const path =
-      currentTab === 'sessions'
-        ? 'sessions'
-        : currentTab === 'trust'
-          ? 'trusted-devices'
-          : 'profile/history';
-    const input: Record<string, string> = {};
-    if (currentTab.endsWith('History'))
-      input.kind = currentTab === 'loginHistory' ? 'login' : 'account';
-    if (append && cursor.value) input.before = cursor.value;
-    const response = await accountRequest(path, 'GET', input, abort.signal);
-    const page = currentTab.endsWith('History')
-      ? (() => {
-          const p = data(response);
-          return pageResponse({
-            data: p.entries,
-            meta: { next_cursor: p.next },
-          });
-        })()
-      : pageResponse(response);
-    if (alive && own === readEpoch && currentTab === tab.value) {
-      rows.value = append ? [...rows.value, ...page.rows] : page.rows;
-      cursor.value = page.cursor;
+    pageLoading.value = true;
+    try {
+      const path =
+        currentTab === 'sessions'
+          ? 'sessions'
+          : currentTab === 'trust'
+            ? 'trusted-devices'
+            : 'profile/history';
+      const input: Record<string, string> = {};
+      if (currentTab.endsWith('History'))
+        input.kind = currentTab === 'loginHistory' ? 'login' : 'account';
+      if (append && cursor.value) input.before = cursor.value;
+      const response = await accountRequest(path, 'GET', input, abort.signal);
+      const page = currentTab.endsWith('History')
+        ? (() => {
+            const p = data(response);
+            return pageResponse({
+              data: p.entries,
+              meta: { next_cursor: p.next },
+            });
+          })()
+        : pageResponse(response);
+      if (alive && own === readEpoch && currentTab === tab.value) {
+        rows.value = append ? [...rows.value, ...page.rows] : page.rows;
+        cursor.value = page.cursor;
+      }
+    } finally {
+      if (own === readEpoch) pageLoading.value = false;
     }
   }
   async function readTrustedDevices(append = false) {
     const own = ++trustedReadEpoch;
-    const input =
-      append && trustedCursor.value ? { before: trustedCursor.value } : {};
-    const page = pageResponse(
-      await accountRequest('trusted-devices', 'GET', input, abort.signal),
-    );
-    if (alive && own === trustedReadEpoch) {
-      trustedRows.value = append
-        ? [...trustedRows.value, ...page.rows]
-        : page.rows;
-      trustedCursor.value = page.cursor;
+    trustedLoading.value = true;
+    try {
+      const input =
+        append && trustedCursor.value ? { before: trustedCursor.value } : {};
+      const page = pageResponse(
+        await accountRequest('trusted-devices', 'GET', input, abort.signal),
+      );
+      if (alive && own === trustedReadEpoch) {
+        trustedRows.value = append
+          ? [...trustedRows.value, ...page.rows]
+          : page.rows;
+        trustedCursor.value = page.cursor;
+      }
+    } finally {
+      if (own === trustedReadEpoch) trustedLoading.value = false;
     }
   }
   async function loadTrustedDevices(append = false) {
@@ -1332,6 +1344,8 @@ export function useAuthAccount(accountId: string) {
     tab,
     task,
     busy,
+    pageLoading,
+    trustedLoading,
     ready,
     failure,
     failureText,

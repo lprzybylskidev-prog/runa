@@ -198,6 +198,35 @@ async function loaded(w: ReturnType<typeof mount>) {
   await flushPromises();
 }
 
+it('shows a loading spinner instead of empty results while session rows are pending', async () => {
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).split('?')[0]!.endsWith('/sessions')) {
+      await gate;
+      return new Response(
+        JSON.stringify({ data: [], meta: { next_cursor: null } }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+    return original(input, init);
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const button = w
+    .findAll('nav button')
+    .find((item) => /Aktywne sesje|Active sessions/.test(item.text()))!;
+  await button.trigger('click');
+  expect(w.text()).toMatch(/Ładowanie danych|Loading data/);
+  expect(w.text()).not.toMatch(/Brak wyników|No results/);
+  release();
+  await vi.waitFor(() => expect(w.text()).toMatch(/Brak wyników|No results/));
+  expect(w.text()).not.toMatch(/Ładowanie danych|Loading data/);
+});
+
 it('keeps the destination shell and account skeleton through session and account loading without mounting protected forms early', async () => {
   const original = vi.mocked(window.fetch).getMockImplementation()!;
   let releaseSession!: () => void;

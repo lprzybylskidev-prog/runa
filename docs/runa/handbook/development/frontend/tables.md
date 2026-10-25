@@ -20,7 +20,12 @@ not sortable. Displayed dates need a `compare` adapter over their original insta
 never sort localized date text. History loaded in bounded cursor batches sorts only
 the loaded rows; this does not claim global ordering of unloaded history.
 
-Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Async states reuse AsyncContent and retry; obsolete requests abort and their eventual replies are ignored. Filters remain usable when results are empty or fail.
+Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Client tables whose rows are fetched by the caller accept `:loading="readPending"`.
+Keep it true for the request lifetime, including an initially empty rows array;
+the shared Spinner takes precedence over empty results. Server providers manage
+loading internally; the optional external flag combines with that state.
+Use a dedicated read indicator rather than a mutation-wide busy flag.
+Async states reuse AsyncContent and retry; obsolete requests abort and their eventual replies are ignored. Filters remain usable when results are empty or fail.
 
 `createApiTableProvider({ path, sort, filter, maxPerPage, decode })` uses the shared HTTP client with encoded `page`, `per_page`, `sort` (leading `-` for descending) and `filter[key]` parameters. `decode(unknown)` must validate the application's `data` + `meta` envelope, rows/public IDs, counts and capabilities and translate it to TablePage. Invalid payloads must throw. The backend must independently validate allowlists/page bounds, authorize records and return counts scoped to the same access/query rules; frontend capabilities are UX only. Custom providers translate their own wire contracts. No backend table engine is installed by this component.
 

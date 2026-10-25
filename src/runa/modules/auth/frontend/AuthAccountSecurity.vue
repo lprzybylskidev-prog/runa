@@ -37,6 +37,7 @@ const {
   notice,
   canTrustDevice,
   trustedRows,
+  trustedLoading,
   trustedCursor,
   loadTrustedDevices,
   revokeTrustedDevice,
@@ -400,6 +401,7 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         v-model:query="query"
         mode="client"
         :rows="trustedRows"
+        :loading="trustedLoading"
         :columns="columns"
         :row-key="(row) => row.public_id"
         :caption="text('Zaufane urządzenia', 'Trusted devices')"

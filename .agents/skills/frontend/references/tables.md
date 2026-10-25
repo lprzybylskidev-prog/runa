@@ -5,3 +5,6 @@ The authoritative delivered contract is [the public tables guide](../../../../do
 Table data columns sort by default; use sortable: false to opt out and preserve
 server capability allowlists. Compare date instants rather than localized text.
 Use the public tables guide for the complete contract.
+
+For externally fetched client rows, pass the request loading state to Table;
+see the public tables guide. Empty rows during a pending read are not an empty result.

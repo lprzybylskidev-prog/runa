@@ -37,6 +37,7 @@ const {
   tab,
   task,
   busy,
+  pageLoading,
   ready,
   failure,
   failureText,
@@ -542,6 +543,7 @@ const passwordHint = computed(() =>
           v-model:query="query"
           mode="client"
           :rows="rows"
+          :loading="pageLoading"
           :columns="columns"
           :row-key="(row) => row.public_id"
           :caption="titles[tab]"

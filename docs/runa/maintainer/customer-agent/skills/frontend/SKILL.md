@@ -24,3 +24,6 @@ For custom initial account loading, use the public AuthAccountLoading or the
 accountLoading presentation entry; see the public Auth account UI/customization
 guides. Loading presentation must not mount protected controllers before session
 validation.
+
+For externally fetched client Table rows, pass the request loading state through
+the public loading prop; see the public tables guide.

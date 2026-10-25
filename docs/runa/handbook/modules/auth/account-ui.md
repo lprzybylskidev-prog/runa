@@ -85,6 +85,8 @@ right. A taller neighboring card does not add space between details and password
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
 another card's draft. Preferences follows Account and security in the default navigation; sessions and
 optional histories follow it.
+Session/history and trusted-device tables show the shared loading spinner during
+their guarded reads; empty-result text appears only after a completed read.
 Operation successes and form-wide failures use shared FormNotifications only in
 the top-right viewport, with explicit operation descriptions and recovery actions.
 Persistent errors do not duplicate a banner above the form; linked field errors

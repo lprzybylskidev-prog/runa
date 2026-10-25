@@ -65,6 +65,10 @@ technical logger, translation-file refactor, speculative framework or CI pipelin
 
 ### Decisions and requirement authority
 
+- 2026-10-25 — Owner requests a spinner while table data loads; empty results
+  must appear only after reads finish. Point 19zk wires external client reads into
+  the existing shared Table loading presentation.
+
 - 2026-10-25 — Owner requests the destination shell immediately and structural
   skeletons in place of initial layout/spinner flashes. Point 19zj supplies the
   account Cards and notification rows using the existing Skeleton. A universal
@@ -1117,6 +1121,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zh. Place secondary email status badges beside their addresses.
 - [x] 19zi. Repair Auth frontend TypeScript errors blocking development setup.
 - [x] 19zj. Preserve the application shell during initial session loading and show structural account/notification skeletons; publish for owner review.
+- [x] 19zk. Show table loading spinners during account reads instead of premature empty results.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -3667,3 +3672,29 @@ architectural premise requires discussion before dependent work.
   No dependency or Docker resources created/removed. Development/test data, running
   services, Qdrant/model caches, backups and evidence preserved. Full verification,
   release and final appearance acceptance remain gated at point 20.
+
+### Point 19zk — Table read loading indicators
+
+- Shared Table now accepts an optional external loading flag, combined with its
+  existing provider loading state. Loading takes precedence over empty/success
+  content and uses the existing AsyncContent Spinner. Account session/history
+  reads and trusted-device dialog reads expose dedicated epoch-fenced indicators
+  reset in finally; mutation busy state does not masquerade as a table read.
+- Auth PATCH 0.21.6 -> 0.21.7, source-only forward edge using the existing no-op
+  presentation handler. Permissions ^0.21.0 remains compatible; no dependent API,
+  database or security-policy change. Registry synchronized and exactly the pending
+  table_loading edge applied through the existing guarded local ModuleUpdates
+  diagnostic; no scoped update CLI exists. Source/runtime and prior-HEAD independent
+  module-version checks pass.
+- Knowledge was current and focused table retrieval/original sources reviewed.
+  One deferred-session browser unit regression passes: no empty message while
+  pending, then empty state after the completed empty response. Published Vite assets
+  for owner review. Served synthetic-API diagnostics at 1440/768/390, both themes,
+  PL/EN and normal/reduced motion confirm the spinner-before-empty sequence with
+  no overflow/page errors. Evidence: .runtime/artifacts/playwright/table-loading.
+  Broad verification remains gated at point 20.
+- Public tables/account guidance, owner table reference and customer frontend
+  product synchronized. Root AGENTS already requires correct component states;
+  no constitution change or new universal skeleton policy. No dependencies or
+  Docker resources created/removed; development/test data, services, Qdrant/model
+  caches, backups and verification evidence preserved.

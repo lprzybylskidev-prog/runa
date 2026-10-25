@@ -21,6 +21,7 @@ const feedbackId = `table-feedback-${useId()}`;
 const props = withDefaults(
   defineProps<{
     mode: 'client' | 'server';
+    loading?: boolean;
     rows?: readonly Row[];
     provider?: TableProvider<Row> | undefined;
     columns: readonly TableColumn<Row>[];
@@ -36,6 +37,7 @@ const props = withDefaults(
     pageSizes?: readonly number[];
   }>(),
   {
+    loading: false,
     columnState: undefined,
     rows: () => [],
     provider: undefined,
@@ -66,11 +68,14 @@ const source = () =>
             throw new Error('Server table requires a provider.');
           }),
       };
-const { page, state, loading, reload } = useTable(
-  source,
-  () => props.columns,
-  toRef(props, 'query'),
-);
+const {
+  page,
+  state: sourceState,
+  loading: sourceLoading,
+  reload,
+} = useTable(source, () => props.columns, toRef(props, 'query'));
+const loading = computed(() => props.loading || sourceLoading.value);
+const state = computed(() => (loading.value ? 'loading' : sourceState.value));
 const tableElement = ref<globalThis.HTMLTableElement>();
 let previousWidths = '';
 function measureColumns() {

@@ -1,5 +1,12 @@
 # Auth module changelog
 
+## 0.21.7
+
+Show the shared Table loading spinner while sessions, account history or trusted
+devices are being read. Empty results appear only after the request completes.
+Independent read indicators do not treat mutations as table reads. Source-only
+forward edge; no schema or security-policy change.
+
 ## 0.21.6
 
 Keep ApplicationLayout mounted from the first session read, with structural account
