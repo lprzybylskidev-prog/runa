@@ -556,7 +556,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Add physical package/import-boundary and standalone-launcher test scenarios.
     Synchronize tool setup/testing/package docs and instruction assessments.
 
-- [ ] 3. Implement shared context, process, state and lifecycle infrastructure.
+- [x] 3. Implement shared context, process, state and lifecycle infrastructure.
   - Prerequisites: point 2 packages and test support.
   - Implement the core contracts above, preserving explicit timeout/stdio/env and
     strong filesystem/lock policies; add typed error/result/reporting boundaries.
@@ -773,6 +773,58 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Existing development services/data and Qdrant/model caches were preserved, along
   with dependency research and test reports under `.runtime/python`. Point 3 remains
   open; shared infrastructure implementation has not started.
+
+### Point 3 — shared infrastructure and first runtime consumers (2026-10-26)
+
+- Added immutable workspace/execution/release/Compose contexts, explicit process
+  specs/results and runner Protocol, subprocess implementation, cooperative
+  cancellation and clock seams, scoped SIGTERM ownership, safe command results/
+  reporting and exact caller-supplied secret masking. Core imports stdlib/core only.
+  Native child statuses, literal arguments, explicit copied environments, byte
+  stdin/capture, inherited terminal streams and opt-in deadlines remain distinct.
+- Added descriptor-anchored state directories, bounded validated JSON, duplicate/
+  non-finite JSON refusal, unique private atomic writes with optional fsync and
+  stable-inode shared/exclusive advisory locks. Domain services retain journal
+  schemas, operation authorization, durable ownership/recovery and cleanup policy.
+  Process groups terminate/reap before enclosing locks release; repeated interrupts
+  are masked during cleanup and prior handlers are restored. Detached Docker or
+  service resources still require their domain ownership journals.
+- Migrated development Compose policy and the private Python tool executor/host
+  delegation to the new APIs. Removed the executor's duplicate process-group,
+  flock and signal mechanics; recording test support now implements the real core
+  ProcessRunner interface. Independent workspaces/releases share no mutable context.
+  Existing mode 644 suite locks retain their inode through explicit readable-lock
+  policy. Workspace trust anchors accept the existing mode 775 host checkout and
+  container bind mount while refusing unsafe state paths below that boundary.
+  Existing report/cache directory permissions and unrelated artifacts are preserved.
+- Reviewed baseline runtime/context/documentation consumers. Legacy script adapters
+  still need their point 4 package bootstrap before they can use qualified imports
+  from unrelated cwd; no new consumer extends that bootstrap. Their remaining
+  quality/production/knowledge consumers migrate in points 5–7 and compatibility
+  modules retire in point 9. Receipt-aware documentation ownership remains an
+  application policy with an explicit root, not a core responsibility. The migration
+  ledger records these staged dispositions and removal conditions.
+- Knowledge was current (186 documents, 2882 chunks), queried before source work;
+  original core/command/toolchain contracts were read. Loaded backend/security
+  guidance. Updated the public Python source of truth, private workflow/ledger,
+  physical wheel import scenarios and core dependency-boundary contract. Root and
+  customer AGENTS already link that public guide; their rules and backend/security
+  skills need no edits because no new customer command, permission or application
+  workflow is introduced. Customer CLAUDE continues delegating to AGENTS.
+- Focused container diagnostics through supported test-python: nine literal-input,
+  independent-context, timeout/process-group, interruption, atomic publication and
+  lock cases passed; eleven JSON refusal, trusted-anchor, clock, reporting and
+  readable-lock cases passed. Repeated three affected context/cancellation/path
+  cases after lifecycle review passed. Dependency-direction contract passed.
+  Initial strict ancestor handling rejected the actual group-writable workspace;
+  explicit workspace anchoring resolved it without chmod or weakening private
+  state policy. Formatting/import ordering touched changed Python source only.
+  Mandatory commit hooks and staged incremental knowledge refresh apply.
+- No full suite, full-tree lint/type analysis, wheel/image build, scanner pipeline
+  or broad acceptance was run; these remain point 10. No task-created Docker
+  containers/networks/image tags/volumes were created or removed. Existing services,
+  databases, Qdrant/model caches, backups and reports were preserved. VERSION stays
+  0.5.0; point 4 is the next implementation point.
 
 ### Draft preparation validation (historical)
 

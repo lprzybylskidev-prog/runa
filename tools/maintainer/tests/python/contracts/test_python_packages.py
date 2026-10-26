@@ -44,6 +44,23 @@ def test_package_initializers_are_inert() -> None:
             ), path
 
 
+def test_core_depends_only_on_stdlib_and_core() -> None:
+    for path in (ROOT / "tools/core").glob("*.py"):
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                assert node.level == 0, path
+                names = [node.module or ""]
+            else:
+                continue
+            for name in names:
+                assert name.startswith("tools.core.") or name.split(".")[0] in (
+                    sys.stdlib_module_names
+                ), (path, name)
+
+
 @pytest.mark.packaging
 def test_wheels_layer_without_file_collisions_and_import_outside_checkout(tmp_path: Path) -> None:
     outputs = {
@@ -58,8 +75,12 @@ def test_wheels_layer_without_file_collisions_and_import_outside_checkout(tmp_pa
             archive.extractall(tmp_path / ("external-site" if kind == "external" else "owner-site"))
     assert not contents["application"] & contents["maintainer"]
     for site, modules in (
-        ("owner-site", "tools.core, tools.application, tools.maintainer"),
-        ("external-site", "tools.core, distribution"),
+        (
+            "owner-site",
+            "tools.core.context, tools.core.state, tools.core.process, "
+            "tools.application.development_runtime, tools.maintainer.python_execution",
+        ),
+        ("external-site", "tools.core.context, tools.core.state, tools.core.process, distribution"),
     ):
         subprocess.run(
             [sys.executable, "-E", "-s", "-c", "import " + modules],

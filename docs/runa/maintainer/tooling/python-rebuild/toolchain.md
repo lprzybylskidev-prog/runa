@@ -64,10 +64,19 @@ and caches are explicit; JUnit reports use selection hashes under
 `.runtime/python/reports`. Quality also retains each command's own log. Legacy
 quality/native suite locks and coordinator semantics are unchanged.
 
-Common support provides scripted recording process outcomes and literal
-argv/cwd/env/stdin records, temporary workspace/Git factories and canonical config
-fixtures. Point 3 binds process support and lifecycle mechanics to the canonical
-core contracts; these test helpers are not another operational executor API.
+`PythonToolExecutor` now composes the canonical core process runner, stable-inode
+suite lock and scoped interrupt handler. Host app delegation uses the shared
+development Compose context. The existing suite directory/readable lock uses an
+explicit non-private policy; it still refuses other-user writes and unsafe file
+identities. No lock inode or running native-suite coordination is replaced.
+Environment/receipt discovery retains its existing guard until point 4.
+
+Common support provides scripted `ProcessResult` outcomes and records actual
+immutable `ProcessSpec` values, plus temporary workspace/Git factories and canonical
+config fixtures. These test helpers implement `ProcessRunner`; they are not another
+operational executor API. Core unit scenarios cover independent workspaces/releases,
+literal argv/stdin/env, native errors, cancellation/timeouts, process group cleanup,
+handler restoration, atomic publication failure and unsafe file/lock refusal.
 
 ## Physical artifacts
 

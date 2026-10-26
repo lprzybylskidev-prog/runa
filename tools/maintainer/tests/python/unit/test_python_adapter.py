@@ -3,23 +3,30 @@ from pathlib import Path
 
 import pytest
 
+from tools.core.process import InputMode, ProcessResult, ProcessSpec
 from tools.maintainer.python_cli import parser
 from tools.maintainer.python_cli import test_command as build_test_command
 from tools.maintainer.python_toolchain import artifact_path
-from tools.maintainer.tests.python.support.process import FakeResult, RecordingRunner
+from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def test_literal_process_inputs_and_scripted_failure(tmp_path: Path) -> None:
-    runner = RecordingRunner(deque([FakeResult(7), OSError("injected failure")]))
+    runner = RecordingRunner(deque([ProcessResult(7), OSError("injected failure")]))
     result = runner.run(
-        ["git", "a b", "$(literal)"], cwd=tmp_path, env={"A": "$raw"}, stdin=b"input"
+        ProcessSpec(
+            ("git", "a b", "$(literal)"),
+            tmp_path,
+            {"A": "$raw"},
+            stdin=InputMode.BYTES,
+            input=b"input",
+        )
     )
     assert result.returncode == 7
     assert runner.calls[0].argv == ("git", "a b", "$(literal)")
-    assert runner.calls[0].stdin == b"input"
-    assert runner.calls[0].env == (("A", "$raw"),)
+    assert runner.calls[0].input == b"input"
+    assert runner.calls[0].env == {"A": "$raw"}
     with pytest.raises(OSError, match="injected"):
-        runner.run(["git"], cwd=tmp_path, env={})
+        runner.run(ProcessSpec(("git",), tmp_path, {}))
 
 
 def test_scope_refuses_escape_and_unknown_options() -> None:

@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import argparse
-import fcntl
 import hashlib
-import os
-import signal
 import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from tools.application.development_runtime import DevelopmentRuntime
 from tools.application.repository_boundary import assert_development_context
-from tools.application.runtime import compose, inside
+from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
+from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
+from tools.core.reporting import SafeFailure
+from tools.maintainer.python_execution import PythonToolExecutor
 from tools.maintainer.python_toolchain import PYTHON, ROOT, STATE, environment
 
 
@@ -70,40 +71,9 @@ def test_command(args: argparse.Namespace) -> list[str]:
     return command
 
 
-def interrupted(_signum: int, _frame: object) -> None:
-    raise KeyboardInterrupt
-
-
 def execute(command: list[str]) -> int:
-    """Share the existing native-suite lock and reap before releasing it."""
-    directory = ROOT / ".runtime/tests"
-    directory.mkdir(parents=True, exist_ok=True)
-    (STATE / "reports").mkdir(parents=True, exist_ok=True)
-    (STATE / "cache/pyright").mkdir(parents=True, exist_ok=True)
-    with (directory / "suite.lock").open("a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise ValueError("Another test suite is running in this checkout.") from error
-        previous = signal.signal(signal.SIGTERM, interrupted)
-        try:
-            with subprocess.Popen(
-                command, cwd=ROOT, env=environment(), start_new_session=True
-            ) as child:
-                try:
-                    return child.wait()
-                except BaseException:
-                    try:
-                        os.killpg(child.pid, signal.SIGTERM)
-                        child.wait(timeout=10)
-                    except subprocess.TimeoutExpired:
-                        os.killpg(child.pid, signal.SIGKILL)
-                        child.wait()
-                    except ProcessLookupError:
-                        child.wait()
-                    raise
-        finally:
-            signal.signal(signal.SIGTERM, previous)
+    executor = PythonToolExecutor(WorkspaceContext(ROOT), SubprocessRunner(), environment())
+    return executor.execute(tuple(command))
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -115,19 +85,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         command = test_command(args)  # Validate scope before any Docker/tool execution.
     else:
         command = []
-    if not inside():
-        return subprocess.call(
-            [
-                *compose(),
-                "exec",
-                "-T",
-                "app",
-                "python3",
-                "-m",
-                "tools.maintainer.python_cli",
-                *(list(argv) if argv is not None else sys.argv[1:]),
-            ],
-            cwd=ROOT,
+    workspace = WorkspaceContext(ROOT)
+    location = (
+        ExecutionLocation.CONTAINER if Path("/.dockerenv").exists() else ExecutionLocation.HOST
+    )
+    runtime = DevelopmentRuntime(ExecutionContext(workspace, workspace, location))
+    if location is ExecutionLocation.HOST:
+        return (
+            SubprocessRunner()
+            .run(
+                ProcessSpec(
+                    runtime.app_command(
+                        (
+                            "python3",
+                            "-m",
+                            "tools.maintainer.python_cli",
+                            *(list(argv) if argv is not None else sys.argv[1:]),
+                        )
+                    ),
+                    ROOT,
+                    environment(),
+                    stdin=InputMode.INHERIT,
+                )
+            )
+            .returncode
         )
     if args.action == "setup":
         return execute([sys.executable, "-m", "tools.maintainer.python_toolchain"])
@@ -154,6 +135,9 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except KeyboardInterrupt:
         raise SystemExit(130) from None
+    except SafeFailure as error:
+        print(str(error), file=sys.stderr)
+        raise SystemExit(error.exit_code) from None
     except ValueError as error:
         print(str(error), file=sys.stderr)
         raise SystemExit(1) from None
