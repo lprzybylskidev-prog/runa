@@ -529,7 +529,7 @@ mandatory commit hooks always apply. No broad baseline, installation acceptance,
 static analysis, image build or scanner pipeline is a prerequisite for later
 implementation. Build their harnesses/scenarios first and execute them at the end.
 
-- [ ] 1. Capture executable contracts and the migration ledger.
+- [x] 1. Capture executable contracts and the migration ledger.
   - Prerequisites: owner approval to activate; confirmed release metadata; updated
     predecessor/main and normal roadmap branch activation.
   - Expand the audited inventory to every tracked Python file, inline Python,
@@ -686,6 +686,42 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   - Close on the roadmap branch, merge with a merge commit, sanity-check main,
     create annotated `v0.6.0`, push/publish under normal owner policy and delete the
     roadmap branch. Report gate, release, migration limitations and resource cleanup.
+
+## Execution evidence
+
+### Point 1 — contract baseline and migration ledger (2026-10-26)
+
+- Activation commit: `32d55d2f`, from clean main `0fab18be` after successful
+  origin fetch and fast-forward reconciliation (two local planning commits,
+  no missing remote commits). The owner authorized activation and this point;
+  release metadata remains confirmed feature 0.6.0 over platform 0.5.0.
+- Delivered [baseline and contract review](../../tooling/python-rebuild/README.md),
+  [per-file ledger](../../tooling/python-rebuild/migration-ledger.md),
+  [source inventory](../../tooling/python-rebuild/inventory.json) and private
+  `tools/maintainer/testing/fixtures/python-command-contracts.json` definitions.
+  Inventory covers 104 Python source/executable files, 37 aliases, 37 integration
+  resources, 68 non-Python reference files, 58 inline/internal integration candidate
+  files and 289 test method definitions. Fixture definitions cover 178 execution
+  surfaces, including all 72 management declarations, and 17 regression scenarios.
+- Reviewed source/documentation disagreements and their owning correction points,
+  version-separated distribution boundaries, dependency order, existing owner-only
+  exception retirement and required public compatibility transports. No new premise
+  or implementation-order conflict was found; no temporary adapter was introduced.
+- Knowledge was current before activation. A query during the branch transition
+  correctly refused the stale branch context; incremental refresh restored current
+  state and the repeated query succeeded. Original command/ownership guides were
+  consulted rather than treating retrieved historical text as operating authority.
+- Focused checks validate inventory completeness/hashes, alias and resource
+  identities, exact command declarations, scenario bindings and local links;
+  documentation/state checks and mandatory commit hooks apply. These are structural
+  checks of this baseline, not runtime acceptance or coverage claims. No broad
+  suite, static analysis, build, scanner pipeline or destructive test was run.
+- Root AGENTS and owner/customer instruction products need no update: this point
+  establishes a private migration baseline and changes no delivered command or
+  reusable procedure. The maintainer README reflects activation; other current
+  runtime claims remain valid. No test containers, networks, volumes or image tags
+  were created; active development data, caches, backups and reports were preserved.
+- Point 2 remains open. No package/toolchain/runtime migration has started.
 
 ### Draft preparation validation (historical)
 

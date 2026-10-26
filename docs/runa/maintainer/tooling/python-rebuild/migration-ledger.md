@@ -1,0 +1,112 @@
+# Per-file migration ledger
+
+Baseline source snapshot and semantics are explained in [README](README.md). Every row starts `planned`; implementation updates disposition and evidence in the owning point. Target names identify responsibilities, not a required one-file/one-class transformation.
+
+| Current source                                           | Point | Target responsibility                                                                                             | Disposition |
+| -------------------------------------------------------- | ----: | ----------------------------------------------------------------------------------------------------------------- | ----------- |
+| `bin/artisan`                                            |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `bin/boost-mcp`                                          |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `bin/command`                                            |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `bin/passthrough`                                        |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `distribution/bootstrap.py`                              |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/initialize.py`                             |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/installation.py`                           |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update.py`                                 |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_contracts.py`                       |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_customization.py`                   |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_execution.py`                       |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_files.py`                           |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_modules.py`                         |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `distribution/update_runtime.py`                         |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `tools/application/bin/git-hook`                         |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/checks.py`                            |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/customer_source.py`                   |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/dependencies.py`                      |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/docs_checks.py`                       |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/documentation.py`                     |     3 | Shared context/process/state APIs                                                                                 | planned     |
+| `tools/application/executors/dev.py`                     |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/executors/doctor.py`                  |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/executors/knowledge.py`               |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/executors/operations.py`              |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `tools/application/executors/production.py`              |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `tools/application/executors/quality.py`                 |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/executors/quality_check.py`           |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/executors/security.py`                |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/git_hook.py`                          |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/hooks.py`                             |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/host_executor.py`                     |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/install-scanners.py`                  |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/knowledge/configuration.py`           |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/corpus.py`                  |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/ingest.py`                  |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/provider.py`                |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/retrieval.py`               |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/startup.py`                 |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/store.py`                   |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/knowledge/transport.py`               |     7 | Development-only knowledge APIs                                                                                   | planned     |
+| `tools/application/management.py`                        |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/module_versions.py`                   |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/operations.py`                        |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `tools/application/production.py`                        |     6 | Release/install/update state-machine services                                                                     | planned     |
+| `tools/application/quality.py`                           |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/repository_boundary.py`               |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/runtime.py`                           |     3 | Shared context/process/state APIs                                                                                 | planned     |
+| `tools/application/security.py`                          |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/application/test_resources.py`                    |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/application/testing/hooks.py`                     |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/maintainer/checks.py`                             |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/maintainer/context.py`                            |     3 | Shared context/process/state APIs                                                                                 | planned     |
+| `tools/maintainer/database`                              |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/maintainer/docs_checks.py`                        |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/maintainer/entrypoint`                            |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/maintainer/localization/snapshot.py`              |     8 | Private test/support and native-runner orchestration                                                              | planned     |
+| `tools/maintainer/make-migration`                        |     4 | Application guard/development/transport APIs                                                                      | planned     |
+| `tools/maintainer/owner_tests.py`                        |     8 | Private test/support and native-runner orchestration                                                              | planned     |
+| `tools/maintainer/release_checks.py`                     |     5 | Injected quality/diagnostic/scanner/hook services                                                                 | planned     |
+| `tools/maintainer/service_fixtures.py`                   |     8 | Private test/support and native-runner orchestration                                                              | planned     |
+| `tools/maintainer/testing/bootstrap.py`                  |     8 | Private test/support and native-runner orchestration; preserve 27 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/customer-deployment-host.py`   |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/customer-deployment.py`        |     8 | Private test/support and native-runner orchestration; preserve 9 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/customer-initialization.py`    |     8 | Private test/support and native-runner orchestration; preserve 5 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/customer-knowledge.py`         |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/database-guards.py`            |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/dependencies.py`               |     8 | Private test/support and native-runner orchestration; preserve 3 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/development-startup.py`        |     8 | Private test/support and native-runner orchestration; preserve 20 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/docker-test-inventory.py`      |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/docs.py`                       |     8 | Private test/support and native-runner orchestration; preserve 6 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/documentation-live.py`         |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/documentation.py`              |     8 | Private test/support and native-runner orchestration; preserve 12 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/documentation_fixture.py`      |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/error-fallback-host.py`        |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/error-fastcgi-fixture.py`      |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/fixtures/installation-smtp.py` |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/host-executor-host.py`         |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/host-executor.py`              |     8 | Private test/support and native-runner orchestration; preserve 8 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/installation-host.py`          |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/installation.py`               |     8 | Private test/support and native-runner orchestration; preserve 17 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/knowledge-live.py`             |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/knowledge-retrieval.py`        |     8 | Private test/support and native-runner orchestration; preserve 3 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/knowledge.py`                  |     8 | Private test/support and native-runner orchestration; preserve 14 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/maintenance.py`                |     8 | Private test/support and native-runner orchestration; preserve 3 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/management-host.py`            |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/management.py`                 |     8 | Private test/support and native-runner orchestration; preserve 22 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/module-development.py`         |     8 | Private test/support and native-runner orchestration; preserve 2 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/operations.py`                 |     8 | Private test/support and native-runner orchestration; preserve 21 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/postgres-alpine-contracts.py`  |     8 | Private test/support and native-runner orchestration; preserve 4 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/postgres-alpine.py`            |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/postgres-switch-contracts.py`  |     8 | Private test/support and native-runner orchestration; preserve 3 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/production.py`                 |     8 | Private test/support and native-runner orchestration; preserve 9 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/quality.py`                    |     8 | Private test/support and native-runner orchestration; preserve 19 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/release.py`                    |     8 | Private test/support and native-runner orchestration; preserve 12 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/repository-boundary.py`        |     8 | Private test/support and native-runner orchestration; preserve 7 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/security.py`                   |     8 | Private test/support and native-runner orchestration; preserve 6 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/services.py`                   |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/switch-postgres-icu.py`        |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/team-update-host.py`           |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/tool-ownership.py`             |     8 | Private test/support and native-runner orchestration; preserve 6 directly defined test methods                    | planned     |
+| `tools/maintainer/testing/update-execution.py`           |     8 | Private test/support and native-runner orchestration; preserve 17 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/update-host.py`                |     8 | Private test/support and native-runner orchestration; migrate scenario/fixture without inventing generic CLI help | planned     |
+| `tools/maintainer/testing/update.py`                     |     8 | Private test/support and native-runner orchestration; preserve 30 directly defined test methods                   | planned     |
+| `tools/maintainer/testing/wrappers.py`                   |     8 | Private test/support and native-runner orchestration; preserve 4 directly defined test methods                    | planned     |
+
+The inventory separately records every alias/resource/caller and its planned disposition. Aliases remain transports; their implementation family owns behavior and point 9 reconciles every remaining caller. Recorded direct test references require manual review and do not attest coverage or PASS.
