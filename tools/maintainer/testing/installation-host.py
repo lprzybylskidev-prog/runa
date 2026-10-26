@@ -385,10 +385,9 @@ def main():
         check(True, 'public production validation, health and AI isolation gates run only against the dedicated customer production fixture')
         if '--security-scan' in sys.argv[1:]:
             import security
-            import owner_runtime_disposition
             from service_fixtures import redis_image
-            security.trivy(production_root=prod, image_disposition=owner_runtime_disposition.apply, additional_images=[redis_image()])
-            check(True, 'owner repository and exact customer images satisfy security policy and dependency audits; raw scans and any bounded disposition are retained')
+            security.trivy(production_root=prod, additional_images=[redis_image()])
+            check(True, 'owner repository and exact customer images satisfy security policy and dependency audits; unfiltered raw scans are retained')
         # Failure acceptance deliberately ends with a fenced unhealthy deployment.
         # Verify and scan the healthy selected revision before injecting failures.
         if '--customer-deployment' in sys.argv[1:]:
@@ -407,7 +406,7 @@ def main():
                     task_images.add('runa-management:' + identity.stdout.strip()[:24])
             for release in (source / '.runtime/production/releases').glob('*'):
                 if re.fullmatch('[a-f0-9]{40}', release.name):
-                    task_images.update(prefix + release.name for prefix in ('runa-production:', 'runa-nginx:'))
+                    task_images.update(prefix + release.name for prefix in ('runa-production:', 'runa-nginx:', 'runa-postgres:'))
             if (source / '.runtime/host/client.json').exists():
                 print('Scoped fixture executor shutdown: ' + str(source), flush=True)
                 call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); from host_executor import stop; stop()'], cwd=source, check=False)

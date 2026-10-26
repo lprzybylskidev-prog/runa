@@ -258,7 +258,10 @@ Repository Trivy scanning excludes generated dependency trees at root vendor/nod
 
 Real customer customization/update/team/deployment acceptance uses the shared immutable fixture in tools/maintainer/service_fixtures.py: Redis 8.4.7 Alpine 3.22 at sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4. The helper fetches that exact artifact when absent and rejects inconsistent local identity. The owner security gate scans it alongside the actual production images; a failing fixture scan remains blocking. Redis runs only in disposable test projects, with non-root user, read-only filesystem, dropped capabilities and no published port. It is absent from baseline development/production services and is not an application dependency.
 
-Owner PostgreSQL/gosu accepted-risk handling is selected explicitly by the native owner security fixture, rejects customer acquisition receipts, and binds the exact assessed artifact/finding/evidence set with expiry. Raw scanner results and disposition records remain separate. See the dated [RM-008 assessment](../security/RM-2026-008-gosu-assessment.md) and MT-2026-001 for pending-upstream review; customer scanners keep the public fail-closed default.
+Runtime scans use strict owner/customer behavior without PHP, gosu, Brotli or curl
+exception callbacks. Historical acceptance policies are retired. The actual
+PostgreSQL derivative and PHP/Nginx images must satisfy the same unfiltered scan;
+see [runtime security](../../handbook/security/postgres-gosu-policy.md).
 
 Native updater acceptance derives its original release tag from the installed platform manifest and synthesizes a strictly newer patch target. Never fix these tags to historical release numbers: the original independently downloaded source must match the installed protected tree before target migration/seed changes are introduced. Production rejection remains before release acquisition; source-integrity checks are unchanged.
 
@@ -278,9 +281,3 @@ that invoke that CLI share the knowledge-state exclusive group. Even read comman
 hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
 refusal. Serialization retains strict checks and requires no automatic retry or
 weaker freshness policy.
-
-RM-2026-011 owner verification temporarily accepts the exact PHP 8.4.26 core risks
-and current runtime Brotli finding after explicit owner authorization. The callback
-retains raw reports, image/binary/evidence binding and expiry; unknown findings,
-scanner errors, secrets and dependency audits remain hard failures. Customer
-scanners do not inherit owner acceptance. See the [runtime risk decision](../security/RM-2026-011-runtime-risk-acceptance.md).

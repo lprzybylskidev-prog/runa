@@ -141,9 +141,23 @@ Production retains `src/composer.json` as application namespace metadata require
 
 ## Production container contract
 
-PHP development and production/management stages temporarily use official PHP 8.4.26 images pinned by digest after an owner-requested rollback for native-crash investigation. This release lacks the PHP 8.4.27 fixes for CVE-2026-109618 and CVE-2026-109619; Nginx/PHP-FPM is not exempt. Owner verification temporarily accepts these known PHP risks and the exact current PostgreSQL/PHP Brotli finding pending stable upstream tools, with review due 2026-11-20. This owner decision is not automatic customer production acceptance: customer scanners retain their own fail-closed policy. A rollback is not proof that the native crash is fixed. Existing containers must be rebuilt and recreated to use the new runtime; restarting an old container does not update PHP. Development uses `./bin/artisan runa:dev:build app` followed by `./bin/artisan runa:dev:recreate app queue scheduler`. If the testing profile is running, also recreate `app-test` through that profile's explicit Compose context. Run the idempotent setup in the recreated app (`python3 tools/application/executors/dev.py setup --if-needed` inside the container) before diagnostics; it restores container-local Boost MCP registration even when dependency/build outputs are current. Production receives rebuilt images through the normal tested customer deployment; preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).
+PHP development and production/management use official PHP 8.4.27 images pinned
+by digest. Production installs corrected curl/libcurl and Brotli packages.
+PostgreSQL 18.6 uses the supplied derivative with corrected libraries and gosu
+1.20 rebuilt with Go 1.27.3; see [runtime security](../security/postgres-gosu-policy.md).
+There are no active scanner exceptions for the retired PHP/gosu/Brotli findings.
+Rebuild images and recreate services to adopt changes; restarting an existing
+container does not update its runtime. Development uses
+`./bin/artisan runa:dev:build app postgres` followed by selective recreation of
+app/queue/scheduler and PostgreSQL, preserving data volumes. Recreate active testing
+profile endpoints through their explicit Compose context as well. Run idempotent
+setup inside the replaced app (`python3 tools/application/executors/dev.py setup
+--if-needed`) to restore container-local Boost MCP registration. Production uses
+normal tested customer deployment and exact-SHA PHP/Nginx/PostgreSQL images;
+preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).
+A successful test run does not establish the cause of earlier native crashes.
 
-`compose.production.yaml` defines the five production services under the separate `runa-prod` project. PHP-FPM, queue and scheduler share the same exact-tag image and application-storage volume. Their root filesystems are read-only; only `/tmp`, per-container bootstrap caches and persistent storage are writable. All application services run as `runa` (UID/GID 1000), drop capabilities and forbid privilege escalation. Nginx runs as `nginx`, mounts only the `app/public` volume subdirectory read-only (with supplemental GID 1000 for public-file read access), and exposes it through `/storage/`. PostgreSQL retains its official entrypoint privileges for initial volume ownership and switching to its database user; it has no published port.
+`compose.production.yaml` defines the five production services under the separate `runa-prod` project. PHP-FPM, queue and scheduler share the same exact-tag image and application-storage volume. Their root filesystems are read-only; only `/tmp`, per-container bootstrap caches and persistent storage are writable. All application services run as `runa` (UID/GID 1000), drop capabilities and forbid privilege escalation. Nginx runs as `nginx`, mounts only the `app/public` volume subdirectory read-only (with supplemental GID 1000 for public-file read access), and exposes it through `/storage/`. PostgreSQL keeps the official entrypoint and runs as postgres (UID/GID 70) from startup; its managed named volume initializes without root. Custom bind mounts require operator-prepared ownership. It has no published port.
 
 Every service has bounded JSON-file log rotation (10 MB × 3), a memory/CPU limit, restart policy and graceful-stop period. Laravel JSON logs go to stderr and the bounded private rotating file family on application storage. Production Nginx explicitly rewrites the root URI to its FastCGI location because `index.php` exists only in the PHP image, not the static image. Production Nginx logs omit query strings, uses a same-origin CSP, denies dotfiles and arbitrary PHP execution, and caches hashed build assets. No HSTS is emitted on this internal HTTP listener: HTTPS termination and HSTS belong to the host's configured TLS reverse proxy. Only loopback port 8081 is published by default, separate from development port 8080. External TLS/domain setup is an operator prerequisite, not an included proxy platform.
 

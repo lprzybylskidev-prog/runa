@@ -15,3 +15,10 @@ Supported test runners own disposable workers and automatically created browser
 containers according to the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle).
 Use its guarded teardown/recovery; preserve manual endpoints, base test data,
 volumes and evidence. Do not replace it with broad cleanup.
+
+When reviewing security updates for compiled helper binaries, inspect their
+embedded compiler/standard-library and module versions as well as the helper
+release number. Build replacements from pinned, integrity-verified sources with
+patched toolchains when explicitly authorized; keep compilers out of runtime.
+Follow [PostgreSQL runtime security](../../../../docs/runa/handbook/security/postgres-gosu-policy.md)
+for the supplied image, preserving database data and the documented entrypoint.

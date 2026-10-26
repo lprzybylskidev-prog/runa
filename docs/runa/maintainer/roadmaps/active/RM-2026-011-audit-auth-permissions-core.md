@@ -1274,6 +1274,12 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
   - Promote Audit, Auth and Permissions source manifests to 1.0.0 with compatible
     dependent constraints, central changelogs and explicit source-only update edges.
     Publication and closure remain conditional on the complete final graph.
+- [x] 19zzj. Remove the remaining runtime vulnerabilities and retire all incident exceptions.
+  - Owner explicitly authorizes corrected curl/Brotli, rebuilt current gosu and
+    patched PHP, including a derived PostgreSQL image. Remove retired bypass code,
+    policies and dedicated tests; preserve historical evidence and strict scanners.
+  - Receive the focused native security result, then immediately restart all groups
+    in the supported background workflow if it passes.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4835,3 +4841,74 @@ architectural premise requires discussion before dependent work.
   committing this preparation. Publication, merge and closure require its PASS;
   known owner-approved runtime risks retain their bounded policy and retirement
   inventory. Native PHP root cause is not asserted by the rollback result.
+
+## Point 19zzj — Strict runtime remediation
+
+- On 2026-10-26 the owner explicitly replaces the wait-only/rollback risk decision:
+  fix curl/libcurl CVE-2026-92392 and all remaining PHP, Brotli and gosu findings.
+  The owner confirms removal of all exceptions, including upgrading PHP from
+  8.4.26. The PostgreSQL derivative is authorized; retain PostgreSQL 18.6, ICU
+  locale/data layout, official entrypoint and existing data. No database reset.
+- Latest official PostgreSQL 18.6 images still contain curl 8.22.0 and Brotli
+  1.2.0; Alpine 3.24 supplies curl 8.23.0-r0 and Brotli 1.2.1-r0. gosu 1.20
+  fixes its moby/sys/user dependency but its official binary still embeds Go
+  1.24.6, so build its exact source with pinned Go 1.27.3 in a separate stage.
+  Deliver only the binary in PostgreSQL, with no compiler/runtime development tools.
+- Use patched PHP 8.4.27 consistently in development/production/management and
+  update runtime version assertions. The earlier crashes also occurred on 8.4.26
+  without Xdebug; neither PHP version nor Xdebug is established as the root cause.
+  Preserve existing diagnostic evidence; do not add runtime crash workarounds.
+- Remove resolved policy/bypass code and dedicated tests, retaining ordinary
+  scanner failure/secret/dependency/review contracts and dated assessments. Update
+  current owner/customer guidance and maintenance tracking in this fix point.
+- Owner requests focused native security verification after the committed fix;
+  after PASS immediately run the entire selected all-group graph in background.
+  Closure remains gated by actual full PASS on this candidate.
+
+### Execution handoff for strict runtime replacement
+
+- Native checkout remains /home/lprzybylski/Documents/php/runa on the active
+  roadmap branch. Rebuild app through runa:dev:build; the PostgreSQL derivative
+  is built from docker/postgres/Dockerfile. Selectively recreate only app, queue,
+  scheduler and postgres after checking their exact Compose ownership/mounts.
+  PostgreSQL retains runa-dev_postgres-icu-data; no reset, drop, migration or
+  volume removal. Keep old images as rollback and preserve all model/AI caches.
+- Existing isolated native acceptance remains the supported security entrypoint:
+  python3 tools/maintainer/testing/installation-host.py --production-only --security-scan.
+  It builds exact-SHA PHP/Nginx/PostgreSQL images and removes only owned fixture
+  containers/networks/disposable volumes/tags. Its unfiltered result is required
+  before all-group background verification; no disposition callback remains.
+
+- First strict native run: all actual runtime images are free of selected
+  vulnerabilities/secrets, but repository scan reports DS-0002 because the new
+  PostgreSQL Dockerfile inherits root. Resolve by setting USER postgres, with no
+  scanner exemption. A disposable no-network/capabilities fresh-volume probe
+  initialized PostgreSQL 18.6 with ICU pl-PL as UID/GID 70. Existing PGDATA is
+  already UID 70; no ownership rewrite/reset is needed. Keep the official
+  entrypoint and document custom bind-mount ownership. Both probe volumes and
+  containers were removed; source/build reports are retained.
+
+- Final native strict security PASS: repository and all four selected image reports
+  contain zero selected vulnerabilities, secrets or misconfigurations. Locked
+  Composer/pnpm audits and actual fresh PostgreSQL/PHP/Nginx initialization, SMTP
+  failure/resume, health and isolation pass without any disposition callback.
+  Report: .runtime/ownership/installation-host-3fccf1d0e3.json; raw reports and logs
+  are retained under .runtime/security and .runtime/artifacts/RM-2026-011/php-rollback.
+- Local app/queue/scheduler/management use PHP 8.4.27; PostgreSQL 18.6 runs as UID
+  70 with unchanged durable data, ICU and entrypoint. Recover the old owned host
+  executor after its reviewed source fingerprint changed; startup/setup and all
+  persistent service health checks are current. No base test/development data reset.
+- Six security/review, 21 operation and 12 documentation source contracts pass;
+  focused docs/maintenance validation and content-bound source review pass.
+  Synchronize owner/customer Docker references and current runtime/security guides;
+  root/customer AGENTS already mandate strict verification/exception retirement and
+  need no additional authority change. Retain historical risk decisions unchanged.
+- Both strict native runs cleaned their own containers/networks/disposable volumes
+  and exact image tags. Two nonroot initialization probe volumes/containers and
+  the unused official-image probe reference are removed. Preserve active development
+  images/data, base testing data, model/Qdrant caches, backups and all reports.
+- MT-2026-001 now tracks retirement of downstream packaging after a verified official
+  replacement; this is not an accepted vulnerability. MT-2026-002 awaits publication
+  of the verified correction in the pending platform release. All exceptions,
+  including their policies, callbacks, dedicated tests and obsolete current guidance,
+  are removed. Point 20 remains open for the complete all-group gate and release.

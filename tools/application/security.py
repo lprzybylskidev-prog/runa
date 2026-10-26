@@ -50,7 +50,7 @@ def production_images(root):
     return selected['images']
 
 
-def trivy(production_root=None, *, image_disposition=None, additional_images=()):
+def trivy(production_root=None, *, additional_images=()):
     if inside():
         raise ValueError('Run repository and runtime-image scanning on the Docker host.')
     # Owner acceptance scans the owner repository and a separate customer fixture's
@@ -60,18 +60,11 @@ def trivy(production_root=None, *, image_disposition=None, additional_images=())
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     reports.chmod(0o700)
     failures = []
-    def scan_command(arguments, label, report_path=None, archive_path=None):
+    def scan_command(arguments, label):
         print('Scanning: ' + label, flush=True)
         try:
             run(arguments)
         except subprocess.CalledProcessError as error:
-            if error.returncode == 1 and report_path is not None:
-                import gosu_disposition
-                try:
-                    if (image_disposition or gosu_disposition.apply)(label, report_path, archive_path):
-                        return
-                except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as disposition_error:
-                    print('Disposition rejected; finding remains blocking: ' + type(disposition_error).__name__, flush=True)
             failures.append(label + ' (exit ' + str(error.returncode) + ')')
             print('FAIL: ' + failures[-1] + '; continuing to collect remaining reports.', flush=True)
     def report(name):
@@ -107,7 +100,7 @@ def trivy(production_root=None, *, image_disposition=None, additional_images=())
                         '-v', 'runa-trivy-cache:/root/.cache/trivy', '-v', str(reports) + ':/reports', 'aquasec/trivy:0.76.0']
                 target = '/image.tar'
             report_name = 'image-' + hashlib.sha256(image.encode()).hexdigest()[:12] + '.json'
-            scan_command(scan + ['image', '--format', 'json', '--output', report(report_name), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'], image, reports / report_name, archive)
+            scan_command(scan + ['image', '--format', 'json', '--output', report(report_name), '--input', target, '--scanners', 'vuln,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1'], image)
         finally:
             archive.unlink(missing_ok=True)
     try:
@@ -116,7 +109,7 @@ def trivy(production_root=None, *, image_disposition=None, additional_images=())
         failures.append('dependency audit (exit ' + str(error.returncode) + ')')
     if failures:
         raise ValueError('Security checks failed: ' + '; '.join(failures) + '. Inspect the private JSON reports.')
-    print('PASS: repository/image security policy and locked dependency audits; raw reports and any dispositions are retained.')
+    print('PASS: repository/image security policy and locked dependency audits; raw reports are retained.')
 
 
 AUDIT_ROOT = None

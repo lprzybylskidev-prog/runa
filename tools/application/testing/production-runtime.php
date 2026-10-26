@@ -14,7 +14,7 @@ $expect = static function (bool $condition, string $message): void {
     }
 };
 
-$expect(PHP_VERSION === '8.4.26', 'Unexpected production PHP version.');
+$expect(PHP_VERSION === '8.4.27', 'Unexpected production PHP version.');
 $expect(posix_geteuid() === 1000, 'Production PHP must run as the application user.');
 $expect(date_default_timezone_get() === 'UTC', 'Production PHP must use UTC.');
 foreach (['pdo_pgsql', 'mbstring', 'intl', 'bcmath', 'Zend OPcache', 'pcntl', 'zip', 'curl', 'xml', 'dom', 'SimpleXML'] as $extension) {

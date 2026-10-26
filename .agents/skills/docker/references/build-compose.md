@@ -49,3 +49,10 @@ Use the single workspace-root .runtime tree for private generated build/tooling
 state; see [artifact placement](../../../../docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state). Resolve paths consistently
 from src and build stages. Keep only required generated runtime assets in explicit
 production copies; preserve unrelated caches/reports/backups/operation state.
+
+When reviewing security updates for compiled helper binaries, inspect their
+embedded compiler/standard-library and module versions as well as the helper
+release number. Build replacements from pinned, integrity-verified sources with
+patched toolchains when explicitly authorized; keep compilers out of runtime.
+Follow [PostgreSQL runtime security](../../../../docs/runa/handbook/security/postgres-gosu-policy.md)
+for the supplied image, preserving database data and the documented entrypoint.

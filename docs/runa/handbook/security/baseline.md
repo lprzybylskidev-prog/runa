@@ -354,10 +354,13 @@ behavior. Preserve immutable historical decisions and raw verification evidence;
 record the replacement, removal inventory and actual verification results before
 closing the maintenance item. This lifecycle applies to future exceptions too.
 
-## Supplied scanner disposition
+## Strict runtime scanning
 
-The current exact-artifact PostgreSQL gosu disposition is delivered with the shared security scanner, together with [its public technical evidence](postgres-gosu-policy.md). It does not depend on owner maintenance reports. All original artifact/binary/finding/expiry binding checks remain mandatory, raw findings are retained, and changed or expired policy fails closed. Customer source never needs the owner's historical audit directory to run security checks.
-
-The current PostgreSQL guidance distinguishes the original 25-finding shared decision from the changed 2026-10-21 scan and pending-upstream parser advisory. Owner-only accepted risk never automatically applies to customer production. See [current applicability and customer decisions](postgres-gosu-policy.md#current-pending-upstream-findings-and-customer-decisions).
+The supplied PostgreSQL derivative uses corrected libraries and a gosu rebuild;
+see [PostgreSQL runtime security](postgres-gosu-policy.md). PHP uses the patched
+runtime shared by development and production. Retired PHP/gosu/Brotli risk
+acceptance code and policies are removed. Owner and customer scanners both retain
+raw reports and fail on all selected findings, operational errors and failed
+locked dependency audits. Dated assessments remain historical evidence only.
 
 Repository scans exclude generated root and src vendor/node_modules trees while retaining first-party source/configuration, Dockerfiles and the committed Composer/pnpm locks, including development dependencies. Excluding dependency implementation trees must not exclude the application or its lockfile audits.
