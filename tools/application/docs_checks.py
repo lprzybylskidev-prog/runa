@@ -82,6 +82,6 @@ def validate(root):
                 import subprocess
                 branch = subprocess.check_output(['git', 'branch', '--show-current'], cwd=root, text=True).strip()
                 if branch == front.get('branch'):
-                    from quality import check_evidence, roadmap_metadata
+                    from tools.application.quality import check_evidence, roadmap_metadata
                     check_evidence(root, roadmap_metadata(path), root / 'tools/application/quality.yml', root / '.runtime/application-quality')
     print('PASS: application documentation, roadmap directories, placement and public local links.')

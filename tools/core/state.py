@@ -212,6 +212,7 @@ class FileLock:
     busy_message: str = "Another operation is running."
     shared: bool = False
     private: bool = True
+    blocking: bool = False
 
     @contextmanager
     def acquire(self) -> Iterator[None]:
@@ -225,7 +226,7 @@ class FileLock:
             ) as descriptor:
                 mode = fcntl.LOCK_SH if self.shared else fcntl.LOCK_EX
                 try:
-                    fcntl.flock(descriptor, mode | fcntl.LOCK_NB)
+                    fcntl.flock(descriptor, mode | (0 if self.blocking else fcntl.LOCK_NB))
                 except BlockingIOError:
                     raise StateFailure(self.busy_message) from None
                 current = os.stat(self.name, dir_fd=directory, follow_symlinks=False)

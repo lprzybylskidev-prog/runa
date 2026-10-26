@@ -12,12 +12,12 @@ import shutil
 import stat
 import subprocess
 
-import production
-from runtime import ROOT, inside, run
+from tools.application import production
+from tools.application.runtime import ROOT, inside, run
 
 STATE = ROOT / '.runtime/production'
 WRITERS = ['queue', 'scheduler', 'app']
-from repository_boundary import OWNER_PATHS
+from tools.application.repository_boundary import OWNER_PATHS
 DEVELOPMENT_MODULES = ('src/app/modules/module_probe', 'src/app/modules/reference')
 DELIVERY = ['/*', *['!/' + name + '/' for name in DEVELOPMENT_MODULES], *['!/' + name + ('/' if name in ('distribution', 'tools/maintainer') else '') for name in OWNER_PATHS]]
 
@@ -181,7 +181,7 @@ def tree_hash(sha, repository=None):
 
 
 def checkout(sha, source=None):
-    from repository_boundary import receipt, write_staging_receipt
+    from tools.application.repository_boundary import receipt, write_staging_receipt
     data = receipt(ROOT)
     if not re.fullmatch('[a-f0-9]{40}', sha):
         raise ValueError('Staging requires an exact commit identity.')
@@ -206,7 +206,7 @@ def checkout(sha, source=None):
     # Acquisition digests identify the original download, not a different staged commit.
     staged.pop('source_sha256', None)
     write_staging_receipt(path, staged)
-    from repository_boundary import application_remote
+    from tools.application.repository_boundary import application_remote
     _, url = application_remote(ROOT, data)
     run(['git', '-C', str(path), 'remote', 'set-url', 'origin', url])
     run(['git', '-C', str(path), 'config', '--local', 'runa.applicationRemote', 'origin'])
@@ -301,7 +301,7 @@ def assert_delivery(path):
 
 
 def build_images(release=None):
-    from dependencies import materialize
+    from tools.application.dependencies import materialize
     materialize(Path(release) if release else ROOT, check=True)
     selected = dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
     app_images = sorted({image for image in selected if image.startswith(('runa-production:', 'runa-nginx:', 'runa-postgres:'))})
@@ -314,7 +314,7 @@ def build_images(release=None):
 
 
 def deploy(target='main', simulation=False, initial_resume=False, verification=None, database_setup=None):
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
     if database_setup is not None:
         # Private external installer callback; never selected by customer commands.
@@ -322,7 +322,7 @@ def deploy(target='main', simulation=False, initial_resume=False, verification=N
     installed = read_state()['current']
     if not installed:
         raise ValueError('Customer deployment requires a completed platform installation; use the external owner installer first.')
-    from customer_source import fetch
+    from tools.application.customer_source import fetch
     with fetch(ROOT, STATE, target, installed=Path(installed['path'])) as (source, sha):
         return deploy_revision(sha, simulation, source=source)
 
@@ -416,7 +416,7 @@ def deploy_revision(sha, simulation, initial_resume=False, verification=None, da
 
 
 def rollback():
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
     state = read_state()
     current, previous = state['current'], state['previous']
@@ -458,7 +458,7 @@ def main(name, args):
     options = parser.parse_args(args)
     if inside():
         raise ValueError('Run production operations in a host terminal outside the devcontainer.')
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
     with lock():
         if options.target == 'rollback':

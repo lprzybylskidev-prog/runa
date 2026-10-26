@@ -98,7 +98,7 @@ def maintenance():
 
 
 def docs():
-    from docs_checks import validate
+    from tools.maintainer.docs_checks import validate
     validate(ROOT)
 
 
@@ -166,6 +166,6 @@ def cleanliness():
 
 
 def release():
-    from release_checks import validate
+    from tools.maintainer.release_checks import validate
     repository()
     validate(ROOT)

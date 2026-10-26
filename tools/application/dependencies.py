@@ -51,12 +51,16 @@ def materialize(root, check=False):
         target.write_text(content)
 
 
-if __name__ == '__main__':
+def main(arguments=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
     try:
         materialize(ROOT, args.check)
     except (ValueError, OSError) as error:
         parser.exit(1, str(error) + '\n')
     print('PASS: dependency manifests match owner inputs; locks preserved.' if args.check else 'Composed dependency manifests; locks preserved. Validate/install with frozen locks before use.')
+
+
+if __name__ == '__main__':
+    main()

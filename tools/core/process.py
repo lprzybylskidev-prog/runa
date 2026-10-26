@@ -1,7 +1,10 @@
 """Literal process execution with explicit policies and owned process groups."""
 
+from __future__ import annotations
+
 import math
 import os
+import selectors
 import signal
 import subprocess
 from collections.abc import Mapping
@@ -26,6 +29,7 @@ class InputMode(Enum):
 class OutputMode(Enum):
     INHERIT = "inherit"
     CAPTURE = "capture"
+    STDERR = "stderr"
 
 
 @dataclass(frozen=True)
@@ -38,9 +42,14 @@ class ProcessSpec:
     output: OutputMode = OutputMode.INHERIT
     timeout: float | None = None
     terminate_grace: float = 10
+    output_limit: int | None = None
 
     def __post_init__(self) -> None:
         absolute_path(self.cwd)
+        if self.output_limit is not None and (
+            self.output_limit < 1 or self.output is not OutputMode.CAPTURE
+        ):
+            raise ValueError("Output limits require captured output and a positive bound.")
         if not self.argv or not self.argv[0] or any("\0" in arg for arg in self.argv):
             raise ValueError("Process requires literal non-NUL arguments.")
         if (self.stdin is InputMode.BYTES) != (self.input is not None):
@@ -108,7 +117,11 @@ class SubprocessRunner:
             InputMode.CLOSED: subprocess.DEVNULL,
             InputMode.BYTES: subprocess.PIPE,
         }[spec.stdin]
-        output = subprocess.PIPE if spec.output is OutputMode.CAPTURE else None
+        output = (
+            subprocess.PIPE
+            if spec.output is OutputMode.CAPTURE
+            else (2 if spec.output is OutputMode.STDERR else None)
+        )
         started = self.clock.monotonic()
         try:
             child = subprocess.Popen(
@@ -126,6 +139,33 @@ class SubprocessRunner:
             ) from None
         pending_input = spec.input
         try:
+            if spec.output_limit is not None:
+                if spec.stdin is InputMode.BYTES:
+                    raise ValueError("Bounded discovery does not accept byte stdin.")
+                buffers = [bytearray(), bytearray()]
+                total = 0
+                with selectors.DefaultSelector() as selector:
+                    assert child.stdout is not None and child.stderr is not None
+                    selector.register(child.stdout, selectors.EVENT_READ, 0)
+                    selector.register(child.stderr, selectors.EVENT_READ, 1)
+                    while selector.get_map() or child.poll() is None:
+                        if self.cancellation is not None:
+                            self.cancellation.checkpoint()
+                        if (
+                            spec.timeout is not None
+                            and self.clock.monotonic() - started >= spec.timeout
+                        ):
+                            raise ProcessTimeout
+                        for key, _ in selector.select(0.1):
+                            chunk = os.read(key.fd, 4096)
+                            if not chunk:
+                                selector.unregister(key.fd)
+                                continue
+                            total += len(chunk)
+                            if total > spec.output_limit:
+                                raise SafeFailure("Child output exceeded the transport limit.")
+                            buffers[key.data].extend(chunk)
+                    return ProcessResult(child.wait(), bytes(buffers[0]), bytes(buffers[1]))
             while True:
                 if self.cancellation is not None:
                     self.cancellation.checkpoint()

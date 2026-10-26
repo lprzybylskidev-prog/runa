@@ -566,7 +566,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     mechanics only after all callers in that slice use the canonical service.
   - Document API ownership, dependency direction and runtime artifact locations.
 
-- [ ] 4. Migrate application guards, development and management/host transport.
+- [x] 4. Migrate application guards, development and management/host transport.
   - Prerequisites: point 3 infrastructure.
   - Migrate repository receipt/source policies, dependency composition and module
     version checks, development config/setup and host/container resolution.
@@ -825,6 +825,55 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   containers/networks/image tags/volumes were created or removed. Existing services,
   databases, Qdrant/model caches, backups and reports were preserved. VERSION stays
   0.5.0; point 4 is the next implementation point.
+
+### Point 4 — application policy and host/development transport (2026-10-26)
+
+- Introduced workspace-scoped development configuration, setup and command services, management service and immutable
+  request-bound HostPlan, injected repository/source policies and an explicit
+  application-to-core process policy adapter. Pure dependency composition and
+  module version assessment remain functions; CLI parsing is guarded and module
+  version reads accept an injected process function. Preserved receipt schema,
+  owner/source exclusion rules, role checks, literal argv, credential-isolated Git,
+  frozen dependency locks and module-version refusal semantics.
+- Isolated host image/discovery, plan validation/execution and authenticated
+  streaming worker lifecycle. Discovery now uses the core shared output bound
+  and deadline with process-group cleanup. Host private atomic JSON no longer
+  imports deployment mechanics. Socket binding does not change cwd; shutdown
+  restores signal handlers and drains workers. Disconnect finishes accepted work,
+  stores the result and never retries; exclusive receipt creation rejects replay.
+- Bin/hook aliases bootstrap fixed modules, retaining alias identity and explicit
+  hook target repository. Boost retains exec/stdio. Updated PHP dev/hook paths,
+  Compose setup and devcontainer post-create together. Application readiness stays
+  independent of optional AI. Container markers are resolved at composition roots;
+  explicit locations and operator environments are injected into domain services.
+  PHP catalogs remain authoritative public declarations; independent Python
+  security allowlist and published schema have an equality regression contract.
+- Qualified application imports and fixed-module bootstrap for legacy executor
+  callers are required compatibility work, not migration of their domain policy.
+  Delegation-only function facades, legacy test scaffolds and owner dispatch are
+  tracked in the migration ledger for points 5–9. The owner composition and database alias bootstraps retain private dispatch/quality and database purpose behavior until their owning migration points. External version-separated
+  acquisition and complete legacy test reconciliation remain points 6 and 8.
+- Knowledge was current before work (186 documents, 2887 chunks); queried local
+  sources and opened the relevant public/owner contracts. Loaded backend/security
+  and Laravel/Docker guidance for the affected process and caller boundaries.
+  Synchronized public Python/command/development/host documentation and private
+  ledger. Root/customer AGENTS and skills already route Python work to the public
+  source of truth; they need no changes because public commands, permission rules
+  and customer application workflows are preserved. No module manifest bump is
+  needed: changes are tooling/management transport outside module implementation.
+- Focused supported test-python diagnostics passed: seven workspace/role/catalog/
+  output-bound/profile cases, four preview/container/receipt/disconnect cases and
+  eleven plan/authentication/pending-operation/state/manifest cases, two stable-setup-lock/named-container-cleanup cases and one inert-import contract. After separating configuration/setup and consolidating Compose construction, five focused configuration/setup/routing cases passed. A separate relative commit-message regression confirmed the hook reads the requested repository, independently of the tool cwd. The import diagnostic exposed eager evaluation of a subprocess type annotation when infrastructure was replaced; postponed annotations resolved it and the focused contract passed. A focused owner repository check confirmed the alias/bootstrap still selects the correct branch policy. Help-only bin
+  probes retained their usage/exit behavior. No broad suite, full static analysis,
+  scanner pipeline or installation acceptance was run. An attempted knowledge
+  status refresh automatically built the changed management image; this accidental
+  prerequisite build was outside the intended point checks and is not final-gate
+  evidence. Its task-created tag `runa-management:797e8a6c0eab19e3e092f98b` was removed after the last consumer (no containers referenced it); shared build
+  caches, all development services/data, Qdrant/model caches, backups and reports
+  are preserved. Knowledge parser source identities remain unchanged.
+- Incremental knowledge refresh passed (186 documents, 2896 chunks; 21 embedded and 12 removed; no stale/missing/orphan chunks and no parser change). Mandatory hooks accompany the point
+  commit. VERSION stays 0.5.0; point 5 is next. Full compatibility/package/container
+  acceptance and strict quality/security/AI gates remain point 10.
 
 ### Draft preparation validation (historical)
 

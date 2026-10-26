@@ -8,7 +8,7 @@ import signal
 import subprocess
 import uuid
 
-from runtime import ROOT, compose
+from tools.application.runtime import ROOT, compose
 
 SERVICES = ('app-test', 'nginx-test')
 LABEL = 'runa.testing.run'
@@ -45,7 +45,7 @@ def cleanup(state, project):
 @contextlib.contextmanager
 def endpoint():
     """Preserve manual endpoints; label/journal only containers this run creates."""
-    from repository_boundary import assert_development_context
+    from tools.application.repository_boundary import assert_development_context
     assert_development_context(ROOT)
     directory = ROOT / '.runtime/tests'
     directory.mkdir(parents=True, exist_ok=True)

@@ -7,7 +7,7 @@ import re
 import subprocess
 import time
 import urllib.request
-from runtime import ROOT, run, app_command
+from tools.application.runtime import ROOT, run, app_command
 
 
 def yaml(path):
@@ -33,7 +33,7 @@ def maintenance():
 
 
 def docs():
-    from docs_checks import validate
+    from tools.application.docs_checks import validate
     validate(ROOT)
 
 

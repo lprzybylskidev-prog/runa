@@ -6,8 +6,9 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / 'tools/application'))
-import security
+if __name__ == '__main__' and not __package__ and Path(sys.argv[0]).resolve() == Path(__file__).resolve():
+    raise SystemExit(subprocess.call([sys.executable, '-m', 'tools.application.executors.security', *sys.argv[1:]], cwd=ROOT))
+from tools.application import security
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('action', choices=['trivy', 'review-changed-surface', 'dependencies', 'secrets'])
@@ -16,7 +17,7 @@ try:
     options = parser.parse_args()
     security.AUDIT_ROOT = options.dependencies_root.resolve() if options.dependencies_root else None
     if options.action == 'trivy':
-        import operations
+        from tools.application import operations
         with operations.lock():
             security.trivy()
     else:

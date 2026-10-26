@@ -75,10 +75,38 @@ users. This preserves shared native-suite lock identities during migration.
 and caller-supplied exact secret masking. Report only authored safe diagnostics;
 masking is not permission to print arbitrary subprocess or exception payloads.
 
-Legacy consumers migrate by family. The owner Python tool executor already uses
-these contracts; legacy application transports keep their existing bootstrap until
-their package adapters migrate together. Do not introduce new bare imports or
-copy the legacy process/Compose/lock implementations into new consumers.
+Application bootstrap now starts fixed package modules from the resolved tool
+checkout. Bin aliases retain their invoked basename before resolving symlinks;
+Boost replaces its process and preserves MCP stdio. Hook adapters carry a separate
+requested repository through PHP and Python instead of treating the tool cwd as
+the target. Compose setup and devcontainer post-create use the same
+`tools.application.development` module before Composer is available.
+
+`DevelopmentService` receives workspace, process policies and execution location; it composes separate `DevelopmentConfig` profile/secret preparation and `DevelopmentSetup` dependency/bootstrap services.
+`RepositoryPolicy` receives the operator environment and process function.
+`CustomerSource` keeps credential-isolated Git and exact source/projection checks.
+Dependency composition remains pure and never resolves packages or edits locks;
+module checks accept their process dependency without importing module code.
+Container detection happens at composition roots, recognizes Docker/Podman marker
+files and never authorizes an installation role. Services can represent distinct
+workspaces and host/container locations in the same interpreter.
+
+`ManagementService` separates immutable request-bound `HostPlan` parsing, isolated
+registry/image discovery and allowlisted execution. Source-owned PHP catalogs and
+the independently enforced Python allowlist/schema have an explicit consistency
+contract; plan data cannot register an executable. Discovery uses a shared 64 KiB
+stdout/stderr bound and 30-second timeout through the core runner. `HostExecutor`
+receives the selected workspace/process dependencies and a worker factory. Its
+bidirectional streaming protocol owns a distinct child lifecycle; disconnect
+continues accepted work and persists completion, while request IDs prevent replay.
+Host state uses the core durable private JSON writer, independently of deployment.
+Socket binding uses a directory descriptor without changing the process cwd.
+
+Compatibility function modules and direct-file launchers remain for existing
+callers during the migration. They delegate to the package services; quality,
+deployment and knowledge domain redesigns retain their own owning points. New
+consumers use these explicit services and qualified imports. Do not copy legacy
+process/Compose/state mechanics or introduce new path injection.
 
 All generated private Python state belongs under the workspace-root
 `.runtime/python`: `venv`, `cache`, `build`, `pycache`, `node` and `reports`.

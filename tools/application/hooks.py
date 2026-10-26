@@ -14,7 +14,7 @@ def git(root, *args, data=None):
 
 def approved_version_backfill(root, name, before, after):
     """Exact owner-approved 2026-10-22 metadata migration; no general history override."""
-    from documentation import maintainer_checkout
+    from tools.application.documentation import maintainer_checkout
     if not maintainer_checkout(root) or not re.fullmatch(r'docs/runa/maintainer/roadmaps/closed/RM-2026-\d{3}-[^/]+\.md', name):
         return False
     mapping = root / 'docs/runa/maintainer/documentation-map.json'
@@ -38,7 +38,7 @@ def commit_message(root, path):
     match = re.fullmatch(r'(feat|fix|docs|style|refactor|perf|test|build|chore|revert|merge)(?:\(([A-Za-z0-9_.-]+)\))?!?: [^\s].*', first)
     if not match:
         raise ValueError('Use Conventional Commits: type(RM-YYYY-NNN): description')
-    from documentation import roadmap_root
+    from tools.application.documentation import roadmap_root
     roadmaps = roadmap_root(root)
     active = list((roadmaps / 'active').glob('*.md'))
     if len(active) > 1:
@@ -75,7 +75,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True):
             if row == '120000':
                 continue
             historical = bool(re.fullmatch(r'docs/(?:app|runa/maintainer)/roadmaps/closed/[^/]+\.md', name))
-            from documentation import maintainer_checkout
+            from tools.application.documentation import maintainer_checkout
             if maintainer_checkout(root):
                 mapping = root / 'docs/runa/maintainer/documentation-map.json'
                 if mapping.is_file() and not mapping.is_symlink():

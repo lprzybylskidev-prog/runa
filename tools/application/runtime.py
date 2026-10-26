@@ -6,12 +6,15 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def inside():
-    return Path('/.dockerenv').exists()
+    from tools.application.development_runtime import execution_location
+    from tools.core.context import ExecutionLocation
+    return execution_location() is ExecutionLocation.CONTAINER
 
 
 def compose():
-    return ['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(ROOT / '.env.dev.local'),
-            '-f', str(ROOT / 'compose.yaml'), '-f', str(ROOT / '.devcontainer/compose.resources.yaml')]
+    from tools.application.development_runtime import development_compose
+    from tools.core.context import WorkspaceContext
+    return list(development_compose(WorkspaceContext(ROOT)).command())
 
 
 def run(args, **kwargs):
@@ -23,16 +26,5 @@ def app_command(args):
 
 
 def host_stack_health():
-    import json
-    result = run(compose() + ['ps', '--all', '--format', 'json'], capture_output=True, text=True).stdout.strip()
-    rows = json.loads(result) if result.startswith('[') else [json.loads(line) for line in result.splitlines() if line]
-    services = {row['Service']: row for row in rows}
-    required = ['app', 'nginx', 'postgres', 'queue', 'scheduler', 'mailpit']
-    for service in required:
-        row = services.get(service, {})
-        if row.get('State') != 'running' or row.get('Health') != 'healthy':
-            raise ValueError('Development container is missing/not healthy: ' + service)
-    setup = services.get('setup', {})
-    if setup.get('State') != 'exited' or setup.get('ExitCode') != 0:
-        raise ValueError('Development setup did not complete successfully.')
-    print('PASS: host Compose service/container health and setup exit status.')
+    from tools.application.management import service
+    return service().host_stack_health()

@@ -33,11 +33,11 @@ def assess(previous, current, changed, changelog):
     return errors
 
 
-def check(root, owner, base):
+def check(root, owner, base, *, run=subprocess.run):
     if owner not in ('app', 'runa'):
         raise ValueError('Select app or runa module ownership.')
     def git(*args, check=True):
-        return subprocess.run(['git', '-C', str(root), *args], check=check, capture_output=True).stdout
+        return run(['git', '-C', str(root), *args], check=check, capture_output=True).stdout
     # Resolve refs as data, rejecting option-like revisions and invalid/shallow baselines explicitly.
     baseline = git('rev-parse', '--verify', '--end-of-options', base + '^{commit}').decode().strip()
     changes = set(git('diff', '--name-only', '-z', baseline, '--', f'src/{owner}/modules').decode().split('\0'))
@@ -49,7 +49,7 @@ def check(root, owner, base):
             raise ValueError('Module version paths cannot traverse symlinks.')
         data = json.loads(manifest.read_text())
         relative = manifest.relative_to(root).as_posix()
-        old = subprocess.run(['git', '-C', str(root), 'show', baseline + ':' + relative], capture_output=True)
+        old = run(['git', '-C', str(root), 'show', baseline + ':' + relative], capture_output=True)
         previous = json.loads(old.stdout)['version'] if old.returncode == 0 else None
         prefix = manifest.parent.relative_to(root).as_posix() + '/'
         changed = any(path.startswith(prefix) and not path[len(prefix):].startswith('tests/') for path in changes)
@@ -61,11 +61,11 @@ def check(root, owner, base):
     return results
 
 
-def main():
+def main(arguments=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--owner', required=True, choices=['app', 'runa'])
     parser.add_argument('--base', default='main', help='Existing baseline ref; use the project default branch for normal roadmap checks.')
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
     try:
         results = check(Path(__file__).resolve().parents[2], args.owner, args.base)
         print(json.dumps(results, indent=2))

@@ -1,29 +1,23 @@
 #!/usr/bin/env python3
-"""Argument-safe project wrappers; host execution delegates to the app container."""
-from pathlib import Path
+"""Stable source transport; resolve aliases before selecting the fixed package adapter."""
+
+import os
 import subprocess
 import sys
+from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'tools/application'))
-from runtime import app_command, compose, inside, run
-
-name = Path(sys.argv[0]).name
-args = sys.argv[1:]
-try:
-    if args == ['--help'] or (not args and name != 'logs'):
-        print({
-            'artisan': 'Usage: ./bin/artisan <Artisan arguments>\nRun Laravel CLI inside the app container.',
-            'composer': 'Usage: ./bin/composer <Composer arguments>\nRun the pinned Composer inside the app container.',
-            'pnpm': 'Usage: ./bin/pnpm <pnpm arguments>\nRun the pinned pnpm inside the app container.',
-            'logs': 'Usage: ./bin/logs [service]\nHost only. Show the last 100 development service log lines; logs must never contain secrets.',
-            'passthrough': 'Usage: invoke artisan, composer, pnpm or logs wrapper.',
-        }[name])
-    elif name == 'logs':
-        run([str(ROOT / 'bin/artisan'), '--management', 'runa:dev:logs', *args])
-    else:
-        commands = {'artisan': ['php', 'artisan'], 'composer': ['composer', '--working-dir=src'], 'pnpm': ['pnpm', '--dir', 'src']}
-        run(app_command(commands[name] + args))
-except (KeyError, ValueError, OSError, subprocess.CalledProcessError) as error:
-    print(f'Error: child command failed (exit {error.returncode}).' if isinstance(error, subprocess.CalledProcessError) else f'Error: {error}', file=sys.stderr)
-    sys.exit(getattr(error, 'returncode', 1))
+if __name__ == "__main__":
+    root = Path(__file__).resolve().parents[1]
+    raise SystemExit(
+        subprocess.call(
+            [
+                sys.executable,
+                "-m",
+                "tools.application.passthrough_cli",
+                Path(sys.argv[0]).name,
+                *sys.argv[1:],
+            ],
+            cwd=root,
+            env=dict(os.environ, PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache")),
+        )
+    )

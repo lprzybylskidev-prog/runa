@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""Fixed-purpose owner entrypoints, selected only by their versioned filename."""
+
+import sys
+from pathlib import Path
+from tools.maintainer.context import ROOT, container, inside, compose
+
+
+def main():
+    name = sys.argv.pop(1)
+    arguments = sys.argv[1:]
+    CHECKS = {
+        "check-repository": "repository",
+        "check-maintenance": "maintenance",
+        "check-docs": "docs",
+        "check-release": "release",
+        "check-cleanliness": "cleanliness",
+        "check-tooling": "tooling",
+        "check-development": "development",
+        "check-frontend": "frontend",
+        "check-database-migrations": "database-migrations",
+    }
+    QUALITY = {
+        "quality-plan": "show",
+        "quality-roadmap": "roadmap",
+        "quality-final": "final",
+        "quality-status": "status",
+    }
+    TESTS = {"test-backend": "backend", "test-frontend": "frontend", "test-e2e": "e2e"}
+    if arguments == ["--help"]:
+        print(
+            "Usage: python3 tools/maintainer/"
+            + name
+            + (
+                " [--group=NAME ... | --all]"
+                + (" [--background]" if name != "quality-plan" else "")
+                if name in QUALITY and name != "quality-status"
+                else " [runner options]"
+                if name in TESTS
+                else ""
+            )
+        )
+        raise SystemExit(0)
+    if name in CHECKS:
+        if arguments:
+            raise SystemExit("This diagnostic takes no arguments.")
+        if name == "check-frontend" and not inside():
+            from test_resources import endpoint
+
+            with endpoint():
+                container(ROOT / "tools/maintainer" / name, arguments)
+        container(ROOT / "tools/maintainer" / name, arguments)
+        from tools.maintainer import checks
+
+        area = CHECKS[name]
+        if area in ("frontend", "database-migrations"):
+            from runtime import run
+
+            run(
+                ["node", "src/runa/tools/testing/frontend.mjs"]
+                if area == "frontend"
+                else ["python3", "tools/maintainer/testing/database-guards.py"]
+            )
+        else:
+            getattr(checks, area)()
+    elif name in QUALITY:
+        import runpy
+        from tools.application import quality
+
+        try:
+            quality.arguments([QUALITY[name], *arguments])
+        except ValueError as error:
+            raise SystemExit(str(error)) from error
+        quality.RUN_DIRECTORY = ROOT / ".runtime/quality"
+        quality.COMMAND_PREFIX = "python3 tools/maintainer/quality-"
+        original_plan = quality.plan
+        quality.plan = lambda final=False, **selection: original_plan(
+            final,
+            ROOT / "docs/runa/maintainer/roadmaps/active",
+            ROOT / "docs/runa/maintainer/quality/gates.yml",
+            **selection,
+        )
+        sys.argv = [sys.argv[0], QUALITY[name], *arguments]
+        runpy.run_path(str(ROOT / "tools/application/executors/quality.py"), run_name="__main__")
+    elif name in TESTS:
+        if name == "test-e2e" and not inside():
+            from test_resources import endpoint
+
+            with endpoint():
+                container(ROOT / "tools/maintainer" / name, arguments)
+        container(ROOT / "tools/maintainer" / name, arguments)
+        from tools.maintainer.owner_tests import execute
+
+        raise SystemExit(execute(TESTS[name], arguments))
+    else:
+        raise SystemExit("Invoke a named owner entrypoint; this module has no public actions.")
+
+
+if __name__ == "__main__":
+    main()

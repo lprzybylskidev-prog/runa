@@ -2,7 +2,7 @@
 import re
 import os
 import uuid
-from runtime import ROOT, inside, run
+from tools.application.runtime import ROOT, inside, run
 
 SERVICES = ('app', 'nginx', 'postgres', 'queue', 'scheduler')
 
@@ -48,12 +48,12 @@ def dispatch(args):
     if inside():
         raise ValueError('Run production Docker operations in a host terminal outside the devcontainer; no Docker socket is mounted here.')
     action, *services = args
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
     if action in ('self-test', 'verify-ai-isolation'):
         if services:
             raise ValueError('This operation takes no service arguments.')
-        import operations
+        from tools.application import operations
         release = operations.active_release()
         if action == 'self-test':
             operations.health(release, verify_source=True)
@@ -80,7 +80,7 @@ def dispatch(args):
         'logs': ['logs', '--tail', '100', *services],
     }
     if action == 'build':
-        import operations
+        from tools.application import operations
         target = operations.read_env(ROOT / '.env.prod.compose')['RUNA_IMAGE_TAG']
         sha = operations.resolve(target)
         head = run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
@@ -114,8 +114,8 @@ def verify_images(command, environment, source=None):
 def main(args):
     if not args or args == ['--help'] or inside():
         return dispatch(args)
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(ROOT)
-    import operations
+    from tools.application import operations
     with operations.lock():
         return dispatch(args)

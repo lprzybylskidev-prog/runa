@@ -33,6 +33,9 @@ final class RunTool
         if ($tool === 'doctor' && isset($doctor[$arguments[0] ?? ''])) {
             return $this->process($doctor[$arguments[0]], $root, $output, $arguments[0] === 'database-migrations' ? ['APP_ENV' => 'testing'] : null);
         }
+        if ($tool === 'dev') {
+            return $this->process(['python3', '-m', 'tools.application.development', ...$arguments], $root, $output);
+        }
         $helpers = ['dev' => 'dev', 'doctor' => 'doctor', 'quality' => 'quality', 'knowledge' => 'knowledge',
             'security' => 'security', 'check' => 'quality_check', 'hook' => 'git_hook'];
         if (! isset($helpers[$tool])) {
@@ -57,7 +60,7 @@ final class RunTool
         }
 
         if ($tool === 'hook') {
-            return $this->process(['python3', $root.'/tools/application/git_hook.py', ...$arguments], $cwd, $output);
+            return $this->process(['python3', '-m', 'tools.application.git_hook', $cwd, ...$arguments], $root, $output);
         }
 
         return $this->process(['python3', $root.'/tools/application/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);

@@ -9,6 +9,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
+if __name__ == '__main__' and not __package__ and Path(sys.argv[0]).resolve() == Path(__file__).resolve():
+    raise SystemExit(subprocess.call([sys.executable, '-m', 'tools.application.executors.knowledge', *sys.argv[1:]], cwd=ROOT))
 sys.path.insert(0, str(ROOT / 'tools/application/knowledge'))
 
 

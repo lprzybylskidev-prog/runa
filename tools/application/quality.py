@@ -9,8 +9,8 @@ import signal
 import subprocess
 import time
 from datetime import datetime, timezone
-from checks import yaml
-from runtime import ROOT, inside, app_command
+from tools.application.checks import yaml
+from tools.application.runtime import ROOT, inside, app_command
 
 
 def select(definition, areas, final=False):

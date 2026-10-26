@@ -38,7 +38,7 @@ services:
     stop_grace_period: 30s
   setup:
     <<: *development
-    command: [python3, tools/application/executors/dev.py, setup, --if-needed]
+    command: [python3, -m, tools.application.development, setup, --if-needed]
     depends_on:
       app: { condition: service_healthy }
     volumes:

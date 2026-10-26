@@ -84,3 +84,14 @@ existing operation locks, processes and domain recovery evidence before retrying
 No receipt falsely attests completion after the executor itself is killed.
 The existing background quality contract remains unchanged: after starting a
 background gate, return control without polling; use its normal later status.
+
+## Internal execution boundaries
+
+The host service is workspace-scoped. It receives its process environment and
+worker factory at construction; it never accepts a client cwd, environment or
+executable. The package worker reparses the immutable request-bound host plan
+before execution. Container-side PHP argument checks and host registry validation
+remain independent. Host receipts use the durable shared private JSON store;
+deployment journals retain their own schemas and recovery rules. A Unix directory
+descriptor binds the socket without changing the server process cwd. Existing
+source-file transports forward to the fixed package entry module.

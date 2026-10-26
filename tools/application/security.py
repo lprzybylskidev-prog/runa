@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import tempfile
 
-from runtime import ROOT, inside, run, app_command
+from tools.application.runtime import ROOT, inside, run, app_command
 
 
 def surface(reference='main'):
@@ -32,7 +32,7 @@ def review():
 
 def production_images(root):
     """Resolve images inside the selected customer's own prepared production context."""
-    from repository_boundary import assert_production_installation
+    from tools.application.repository_boundary import assert_production_installation
     assert_production_installation(root)
     code = ('import sys,json,hashlib; from pathlib import Path; sys.path.insert(0,"tools/application"); import operations; '
             'from repository_boundary import assert_production_installation; '

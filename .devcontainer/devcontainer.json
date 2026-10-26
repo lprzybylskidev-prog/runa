@@ -11,7 +11,8 @@
   "initializeCommand": ["./bin/artisan", "runa:dev:prepare"],
   "postCreateCommand": [
     "python3",
-    "tools/application/executors/dev.py",
+    "-m",
+    "tools.application.development",
     "setup",
     "--if-needed"
   ],
