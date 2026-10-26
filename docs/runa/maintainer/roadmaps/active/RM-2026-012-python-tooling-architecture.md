@@ -46,7 +46,9 @@ was active or paused. The predecessor remains 0.5.0, consistent with feature 0.6
 All tracked Python source and executable launchers; application/maintainer and
 external distribution tools; Python tests and fixtures; PHP/JS/shell/Compose/
 Devcontainer callers; package/resource projection; tool pins; local hooks and
-quality integration; documentation and both agent instruction products.
+quality integration; documentation and both agent instruction products. Include
+a delivered, extensible customer development environment for backend, frontend
+and tooling, with shared test infrastructure and separate owner/customer suites.
 
 ### Out of scope
 
@@ -88,6 +90,21 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
 - 2026-10-26 — Preserve existing quality selection, hard gates, locks, evidence,
   native exit codes and security policy. Integrate Python checks into that system,
   with no second coordinator or CI. Full verification is exclusively the last point.
+
+- 2026-10-26 — After point 4, the owner clarified that the delivered product is
+  an extensible development environment across backend, frontend and tooling,
+  rather than only an application runtime. Reusable development/test mechanisms
+  are customer capabilities even when Runa maintainers also use them. Private
+  Runa test suites, platform fixtures and release/maintenance policy remain excluded.
+- 2026-10-26 — The owner agreed that the default owner and customer test commands
+  run backend, frontend and tooling tests, including Python, with optional focused
+  selections. This explicitly supersedes the backend-only default and the earlier
+  owner-only Python developer-tooling assumption. Python infrastructure itself
+  requires meaningful private regression coverage; a customer receives its public
+  tooling/support, not the platform's test suite. This remains feature scope within
+  the agreed 0.6.0 roadmap; existing completed-point evidence is historical, and
+  remaining points own reconciliation. No new dependency or production tooling
+  inclusion is authorized by this clarification.
 
 ### Audit basis and limits
 
@@ -252,7 +269,9 @@ distribution/
 ```
 
 The generic `tools` name is repository-local, not a promised public Python import
-API or third-party plugin namespace. Explicit packaging includes prevent discovery
+API or third-party plugin namespace. Provide deliberately documented reusable
+interfaces and composition/configuration contracts; the whole internal package
+namespace does not become a supported extension API. Explicit packaging includes prevent discovery
 of unrelated repository directories. Core and application form **one customer
 distribution**, so customer tooling never needs to install a second core package.
 Owner tooling is a separate private distribution adding `tools.maintainer`; it
@@ -262,8 +281,12 @@ from canonical source, not private maintainer code. There is one authored core;
 generated bundle copies are artifacts, not separately maintained implementations.
 
 Root `pyproject.toml` describes only deliverable core/application metadata and
-shared tool rules. Private build/test dependency groups, collection roots and
-owner package manifests live under `tools/maintainer`, outside customer projection.
+shared tool rules. Deliver the reviewed developer-tool definitions, frozen inputs,
+setup and reusable support needed by customer Python/tooling tests independently
+of owner files. Only genuinely owner-specific build/test groups, private suite
+roots, fixtures and owner package manifests live under `tools/maintainer` outside
+customer projection. Reconcile point 2's private-only setup into shared delivered
+mechanisms with explicit owner additions, without duplicating toolchain engines.
 External bundle metadata lives in `distribution`. Use a reviewed setuptools build
 backend with explicit file/resource lists; no package auto-discovery across the
 whole checkout. Generate private wheel/build outputs under `.runtime/python/`.
@@ -301,7 +324,9 @@ Dependency direction:
   application gateway. It never requires maintainer imports or resources.
 - Test support cannot be imported by production service packages. Customer
   self-diagnostic scenarios remain delivered, stdlib-only capabilities, separately
-  classified from private pytest tests and developer dependencies.
+  classified from private platform suites. Delivered reusable developer/test
+  support may use the reviewed container-only development dependencies, but
+  operational source execution and cold recovery stay stdlib-only.
 
 Verify imports statically and from physically projected artifacts: no private
 directory merely hidden behind an optional import. Verify wheels from an unrelated
@@ -334,8 +359,9 @@ only their fixed family and orchestrate these services. A small explicit mapping
 is enough; no extensible command bus or competing public Python CLI registry.
 All importable modules are inert; `main(argv)` is behind a main guard or entrypoint.
 
-Keep existing public arguments, validation precedence, exit codes, streaming,
-stdin/TTY behavior and plan-only guarantees. Translate expected failures once at
+Preserve existing public arguments, validation precedence, exit codes, streaming,
+stdin/TTY behavior and plan-only guarantees except the explicitly owner-approved
+aggregate test default and its documented scope/filter interface. Translate expected failures once at
 the process boundary, preserving child failure codes and existing interrupt
 semantics. Internal services return typed results or raise narrow safe exceptions;
 they do not call `sys.exit`, rewrite `sys.argv`, `os.chdir` globally or monkey-patch
@@ -355,7 +381,13 @@ requirements including transitive dependencies, and `.runtime/python/{cache,buil
 pycache,reports}`. Keep pnpm/Python/scanner artifact contracts; no `.venv`, `dist`,
 `.pytest_cache`, `__pycache__` or egg-info scattered through source. Host operational
 commands continue using system stdlib Python; project format/test/type tools run
-in containers. Reopen/recovery must work before installing development packages.
+in containers. Deliver the shared frozen development toolchain/setup needed for
+customer Python tests, formatting, lint and typing; owner-only additions stay
+private. Customer extensions have documented source/config/test ownership and
+reviewed lock/update composition, without editing protected Runa tooling or
+silently replacing platform pins. Reopen/recovery must work before installing
+development packages. Production contains neither shared nor private developer
+dependencies, test support or test suites.
 
 Adopt pytest without xdist or extra fixture plugins initially. Use Ruff formatter
 and lint rules covering syntax/imports, modern supported syntax, likely bugs and
@@ -382,15 +414,72 @@ Upstream design references reviewed on 2026-10-26:
 Use their package/configuration capabilities; Runa's no-CI and verification order
 override upstream workflow examples. Do not copy upstream implementation or policy.
 
+### Delivered development environment and extension contract
+
+The customer receives an application-development foundation for backend,
+frontend and tooling: usable defaults, supported commands, reproducible tools,
+public reusable interfaces/test support and documented extension/composition
+points. A mechanism does not become owner-only merely because maintainers use it.
+Audit each migrated component by responsibility and required consumer, rather than
+classifying every test helper or development dependency as private.
+
+Customers can add their own application code, tests, tooling, commands and
+workflow configuration in documented application-owned locations, using ordinary
+Laravel and optional app modules plus the established frontend/tooling patterns.
+They can consume and compose supported Runa capabilities without protected edits,
+copying security/lifecycle logic, private imports or maintaining a parallel runner.
+Define the supported interfaces, configuration ownership, discovery/registration
+rules and update compatibility. Keep registration source-owned and explicit;
+this does not authorize a generic plugin bus or caller-supplied executables.
+
+Runa's own PHP/JS/Python tests, private fixtures and platform acceptance harnesses
+remain owner-only. Do not deliver those suites to customers or discover them merely
+because private files were copied into a customer checkout. Customers write and
+own their tests for new behavior; shared bases, factories/fakes and contract helpers
+are delivered support with explicit public boundaries, separate from private test
+cases. Minimal customer-authored scaffolding/documented examples must not import
+private Runa suites or trigger them on installation, reopen or a test command.
+Source/delivery projections and production exclusion apply to every language.
+
 ### Unified test infrastructure and regression matrix
+
+The default customer `php artisan runa:test` and its recovery `bin/test` transport
+run **backend, frontend and tooling** for the application. Provide the corresponding
+aggregate owner entrypoint through the existing private maintainer transport;
+it runs those three scopes for Runa, including its private Python tests. Both
+commands share orchestration mechanisms with explicit ownership/configuration,
+while preserving separate suite roots and reports. Do not select ownership from
+accidental presence of private directories. Laravel's native test command and
+existing focused backend/frontend/e2e/Python transports remain clearly scoped;
+document the intentional change from the old backend-only Runa default.
+
+Support explicit scope and test/filter selection without making users bypass
+lifecycle guards. Tooling includes Python tests of the selected owner's tooling
+and extensions; frontend/backend keep their native test engines. Keep explicit
+browser/e2e selection and its existing prerequisites. The aggregate command is
+normal developer test execution, not a replacement for the full quality/release
+graph or permission to run that graph during implementation points.
+
+Run every independently runnable selected scope and summarize each result even
+when another scope fails. Return nonzero if any selected scope fails or cannot run;
+missing prerequisites, collection failures and interruptions are never PASS.
+A genuinely empty customer scope is reported explicitly, without running private
+Runa tests or claiming platform verification. Preserve meaningful native child
+statuses in per-scope evidence and deterministic aggregate failure semantics.
+Use the existing suite/resource locks, ownership journals, cleanup and reports;
+avoid nested lock acquisition, a second coordinator or silent retries. Cancellation
+stops further scheduling and reaps owned work before releasing its resources.
 
 Private Python tests live in `tools/maintainer/tests/python/{unit,contracts,
 integration,e2e}` with importable `support` factories/fakes. Use `test_*.py`, pytest
 `--import-mode=importlib`, strict registered markers and explicit collection roots.
 Mark Docker/network/knowledge/database consumers and schedule them through existing
-quality prerequisites/exclusive groups. Do not add generic host pytest as the
+quality prerequisites/exclusive groups. Shared delivered support is separate from
+these private collection roots; customer Python/tooling tests use explicit
+application-owned roots and configuration. Do not add generic host pytest as the
 documented owner workflow: extend the existing maintainer entrypoint mechanism
-with a justified `test-python` adapter supporting explicit scope/filter options,
+with a justified aggregate test entrypoint and focused `test-python` adapter
+supporting explicit scope/filter options,
 container transport, reports and native exit codes. Public Artisan remains the
 customer interface; add no owner Artisan aliases or competing test coordinator.
 
@@ -400,6 +489,11 @@ repository/customer receipt factories; typed config/journal factories; controlla
 clock/HTTP provider; temporary workspace fixtures; output/result assertions; and
 owned Docker resource journals. Avoid one universal fixture that starts the stack.
 Unit tests cannot start Docker, network services or real databases implicitly.
+Split reusable customer support from owner-only fixtures; public helpers cannot
+import the private suite. Test the Python layer itself: pure behavior, services,
+process/configuration/state/lifecycle adapters, failures, refusal boundaries and
+cross-language/packaging integration. Exercising only PHP/JS tests through Python
+or accepting type/lint checks is not Python behavioral regression coverage.
 
 Move existing useful unittest assertions under unified discovery first; pytest
 can collect retained TestCase classes. Convert when fixtures/parameterization
@@ -410,20 +504,22 @@ deliberately retired behavior. A test count reduction requires explanation, not
 necessarily a one-for-one replacement. Do not freeze incidental dict layout or
 private method call order unless it is a recovery/security protocol.
 
-| Surface                   | Required final regression evidence                                                                                                                                                                                                                |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| All public transports     | Every bin alias, application hook adapter, fixed-purpose maintainer command, documented direct Python command and external acquisition/install/update entry: help, valid/invalid args, no-arg behavior, exit/output/stdin/TTY and independent cwd |
-| Host/devcontainer         | Host stdlib cold operation, configured container execution, no container Docker socket, correct context/root and paths containing spaces; mixed Python 3.11/3.12 contexts                                                                         |
-| Management/host executor  | Unknown/duplicate/oversized/request-mismatched plans refused, immutable artifact binding, receipt roles, permissions, disconnected operation, cancellation, stale executor recovery and nonexecuting preview                                      |
-| Install/update/team clone | Verified projection, clean/reference variants, optional customer example preservation, explicit remote ownership, development initialization, 0.5.0 upgrade to 0.6.0, preflight/apply/resume, source tampering and no replay after committed data |
-| Production                | Separate complete customer fixture, actual image build/deploy/health, exact image and source identity, TLS/SMTP refusal/resume, forward data semantics and unsafe rollback refusal                                                                |
-| Quality                   | Manual/legacy selection, prerequisite union, unchanged hard failures, cycle/conflict detection, exclusivity/concurrency, candidate/hash binding, timing, background/status, interrupted coordinator and surviving child refusal                   |
-| Security                  | Reusable direct/quality scanner results, pinned artifacts, lock consistency, all selected image reports collected despite earlier failure, secret redaction, scanner errors/findings remain nonzero, real review evidence                         |
-| Knowledge                 | Freshness/source filtering, owner/customer corpus split, model/input/dimension refusal, pending recovery, incremental reuse, exact golden cases, real CPU/CUDA fallback where supported, production refusal                                       |
-| Hooks                     | Real installed safe temporary hooks, secrets/env/key rejection, invalid message, partial staging, formatter input from index, owner/customer policy and mandatory knowledge freshness                                                             |
-| Packaging/isolation       | Customer without owner/external directories, owner wheel layered on customer wheel, standalone external bundle, declared resources, private test/dependency exclusion; production contains no tooling/AI imports, services or artifacts           |
-| Lifecycle                 | Lock contention, symlink/ownership refusal, signal restoration, kill/reap before cleanup, inactive worker ownership, automatic vs manually owned browser endpoints, task-only Docker cleanup and preservation of durable resources                |
-| Interop                   | PHP Actions and generators, shell hooks, Compose setup/knowledge jobs, Devcontainer startup, Docker build inputs, both gate definitions and JS/package script integrations                                                                        |
+| Surface                   | Required final regression evidence                                                                                                                                                                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All public transports     | Every bin alias, application hook adapter, fixed-purpose maintainer command, documented direct Python command and external acquisition/install/update entry: help, valid/invalid args, no-arg behavior, exit/output/stdin/TTY and independent cwd                                              |
+| Host/devcontainer         | Host stdlib cold operation, configured container execution, no container Docker socket, correct context/root and paths containing spaces; mixed Python 3.11/3.12 contexts                                                                                                                      |
+| Management/host executor  | Unknown/duplicate/oversized/request-mismatched plans refused, immutable artifact binding, receipt roles, permissions, disconnected operation, cancellation, stale executor recovery and nonexecuting preview                                                                                   |
+| Install/update/team clone | Verified projection, clean/reference variants, optional customer example preservation, explicit remote ownership, development initialization, 0.5.0 upgrade to 0.6.0, preflight/apply/resume, source tampering and no replay after committed data                                              |
+| Production                | Separate complete customer fixture, actual image build/deploy/health, exact image and source identity, TLS/SMTP refusal/resume, forward data semantics and unsafe rollback refusal                                                                                                             |
+| Quality                   | Manual/legacy selection, prerequisite union, unchanged hard failures, cycle/conflict detection, exclusivity/concurrency, candidate/hash binding, timing, background/status, interrupted coordinator and surviving child refusal                                                                |
+| Security                  | Reusable direct/quality scanner results, pinned artifacts, lock consistency, all selected image reports collected despite earlier failure, secret redaction, scanner errors/findings remain nonzero, real review evidence                                                                      |
+| Knowledge                 | Freshness/source filtering, owner/customer corpus split, model/input/dimension refusal, pending recovery, incremental reuse, exact golden cases, real CPU/CUDA fallback where supported, production refusal                                                                                    |
+| Hooks                     | Real installed safe temporary hooks, secrets/env/key rejection, invalid message, partial staging, formatter input from index, owner/customer policy and mandatory knowledge freshness                                                                                                          |
+| Packaging/isolation       | Customer without owner/external directories, owner wheel layered on customer wheel, standalone external bundle, declared resources, private suite/fixture/owner-dependency exclusion with usable shared developer tools; production contains no tooling/AI imports, services or artifacts      |
+| Customer extensibility    | Physically projected customer checkout without owner/external source; add application-owned backend, frontend and Python/tooling tests and a tooling extension through public contracts without protected edits; default/scoped commands, reports, failures and reproducible shared setup work |
+| Aggregate tests           | Owner and customer defaults include backend/frontend/tooling; explicit roots/filters, native per-scope statuses, all independent results, missing/empty scopes, interruption, locks, cleanup and refusal to discover private tests in customer mode                                            |
+| Lifecycle                 | Lock contention, symlink/ownership refusal, signal restoration, kill/reap before cleanup, inactive worker ownership, automatic vs manually owned browser endpoints, task-only Docker cleanup and preservation of durable resources                                                             |
+| Interop                   | PHP Actions and generators, shell hooks, Compose setup/knowledge jobs, Devcontainer startup, Docker build inputs, both gate definitions and JS/package script integrations                                                                                                                     |
 
 Implement these scenarios alongside each migration. Execute full suites and broad
 acceptance only in the final point; historical logs/source assertions inform the
@@ -510,6 +606,13 @@ Closure requires all of the following:
   the full first-party scope, including executable adapters and test support.
 - Unified unit/contract/integration/relevant e2e suites and all selected existing
   quality gates pass; no unavailable prerequisite becomes a skip or warning PASS.
+- A physically delivered customer development checkout can extend backend,
+  frontend and tooling and author/run its own tests through documented public
+  support, without maintainer files, private platform suites or protected edits.
+  Shared developer-tool setup/locks/configuration are reproducible and update-safe.
+- Owner and customer aggregate test defaults cover backend, frontend and tooling;
+  focused selection, meaningful Python behavior coverage, per-scope reports and
+  aggregate failures/interruptions preserve suite/resource lifecycle contracts.
 - Public transports, Artisan contracts, PHP/JS/shell/Docker integrations, journal
   compatibility, native exits, cancellation and scoped cleanup remain correct.
 - Transitional adapters, duplicate helpers, obsolete test runners/configuration,
@@ -582,6 +685,10 @@ implementation. Build their harnesses/scenarios first and execute them at the en
 
 - [ ] 5. Rebuild shared quality, diagnostics, scanners and hook services.
   - Prerequisites: point 4 guards and transports.
+  - Reconcile shared customer development/test capability versus private owner
+    policy. Refactor point 2's private-only Python setup/config/locks into delivered
+    reusable mechanisms with explicit private additions; define supported customer
+    configuration/composition contracts and keep operational/cold paths stdlib-only.
   - Replace owner quality monkey-patching with explicit context/planner/policy
     injection. Separate YAML/config parsing, planning, execution, evidence/status
     and reporting; preserve graph semantics, latest-run locks and background handoff.
@@ -610,6 +717,9 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     acquisition, application and updater, including version-separated artifact checks.
   - Add 0.5.0 upgrade, two-release, interrupted source/data switch, TLS/SMTP,
     unsafe rollback and production/customer distribution regression scenarios.
+  - Include shared customer developer-tool/support delivery and reconciliation of
+    customer-owned extensions/configuration/frozen inputs in acquisition/update
+    scenarios; private suites stay excluded and production remains tooling-free.
   - Synchronize installation/update/production/security docs and package projections.
     Do not run real installation/build/deployment acceptance yet.
 
@@ -626,7 +736,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Migrate fake/live knowledge scenarios and docs, with real retrieval/AI gates
     deferred to the final point. Preserve caches and collections.
 
-- [ ] 8. Consolidate private Python tests and isolated acceptance support.
+- [ ] 8. Deliver shared test infrastructure, aggregate runners and private suites.
   - Prerequisites: points 4–7 migrated domain APIs and their test code.
   - Move remaining unittest cases into unified discovery; retain useful assertions,
     replace fixture inheritance/runpy with support factories and qualified imports,
@@ -636,9 +746,20 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     Parameterize container identity instead of fixed dev container names.
   - Migrate localization/service fixtures, error/SMTP/FastCGI helpers and still-live
     PostgreSQL probes. Assess and document obsolete historical probe retirement.
-  - Keep supported backend/frontend/e2e runners and PHP worker lifecycle intact;
-    route Python scopes through the existing quality scheduler without a second
-    lock/report coordinator. Document exact scoped commands and prerequisites.
+  - Separate delivered reusable test bases/fakes/helpers from private Runa cases,
+    fixtures and acceptance harnesses across PHP/JS/Python. Provide customer-owned
+    Python/tooling discovery/configuration and public extension/support contracts;
+    customers can add tests and tools without maintainer imports or protected edits.
+  - Implement owner and customer aggregate defaults for backend/frontend/tooling,
+    with Python behavioral tests, explicit scoped/filter options, per-scope results
+    and deterministic aggregate failure semantics. Keep independently runnable
+    scopes running after failures, report empty/blocked scopes accurately, and
+    preserve cancellation, existing native engines, PHP workers, suite/resource
+    locks, reports and cleanup without nested locks or a second coordinator.
+  - Keep focused backend/frontend/e2e/Python transports and route their scopes
+    through the existing quality scheduler. Add aggregate ownership/failure and
+    projected customer extension scenarios now; execute broad acceptance in point
+    10 only. Document exact commands, prerequisites and changed default semantics.
 
 - [ ] 9. Complete caller migration and retire the old architecture.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
@@ -652,6 +773,10 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Finish full-scope Python annotations and rule configuration without hiding
     difficult modules. Complete semantic documentation and both instruction-product
     assessments; record all retained exceptions and their justified boundaries.
+  - Reconcile customer projection/toolchain resources and caller/help/catalog
+    defaults against aggregate test semantics. Update owner/customer instruction
+    products and public guides for authoring backend/frontend/tooling extensions
+    and tests, supported public contracts and configuration/update ownership.
   - Align editor/container Python settings and document one coherent cross-language
     command workflow; retain native PHP/JS runners and existing quality ownership.
   - Prepare the final graph definitions and acceptance scenarios; do not run an
@@ -673,7 +798,11 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
     interpret missing/excluded evidence as PASS. Selected security/AI gates are strict.
   - Include actual host/container/standalone/package/customer upgrade and production
     acceptance, scanners, hooks, knowledge golden/freshness and supported PHP/JS/
-    database/browser suites. Collect complete candidate-bound results and artifact
+    database/browser suites. Verify both aggregate command defaults, targeted
+    selections, scope failures/interruptions and Python behavior. In a projected
+    customer fixture, add and run customer-owned backend/frontend/tooling tests and
+    a tooling extension using only delivered public support; assert no private
+    suite or production developer-tool leakage. Collect complete candidate-bound results and artifact
     manifests. Inspect/show/clean task-created disposable resources after their last
     consumer; record exact removed and preserved identities.
   - Any required fix becomes an inserted implementation point immediately before
