@@ -93,6 +93,8 @@ base:
     severity: hard_fail
 
   - id: hook-contract
+
+    exclusive_group: knowledge-state
     depends_on: [configuration]
     description: Verify installed hooks and safe rejection behavior without creating permanent fixture commits.
     command: php artisan runa:doctor:hooks
@@ -130,6 +132,7 @@ impact_areas:
       severity: hard_fail
 
     - id: frontend-render-diagnostics
+      execution_context: host
       depends_on: [frontend-browser]
       exclusive_group: testing-state
       command: python3 tools/maintainer/check-frontend
@@ -145,14 +148,14 @@ impact_areas:
     - id: database-constraints
       depends_on: [database-migrations]
       exclusive_group: testing-state
-      command: python3 tools/maintainer/test-backend --filter=Database
+      command: python3 tools/maintainer/test-backend --parallel --filter=Database
       severity: hard_fail
 
     - id: seeding-contract
       depends_on: [database-constraints]
       exclusive_group: testing-state
       description: Validate category isolation, dependency graph, idempotence and relevant development scenario coverage.
-      command: python3 tools/maintainer/test-backend --filter=Seeding
+      command: python3 tools/maintainer/test-backend --parallel --filter=Seeding
       severity: hard_fail
 
   production:
@@ -187,6 +190,8 @@ impact_areas:
       severity: hard_fail
 
     - id: development-stack
+
+      exclusive_group: knowledge-state
       depends_on: [configuration]
       command: php artisan runa:doctor:development
       severity: hard_fail
@@ -202,11 +207,14 @@ impact_areas:
       command: python3 tools/maintainer/testing/documentation-live.py
       severity: hard_fail
     - id: knowledge-doctor
+      exclusive_group: knowledge-state
       depends_on: [configuration]
       command: php artisan runa:knowledge:doctor
       severity: hard_fail
 
     - id: knowledge-evals
+
+      exclusive_group: knowledge-state
       depends_on: [knowledge-doctor]
       command: php artisan runa:knowledge:eval
       severity: hard_fail
@@ -220,11 +228,6 @@ impact_areas:
     - id: security-review-contracts
       depends_on: [configuration]
       command: python3 tools/maintainer/testing/security.py
-      severity: hard_fail
-
-    - id: gosu-disposition-contracts
-      depends_on: [configuration]
-      command: python3 tools/maintainer/testing/gosu-disposition.py
       severity: hard_fail
 
     - id: repository-container-scan
@@ -383,7 +386,7 @@ groups:
       development-stack,
       hook-contract,
     ]
-  containers: [repository-container-scan, gosu-disposition-contracts]
+  containers: [repository-container-scan]
   installation:
     [
       installation-contracts,
@@ -411,17 +414,13 @@ groups:
       production-acceptance,
     ]
   security:
-    [
-      dependency-audit,
-      security-review-contracts,
-      expanded-security-review,
-      gosu-disposition-contracts,
-    ]
+    [dependency-audit, security-review-contracts, expanded-security-review]
   knowledge:
     [documentation-ownership-live, knowledge-doctor, knowledge-evals, boost-mcp]
 
 group_steps:
   - id: knowledge-freshness
+    exclusive_group: knowledge-state
     depends_on: [repository-state]
     command: php artisan runa:knowledge:stale
     severity: hard_fail

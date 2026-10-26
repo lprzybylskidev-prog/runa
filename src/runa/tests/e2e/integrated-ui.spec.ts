@@ -1,3 +1,4 @@
+import { recordBrowserProblems } from './support/browserProblems';
 import { expect, test } from '@playwright/test';
 
 const categories = [
@@ -12,23 +13,6 @@ const categories = [
   'dialogs',
   'data',
 ];
-function recordProblems(page: import('@playwright/test').Page) {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (['warning', 'error'].includes(message.type()))
-      errors.push(message.text());
-  });
-  page.on('requestfailed', (request) => {
-    if (request.failure()?.errorText !== 'net::ERR_ABORTED')
-      errors.push(`${request.url()}: ${request.failure()?.errorText}`);
-  });
-  page.on('response', (response) => {
-    if (response.status() >= 400)
-      errors.push(`${response.status()} ${response.url()}`);
-  });
-  return errors;
-}
 for (const locale of ['pl', 'en'])
   for (const theme of ['light', 'dark']) {
     test(`integrated scenario semantics and 200% reflow ${locale} ${theme}`, async ({
@@ -44,7 +28,9 @@ for (const locale of ['pl', 'en'])
           deviceScaleFactor: scale,
         });
         const page = await context.newPage();
-        const pageErrors = recordProblems(page);
+        const pageErrors = recordBrowserProblems(page, {
+          anonymousSession: true,
+        });
         await page.addInitScript(
           ({ locale, theme }) => {
             localStorage.setItem('runa.locale', locale);
@@ -125,7 +111,7 @@ for (const locale of ['pl', 'en'])
           }
           if (scale === 2)
             await page.screenshot({
-              path: `../artifacts/playwright/integrated/${category}-${locale}-${theme}-200.png`,
+              path: `../.runtime/artifacts/playwright/integrated/${category}-${locale}-${theme}-200.png`,
               fullPage: true,
             });
         }
@@ -149,7 +135,7 @@ for (const [device, width, height] of [
         test.setTimeout(120000);
         await page.setViewportSize({ width, height });
         await page.emulateMedia({ reducedMotion: 'reduce' });
-        const errors = recordProblems(page);
+        const errors = recordBrowserProblems(page, { anonymousSession: true });
         await page.addInitScript(
           ({ locale, theme }) => {
             localStorage.setItem('runa.locale', locale);
@@ -299,7 +285,7 @@ for (const locale of ['pl', 'en'])
       page,
     }) => {
       await page.setViewportSize({ width: 390, height: 844 });
-      const errors = recordProblems(page);
+      const errors = recordBrowserProblems(page, { anonymousSession: true });
       await page.addInitScript(() => {
         for (const method of ['getItem', 'setItem', 'removeItem'] as const)
           Object.defineProperty(Storage.prototype, method, {
@@ -315,7 +301,7 @@ for (const locale of ['pl', 'en'])
         `/__fixtures/standalone/standalone.html?locale=${locale}&theme=${theme}`,
       );
       await page.screenshot({
-        path: `../artifacts/playwright/integrated/standalone-${locale}-${theme}.png`,
+        path: `../.runtime/artifacts/playwright/integrated/standalone-${locale}-${theme}.png`,
         fullPage: true,
       });
       await expect(page.locator('.minimal-page,.application-page')).toHaveCount(

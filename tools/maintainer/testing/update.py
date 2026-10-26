@@ -257,6 +257,24 @@ class Updater(unittest.TestCase):
         self.assertEqual(result['checks'][-1]['id'], 'disk-permissions')
         self.assertEqual(before, self.snapshot())
 
+    def test_frontend_and_error_customizations_remain_application_owned_across_review(self):
+        names = ('src/app/resources/js/App.vue', 'src/app/resources/js/main.ts',
+                 'src/app/resources/js/errorLayout.ts', 'src/app/resources/css/customer.css')
+        for root in (self.original, self.target, self.installed):
+            for name in names:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('customer customization' if root == self.installed else 'upstream default')
+                self.git(root, 'add', name)
+        result = self.run_plan()
+        self.assertEqual(result['status'], 'ready', result)
+        rows = {row['path']: row for row in result['customization_review']['files']}
+        for name in names:
+            self.assertEqual(rows[name]['ownership'], 'application')
+            self.assertEqual(rows[name]['action'], 'preserve')
+            self.assertNotIn('current', rows[name])
+            self.assertEqual((self.installed / name).read_text(), 'customer customization')
+
     def test_scaffold_edits_and_teammate_clones_need_no_original_receipt(self):
         (self.installed / '.git/runa-bootstrap.json').unlink()
         (self.installed / 'VERSION').write_text('customer version')
@@ -339,8 +357,19 @@ class Updater(unittest.TestCase):
             self.git(root, 'add', 'README.md', 'AGENTS.md', 'obsolete.txt')
         (self.target / 'README.md').write_text('target readme')
         (self.installed / 'README.md').write_text('customer readme')
-        (self.target / 'AGENTS.md').write_text('new customer defaults')
+        audit_guidance = (ROOT / 'docs/runa/maintainer/customer-agent/AGENTS.md').read_text()
+        self.assertIn('## Audit awareness', audit_guidance)
+        (self.target / 'AGENTS.md').write_text(audit_guidance)
         (self.installed / 'AGENTS.md').write_text('customer extension')
+        for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
+            relative = Path('.agents/skills') / area / 'references/application.md'
+            for root in (self.original, self.target, self.installed):
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                (root / relative).write_text('baseline domain guidance')
+                self.git(root, 'add', str(relative))
+            guidance = (ROOT / 'docs/runa/maintainer/customer-agent/skills' / area / 'references/application.md').read_text()
+            (self.target / relative).write_text(guidance)
+            (self.installed / relative).write_text('customer domain extension')
         self.git(self.target, 'rm', '-f', 'obsolete.txt')
         (self.target / 'new-guide.md').write_text('target addition')
         self.git(self.target, 'add', 'new-guide.md')
@@ -352,6 +381,22 @@ class Updater(unittest.TestCase):
         self.assertEqual(rows['README.md']['action'], 'update')
         self.assertEqual(rows['README.md']['local'], 'modified')
         self.assertEqual(rows['AGENTS.md']['action'], 'manual-reconciliation')
+        self.assertEqual((self.installed / 'AGENTS.md').read_text(), 'customer extension')
+        self.assertIn('explicit manual Audit events', (self.target / 'AGENTS.md').read_text())
+        for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
+            relative = '.agents/skills/' + area + '/references/application.md'
+            self.assertEqual(rows[relative]['action'], 'manual-reconciliation')
+            self.assertIn('docs/runa/handbook/modules/auth/README.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/transport.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/sessions.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/security.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/profile.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/preferences.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/auth/policies-and-operators.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/permissions/README.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/modules/permissions/authority.md', (self.target / relative).read_text())
+            self.assertIn('docs/runa/handbook/data/seeding.md#explicit-module-development-contributors', (self.target / relative).read_text())
+            self.assertEqual((self.installed / relative).read_text(), 'customer domain extension')
         self.assertEqual(rows['obsolete.txt']['action'], 'remove')
         self.assertEqual(rows['new-guide.md']['action'], 'manual-reconciliation')
         self.assertNotIn('never report', json.dumps(result))

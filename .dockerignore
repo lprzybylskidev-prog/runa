@@ -47,8 +47,6 @@ src/public/runa-error
 src/public/ui-review
 src/runa/resources/views/errors/generated
 
-src/.runtime
-
 src/runa/Testing
 
 .pnpm-store/

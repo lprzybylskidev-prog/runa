@@ -24,8 +24,13 @@ it('renders safe localized native error pages while preserving status and header
 it('keeps JSON exception contracts on API paths and negotiated requests', function (int $status) {
     config(['app.debug' => false]);
     Route::get('/api/error-fixture', fn () => abort($status, 'Safe API message', ['Retry-After' => '17']))->name('test.api.error');
-    $this->get('/api/error-fixture')->assertStatus($status)->assertJsonStructure(['message'])
-        ->assertHeader('Retry-After', '17')->assertDontSee('<html', false);
+    $api = $this->get('/api/error-fixture')->assertStatus($status)->assertDontSee('<html', false);
+    if ($status === 419) {
+        $api->assertExactJson(['error' => ['code' => 'csrf_token_mismatch']])
+            ->assertHeader('Cache-Control', 'no-store, private');
+    } else {
+        $api->assertJsonStructure(['message'])->assertHeader('Retry-After', '17');
+    }
     $this->getJson('/test-errors/'.$status)->assertStatus($status)->assertJsonStructure(['message'])
         ->assertDontSee('<html', false);
 })->with([403, 404, 419, 429, 500, 503]);

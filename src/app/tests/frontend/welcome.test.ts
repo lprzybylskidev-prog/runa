@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import WelcomePage from '@/App.vue';
 
 describe('application welcome', () => {
-  it('renders the welcome page', () => {
+  it('renders the welcome page', async () => {
     const page = mount(WelcomePage);
-    expect(page.get('main h1').text()).toBe('Runa');
+    await vi.waitFor(() => expect(page.get('main h1').text()).toBe('.runa'));
     page.unmount();
   });
 });

@@ -30,7 +30,7 @@ export function useTable<Row>(
     const fields = columns();
     const state = normalizeTableQuery(
       query.value,
-      fields.filter((c) => c.sortable).map((c) => c.key),
+      fields.filter((c) => c.sortable !== false).map((c) => c.key),
       fields.filter((c) => c.filter).map((c) => c.key),
     );
     try {

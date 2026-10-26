@@ -6,6 +6,23 @@ Production baseline is complete but deliberately simple. Do not pre-build enterp
 
 No Kubernetes, blue/green platform, ELK stack, Redis/Horizon, or similar infrastructure is part of the baseline unless a future roadmap introduces a real need.
 
+## Responsibility boundary
+
+Runa supplies a minimal working production baseline with application security and
+supported installation/deployment operations. The customer operates and protects
+the host, infrastructure and access to operator commands, including SSH/Docker/CLI
+permissions, network exposure, TLS termination and externally managed backups.
+Additional infrastructure hardening is customer-owned unless explicitly agreed.
+
+Authorized access to execute a dedicated operator command is a trusted boundary.
+An Auth emergency-recovery command does not need an additional recovery container,
+separate database credential or infrastructure authority service solely to prove
+that the operator may execute it. Application authorization, input validation,
+secret-safe handling and Audit remain required. This boundary does not remove the
+supplied container/runtime safeguards described below. The recovery command's
+behavior and acceptance remain defined by its owning Auth specification; this
+responsibility rule does not claim the command is already delivered.
+
 ## Runtime services
 
 Baseline production services:
@@ -124,9 +141,23 @@ Production retains `src/composer.json` as application namespace metadata require
 
 ## Production container contract
 
-PHP development and production/management stages use official PHP 8.4.27 images pinned by digest. This security update addresses CVE-2026-109618 and CVE-2026-109619; Nginx/PHP-FPM is not exempt from updating. Existing containers must be rebuilt and recreated to use the new runtime; restarting an old container does not update PHP. Development uses `./bin/artisan runa:dev:build app` followed by `./bin/artisan runa:dev:recreate app queue scheduler`. If the testing profile is running, also recreate `app-test` through that profile's explicit Compose context. Run the idempotent setup in the recreated app (`python3 tools/application/executors/dev.py setup --if-needed` inside the container) before diagnostics; it restores container-local Boost MCP registration even when dependency/build outputs are current. Production receives rebuilt images through the normal tested customer deployment; preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).
+PHP development and production/management use official PHP 8.4.27 images pinned
+by digest. Production installs corrected curl/libcurl and Brotli packages.
+PostgreSQL 18.6 uses the supplied derivative with corrected libraries and gosu
+1.20 rebuilt with Go 1.27.3; see [runtime security](../security/postgres-gosu-policy.md).
+There are no active scanner exceptions for the retired PHP/gosu/Brotli findings.
+Rebuild images and recreate services to adopt changes; restarting an existing
+container does not update its runtime. Development uses
+`./bin/artisan runa:dev:build app postgres` followed by selective recreation of
+app/queue/scheduler and PostgreSQL, preserving data volumes. Recreate active testing
+profile endpoints through their explicit Compose context as well. Run idempotent
+setup inside the replaced app (`python3 tools/application/executors/dev.py setup
+--if-needed`) to restore container-local Boost MCP registration. Production uses
+normal tested customer deployment and exact-SHA PHP/Nginx/PostgreSQL images;
+preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).
+A successful test run does not establish the cause of earlier native crashes.
 
-`compose.production.yaml` defines the five production services under the separate `runa-prod` project. PHP-FPM, queue and scheduler share the same exact-tag image and application-storage volume. Their root filesystems are read-only; only `/tmp`, per-container bootstrap caches and persistent storage are writable. All application services run as `runa` (UID/GID 1000), drop capabilities and forbid privilege escalation. Nginx runs as `nginx`, mounts only the `app/public` volume subdirectory read-only (with supplemental GID 1000 for public-file read access), and exposes it through `/storage/`. PostgreSQL retains its official entrypoint privileges for initial volume ownership and switching to its database user; it has no published port.
+`compose.production.yaml` defines the five production services under the separate `runa-prod` project. PHP-FPM, queue and scheduler share the same exact-tag image and application-storage volume. Their root filesystems are read-only; only `/tmp`, per-container bootstrap caches and persistent storage are writable. All application services run as `runa` (UID/GID 1000), drop capabilities and forbid privilege escalation. Nginx runs as `nginx`, mounts only the `app/public` volume subdirectory read-only (with supplemental GID 1000 for public-file read access), and exposes it through `/storage/`. PostgreSQL keeps the official entrypoint and runs as postgres (UID/GID 70) from startup; its managed named volume initializes without root. Custom bind mounts require operator-prepared ownership. It has no published port.
 
 Every service has bounded JSON-file log rotation (10 MB × 3), a memory/CPU limit, restart policy and graceful-stop period. Laravel JSON logs go to stderr and the bounded private rotating file family on application storage. Production Nginx explicitly rewrites the root URI to its FastCGI location because `index.php` exists only in the PHP image, not the static image. Production Nginx logs omit query strings, uses a same-origin CSP, denies dotfiles and arbitrary PHP execution, and caches hashed build assets. No HSTS is emitted on this internal HTTP listener: HTTPS termination and HSTS belong to the host's configured TLS reverse proxy. Only loopback port 8081 is published by default, separate from development port 8080. External TLS/domain setup is an operator prerequisite, not an included proxy platform.
 
@@ -147,6 +178,25 @@ The production Nginx image includes generated `src/public/runa-error` HTML/CSS/f
 
 `docker/nginx/production.conf` maps Nginx-generated upstream 502/504 and its explicit maintenance 503 to an internal static document with final status 503, Retry-After 120 and no-store. API paths or JSON Accept headers receive a safe English JSON response; web requests receive Polish by default or English from `lang=en`/an English-leading Accept-Language. The static documents use system CSS or whitelisted `theme=light|dark` variants, with native MinimalLayout preference forms. Their internal paths cannot be requested directly, while their local assets remain publicly readable. Normal root/API/PHP responses keep their existing behavior and Laravel status/retry/body contracts; `fastcgi_intercept_errors off` avoids replacing application-originated 503/502/404/403 responses. Security headers are shared through `docker/nginx/security-headers.conf` and retained by the internal location, with same-origin styles/fonts/images and no inline-script/style exception. Docker's embedded DNS resolver is used at request time, so Nginx can start without PHP and discover recreated app containers.
 
+## Private generated artifacts
+
+Private native-error templates live at
+/workspace/.runtime/frontend/errors/templates, generated freshly during image
+build and copied explicitly into PHP. The shared workspace-root artifact placement
+is defined in [project principles](../architecture/project-principles.md#generated-tooling-and-build-state).
+No host runtime directory, renderer bundle, report, backup or development cache is
+copied wholesale. Public generated error assets remain under src/public/runa-error.
+
 ## Runtime source paths
 
 The Laravel base path is /workspace/src. Explicit image copies include the customer source/config/views and required platform backend/config/data/routes, mail/error templates, localization, generated UI/error assets and production-only vendor. Management, tests, source frontend, Node/build tooling, Boost and AI are absent. No source/dependency bridges remain. Root artisan transports to src/artisan; per-container config-cache tmpfs mounts at /workspace/src/bootstrap/cache. The existing application-storage volume now mounts at /workspace/src/storage without changing its identity. Nginx mounts application/public and runa/public read-only at /storage/ and /runa-storage/. Startup creates missing directories without deleting data; no implicit legacy-storage migration occurs.
+
+## First administrator
+
+Use the [trusted Auth operator procedure](../modules/auth/policies-and-operators.md)
+after Core data preparation. The production installer can admit an initial emailed
+invitation using explicit administrator settings; no-mail setup uses the private
+one-time handoff command in the configured application PHP environment. Both grant
+the actual Permissions system role under the same singleton/transaction protocol.
+Reopen, ordinary deployment and customer-clone initialization never grant new
+administrators. Host/CLI access protection remains the customer's responsibility.

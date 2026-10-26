@@ -36,3 +36,8 @@ Preproduction Runa dev/test database resets and accepted obsolete-volume retirem
 Customer deployment fetches only the explicitly configured customer repository into disposable staging, accepts the complete selected project including platform/infrastructure changes and builds exact-SHA images before data mutation. Platform source integrity is checked only by the external development updater. Declared custom production services/volumes are supported while runtime AI/dev isolation remains mandatory. Keep real-Git source checks and native isolated production code/data/failure acceptance together. Deployment source/image rollback never proves schema/data recovery; follow docs/runa/handbook/production/deployment.md.
 
 Production image scanning resolves images from the selected deployment in the locally prepared production checkout. Keep repository/dependency scan scope explicit when the tested runtime belongs to a separate fixture. Never set APP_ENV or synthesize an upstream acquisition receipt to bypass a development/unknown target guard. A normal customer clone prepares its own local production role; follow docs/runa/handbook/production/deployment.md.
+
+Supported test runners own disposable workers and automatically created browser
+containers according to the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle).
+Use its guarded teardown/recovery; preserve manual endpoints, base test data,
+volumes and evidence. Do not replace it with broad cleanup.

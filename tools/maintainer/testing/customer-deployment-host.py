@@ -55,7 +55,11 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     platform_seed = customer / 'src/runa/database/seeders/DatabaseSeeder.php'
     platform_seed.write_text("<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.deploy_reference')->upsert([['code'=>'baseline','label'=>'first-reference']], ['code'], ['label']); } }\n")
     platform_manifest = customer / 'src/runa/platform.json'
-    identity = json.loads(platform_manifest.read_text()); identity['version'] = '0.3.0'; platform_manifest.write_text(json.dumps(identity) + '\n')
+    # Derive a newer compatible platform target from the installed baseline.
+    current_version = json.loads((prod / 'src/runa/platform.json').read_text())['version']
+    major, minor, patch = map(int, current_version.split('.'))
+    target_version = f'{major}.{minor}.{patch + 1}'
+    identity = json.loads(platform_manifest.read_text()); identity['version'] = target_version; platform_manifest.write_text(json.dumps(identity) + '\n')
     (customer / 'VERSION').write_text('customer-controlled-scaffold\n')
     definitions = customer / 'compose.production.yaml'
     data = json.loads(definitions.read_text())
@@ -101,7 +105,7 @@ final class DatabaseSeeder extends Seeder {
     execute()
     check(deployment()['current']['sha'] == first and sql('SELECT string_agg(label,\',\' ORDER BY id) FROM deploy_probe.records') == 'first', 'default main builds customer code, runs application migration and only its explicit DatabaseSeeder')
     check(deployment()['current']['application_version'] == '7.4.2'
-          and deployment()['current']['version'] == '0.3.0',
+          and deployment()['current']['version'] == target_version,
           'deployment records independent customer and platform versions without rewriting either manifest')
     check(output(['docker', 'exec', project + '-nginx-1', 'wget', '-qO-', 'http://127.0.0.1:8080/api/deploy-probe']) == '{"count":1}', 'running production HTTP serves the customer code/data transition')
     execute()
@@ -153,7 +157,11 @@ final class DatabaseSeeder extends Seeder {
     recover_fixture()
     call(['git', '-C', str(customer), 'checkout', '-B', 'bad-health', second])
     seed.write_text(seed_template.replace('LABEL', 'health-failure').replace('EXTRA', ''))
-    route.write_text(route.read_text().replace("Route::get('/', SpaController::class)", "Route::get('/', fn () => abort(503))"))
+    # Break the actual source-owned root route; fail if fixture wiring drifts.
+    root_route = "Route::get('/', WelcomePageController::class)"
+    route_source = route.read_text()
+    check(route_source.count(root_route) == 1, 'health fixture targets exactly one current root route')
+    route.write_text(route_source.replace(root_route, "Route::get('/', fn () => abort(503))"))
     commit(customer)
     execute('bad-health', success=False)
     assert_fenced('restart-and-health')

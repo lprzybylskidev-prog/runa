@@ -13,9 +13,10 @@ final readonly class ModuleManagement
      * @param  array<string, ManagementPermission>  $permissions
      * @param  array<string, ManagementAction>  $actions
      * @param  array<string, ManagementComponent>  $components
+     * @param  array<string, ManagementEntity>  $entities
      * @param  list<string>  $diagnostics
      */
-    public function __construct(public string $moduleId, public int $generation, public ModuleStatus $status, public array $metadata, public ?array $settings, public array $integrations, public array $activeWork, public bool $workTruncated, public array $permissions, public array $actions, public array $components, public array $diagnostics)
+    public function __construct(public string $moduleId, public int $generation, public ModuleStatus $status, public array $metadata, public ?array $settings, public array $integrations, public array $activeWork, public bool $workTruncated, public array $permissions, public array $actions, public array $components, public array $diagnostics, public array $entities = [])
     {
         $this->schemaVersion = 1;
     }

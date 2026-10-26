@@ -1,11 +1,21 @@
 <script setup lang="ts" generic="Row">
-import { computed, toRef, useSlots, ref, watch, nextTick, useId } from 'vue';
+import {
+  computed,
+  toRef,
+  useSlots,
+  ref,
+  watch,
+  nextTick,
+  useId,
+  onScopeDispose,
+} from 'vue';
 import AppButton from './AppButton.vue';
 import AppTextInput from './AppTextInput.vue';
 import AppSelect from './AppSelect.vue';
 import AppCheckbox from './AppCheckbox.vue';
 import AppPagination from './AppPagination.vue';
 import AppAsyncContent from './AppAsyncContent.vue';
+import AppSpinner from './AppSpinner.vue';
 import type { RowSelection } from '../runa/ui/exports';
 import {
   selectionContains,
@@ -21,6 +31,7 @@ const feedbackId = `table-feedback-${useId()}`;
 const props = withDefaults(
   defineProps<{
     mode: 'client' | 'server';
+    loading?: boolean;
     rows?: readonly Row[];
     provider?: TableProvider<Row> | undefined;
     columns: readonly TableColumn<Row>[];
@@ -36,6 +47,7 @@ const props = withDefaults(
     pageSizes?: readonly number[];
   }>(),
   {
+    loading: false,
     columnState: undefined,
     rows: () => [],
     provider: undefined,
@@ -66,12 +78,59 @@ const source = () =>
             throw new Error('Server table requires a provider.');
           }),
       };
-const { page, state, loading, reload } = useTable(
-  source,
-  () => props.columns,
-  toRef(props, 'query'),
+const {
+  page,
+  state: sourceState,
+  loading: sourceLoading,
+  reload,
+} = useTable(source, () => props.columns, toRef(props, 'query'));
+// Local calculations can finish within one tick. Keep their feedback paintable
+// without delaying processing, issuing requests or changing the controlled query.
+const queryFeedback = ref(false);
+let focusedColumn: string | undefined;
+let feedbackTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+watch(
+  () =>
+    JSON.stringify([
+      props.query.page,
+      props.query.perPage,
+      tableQueryIdentity(props.query),
+    ]),
+  () => {
+    const active = document.activeElement;
+    if (
+      active instanceof globalThis.HTMLElement &&
+      tableElement.value?.contains(active)
+    )
+      focusedColumn = active.closest<globalThis.HTMLElement>(
+        'th[data-column-key]',
+      )?.dataset.columnKey;
+    globalThis.clearTimeout(feedbackTimer);
+    queryFeedback.value = true;
+    feedbackTimer = globalThis.setTimeout(() => {
+      queryFeedback.value = false;
+    }, 140);
+  },
 );
+onScopeDispose(() => globalThis.clearTimeout(feedbackTimer));
+const loading = computed(
+  () => props.loading || sourceLoading.value || queryFeedback.value,
+);
+const state = computed(() => (loading.value ? 'loading' : sourceState.value));
 const tableElement = ref<globalThis.HTMLTableElement>();
+watch(state, async (value) => {
+  if (value === 'loading' || !focusedColumn) return;
+  const key = focusedColumn;
+  focusedColumn = undefined;
+  await nextTick();
+  if (document.activeElement !== document.body) return;
+  const header = [
+    ...(tableElement.value?.querySelectorAll<globalThis.HTMLElement>(
+      'th[data-column-key]',
+    ) ?? []),
+  ].find((cell) => cell.dataset.columnKey === key);
+  header?.querySelector<globalThis.HTMLButtonElement>('button')?.focus();
+});
 let previousWidths = '';
 function measureColumns() {
   if (!tableElement.value) return;
@@ -284,7 +343,16 @@ function changePage(value: number) {
         :empty-title="text('Brak wyników', 'No results')"
         :retry-label="text('Spróbuj ponownie', 'Retry')"
         @retry="reload"
-      />
+      >
+        <template #loading>
+          <div
+            class="flex min-h-32 items-center justify-center py-6 text-muted"
+            data-table-loading
+          >
+            <AppSpinner :label="text('Ładowanie danych', 'Loading data')" />
+          </div>
+        </template>
+      </AppAsyncContent>
     </div>
     <div
       v-else
@@ -351,7 +419,7 @@ function changePage(value: number) {
             >
               <AppButton
                 v-if="
-                  column.sortable &&
+                  column.sortable !== false &&
                   page?.capabilities.sort.includes(column.key)
                 "
                 variant="ghost"

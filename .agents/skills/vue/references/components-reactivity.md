@@ -40,3 +40,19 @@
 ## Module component skeletons
 
 `runa:make:module owner.code component ComponentName` previews an unregistered `resources/js/ComponentName.vue` with TypeScript script setup and a static slot wrapper. Use the existing component catalogue when implementing it; add owned frontend/slot declarations separately and verify rendered states. Generation supplies no page registration, styling or visual acceptance. See docs/runa/handbook/development/modules.md.
+
+## Replaceable platform presentation
+
+Every Runa/module view must support the public [frontend adoption
+contract](../../../../docs/runa/handbook/development/frontend/customization.md).
+Keep props/slots/controller boundaries typed and document lifetime, identity/page
+keys and disposal. Presentation providers stay subtree-scoped; omitted components
+retain defaults. Application composition uses public facades and owns its files.
+Static native/emergency error components must also work without browser globals,
+network or session state. Test actual custom consumers in owner fixtures.
+
+Separate initial document/UI application of persisted preferences from persistence.
+Mounting a locale/theme consumer while account hydration is pending must not write
+defaults or manufacture save failures. Apply initial display once, subscribe to
+hydration without echo writes, and persist subsequent deliberate changes. Keep
+actual rejected-write feedback and account-switch/late-response fencing intact.

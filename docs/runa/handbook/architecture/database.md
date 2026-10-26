@@ -23,7 +23,9 @@ Shared/global technical or application tables use the `shared` schema.
 
 Laravel technical tables such as migrations, jobs, batches, failed jobs, and cache tables belong in `shared`.
 
-Password reset data belongs with authentication once that module exists.
+Auth also owns immutable policy versions, bounded versioned account exceptions, hashed operator setup/recovery tokens, an initialization singleton and a pending-recovery account blocker; see [policy/operator storage and transactions](../modules/auth/policies-and-operators.md). Auth owns typed/versioned account preference rows, shared optimistic preference revisions, category routing preferences and reference-only security-notice outbox/frequency/browser/reminder cursor storage; see [preferences and delivery](../modules/auth/preferences.md). Auth additionally owns verified secondary-address identities, pending primary-address requests/private mail and tracked private avatar cleanup candidates under the [profile contract](../modules/auth/profile.md). Auth owns runa_auth identity/lifecycle, single-use invitation/verification tokens, operational sessions, revocable trust metadata and privacy-preserving login windows. Credential storage additionally owns private password-history hashes, encrypted TOTP enrollment and replay counters, hashed recovery codes, session-bound email OTP and step-up proofs. Reset/trust issuance is delivered through the [credential contract](../modules/auth/security.md); see also the [session storage contract](../modules/auth/sessions.md). Entry tokens have same-module RESTRICT user references and UTC deadlines; pending private delivery secrets are encrypted, equality proofs are hashed. See the [transport contract](../modules/auth/transport.md). Normalized email/login ownership uses nullable unique claims, retained on deletion by default. See the [Auth identity contract](../modules/auth/README.md) for explicit release/reuse, atomic restore conflicts and UUIDv7 history preservation; do not infer identifier ownership from validation alone.
+
+Permissions owns five-field role/permission/preset dictionaries, monotonic per-user assignment revisions and same-module RESTRICT assignment/template pivots in runa_permissions. Foreign Auth subjects are UUIDv7 references only; declaration synchronization and business writes require atomic Audit. See the [Permissions contract](../modules/permissions/README.md).
 
 Models use schema-qualified `$table` values. Migrations create/use explicit schemas. Do not rely on a magical `search_path`.
 
@@ -289,3 +291,11 @@ The protected `shared.modules` row retains encrypted operational settings and a 
 ## Module slot ordering
 
 The existing protected `shared.module_registry_state` singleton stores bounded JSON-object `slot_order` metadata; no application domain table or additional public management entity is introduced. Trusted order writes use its row lock and expected generation, then increment generation atomically. Missing/disabled/unregistered contribution IDs remain inactive and retain compatible restoration order. Only explicit reset or an incompatible migration prunes them. Native application wipes preserve the platform row and its metadata. See [module frontend contracts](module-framework.md#delivered-frontend-pages-and-named-slots).
+
+Auth and Permissions each retain an owned `development_fixtures` table with bigint
+identity, unique scenario key, UUIDv7 subject reference and UTC creation moment.
+It is technical provenance, with no cross-module FK or independent business API.
+Forward migrations create only empty storage in every environment. Explicit guarded
+local fixture contracts atomically fill it with the owned business writes and Audit;
+production initialization and ordinary startup never create fixture data. See the
+[development corpus](../data/seeding.md#explicit-module-development-contributors).

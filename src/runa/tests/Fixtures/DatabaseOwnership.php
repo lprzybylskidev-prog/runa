@@ -13,6 +13,10 @@ final class DatabaseOwnership
 
     public function __construct()
     {
+        $identity = DB::selectOne('SELECT current_database() AS name, session_user AS role');
+        if ($identity?->role !== 'runa_test' || preg_match('/\Aruna_test_test_[1-9][0-9]{0,4}\z/D', $identity?->name ?? '') !== 1) {
+            throw new RuntimeException('Destructive ownership acceptance requires a disposable worker; use test-backend --parallel.');
+        }
         $this->root = sys_get_temp_dir().'/runa-db-ownership-'.bin2hex(random_bytes(6));
         foreach (['app/database/migrations', 'app/database/seeders/Production', 'runa/database/migrations', 'runa/database/seeders'] as $directory) {
             mkdir($this->root.'/'.$directory, 0775, true);

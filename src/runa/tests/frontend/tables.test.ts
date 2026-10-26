@@ -8,6 +8,7 @@ import {
   createApiTableProvider,
   type TableColumn,
   type TablePage,
+  type TableProvider,
   type TableQuery,
 } from '../../resources/js/runa/ui';
 const rows = [
@@ -140,7 +141,7 @@ it('renders semantic sorting, row selection and empty recovery', async () => {
     query: { ...query(), filters: { name: 'Missing' } },
   });
   await flushPromises();
-  expect(wrapper.text()).toContain('Brak wyników');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Brak wyników'));
   wrapper.unmount();
 });
 it('recovers from provider failures and uses hasNext with uncertain counts', async () => {
@@ -264,4 +265,180 @@ it('passes global search as an encoded backend filter and allows disabling it', 
       window.location.origin,
     ).searchParams.has('filter[search]'),
   ).toBe(false);
+});
+
+it('sorting defaults support numeric ordering, opt-out and the controlled three-state cycle', async () => {
+  const defaults: TableColumn<Row>[] = [
+    { key: 'name', label: 'Name', value: (row) => row.name },
+    { key: 'count', label: 'Count', value: (row) => row.count },
+    {
+      key: 'disabled',
+      label: 'Disabled',
+      value: (row) => row.name,
+      sortable: false,
+    },
+  ];
+  expect(
+    clientTablePage(rows, defaults, {
+      ...query(),
+      sort: { key: 'count', direction: 'asc' },
+    }).rows[0]?.public_id,
+  ).toBe('b');
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'client',
+      rows,
+      columns: defaults,
+      rowKey: (row) => row.public_id,
+      query: { ...query(), perPage: 10 },
+      caption: 'Default sorting',
+    },
+    attachTo: document.body,
+  });
+  try {
+    await flushPromises();
+    expect(wrapper.findAll('thead button')).toHaveLength(2);
+    const header = () => wrapper.get('th[data-column-key="count"]');
+    for (const [direction, first] of [
+      ['asc', 'Alpha'],
+      ['desc', 'Beta'],
+      [null, 'Beta'],
+    ] as const) {
+      await header().get('button').trigger('click');
+      const emitted = wrapper.emitted('update:query')!.at(-1)![0] as TableQuery;
+      expect(emitted.sort).toEqual(
+        direction ? { key: 'count', direction } : null,
+      );
+      expect(emitted.page).toBe(1);
+      await wrapper.setProps({ query: emitted });
+      await flushPromises();
+      await vi.waitFor(() =>
+        expect(wrapper.get('tbody tr').text()).toContain(first),
+      );
+      expect(header().attributes('aria-sort')).toBe(
+        direction === 'asc'
+          ? 'ascending'
+          : direction === 'desc'
+            ? 'descending'
+            : undefined,
+      );
+    }
+    expect(
+      wrapper.get('th[data-column-key="disabled"]').find('button').exists(),
+    ).toBe(false);
+  } finally {
+    wrapper.unmount();
+  }
+});
+
+it('sorting defaults keep server capability restrictions and forward supported queries', async () => {
+  const defaults = columns.map((column) => {
+    const copy = { ...column };
+    delete copy.sortable;
+    return copy;
+  });
+  const provider = vi.fn<TableProvider<Row>>(async () => ({
+    ...clientTablePage(rows, defaults, { ...query(), perPage: 10 }),
+    capabilities: { sort: ['name'], filter: [], maxPerPage: 100 },
+  }));
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'server',
+      provider,
+      columns: defaults,
+      rowKey: (row) => row.public_id,
+      query: query(),
+      caption: 'Server sorting',
+    },
+  });
+  try {
+    await flushPromises();
+    expect(
+      wrapper.get('th[data-column-key="count"]').find('button').exists(),
+    ).toBe(false);
+    await wrapper.get('th[data-column-key="name"] button').trigger('click');
+    const next = wrapper.emitted('update:query')!.at(-1)![0] as TableQuery;
+    await wrapper.setProps({ query: next });
+    await flushPromises();
+    expect(provider.mock.calls.at(-1)?.[0]).toMatchObject({
+      sort: { key: 'name', direction: 'asc' },
+    });
+  } finally {
+    wrapper.unmount();
+  }
+});
+
+it('shows one centered spinner for pagination, page size, sorting, search and filters in client and server tables', async () => {
+  for (const mode of ['client', 'server'] as const) {
+    const provider = vi.fn(async (value: TableQuery) =>
+      clientTablePage(rows, columns, value),
+    );
+    const wrapper = mount(Table<Row>, {
+      props: {
+        mode,
+        rows,
+        provider,
+        columns,
+        rowKey: (row) => row.public_id,
+        query: query(),
+        caption: 'Projects',
+      },
+    });
+    await flushPromises();
+    const changes: TableQuery[] = [
+      { ...query(), page: 2 },
+      { ...query(), perPage: 2 },
+      { ...query(), sort: { key: 'name', direction: 'asc' } },
+      { ...query(), search: 'Alpha' },
+      { ...query(), filters: { name: 'Missing' } },
+    ];
+    for (const value of changes) {
+      await wrapper.setProps({ query: value });
+      await flushPromises();
+      expect(wrapper.findAll('[data-table-loading]')).toHaveLength(1);
+      expect(wrapper.get('[data-table-loading]').text()).toBe('');
+      expect(
+        wrapper.find('[data-table-loading] [role="status"]').exists(),
+      ).toBe(true);
+      expect(wrapper.text()).not.toContain('Brak wyników');
+      await vi.waitFor(() =>
+        expect(wrapper.find('[data-table-loading]').exists()).toBe(false),
+      );
+    }
+    expect(wrapper.text()).toContain('Brak wyników');
+    if (mode === 'server')
+      expect(provider).toHaveBeenCalledTimes(changes.length + 1);
+    wrapper.unmount();
+  }
+});
+
+it('keeps query feedback continuous through rapid changes and a slower provider response', async () => {
+  let resolve!: (value: TablePage<Row>) => void;
+  const provider = vi.fn(
+    () => new Promise<TablePage<Row>>((done) => (resolve = done)),
+  );
+  const wrapper = mount(Table<Row>, {
+    props: {
+      mode: 'server',
+      provider,
+      columns,
+      rowKey: (row) => row.public_id,
+      query: query(),
+      caption: 'Projects',
+    },
+  });
+  resolve(clientTablePage(rows, columns, query()));
+  await flushPromises();
+  await wrapper.setProps({ query: { ...query(), page: 2 } });
+  await wrapper.setProps({ query: { ...query(), filters: { name: 'Alpha' } } });
+  const indicator = wrapper.get('[data-table-loading]').element;
+  await new Promise((done) => setTimeout(done, 180));
+  expect(wrapper.get('[data-table-loading]').element).toBe(indicator);
+  resolve(
+    clientTablePage(rows, columns, { ...query(), filters: { name: 'Alpha' } }),
+  );
+  await flushPromises();
+  expect(wrapper.find('[data-table-loading]').exists()).toBe(false);
+  expect(wrapper.text()).toContain('Alpha');
+  wrapper.unmount();
 });

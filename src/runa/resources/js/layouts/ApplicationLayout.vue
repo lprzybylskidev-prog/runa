@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
+import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
+import { accountPreferences } from '../lib/preferenceStore';
 import { lockDocumentScroll } from '../lib/scrollLock';
 import {
   computed,
@@ -10,6 +13,7 @@ import {
   watch,
 } from 'vue';
 import AppButton from '../components/AppButton.vue';
+import AppAvatar from '../components/AppAvatar.vue';
 import AppPopover from '../components/AppPopover.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
@@ -36,9 +40,12 @@ const props = withDefaults(
     topbar?: boolean;
     width?: 'contained' | 'fluid';
     footer?: FooterOptions | undefined;
+    homeHref?: string;
     preferenceStore?: PreferenceStore | undefined;
     userName?: string;
     userInitials?: string;
+    userAvatar?: string;
+    userLoading?: boolean;
   }>(),
   {
     current: undefined,
@@ -48,9 +55,12 @@ const props = withDefaults(
     topbar: true,
     width: 'contained',
     footer: undefined,
+    homeHref: '/',
     preferenceStore: undefined,
     userName: 'Runa',
     userInitials: 'RU',
+    userAvatar: '',
+    userLoading: false,
   },
 );
 const emit = defineEmits<{
@@ -58,6 +68,12 @@ const emit = defineEmits<{
   localeChange: [locale: Locale];
 }>();
 const identity = useIdentity();
+const brandName = computed(() =>
+  identity.value.applicationId === 'runa' &&
+  identity.value.applicationName === 'Runa'
+    ? 'runa'
+    : identity.value.applicationName,
+);
 const {
   locale,
   t,
@@ -71,6 +87,11 @@ const {
   finishPreferenceChange,
 } = useDisplayPreferences();
 watch(locale, (value) => emit('localeChange', value), { immediate: true });
+watch(
+  () => identity.value.applicationId,
+  (app) => accountPreferences.setApplication(app),
+  { immediate: true },
+);
 const scope = {
   applicationId: identity.value.applicationId,
   moduleKey: 'shell',
@@ -242,6 +263,7 @@ watch(
   },
 );
 onMounted(() => {
+  initializePreferenceSession();
   document.addEventListener('keydown', keydown);
 });
 const media = window.matchMedia('(max-width: 63.999rem)');
@@ -292,7 +314,11 @@ onScopeDispose(() => {
       :inert="mobile && !drawer"
     >
       <div class="shell-brand-row">
-        <a href="/" class="shell-brand" :aria-label="identity.applicationName">
+        <a
+          :href="homeHref"
+          class="shell-brand"
+          :aria-label="identity.applicationName"
+        >
           <span class="brand-mark">
             <img
               v-if="identity.logo && !logoFailed"
@@ -304,7 +330,7 @@ onScopeDispose(() => {
             <RunaLogo v-else />
           </span>
           <span v-if="!sidebarCollapsed"
-            >{{ identity.applicationName
+            >{{ brandName
             }}<span class="text-primary" aria-hidden="true">.</span></span
           >
         </a>
@@ -370,9 +396,9 @@ onScopeDispose(() => {
               ><span /><span /><span
             /></span>
           </AppButton>
-          <a v-if="!sidebar" href="/" class="shell-brand"
+          <a v-if="!sidebar" :href="homeHref" class="shell-brand"
             ><span class="brand-mark"><RunaLogo /></span
-            ><span>{{ identity.applicationName }}</span></a
+            ><span>{{ brandName }}</span></a
           >
           <div
             v-if="topbar"
@@ -421,8 +447,12 @@ onScopeDispose(() => {
                 :aria-controls="panelId"
                 aria-haspopup="dialog"
                 @click="toggle"
-                >{{ userInitials }}</AppButton
-              >
+                ><AppAvatar
+                  :src="userAvatar"
+                  :loading="userLoading"
+                  :initials="userInitials"
+                  :size="40"
+              /></AppButton>
             </template>
             <div class="shell-profile-panel">
               <slot name="user-menu" :t="t"
@@ -436,7 +466,11 @@ onScopeDispose(() => {
         </div>
       </header>
       <main :id="contentId" tabindex="-1" class="shell-workspace">
-        <header class="shell-heading">
+        <AppPreferenceFeedback :locale="locale" />
+        <header
+          v-if="title || $slots.heading || $slots.actions"
+          class="shell-heading"
+        >
           <div>
             <slot name="heading" :t="t"
               ><h1>{{ title }}</h1>

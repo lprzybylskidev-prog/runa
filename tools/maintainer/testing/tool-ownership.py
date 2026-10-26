@@ -64,11 +64,13 @@ class ToolOwnership(unittest.TestCase):
         import owner_tests
         with tempfile.TemporaryDirectory() as folder, patch.object(owner_tests, 'ROOT', Path(folder)):
             for suite, option, config in (('backend', '--configuration=', 'phpunit.xml'), ('frontend', '--config=', 'vitest.config.mjs'), ('e2e', '--config=', 'playwright.config.mjs')):
-                with self.subTest(suite=suite), patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)) as run:
+                with self.subTest(suite=suite), patch.object(owner_tests, 'worker_cleanup', return_value=0), patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)), patch.object(subprocess, 'Popen') as launch:
+                    launch.return_value.__enter__.return_value.wait.return_value = 0
                     self.assertEqual(owner_tests.execute(suite, []), 0)
-                    self.assertIn(option + 'runa/tests/' + config, run.call_args_list[-1].args[0])
+                    self.assertIn(option + 'runa/tests/' + config, launch.call_args.args[0])
+                    self.assertTrue(launch.call_args.kwargs['start_new_session'])
                     if suite == 'backend':
-                        self.assertIn('--test-directory=runa/tests', run.call_args_list[-1].args[0])
+                        self.assertIn('--test-directory=runa/tests', launch.call_args.args[0])
 
     def test_customer_quality_does_not_require_a_runa_roadmap_or_maintainer_files(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(quality, 'ROOT', Path(folder)), patch.object(quality, 'yaml', return_value={'base': [], 'impact_areas': {}, 'final': []}) as yaml:

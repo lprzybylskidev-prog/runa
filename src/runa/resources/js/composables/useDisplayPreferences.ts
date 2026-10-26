@@ -36,6 +36,7 @@ export function useDisplayPreferences(staticPreferences?: {
   const changingPreference = ref(false);
   const coverVisible = ref(false);
   let pendingPreference: 'language' | 'theme' | undefined;
+  let pendingValue: Locale | Theme | undefined;
   let trigger: globalThis.HTMLElement | undefined;
   let frame = 0;
   let revealTimer: ReturnType<typeof window.setTimeout> | undefined;
@@ -47,21 +48,40 @@ export function useDisplayPreferences(staticPreferences?: {
       window.clearTimeout(revealTimer);
     }
   });
-  function changePreference(preference: 'language' | 'theme', event: Event) {
-    if (changingPreference.value) return;
-    trigger =
-      event.currentTarget instanceof window.HTMLElement
-        ? event.currentTarget
-        : undefined;
+  function selectPreference(
+    preference: 'language' | 'theme',
+    value: string,
+    origin?: globalThis.HTMLElement,
+  ) {
+    const valid =
+      preference === 'language' ? ['pl', 'en'] : ['system', 'light', 'dark'];
+    const current = preference === 'language' ? locale.value : theme.value;
+    if (changingPreference.value || !valid.includes(value) || current === value)
+      return;
+    trigger = origin;
     pendingPreference = preference;
+    pendingValue = value as Locale | Theme;
     changingPreference.value = true;
     coverVisible.value = true;
   }
+  function changePreference(preference: 'language' | 'theme', event: Event) {
+    selectPreference(
+      preference,
+      preference === 'language'
+        ? locale.value === 'pl'
+          ? 'en'
+          : 'pl'
+        : nextTheme.value,
+      event.currentTarget instanceof window.HTMLElement
+        ? event.currentTarget
+        : undefined,
+    );
+  }
   async function applyPreference() {
-    if (pendingPreference === 'language')
-      locale.value = locale.value === 'pl' ? 'en' : 'pl';
-    else if (pendingPreference === 'theme') theme.value = nextTheme.value;
+    if (pendingPreference === 'language') locale.value = pendingValue as Locale;
+    else if (pendingPreference === 'theme') theme.value = pendingValue as Theme;
     pendingPreference = undefined;
+    pendingValue = undefined;
     await nextTick();
     // Keep the opaque cover through a paint of the newly selected theme/locale.
     if (disposed) return;
@@ -88,6 +108,7 @@ export function useDisplayPreferences(staticPreferences?: {
     changingPreference,
     coverVisible,
     changePreference,
+    selectPreference,
     applyPreference,
     finishPreferenceChange,
   };

@@ -1,10 +1,18 @@
 version: 1
 items:
   - id: MT-2026-001
-    description: Replace the exact accepted PostgreSQL/gosu artifact when a corrected official image is available; reassess unchanged findings by 2026-11-20.
-    source: docs/runa/maintainer/security/RM-2026-008-gosu-assessment.md
+    description: Retire temporary downstream PostgreSQL packaging after a corrected official image is verified; current derivative removes the vulnerable gosu and library artifacts.
+    source: docs/runa/handbook/security/postgres-gosu-policy.md
     priority: high
     created_at: 2026-10-21
-    status: open
+    status: planned
     roadmap: RM-2026-008
-    closure_condition: Verified corrected official artifact, fresh reachability/scans and compatibility tests replace pending-upstream acceptance in a future maintenance roadmap.
+    closure_condition: Adopt an exact official image with corrected libraries and helper toolchain after compatibility and strict security verification; remove the downstream Dockerfile/Go stage, pins, Compose build wiring and unused dedicated support while preserving ordinary tests and historical evidence.
+  - id: MT-2026-002
+    description: Publish the strictly verified PHP 8.4.27 and corrected Alpine runtime in the pending platform release; all exception code and policies are removed.
+    source: docs/runa/maintainer/security/RM-2026-011-runtime-remediation.md
+    priority: high
+    created_at: 2026-10-25
+    status: planned
+    roadmap: RM-2026-011
+    closure_condition: Adopt stable patched PHP and Brotli artifacts, receive compatibility/security verification, remove the documented exception code/policies/flags and dedicated tests, and synchronize current guidance while preserving historical evidence.

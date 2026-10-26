@@ -15,7 +15,7 @@ it('renders independently with optional regions and a translator-compatible defa
   const layout = mount(MinimalLayout, {
     slots: { default: ({ t }) => h('h1', t('title')), actions: 'Actions' },
   });
-  expect(layout.get('main h1').text()).toBe('Runa');
+  expect(layout.get('main h1').text()).toBe('.runa');
   expect(layout.get('main').attributes('tabindex')).toBe('-1');
   expect(layout.get('.skip-link').attributes('href')).toBe('#main');
   expect(layout.find('.lg\\:grid-cols-2').exists()).toBe(true);

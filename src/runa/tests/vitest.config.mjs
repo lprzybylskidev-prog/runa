@@ -25,7 +25,7 @@ export default defineConfig({
   },
   test: {
     include: ['runa/tests/frontend/**/*.test.ts'],
-    attachmentsDir: '../artifacts/playwright/runa/vitest',
+    attachmentsDir: '../.runtime/artifacts/playwright/runa/vitest',
     restoreMocks: true,
     browser: {
       enabled: true,

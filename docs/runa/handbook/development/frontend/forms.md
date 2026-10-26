@@ -1,8 +1,19 @@
 # Form Patterns
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. There are no business forms or backend write endpoints yet. Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
+
+When several Cards have independent forms, keep their drafts, validation and submit
+boundaries separate. Keep submit actions visually attached to their fields: use
+spacing without a horizontal separator above the actions. Reserve separators for
+independent sections or operations. The shared Form actions slot supplies this
+default for account, Preferences and other forms. For two columns with uneven card heights, use independent
+column stacks so unrelated card height does not create gaps. Present individual
+security methods with status and explicit setup/disable actions; show only the
+selected operation's proof fields and named submit. Confirm destructive removal
+through shared ConfirmDialog, preserve data on Cancel and report the outcome once
+through FormNotifications.
 
 Form always uses novalidate, prevents native navigation and blocks submission when busy or valid=false. Busy disables the contained fieldset, including actions. Props also provide dirty metadata, accessible label, description and 1/2/3 responsive columns. Slots are default fields, feedback and actions. It emits submit(SubmitEvent) or invalid. After synchronous validation it focuses the first aria-invalid control. Exposed focusInvalid() focuses that control or the feedback wrapper for async failures; call after nextTick when applying server errors.
 
@@ -22,7 +33,7 @@ useForm accepts finite JSON form data only (no Date/File/classes/cycles/nonfinit
 
 submit(action, validate?) validates first, blocks known errors/concurrent submissions, passes an isolated snapshot and holds busy until settlement. Success marks only that submitted snapshot clean, so programmatic edits during the request remain dirty. clearErrors(name?) and setError(name, messages) support feature-owned immediate validation. Validators should return fresh FieldErrors; preserve backend authority. No domain constraints are embedded in primitives.
 
-ApiError 422 maps validated string-array errors using exact Laravel dot keys; 409 sets failure=conflict, and other errors set unexpected. Input/baselines survive failures. A screen must display operation-wide errors as well as inline messages, focus the relevant error and offer explicit conflict comparison/reload/retry. Never silently overwrite a draft on 409 or invent a successful retry. reset(serverSnapshot) is the deliberate reload seam; optimistic-lock tokens and server reconciliation remain owned by the feature. The catalog demonstrates local fixtures only, including a newer sample snapshot.
+ApiError 422 maps validated string-array errors using exact Laravel dot keys; 409 sets failure=conflict, and other errors set unexpected. Input/baselines survive failures. A screen must display operation-wide errors as well as inline messages and focus the relevant error. Follow automatic read reconciliation below instead of asking users to reload the page or reinitialize an edited form. Never silently overwrite a draft on 409 or invent a successful retry. reset(serverSnapshot) deliberately discards/replaces a draft; optimistic-lock tokens and reconciliation remain owned by the feature. The catalog demonstrates local fixtures only, including a newer sample snapshot.
 
 Optional dirty guards, masks, cascading fields and wizards are available through the public facade; their contracts are below. No business write APIs or server drafts are introduced.
 
@@ -54,11 +65,44 @@ async function save() {
   <NumberInput v-model="values.amount" label="Kwota" kind="currency"
     :scale="2" locale="pl" unit="PLN" :error="errors.amount ?? []"
     invalid-message="Podaj poprawną kwotę." />
-  <template #actions><Button type="submit" :busy="busy">Zapisz</Button></template>
+  <template #actions><Button type="submit" variant="outline" :busy="busy">Zapisz</Button></template>
 </Form>
 ```
 
 Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:autofill) documents UA-important background/text rules. The shared field paints its theme surface with an inset shadow and sets text-fill/caret colors while retaining the internal focus indicator; it does not attempt to replace browser-owned suggestion UI.
+
+## Automatic read reconciliation
+
+Current and future data views refresh authoritative reads in place after their own
+mutations, when returning to a visible view and when a stale write is rejected.
+Coalesce overlapping reads and refresh on navigation as appropriate. Reuse the
+feature controller and shared HTTP client; do not add unconditional polling or a
+whole-document reload. Failed reads may offer Retry loading; successful automatic
+refresh does not require a generic Reload current values action.
+
+Track confirmed server baselines separately from local drafts. Update clean
+fields/lists automatically and merge disjoint changes while retaining dirty
+fields, file selections and other editors. Compare the old baseline, incoming
+snapshot and current draft before advancing a lock token. Never assign a newer
+token alone to an unreconciled form. Shared aggregate revisions require a shared
+mutation queue across controls, including display and delivery preferences.
+
+Only overlapping changes require a local decision in the affected form: show
+current values and offer Use current values or Keep my edits. Neither action
+writes; the user explicitly submits after resolving. If a resource lacks enough
+field/version detail to prove disjointness, preserve the draft and require a
+conservative local review. A removed target cannot be retained as a valid edit.
+`FormConflict` supplies this shared presentation through the UI facade with
+`current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
+owns merging, resolution, token advancement and subsequent explicit submission.
+
+On HTTP 409, automatically fetch current data without replaying the write. Report
+that the rejected change was not saved; retain its draft. Cancel older queued
+mutation intents after a failed mutation rather than rebasing them implicitly.
+Fence late responses by account/view/request generation; cancel and unsubscribe
+on disposal/logout. Refresh must not steal focus, clear validation unnecessarily,
+reset unrelated forms or persist secrets. Sensitive submission/cancel/expiry cleanup
+and server authorization remain authoritative.
 
 ## Additional field values and incomplete drafts
 
@@ -84,6 +128,40 @@ useDirtyGuard({dirty,enabled?,confirmLeave}) registers beforeunload only while e
 
 useWizard accepts stable keyed steps, validate(key), submit() and optional disabled input. go/next validate intervening forward steps; previous/backward go preserve values without validation. finish revalidates all steps and stops at the earliest error before calling submit. Rejected/thrown validation or submit leaves a retryable failed state; busy prevents duplicate work and scope disposal prevents a later submit. Values/errors remain in the caller’s useForm; neither composable nor Wizard stores drafts. Wizard is a controlled view: pass steps/index/busy/failed and bind go/next/previous/finish; optional progress defaults on. It supplies accessible step/current semantics, busy fieldset, localized controls and active-heading/error focus. Call its exposed focusInvalid after nextTick when an already-failed validation changes messages without changing failed. The feature owns server writes, validation rules and error feedback.
 
-For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, restoring errors inline and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
+For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, reporting failures through FormNotifications inside the modal focus boundary and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
 
 TextInput/NumberInput/Select expose optional size=sm for compact table/filter/toolbars (36px, matching small Buttons); their default md form size stays 44px. Select popup controls/options follow its size. TextInput hideLabel forwards to FormField's associated visually hidden label, keeping compact inline width controls accessible without a visible repeated heading. Form fields keep validation semantics and browser autofill in either size; do not shrink whole ordinary forms merely to demonstrate the variant.
+
+Account reauthentication preserves only explicitly safe name/login fields in memory,
+bound to the same account. Offer explicit restoration/review; never replay a write.
+Clear credentials, codes and files, fence late responses, and refresh stale revisions
+or CSRF only through deliberate actions. See [account UI](../../modules/auth/account-ui.md).
+
+Form submit actions use Button variant="outline" by default, including Auth entry,
+account/security and preference-save forms; retain semantic tone for destructive
+operations and existing busy/disabled behavior. Solid fills are not the default
+submit hierarchy. Navigation beside forms uses public TextLink like welcome:
+muted text without a permanent underline, underline/color on hover, visible focus,
+44px touch targets and reduced-motion support. Active tab selection is separate.
+
+## Related settings in one editor
+
+Group related settings into one visible editing area rather than requiring task
+buttons to reveal ordinary fields. Compose existing Card headers/bodies and give
+independent operations their own Form and outlined submit. Keep each operation's
+credential draft, validation, focus target and cleanup scoped to its form. Use
+FormSection for field groups within a form, not as a substitute for a Card.
+Saving one operation must not submit or discard another operation's draft.
+
+Use shared FormNotifications for both successful operations and form-wide errors,
+only in the top-right viewport. Do not duplicate these outcomes above the form.
+Keep associated field errors beside controls. Failures stay until dismissed and
+include recovery buttons where needed; successful notifications expire. Bind
+error/success/invalid/locale and increment attempt on deliberate submits so repeated
+identical validation failures can be announced after dismissal. The component
+retains one current outcome and never retries writes itself. Preserve deliberate multi-step
+security and destructive confirmation. Where one form needs multiple endpoints,
+validate first, respect each proof/version, stop on failure and report partial
+success without replay. The [account editor](../../modules/auth/account-ui.md)
+supplies this pattern through its public controller; customer code does not copy
+orchestration.

@@ -26,6 +26,25 @@ withDefaults(
         d="M4 10a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"
       />
     </g>
+    <g v-if="name === 'clipboard-list'">
+      <path
+        d="M9 5H6a2 2 0 0 0 -2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7a2 2 0 0 0 -2 -2h-3"
+      />
+      <rect x="9" y="3" width="6" height="4" rx="1" />
+      <path d="M9 12h6M9 16h6" />
+    </g>
+    <g v-if="name === 'key'">
+      <circle cx="8" cy="8" r="5" />
+      <path d="m11.5 11.5 9.5 9.5M16 16l3 -3M19 19l3 -3" />
+    </g>
+    <g v-if="name === 'shield-lock'">
+      <path d="M12 3 4 6v6c0 5 8 9 8 9s8 -4 8 -9V6l-8 -3" />
+      <rect x="9" y="10" width="6" height="5" rx="1" />
+      <path d="M10 10V8a2 2 0 0 1 4 0v2" />
+    </g>
+    <g v-if="name === 'logout'">
+      <path d="M9 5H5v14h4M13 8l4 4-4 4M9 12h11" />
+    </g>
     <g v-if="name === 'sun'">
       <path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
       <path

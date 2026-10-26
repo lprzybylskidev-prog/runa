@@ -37,6 +37,13 @@ Do not disable framework escaping unless controlled/sanitized content explicitly
 
 Untrusted raw HTML is forbidden unless deliberate sanitization is part of the use case.
 
+Validate binary uploads with the format's MIME, size and structure boundaries.
+Do not scan compressed image pixels with source-code/markup regular expressions;
+ordinary binary bytes can resemble executable text. Keep format-aware metadata
+checks separate from pixel data, and do not claim a container check is a decoder
+or general sanitizer. Private image delivery retains fixed validated content type,
+nosniff and CSP; see [avatar storage](../modules/auth/profile.md#avatar-ownership-and-storage).
+
 ## SQL
 
 Use parameterized values/bindings for raw SQL.
@@ -80,7 +87,7 @@ Do not use an unvalidated Host header as the authority for sensitive absolute UR
 
 ## Authentication-sensitive behavior
 
-Exact authentication/authorization architecture is deferred to its future module, but secure defaults apply:
+Auth supplies [identity/entry transport](../modules/auth/transport.md) and [operational sessions/abuse defenses](../modules/auth/sessions.md). [Password/2FA security](../modules/auth/security.md) and [account/session UI](../modules/auth/account-ui.md) are delivered; [Permissions ordinary access management](../modules/permissions/access.md) and [protected authority](../modules/permissions/authority.md) require reviewed revisions, native grants, fresh both-factor proof and atomic Audit. The shared last-eligible-superadministrator invariant covers explicit role/account removal; trusted operator/bootstrap integration assigns the actual protected role once and supports recovery without ordinary account eligibility. Core source/data/fences and Audit remain required. Secure defaults apply:
 
 - avoid account-enumeration leaks in login/recovery flows where practical,
 - do not permanently lock an account based on a naive failed-login counter that enables denial-of-service,
@@ -325,10 +332,35 @@ Do not add automatically:
 
 A higher-risk roadmap may explicitly add deeper security work.
 
-## Supplied scanner disposition
+## Temporary compatibility and security exceptions
 
-The current exact-artifact PostgreSQL gosu disposition is delivered with the shared security scanner, together with [its public technical evidence](postgres-gosu-policy.md). It does not depend on owner maintenance reports. All original artifact/binary/finding/expiry binding checks remain mandatory, raw findings are retained, and changed or expired policy fails closed. Customer source never needs the owner's historical audit directory to run security checks.
+Every temporary tool/version rollback, compatibility workaround or accepted security
+finding requires explicit authorization, a narrowly defined scope, an owner,
+maintenance tracking, a review date and a concrete removal condition. Record the
+exception code, policies/flags, dedicated tests and current documentation that must
+be retired. A new incident needs its own assessed decision; an existing exception
+never automatically authorizes another one.
 
-The current PostgreSQL guidance distinguishes the original 25-finding shared decision from the changed 2026-10-21 scan and pending-upstream parser advisory. Owner-only accepted risk never automatically applies to customer production. See [current applicability and customer decisions](postgres-gosu-policy.md#current-pending-upstream-findings-and-customer-decisions).
+When a stable corrected replacement is available, adopt it through the applicable
+roadmap and verify compatibility plus fresh security results under the normal
+strict policy. Retire resolved exceptions independently as each component is
+corrected. Remove their bypass/tolerance code, policies, flags, exception-specific
+tests and obsolete current instructions in that same change. Remove shared
+temporary machinery when it has no remaining approved consumer. Do not leave
+an inactive bypass or obsolete regression fixture for a retired exception behind.
+
+Retain normal security checks and meaningful coverage of the restored strict
+behavior. Preserve immutable historical decisions and raw verification evidence;
+record the replacement, removal inventory and actual verification results before
+closing the maintenance item. This lifecycle applies to future exceptions too.
+
+## Strict runtime scanning
+
+The supplied PostgreSQL derivative uses corrected libraries and a gosu rebuild;
+see [PostgreSQL runtime security](postgres-gosu-policy.md). PHP uses the patched
+runtime shared by development and production. Retired PHP/gosu/Brotli risk
+acceptance code and policies are removed. Owner and customer scanners both retain
+raw reports and fail on all selected findings, operational errors and failed
+locked dependency audits. Dated assessments remain historical evidence only.
 
 Repository scans exclude generated root and src vendor/node_modules trees while retaining first-party source/configuration, Dockerfiles and the committed Composer/pnpm locks, including development dependencies. Excluding dependency implementation trees must not exclude the application or its lockfile audits.

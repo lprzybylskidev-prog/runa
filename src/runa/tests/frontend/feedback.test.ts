@@ -13,6 +13,8 @@ import {
   Tooltip,
   Popover,
   ToastViewport,
+  FormNotifications,
+  Dialog,
   useToasts,
 } from '../../resources/js/runa/ui';
 import AppToast from '../../resources/js/components/AppToast.vue';
@@ -78,6 +80,53 @@ it('dismisses rapid tooltip hover, permits pointer entry into content and honors
   await vi.advanceTimersByTimeAsync(100);
   await settle();
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
+});
+it('keeps Escape dismissal through duplicate pointer entry until the hover session ends', async () => {
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Theme' },
+    slots: { default: '<button>Theme</button>' },
+  });
+  const anchor = wrapper.get('.app-tooltip');
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await anchor.trigger('pointerleave');
+  await anchor.trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+});
+it('keeps Escape dismissal when the first pointer entry arrives during existing keyboard focus', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(Tooltip, {
+    attachTo: document.body,
+    props: { text: 'Theme' },
+    slots: { default: '<button>Theme</button>' },
+  });
+  const button = wrapper.get('button').element as HTMLButtonElement;
+  button.focus();
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+  );
+  await settle();
+  await wrapper.get('.app-tooltip').trigger('pointerenter');
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  await wrapper.get('.app-tooltip').trigger('pointerleave');
+  button.blur();
+  await vi.advanceTimersByTimeAsync(100);
+  button.focus();
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
 });
 it('hides clicked preference tooltips even when the trigger retains pointer focus', async () => {
   const wrapper = mount(Tooltip, {
@@ -326,4 +375,74 @@ it('renders a matching retry action in every AsyncContent error', () => {
   });
   expect(wrapper.get('button').attributes('data-tone')).toBe('danger');
   expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
+});
+
+it('shows one top-right form result, keeps failures persistent with recovery actions and leaves no inline duplicate', async () => {
+  const retry = vi.fn();
+  const wrapper = mount(FormNotifications, {
+    props: { success: 'Zapisano dane.' },
+    slots: { actions: () => h(Button, { onClick: retry }, () => 'Ponów') },
+  });
+  await settle();
+  expect(wrapper.text()).toBe('');
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+  expect(document.querySelector('.app-toast')?.textContent).toContain(
+    'Zapisano dane.',
+  );
+  await wrapper.setProps({ success: '', error: 'Nie zapisano danych.' });
+  await settle();
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1),
+  );
+  const toast = wrapper.getComponent(AppToast);
+  expect(toast.props('message').duration).toBe(0);
+  const retryButton = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((button) => button.textContent?.trim() === 'Ponów')!;
+  retryButton.click();
+  expect(retry).toHaveBeenCalledOnce();
+  await wrapper.setProps({ error: '', invalid: true });
+  await settle();
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1),
+  );
+  expect(document.querySelector('.app-toast')?.textContent).toContain(
+    'Sprawdź zaznaczone pola',
+  );
+  wrapper
+    .getComponent(AppToast)
+    .vm.$emit('close', wrapper.getComponent(AppToast).props('message').id);
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(0),
+  );
+  await wrapper.setProps({ attempt: 1 });
+  await settle();
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+});
+it('keeps modal form notifications and their recovery buttons inside the active modal focus boundary', async () => {
+  const wrapper = mount(Dialog, {
+    attachTo: document.body,
+    props: { modelValue: true, title: 'Test' },
+    slots: {
+      default: () =>
+        h(
+          FormNotifications,
+          { error: 'Błąd kadrowania' },
+          { actions: () => h(Button, {}, () => 'Ponów') },
+        ),
+    },
+  });
+  await settle();
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('.dialog-backdrop .app-toast'),
+    ).not.toBeNull(),
+  );
+  const button = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((value) => value.textContent?.trim() === 'Ponów')!;
+  button.focus();
+  expect(document.activeElement).toBe(button);
+  expect(button.closest('[inert]')).toBeNull();
+  await wrapper.setProps({ modelValue: false });
 });

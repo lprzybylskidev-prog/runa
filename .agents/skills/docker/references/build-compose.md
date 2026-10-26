@@ -43,4 +43,16 @@ Module builds copy the Vite discovery plugin and both owners' module roots into 
 34. One-shot init/migration jobs exit 0/non-zero clearly.
 35. Do not allow multiple app replicas/processes to race the same migration step; deploy has one controlled migration point.
 
-Customer container/devcontainer definitions are editable scaffold. External development updates review affected names separately from src/runa integrity, apply only exact approved eligible file replacements/removals and preserve customer instruction extensions for manual reconciliation. Use docs/runa/handbook/release/platform-reconciliation.md for target manifest/lock, env, image/recreation and team/deploy ordering. Generated build output stays outside src/runa; private error shells use src/.runtime/runa-errors, copied into production images outside persistent storage mounts.
+Customer container/devcontainer definitions are editable scaffold. External development updates review affected names separately from src/runa integrity, apply only exact approved eligible file replacements/removals and preserve customer instruction extensions for manual reconciliation. Use docs/runa/handbook/release/platform-reconciliation.md for target manifest/lock, env, image/recreation and team/deploy ordering. Generated build output stays outside src/runa; private error shells use .runtime/frontend/errors/templates, copied into production images outside persistent storage mounts.
+
+Use the single workspace-root .runtime tree for private generated build/tooling
+state; see [artifact placement](../../../../docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state). Resolve paths consistently
+from src and build stages. Keep only required generated runtime assets in explicit
+production copies; preserve unrelated caches/reports/backups/operation state.
+
+When reviewing security updates for compiled helper binaries, inspect their
+embedded compiler/standard-library and module versions as well as the helper
+release number. Build replacements from pinned, integrity-verified sources with
+patched toolchains when explicitly authorized; keep compilers out of runtime.
+Follow [PostgreSQL runtime security](../../../../docs/runa/handbook/security/postgres-gosu-policy.md)
+for the supplied image, preserving database data and the documented entrypoint.

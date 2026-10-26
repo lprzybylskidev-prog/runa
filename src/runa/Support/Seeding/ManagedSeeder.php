@@ -17,11 +17,11 @@ abstract class ManagedSeeder extends Seeder
 
     final public function run(): void
     {
-        if (static::category() === SeedCategory::Development && ! app()->environment('local', 'testing')) {
-            throw new RuntimeException('Development seeders require local or testing environment.');
+        if (static::category() === SeedCategory::Development) {
+            DevelopmentFixtures::assertAllowed();
         }
         $options = static::category() === SeedCategory::Development
-            ? config('seeding.development.'.class_basename(static::class), []) : [];
+            ? config('seeding.development.'.static::class, config('seeding.development.'.class_basename(static::class), [])) : [];
         if (! is_array($options)) {
             throw new RuntimeException('Seeder options must be an array.');
         }

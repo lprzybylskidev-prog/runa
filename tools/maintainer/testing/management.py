@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / 'tools/maintainer'))
 sys.path.insert(0, str(ROOT / 'distribution'))
 import management
 import operations
+import test_resources
 
 
 class ManagementContracts(unittest.TestCase):
@@ -203,6 +204,115 @@ class ManagementContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'timed out'):
                 management.launch(['list'])
             self.assertEqual(cleanup.call_args.args[0], ['docker', 'rm', '--force', 'runa-management-' + self.request])
+
+
+class TestResourceContracts(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.project = 'isolated-test'
+        self.run = 'b' * 32
+        self.labels = {'com.docker.compose.project': self.project,
+                       'com.docker.compose.project.working_dir': str(self.root),
+                       'com.docker.compose.service': 'app-test', test_resources.LABEL: self.run}
+
+    def test_cleanup_targets_only_run_labels_and_preserves_volumes(self):
+        calls = []
+        def read(command):
+            calls.append(command)
+            return 'owned-id\n' if command[1] == 'ps' else json.dumps(self.labels)
+        with patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=read), patch.object(test_resources.subprocess, 'run') as remove:
+            test_resources.cleanup({'project': self.project, 'run': self.run}, self.project)
+        self.assertIn('label=runa.testing.run=' + self.run, calls[0])
+        self.assertEqual([call.args[0] for call in remove.call_args_list], [
+            ['docker', 'stop', '-t', '10', 'owned-id'], ['docker', 'rm', 'owned-id']])
+
+    def test_uncertain_container_or_journal_ownership_prevents_all_removal(self):
+        for field, value in [('com.docker.compose.project', 'foreign'),
+                             ('com.docker.compose.project.working_dir', '/foreign'),
+                             ('com.docker.compose.service', 'postgres'),
+                             (test_resources.LABEL, 'foreign')]:
+            with self.subTest(field=field), patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=['owned-id\n', json.dumps(self.labels | {field: value})]), patch.object(test_resources.subprocess, 'run') as remove:
+                with self.assertRaisesRegex(ValueError, 'ownership'):
+                    test_resources.cleanup({'project': self.project, 'run': self.run}, self.project)
+                remove.assert_not_called()
+        with patch.object(test_resources, 'read') as read:
+            with self.assertRaisesRegex(ValueError, 'ownership'):
+                test_resources.cleanup({'project': 'foreign', 'run': self.run}, self.project)
+            read.assert_not_called()
+
+    def endpoint(self, existing=()):
+        def read(command):
+            if 'config' in command:
+                return json.dumps({'name': self.project})
+            if 'ps' in command:
+                return '\n'.join(existing)
+            return json.dumps(self.labels | {'com.docker.compose.service': command[-1]})
+        return read
+
+    def test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans(self):
+        with patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=self.endpoint(('app-test', 'nginx-test'))), patch('repository_boundary.assert_development_context'), patch.object(test_resources, 'cleanup') as cleanup, patch.object(test_resources.subprocess, 'run') as start:
+            with self.assertRaisesRegex(RuntimeError, 'test failure'):
+                with test_resources.endpoint():
+                    override = json.loads((self.root / '.runtime/tests/endpoint.compose.json').read_text())
+                    self.assertEqual(override, {'services': {}})
+                    self.assertIn('--no-recreate', start.call_args.args[0])
+                    raise RuntimeError('test failure')
+            cleanup.assert_called_once()
+            self.assertFalse((self.root / '.runtime/tests/endpoint.json').exists())
+
+    def test_partial_startup_failure_has_journal_before_creation_and_cleans(self):
+        def fail(command, **kwargs):
+            self.assertTrue((self.root / '.runtime/tests/endpoint.json').exists())
+            override = json.loads((self.root / '.runtime/tests/endpoint.compose.json').read_text())
+            self.assertEqual(set(override['services']), set(test_resources.SERVICES))
+            raise subprocess.CalledProcessError(1, command)
+        with patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=self.endpoint()), patch('repository_boundary.assert_development_context'), patch.object(test_resources, 'cleanup') as cleanup, patch.object(test_resources.subprocess, 'run', side_effect=fail):
+            with self.assertRaises(subprocess.CalledProcessError):
+                with test_resources.endpoint():
+                    self.fail('Cannot run against a failed endpoint')
+            cleanup.assert_called_once()
+
+    def test_interrupted_startup_retains_journal_and_next_run_recovers_it(self):
+        with patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=self.endpoint()), patch('repository_boundary.assert_development_context'), patch.object(test_resources, 'cleanup') as cleanup, patch.object(test_resources.subprocess, 'run', side_effect=KeyboardInterrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                with test_resources.endpoint():
+                    pass
+            old = json.loads((self.root / '.runtime/tests/endpoint.json').read_text())
+            self.assertEqual(cleanup.call_args.args[0], old)
+        with patch.object(test_resources, 'ROOT', self.root), patch.object(test_resources, 'read', side_effect=self.endpoint()), patch('repository_boundary.assert_development_context'), patch.object(test_resources, 'cleanup') as cleanup, patch.object(test_resources.subprocess, 'run'):
+            with test_resources.endpoint():
+                self.assertEqual(cleanup.call_args_list[0].args[0], old)
+            self.assertEqual(cleanup.call_count, 2)
+            self.assertFalse((self.root / '.runtime/tests/endpoint.json').exists())
+
+    def test_busy_suite_prevents_endpoint_startup_and_orphan_recovery(self):
+        import fcntl
+        directory = self.root / '.runtime/tests'
+        directory.mkdir(parents=True)
+        with (directory / 'suite.lock').open('a') as suite:
+            fcntl.flock(suite, fcntl.LOCK_EX)
+            with patch.object(test_resources, 'ROOT', self.root), patch('repository_boundary.assert_development_context'), patch.object(test_resources, 'read') as read, patch.object(test_resources, 'cleanup') as cleanup:
+                with self.assertRaisesRegex(ValueError, 'Another test suite'):
+                    with test_resources.endpoint():
+                        self.fail('Cannot acquire a busy suite')
+                cleanup.assert_not_called()
+                read.assert_not_called()
+
+    def test_owner_runner_preserves_test_failure_and_reports_cleanup_failure(self):
+        import owner_tests
+        for child_status, cleanup_status, expected in [(5, 1, 5), (0, 1, 1), (0, 0, 0)]:
+            with self.subTest(child=child_status, cleanup=cleanup_status), patch.object(owner_tests, 'ROOT', self.root), patch.object(owner_tests, 'worker_cleanup', side_effect=[0, cleanup_status]) as cleanup, patch.object(owner_tests.subprocess, 'Popen') as popen:
+                popen.return_value.__enter__.return_value.wait.return_value = child_status
+                self.assertEqual(owner_tests.execute('backend', ['--filter=Example']), expected)
+                self.assertEqual(cleanup.call_count, 2)
+
+    def test_owner_runner_refuses_to_start_after_failed_orphan_cleanup(self):
+        import owner_tests
+        with patch.object(owner_tests, 'ROOT', self.root), patch.object(owner_tests, 'worker_cleanup', return_value=1), patch.object(owner_tests.subprocess, 'Popen') as popen:
+            self.assertEqual(owner_tests.execute('backend', []), 1)
+            popen.assert_not_called()
 
 
 if __name__ == '__main__':

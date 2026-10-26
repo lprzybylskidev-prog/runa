@@ -2,7 +2,7 @@
 FROM composer:2.10.3 AS composer
 FROM node:24.22.0-bookworm-slim AS node
 
-FROM php:8.4.27-fpm-bookworm@sha256:6d2c08c2ce0548e9bc55e21aab68f5a2613e635e4225fdea84290459728995e7 AS runtime
+FROM php:8.4.27-fpm-bookworm@sha256:df5a5113e1179ddf4560cd15727eb3812f6457829756d2a96c6c11bb4c250089 AS runtime
 ARG RUNA_UID=1000
 ARG RUNA_GID=1000
 RUN apt-get update \
@@ -42,6 +42,7 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && chown -R runa:runa /opt/corepack
 ENV COREPACK_HOME=/opt/corepack
 ENV COMPOSER_HOME=/home/runa/.config/composer
+ENV PYTHONPYCACHEPREFIX=/workspace/.runtime/python/pycache
 USER runa
 RUN pnpm --version
 
@@ -63,10 +64,11 @@ USER runa
 
 # Production keeps the same PHP version/capabilities on the approved Alpine candidate.
 # Development retains its browser-compatible Debian toolchain.
-FROM php:8.4.27-fpm-alpine3.24@sha256:8193f7c711715c88452ebe51d4ee7769172a3fa917446a8820cf84192da2c555 AS production-runtime
+FROM php:8.4.27-fpm-alpine3.24@sha256:93aa3f61216b73cc6f878235c9772849449f4efc18dfe3d6678eed645076c00d AS production-runtime
 ARG RUNA_UID=1000
 ARG RUNA_GID=1000
-RUN apk add --no-cache libpq icu-libs icu-data-full libzip oniguruma fcgi tzdata \
+RUN apk add --upgrade --no-cache 'curl>=8.23.0-r0' 'libcurl>=8.23.0-r0' 'brotli-libs>=1.2.1-r0' \
+    && apk add --no-cache libpq icu-libs icu-data-full libzip oniguruma fcgi tzdata \
     && apk add --no-cache --virtual .runa-build-deps \
         $PHPIZE_DEPS libpq-dev icu-dev libzip-dev oniguruma-dev \
     && docker-php-ext-install -j2 pdo_pgsql intl bcmath opcache pcntl zip mbstring \
@@ -141,7 +143,7 @@ COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 RUN pnpm run build
 
 FROM php-dependencies AS error-pages-build
-COPY --chown=runa:runa --from=frontend-build /build/src/.runtime/runa-errors/ .runtime/runa-errors/
+COPY --chown=runa:runa --from=frontend-build /build/.runtime/frontend/errors/templates/ /tmp/runa-build/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa --from=frontend-build /build/src/public/runa-error/ public/runa-error/
 RUN php runa/resources/errors/build.php
 
@@ -167,7 +169,7 @@ COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
 COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/
 COPY --chown=runa:runa src/runa/resources/css/light-palette.css /workspace/src/runa/resources/css/light-palette.css
 COPY --chown=runa:runa src/runa/resources/views/ /workspace/src/runa/resources/views/
-COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/.runtime/runa-errors/ /workspace/src/.runtime/runa-errors/
+COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/.runtime/frontend/errors/templates/ /workspace/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa src/runa/resources/errors/messages.json /workspace/src/runa/resources/errors/messages.json
 COPY --chown=runa:runa --from=error-pages-build /tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/
 COPY --chown=runa:runa src/runa/resources/images/runa-mail-logo.png /workspace/src/runa/resources/images/runa-mail-logo.png

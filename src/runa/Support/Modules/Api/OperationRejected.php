@@ -16,7 +16,7 @@ final class OperationRejected extends RuntimeException
 
     public function render(): JsonResponse
     {
-        return new JsonResponse(['error' => ['code' => $this->reason, 'module' => $this->moduleId, 'operation' => $this->operation]], $this->status, ['Cache-Control' => 'no-store']);
+        return new JsonResponse(['error' => ['code' => $this->reason, 'module' => $this->moduleId, 'operation' => $this->operation]], $this->status, ['Cache-Control' => 'no-store', ...($this->retryAfter === null ? [] : ['Retry-After' => (string) $this->retryAfter])]);
     }
 
     public function report(): bool

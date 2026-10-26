@@ -15,7 +15,15 @@
     - preventing lazy loading,
     - preventing silently discarded attributes,
     - preventing access to missing attributes,
-    where supported and compatible.
+      where supported and compatible.
 13. Do not hide database queries inside accessors/casts.
 14. Be conscious of model events/observers; they must not own critical hidden business workflows.
 15. Use framework fakes intentionally in tests. Do not over-fake so heavily that integration behavior is no longer exercised.
+
+Auth owns its ModuleModel/Authenticatable implementation and public UUIDv7 identity; ordinary application consumers use guarded identity/lifecycle APIs. Do not add a second users table/model, expose internal auth identifiers or mutate account state directly. Follow the [Auth identity/lifecycle guide](../../../../docs/runa/handbook/modules/auth/README.md) for the authoritative procedure.
+
+Use the [private Auth profile/address contract](../../../../docs/runa/handbook/modules/auth/profile.md)
+for versioned own/admin changes, recipient-bound verification, notification-only
+secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
+modules consume guarded public contracts; never expand security delivery to
+secondary recipients or expose general Audit detail for self-service history.

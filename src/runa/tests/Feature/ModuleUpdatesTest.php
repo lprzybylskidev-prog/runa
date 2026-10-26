@@ -3,6 +3,8 @@
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Runa\Contracts\Modules\PreparationContext;
+use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Support\Modules\ModuleDiscovery;
 use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Updates\ModuleUpdates;
@@ -256,4 +258,38 @@ it('enforces a PostgreSQL read-only snapshot around runtime preflight providers'
     $before = $this->registry->snapshot();
     expect(fn () => $this->updates->plan('runa'))->toThrow(QueryException::class)
         ->and($this->registry->snapshot())->toEqual($before);
+});
+
+it('atomically refuses reserved preparation participation and resumes the exact step', function (): void {
+    $id = ($this->add)('runa', '0.3.0', [[null, '0.3.0', true, false]]);
+    $participant = new class implements PreparationParticipant
+    {
+        public bool $fail = true;
+
+        public array $seen = [];
+
+        public function preparing(PreparationContext $context): void
+        {
+            expect($context->connection)->toBe(DB::connection());
+            expect($context->connection->transactionLevel())->toBeGreaterThan(0);
+            expect(DB::table('shared.module_registry_state')->where('id', 1)->value('update_operation'))->toBe($context->operation);
+            expect($context->owner)->toBe('runa')->and(strlen($context->fingerprint))->toBe(64);
+            $this->seen[] = $context;
+            $context->connection->table(str_replace('.', '_', $context->module).'.records')->insert(['value' => 'preparation']);
+            if ($this->fail) {
+                throw new RuntimeException('Required preparation audit failed.');
+            }
+        }
+    };
+    $updates = new ModuleUpdates(DB::connection(), $this->registry, $this->sources->root, '0.4.0', participant: $participant);
+    expect(fn () => $updates->apply('runa', $this->operation, $this->recordProgress))->toThrow(RuntimeException::class, 'Required preparation audit failed.');
+    expect(DB::table($this->codes[$id].'.records')->count())->toBe(0);
+    expect($this->registry->snapshot()->modules[$id]->installedVersion)->toBeNull();
+    expect($this->registry->snapshot()->fenced)->toContain($id);
+    $participant->fail = false;
+    $updates->apply('runa', $this->operation, $this->recordProgress);
+    expect(DB::table($this->codes[$id].'.records')->orderBy('value')->pluck('value')->all())->toBe(['preparation', 'step_a']);
+    expect($participant->seen)->toHaveCount(2);
+    $updates->apply('runa', $this->operation, $this->recordProgress);
+    expect($participant->seen)->toHaveCount(2);
 });

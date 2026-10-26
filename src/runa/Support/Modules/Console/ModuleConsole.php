@@ -168,7 +168,7 @@ final readonly class ModuleConsole
                     if ($current->manifestHash !== $record->manifestHash || ! in_array($definition, $this->schedules($current))) {
                         throw new RuntimeException('Scheduled source changed.');
                     }
-                    $this->execute($record->id, $definition->command);
+                    $this->logs->run(['work_id' => 'module:'.$record->id.':'.$definition->key], fn (): array => $this->execute($record->id, $definition->command));
                 })->name('module:'.$record->id.':'.$definition->key)->cron($definition->expression)->timezone('UTC');
                 // Operational callbacks still run admission during maintenance and are refused there.
                 // Diagnostics may perform health recovery while the platform is unavailable.

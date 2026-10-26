@@ -51,3 +51,24 @@ it('has an empty idempotent Seeding foundation without invented business data', 
     expect(Artisan::call('runa:seed'))->toBe(0);
     expect(SeedGraph::registered())->toBe([]);
 });
+
+it('refuses explicit development corpus and direct seeders in a production installation despite local environment', function (): void {
+    $original = base_path();
+    $directory = sys_get_temp_dir().'/runa-seed-production-'.bin2hex(random_bytes(8));
+    mkdir($directory.'/.git', 0700, true);
+    mkdir($directory.'/src', 0700);
+    $path = $directory.'/.git/runa-bootstrap.json';
+    app()->setBasePath($directory.'/src');
+    file_put_contents($path, '{"schema_version":1,"mode":"prod"}');
+    try {
+        expect(fn () => Artisan::call('runa:seed:development', ['--force' => true]))->toThrow(InvalidArgumentException::class, 'production');
+        expect(fn () => app(DemoSeed::class)->run())->toThrow(InvalidArgumentException::class, 'production');
+        expect(Artisan::call('runa:seed:accounts'))->toBe(1);
+    } finally {
+        app()->setBasePath($original);
+        unlink($path);
+        rmdir($directory.'/.git');
+        rmdir($directory.'/src');
+        rmdir($directory);
+    }
+});

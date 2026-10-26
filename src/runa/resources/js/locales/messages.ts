@@ -25,8 +25,9 @@ export const messages = {
     system: 'Systemowy',
     version: 'Wersja',
     poweredBy: 'Oparte na',
-    title: 'Runa',
-    description: 'Aplikacja w przygotowaniu.',
+    title: '.runa',
+    description:
+      'Modularny monolit na bazie Laravela. Dostarcza w pełni konfigurowalne moduły do budowy aplikacji biznesowych.',
   },
   en: {
     modules: 'Modules',
@@ -54,8 +55,9 @@ export const messages = {
     system: 'System',
     version: 'Version',
     poweredBy: 'Powered by',
-    title: 'Runa',
-    description: 'Application in development.',
+    title: '.runa',
+    description:
+      'A modular monolith built on Laravel. Fully configurable modules for building business applications.',
   },
 } satisfies Record<'pl' | 'en', Record<string, string>>;
 

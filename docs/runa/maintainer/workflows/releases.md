@@ -48,6 +48,10 @@ A maintenance release is still a real release even when it has no user-facing fe
 
 A special release roadmap targets a user-selected version.
 
+## Module versions
+
+Module releases follow the independent [module version policy](../../handbook/development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible MAJOR changes require explicit owner approval before implementation. This does not promote the platform version. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+
 ## One roadmap, one release
 
 Every completed roadmap produces one release.

@@ -34,3 +34,33 @@ Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle
 ## Module generators
 
 Use `runa:make:module owner.code [type] [name]` for module-local generation, following docs/runa/handbook/development/modules.md. Native `make:*` retains ordinary application paths. Generated controllers use owned HttpProvider declarations and named centrally guarded routes; public APIs use GuardedApi proxies. Run reusable ModuleContractSuite source checks, module tests and synchronized runtime checks; generator success is not implementation acceptance.
+
+HttpEndpoint may declare Public/Authenticated/Restricted access. The shared pre-controller HttpAccountPolicy resolves current identity without recursive protected API calls; PrincipalScope unwinds at the server root. Keep session/CSRF wiring explicit. Use SettingsParticipant for required in-transaction persistence. See [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); these interfaces alone do not supply authentication.
+
+Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Password/2FA flows use the credential procedure below.
+
+Use the [Auth session/abuse contract](../../../../docs/runa/handbook/modules/auth/sessions.md)
+for tracked proof/deadline validation, own/admin revocation and standalone abuse
+windows. Ordinary polling is not user activity; a heartbeat never moves the captured
+absolute deadline. Remembered cookies cannot recreate revoked sessions. Technical
+cleanup preserves Audit history. Do not add a native recaller or permanent account
+lock from attacker-controlled counters.
+
+Use the [Auth credential security contract](../../../../docs/runa/handbook/modules/auth/security.md)
+for password policy/recovery, mandatory factors, trusted devices and AuthStepUp.
+Consume server-chosen session/action-bound step-up inside the business transaction;
+trust or recent login never substitutes for required fresh proof. Never expose
+factor secrets, password history or OTPs through module APIs, logs or Audit.
+
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.

@@ -27,7 +27,7 @@ def main():
         raise SystemExit('Usage: python3 tools/maintainer/testing/error-fallback-host.py (native host only)')
     if Path('/.dockerenv').exists():
         raise SystemExit('Run this test on the native Linux host; the devcontainer has no Docker socket.')
-    report = ROOT / 'artifacts/playwright/ui-foundations/error-fallback-host.json'
+    report = ROOT / '.runtime/artifacts/playwright/ui-foundations/error-fallback-host.json'
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps({'result': 'RUNNING'}, indent=2) + '\n')
     compose = ['docker', 'compose', '--env-file', '.env.dev.local', '-f', 'compose.yaml', '-f', '.devcontainer/compose.resources.yaml']

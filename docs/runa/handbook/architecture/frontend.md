@@ -1,5 +1,16 @@
 # Frontend Architecture
 
+## Adoption and source ownership
+
+Every current and future Runa view/module must ship immediately usable defaults
+and a documented public presentation replacement contract. Customers can keep
+screens unchanged, compose application screens from public layouts/components,
+or replace their entire frontend using supported backend and headless contracts.
+Platform defaults and reusable security/session orchestration remain in src/runa;
+customer presentation remains in src/app. Keep the shipped application scaffold
+minimal. See [frontend adoption and replacement](../development/frontend/customization.md)
+for public entrypoints, controller lifetimes, static errors and update ownership.
+
 ## Stack
 
 - Vue 3
@@ -21,7 +32,7 @@ User-facing UI:
 - Polish is the default language.
 - English is the secondary language.
 
-The mandatory administration panel is English-only and is not translated to Polish.
+Any future administration panel is English-only. This release supplies no Admin UI.
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
@@ -220,7 +231,7 @@ Public identity, navigation, preference-storage, selection/export/provider and p
 
 ## Minimal layout and branding
 
-`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The root uses MinimalLayout directly; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
+`MinimalLayout`, `IdentityProvider` and `Footer` are public exports from `@/runa/ui`. The default welcome uses MinimalLayout; AuthLayout was removed by owner request. MinimalLayout includes the supplied Runa illustration by default; the content/default slot occupies the left side, matching `/`. Named header/header-actions/content/illustration/actions/footer slots permit overrides; `illustration: false` explicitly selects a single column. The default header owns existing locale/theme controls; replacing it replaces those controls too. Footer visibility applies to custom footer slots as well.
 
 ```vue
 <script setup lang="ts">
@@ -248,7 +259,7 @@ The example supplies an application version only; platformVersion defaults to sr
 
 ## Application layout, route context and preferences
 
-Import `ApplicationLayout`, `usePageResolver`, `createPageResolver`, `createPreferenceStore`, `usePreference` and their types from `@/runa/ui`. ApplicationLayout is independent of module discovery, Auth and a router installation. Supply navigation descriptors, a title and current URL-derived RouteContext; handle its `navigate(href, event)` event with your resolver. `localeChange(locale)` emits the initial and subsequent locale so callers can translate navigation labels without initializing another locale composable. Modified/middle clicks retain native browser behavior. Standalone component consumers still initialize no shell or preferences.
+Import `ApplicationLayout`, `usePageResolver`, `createPageResolver`, `createPreferenceStore`, `usePreference` and their types from `@/runa/ui`. ApplicationLayout needs no module discovery or router installation; optional Auth session discovery binds account preferences when available. Supply navigation descriptors, a title and current URL-derived RouteContext; handle its `navigate(href, event)` event with your resolver. `localeChange(locale)` emits the initial and subsequent locale so callers can translate navigation labels without initializing another locale composable. Modified/middle clicks retain native browser behavior. Standalone component consumers still initialize no shell or preferences.
 
 ```ts
 const pages: PageDescriptor[] = [
@@ -272,7 +283,7 @@ Workspace order is heading/description/actions, breadcrumbs, optional statistics
 
 Below 64rem the sidebar is an inert offscreen panel until opened. Its drawer traps Tab/Shift+Tab, closes on Escape/backdrop and restores focus; successful navigation closes it and focuses main. Body scrolling is locked only while the drawer is open, and listeners/body style are cleaned up on unmount or resize. At desktop size the sidebar is viewport-fixed with its own scrollable navigation region. The top header is sticky and remains visible during page scrolling; the toolbar scrolls normally. The owner's later point-3 feedback supersedes the original nonsticky-header premise. The sidebar brand row and top header both use 64px height; the Runa mark uses the same 42px square as MinimalLayout. The collapse/expand or phone-drawer control precedes top navigation. Sidebar groups are whole-row disclosure buttons, with their chevron inside the control rather than beside a navigable parent label. The top header uses a compact 64px row, with the navigation scrollbar flush to its bottom edge. Top navigation overflows horizontally without widening the document. Its internal AppTopNavigation renders group triggers and teleports each open dropdown card outside the scrolling nav into body. Cards are viewport-clamped below the trigger/header, overlay workspace content and never change header height; sidebar groups continue expanding inline. Escape returns focus, Tab/Shift+Tab reconnect to the trigger/next navigation item, and outside clicks, navigation, document scroll and resize dismiss the card; horizontal nav scrolling updates its anchor position. While it overflows, wheel events over navigation move it horizontally and do not scroll the document, including at either end; horizontal trackpad deltas and line/page wheel modes are supported, while Ctrl+wheel keeps native zoom behavior. Collapsed link tooltips use a narrow right-placement extension of the existing tooltip; the hover-dismissal correction was delivered and accepted in point 9.
 
-Both layouts share AppPreferenceControls/useDisplayPreferences, preserving the original cover timing, inert content and focus return. Locale/theme still read and write `runa.locale`/`runa.theme`; the versioned store imports legacy values when no scoped record exists. New values use `runa.preferences:<encoded application>:<module>:<view>:<control>` with `{ version, value }` JSON. `createPreferenceStore(adapter)` accepts the existing read/write/remove interface. Each definition supplies a version, default, type guard and optional migration/legacy key. Invalid/corrupt/unknown versions use defaults; reset removes the scoped entry. Writes validate finite JSON values before storage. Adapter denial/quota failure switches that store to memory for its lifetime. Use stable application IDs for a mounted layout; create a new store/session to retry a failed adapter. No account sync or security state belongs here.
+Both layouts share AppPreferenceControls/useDisplayPreferences and preserve cover timing, inert content and focus return. The default PreferenceStore now binds verified account sessions to Auth-owned PostgreSQL preferences with immediate revision-checked writes, reload/new-login convergence, account-switch/late-response isolation and visible failure/reload feedback in both layouts. Display and navigation schemas are declared by Auth; each module declares its exact table/statistics view schemas. Guest values retain versioned localStorage plus legacy locale/theme fallback and denied-storage memory. Reset tombstones prevent legacy resurrection; only guest writes update compatibility keys. Explicit ownership-confirmed allowlisted adoption never overwrites existing server values. Account values stay in memory and never enter guest storage. Custom injected stores retain their own lifecycle responsibility. See the [account preference contract](../modules/auth/preferences.md) for declarations, APIs and boundaries; preference storage never contains credentials, drafts or authorization state.
 
 Shell controls use a 36px sidebar toggle inset 24px from the header left edge. Top-navigation overflow has decorative dotted edge indicators, shown only in directions containing hidden content; scroll, viewport/sidebar resizing and navigation-content changes refresh them. Indicators fade over 160ms, with reduced-motion support, and do not intercept input. The collapsed sidebar centers disabled icons identically to enabled entries, omits the supplementary sidebar-bottom slot and retains the platform version without the RUNA prefix in its footer.
 
@@ -282,7 +293,7 @@ Shared print rules hide navigation, backdrop, footers and `[data-print-hide]`, r
 
 ## Native email layout
 
-Standard Laravel Markdown mailables (`<x-mail::message>`) and non-Auth `MailMessage` notifications use the default Runa theme through `mail.markdown`, without a custom mail engine. Server-rendered email views are an explicit exception to the Vue-only application UI rule. No Auth notification class or callback is customized.
+Standard Laravel Markdown mailables (`<x-mail::message>`) and `MailMessage` notifications use the default Runa theme through `mail.markdown`, without a custom mail engine. Server-rendered email views are an explicit exception to the Vue-only application UI rule. Auth owns its direct private recovery/security mail and reference-only managed delivery under the [Auth delivery contract](../modules/auth/preferences.md); it does not use a general Notifications runtime. Its direct entry, profile/address and security-notice messages use the same shared Markdown layout, branding, theme and generated text alternative. Presentation does not change recipient resolution, private reference-only jobs, token fragments or persisted single-attempt claims. Auth body overrides belong in `src/app/resources/views/auth/mail/message.blade.php`; retain escaped content, action URL text alternatives and the shared `<x-mail::message>` wrapper.
 
 `src/runa/config/branding.php` projects canonical ID/name/application version from `src/app/application.json` and platform version from `src/runa/platform.json`. `ApplicationIdentity` supplies public API and mail/error consumers. Configure identity in the application manifest; customer branding config retains mail assets/footer visibility but cannot override canonical identity fields. The mail logo is a high-density snapshot of the actual Vue light-theme brand tile, with the unchanged supplied PNG as its source; the platform and application manifest identities are shared with Vue. Both web CSS and email colors read `src/runa/resources/css/light-palette.css`; email resolves these safe literal colors at configuration load and Laravel inlines the theme. Keep this palette as simple six-digit hexadecimal custom properties. Web dark tokens remain separate and unchanged. After changing branding/palette, rebuild cached configuration and restart long-running mail workers.
 
@@ -298,11 +309,11 @@ Production PHP includes native/namespaced views, the mail brand-tile PNG, shared
 
 ## HTTP error pages
 
-HTTP errors use **MinimalLayout.vue itself**, also used by the welcome dashboard and reserved for future Auth screens. They are not a second PHP/CSS shell. `src/runa/resources/errors/render.mjs` pre-renders the actual MinimalLayout with IdentityProvider and a content-only `MinimalErrorContent.vue` slot during `pnpm run build:errors` (also part of the normal frontend build). This includes the same AppBackdrop/constellations, default AppBrandIllustration, 42px logo/header, responsive split/stack composition and AppFooter. No Auth behavior is introduced.
+HTTP errors use **MinimalLayout.vue itself**, also used by the public welcome and Auth entry/restricted screens. They are not a second PHP/CSS shell. `src/runa/resources/errors/render.mjs` pre-renders the actual MinimalLayout with IdentityProvider and a content-only `MinimalErrorContent.vue` slot during `pnpm run build:errors` (also part of the normal frontend build). This includes the same AppBackdrop/constellations, default AppBrandIllustration, 42px logo/header, responsive split/stack composition and AppFooter. Static error output contains no account state or Auth orchestration.
 
 MinimalLayout's optional `staticPreferences: { locale, theme }` mode is for build-time rendering: it avoids browser storage/DOM hooks and renders the existing AppPreferenceControls/AppButton/AppIcon as ordinary GET forms. Language/theme controls work without JavaScript and retain the other selection. Normal interactive layout consumers retain their existing preferences, cover timing, persistence and focus behavior. The static mode does not add runtime Node/Vue rendering to PHP or Nginx.
 
-Generated private HTML shells live in ignored `src/.runtime/runa-errors/`, with native status/PL/EN/theme and default/custom-identity variants. Laravel's six native error views retain a thin `errors/page.php` document wrapper which selects a pre-rendered shell and escapes application name, independent versions and request ID into fixed markers. The same wrapper finalizes static 503 documents. Localized copy stays in `src/runa/resources/errors/messages.json`. Exception messages/traces are not rendered; API/JSON/status/retry contracts remain native. Private shells are shipped as runtime view assets, independently of public Vite JS/build output; deleting `src/public/build` does not prevent error rendering.
+Generated private HTML shells live in ignored `.runtime/frontend/errors/templates/`, with native status/PL/EN/theme and default/custom-identity variants. Laravel's six native error views retain a thin `errors/page.php` document wrapper which selects a pre-rendered shell and escapes application name, independent versions and request ID into fixed markers. The same wrapper finalizes static 503 documents. Localized copy stays in `src/runa/resources/errors/messages.json`. Exception messages/traces are not rendered; API/JSON/status/retry contracts remain native. Private shells are shipped as runtime view assets, independently of public Vite JS/build output; deleting `src/public/build` does not prevent error rendering.
 
 The build-only SSR entry uses the server-renderer export already supplied by the locked Vue dependency. Generated `src/public/runa-error/styles.css`, the original logo and local font assets are emitted from the real component styles/main stylesheet; there is no separately maintained error layout stylesheet, copied illustration or second palette implementation. Only a CSS system-theme selector is added from the emitted shared dark token block. No SSR JavaScript bundle is published or copied into runtime images. Generated views/assets must be rebuilt after changing shared layouts/components/styles, localization or identity inputs.
 
@@ -328,7 +339,10 @@ The retired catalog has no application entry. Isolated component scenarios remai
 
 ## Shared feedback and floating layers
 
-Public `@/runa/ui` exports Alert, Badge, Status, Tooltip, Popover, ToastViewport and setup-scoped useToasts. Feedback uses neutral/success/info/warning/danger roles. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, without a status tint. Readable labels and alert symbols supplement color. Static badges/statuses do not announce automatically; Alert provides live semantics unless explicitly disabled. ToastViewport supplies one polite region, explicit close controls and top-right responsive placement. Its local queue defaults to 5-second notifications and persistent errors, pauses remaining time on hover/focus and restores the invoking control when a focused toast is dismissed. Features retain important errors inline; no notification history or server service is added.
+Public `@/runa/ui` exports Alert, Badge, Status, Tooltip, Popover, ToastViewport, FormNotifications and setup-scoped useToasts. Feedback uses neutral/success/info/warning/danger roles. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, without a status tint. Readable labels and alert symbols supplement color. Static badges/statuses do not announce automatically; Alert provides live semantics unless explicitly disabled. ToastViewport supplies one polite region, explicit close controls and top-right responsive placement. Its local queue defaults to 5-second notifications and persistent errors, pauses remaining time on hover/focus and restores the invoking control when a focused toast is dismissed. FormNotifications presents operation successes and form-wide failures only in that
+viewport, with persistent errors and explicit recovery actions. Field errors stay
+associated with their controls; no duplicate outcome banner, notification history
+or server service is added. Modal notifications teleport inside their focus boundary.
 
 Tooltip and Popover share internal useFloatingLayer for viewport-clamped measured placement, scroll/resize/content updates, top-layer Escape/outside dismissal and cleanup. Tooltip separates pointer and keyboard focus, dismisses on click/scroll and bridges the gap into its content without stale hover. Popover is a named nonmodal dialog with focus entry/return and Tab exit. ApplicationLayout reuses Popover for its existing user-menu slot while preserving its unique initials button; AppPreferenceControls supplies finalized Tooltip to both layouts. Specialized navigation anchoring/route semantics remain internal to AppTopNavigation. All controls remain shell-independent; isolated feedback scenarios remain test-only.
 
@@ -385,7 +399,7 @@ Form extends the original controlled AppForm with feedback/actions slots, respon
 
 NumberInput stores exact string/null values. Complete values normalize to decimal dots; PL/EN formatting preserves digits/zeros without binary conversion. Invalid intermediate drafts remain visible and in the model, so validation cannot accidentally submit a stale previous value. Validate with parseDecimal and serialize with serializeDecimal before an API call; optional scale rejects excessive precision rather than rounding. Currency/percentage kinds do not impose domain ranges or rescale values.
 
-useForm accepts finite JSON field values, isolates submitted snapshots, blocks concurrent/known-invalid writes and tracks nested dirty baselines. Successful submission advances only the submitted baseline; reset() restores that baseline and reset(serverSnapshot) explicitly loads new data. ApiError 422 maps exact nested Laravel keys; 409 marks conflict without replacing input, and other failures remain recoverable. Screens own immediate business validation, accessible error summaries, optimistic-lock tokens and deliberate comparison/reload/retry. No business write endpoints or account storage are provided; optional masks/navigation guards are described below. Detailed component/decimal/error examples are maintained in the frontend form reference.
+useForm accepts finite JSON field values, isolates submitted snapshots, blocks concurrent/known-invalid writes and tracks nested dirty baselines. Successful submission advances only the submitted baseline; reset() restores that baseline and reset(serverSnapshot) explicitly loads new data. ApiError 422 maps exact nested Laravel keys; 409 marks conflict without replacing input, and other failures remain recoverable. Screens own immediate business validation, accessible error summaries, optimistic-lock tokens and deliberate comparison/reload/retry. Auth entry forms use guarded backend endpoints and account preferences have their own persistence contract; optional masks/navigation guards are described below. Detailed component/decimal/error examples are maintained in the frontend form reference.
 
 ### Additional input foundation
 
@@ -415,11 +429,11 @@ The dialog body scrolls within a bounded viewport while header/footer remain ava
 
 ## Table processing
 
-The public `Table` component supports explicit bounded client and paginated server modes through typed columns, stable row keys, controlled query/selection, cell/action/filter slots and cancellable providers. `useTable` ignores obsolete replies. Server counts distinguish exact/stale/unknown; uncertain totals use previous/next navigation. `createApiTableProvider` normalizes allowlisted query fields and uses the shared HTTP transport; application decoders validate unknown `data` + `meta` responses. No backend table engine or domain endpoint is provided. See the [table contracts and integration guidance](../development/frontend/tables.md). Column personalization and named browser-local views are available through optional TablePreferences/useTableViews; cross-page explicit/all-matching selection, TableActions/OperationPanel, bounded real CSV/XLSX/PDF adapters, separate printing and application-owned server/bulk providers are available. See the table reference for limits, idempotency, cancellation and license notices.
+The public `Table` component supports explicit bounded client and paginated server modes through typed columns, stable row keys, controlled query/selection, cell/action/filter slots and cancellable providers. `useTable` ignores obsolete replies. Server counts distinguish exact/stale/unknown; uncertain totals use previous/next navigation. `createApiTableProvider` normalizes allowlisted query fields and uses the shared HTTP transport; application decoders validate unknown `data` + `meta` responses. No backend table engine or domain endpoint is provided. See the [table contracts and integration guidance](../development/frontend/tables.md). Column personalization and named scoped views are available through optional TablePreferences/useTableViews; cross-page explicit/all-matching selection, TableActions/OperationPanel, bounded real CSV/XLSX/PDF adapters, separate printing and application-owned server/bulk providers are available. See the table reference for limits, idempotency, cancellation and license notices.
 
 Semantic feedback components supply a reactive nearest-parent tone context. Nested feedback inherits omitted tones; Buttons inside colored feedback default to the matching outline variant. Explicit tones/variants override inheritance, and a neutral surface resets it. This also covers slotted actions and AsyncContent retry buttons. Standalone component defaults remain unchanged; ordinary form validation and shell navigation keep their independent contracts.
 
-Table personalization persists presentation/query snapshots in the existing scoped PreferenceStore (schema v2, v1 migration). TablePreferences provides column visibility, drag/keyboard ordering, width controls and named-view create/select/update/rename/delete/default/reset. Hidden columns remain part of query processing; only explicit descriptor removal invalidates filters/sorts. Current and saved snapshots reconcile unavailable/new columns before application. Applying a view resets pagination to page 1. See the table reference for public integration, bounds, default/re-entry behavior and storage fallback; this is local UX state, never a permissions model.
+Table personalization persists presentation/query snapshots in the existing scoped PreferenceStore (schema v2, v1 migration). TablePreferences provides column visibility, drag/keyboard ordering, width controls and named-view create/select/update/rename/delete/default/reset. Hidden columns remain part of query processing; only explicit descriptor removal invalidates filters/sorts. Current and saved snapshots reconcile unavailable/new columns before application. Applying a view resets pagination to page 1. See the table reference for public integration, bounds, default/re-entry behavior and storage fallback; this is UX state, with account persistence through declared schemas when signed in, never a permissions model.
 
 Table toolbar composition groups Search/page size with optional view preferences and sm icon export/print buttons. Export scope and PDF orientation live in the shared settings Popover; selection/bulk controls appear contextually. The toolbar slot exposes a per-instance feedbackTarget for TableActions, keeping operation feedback below the header without changing alignment. Print tables use separate zero-spacing cell borders and uniform 1pt CSS separators.
 
@@ -430,3 +444,25 @@ The public consumer fixture at tests/frontend/fixtures/StandaloneConsumer.vue co
 ## Optional module composition
 
 `@/runa/modules` supplies ModulePage, ModuleSlot, build/runtime types, createModuleComponents, modulePages, moduleNavigation and useModuleFrontend. The two components are also exported through the UI facade. Import `virtual:runa-module-components` only in an entry that consumes modules; ordinary customer frontends need neither this registry nor the module projection request. The existing exact URL resolver and ApplicationLayout navigation remain the composition contracts. The application entry explicitly handles loading/unavailable/unknown routes and refreshes metadata on navigation/recovery; module page setup runs only after current availability and build-hash checks. Slots preserve server ordering and require exact scalar props before mounting. Tailwind scans both owned module source roots; module utility names must remain static. See [module frontend contracts](module-framework.md#delivered-frontend-pages-and-named-slots) for server routes, permissions, build mapping, ordering and freshness limits.
+
+## Auth entry integration
+
+Exact Auth entry paths render the lazy `AuthEntry` component from `@/runa/auth`
+inside MinimalLayout. See [Auth entry screens](../modules/auth/entry-ui.md) for
+server-declared constraints/restrictions, fragment-only proofs, safe local returns,
+explicit CSRF/conflict retry and secret cleanup. HTTP GET pages supply presentation
+only; security remains at guarded module endpoints. The existing welcome remains
+at `/`. Account dropdown/self-service and global session-expiry handling are delivered
+through the application/account composition below.
+
+The delivered [Auth application/account composition](../modules/auth/account-ui.md)
+connects welcome, guarded sign-in, ApplicationLayout, profile and dropdown sign-out.
+It uses the shared HTTP lifecycle for 401/restricted reauthentication, local expiry
+warnings and throttled real activity; account-bound safe memory drafts require
+explicit review and resubmission. No global state/router package is introduced.
+
+The public MinimalLayout `header-actions` slot adds actions beside the existing
+language/theme controls while retaining the default identity/header. Welcome places
+sign-in, policy-dependent registration and authenticated entry here; these controls
+do not belong in the welcome content panel. The header action group wraps on narrow
+screens. Replacing the whole header replaces this default group as well.

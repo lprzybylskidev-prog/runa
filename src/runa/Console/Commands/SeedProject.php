@@ -5,6 +5,7 @@ namespace Runa\Console\Commands;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Runa\Support\Seeding\DevelopmentFixtures;
 use Runa\Support\Seeding\SeedGraph;
 
 final class SeedProject extends Command
@@ -19,6 +20,9 @@ final class SeedProject extends Command
     {
         $this->signature = 'runa:seed'.($mode === 'default' ? '' : ':'.($mode === 'graph' ? 'plan' : $mode));
         $this->signature .= $mode === 'occasional' ? ' {scenario}' : '';
+        if (in_array($mode, ['development', 'graph'], true)) {
+            $this->signature .= ' {--modules : Include explicitly registered module development contributors}';
+        }
         if ($mode !== 'graph') {
             $this->signature .= ' {--force : Run without interactive production confirmation}';
         }
@@ -29,14 +33,21 @@ final class SeedProject extends Command
     public function handle(): int
     {
         $mode = $this->mode;
+        if ($mode === 'development') {
+            DevelopmentFixtures::assertAllowed();
+        }
         $scenario = $mode === 'occasional' ? $this->input->getArgument('scenario') : null;
         if ($scenario !== null && ! is_string($scenario)) {
             throw new \InvalidArgumentException('A seeder scenario must be a string.');
         }
-        $plan = (new SeedGraph(SeedGraph::registered()))->plan($mode, app()->environment(), $scenario);
+        $graph = new SeedGraph(SeedGraph::registered());
+        if (in_array($mode, ['development', 'graph'], true) && $this->input->getOption('modules')) {
+            $graph = app(DevelopmentFixtures::class)->graph(SeedGraph::registered());
+        }
+        $plan = $graph->plan($mode, app()->environment(), $scenario);
         if ($mode === 'graph') {
             foreach ($plan as $class) {
-                $this->line($class::category()->value.' '.$class.' dependsOn='.implode(',', $class::dependsOn()));
+                $this->line($class::category()->value.' '.$class.' dependsOn='.implode(',', $graph->dependencies($class)));
             }
         } else {
             if (! $this->confirmToProceed()) {

@@ -20,3 +20,8 @@
 18. Test Polish/English translation expansion.
 19. Screen-reader checks are periodic for critical/complex flows, not a mechanical requirement for every trivial control.
 20. Accessibility is part of normal component review.
+
+For Auth step/tab changes, keep programmatic focus on the noninteractive heading
+(tabindex=-1) for reading context, without an interactive outline on that heading.
+Scope this presentation exception to the reading target; retain visible keyboard
+focus on links, inputs, buttons, error feedback and other interactive controls.

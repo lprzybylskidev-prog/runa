@@ -30,3 +30,5 @@
 28. Theme switching should not require mass duplication of utility sets when variables/tokens can express the semantic change.
 29. Avoid inline styles for design-system values. Inline styles are appropriate for truly dynamic runtime values that Tailwind cannot statically represent well.
 30. Runtime values may flow through CSS custom properties when that is clearer/safer than constructing dynamic Tailwind class names.
+
+31. Follow the [frontend adoption contract](../../../../docs/runa/handbook/development/frontend/customization.md) for all module views. Keep customer CSS in application-owned resources, scan its static classes and preserve native/emergency error CSS through the same build contract. Never require editing protected tokens merely to customize customer presentation.

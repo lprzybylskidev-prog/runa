@@ -66,7 +66,7 @@ def regular_file(value, private=False):
 
 
 def validate_settings(value, simulation):
-    if set(value) - {'app_url', 'http_port', 'tls', 'smtp', 'simulation_project'}:
+    if set(value) - {'app_url', 'http_port', 'tls', 'smtp', 'simulation_project', 'administrator'}:
         raise InstallationError('Unknown installer settings field.')
     # Reject newlines/NUL recursively before serializing any raw environment value.
     def strings(item):
@@ -123,6 +123,16 @@ def validate_settings(value, simulation):
     for key in ('from', 'recipient'):
         if not isinstance(smtp.get(key), str) or not re.fullmatch(r'[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+', smtp[key]):
             raise InstallationError('Explicit sender and verification recipient email addresses are required.')
+    administrator = value.get('administrator')
+    if administrator is not None:
+        if not isinstance(administrator, dict) or set(administrator) - {'email', 'name', 'login'}:
+            raise InstallationError('Administrator settings accept email, name and optional login only.')
+        if not isinstance(administrator.get('email'), str) or not re.fullmatch(r'[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+', administrator['email']):
+            raise InstallationError('Administrator email is required.')
+        if not isinstance(administrator.get('name'), str) or not administrator['name'].strip() or len(administrator['name']) > 160:
+            raise InstallationError('Administrator display name is required, at most 160 characters.')
+        if 'login' in administrator and (not isinstance(administrator['login'], str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,63}', administrator['login'])):
+            raise InstallationError('Administrator login must match the Auth identifier contract.')
     project = value.get('simulation_project')
     if project and (not simulation or not re.fullmatch(r'runa-prod-simulation-[a-z0-9-]{1,40}', project)):
         raise InstallationError('Custom project names are restricted to isolated runa-prod-simulation-* acceptance.')
@@ -146,8 +156,12 @@ def collect_settings():
             'username': input('SMTP username (empty for authorized relay): ').strip(),
             'password': getpass.getpass('SMTP password: '), 'from': input('Sender email: ').strip(),
             'recipient': input('Installation verification recipient email: ').strip()}
-    return {'app_url': url, 'tls': tls, 'smtp': smtp,
-            'http_port': int(input('Loopback HTTP port [8081]: ').strip() or '8081')}
+    settings = {'app_url': url, 'tls': tls, 'smtp': smtp,
+                'http_port': int(input('Loopback HTTP port [8081]: ').strip() or '8081')}
+    email = input('First administrator email (empty to initialize later through trusted CLI): ').strip()
+    if email:
+        settings['administrator'] = {'email': email, 'name': input('Administrator display name: ').strip()}
+    return settings
 
 
 def scaffold(sha, mode):
@@ -445,6 +459,17 @@ def install(mode, target, simulation=False, settings_file=None, profile=None, re
             else:
                 owned_resume = resume_is_owned(journal) if resume else False
                 ops.deploy(sha, simulation, initial_resume=owned_resume, verification=lambda release: verify_endpoints(settings, release), database_setup=lambda release: initialize_database(sha, release))
+            administrator = settings.get('administrator')
+            if administrator and not journal.get('administrator_invited', False):
+                current = ops.read_state()['current']
+                if not current or current['sha'] != sha:
+                    raise InstallationError('Administrator initialization requires this installed release.')
+                arguments = ['runa:auth:initialize', '--email=' + administrator['email'], '--name=' + administrator['name'], '--invite', '--confirm']
+                if administrator.get('login'):
+                    arguments.append('--login=' + administrator['login'])
+                ops.artisan(arguments, Path(current['path']))
+                journal['administrator_invited'] = True
+                ops.atomic(journal_path, journal)
             if os.environ.get('RUNA_HOST_WORKER') != '1':
                 import host_executor
                 host_executor.ensure()

@@ -81,7 +81,7 @@ export function normalizeTableSnapshot<Row>(
         sort: sort as TableQuery['sort'],
         filters,
       },
-      columns.filter((c) => c.sortable).map((c) => c.key),
+      columns.filter((c) => c.sortable !== false).map((c) => c.key),
       columns.filter((c) => c.filter).map((c) => c.key),
     ),
   };

@@ -1,3 +1,4 @@
+import { recordBrowserProblems } from './support/browserProblems';
 import { expect, test } from '@playwright/test';
 for (const [device, width, height] of [
   ['desktop', 1440, 900],
@@ -21,17 +22,7 @@ for (const [device, width, height] of [
           },
           { locale, theme },
         );
-        const errors: string[] = [];
-        page.on('pageerror', (error) => errors.push(error.message));
-        page.on('console', (message) => {
-          if (['warning', 'error'].includes(message.type()))
-            errors.push(message.text());
-        });
-        page.on('requestfailed', (request) => errors.push(request.url()));
-        page.on('response', (response) => {
-          if (response.status() >= 400)
-            errors.push(`${response.status()} ${response.url()}`);
-        });
+        const errors = recordBrowserProblems(page, { anonymousSession: true });
         await page.goto('/__fixtures/ui?preview=minimal');
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(
           locale === 'pl' ? 'Układ minimalny' : 'Minimal layout',
@@ -65,7 +56,7 @@ for (const [device, width, height] of [
             1,
         );
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page
@@ -83,7 +74,7 @@ for (const [device, width, height] of [
           .click();
         await expect(page.locator('.runa-art')).toBeVisible();
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-illustration-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-illustration-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page
@@ -109,7 +100,7 @@ for (const [device, width, height] of [
         });
         expect(flow).toBe(true);
         await page.screenshot({
-          path: `../artifacts/playwright/ui-foundations/minimal-long-${device}-${locale}-${theme}.png`,
+          path: `../.runtime/artifacts/playwright/ui-foundations/minimal-long-${device}-${locale}-${theme}.png`,
           fullPage: true,
         });
         await page

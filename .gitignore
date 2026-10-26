@@ -6,7 +6,6 @@
 /src/vendor/
 /src/node_modules/
 /src/public/build/
-/artifacts/playwright/
 /coverage/
 
 # Python tooling bytecode is generated locally.
@@ -17,7 +16,5 @@ __pycache__/
 
 /src/storage/*.key
 /src/bootstrap/cache/*.php
-
-/src/.runtime/
 
 .pnpm-store/

@@ -51,7 +51,7 @@ Regenerate after building the root entry with `./bin/pnpm exec node runa/tools/a
 
 ## Standalone HTTP error assets
 
-The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `src/public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `src/.runtime/runa-errors/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.
+The build-time MinimalLayout render emits its actual component CSS and unchanged logo/font assets into ignored `src/public/runa-error/`; provenance remains that recorded above. It uses the same RunaLogo mask and AppBrandIllustration rather than a recreated error-specific illustration or logo. The font license is included. Generated private MinimalLayout HTML shells are ignored under `.runtime/frontend/errors/templates/`; production creates fresh output, then the plain PHP finalizer emits static 503 documents with actual branding/version values. No runtime Vue/Node/JavaScript or public Vite manifest is required.
 
 ## Table export icons
 
@@ -64,3 +64,9 @@ Point 19 adds file-type-csv, file-type-xls, file-type-pdf, printer and adjustmen
 | resources/icons/file-type-pdf.svg          | `36ef668b02762697eb2d3e360ec13580651908ded26c08facfe3b99fc96ccebf` |
 | resources/icons/printer.svg                | `6f530e94836068b346f241313a6040c1d55ff1b677d326dc6c1b3c5b42c5c1eb` |
 | resources/icons/adjustments-horizontal.svg | `51c876babc598cf69ad1146f0fb621919a975758df0cc7abf45052006358a353` |
+
+## Module catalogue icons
+
+The clipboard-list, key and shield-lock paths in AppIcon are small, locally authored
+outline drawings for welcome module identity. They reuse the existing 24px viewbox,
+inherited color and 1.6px stroke; no upstream asset or dependency was introduced.

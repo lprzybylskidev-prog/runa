@@ -25,6 +25,23 @@ class OperationContracts(unittest.TestCase):
         boundary.start()
         self.addCleanup(boundary.stop)
 
+    def test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set(self):
+        images = ['runa-production:' + 'a' * 40, 'runa-nginx:' + 'a' * 40, 'runa-postgres:' + 'a' * 40]
+        for codes in ([1, 1, 1], [0, 0, 0], [0, 1, 0]):
+            def dc(arguments, *args, **kwargs):
+                return subprocess.CompletedProcess(arguments, 0, stdout='\n'.join(images))
+            results = [subprocess.CompletedProcess([], code) for code in codes]
+            with self.subTest(codes=codes), patch('dependencies.materialize'), patch.object(ops, 'dc', side_effect=dc) as compose, patch.object(ops.subprocess, 'run', side_effect=results), patch.object(ops.production, 'verify_images') as verify:
+                if codes == [0, 1, 0]:
+                    with self.assertRaisesRegex(ValueError, 'Incomplete immutable image set'):
+                        ops.build_images()
+                    verify.assert_not_called()
+                else:
+                    ops.build_images()
+                    verify.assert_called_once()
+                    builds = [call.args[0] for call in compose.call_args_list if call.args[0][0] == 'build']
+                    self.assertEqual(builds, [['build', 'app', 'nginx', 'postgres']] if codes == [1, 1, 1] else [])
+
     def test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work(self):
         for mode in ('dev', None, 'unknown'):
             for simulation in (False, True):

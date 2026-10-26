@@ -10,6 +10,16 @@ Development uses Docker Engine/Compose and Nginx -> PHP-FPM -> Laravel. PHP, Com
 
 The development environment retains Git hooks, local quality/security checks, Laravel Boost, Codex and optional Qdrant/embeddings knowledge retrieval. Application readiness is independent of AI services. Production excludes all AI and development tooling.
 
+For optional local Auth/Permissions manual scenarios, account discovery and private
+initial password setup, follow the [development corpus guide](docs/runa/handbook/data/seeding.md#explicit-module-development-contributors). No default password is distributed.
+
+Core [Audit](docs/runa/handbook/modules/audit/README.md),
+[Auth](docs/runa/handbook/modules/auth/README.md) and
+[Permissions](docs/runa/handbook/modules/permissions/README.md) supply transactional
+history, session/CSRF authentication, private account views and current action
+grants. [Trusted initial administrator setup/recovery](docs/runa/handbook/modules/auth/policies-and-operators.md)
+uses the actual protected system role. No administration UI is supplied.
+
 ## Application work
 
 Application UI defaults to Polish with English support and light/dark themes; administration UI is English-only. Technical source, APIs, commands and repository documentation are English-only.
@@ -19,3 +29,9 @@ Use one active application roadmap under `docs/app/roadmaps`, a roadmap branch, 
 [Application tests](docs/runa/handbook/testing/strategy.md) use `php artisan test`, `runa:test`, `runa:test:frontend` and `runa:test:e2e`. [Commands](docs/runa/handbook/tooling/commands.md) documents the public interface. [Production guidance](docs/runa/handbook/production/architecture.md) covers runtime isolation and operations.
 
 Application identity/version in `src/app/application.json` is independent of the protected platform identity in `src/runa/platform.json`. Platform installation and updates are owner-operated external delivery procedures; customer repositories contain no owner installer/updater, platform test suites, maintenance reports or platform release history.
+
+Runa views support [unchanged defaults, application composition and full frontend
+replacement](docs/runa/handbook/development/frontend/customization.md). Customer
+presentation stays in src/app through public contracts; platform defaults and
+security/session orchestration stay in src/runa. The same rule applies to future
+Runa module views.

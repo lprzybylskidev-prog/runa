@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "runa.auth",
+  "kind": "core",
+  "version": "1.0.0",
+  "platform": ">=0.4.2 <0.6.0",
+  "framework_api": "^1.0.0",
+  "name": {
+    "pl": "Uwierzytelnianie",
+    "en": "Authentication"
+  },
+  "description": {
+    "pl": "Tożsamości użytkowników i niezależny cykl życia kont.",
+    "en": "Human identities and independent account lifecycle."
+  },
+  "dependencies": {
+    "required": {
+      "runa.audit": "^1.0.0"
+    },
+    "optional": {}
+  },
+  "providers": [],
+  "declarations": {
+    "apis": [
+      "Runa\\Modules\\Auth\\Definitions\\IdentityApi",
+      "Runa\\Modules\\Auth\\Definitions\\LifecycleApi",
+      "Runa\\Modules\\Auth\\Definitions\\InvitationsApi",
+      "Runa\\Modules\\Auth\\Definitions\\SessionsApi",
+      "Runa\\Modules\\Auth\\Definitions\\SecurityApi",
+      "Runa\\Modules\\Auth\\Definitions\\StepUpApi",
+      "Runa\\Modules\\Auth\\Definitions\\ProfilesApi",
+      "Runa\\Modules\\Auth\\Definitions\\PreferencesApi",
+      "Runa\\Modules\\Auth\\Definitions\\DeliveryApi",
+      "Runa\\Modules\\Auth\\Definitions\\PoliciesApi",
+      "Runa\\Modules\\Auth\\Definitions\\BulkSessionsApi"
+    ],
+    "health": [],
+    "lifecycle": ["Runa\\Modules\\Auth\\Definitions\\IdentityLifecycle"],
+    "settings": ["Runa\\Modules\\Auth\\Definitions\\IdentitySettings"],
+    "integrations": [],
+    "http": [
+      "Runa\\Modules\\Auth\\Definitions\\EntryHttp",
+      "Runa\\Modules\\Auth\\Definitions\\ProfileHttp"
+    ],
+    "commands": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
+    "jobs": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
+    "schedules": ["Runa\\Modules\\Auth\\Definitions\\EntryWork"],
+    "events": [],
+    "frontend": [],
+    "slots": [],
+    "management": ["Runa\\Modules\\Auth\\Definitions\\AuthPermissions"],
+    "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]
+  },
+  "docs": ["docs/runa/handbook/modules/auth/README.md"],
+  "tests": ["tests"]
+}

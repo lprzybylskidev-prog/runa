@@ -29,6 +29,19 @@ Existing files require an explicit repeated `--overwrite=repository/path=SHA256`
 
 Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation/check commands; no module-management HTTP write endpoint exists.
 
+## Welcome catalogue
+
+Every new Runa-owned module must also complete the default welcome page: supply
+PL/EN names and descriptions in its manifest, add its icon to the platform-owned
+`src/runa/resources/js/lib/welcomeModules.ts` map, and inspect its tooltip in both
+locales/themes with pointer and keyboard focus. The build-time catalogue discovers
+Runa manifests automatically and reuses their public descriptions; it does not
+represent installation/availability or disclose grants. A generic fallback avoids
+an empty icon during development but does not complete this requirement.
+Application modules and customer presentation are application-owned; customers
+may replace the welcome through the public Auth presentation contract without
+editing the protected catalogue.
+
 ## Contract checks and tests
 
 ```bash
@@ -49,7 +62,13 @@ Literal checks are deliberately pragmatic. Aliases, dynamic class/path/SQL const
 
 ## Independent module versions
 
-The agent assesses and updates each changed module's stable `X.Y.Z` manifest version and central `CHANGELOG.md`, independently of platform VERSION and the application manifest. PATCH covers compatible corrections, MINOR compatible new behavior/contracts, and MAJOR incompatible public API/event/settings/behavior/data expectations. Record the chosen impact and check required dependents and enabled optional integrations. Pre-1.0 does not make silent contract breaks acceptable; state compatibility decisions explicitly. The platform's user-controlled major release rule remains separate.
+The agent assesses and updates each changed module's `X.Y.Z` manifest version and central `CHANGELOG.md`, independently of platform VERSION and the application manifest.
+
+- A new module develops through `0.x.y` versions during the roadmap that creates it. That roadmap delivers its first stable `1.0.0` at verified closure; prepare the manifest, changelog, dependent constraints and explicit install/update edges as part of finalization. Do not publish `1.0.0` merely because implementation is finished or skip the roadmap's acceptance gates.
+- After stabilization, compatible new capabilities/contracts use MINOR (`1.0.0` -> `1.1.0` -> `1.2.0`), resetting PATCH. Compatible corrections use PATCH (`1.2.0` -> `1.2.1`). A later roadmap does not reset an existing module to `1.0.0`.
+- Incompatible public API/event/settings/behavior/data expectations require MAJOR (`2.0.0`, `3.0.0`), resetting MINOR and PATCH, and explicit approval from the project owner before implementing the incompatible change. Stop for that decision; never hide a break in MINOR or PATCH. The amount of internal code rewritten does not determine MAJOR: even an extensive compatible rebuild can remain MINOR.
+
+Record the chosen impact and check required dependents and enabled optional integrations. Pre-1.0 does not make silent contract breaks acceptable; state compatibility decisions explicitly. The first stable module release follows the agreed creation-roadmap rule; later module MAJOR changes require a separate owner decision. Platform/application major-release approval remains independent.
 
 `module_versions.py` compares tracked and untracked module implementation against the specified existing Git ref (default `main`), requires a monotonically increased version and a `## X.Y.Z` or `## [X.Y.Z]` central changelog heading for changed implementation, and rejects downgrades. New modules require their initial entry. Test-only edits do not force a bump. Missing baseline/shallow history, malformed versions or unsafe changelog paths fail; provide an available deliberate baseline rather than silently skipping checks. It does not infer semantic breaks, select the bump, prove the entry's accuracy or authorize deletion of a retained module. Human/agent review owns those decisions and must review dependent constraints. Backend-impact local quality graphs include these scoped checks; no CI or universal pre-commit gate is introduced.
 
@@ -57,7 +76,7 @@ The agent assesses and updates each changed module's stable `X.Y.Z` manifest ver
 
 The optional first-development example is `app.reference`, version 0.1.0. Choose `--reference-module=include|exclude` in the external source installer, or answer its interactive question. Automation defaults to exclude. Source selection persists on reopen; protected-platform updates preserve customer example edits and never add declined code. Production sparse staging, Docker context and frontend registry exclude it; backend discovery refuses copied reference source. Its central guide is `docs/app/modules/reference/README.md` when selected. The clean variant retains this guide and all public module contracts without needing the example.
 
-Production builds copy both owners' module source into the frontend build for component discovery and into PHP for runtime discovery. The Vite module plugin is a build input only. Keep the empty Runa module root tracked so clean customer builds need no pre-existing local directories. Docker context exclusions remove development examples and tests before these copies.
+Production builds copy both owners' module source into the frontend build for component discovery and into PHP for runtime discovery. The Vite module plugin is a build input only. The tracked Runa module root contains the Core Audit, Auth and Permissions source; clean customer builds need no pre-existing local directories. Docker context exclusions remove development examples and tests before these copies.
 
 Module anatomy follows the generated skeleton: strict manifest; owned `backend/Contracts` DTOs/interfaces and guarded implementations; explicit `database/migrations`; local frontend components and module tests; central owner docs. Registration, enabled flags, health, source version and successfully installed data version are separate. Inspect `ModuleUpdates::plan(owner)` and apply under the existing trusted application operation journal/maintenance boundary before enabling data-dependent modules. Application update execution is explicit. `ModuleTransitions` previews and atomically applies lifecycle changes; diagnose critical health before enabling. Health policies and work policies belong to the module, including retry/checkpoint/cancellation/compensation decisions.
 
@@ -70,8 +89,26 @@ use Runa\Support\Modules\Api\ModuleApis;
 $result = app(ModuleApis::class)->resolve('app.reference', Ping::class, '1.0.0')->read();
 ```
 
-Use only a foreign module's public Contracts through these adapters, exchange public UUIDv7 references and handle operation rejection explicitly. Required dependencies participate in activation/health; optional integrations do not auto-enable or disable either side. Test real Core dependency policies with isolated fixtures until Core modules ship. Never add phantom Auth/Permissions/Audit/Admin registrations to make an example boot.
+Use only a foreign module's public Contracts through these adapters, exchange public UUIDv7 references and handle operation rejection explicitly. Required dependencies participate in activation/health; optional integrations do not auto-enable or disable either side. Use the shipped Core Audit contracts for manual history and isolated fixtures for dependency policies whose real modules remain undelivered. Never add phantom Core/Admin registrations to make an example boot. Use the [Permissions declaration and grant contract](../modules/permissions/README.md) for source-owned permissions/predefined roles; ordinary action grants do not replace record policies or security steps.
 
 Use ModuleSchema/ModuleModel and ModuleStorage for owned data/files; migrations run only in explicit install/update. No cross-module SQL/models/relations/FKs/path traversal. Settings providers declare typed defaults/validation and immediate/reinitialize handlers; use revision/generation checks and private runtime reads for sensitive values. Facts use ModuleEvents after commit and independent versioned listeners; coordinated critical operations use guarded APIs. Jobs/commands/schedules use classified adapters and cooperative work checkpoints. Frontends opt into ModulePage/navigation/ModuleSlot, validate runtime/build identity before loading and use the shared HTTP client; custom shells remain supported. Logs carry bounded origin/correlation and never raw secrets/payloads.
 
 Troubleshoot in this order: source/manifest synchronization, installed version, administrative state, own/effective health and independent maintenance reasons, active work/fences, then declaration/build compatibility. Inspect `runa:modules:management`, `runa:modules:health` and redacted settings. Source checks cannot prove semantic isolation or replace behavior tests. Test module-specific failure/retry cases and retained-data disable/unregister, and review dependent public contracts whenever the independent module version changes.
+
+## Replaceable module views
+
+Every present/future Runa module view follows [frontend adoption and
+replacement](frontend/customization.md): ship working default views under src/runa
+and documented public props/slots/controllers for unchanged use, application
+composition and complete customer presentation replacement. Reusable orchestration
+and security remain platform-owned; do not require customer private imports,
+protected edits or copied session/restriction flows. A module-specific facade and
+typed local seams are sufficient; no universal renderer/registry is required.
+
+Keep the supplied src/app minimal: essential wiring/extensions and the selected
+reference module. Additional platform examples belong in owner fixtures; customer
+business screens belong in their application only when requested. Synchronize the
+public contract, independent module version/changelog, owner/customer skills and
+meaningful default/custom consumer/update/clone regressions in the owning point.
+When a view participates in native/emergency errors, preserve the shared static
+CSP-constrained presentation build as well as normal browser composition.

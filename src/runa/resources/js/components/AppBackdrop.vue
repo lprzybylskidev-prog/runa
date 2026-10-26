@@ -1,9 +1,55 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useDecorativeMotion } from '../composables/useDecorativeMotion';
 import AppConstellation from './AppConstellation.vue';
+const props = withDefaults(defineProps<{ constellationGlow?: boolean }>(), {
+  constellationGlow: false,
+});
+const backdrop = ref<globalThis.HTMLElement>();
+let previous: globalThis.SVGGElement | undefined;
+useDecorativeMotion(
+  () => props.constellationGlow,
+  () => {
+    const points = [
+      ...(backdrop.value?.querySelectorAll<globalThis.SVGGElement>('svg g') ??
+        []),
+    ].filter((point) => {
+      const bounds = point.getBoundingClientRect();
+      return (
+        point !== previous &&
+        bounds.width > 0 &&
+        bounds.height > 0 &&
+        bounds.right > 0 &&
+        bounds.left < window.innerWidth &&
+        bounds.bottom > 0 &&
+        bounds.top < window.innerHeight
+      );
+    });
+    const point = points[Math.floor(Math.random() * points.length)];
+    if (!point) {
+      return [];
+    }
+    previous = point;
+    const levels = [
+      [0.025, 0.1],
+      [0.07, 0.22],
+      [0.55, 0.95],
+    ] as const;
+    return [...point.querySelectorAll('circle')].map((circle, index) => {
+      const [base, peak] = levels[index]!;
+      return circle.animate(
+        [{ opacity: base }, { opacity: peak, offset: 0.45 }, { opacity: base }],
+        { duration: 3000, easing: 'ease-in-out' },
+      );
+    });
+  },
+  3000,
+  [7000, 15000],
+);
 </script>
 
 <template>
-  <div class="app-backdrop" aria-hidden="true">
+  <div ref="backdrop" class="app-backdrop" aria-hidden="true">
     <span class="backdrop-geometry" />
     <AppConstellation variant="one" class="constellation-one" />
     <AppConstellation variant="two" class="constellation-two" />

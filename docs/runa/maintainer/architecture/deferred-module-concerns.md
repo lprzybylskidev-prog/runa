@@ -4,17 +4,50 @@ This registry records areas intentionally left undefined until the responsible f
 
 Remove an entry when the responsible module is implemented and move its durable rules into the correct project documentation/skills.
 
-| Concern               | Responsible future scope    | What is intentionally deferred                                                                       | Removal condition                                      |
-| --------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Audit trail           | Audit module                | Audit record schema, actor/context model, business event coverage, retention/query UX                | Audit module roadmap establishes durable policy        |
-| Files/uploads         | Filesystem module           | Upload storage, scanning, metadata/versioning, content disposition, virus scanning, file lifecycle   | Filesystem module roadmap establishes durable policy   |
-| External integrations | Integrations module         | HTTP adapter conventions, provider credentials, retries/circuit behavior, inbound/outbound contracts | Integrations module roadmap establishes durable policy |
-| Roles and permissions | Authorization system/module | Exact role/permission storage, policy integration, inheritance, assignment UX                        | Authorization roadmap establishes durable policy       |
+| Concern               | Responsible future scope | What remains deferred                                                                                                                | Removal condition                               |
+| --------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| Data management       | Data-management module   | Physical deletion/anonymization and its audited lifecycle                                                                            | Approved module policy is delivered             |
+| Files/uploads         | Filesystem module        | General upload storage/scanning/metadata/versioning and file lifecycle; Auth private avatars already have their own bounded contract | Filesystem policy is delivered                  |
+| External integrations | Integrations module      | Provider credentials, adapter/retry/circuit and inbound/outbound contracts; LDAP/OIDC/SSO remain excluded                            | Integration policy is delivered                 |
+| Administration        | Admin module             | Audit viewer, user/role/preset/assignment UI and generic management renderer; typed backend contracts already exist                  | Approved Admin UI is delivered                  |
+| Notifications         | Notifications module     | General notifications and operational in-app delivery; direct Auth/security email is delivered                                       | Notifications runtime is delivered              |
+| Throttling            | Throttling module        | Optional general request throttling; Auth retains intrinsic login/OTP safeguards and supplies an exclusive request adapter seam      | General throttling contract is delivered        |
+| Teams                 | Teams module             | Team membership and team-scoped grants                                                                                               | Teams policy is delivered                       |
+| Import                | Import module            | General import and CSV/XLSX user import                                                                                              | Import policy is delivered                      |
+| External factors      | Future Auth scope        | WebAuthn and external identity providers                                                                                             | Explicitly approved Auth extension is delivered |
+| Logs                  | Logs module              | Authorized bounded diagnostic log read/search UI/API; structured logging is delivered                                                | Logs read/search contract is delivered          |
 
 Generic secure coding, transaction, API, and dependency rules continue to apply. Do not invent module-specific policy merely because a generic skill mentions it.
 
-The audit module will also define audited physical deletion/anonymization. Do not implement that mechanism during environment setup. Module identity/discovery and dependency/cascade planning are defined in the public [module framework contracts](../../handbook/architecture/module-framework.md); administrative transition execution and operational enforcement remain under the active module-framework roadmap. The future Logs read/search module remains deferred; the framework now supplies structured origin/correlation/redaction with private bounded file rotation and container stderr under the public module contract. Authentication implementation and its exact package choice remain deferred alongside authorization; no starter auth stack is implicitly approved.
+Audit append-only storage, automatic/manual capture and authorized reads are
+implemented under the [Audit contract](../../handbook/modules/audit/README.md).
+[Auth](../../handbook/modules/auth/README.md) supplies identity, eligibility,
+sessions/CSRF, credentials/factors, private self-service, preferences, security
+email, policy history and trusted operator recovery.
+[Permissions](../../handbook/modules/permissions/README.md) supplies declarations,
+current grants, ordinary access/preset/copy operations, protected authority and
+last-superadministrator participation. First-administrator integration and explicit
+local development fixtures are implemented. Independent versions and limitations
+belong in their public guides/changelogs; this registry records remaining scope.
+Frontend customization reconciliation remains RM-2026-011 point 19; final integrated
+acceptance/release remains point 20. Implementation is not a final PASS claim.
 
 ## Auth-owned user preferences
 
-Owner decision (2026-10-19): when implementing Auth, review every browser-local preference, including available/default table views, column layouts, language, theme, statistics modes and shell/view preferences. Provide durable per-user backend persistence, preferably database-backed, so settings survive browser-storage expiry/clearing and switching browsers/devices. Browser-local storage remains the current pre-Auth adapter and may remain a guest/cache fallback. The Auth roadmap must define account/application scope, authenticated access, migration/import/precedence, synchronization and logout/account-switch behavior before implementation. Review legacy locale/theme keys as well as the scoped PreferenceStore; do not assume all current settings already share one storage path. No user-preference schema/API, account synchronization or Auth implementation is authorized by RM-2026-004.
+The 2026-10-19 persistence/adoption decision is delivered by Auth 0.6.0; follow the
+[public preference and delivery contract](../../handbook/modules/auth/preferences.md).
+PostgreSQL is authoritative for signed-in accounts, guest storage remains separate,
+and legacy adoption requires explicit ownership confirmation. Future domain views
+must declare their exact table/statistics schemas; no generic undeclared JSON store
+or Notifications runtime is delivered. Own-account controls are delivered under the [account UI contract](../../handbook/modules/auth/account-ui.md).
+
+The future optional Throttling module must take exclusive Auth request-cap ownership
+when enabled, recheck lifecycle/availability per call and restore the local targeted
+fallback when disabled/absent. Failures of an enabled integration must not silently
+weaken enforcement. The delivered [Auth seam](../../handbook/modules/auth/throttling.md)
+is not the general module. Intrinsic credential/proof budgets and replay/eligibility
+rules remain Auth-owned; any later relocation requires its own agreed roadmap.
+
+The owner plans module development incrementally. Throttling is a distant,
+unscheduled concern; its optional nature and ownership boundary do not authorize
+a roadmap draft, implementation order or projected release version.

@@ -304,12 +304,12 @@ def build_images(release=None):
     from dependencies import materialize
     materialize(Path(release) if release else ROOT, check=True)
     selected = dc(['config', '--images'], release, capture_output=True, text=True).stdout.splitlines()
-    app_images = sorted({image for image in selected if image.startswith(('runa-production:', 'runa-nginx:'))})
+    app_images = sorted({image for image in selected if image.startswith(('runa-production:', 'runa-nginx:', 'runa-postgres:'))})
     present = [subprocess.run(['docker', 'image', 'inspect', image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0 for image in app_images]
     if any(present) and not all(present):
-        raise ValueError('Incomplete immutable image pair; inspect/remove the failed build explicitly before retrying.')
+        raise ValueError('Incomplete immutable image set; inspect/remove the failed build explicitly before retrying.')
     if not any(present):
-        dc(['build', 'app', 'nginx'], release)
+        dc(['build', 'app', 'nginx', 'postgres'], release)
     production.verify_images(command(release), environment(), source=Path(release) if release else ROOT)
 
 

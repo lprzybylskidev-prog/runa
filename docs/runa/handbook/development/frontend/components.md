@@ -25,7 +25,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppIcon
 
 - Source: `src/runa/resources/js/components/AppIcon.vue`.
-- Typed subset of four Tabler outline icons with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
+- Typed outline icon set (including clipboard-list, key and shield-lock for module identity) with optional `size` (24 default) and `color` (`currentColor` default); decorative SVGs are hidden from assistive technology. Put an accessible name on the owning control when it is icon-only.
 - Local source assets, licenses and revision/hash provenance: `docs/runa/handbook/design/assets.md`.
 
 ## Root preference buttons
@@ -36,14 +36,14 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppTooltip
 
 - Source: `src/runa/resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
-- Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
+- Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session; a repeated pointerenter while the anchor is still hovered, or a delayed first pointerenter during the same keyboard focus, does not reopen a dismissed tooltip. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
 - Uses shared `useFloatingLayer` for measured viewport-clamped fixed positioning, resize/content observation, top-layer Escape/outside dismissal and teardown. Both placements teleport outside scroll clipping; no runtime DOM access during static error rendering.
 - Tooltip is descriptive only; use Popover for interactive content. Opacity transition is 140ms with reduced-motion support. Keep an accessible name on icon-only triggers.
 
 ## AppAlert, AppBadge and AppStatus
 
 - Sources: `AppAlert.vue`, `AppBadge.vue`, `AppStatus.vue` under `src/runa/resources/js/components/`; public `Alert`, `Badge`, `Status`. Semantic `FeedbackTone`: neutral/success/info/warning/danger for alerts, toasts, badges and statuses. Neutral alerts/toasts use the ordinary raised surface, secondary text and control border, with no status tint. All use shared theme role tokens.
-- Alert accepts optional title, content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
+- Alert accepts optional title, alignment=start/center (start default), content/actions slots, dismissible and localized closeLabel. Emits close; the owner controls removal. Danger uses role alert, other tones role status; announce=false disables live semantics for static catalogs or an existing live region. Symbols and readable content supplement color.
 - Badge is static inline labeling/counts, size sm/md, no live role. Status pairs a decorative dot with required caller-provided readable slot content; announce opt-in enables role status.
 
 ## AppPopover
@@ -55,9 +55,24 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## ToastViewport and useToasts
 
 - Sources: `AppToastViewport.vue`, internal `AppToast.vue`, `composables/useToasts.ts`; public `ToastViewport`, `useToasts`, ToastMessage/FeedbackTone types.
+- Toast content is centered horizontally and vertically between its icon and close control; recovery actions are centered with the text. Empty descriptions reserve no extra line.
 - Local setup-scoped queue: `const { messages, show, dismiss } = useToasts()`. Pass messages to ToastViewport and bind dismiss. show accepts title, optional description/tone/duration and returns its ID. Default duration is 5000ms, danger defaults to persistent (0); invalid/nonfinite durations are persistent. This is transient feedback, not a notification center.
-- Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
-- Keep actionable/important errors inline as well as in transient feedback; the host feature owns that error state. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.
+- Viewport accepts an actions slot scoped with message; modal consumers teleport inside the active modal focus/inert boundary and wait for its target before rendering. Viewport is top-right and fits narrow screens; an initially empty polite live region announces additions once. Explicit localized close buttons are always present. Hover or focus pauses the remaining time; resume waits until both have left. Removing a focused toast through useToasts restores its invoking control when available. Timers/listeners clean up with components.
+- Form-wide outcomes use top-right notifications only; field-specific corrections remain associated with their controls. Persistent error notifications retain explicit recovery actions. Standalone ToastViewport consumers can provide readonly ToastMessage[] and handle dismiss themselves, including any focus destination. No shell/provider/global store installation.
+
+## FormNotifications
+
+- Public FormNotifications composes the existing local toast queue/viewport. Props:
+  error/success strings, invalid boolean, locale (pl default) and attempt (0 default).
+  Error wins over success; simultaneous partial success is included as description.
+  Errors/invalid summaries are persistent, successes use the standard timeout.
+- Bind state owned by the form; increment attempt on each explicit submit so a
+  dismissed identical validation failure is reported again. One current result
+  replaces its predecessor. The actions slot supplies explicit recovery buttons.
+  The component never submits, reloads or retries by itself.
+- Use it for form outcomes instead of duplicating a banner near the form. Keep
+  linked field errors and normal static instructional/loading/empty states.
+  Modal consumers retain keyboard access and one polite live announcement.
 
 ## AppButton
 
@@ -71,7 +86,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Source: `src/runa/resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
 - Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
-- Action-list/split buttons and reusable avatars were removed at the owner's request; build these only when an actual application need appears. ApplicationLayout retains its unique initials profile control.
+- Action-list/split buttons remain absent until an actual application need appears. The current Auth profile requirement uses public Avatar for shared image/initials presentation; ApplicationLayout retains its dedicated profile disclosure control.
 
 ## AppFooter
 
@@ -89,7 +104,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppBrandIllustration
 
-- Source: `src/runa/resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it.
+- Source: `src/runa/resources/js/components/AppBrandIllustration.vue`. Decorative RunaLogo/grid/orbits; desktop retains the original composition, while narrow screens use a 240px panel and scaled artwork. The `RUNA` corner signature always identifies the platform and is never replaced by the business application name. MinimalLayout supplies it as the default illustration; consumers supply only content. The illustration slot can override it; `illustration: false` explicitly hides it. Points are real child elements on stationary ellipses. The illustration is static by default; interactive MinimalLayout opts into occasional full point laps and pulsation, with `orbitMotion: false` as its public opt-out. See the layout/motion guides for timing and cancellation.
 
 ## AppLoadingOverlay
 
@@ -100,8 +115,8 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppBackdrop
 
 - Source: `src/runa/resources/js/components/AppBackdrop.vue`.
-- Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture, animation or external assets.
-- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout. Follow the current background direction in `docs/runa/handbook/design/visual-direction.md`.
+- Shared decorative CSS backdrop: large diffuse violet/rose and cyan/blue corner gradients with a quieter center, and a masked 88px technical grid at theme-specific opacity (light 9%, dark 4.5%). Page-background rings/arcs are removed. No raster texture or external assets. The backdrop stays static by default; MinimalLayout alone opts into sparse point glows.
+- Decorative, fixed, pointer-transparent and clipped within its own viewport. Place inside an isolated layout stacking context behind opaque reading surfaces. Canonical use: MinimalLayout and ApplicationLayout. Follow the current background direction in `docs/runa/handbook/design/visual-direction.md`.
 
 ## RunaLogo
 
@@ -112,7 +127,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppConstellation
 
 - Source: `src/runa/resources/js/components/AppConstellation.vue`.
-- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. No motion, randomness, image asset or dependency.
+- Decorative deterministic SVG with thin lines and softly layered star points; `variant` selects one of three distinct branched patterns with 6–8 points. Desktop widths scale with the viewport (roughly 48–62vw with 500–1200px limits); mobile retains two cropped structures at 580/650px. Position them partly off-screen and behind the card, not as small isolated ornaments. Lines retain thin non-scaling strokes. Geometry and links remain static; AppBackdrop can animate point opacity when explicitly enabled, without an image asset or dependency.
 - Uses theme color tokens and is hidden from assistive technology. Canonical use: three peripheral details in AppBackdrop, reduced to two quieter details on narrow screens.
 
 ## ApplicationLayout and AppNavigation
@@ -120,7 +135,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 - Sources: `src/runa/resources/js/layouts/ApplicationLayout.vue`, internal recursive `src/runa/resources/js/components/AppNavigation.vue`; public import ApplicationLayout. Slots/props and route/preference contracts are documented in `docs/runa/handbook/architecture/frontend.md` and page-layouts.md.
 - AppNavigation reuses existing AppIcon/AppTooltip; supports link availability, URL-derived active state, whole-row disclosure buttons for groups and collapsed labels. Group labels do not navigate; leaf entries remain links. A centered CSS chevron lives inside the disclosure control, matching top-navigation convention. Right-position tooltip is a narrow shell requirement, not completion of the later feedback/layer group. All sidebar entries have a supplied or fallback Tabler icon.
 - Header and sidebar share a static 44px CSS grid over their opaque surface, using 30% of the theme backdrop-grid opacity and secondary-text color; forced-colors removes the decorative texture.
-- The initials profile trigger remains a dedicated 44px circular button; its shell selector takes precedence over the shared button corner style. ApplicationLayout preference buttons use sm (36px) with 18px icons. The sidebar toggle uses an 18×14px geometric three-bar mark centered in a 36px sm square, 24px from the header left edge, avoiding font-baseline glyph shifts. Header toggle and initials avatar expose visible hover/focus/pressed states through the semantic primary palette in both themes.
+- The profile trigger remains a dedicated 44px circular button without a border or background frame around its avatar; visible keyboard focus remains. Its shell selector takes precedence over shared button surfaces/corners. ApplicationLayout preference buttons use sm (36px) with 18px icons. The sidebar toggle uses an 18×14px geometric three-bar mark centered in a 36px sm square, 24px from the header left edge, avoiding font-baseline glyph shifts. Header toggle and initials avatar expose visible hover/focus/pressed states through the semantic primary palette in both themes.
 - Existing AppPreferenceControls and useDisplayPreferences are shared shell composition, preserving root timing/focus. MinimalLayout can supply staticPreferences for build-time native error rendering; the same controls/buttons/icons render GET forms in navigation mode without DOM/storage access. Do not create another copy when later finalizing buttons/feedback; update both consumers. AppNavigation/profile/drawer composition is finalized with the owning later component points, not a competing exported dropdown/modal system.
 
 - Collapsed sidebar renders an icon-only list with 8px vertical padding; hidden headings/labels/submenus and their wrappers reserve no space. Saved expansion restores on reopening. It centers enabled/disabled icons identically, omits the supplementary sidebar-bottom slot and displays only the platform version in its footer. Top navigation has dotted edge cues only where more content is scrollable; cues fade over 160ms and respect reduced motion. Scroll/resize/content changes refresh the edge state.
@@ -147,7 +162,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 - Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `src/runa/resources/js/components/App*.vue`. `AsyncContentState` is loading/error/empty/success. No fetch/provider lifecycle is hidden in these primitives.
 - Spinner requires localized label; sm/md/lg are 14/24/44px. Standalone uses role=status; decorative removes announcement for an already named parent. Button busy state and LoadingOverlay now compose this shared spinner, preserving overlay timing/focus/color capture. Reduced motion removes rotation.
-- Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not implement avatars or imply actual data progress.
+- Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not fetch identity data or imply actual data progress.
 - Progress requires localized label; value null/absent/nonfinite is indeterminate. Finite value is clamped to 0..max (positive finite max, otherwise 100). ARIA uses actual value/max units; visible percentage is derived only for determinate progress. Optional valueText supplies a localized meaningful equivalent. FeedbackTone selects neutral/success/info/warning/danger; reduced motion stops travel/transition while leaving the status visible. The caller owns completion/failure/cancellation.
 - EmptyState requires title, optional description/icon; icon and actions slots support composition. It is static by default. AsyncContent announces its default empty state through role=status.
 - AsyncContent requires controlled state and offers loading/error/empty/success slots, with default slot as success fallback. Defaults compose Spinner, Alert and EmptyState; all text is configurable (English standalone defaults; application callers supply PL/EN). Optional retryLabel exposes a retry button and retry event; custom error slot receives retry(). Retry never invents success or fetches data. Only the active state is mounted, so hoist form/draft state if it must survive switching; network cancellation and stale-response handling belong to the caller. aria-busy reflects loading; custom slots own their appropriate accessible status semantics.
@@ -189,7 +204,7 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 
 ### Table
 
-`Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters, async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
+`Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters (sorting defaults on with explicit `sortable: false` opt-out and server capability gating), async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
 
 ### Nested semantic colors
 
@@ -237,3 +252,124 @@ IdentityProvider keeps its existing reactive subtree contract. Normal applicatio
 - ModulePage takes nullable view, built components, href, optional locale and unavailableText, with an unavailable scoped slot. It reconstructs exact route context and mounts only available pages with matching manifest hashes. Gate before setup/import, rather than starting page requests then hiding content.
 - ModuleSlot takes nullable view, components, name and exact scalar values. It preserves backend contribution order and stable identity, rejects incompatible props/builds, and exposes ordinary fallback content. Host/contributor availability and permission projection are backend-owned.
 - createModuleComponents wraps the opt-in virtual local registry with raw lazy Vue components. useModuleFrontend explicitly refreshes through the existing HTTP wrapper, clears stale presentation and cancels/ignores obsolete requests. Follow the public module-framework frontend section for schema, build inclusion, scalar props, ordering persistence and permission limits.
+
+## Account preference adapter
+
+Public `accountPreferences` and `createAccountPreferenceStore` complement the
+existing PreferenceStore/usePreference contract. Display/navigation/statistics/table
+consumers subscribe to account hydration and keep guest values separate. Public `PreferenceFeedback` (`AppPreferenceFeedback.vue`) is reused by both layouts
+and shows save/load/conflict feedback through shared notifications. Rejected writes
+refresh the server snapshot automatically without replay. Retry loading appears only
+when synchronization fails; feedback is static and announced, with no added motion.
+See [Auth preferences](../../modules/auth/preferences.md) for exact declarations,
+revisions, safe legacy adoption and logout/late-response behavior. Custom standalone
+stores remain opt-in; standalone components initialize no account session.
+
+## Auth entry composition
+
+`AuthEntry`, `entryPage` and `EntryPage` are exported separately from `@/runa/auth`.
+The lazy module-owned flow reuses MinimalLayout and the shared Form, TextInput,
+RadioGroup, Checkbox, Button, Spinner and Alert components. Changing page resets
+and cancels the old flow. See [entry screens](../../modules/auth/entry-ui.md) for
+exact routes, public form constraints, server restrictions, safe returns and
+in-memory one-time material. Account management/session-expiry UI uses AuthApplication below.
+
+## LinkButton and Auth application composition
+
+`LinkButton` maps to `AppLinkButton.vue`: a native anchor with required href and
+existing button variants/tone, preserving open-in-new-tab and keyboard semantics.
+Use Button for mutations and LinkButton for styled navigation; it inherits the
+shared control focus/color/motion without duplicating local button markup. Auth
+welcome and application dropdown/entry use it. It does not authorize a destination.
+
+Public `AuthEntry`, `AuthWelcome` and `AuthApplication` load lazily from `@/runa/auth`.
+The latter accepts optional account=true and composes the existing ApplicationLayout,
+profile/sign-out slot, self-service forms, bounded Table lists, real-activity/expiry
+boundary and explicit safe draft review. See the [account UI](../../modules/auth/account-ui.md).
+Custom shells/forms must preserve request/account ownership and never replay writes.
+
+## Application boot and presentation contracts
+
+Public `@/runa/ui` exports `createApplication(root)` (Vue App with non-blocking
+public identity hydration), `HttpErrorLayout`, `HttpErrorContent` and
+`HttpErrorLayoutProps`. Shared CSS is imported through `@/runa/ui/styles.css`.
+`@/runa/http` exports the single `request`/`ApiError` transport boundary.
+`@/runa/auth` exports DefaultApplication, AuthPresentationProvider and its typed
+component map, AuthEntry/AuthApplication/AuthAccount/AuthWelcome/AuthAvatarCropper and the shared
+entry/account/welcome/session controllers. See [frontend adoption](customization.md)
+for supported props, slots, lifetime and security obligations. All future Runa
+module views follow the same usable-default/public-replacement requirement.
+Canonical custom consumers are owner-only fixtures under
+src/runa/tests/frontend/fixtures/customization; they are excluded from delivery.
+
+MinimalLayout exposes `header-actions` with translator `t` inside the default
+header action group beside locale/theme controls. Use it for page entry actions
+without duplicating identity/preferences. Welcome authentication links use this
+slot and wrap responsively; custom layout wrappers forward it.
+
+Button and LinkButton share the single src/runa/resources/css/button.css style
+source through scoped imports, retaining variants, themes, focus and reduced motion
+without making link styling depend on mounting a separate button instance.
+
+Public TextLink from @/runa/ui (AppTextLink.vue) renders a native href anchor with
+quiet muted 12px text, no surface/border or permanent underline, hover underline/
+color, visible keyboard focus, 44px touch target and reduced-motion handling.
+Welcome and Auth entry navigation share this implementation. Form submits use
+Button outline variants; active tabs retain their independent selection styling.
+
+ApplicationLayout omits the heading region for an empty title without heading or
+action slots. Dedicated Auth user-dropdown rows remain shell-local: compact
+avatar/initials and name identity, divider, 44px left-aligned icon/label navigation/sign-out.
+The public Icon catalogue includes logout. Panel użytkownika/User panel appears
+only in the user dropdown; the default /app workspace has no placeholder content.
+
+The default account view composes four existing Cards with independent Forms and
+shared FormNotifications outcome feedback. AuthAvatarCropper exports a local,
+bounded square crop through `@/runa/auth`; see [the account UI contract](../../modules/auth/account-ui.md)
+and [public customization](customization.md). The account card hosts it in the
+shared Dialog with explicit Apply/Cancel. The canvas displays a circular bright
+frame and dimmed surrounding image; direct mouse/touch dragging, wheel/pinch
+zoom and keyboard alternatives replace sliders. Mask pixels never enter export.
+AppPickerSlider remains the internal color-picker control, with optional min=0;
+disabled fieldsets/inert ancestors block edits.
+
+## Avatar
+
+Public Avatar from `@/runa/ui` renders a decorative circular image with initials
+fallback and object-fit cover. Props: initials (required), src (default empty),
+size in px (default 40), loading (default false) for pending identity metadata.
+A shared circular Skeleton pulses while metadata or the image is loading; initials
+appear only after no image is known or an image fails. Source changes restart image
+readiness. Reduced motion/print inherit Skeleton's static fallback.
+The parent owns the accessible name, identity authorization and safe image URL.
+No fetching/profile storage or global state lives in this primitive.
+During loading the Avatar background is transparent and the animated Skeleton
+fills its exact bounds, so the entire placeholder visibly pulses like content.
+ApplicationLayout accepts optional userAvatar (default empty) and userLoading
+(default false) alongside userName/userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
+
+## Form conflict decisions
+
+`FormConflict` (`AppFormConflict.vue`) composes the shared Alert and Button without
+extra motion. It renders localized current values (`current`), `locale`, `busy` and
+optional `allowKeep` (default true), and emits `accept`/`keep`; its default slot can show the current server image or
+other feature-owned comparison content. It never fetches,
+discards, rebases or saves by itself. Place it inside the affected form, following
+[automatic reconciliation](forms.md#automatic-read-reconciliation); disable Keep
+when the edited target has disappeared. Preserve normal field errors. Explicit
+resolution restores lost focus to the containing form when its decision buttons
+unmount; background refresh never moves focus.
+
+MinimalLayout and ApplicationLayout accept homeHref (default /) for the brand link.
+Auth presentations supply /app while welcome is disabled or policy is unknown, and
+/ when enabled. Custom layout wrappers forward it; it is navigation presentation,
+not an authorization or server-routing decision.
+
+## Account history detail
+
+AuthHistoryDetail composes public Dialog, Spinner, Alert and Button for an explicit
+read-only event modal, PL/EN before/after pairs and legacy/security explanations.
+The controller fences overlapping/closed reads and supports retry. Public presentation
+replacement and exported types are documented in the
+[history contract](../../modules/auth/history.md); custom application presentation
+lives in src/app. Existing Dialog owns motion/focus; no new transition is added.

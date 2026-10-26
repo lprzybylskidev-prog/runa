@@ -31,3 +31,33 @@ Complete customer-repository deployment orders scoped forward platform migration
 ## Module installation boundaries
 
 Use ModuleUpdates for explicit owner-scoped module installation, never lifecycle toggles or request boot. Pure upgrade descriptors/preflight declare forward version paths; schema migrations and transactional upgrade completion records commit atomically. Nontransactional retry requires explicit idempotency, otherwise retain the source/owner/fingerprint fence and follow documented operator recovery. Reuse the caller's installation/deployment journal/lock/maintenance; the platform updater selects only Runa modules. App-module invocation and ordering stay explicit in the customer deployment. See docs/runa/handbook/architecture/module-framework.md for the delivered contract.
+
+Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
+
+Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.
+
+Follow the [Auth policy/operator contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for atomic settings/history/Audit/proof consumption, bounded account exceptions,
+preview-bound bulk revocation and trusted CLI initialization/recovery. Keep private
+one-time material out of command arguments/output and logs; operator access is the
+customer's infrastructure boundary. Do not grant a temporary administrator flag or
+call guarded business gateways behind a settings/update fence.
+
+Consume the [Permissions ordinary access contract](../../../../docs/runa/handbook/modules/permissions/access.md)
+for reviewed assignment/custom-role/preset/copy mutations, fresh both-factor proof,
+source/target revision checks and complete aggregate Audit. Preserve assigned
+roles/directs, snapshot independence and protected system membership. Do not use
+private grant writers or flatten role-derived effective grants into direct grants.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.
+
+Module email presentation uses the shared native Runa Markdown layout described in
+`docs/runa/handbook/architecture/frontend.md` (Native email layout), including text
+alternatives and configured branding. Reusing that layout does not authorize
+changing a module's delivery, recipient, secret-handling or retry contract. Auth
+private mail stays at its guarded synchronous delivery boundary; do not queue its
+Mailable or move recovery into general notification routing.

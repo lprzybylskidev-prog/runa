@@ -177,14 +177,6 @@ class DocumentationOwnership(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'scope'):
             commit_message(self.root, message)
 
-    def test_shared_operational_scan_policy_preserves_approved_scope_and_binds_public_evidence(self):
-        archived = json.loads((ROOT / 'docs/runa/maintainer/security/postgres-gosu-not-affected.json').read_text())
-        shared = json.loads((ROOT / 'tools/application/security/postgres-gosu-not-affected.json').read_text())
-        self.assertEqual({k: v for k, v in archived.items() if k not in ('evidence', 'evidence_sha256')},
-                         {k: v for k, v in shared.items() if k not in ('evidence', 'evidence_sha256')})
-        self.assertTrue(shared['evidence'].startswith('docs/runa/handbook/security/'))
-        self.assertEqual(hashlib.sha256((ROOT / shared['evidence']).read_bytes()).hexdigest(), shared['evidence_sha256'])
-
     def test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes(self):
         mapping = json.loads((ROOT / 'docs/runa/maintainer/documentation-map.json').read_text())
         for name, expected in mapping['immutable_sha256'].items():

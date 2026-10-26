@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
+import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
+import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
+import { accountPreferences } from '../lib/preferenceStore';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import AppBrandIllustration from '../components/AppBrandIllustration.vue';
 import RunaLogo from '../components/RunaLogo.vue';
@@ -14,13 +17,32 @@ import type { FooterOptions } from '../runa/ui/identity';
 const props = withDefaults(
   defineProps<{
     footer?: FooterOptions | undefined;
+    homeHref?: string;
     illustration?: boolean;
+    constellationGlow?: boolean;
+    orbitMotion?: boolean;
     staticPreferences?: { locale: Locale; theme: Theme } | undefined;
   }>(),
-  { illustration: true, footer: undefined, staticPreferences: undefined },
+  {
+    illustration: true,
+    constellationGlow: true,
+    orbitMotion: true,
+    footer: undefined,
+    homeHref: '/',
+    staticPreferences: undefined,
+  },
 );
 const identity = useIdentity();
 const logoFailed = ref(false);
+onMounted(() => {
+  if (!props.staticPreferences) initializePreferenceSession();
+});
+if (!props.staticPreferences)
+  watch(
+    () => identity.value.applicationId,
+    (app) => accountPreferences.setApplication(app),
+    { immediate: true },
+  );
 watch(
   () => identity.value.logo?.src,
   () => {
@@ -47,14 +69,16 @@ const {
     :inert="changingPreference"
     :aria-busy="changingPreference"
   >
-    <AppBackdrop />
+    <AppBackdrop
+      :constellation-glow="constellationGlow && !staticPreferences"
+    />
     <a href="#main" class="skip-link">{{ t('skip') }}</a>
     <header
       class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"
     >
       <slot name="header" :t="t">
         <a
-          href="/"
+          :href="homeHref"
           :aria-label="identity.applicationName"
           class="brand flex min-h-11 items-center gap-3 text-xl font-semibold tracking-tight"
         >
@@ -76,15 +100,18 @@ const {
           >
           <span v-else class="break-words">{{ identity.applicationName }}</span>
         </a>
-        <AppPreferenceControls
-          :navigation="props.staticPreferences !== undefined"
-          :locale="locale"
-          :theme="theme"
-          :theme-label="themeLabel"
-          :language-label="languageLabel"
-          :t="t"
-          @change="changePreference"
-        />
+        <div class="flex max-w-full flex-wrap items-center justify-end gap-3">
+          <slot name="header-actions" :t="t" />
+          <AppPreferenceControls
+            :navigation="props.staticPreferences !== undefined"
+            :locale="locale"
+            :theme="theme"
+            :theme-label="themeLabel"
+            :language-label="languageLabel"
+            :t="t"
+            @change="changePreference"
+          />
+        </div>
       </slot>
     </header>
     <main
@@ -102,6 +129,10 @@ const {
           <div
             class="order-2 min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16 lg:order-1"
           >
+            <AppPreferenceFeedback
+              v-if="!props.staticPreferences"
+              :locale="locale"
+            />
             <slot name="content" :t="t"><slot :t="t" /></slot>
             <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
               <slot name="actions" :t="t" />
@@ -111,7 +142,10 @@ const {
             v-if="props.illustration"
             class="order-1 flex min-w-0 lg:order-2"
           >
-            <slot name="illustration" :t="t"><AppBrandIllustration /></slot>
+            <slot name="illustration" :t="t"
+              ><AppBrandIllustration
+                :animated="orbitMotion && !staticPreferences"
+            /></slot>
           </div>
         </div>
       </div>

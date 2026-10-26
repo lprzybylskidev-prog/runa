@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const evidence = '../artifacts/playwright/ui-foundations';
+const evidence = '../.runtime/artifacts/playwright/ui-foundations';
 
 for (const locale of ['pl', 'en']) {
   test(`email: light responsive ${locale} HTML without JavaScript`, async ({

@@ -9,9 +9,13 @@ use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingChange;
 use Runa\Contracts\Modules\SettingDefinition;
 use Runa\Contracts\Modules\SettingsActor;
+use Runa\Contracts\Modules\SettingsAuthorization;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsObserver;
+use Runa\Contracts\Modules\SettingsParticipant;
+use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
+use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
@@ -32,7 +36,51 @@ final class ModuleSettings
         private readonly Connection $connection, private readonly ModuleRegistry $registry,
         private readonly SettingsDefinitions $definitions, private readonly Encrypter $encrypter,
         private readonly SettingsObserver $observer,
+        private readonly SettingsParticipant $participant = new NoSettingsParticipation,
     ) {}
+
+    /** Add source defaults during a transactional reserved module upgrade, preserving existing values.
+     * Existing immediate definitions only: changed/removed keys need a separately designed migration.
+     */
+    public function upgradeDefaults(UpgradeContext $context): void
+    {
+        if ($context->connection !== $this->connection || $this->connection->transactionLevel() < 1) {
+            throw new RuntimeException('Settings upgrade requires the reserved default transaction.');
+        }
+        $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+        $record = $this->registry->snapshot()->modules[$context->module] ?? null;
+        if ($state === null || $state->update_operation !== $context->operation
+            || $state->update_owner !== explode('.', $context->module)[0]
+            || $record === null || ! $record->registered || ! $record->sourcePresent
+            || version_compare($context->to, $record->sourceVersion, '>')) {
+            throw new RuntimeException('Settings upgrade reservation changed.');
+        }
+        [$definitions, $provider] = $this->definitions->for($record);
+        $stored = $this->state($context->module);
+        if ($stored->settings_values === null) {
+            return;
+        }
+        $old = $this->decode($stored->settings_values);
+        $candidate = $old;
+        $changes = [];
+        foreach ($definitions as $key => $definition) {
+            if (! array_key_exists($key, $old)) {
+                if ($definition->application !== 'immediate') {
+                    throw new RuntimeException('Reinitializing defaults need an explicit upgrade workflow.');
+                }
+                $candidate[$key] = $definition->default;
+                $changes[$key] = $definition->sensitive ? ['replaced' => true] : ['old' => null, 'new' => $definition->default];
+            }
+        }
+        $this->definitions->validate($definitions, $provider, $candidate);
+        if ($changes === []) {
+            return;
+        }
+        $revision = $stored->settings_revision + 1;
+        $this->write($context->module, $this->encode($candidate), $revision);
+        $publication = new SettingsContext($context->operation, $context->module, $revision, 'immediate', $changes, null, now()->utc()->toIso8601String());
+        $this->participant->publishing($this->connection, new SettingsPublication($publication, $revision, 'upgrade', $changes));
+    }
 
     /** Safe management projection. Sensitive values expose set-state only, never ciphertext.
      * @return array{generation: int, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
@@ -115,12 +163,17 @@ final class ModuleSettings
                     'actor' => $actor === null ? null : ['kind' => $actor->kind, 'id' => $actor->id],
                     'occurred_at' => now()->utc()->toIso8601String(),
                 ];
+                if ($this->participant instanceof SettingsAuthorization) {
+                    $this->participant->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
+                }
                 $this->connection->table('shared.module_transitions')->insert([
                     'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $expectedGeneration,
                     'affected' => json_encode([$module], JSON_THROW_ON_ERROR), 'payload' => $this->encode($payload),
                     'status' => 'preparing', 'created_at' => now(), 'updated_at' => now(),
                 ]);
                 $this->write($module, $encrypted, $expectedRevision + 1);
+                $row = $this->operation($id);
+                $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $expectedRevision + 1, 'publish', $changes));
                 $this->bump(); // Publish candidate and durable fence together, preserving enabled state.
             });
             $row = $this->operation($id);
@@ -178,6 +231,8 @@ final class ModuleSettings
                 $state = $this->state($row->target);
                 if ($state->settings_values !== $payload['old']) {
                     $this->write($row->target, $payload['old'], $state->settings_revision + 1);
+                    $changes = array_map(static fn (array $change): array => isset($change['replaced']) ? $change : ['old' => $change['new'], 'new' => $change['old']], $payload['changes']);
+                    $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $state->settings_revision + 1, 'restore', $changes));
                 }
                 $this->save($row->public_id, 'compensating');
             });

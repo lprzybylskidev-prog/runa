@@ -32,20 +32,20 @@ function leave() {
 }
 function dismiss() {
   globalThis.clearTimeout(timer);
-  overAnchor = false;
+  // Preserve the current hover/focus session while the floating panel leaves.
   overPanel = false;
   dismissed = true;
   visible.value = false;
 }
 function enter() {
+  // Firefox can deliver the first pointerenter after Escape following a reload.
+  // An existing keyboard focus still belongs to the dismissed interaction.
+  if (!overAnchor && !keyboardFocus()) dismissed = false;
   overAnchor = true;
-  dismissed = false;
   update();
 }
 function click() {
   dismiss();
-  overAnchor = false;
-  overPanel = false;
 }
 const { position, ready, teleportTarget } = useFloatingLayer({
   open: visible,

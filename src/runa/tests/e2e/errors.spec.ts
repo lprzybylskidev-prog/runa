@@ -58,7 +58,7 @@ for (const status of [404, 503]) {
           }
 
           await page.screenshot({
-            path: `../artifacts/playwright/ui-foundations/error-${status}-${device}-${locale}-${theme}.png`,
+            path: `../.runtime/artifacts/playwright/ui-foundations/error-${status}-${device}-${locale}-${theme}.png`,
             fullPage: true,
           });
           expect(failed).toEqual([]);
@@ -106,7 +106,7 @@ test('errors: standalone emergency document uses independent assets', async ({
     'Przerwa techniczna',
   );
   await page.screenshot({
-    path: '../artifacts/playwright/ui-foundations/error-emergency.png',
+    path: '../.runtime/artifacts/playwright/ui-foundations/error-emergency.png',
     fullPage: true,
   });
 });

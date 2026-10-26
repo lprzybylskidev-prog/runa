@@ -42,3 +42,57 @@ For framework module data, use the [module boundary contract](../../../../docs/r
 38. `citext` is not the automatic solution to all case-insensitive fields.
 39. Collation/locale-sensitive sort/uniqueness semantics must be deliberate where business correctness depends on them.
 40. Full-text/trigram search is introduced only for a real need and after evaluating normal search.
+
+Durable dictionaries use code/name_pl/name_en/description_pl/description_en, projected deliberately from source pl/en descriptors through DictionaryEntry. Authority-affecting operations use the shared registry/advisory/Auth/Permissions lock order and exact Connection described in [module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md); no cross-module SQL/FK/model exception follows.
+
+Meaningful business/security mutations require [Audit history](../../../../docs/runa/handbook/modules/audit/README.md). Use Auditable with source-owned approved fields inside the default PostgreSQL transaction; automatic capture supports single-model save/delete/restore and scoped suppression. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual events on that same transaction. Suppression never disables explicit records. Follow the guide for nested redaction, fail-closed rollback, independent refusal and permission-protected bounded reads; arbitrary Eloquent writes are not automatically captured.
+
+Auth identifier ownership uses normalized unique claims, with retention by default and explicit release on future deletions. Restore must reacquire claims atomically without stealing a newer identity or transferring history; expiry, activation, approval, deletion and locks remain independent. Follow the [Auth identity/lifecycle guide](../../../../docs/runa/handbook/modules/auth/README.md) for the authoritative procedure.
+
+Use the [Auth entry transport contract](../../../../docs/runa/handbook/modules/auth/transport.md)
+for native session/CSRF bootstrapping, registration/invitation/verification and
+private single-use delivery boundaries. Do not add duplicate Fortify routes or put
+credentials/tokens in module APIs, events, metadata or queue payloads. Password/2FA flows use the credential procedure below.
+
+Use the [Auth session/abuse contract](../../../../docs/runa/handbook/modules/auth/sessions.md)
+for tracked proof/deadline validation, own/admin revocation and standalone abuse
+windows. Ordinary polling is not user activity; a heartbeat never moves the captured
+absolute deadline. Remembered cookies cannot recreate revoked sessions. Technical
+cleanup preserves Audit history. Do not add a native recaller or permanent account
+lock from attacker-controlled counters.
+
+Use the [Auth credential security contract](../../../../docs/runa/handbook/modules/auth/security.md)
+for password policy/recovery, mandatory factors, trusted devices and AuthStepUp.
+Consume server-chosen session/action-bound step-up inside the business transaction;
+trust or recent login never substitutes for required fresh proof. Never expose
+factor secrets, password history or OTPs through module APIs, logs or Audit.
+
+Use the [private Auth profile/address contract](../../../../docs/runa/handbook/modules/auth/profile.md)
+for versioned own/admin changes, recipient-bound verification, notification-only
+secondary emails, avatar ownership/cleanup and safe own-history summaries. Other
+modules consume guarded public contracts; never expand security delivery to
+secondary recipients or expose general Audit detail for self-service history.
+
+Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.
+
+Follow the [Auth policy/operator contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for atomic settings/history/Audit/proof consumption, bounded account exceptions,
+preview-bound bulk revocation and trusted CLI initialization/recovery. Keep private
+one-time material out of command arguments/output and logs; operator access is the
+customer's infrastructure boundary. Do not grant a temporary administrator flag or
+call guarded business gateways behind a settings/update fence.
+
+Follow the [Permissions contract](../../../../docs/runa/handbook/modules/permissions/README.md) for source-owned declarations, current direct/role action grants, guarded introspection and reviewed ordinary assignment/custom-role/preset/copy operations. Preserve independent account/security/availability and record-policy decisions; never call private authorization resolvers or use generic superadmin policy bypasses.
+
+Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
+for dedicated superadministrator changes and confirmed custom-role force deletion.
+Preserve the shared last-eligible-administrator transaction invariant, dedicated
+capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+protected membership through ordinary assignment/copy/preset writers.
+
+Use the [module development corpus contract](../../../../docs/runa/handbook/data/seeding.md#explicit-module-development-contributors)
+for explicit owner-checked contributors and module-ID dependencies. Keep native
+application production seeding separate, reject production even through direct
+fixture calls, exchange public references and preserve credentials/provenance with
+atomic Audit. Initial account passwords use hidden local prompts; never argv or
+distributed defaults.

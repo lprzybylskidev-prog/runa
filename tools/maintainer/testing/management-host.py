@@ -43,7 +43,7 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix=project + '-', dir=ROOT / '.runtime') as folder:
         root = Path(folder)
-        for name in ('artisan', 'src/artisan', 'bin/artisan', 'tools/application/runtime.py', 'tools/application/repository_boundary.py', 'tools/application/management.py', 'tools/application/host_executor.py', 'tools/application/operations.py', 'tools/application/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
+        for name in ('artisan', 'src/artisan', 'bin/artisan', 'tools/application/runtime.py', 'tools/application/repository_boundary.py', 'tools/application/management.py', 'tools/application/test_resources.py', 'tools/application/host_executor.py', 'tools/application/operations.py', 'tools/application/production.py', 'src/composer.json', 'src/composer.lock', 'docker/php/Dockerfile', '.dockerignore'):
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)

@@ -83,7 +83,7 @@ Reuse the accepted grid, diffuse corner gradients and static constellations for 
 4. Optional toolbar (including filters where relevant).
 5. Mandatory main content, with an optional supplementary panel.
 
-The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top header above the workspace stays visible with sticky positioning while the toolbar scrolls normally (latest owner point-3 correction, superseding the original nonsticky-top decision). Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors were implemented and visually accepted in point 3. The synthetic application scenarios are retained only in isolated tests; real modules/admin/authentication remain deferred.
+The application shell is optional; components can be imported individually. Sidebar and top navigation are both visible by default and independently hideable. Keep the sidebar on the left, viewport-fixed and independently scrollable; top header above the workspace stays visible with sticky positioning while the toolbar scrolls normally (latest owner point-3 correction, superseding the original nonsticky-top decision). Support sidebar groups, collapsed tooltips, a phone drawer, persisted collapse/expansion and narrow top-navigation overflow. Active module/area derives from URL descriptors, including direct links, refresh and back/forward; stored selection is not routing. Offer contained/fluid content widths and overridable print rules. These shell behaviors were implemented and visually accepted in point 3. The synthetic application scenarios are retained only in isolated tests; Auth entry/restricted screens now use MinimalLayout; application account integration and Admin UI remain separate.
 
 Do not copy dashboard content, cards, charts or their appearance from this reference. Its palette and typography are not selected; apply the separately agreed Runa visual direction.
 
@@ -150,9 +150,17 @@ User accepted (2026-10-17): remember the sidebar's expanded/collapsed preference
 
 ## Feedback and application states
 
-User accepted (2026-10-17): show field errors beside their fields and operation-wide errors near the form. Use brief notifications for confirmations. Establish consistent loading, empty-results and retry-after-error states.
+Owner correction (2026-10-24): show all form-operation outcomes, including successful
+saves and form-wide failures, only in the top-right notification area. Do not repeat
+them above the form. Keep field-specific validation beside the relevant controls.
+Use public FormNotifications for consistent presentation and recovery actions.
 
-Flash messages appear at the top right, offer an explicit close control and disappear automatically after a timeout. Exact timeout and stacking behavior remain to be determined. Adapt placement to narrow screens without covering essential controls. Make notifications accessible, allow enough reading time and pause dismissal while hovered or keyboard-focused; important recoverable errors must remain available in their relevant page/form context.
+Notifications offer explicit dismissal; successes expire after the shared timeout
+and pause on hover/focus. Errors remain until dismissed/replaced and retain explicit
+recovery actions. Modal notifications belong inside their modal's focus/inert
+boundary. Preserve accessible announcements, narrow-screen fit, field focus and
+explicit retries. Loading, empty states and instructional security warnings retain
+their contextual components; the HTTP client never globally toasts every error.
 
 ## Motion and transitions
 
@@ -166,7 +174,13 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 
 User correction: use concise, professional, factual UI copy. Avoid promotional slogans, generic motivational wording and repeated workspace/growth taglines. Omit unnecessary text instead of replacing it with another slogan.
 
-Language and theme preferences use exactly two compact buttons, not selects or expanded option groups. Language cycles PL/EN; theme cycles system/light/dark and updates its icon. Use short application-styled tooltips: “Zmień język” / “Zmień motyw” (English: “Change language” / “Change theme”). Accessible names may additionally describe current/next choices; preserve keyboard operation and preference persistence.
+Shell and entry-page language/theme preferences use exactly two compact buttons, not selects or expanded option groups. Language cycles PL/EN; theme cycles system/light/dark and updates its icon. Use short application-styled tooltips: “Zmień język” / “Zmień motyw” (English: “Change language” / “Change theme”). Accessible names may additionally describe current/next choices; preserve keyboard operation and preference persistence.
+
+Owner correction (2026-10-24): the dedicated Account Preferences view uses explicit
+language and system/light/dark RadioGroups so all choices are visible. This is a
+scoped presentation exception; shell/entry controls retain their compact cycle.
+Both routes share the accepted cover, delayed application, persistence and focus
+restoration. Do not add a second preference store or bypass hydration guards.
 
 Root preview refinement: remove the visible application-connection/status block and its request from the root view. Expand the existing CSS illustration to occupy the right column. Backend health behavior remains available independently.
 
@@ -182,13 +196,28 @@ User decision: activating language or theme controls first covers the entire vie
 
 ## Background depth refinement
 
-Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep them static and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This background was accepted as part of the final root view on 2026-10-18.
+Current preview removes all decorative rings/arcs at the user's request. Retain the technical grid. Following user review, add large, more pronounced and diffuse corner gradients in the removed rings’ colors: violet/lavender/rose at the upper left and cyan/blue at the lower right. Use broad fades without ring contours and preserve a quieter center. No full circles or cropped arcs remain in the page backdrop. The main card stays opaque and visually dominant; its internal orbital illustration is unchanged. Use three large, visibly distinct constellation structures spanning the backdrop, cropped by viewport edges and passing behind the opaque card, rather than small standalone decorations: fine connecting lines, small points and low-opacity glow. Use different point counts and branching/connectivity, not repeated five-point chains. Keep their geometry stationary and subordinate to the card; show only two quieter details on narrow screens. The reference selects this motif, not a starfield or bright lens flares. This background was accepted as part of the final root view on 2026-10-18.
+
+Owner direction on 2026-10-25 adds sparse, randomized, gentle point glows only in
+interactive MinimalLayout: one visible point brightens and fades for three seconds,
+then rests for 7–15 seconds before a different point is selected. ApplicationLayout
+retains the identical static artwork. Reduced motion, print, hidden tabs and static
+error output do not animate. Gradients, lines and geometry remain stationary; the internal illustration point
+motion is described below.
 
 ## Project logo
 
 The user supplied `src/runa/resources/images/runa-logo.png`. Its transparent alpha enables recoloring using a CSS mask; RunaLogo preserves the original and compensates for its transparent padding. The auth-layout header and central illustration now use this mark, inheriting the theme’s primary text color. No SVG tracing or generated reinterpretation is performed.
 
-The logo illustration’s orbital outlines also carry small static glowing points, matching the constellation motif. Share their appearance across all orbit outlines, use violet/cyan theme colors and keep glow restrained in both themes.
+The logo illustration’s stationary orbital outlines also carry small glowing points, matching the constellation motif. Share their appearance across all orbit outlines, use violet/cyan theme colors and keep glow restrained in both themes.
+
+Owner direction on 2026-10-25 adds occasional complete laps with gentle pulsation
+while travelling. Only one randomly chosen point moves at a time, excluding the
+previous selection. It follows its ellipse and returns to its starting position
+after six seconds, followed by 8–14 seconds of quiet; the other five points stay
+still. Only interactive MinimalLayout opts in; logo/orbit lines stay fixed. Both
+motion effects respect reduced motion, print, visibility and static output. Sparse
+random background glow is the accepted backdrop behavior.
 
 ## Light-theme visibility refinement
 

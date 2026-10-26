@@ -16,19 +16,29 @@ Run `php artisan runa:test --parallel`; TEST_WORKERS defaults to the selected re
 
 ## Browser endpoint and startup
 
-Build with `pnpm --dir src run build` inside the development container. Start the isolated testing siblings once from the native Docker host:
+Build with `pnpm --dir src run build` inside the development container. From the native Docker host, `./bin/artisan runa:test:e2e` starts the testing siblings for that run and removes only containers it creates, including on failure. Use this host entrypoint when automatic endpoint ownership is wanted.
+
+For a deliberately persistent manual endpoint, start it on the host:
 
 ```sh
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-Then run `php artisan runa:test:e2e` inside the development container. The initial/recovery host `./bin/artisan runa:test:e2e` also starts that profile. src/playwright.config.mjs selects only src/app/tests/e2e and targets real Nginx/PHP-FPM at http://nginx-test:8080, never artisan serve or the owner fixture harness. RUNA_E2E_BASE_URL may select another provisioned HTTP(S) application test endpoint. No data reset is performed by the browser runner.
+Then run `php artisan runa:test:e2e` inside the development container. Existing manually provisioned endpoints are preserved by automatic host runs. Their operator owns their eventual scoped teardown. src/playwright.config.mjs selects only src/app/tests/e2e and targets real Nginx/PHP-FPM at http://nginx-test:8080, never artisan serve or the owner fixture harness. RUNA_E2E_BASE_URL may select another provisioned HTTP(S) application test endpoint. No data reset is performed by the browser runner.
 
-Chromium, Firefox and mobile Chromium use one worker and fresh contexts. The retained --critical spelling runs the application suite; use normal Playwright filters for specific cases. HTML report, screenshots and failure traces live under artifacts/playwright/application. Browser binaries are supplied by the development image; production contains no browser/test tooling.
+Chromium, Firefox and mobile Chromium use one worker and fresh contexts. The retained --critical spelling runs the application suite; use normal Playwright filters for specific cases. HTML report, screenshots and failure traces live under .runtime/artifacts/playwright/application. Browser binaries are supplied by the development image; production contains no browser/test tooling.
+
+## Test resource lifecycle
+
+The base `runa_test` database is persistent and retains prepared platform data. Parallel worker databases `runa_test_test_N` (canonical tokens 1–99999) are disposable. Supported backend runners clean inactive workers before execution and after success, failure or a handled interruption, while holding `.runtime/tests/suite.lock`. The cleanup child loads the testing environment and validates the configured and actual PostgreSQL host, role and base database through TestDatabaseGuard. It inspects only canonical worker names, prints the exact scope, refuses the whole cleanup if any candidate has another owner or active connections, and uses ordinary DROP DATABASE without force or session termination. Development/production/base databases, foreign owners and unexpected names are preserved. Cleanup failure makes an otherwise successful run fail; it never converts a test failure into success.
+
+The shared TestCase selects a worker before provider boot and disables Laravel's additional database suffixing. Do not add a second naming/DDL owner or rely on Laravel's drop-databases option for these custom workers. Native application tests and owner backend tests use the same cleanup contract. A hard kill, machine restart or lost Docker client can prevent immediate teardown; the next supported backend run recovers inactive orphan workers. Active orphan processes must finish or be investigated before cleanup can proceed. Reopen/setup never performs this cleanup.
+
+Automatic host browser startup serializes endpoint ownership with `.runtime/tests/endpoint.lock`. Before startup it records a unique `runa.testing.run` label in `.runtime/tests/endpoint.json` and a local Compose override, applying the label only to missing app-test/nginx-test services. Existing containers are not recreated or adopted. Teardown and next-run recovery inspect exact container IDs, project, checkout directory, service and run label before stopping/removing only owned containers. Failed/interrupted cleanup retains its journal; a still-running suite prevents recovery. Shared development networks, every volume, model/Qdrant caches, backups and browser evidence remain untouched. Manually provisioned endpoints are outside automatic ownership.
 
 ## Concurrency and acceptance
 
-The runa:test* wrappers share a nonblocking checkout suite lock and forward child failure codes. Native php artisan test and direct runners retain framework behavior and bypass that wrapper lock; avoid competing diagnostic suites against shared state. Cached application config must be cleared before backend wrapper runs so .env.testing remains effective.
+The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before test execution so .env.testing remains effective.
 
 Visually inspect significant frontend changes at desktop/tablet/mobile sizes, light/dark and PL/EN as relevant. Check keyboard/focus semantics, meaningful labels, console/network errors, long content and responsive overflow. Keep durable browser tests focused on critical application flows and reproducible regressions. Temporary exploration lives under .playwright/scratch or tools/scratch; promote useful coverage or remove scratch before closure, preserving ignored artifacts.
 

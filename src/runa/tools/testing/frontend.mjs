@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { recordBrowserProblems } from '../../tests/e2e/support/browserProblems.ts';
 import { fileURLToPath } from 'node:url';
 import { mkdir, readFile } from 'node:fs/promises';
 import { chromium, firefox, expect } from '@playwright/test';
@@ -10,10 +11,9 @@ const version = (await readFile('../VERSION', 'utf8')).trim();
 const applicationVersion = JSON.parse(
   await readFile('app/application.json', 'utf8'),
 ).version;
-const artifacts = '../artifacts/playwright/foundation';
+const artifacts = '../.runtime/artifacts/playwright/foundation';
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch();
-const errors = [];
 async function settled(page) {
   await expect(page.locator('.minimal-page')).toHaveAttribute(
     'aria-busy',
@@ -48,21 +48,12 @@ async function theme(page, value) {
 try {
   const context = await browser.newContext();
   const page = await context.newPage();
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (['error', 'warning'].includes(message.type()))
-      errors.push(message.text());
-  });
-  page.on('requestfailed', (request) => errors.push(request.url()));
-  page.on('response', (response) => {
-    if (response.status() >= 400)
-      errors.push(`${response.status()} ${response.url()}`);
-  });
+  const errors = recordBrowserProblems(page, { anonymousSession: true });
   // Readiness is independent of the deliberately removed root status panel.
   assert.equal((await page.request.get(`${base}/api/health`)).ok(), true);
   await page.goto(base);
   await expect(
-    page.getByRole('heading', { name: 'Runa', exact: true }),
+    page.getByRole('heading', { name: '.runa', exact: true }),
   ).toBeVisible();
   for (const [name, width, height] of [
     ['desktop', 1440, 900],
@@ -163,7 +154,7 @@ try {
   const page = await secondary.newPage();
   await page.goto(base);
   await expect(
-    page.getByRole('heading', { name: 'Runa', exact: true }),
+    page.getByRole('heading', { name: '.runa', exact: true }),
   ).toBeVisible();
   await language(page, 'en');
   await theme(page, 'dark');

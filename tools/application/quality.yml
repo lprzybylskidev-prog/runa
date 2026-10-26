@@ -66,10 +66,12 @@ final:
     command: php artisan runa:security:dependencies
     severity: hard_fail
   - id: application-knowledge-doctor
+    exclusive_group: knowledge-state
     depends_on: []
     command: php artisan runa:knowledge:doctor
     severity: hard_fail
   - id: application-knowledge-eval
+    exclusive_group: knowledge-state
     depends_on: []
     command: php artisan runa:knowledge:eval
     severity: hard_fail
@@ -127,6 +129,7 @@ group_steps:
     command: php artisan runa:check:debug-residue
     severity: hard_fail
   - id: application-knowledge-freshness
+    exclusive_group: knowledge-state
     depends_on: [application-config]
     command: php artisan runa:knowledge:stale
     severity: hard_fail
@@ -170,10 +173,12 @@ group_steps:
     severity: hard_fail
     exclusive_group: testing-state
   - id: application-development
+    exclusive_group: knowledge-state
     depends_on: [application-config]
     command: php artisan runa:doctor:development
     severity: hard_fail
   - id: application-hooks
+    exclusive_group: knowledge-state
     depends_on: [application-config]
     command: php artisan runa:doctor:hooks
     severity: hard_fail

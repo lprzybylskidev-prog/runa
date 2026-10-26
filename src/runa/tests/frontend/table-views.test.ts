@@ -203,3 +203,19 @@ it('retains global search in saved snapshots and resolves the default option', (
   c.selectDefault();
   expect(query.value.search).toBeUndefined();
 });
+
+it('sorting defaults survive saved-view normalization and respect explicit opt-out', () => {
+  const snapshot = {
+    query: { ...initial(), sort: { key: 'city', direction: 'asc' } },
+  };
+  expect(
+    normalizeTableSnapshot(snapshot, columns, initial()).query.sort,
+  ).toEqual({ key: 'city', direction: 'asc' });
+  expect(
+    normalizeTableSnapshot(
+      snapshot,
+      columns.map((column) => ({ ...column, sortable: false })),
+      initial(),
+    ).query.sort,
+  ).toBeNull();
+});

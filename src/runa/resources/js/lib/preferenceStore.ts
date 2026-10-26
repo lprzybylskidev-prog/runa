@@ -1,3 +1,7 @@
+import {
+  createAccountPreferenceStore,
+  bindPreferenceSession,
+} from './accountPreferences';
 import type {
   PreferenceScope,
   PreferenceStorage,
@@ -12,6 +16,7 @@ export interface PreferenceDefinition<T> {
 }
 
 export interface PreferenceStore {
+  subscribe?(listener: () => void): () => void;
   read<T>(
     scope: PreferenceScope,
     control: string,
@@ -139,10 +144,10 @@ export function createPreferenceStore(
     },
     reset(scope, control) {
       const key = preferenceKey(scope, control);
-      memory.delete(key);
+      memory.set(key, '{"reset":true}');
       if (available) {
         try {
-          adapter.remove(key);
+          adapter.write(key, '{"reset":true}');
         } catch {
           available = false;
         }
@@ -151,4 +156,8 @@ export function createPreferenceStore(
   };
 }
 
-export const defaultPreferenceStore = /* @__PURE__ */ createPreferenceStore();
+export const guestPreferenceStore = /* @__PURE__ */ createPreferenceStore();
+export const accountPreferences =
+  createAccountPreferenceStore(guestPreferenceStore);
+bindPreferenceSession(accountPreferences);
+export const defaultPreferenceStore = accountPreferences.store;

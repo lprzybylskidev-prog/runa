@@ -16,6 +16,7 @@ import sys
 import tempfile
 import time
 import urllib.request
+import urllib.error
 import uuid
 from datetime import datetime, timezone
 
@@ -131,6 +132,20 @@ def remove_project(project, report):
     report.setdefault('cleanup', []).append(resources)
 
 
+def persistent_development_containers():
+    # One Docker snapshot provides IDs and ownership labels, avoiding a race with
+    # the browser runner removing its own endpoints before a separate inspect.
+    listing = call(['docker', 'ps', '--no-trunc',
+                    '--filter', 'label=com.docker.compose.project=runa-dev',
+                    '--format', '{{.ID}}\t{{.Label "runa.testing.run"}}\t{{.Label "com.docker.compose.project.working_dir"}}'], capture=True).stdout
+    protected = []
+    for row in listing.splitlines():
+        identity, browser_run, directory = row.split('\t')
+        if directory == str(ROOT) and not browser_run:
+            protected.append(identity)
+    return protected
+
+
 def main():
     if Path('/.dockerenv').exists():
         raise SystemExit('Run this acceptance from the native Docker host.')
@@ -145,10 +160,7 @@ def main():
             raise RuntimeError(text)
         report['checks'].append(text)
         print('PASS: ' + text, flush=True)
-    active = output(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=runa-dev']).splitlines()
-    # Devcontainer images may carry inherited Compose labels into standalone
-    # test helpers. Track actual containers belonging to this checkout.
-    active = [item for item in active if output(['docker', 'inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', item]) == str(ROOT)]
+    active = persistent_development_containers()
     observed_at = datetime.now(timezone.utc).isoformat()
     before = {item: json.loads(output(['docker', 'inspect', item]))[0] for item in active}
     team = None
@@ -217,10 +229,10 @@ def main():
             check(not (dev / 'src/tests').exists() and (dev / 'src/runa/Testing/TestCase.php').is_file(), 'generated PHPUnit/Pest tests and native/wrapped parallel customer suites use delivered guarded testing infrastructure without src/tests or owner tools')
             call(['docker', 'compose', '--project-directory', str(dev), '--env-file', str(dev / '.env.dev.local'), '-f', str(dev / 'compose.yaml'), '-f', str(dev / '.devcontainer/compose.resources.yaml'), '--profile', 'testing', 'up', '-d', '--wait', 'nginx-test'], cwd=dev, env=env)
             call(['docker', 'exec', '-w', '/workspace', dev_project + '-app-1', 'php', 'artisan', 'runa:test:e2e'])
-            browser_evidence = ROOT / 'artifacts/playwright' / ('installation-' + token)
-            shutil.copytree(dev / 'artifacts/playwright/application', browser_evidence)
+            browser_evidence = ROOT / '.runtime/artifacts/playwright' / ('installation-' + token)
+            shutil.copytree(dev / '.runtime/artifacts/playwright/application', browser_evidence)
             report['application_browser_artifacts'] = str(browser_evidence.relative_to(ROOT))
-            check((dev / 'artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
+            check((dev / '.runtime/artifacts/playwright/application/report/index.html').is_file(), 'customer backend, frontend and real Nginx browser suites pass without maintainer source; HTML report is available')
 
             if '--customer-knowledge' in sys.argv[1:]:
                 runpy.run_path(str(ROOT / 'tools/maintainer/testing/customer-knowledge.py'))['exercise'](
@@ -254,6 +266,12 @@ def main():
             snapshot(temporary_source)
             customer_snapshot(temporary_source, prod)
             shutil.rmtree(temporary_source)
+        if not team:
+            custom = prod / 'src/app/resources/js'
+            custom.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'src/runa/tests/frontend/fixtures/customization/CustomerErrorLayout.vue',
+                            custom / 'CustomerErrorLayout.vue')
+            (custom / 'errorLayout.ts').write_text('export { default } from "./CustomerErrorLayout.vue";\n')
         certificates = fixture_directory / 'certificates'
         certificates.mkdir(mode=0o700)
         call(['docker', 'run', '--rm', '--name', 'runa-install-cert-' + token, '--network', 'none', '--user', str(os.getuid()) + ':' + str(os.getgid()),
@@ -315,6 +333,8 @@ def main():
         settings = {'app_url': 'https://localhost:' + str(https_port), 'http_port': http_port, 'simulation_project': prod_project,
                     'tls': {'mode': 'builtin', 'certificate': str(certificates / 'certificate.pem'), 'private_key': str(certificates / 'private-key.pem'), 'ca_file': str(certificates / 'certificate.pem'), 'https_port': https_port, 'bind': '127.0.0.1'},
                     'smtp': {'host': 'smtp', 'port': 2465, 'scheme': 'smtps', 'username': '', 'password': '', 'from': 'fixture@example.invalid', 'recipient': 'verification@example.invalid'}}
+        if not team:
+            settings['administrator'] = {'email': 'initial-admin@example.invalid', 'name': 'Initial administrator'}
         settings_file = fixture_directory / 'settings.json'
         settings_file.write_text(json.dumps(settings))
         settings_file.chmod(0o600)
@@ -326,8 +346,26 @@ def main():
         secrets = {name: (prod / name).read_bytes() for name in ('.env.prod', '.env.prod.database', '.env.prod.compose')}
         (mail_reports / 'allow-mail').touch()
         call(command + ['--resume'], cwd=prod)
+        if not team:
+            # The actual production build consumes the customer's public static layout seam.
+            static_page = output(['docker', 'exec', prod_project + '-app-1', 'cat',
+                                  '/workspace/src/public/runa-error/pages/503-en-dark.html'])
+            check('data-customer-error' in static_page and 'Customer support' in static_page
+                  and 'Service unavailable' in static_page and '<script' not in static_page,
+                  'customer static layout reaches emergency 503 without browser runtime')
+            try:
+                urllib.request.urlopen('http://127.0.0.1:' + str(settings['http_port']) + '/missing-custom-error?lang=en', timeout=10)
+            except urllib.error.HTTPError as response:
+                body = response.read().decode()
+                check(response.code == 404 and 'data-customer-error' in body
+                      and 'HTTP 404' in body and '<script' not in body,
+                      'native 404 and generated emergency 503 share the customer presentation seam')
+            else:
+                raise RuntimeError('Unknown customer path did not retain native 404 status.')
         journal = json.loads((prod / '.runtime/production/install-prod.json').read_text())
         deployment = json.loads((prod / '.runtime/production/deployment.json').read_text())
+        if not team:
+            check(journal.get('administrator_invited') is True, 'actual initial administrator invitation admitted through trusted native CLI after SMTP recovery')
         check(journal['state'] == 'complete' and deployment['current']['simulation'], 'explicit resume completes real isolated production topology through the same installer')
         check(all((prod / name).read_bytes() == value for name, value in secrets.items()), 'production recovery preserves all originally generated secrets/settings')
         check((mail_reports / 'accepted.eml').is_file() and 'Runa installation SMTP verification' in (mail_reports / 'accepted.eml').read_text(), 'SMTP fixture actually received the verification message over certificate-verified TLS')
@@ -347,10 +385,9 @@ def main():
         check(True, 'public production validation, health and AI isolation gates run only against the dedicated customer production fixture')
         if '--security-scan' in sys.argv[1:]:
             import security
-            import owner_gosu_disposition
             from service_fixtures import redis_image
-            security.trivy(production_root=prod, image_disposition=owner_gosu_disposition.apply, additional_images=[redis_image()])
-            check(True, 'owner repository and exact customer images satisfy security policy and dependency audits; raw scans and any bounded disposition are retained')
+            security.trivy(production_root=prod, additional_images=[redis_image()])
+            check(True, 'owner repository and exact customer images satisfy security policy and dependency audits; unfiltered raw scans are retained')
         # Failure acceptance deliberately ends with a fenced unhealthy deployment.
         # Verify and scan the healthy selected revision before injecting failures.
         if '--customer-deployment' in sys.argv[1:]:
@@ -369,7 +406,7 @@ def main():
                     task_images.add('runa-management:' + identity.stdout.strip()[:24])
             for release in (source / '.runtime/production/releases').glob('*'):
                 if re.fullmatch('[a-f0-9]{40}', release.name):
-                    task_images.update(prefix + release.name for prefix in ('runa-production:', 'runa-nginx:'))
+                    task_images.update(prefix + release.name for prefix in ('runa-production:', 'runa-nginx:', 'runa-postgres:'))
             if (source / '.runtime/host/client.json').exists():
                 print('Scoped fixture executor shutdown: ' + str(source), flush=True)
                 call([sys.executable, '-c', 'import sys; sys.path.insert(0,"tools/application"); from host_executor import stop; stop()'], cwd=source, check=False)

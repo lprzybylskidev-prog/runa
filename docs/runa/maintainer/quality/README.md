@@ -132,6 +132,20 @@ Steps that share mutable database/environment/migration/production-stack state m
 
 Every parallel process has its own log.
 
+Owner browser and render diagnostics both run through their native host entrypoints
+and own a separate journaled test endpoint lifecycle. Render diagnostics must not
+reuse an endpoint already cleaned up by the preceding browser suite. Existing
+manual endpoints remain externally owned.
+
+Owner parallel backend tests use the standard ParaTest worker lifecycle. Temporary
+native-crash process-isolation overrides and debugger shims are absent.
+Owner Core fixtures remove their own settings/transition history along with their
+owned schemas and registry identities. Cleanup requires a guarded disposable
+worker and an exact Core identity; foreign histories and the base database remain
+protected. Process exit does not prove PostgreSQL has released a dead client's
+session lock: recovery fixtures synchronize with the actual lock release before
+invoking recovery once.
+
 ## Timeouts
 
 Do not impose arbitrary automatic timeouts on quality commands.
@@ -232,7 +246,7 @@ A stable OS file lock outside the latest-run directory prevents concurrent start
 
 ## Owner test routing
 
-Owner database-constraints and seeding-contract gates use the dedicated maintainer backend runner with Database and Seeding filters. Customer runa:doctor:database/seeding commands continue to select application tests only. The standalone platform browser document process loads the private test bootstrap, including its fixture autoloader; it does not add private fixtures to customer Composer autoloading.
+Owner database-constraints and seeding-contract gates use the dedicated maintainer backend runner with Database and Seeding filters in disposable parallel workers. The database-migrations native guard entrypoint delegates its full acceptance to DatabaseTest in one disposable worker under the same suite lock/cleanup; it never resets the persistent base runa_test. Destructive DatabaseOwnership fixtures refuse the base before any mutation. The selected assertions, prerequisites and hard-failure policy are unchanged. Customer runa:doctor:database/seeding commands continue to select application tests only. The standalone platform browser document process loads the private test bootstrap, including its fixture autoloader; it does not add private fixtures to customer Composer autoloading.
 
 ## Production fixture routing
 
@@ -244,10 +258,26 @@ Repository Trivy scanning excludes generated dependency trees at root vendor/nod
 
 Real customer customization/update/team/deployment acceptance uses the shared immutable fixture in tools/maintainer/service_fixtures.py: Redis 8.4.7 Alpine 3.22 at sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4. The helper fetches that exact artifact when absent and rejects inconsistent local identity. The owner security gate scans it alongside the actual production images; a failing fixture scan remains blocking. Redis runs only in disposable test projects, with non-root user, read-only filesystem, dropped capabilities and no published port. It is absent from baseline development/production services and is not an application dependency.
 
-Owner PostgreSQL/gosu accepted-risk handling is selected explicitly by the native owner security fixture, rejects customer acquisition receipts, and binds the exact assessed artifact/finding/evidence set with expiry. Raw scanner results and disposition records remain separate. See the dated [RM-008 assessment](../security/RM-2026-008-gosu-assessment.md) and MT-2026-001 for pending-upstream review; customer scanners keep the public fail-closed default.
+Runtime scans use strict owner/customer behavior without PHP, gosu, Brotli or curl
+exception callbacks. Historical acceptance policies are retired. The actual
+PostgreSQL derivative and PHP/Nginx images must satisfy the same unfiltered scan;
+see [runtime security](../../handbook/security/postgres-gosu-policy.md).
 
 Native updater acceptance derives its original release tag from the installed platform manifest and synthesizes a strictly newer patch target. Never fix these tags to historical release numbers: the original independently downloaded source must match the installed protected tree before target migration/seed changes are introduced. Production rejection remains before release acquisition; source-integrity checks are unchanged.
 
 ## Stage timings
 
 The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual group selection does not change individual test bodies or add Playwright skip flags.
+
+Native installation acceptance protects persistent development and manually owned
+test containers belonging to this checkout. Containers carrying the automatic
+runa.testing.run label belong to the concurrent browser runner and its recovery
+journal; they are excluded from the persistent-service snapshot. Their own runner
+continues to verify exact ownership and cleanup. Missing or restarted persistent
+services still fail the installation preservation check.
+
+Knowledge CLI doctor/evaluation/freshness checks and development/hook diagnostics
+that invoke that CLI share the knowledge-state exclusive group. Even read commands
+hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
+refusal. Serialization retains strict checks and requires no automatic retry or
+weaker freshness policy.

@@ -24,8 +24,8 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppPopover, AppTooltip                                                                                          | Retained accepted 140ms fade/travel; repaired exit visibility after floating readiness resets. Popover also restores interactivity on interrupted reopen.         |
 | AppDialog, AppToastViewport                                                                                     | Retained existing fade/scale/stack presentation; exiting roots inert immediately and interrupted enter restores interactivity.                                    |
 | AppDropdown                                                                                                     | Inherits Popover/Button motion; added rotating indicator.                                                                                                         |
-| AppTable                                                                                                        | Added row color easing only. Sorting, filtering, pagination, widths and selection data stay immediate, with no moving rows.                                       |
-| AppButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                                     | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.           |
+| AppTable                                                                                                        | Query changes show a centered spinner for at least 140ms; processing/requests start immediately. Widths/selection remain immediate, without moving rows.          |
+| AppButton, AppLinkButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                      | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.           |
 | AppCheckbox, AppRadioGroup                                                                                      | Inherit BooleanInput visual state easing.                                                                                                                         |
 | AppAlertDialog, AppConfirmDialog                                                                                | Inherit Dialog and action-control motion; no second entrance.                                                                                                     |
 | AppDateInput, AppDateRangeInput, AppDateTimeInput, AppTimeInput, AppTemporalInput, AppTimePicker, AppColorInput | Inherit field, Popover, CalendarPicker and control motion as composed; text/time/color input and pointer adjustment stay immediate.                               |
@@ -37,6 +37,33 @@ Names below refer to `src/runa/resources/js/components/<name>.vue`. Every compon
 | AppAlert, AppBadge, AppStatus, AppEmptyState                                                                    | Static semantic content; the owning feedback/async container animates state changes when appropriate. Avoid duplicate entrances/announcements.                    |
 | AppCard, AppDivider, AppBreadcrumbs, AppStatistic, AppStatistics, AppFooter                                     | Static structure/content; links/controls retain shared interaction feedback. No count tween or decorative mount animation.                                        |
 | AppForm, AppHiddenInput, AppIdentityProvider                                                                    | Behavioral/identity/form contracts; no independent visual transition.                                                                                             |
-| AppIcon, RunaLogo, AppBrandIllustration, AppBackdrop, AppConstellation                                          | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
+| AppIcon, RunaLogo, AppConstellation                                                                             | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
 
-Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
+Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback, plus sparse randomized constellation-point opacity pulses in its backdrop. ApplicationLayout uses the same backdrop with the effect disabled. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
+
+AuthWelcome/AuthApplication/AuthAccount change page, restriction and form steps
+immediately. Their links, controls, dropdown and preference cover inherit existing
+motion and reduced-motion behavior; account tables do not animate rows.
+
+MinimalLayout constellation glow uses one point at a time: a 3000ms gentle
+opacity rise/fall across its three existing circle layers, then a random 7–15s
+quiet interval. It chooses among viewport-visible points without repeating the
+previous point. It never moves links, geometry, gradients or artwork. Reduced
+motion, print, hidden tabs and static error rendering disable decorative glow;
+opt-out/unmount cancels timers and animations. This exception is specific to
+MinimalLayout and does not authorize animated ApplicationLayout backgrounds.
+
+The MinimalLayout default brand illustration opts into one six-second lap of one
+random point after each random 8–14 second quiet interval, with gentle opacity
+pulsation during travel. Only one point moves at a time, without immediate repeats. Orbit borders/logo stay fixed; point positions are sampled
+along their own ellipse and return exactly to the static start. No continuous spin.
+AppBrandIllustration is static by default outside that layout. Both decorative
+effects share a private scheduler that cancels timers/animations on reduced motion,
+print, hidden documents, opt-out and disposal. Their public controls are
+MinimalLayout constellationGlow/orbitMotion; static errors never start scheduling.
+
+Avatar composes the shared circular Skeleton while identity metadata or image bytes
+are pending. It inherits Skeleton's 1600ms pulse and reduced-motion/print fallback;
+image/initials replacement is immediate without another fade or entrance.
+During loading the avatar has no steady backing fill, and the circular Skeleton
+uses the exact avatar bounds so its opacity pulse remains visible.

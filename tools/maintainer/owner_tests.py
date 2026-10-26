@@ -2,6 +2,18 @@ import os
 import fcntl
 from context import ROOT
 import subprocess
+import signal
+
+
+def worker_cleanup():
+    return subprocess.run(['php', 'runa/Testing/worker-databases.php'], cwd=ROOT / 'src',
+                          env=dict(os.environ, APP_ENV='testing', TEST_TOKEN='')).returncode
+
+
+def interrupted(signum, frame):
+    raise KeyboardInterrupt
+
+
 def execute(suite, args):
     if suite == 'frontend':
         command = ['pnpm', 'exec', 'vitest', 'run', '--config=runa/tests/vitest.config.mjs', *args]
@@ -22,8 +34,32 @@ def execute(suite, args):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise SystemExit('Another test suite is running in this checkout.')
-        if suite == 'e2e':
-            result = subprocess.run(['php', 'runa/resources/errors/build.php'], cwd=ROOT / 'src')
-            if result.returncode:
-                return result.returncode
-        return subprocess.run(command, cwd=ROOT / 'src', env=dict(os.environ, APP_ENV='testing')).returncode
+        previous = signal.signal(signal.SIGTERM, interrupted)
+        try:
+            if suite == 'backend':
+                status = worker_cleanup()
+                if status:
+                    return status
+            try:
+                if suite == 'e2e':
+                    result = subprocess.run(['php', 'runa/resources/errors/build.php'], cwd=ROOT / 'src')
+                    if result.returncode:
+                        return result.returncode
+                # Kill/reap the runner and its workers before releasing the lock
+                # or dropping databases when interrupted.
+                with subprocess.Popen(command, cwd=ROOT / 'src', env=dict(os.environ, APP_ENV='testing'), start_new_session=True) as child:
+                    try:
+                        status = child.wait()
+                    except BaseException:
+                        os.killpg(child.pid, signal.SIGTERM)
+                        try:
+                            child.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(child.pid, signal.SIGKILL)
+                            child.wait()
+                        raise
+            finally:
+                cleanup = worker_cleanup() if suite == 'backend' else 0
+            return status if status else cleanup
+        finally:
+            signal.signal(signal.SIGTERM, previous)

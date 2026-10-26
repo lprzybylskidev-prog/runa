@@ -1,6 +1,11 @@
 # Current toolchain selections
 
-The initial baseline was reviewed on 2026-10-17 for RM-2026-001. PHP was re-reviewed and updated to 8.4.27 on 2026-10-21 for RM-2026-008; other selections retain their existing review dates in the maintenance registry. These are implementation selections, not permission to upgrade dependencies automatically. Committed Composer and pnpm lockfiles record the resolved dependency trees.
+The initial baseline was reviewed on 2026-10-17 for RM-2026-001. The temporary
+PHP rollback in RM-2026-011 is retired on 2026-10-26: PHP 8.4.27 is selected in
+development/production/management. The PostgreSQL derivative updates curl/Brotli
+and builds exact gosu 1.20 source using Go 1.27.3; Go exists only in the image
+build stage. Other selections retain their registry review dates. These selections
+do not authorize automatic dependency upgrades; Composer/pnpm locks remain unchanged.
 
 | Component                     | Selected version                                  | Primary source                                                               |
 | ----------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -45,7 +50,7 @@ The initial baseline was reviewed on 2026-10-17 for RM-2026-001. PHP was re-revi
 
 ## Compatibility and dependency assessment
 
-Laravel 13 requires PHP 8.3 or later; PHP 8.4.27 is a supported security release and meets the preferred project line. Pest 5 requires PHP 8.4 and its Laravel plugin requires Laravel 13.23 or later; this selection satisfies both. Larastan 3.13 explicitly supports Laravel 13 and PHPStan 2.3. Boost 2.10 supports Laravel 13. These packages have distinct roles: testing, analysis and development MCP. They do not belong in production dependencies.
+Laravel 13 requires PHP 8.3 or later; PHP 8.4.27 meets the preferred project line but deliberately lacks the latest security fixes during the temporary rollback; see [the bounded owner risk decision](../security/RM-2026-011-runtime-risk-acceptance.md). Pest 5 requires PHP 8.4 and its Laravel plugin requires Laravel 13.23 or later; this selection satisfies both. Larastan 3.13 explicitly supports Laravel 13 and PHPStan 2.3. Boost 2.10 supports Laravel 13. These packages have distinct roles: testing, analysis and development MCP. They do not belong in production dependencies.
 
 Node 24.22 is the current LTS entry returned by the Node release index and satisfies Corepack, Vite, ESLint and Vitest engine requirements. TypeScript 7.0.2 was deliberately not selected: typescript-eslint 8.71.2 supports TypeScript below 6.1. TypeScript 6.0.3 remains inside that range. Vue 3.5 is the stable release; 3.6 prereleases are excluded. Tailwind's Vite adapter and the Vue Vite adapter explicitly support Vite 8.
 

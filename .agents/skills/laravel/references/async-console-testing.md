@@ -50,7 +50,7 @@ docs/runa/handbook/production/deployment.md for the implemented lifecycle and ac
 19. Use framework fakes selectively and preserve meaningful integration behavior.
 20. Security/behavior regressions receive focused tests when reproducible.
 
-Test ownership is explicit: native `php artisan test` and customer `runa:test`, `runa:test:frontend`, `runa:test:e2e` use application configurations and `src/app/tests`. Select the guarded worker database before provider boot so singleton services and test transactions share one connection; do not switch/purge it after booted services capture it. Shared `src/runa/Testing/TestCase.php` preserves the `Tests\TestCase` contract, guarded worker selection and application migrations; it never requires distribution or maintainer code. A fresh customer worker without platform history first uses the delivered forward-only data preparation primitive. Only this test application opts out of Laravel's additional per-case database suffixing; other parallel callbacks and process lifecycle options remain available. Owner `tools/maintainer/test-*` select private configurations under `src/runa/tests`, where platform migration preparation and fixture autoloading remain. Only owner E2E uses the synthetic platform harness; application E2E uses the real testing Nginx endpoint and keeps failure artifacts/reporting under `artifacts/playwright/application`. Preserve the shared suite lock and native child exit status. Customer delivery excludes all platform tests/harnesses.
+Test ownership is explicit: native `php artisan test` and customer `runa:test`, `runa:test:frontend`, `runa:test:e2e` use application configurations and `src/app/tests`. Select the guarded worker database before provider boot so singleton services and test transactions share one connection; do not switch/purge it after booted services capture it. Shared `src/runa/Testing/TestCase.php` preserves the `Tests\TestCase` contract, guarded worker selection and application migrations; it never requires distribution or maintainer code. A fresh customer worker without platform history first uses the delivered forward-only data preparation primitive. Only this test application opts out of Laravel's additional per-case database suffixing; other parallel callbacks and process lifecycle options remain available. Owner `tools/maintainer/test-*` select private configurations under `src/runa/tests`, where platform migration preparation and fixture autoloading remain. Only owner E2E uses the synthetic platform harness; application E2E uses the real testing Nginx endpoint and keeps failure artifacts/reporting under `.runtime/artifacts/playwright/application`. Preserve the shared suite lock and native child exit status. Customer delivery excludes all platform tests/harnesses.
 
 ## Additional framework checks
 
@@ -71,3 +71,29 @@ Database commands use `DatabaseScope`: native Artisan operations and `DatabaseSe
 Use ModuleEvents with source-owned EventProvider declarations rather than raw module Laravel listeners. Commit-dependent facts use the default connection's afterCommit callback; test the real outer transaction, savepoint rollback and subscriber/enqueue failure without origin failure. Async subscriptions reserve a declared JobDefinition, retain encrypted managed work, listener identity and a unique delivery key; worker admission rechecks the binding, toggle and both-side availability. Test real queue execution and subscriber-only reconciliation retries with stable idempotency keys. Callback publication is not a durable outbox and subscriber deduplication is not exactly-once external effects. Optional integration configuration uses ModuleIntegrations under registry generation/lock control; no management HTTP endpoint or fictional Audit implementation is supplied.
 
 Supplied logging scopes propagate only safe correlation metadata to native queues; managed module work/event subscribers retain their persisted ownership, correlation and event/work IDs. Never serialize request payloads into diagnostic queue metadata. Console scopes include command names only. Test actual HTTP/controller construction, Artisan events, sync/database workers and failed-scope cleanup when changing this boundary; Laravel suppresses Symfony command event rerouting during unit tests, so explicitly enable it for the isolated integration scenario. See the [structured logging contract](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-structured-logging-and-future-logs-read-boundary).
+
+Use the [Auth preference/delivery contract](../../../../docs/runa/handbook/modules/auth/preferences.md) for source-declared account preferences, optimistic revisions, explicit safe guest adoption and email-only routing. Never store credentials/drafts in preferences, infer legacy ownership, bypass mandatory primary recipients or cache recipient decisions across jobs. Security mail uses reference-only managed work and revalidates state before its persisted single SMTP attempt; recovery retains direct mail.
+
+Follow the [Auth policy/operator contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for atomic settings/history/Audit/proof consumption, bounded account exceptions,
+preview-bound bulk revocation and trusted CLI initialization/recovery. Keep private
+one-time material out of command arguments/output and logs; operator access is the
+customer's infrastructure boundary. Do not grant a temporary administrator flag or
+call guarded business gateways behind a settings/update fence.
+
+Use the [Core operator/selection contract](../../../../docs/runa/handbook/modules/auth/policies-and-operators.md)
+for actual first-administrator membership, resumable invitation admission, private
+no-mail setup and Auth bulk selection. Use guarded PermissionsSelections at ordinary
+ingress; the trusted operator adapter is local infrastructure access, not a public
+authorization bypass. Preserve source/data/update fences and atomic Audit.
+
+Use the [module development corpus contract](../../../../docs/runa/handbook/data/seeding.md#explicit-module-development-contributors)
+for explicit owner-checked contributors and module-ID dependencies. Keep native
+application production seeding separate, reject production even through direct
+fixture calls, exchange public references and preserve credentials/provenance with
+atomic Audit. Initial account passwords use hidden local prompts; never argv or
+distributed defaults.
+
+Native test execution and supported test wrappers share the suite lock and guarded
+worker cleanup. Use the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle);
+read-only discovery is exempt, while direct runners bypass protection.

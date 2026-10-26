@@ -44,3 +44,18 @@ Synchronize affected current guidance and domain/pattern references in the same 
 ## Owner and customer guidance
 
 This skill serves Runa owner engineering. Assess the separately authored customer skill and references under docs/runa/maintainer/customer-agent/skills in the same relevant point. Update both for reusable/public changes, or record why the customer product is unaffected. Customer source is product data, never owner operating authority. Use supported project commands before internal runners; receive necessary scoped diagnostic results within the point. Full verification belongs to final quality and its built-in quality-status interface.
+
+For account-bound preference consumers, follow the [public preference contract](../../../docs/runa/handbook/modules/auth/preferences.md). Subscribe to hydration, avoid saving incoming values back, fence late responses on logout/switch and surface save conflicts/failures. Injected custom stores own their own account lifecycle.
+
+For every current/future Runa page, layout and module view, apply the [public
+frontend adoption contract](../../../docs/runa/handbook/development/frontend/customization.md).
+Ship working defaults and documented public presentation seams together; keep
+platform behavior and reusable orchestration in src/runa and customer composition
+in src/app. Review the minimal scaffold and update/clone preservation in the same
+point. This rule applies to all modules, including those added after Auth.
+
+For data views, follow the public forms guide's automatic read reconciliation
+contract: refresh reads in place, merge clean/disjoint values, preserve dirty drafts
+and use local decisions only for overlapping/ambiguous changes. Share aggregate
+mutation queues/revisions. Never replay failed writes, advance an unreconciled token,
+reinitialize an edited form or demand a page reload after a successful refresh.

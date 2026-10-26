@@ -75,6 +75,18 @@ ports/URLs are rejected. Example shape (replace all operator inputs):
 }
 ```
 
+Optional `administrator` settings contain `email`, `name` and optional `login`.
+After the real application/TLS/SMTP checks succeed, the installer runs native
+`runa:auth:initialize --invite --confirm` in the installed release. It commits the
+real Permissions role and encrypted invitation work atomically and records only
+safe admission in its existing journal. Complete repeats do nothing; a crash before
+journal recording safely reuses the same recipient/admission, including completed
+password setup. Omit the object to initialize later through the documented private
+CLI handoff (also supported for development/ordinary customer clones). No password
+or token belongs in settings, command output or transport logs. The installer does
+not claim that queued invitation admission proves SMTP delivery; failed delivery
+uses explicit Auth resend/operator recovery.
+
 The installer generates distinct random admin/runtime database passwords and an application
 key once, writes raw mode-600 env files and preserves them on retries. Dollar
 signs remain literal. Existing unowned production settings/resources are refused;

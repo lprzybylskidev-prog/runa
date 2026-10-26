@@ -90,6 +90,19 @@ Trusted installation/deployment operation that discovers exactly one source owne
 
 Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded JSON through `--payload`. Diagnostic handlers remain available while disabled/unhealthy. Operational commands enqueue a managed owned job and return its work ID; a zero exit reports admission, not completion. Module schedules target the same classified entries, run in UTC and recheck at dispatch and worker execution. Use `php artisan schedule:list` to inspect them. See [module Artisan and schedules](../architecture/module-framework.md#delivered-module-artisan-and-schedules) for trusted recovery, overlap and retry boundaries. No module-specific global registration edits or cold host-management aliases are provided.
 
+### `php artisan runa:permissions:declarations --payload='{"module":"app.documents"}'`
+
+Trusted read-only module diagnostic for declaration-update impact: old/new dictionary/role memberships, distinct impacted users and source/state fingerprint. It changes no grants; actual synchronization belongs to explicit transactional module install/update. See [Permissions declarations](../modules/permissions/README.md).
+
+### Trusted Auth operator setup
+
+Native `runa:auth:initialize`, `runa:auth:recover` and `runa:auth:restore-policy`
+run in the configured application PHP environment. Initialization supports either
+`--invite --confirm` with email/name (working mail), or `--output=/private/setup.json --confirm` for a new private one-time no-mail handoff. Follow the exact options,
+private path, recovery disablement and token handling rules in the
+[operator guide](../modules/auth/policies-and-operators.md). These are local trusted
+operator commands, with no public issuance endpoint or development-only dependency.
+
 ## Formatting/lint/type/static analysis
 
 - `php artisan runa:format`
@@ -100,7 +113,7 @@ Source-discovered module commands use `<owner>:<code>:<key>` and accept bounded 
 
 ### `php artisan runa:test --parallel`
 
-Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration.
+Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration, suite lock and guarded worker cleanup. See [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle).
 
 ### `php artisan runa:test:frontend`
 
@@ -108,7 +121,7 @@ Run only application Vitest/Vue component tests from `src/app/tests/frontend`, u
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; recovery host transport starts it automatically. `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 
@@ -126,7 +139,7 @@ Xdebug is development-only and off by default.
 - `php artisan runa:seed:occasional <scenario>`
 - `php artisan runa:seed:plan`
 
-Implemented now; the initial graph is empty because no business/reference/demo entities exist. Categories and dependency validation run before execution; production refuses development dependencies, including explicit development requests. `--force` deliberately bypasses the production confirmation only for automated seed execution, not destructive database commands. See `docs/runa/handbook/data/seeding.md`.
+The default application graph is empty until application seeders are registered. Explicit module development contributors supply optional local Auth/Permissions scenarios; they do not enter native/default/production application seeding. Categories and dependency validation run before execution; production refuses development dependencies, including explicit development requests. `--force` deliberately bypasses the production confirmation only for automated seed execution, not destructive database commands. See `docs/runa/handbook/data/seeding.md`.
 
 ## Knowledge/RAG
 
@@ -291,3 +304,58 @@ Development source ownership/manifest/required graph checks without executing mo
 `--group=NAME` or standalone `--all`. Background remains limited to roadmap/final;
 status takes no flags. See [quality groups and examples](../quality/README.md).
 The native Artisan registry and host transport preserve and validate these options.
+
+### Auth invitation reminders
+
+Installed Auth declares `php artisan runa:auth:entry.remind` as an operational
+ModuleWork command and a minute schedule with overlap protection. Reminders are
+disabled by default and bounded by encrypted module settings; see the
+[Auth transport procedure](../modules/auth/transport.md). Administrative invitation
+issue/resend/invalidation uses the protected typed contract, not credentials or raw
+tokens in CLI arguments. Delivered [Auth entry screens](../modules/auth/entry-ui.md) and [account screens](../modules/auth/account-ui.md) consume these guarded endpoints. Integrated operator commands are described below.
+
+### Auth session cleanup
+
+`php artisan runa:auth:sessions.cleanup` admits operational ModuleWork cleanup;
+its zero exit indicates admission, not completion. The five-minute schedule removes
+bounded expired/revoked/stale technical session/trust/login-window rows and preserves
+Audit or password history. It also removes bounded expired step-up proofs, profile mail/requests and disposable unreferenced private avatar files; current/disabled avatars and address identities remain preserved. See the [profile contract](../modules/auth/profile.md). See the
+[session/abuse contract](../modules/auth/sessions.md) and [credential contract](../modules/auth/security.md).
+
+### Auth security reminders
+
+`php artisan runa:auth:security.remind` admits bounded operational reminder work;
+zero means admission, not completion. Its minute schedule rotates through 100
+accounts, revalidating exact deadlines and current recipients before delivery.
+See [preferences and security delivery](../modules/auth/preferences.md). Normal
+recovery mail remains direct and independent of a Notifications module.
+
+### Auth policy and operator commands
+
+Native local `php artisan runa:auth:initialize`, `runa:auth:recover` and
+`runa:auth:restore-policy` perform the fixed trusted operator operations. Each
+requires `--confirm`; initialize accepts `--email`, `--name`, optional `--login`
+and either a new absolute private `--output` file or `--invite` for configured mail; recover takes `--user` UUIDv7 and
+`--output`; policy restoration takes `--revision`. Account commands use the integrated Permissions OperatorAuthority adapter and require current exact Core source/data, no update fence and mandatory Audit. There is no
+temporary administrator flag or general web bypass. The external
+`AUTH_OPERATOR_RECOVERY_ENABLED=false` switch disables issuance/redemption and
+operator policy restoration. Secrets are written only to the private file, never
+stdout/stderr or command arguments. See the complete
+[policy/operator procedure](../modules/auth/policies-and-operators.md) for
+filesystem paths, 15-minute handoff, repeated initialization and recovery behavior.
+
+`php artisan runa:auth:lifecycle.apply` admits bounded current-predicate scheduled
+activation/deactivation work; zero means admission, not completion. Its minute
+schedule, authority integration and Audit semantics follow the same guide.
+
+### Module development fixtures and private initial setup
+
+`runa:seed:plan --modules` previews the explicit application plus module development
+graph; `runa:seed:development --modules` executes it only in local/testing console
+context. `runa:seed:accounts` lists safe local fixture identifiers and unset-password
+status. `runa:seed:accounts <scenario> --setup` uses hidden interactive confirmation
+to initialize only an absent password; it accepts no password argument and never
+replaces existing credentials. Production receipt/environment checks apply even
+with local APP_ENV or --force. Native db:seed/default/production seeding remain
+application-owned. See [seeding](../data/seeding.md#explicit-module-development-contributors)
+for prerequisites, independent tuning, contribution contracts and manual navigation.

@@ -1,15 +1,11 @@
+import { recordBrowserProblems } from './support/browserProblems';
 import { expect, test } from '@playwright/test';
 
 test('critical: API readiness and compact language/theme preferences', async ({
   page,
   request,
 }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'error' || message.type() === 'warning')
-      errors.push(message.text());
-  });
+  const errors = recordBrowserProblems(page, { anonymousSession: true });
   expect((await request.get('/api/health')).ok()).toBe(true);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

@@ -147,6 +147,18 @@ Prefer an internal implementation when reasonable. Keep lockfiles committed. Dep
 
 Load `.agents/skills/laravel/SKILL.md` and `.agents/skills/backend/SKILL.md` when relevant.
 
+## Audit awareness
+
+Meaningful business/security mutations require Audit history. Use the opt-in
+Auditable contract for approved single-model changes inside the default PostgreSQL
+transaction. Bulk SQL, relationship/pivot changes and aggregate operations require
+explicit manual Audit events in that same transaction; Eloquent does not emit model
+events for every write. Scoped automatic suppression never disables explicit
+records. Follow docs/runa/handbook/modules/audit/README.md for safe fields,
+redaction, rollback/refusal boundaries and authorized reads.
+
+Use the [Permissions contract](docs/runa/handbook/modules/permissions/README.md) for source-owned permission/role declarations and current action grants. Grants never replace availability, Auth security steps or record-level Policies. Consume guarded public APIs; never use private identity/grant resolvers, mutate foreign assignments or add a generic superadmin policy bypass.
+
 ## Database invariants
 
 PostgreSQL only.
@@ -176,6 +188,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 ## Frontend invariants
 
 - Vue 3 + TypeScript.
+- Every current and future Runa view ships usable defaults and a documented public presentation replacement/composition contract. Keep platform views and reusable session/security orchestration in src/runa; customers own their presentation in src/app without protected edits or copied security logic. Keep the delivered app scaffold minimal. Follow [frontend adoption](docs/runa/handbook/development/frontend/customization.md).
 - Tailwind CSS.
 - Polish user UI is default; English is secondary.
 - Admin panel is English-only.
@@ -187,6 +200,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Do not use native browser validation when it conflicts with controlled application UX.
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
+- Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.
 - No global state library unless a real shared-state need appears.
@@ -208,15 +222,42 @@ Never:
 
 Use Gitleaks, Trivy, Composer audit, and pnpm audit as defined by project tooling.
 
+Every temporary compatibility workaround or security exception requires a tracked removal condition. After a stable corrected replacement passes verification, remove the workaround, its policy/flags, exception-specific tests and obsolete current guidance; retire shared temporary machinery when unused. Follow [temporary exception retirement](docs/runa/handbook/security/baseline.md#temporary-compatibility-and-security-exceptions).
+
 Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 ## Host execution
 
 Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/maintainer/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
+## Generated tooling state
+
+Keep generated private build/tooling artifacts under the single workspace-root
+`.runtime/<area>/` tree; never introduce src/.runtime or per-module runtime roots.
+Public built assets, Laravel storage and supported verification evidence keep
+their documented locations. Follow
+[artifact placement](docs/runa/handbook/architecture/project-principles.md#generated-tooling-and-build-state);
+preserve reports, caches, backups and operation/recovery state during cleanup.
+Browser evidence uses `.runtime/artifacts/playwright`, pnpm uses
+`.runtime/pnpm-store`, and development Python bytecode uses
+`.runtime/python/pycache`; see the placement contract for environment activation.
+
 ## Temporary Docker resources
 
 After the final checks that need them, clean up containers, networks, image tags and disposable volumes created for the task's tests/simulations. Inspect exact resource identities and show the scoped removal list before deletion. This rule authorizes cleanup of clearly identified task-created disposable resources; uncertain ownership or durable data requires clarification. Preserve active development, development/test database data and rollback volumes outside an explicitly scoped preproduction reset or accepted retirement under `docs/runa/handbook/architecture/database.md`. Always preserve Qdrant/model caches, backups, verification reports and other projects. Never use global prune or remove shared builder caches without explicit user approval. Record what was removed and what was preserved in the final report.
+
+Disposable worker databases are an explicit exception to test-data preservation: supported test runners own `runa_test_test_N`, clean inactive workers under the shared suite lock before and after backend runs, and preserve the base `runa_test`. Active connections or uncertain ownership block cleanup. Automatically started browser endpoints carry a run label and recovery journal; remove only those owned containers. Manually provisioned endpoints remain externally owned. Follow [test resource lifecycle](docs/runa/handbook/testing/strategy.md#test-resource-lifecycle); never substitute global Docker or database cleanup.
+
+## Production responsibility boundary
+
+Runa supplies a minimal working production baseline with application security.
+The customer owns host/infrastructure hardening and protection of operator/CLI
+access. Treat authorized execution of dedicated operator commands as trusted;
+do not add a separate infrastructure authority system merely to defend against
+someone who already controls that access. Keep application authorization,
+validation, Audit and secret-safe handling. Extend infrastructure security only
+for an explicitly agreed requirement. See
+`docs/runa/handbook/production/architecture.md` for the supplied baseline and boundary.
 
 ## Production isolation
 
@@ -271,7 +312,7 @@ Constitution-level changes require user discussion: roadmap workflow, branch/mer
 
 ## Module development
 
-For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. The agent owns assessing and updating each changed module's independent PATCH/MINOR/MAJOR manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly owner-approved MAJOR before implementation, regardless of how much code is rewritten. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming
 

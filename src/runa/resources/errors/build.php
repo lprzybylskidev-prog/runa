@@ -10,10 +10,18 @@ $output = $argv[1] ?? $root.'/public/runa-error';
 if (! is_dir($output.'/pages') && ! mkdir($output.'/pages', 0775, true) && ! is_dir($output.'/pages')) {
     throw new RuntimeException('Cannot create error assets directory.');
 }
-if (! is_file($output.'/styles.css') || ! is_dir($root.'/.runtime/runa-errors')) {
+if (! is_file($output.'/styles.css') || ! is_dir(dirname($root).'/.runtime/frontend/errors/templates')) {
     throw new RuntimeException('Build the shared MinimalLayout error shells with pnpm run build:errors first.');
 }
 $branding = require $root.'/runa/config/branding.php';
+$appBranding = $root.'/app/config/branding.php';
+if (is_file($appBranding)) {
+    $overrides = require $appBranding;
+    if (! is_array($overrides)) {
+        throw new RuntimeException('Application configuration must return an array.');
+    }
+    $branding = array_replace_recursive($branding, $overrides);
+}
 $renderer = new HttpErrorPage;
 foreach (['pl', 'en'] as $locale) {
     foreach (['system', 'light', 'dark'] as $theme) {

@@ -237,6 +237,26 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertFalse((production / 'src/app/modules/reference').exists())
                 self.assertFalse((production / 'src/app/modules/module_probe').exists())
 
+    def test_delivered_application_contains_only_essential_extension_entrypoints(self):
+        expected = {
+            'Providers/AppServiceProvider.php', 'providers.php',
+            'resources/index.html', 'resources/js/App.vue', 'resources/js/main.ts',
+            'package.json', 'composer.json', 'application.json', 'routes/web.php',
+            'config/branding.php', 'database/seeders/DatabaseSeeder.php',
+            'tests/Pest.php', 'tests/Feature/WelcomeTest.php',
+            'tests/frontend/welcome.test.ts', 'tests/e2e/welcome.spec.ts',
+            'tests/Feature/.gitignore', 'database/migrations/.gitignore',
+            'config/.gitignore', 'tests/Unit/.gitkeep', 'database/factories/.gitignore',
+            'lang/.gitignore', 'tests/.gitignore', 'Actions/.gitignore',
+        }
+        actual = {path.relative_to(ROOT / 'src/app').as_posix()
+                  for path in (ROOT / 'src/app').rglob('*')
+                  if path.is_file() and 'modules' not in path.relative_to(ROOT / 'src/app').parts}
+        self.assertEqual(actual, expected)
+        self.assertIn('DefaultApplication', (ROOT / 'src/app/resources/js/App.vue').read_text())
+        self.assertNotIn('window.location', (ROOT / 'src/app/resources/js/App.vue').read_text())
+        self.assertIn('createApplication', (ROOT / 'src/app/resources/js/main.ts').read_text())
+
     def test_customer_agent_projection_survives_reapply_and_teammate_clone(self):
         for include in (False, True):
             with self.subTest(include=include), tempfile.TemporaryDirectory() as folder, self.local_git():
@@ -258,11 +278,41 @@ class BootstrapContracts(unittest.TestCase):
                 receipt = bootstrap.acquire(client, 'v1.0.0', destination, 'dev', reference_module=include)
                 expected = (ROOT / 'docs/runa/maintainer/customer-agent/AGENTS.md').read_bytes()
                 self.assertEqual((destination / 'AGENTS.md').read_bytes(), expected)
+                self.assertIn(b'## Audit awareness', expected)
+                for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
+                    guidance = destination / '.agents/skills' / area / 'references/application.md'
+                    if area != 'frontend':
+                        self.assertIn('explicit manual Audit events', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/README.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/transport.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/sessions.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/security.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/profile.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/preferences.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/policies-and-operators.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/permissions/README.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/modules/permissions/authority.md', guidance.read_text())
+                    self.assertIn('docs/runa/handbook/data/seeding.md#explicit-module-development-contributors', guidance.read_text())
                 self.assertEqual(len(list((destination / '.agents/skills').glob('*/SKILL.md'))), 9)
                 self.assertIn('AGENTS.md', receipt['customer_agent']['files'])
                 self.assertFalse((destination / 'docs/runa/maintainer').exists())
+                custom_frontend = {
+                    'src/app/resources/js/App.vue': '<template><main>Customer screen</main></template>\n',
+                    'src/app/resources/js/errorLayout.ts': 'export { default } from "./CustomerError.vue";\n',
+                    'src/app/resources/js/CustomerError.vue': '<template><main><slot /></main></template>\n',
+                    'src/app/resources/css/customer.css': ':root { --customer-spacing: 2rem; }\n',
+                }
+                for name, content in custom_frontend.items():
+                    path = destination / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(content)
                 subprocess.run(['git', '-C', str(destination), 'sparse-checkout', 'reapply'], check=True, capture_output=True)
                 self.assertEqual((destination / 'AGENTS.md').read_bytes(), expected)
+                for name, content in custom_frontend.items():
+                    self.assertEqual((destination / name).read_text(), content)
+                for area in ('frontend', 'vue', 'tailwind', 'security'):
+                    self.assertIn('docs/runa/handbook/development/frontend/customization.md',
+                                  (destination / '.agents/skills' / area / 'references/application.md').read_text())
                 # Customer repository commits its projected working tree, never owner files.
                 exported = Path(folder) / 'exported'
                 shutil.copytree(destination, exported, ignore=shutil.ignore_patterns('.git'))
@@ -272,6 +322,24 @@ class BootstrapContracts(unittest.TestCase):
                 clone = Path(folder) / 'teammate'
                 subprocess.run(['git', 'clone', '-q', str(exported), str(clone)], check=True)
                 self.assertEqual((clone / 'AGENTS.md').read_bytes(), expected)
+                for name, content in custom_frontend.items():
+                    self.assertEqual((clone / name).read_text(), content)
+                for area in ('frontend', 'vue', 'tailwind', 'security'):
+                    self.assertIn('docs/runa/handbook/development/frontend/customization.md',
+                                  (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                for area in ('backend', 'laravel', 'postgresql', 'security', 'frontend'):
+                    if area != 'frontend':
+                        self.assertIn('explicit manual Audit events', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/README.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/transport.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/sessions.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/security.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/profile.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/preferences.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/auth/policies-and-operators.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/permissions/README.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/modules/permissions/authority.md', (clone / '.agents/skills' / area / 'references/application.md').read_text())
+                    self.assertIn('docs/runa/handbook/data/seeding.md#explicit-module-development-contributors', (clone / '.agents/skills' / area / 'references/application.md').read_text())
                 self.assertFalse((clone / '.git/runa-bootstrap.json').exists())
                 self.assertFalse((clone / 'docs/runa/maintainer').exists())
 

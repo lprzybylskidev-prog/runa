@@ -15,7 +15,7 @@ Select an actually published stable annotated release. The example target 0.4.1 
 
 Installed identity comes exclusively from src/runa/platform.json. Owner release acquisition additionally verifies the release VERSION against its tag. Customer scaffold VERSION is not a runtime/update authority. Independently acquire original and target releases and compare only the delivered src/runa file set, contents, executable modes and safe paths. Receipt hashes and installed Git HEAD never authorize expected source. Missing, unexpected or changed platform files block without override. Owner-only source and production contexts are rejected. A teammate clone does not need the first workstation's acquisition receipt or installation journal.
 
-Generated private error shells live under src/.runtime/runa-errors, outside protected source. No generated-output exception hides files inside src/runa. Application source, composed dependency declarations/locks/workspace, private configuration, Git remotes/history and both durable storage owners are preserved. Other delivered scaffold/configuration files follow the exact reviewed plan.
+Generated private error shells live under .runtime/frontend/errors/templates, outside protected source. No generated-output exception hides files inside src/runa. Application source, composed dependency declarations/locks/workspace, private configuration, Git remotes/history and both durable storage owners are preserved. Other delivered scaffold/configuration files follow the exact reviewed plan.
 
 ## Infrastructure customization review
 

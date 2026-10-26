@@ -1,4 +1,5 @@
 /** Public, shell-independent imports. Keep implementation paths private to the facade. */
+export { default as Avatar } from '../../components/AppAvatar.vue';
 export { default as Button } from '../../components/AppButton.vue';
 export { default as Tooltip } from '../../components/AppTooltip.vue';
 export { default as Icon } from '../../components/AppIcon.vue';
@@ -34,6 +35,8 @@ export { default as Alert } from '../../components/AppAlert.vue';
 export { default as Badge } from '../../components/AppBadge.vue';
 export { default as Status } from '../../components/AppStatus.vue';
 export { default as Popover } from '../../components/AppPopover.vue';
+export { default as FormConflict } from '../../components/AppFormConflict.vue';
+export { default as FormNotifications } from '../../components/AppFormNotifications.vue';
 export { default as ToastViewport } from '../../components/AppToastViewport.vue';
 export { useToasts } from '../../composables/useToasts';
 export type * from './feedback';
@@ -150,3 +153,16 @@ export {
 export { loadApplicationIdentity } from './loadIdentity';
 
 export { ModulePage, ModuleSlot } from '../modules';
+
+export { accountPreferences } from '../../lib/preferenceStore';
+export { createAccountPreferenceStore } from '../../lib/accountPreferences';
+export { default as PreferenceFeedback } from '../../components/AppPreferenceFeedback.vue';
+
+export { default as LinkButton } from '../../components/AppLinkButton.vue';
+
+export { createApplication } from './createApplication';
+export { default as HttpErrorLayout } from '../../layouts/HttpErrorLayout.vue';
+export { default as HttpErrorContent } from '../../layouts/MinimalErrorContent.vue';
+export type { HttpErrorLayoutProps } from './errors';
+
+export { default as TextLink } from '../../components/AppTextLink.vue';

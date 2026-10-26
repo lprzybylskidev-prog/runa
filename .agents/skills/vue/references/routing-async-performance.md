@@ -24,3 +24,13 @@
 22. Keep the Vue skill Vue-specific; do not duplicate generic HTML/CSS/HTTP/accessibility rules.
 23. Prefer current installed Vue-version docs/patterns over historical community advice.
 24. Load progressive references on demand rather than treating every Vue task as an invitation to load the whole framework handbook.
+
+Use the shared HTTP document-cancellation contract for requests on views being
+left: RequestCancelledError from @/runa/http cancels observation and must not become
+false error feedback or an automatic write retry. Preserve real network/API errors,
+synchronous dirty-form guards and explicit state reload after interrupted writes.
+Do not add page-local raw fetch/unload handlers to bypass the shared lifecycle.
+
+For view refresh, follow the public forms guide's automatic read reconciliation.
+Coalesce reads, fence late snapshots, clean up listeners, merge against confirmed
+baselines and preserve dirty refs; component remount/reset is not reconciliation.

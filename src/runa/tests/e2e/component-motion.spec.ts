@@ -74,7 +74,7 @@ for (const reduced of [false, true]) {
         .poll(() => content.evaluate((el) => el.getBoundingClientRect().height))
         .toBeGreaterThan(0);
       await page.screenshot({
-        path: `../artifacts/playwright/motion/disclosures-${width}-${reduced}.png`,
+        path: `../.runtime/artifacts/playwright/motion/disclosures-${width}-${reduced}.png`,
         fullPage: true,
       });
     });

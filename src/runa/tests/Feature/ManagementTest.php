@@ -79,6 +79,9 @@ it('keeps all development command families out of the production registry', func
 it('preserves literal runner arguments, nonzero exits and test suite exclusion in PHP actions', function (): void {
     $root = sys_get_temp_dir().'/runa-checks-'.bin2hex(random_bytes(6));
     mkdir($root.'/src/vendor/bin', 0775, true);
+    mkdir($root.'/src/runa/Testing', 0775, true);
+    // This process fixture has no database; lifecycle behavior is covered separately.
+    file_put_contents($root.'/src/runa/Testing/worker-databases.php', '<?php exit(0);');
     $runner = $root.'/src/vendor/bin/pest';
     file_put_contents($runner, '#!/usr/bin/env php'."\n".'<?php fwrite(STDOUT, json_encode(array_slice($argv, 1))); exit(7);');
     chmod($runner, 0755);
@@ -91,7 +94,7 @@ it('preserves literal runner arguments, nonzero exits and test suite exclusion i
         $lock = fopen($root.'/.runtime/tests/suite.lock', 'c');
         flock($lock, LOCK_EX);
         try {
-            expect(fn () => $action->execute('test', [], $root, $output))->toThrow(InvalidArgumentException::class, 'Another test suite');
+            expect(fn () => $action->execute('test', [], $root, $output))->toThrow(RuntimeException::class, 'Another test suite');
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);
