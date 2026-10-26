@@ -1,10 +1,10 @@
 ---
 id: RM-2026-012
 title: Python Tooling Architecture & Unified Test Infrastructure
-status: draft
+status: active
 branch: roadmap/RM-2026-012-python-tooling-architecture
 created_at: 2026-10-26
-activated_at: null
+activated_at: 2026-10-26
 closed_at: null
 release_type: feature
 proposed_version: 0.6.0
@@ -34,12 +34,12 @@ customer and owner behavior while removing duplicate implementation mechanisms.
 The predecessor is [RM-2026-011](../closed/RM-2026-011-audit-auth-permissions-core.md),
 released as 0.5.0. The owner explicitly requested **0.6.0 after this roadmap**.
 The owner confirmed `release_type: feature` and `proposed_version: 0.6.0` on
-2026-10-26: a MINOR increment with PATCH reset. Creating this draft does not change VERSION, approve
-the architecture for execution, activate a roadmap or create its branch.
+2026-10-26: a MINOR increment with PATCH reset. The owner authorized activation
+and execution of point 1 on 2026-10-26. VERSION remains 0.5.0 until verified closure.
 
-At authoring time the checkout is clean `main`, no roadmap is active or paused,
-and the next unused identifier is RM-2026-012. Recheck these facts and the release
-order at activation; a changed predecessor requires reconciliation with 0.6.0.
+Activation started from clean `main` at `0fab18be` after fetching origin; main was
+two planning commits ahead and zero commits behind origin/main. No other roadmap
+was active or paused. The predecessor remains 0.5.0, consistent with feature 0.6.0.
 
 ### Scope
 
@@ -60,6 +60,9 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
 
 ### Decisions
 
+- 2026-10-26 — The owner authorized activation and point 1. Created
+  `roadmap/RM-2026-012-python-tooling-architecture` from updated main; reviewed
+  implementation ordering and confirmed broad verification occurs only in point 10.
 - 2026-10-26 — The owner explicitly confirmed `release_type: feature` and
   `proposed_version: 0.6.0`, independently of roadmap activation.
 - 2026-10-26 — Preserve the four ownership domains: reusable core, delivered
@@ -482,9 +485,10 @@ workflow can be evaluated during implementation under the skills policy. Record
 why unaffected products need no change. Customer guidance continues ordinary
 Laravel plus optional app modules with no permission to edit protected platform.
 
-This draft alone introduces no delivered capability or reusable operating rule,
-so root/customer instruction products and current-state documentation need no
-changes now. Closed roadmaps and dated audit evidence remain immutable.
+Activation and the point 1 contract baseline introduce no delivered capability or
+new reusable operating rule. Root/customer instruction products need no change
+for this point; the maintainer README reflects activation. Closed roadmaps and
+dated audit evidence remain immutable.
 
 ### Measurable acceptance and removal criteria
 
@@ -516,7 +520,7 @@ Closure requires all of the following:
 
 ## Implementation plan
 
-All points remain open. Each implementation point produces code, test code,
+Each implementation point produces code, test code,
 synchronized documentation, a logical commit and checklist update. Refresh the
 active roadmap, relevant decisions, local knowledge and relevant skills before
 each point. Do not routinely run suites at point boundaries. Only necessary small,
@@ -683,9 +687,9 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
     create annotated `v0.6.0`, push/publish under normal owner policy and delete the
     roadmap branch. Report gate, release, migration limitations and resource cleanup.
 
-### Draft preparation validation
+### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,
-compatibility coverage and final-only broad verification scheduling. All checklist
-items stay open. No quality PASS or implementation completion is claimed here.
-The only current file change is this draft under the permitted planning directory.
+compatibility coverage and final-only broad verification scheduling. At draft
+preparation all checklist items remained open and only the draft changed. No
+quality PASS or implementation completion was claimed by that planning validation.
