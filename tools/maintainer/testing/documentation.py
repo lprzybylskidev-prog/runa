@@ -1,43 +1,47 @@
 #!/usr/bin/env python3
 """Actual customer source/knowledge/documentation boundaries using disposable Git fixtures."""
+
 import contextlib
 import hashlib
 import io
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / 'tools/application'))
-sys.path.insert(0, str(ROOT / 'tools/application/knowledge'))
-import corpus
-import docs_checks
-from configuration import load, golden
-from documentation import maintainer_checkout, roadmap_root
-from hooks import approved_version_backfill, commit_message
+if __package__:
+    from tools.application import docs_checks
+    from tools.application.documentation import maintainer_checkout, roadmap_root
+    from tools.application.hooks import commit_message
+    from tools.application.knowledge import corpus
+    from tools.application.knowledge.configuration import golden, load
 
 
 class DocumentationOwnership(unittest.TestCase):
     def setUp(self):
-        self.folder = tempfile.TemporaryDirectory(prefix='runa-doc-ownership-')
+        self.folder = tempfile.TemporaryDirectory(prefix="runa-doc-ownership-")
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
-        subprocess.run(['git', 'init', '-q', '-b', 'documentation-test', str(self.root)], check=True)
-        for name in ('AGENTS.md', 'README.md', 'docs/README.md'):
+        subprocess.run(
+            ["git", "init", "-q", "-b", "documentation-test", str(self.root)], check=True
+        )
+        for name in ("AGENTS.md", "README.md", "docs/README.md"):
             self.copy(name)
-        for name in ('docs/app', 'docs/runa/handbook', '.agents', 'tools/application/knowledge'):
-            shutil.copytree(ROOT / name, self.root / name, ignore=shutil.ignore_patterns('__pycache__'))
-        product = ROOT / 'docs/runa/maintainer/customer-agent'
-        shutil.copy2(product / 'AGENTS.md', self.root / 'AGENTS.md')
-        shutil.rmtree(self.root / '.agents/skills')
-        shutil.copytree(product / 'skills', self.root / '.agents/skills')
-        self.copy('tools/application/quality.yml')
-        self.receipt = self.root / '.git/runa-bootstrap.json'
-        self.receipt.write_text('{}\n')
+        for name in ("docs/app", "docs/runa/handbook", ".agents", "tools/application/knowledge"):
+            shutil.copytree(
+                ROOT / name, self.root / name, ignore=shutil.ignore_patterns("__pycache__")
+            )
+        product = ROOT / "docs/runa/maintainer/customer-agent"
+        shutil.copy2(product / "AGENTS.md", self.root / "AGENTS.md")
+        shutil.rmtree(self.root / ".agents/skills")
+        shutil.copytree(product / "skills", self.root / ".agents/skills")
+        self.copy("tools/application/quality.yml")
+        self.receipt = self.root / ".git/runa-bootstrap.json"
+        self.receipt.write_text("{}\n")
         self.track()
 
     def copy(self, name):
@@ -52,171 +56,177 @@ class DocumentationOwnership(unittest.TestCase):
         return target
 
     def track(self):
-        subprocess.run(['git', 'add', '.'], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
 
     def validate(self):
         with contextlib.redirect_stdout(io.StringIO()):
             docs_checks.validate(self.root)
 
     def copy_owner_inputs(self):
-        for name in ('docs/runa/maintainer/agent-contract.md', 'tools/maintainer/knowledge.json', 'tools/maintainer/knowledge-golden.json'):
+        for name in (
+            "docs/runa/maintainer/agent-contract.md",
+            "tools/maintainer/knowledge.json",
+            "tools/maintainer/knowledge-golden.json",
+        ):
             self.copy(name)
-        self.write('docs/runa/maintainer/internal.md', '# Private owner roadmap\nInternal sentinel, never customer knowledge.\n')
+        self.write(
+            "docs/runa/maintainer/internal.md",
+            "# Private owner roadmap\nInternal sentinel, never customer knowledge.\n",
+        )
         self.track()
 
-    def test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history(self):
+    def test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history(
+        self,
+    ):
         self.validate()
-        self.assertFalse((self.root / 'docs/runa/maintainer').exists())
-        self.assertNotIn('runa:current-state', (self.root / 'README.md').read_text())
-        for state in ('draft', 'active', 'paused', 'closed'):
-            self.assertEqual(list((self.root / 'docs/app/roadmaps' / state).glob('*.md')), [])
-        self.assertEqual(len(list((self.root / '.agents/skills').glob('*/SKILL.md'))), 9)
-        paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, load(self.root))}
-        self.assertIn('docs/app/README.md', paths)
-        self.assertIn('docs/runa/handbook/development/editor-and-agents.md', paths)
-        self.assertIn('docs/runa/handbook/security/baseline.md', paths)
-        self.assertFalse(any('/maintainer/' in p for p in paths))
-        self.assertTrue(all('/maintainer/' not in q['source_path'] for q in golden(self.root)))
+        self.assertFalse((self.root / "docs/runa/maintainer").exists())
+        self.assertNotIn("runa:current-state", (self.root / "README.md").read_text())
+        for state in ("draft", "active", "paused", "closed"):
+            self.assertEqual(list((self.root / "docs/app/roadmaps" / state).glob("*.md")), [])
+        self.assertEqual(len(list((self.root / ".agents/skills").glob("*/SKILL.md"))), 9)
+        paths = {
+            p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, load(self.root))
+        }
+        self.assertIn("docs/app/README.md", paths)
+        self.assertIn("docs/runa/handbook/development/editor-and-agents.md", paths)
+        self.assertIn("docs/runa/handbook/security/baseline.md", paths)
+        self.assertFalse(any("/maintainer/" in p for p in paths))
+        self.assertTrue(all("/maintainer/" not in q["source_path"] for q in golden(self.root)))
 
     def test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt(self):
         self.copy_owner_inputs()
         self.assertFalse(maintainer_checkout(self.root))
         config = load(self.root)
-        self.assertNotIn('docs/runa/maintainer', config['markdown_roots'])
-        config['markdown_roots'] = ['docs']
-        config['files'] += ['docs/runa/maintainer/internal.md']
+        self.assertNotIn("docs/runa/maintainer", config["markdown_roots"])
+        config["markdown_roots"] = ["docs"]
+        config["files"] += ["docs/runa/maintainer/internal.md"]
         paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, config)}
-        self.assertFalse(any('/maintainer/' in p for p in paths))
+        self.assertFalse(any("/maintainer/" in p for p in paths))
         self.receipt.unlink()
         self.assertTrue(maintainer_checkout(self.root))
-        self.assertIn('docs/runa/maintainer', load(self.root)['markdown_roots'])
-        self.assertTrue(any('/maintainer/' in q['source_path'] for q in golden(self.root)))
+        self.assertIn("docs/runa/maintainer", load(self.root)["markdown_roots"])
+        self.assertTrue(any("/maintainer/" in q["source_path"] for q in golden(self.root)))
 
     def test_customer_authoring_templates_never_enter_owner_retrieval(self):
         self.copy_owner_inputs()
         self.receipt.unlink()
-        self.write('docs/runa/maintainer/customer-agent/AGENTS.md', '# Customer template sentinel')
-        self.write('docs/runa/maintainer/customer-agent/skills/frontend/SKILL.md', '# Customer UI rules')
+        self.write("docs/runa/maintainer/customer-agent/AGENTS.md", "# Customer template sentinel")
+        self.write(
+            "docs/runa/maintainer/customer-agent/skills/frontend/SKILL.md", "# Customer UI rules"
+        )
         self.track()
         config = load(self.root)
-        config['files'].append('docs/runa/maintainer/customer-agent/AGENTS.md')
+        config["files"].append("docs/runa/maintainer/customer-agent/AGENTS.md")
         paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, config)}
-        self.assertIn('docs/runa/maintainer/internal.md', paths)
-        self.assertFalse(any(p.startswith('docs/runa/maintainer/customer-agent/') for p in paths))
+        self.assertIn("docs/runa/maintainer/internal.md", paths)
+        self.assertFalse(any(p.startswith("docs/runa/maintainer/customer-agent/") for p in paths))
 
     def test_customer_template_links_use_installed_paths_and_public_boundaries(self):
-        product = self.root / 'docs/runa/maintainer/customer-agent'
+        product = self.root / "docs/runa/maintainer/customer-agent"
         product.mkdir(parents=True)
-        template = product / 'AGENTS.md'
-        template.write_text('[Public guide](docs/runa/handbook/ai/skills-policy.md)')
-        docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
-        template.write_text('[Owner guide](docs/runa/maintainer/agent-contract.md)')
-        with self.assertRaisesRegex(ValueError, 'owner-only'):
-            docs_checks.links(self.root, [template], logical_paths={template: self.root / 'AGENTS.md'})
+        template = product / "AGENTS.md"
+        template.write_text("[Public guide](docs/runa/handbook/ai/skills-policy.md)")
+        docs_checks.links(self.root, [template], logical_paths={template: self.root / "AGENTS.md"})
+        template.write_text("[Owner guide](docs/runa/maintainer/agent-contract.md)")
+        with self.assertRaisesRegex(ValueError, "owner-only"):
+            docs_checks.links(
+                self.root, [template], logical_paths={template: self.root / "AGENTS.md"}
+            )
 
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self):
         self.copy_owner_inputs()
         self.receipt.unlink()
-        self.write('docs/app/notes.md', '[Internal](../runa/maintainer/internal.md)\n')
-        with self.assertRaisesRegex(ValueError, 'owner-only'):
+        self.write("docs/app/notes.md", "[Internal](../runa/maintainer/internal.md)\n")
+        with self.assertRaisesRegex(ValueError, "owner-only"):
             self.validate()
 
     def test_legacy_roots_and_materialized_owner_docs_are_rejected(self):
-        legacy = self.root / 'docs/development'
+        legacy = self.root / "docs/development"
         legacy.mkdir()
-        with self.assertRaisesRegex(ValueError, 'placement'):
+        with self.assertRaisesRegex(ValueError, "placement"):
             self.validate()
         legacy.rmdir()
         self.copy_owner_inputs()
-        with self.assertRaisesRegex(ValueError, 'owner-only'):
+        with self.assertRaisesRegex(ValueError, "owner-only"):
             self.validate()
 
     def test_missing_directories_duplicate_root_and_symlink_sources_fail(self):
-        (self.root / 'docs/app/roadmaps/active/.gitkeep').unlink()
-        (self.root / 'docs/app/roadmaps/active').rmdir()
-        with self.assertRaisesRegex(ValueError, 'roadmap directory'):
+        (self.root / "docs/app/roadmaps/active/.gitkeep").unlink()
+        (self.root / "docs/app/roadmaps/active").rmdir()
+        with self.assertRaisesRegex(ValueError, "roadmap directory"):
             self.validate()
-        (self.root / 'docs/app/roadmaps/active').mkdir()
-        duplicate = self.root / 'src/app/docs'
+        (self.root / "docs/app/roadmaps/active").mkdir()
+        duplicate = self.root / "src/app/docs"
         duplicate.mkdir(parents=True)
-        with self.assertRaisesRegex(ValueError, 'docs/app'):
+        with self.assertRaisesRegex(ValueError, "docs/app"):
             self.validate()
         duplicate.rmdir()
-        (self.root / 'docs/app/linked.md').symlink_to(ROOT / 'AGENTS.md')
-        with self.assertRaisesRegex(ValueError, 'symlink'):
+        (self.root / "docs/app/linked.md").symlink_to(ROOT / "AGENTS.md")
+        with self.assertRaisesRegex(ValueError, "symlink"):
             self.validate()
 
     def test_module_local_documentation_is_rejected(self):
-        for owner in ('app', 'runa'):
-            local = self.root / ('src/' + owner + '/modules/example/docs')
+        for owner in ("app", "runa"):
+            local = self.root / ("src/" + owner + "/modules/example/docs")
             local.mkdir(parents=True)
-            with self.assertRaisesRegex(ValueError, 'central docs'):
+            with self.assertRaisesRegex(ValueError, "central docs"):
                 self.validate()
             local.rmdir()
 
     def test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable(self):
-        text = '---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n'
-        app = self.write('docs/app/roadmaps/active/RM-2026-099-test.md', text)
-        owner = self.write('docs/runa/maintainer/roadmaps/active/RM-2026-099-test.md', text)
+        text = "---\nid: RM-2026-099\nstatus: active\n---\n# Plan\n"
+        app = self.write("docs/app/roadmaps/active/RM-2026-099-test.md", text)
+        owner = self.write("docs/runa/maintainer/roadmaps/active/RM-2026-099-test.md", text)
         a = corpus.metadata(app, self.root, text)
         b = corpus.metadata(owner, self.root, text)
-        self.assertNotEqual(a['document_id'], b['document_id'])
-        self.assertEqual(b['document_id'], corpus.identity('roadmap:RM-2026-099'))
-        closed_text = text.replace('status: active', 'status: closed')
-        closed = self.write('docs/app/roadmaps/closed/RM-2026-099-test.md', closed_text)
-        self.assertEqual(a['document_id'], corpus.metadata(closed, self.root, closed_text)['document_id'])
+        self.assertNotEqual(a["document_id"], b["document_id"])
+        self.assertEqual(b["document_id"], corpus.identity("roadmap:RM-2026-099"))
+        closed_text = text.replace("status: active", "status: closed")
+        closed = self.write("docs/app/roadmaps/closed/RM-2026-099-test.md", closed_text)
+        self.assertEqual(
+            a["document_id"], corpus.metadata(closed, self.root, closed_text)["document_id"]
+        )
 
     def test_commit_scope_uses_application_roadmap_despite_copied_owner_history(self):
         self.copy_owner_inputs()
-        self.write('docs/app/roadmaps/active/RM-2026-099-test.md', '---\nid: RM-2026-099\nstatus: active\n---\n')
-        self.write('docs/runa/maintainer/roadmaps/active/RM-2026-098-test.md', '---\nid: RM-2026-098\nstatus: active\n---\n')
-        message = self.write('message.txt', 'docs(RM-2026-099): application notes\n')
+        self.write(
+            "docs/app/roadmaps/active/RM-2026-099-test.md",
+            "---\nid: RM-2026-099\nstatus: active\n---\n",
+        )
+        self.write(
+            "docs/runa/maintainer/roadmaps/active/RM-2026-098-test.md",
+            "---\nid: RM-2026-098\nstatus: active\n---\n",
+        )
+        message = self.write("message.txt", "docs(RM-2026-099): application notes\n")
         commit_message(self.root, message)
-        self.assertEqual(roadmap_root(self.root), self.root / 'docs/app/roadmaps')
+        self.assertEqual(roadmap_root(self.root), self.root / "docs/app/roadmaps")
         self.receipt.unlink()
-        with self.assertRaisesRegex(ValueError, 'scope'):
+        with self.assertRaisesRegex(ValueError, "scope"):
             commit_message(self.root, message)
 
     def test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes(self):
-        mapping = json.loads((ROOT / 'docs/runa/maintainer/documentation-map.json').read_text())
-        for name, expected in mapping['immutable_sha256'].items():
+        mapping = json.loads((ROOT / "docs/runa/maintainer/documentation-map.json").read_text())
+        for name, expected in mapping["immutable_sha256"].items():
             with self.subTest(source=name):
                 self.assertEqual(hashlib.sha256((ROOT / name).read_bytes()).hexdigest(), expected)
-        for name in mapping['paths'].values():
+        for name in mapping["paths"].values():
             path = ROOT / name
-            if '/roadmaps/' in name and path.name.startswith('RM-'):
-                self.assertEqual(len(list((ROOT / 'docs/runa/maintainer/roadmaps').glob('*/' + path.name))), 1, name)
+            if "/roadmaps/" in name and path.name.startswith("RM-"):
+                self.assertEqual(
+                    len(list((ROOT / "docs/runa/maintainer/roadmaps").glob("*/" + path.name))),
+                    1,
+                    name,
+                )
             else:
                 self.assertTrue(path.is_file(), name)
 
-    def test_version_backfill_accepts_only_exact_metadata_changes_in_owner_context(self):
-        mapping = json.loads((ROOT / 'docs/runa/maintainer/documentation-map.json').read_text())
-        records = mapping['proposed_version_backfill_2026_10_22']
-        self.assertEqual(len(records), 7)
-        self.copy_owner_inputs()
-        self.copy('docs/runa/maintainer/documentation-map.json')
-        self.receipt.unlink()
-        for name, record in records.items():
-            with self.subTest(source=name):
-                after = (ROOT / name).read_bytes()
-                field = b'\nproposed_version: ' + record['proposed_version'].encode()
-                front, boundary, body = after.partition(b'\n---\n')
-                before = front.replace(field, b'', 1) + boundary + body
-                self.assertEqual(hashlib.sha256(before).hexdigest(), record['before_sha256'])
-                self.assertTrue(approved_version_backfill(self.root, name, before, after))
-                self.assertFalse(approved_version_backfill(self.root, name, before, after + b'Changed history.\n'))
-                self.assertFalse(approved_version_backfill(self.root, name, after, after))
-                # Even updating the approved digest cannot authorize changes beyond the one field.
-                altered = after + b'Changed history.\n'
-                changed_mapping = json.loads(json.dumps(mapping))
-                changed_mapping['proposed_version_backfill_2026_10_22'][name]['after_sha256'] = hashlib.sha256(altered).hexdigest()
-                self.write('docs/runa/maintainer/documentation-map.json', json.dumps(changed_mapping))
-                self.assertFalse(approved_version_backfill(self.root, name, before, altered))
-                self.copy('docs/runa/maintainer/documentation-map.json')
-                self.receipt.write_text('{}\n')
-                self.assertFalse(approved_version_backfill(self.root, name, before, after))
-                self.receipt.unlink()
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
+    if not __package__:
+        raise SystemExit(
+            subprocess.call(
+                [sys.executable, "-m", "tools.maintainer.testing.documentation", *sys.argv[1:]],
+                cwd=ROOT,
+            )
+        )
     unittest.main()

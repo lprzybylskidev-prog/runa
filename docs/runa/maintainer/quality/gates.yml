@@ -80,10 +80,17 @@ base:
     command: php artisan runa:check:debug-residue
     severity: hard_fail
 
+  - id: python-toolchain
+    depends_on: [configuration]
+    exclusive_group: testing-state
+    command: python3 tools/maintainer/python-tool setup
+    severity: hard_fail
+
   - id: quality-runner-contract
-    depends_on: [repository-state]
+    depends_on: [repository-state, python-toolchain]
+    exclusive_group: testing-state
     description: Validate graph selection, failure propagation, parallel exclusion, background locking and interruption.
-    command: python3 tools/maintainer/testing/quality.py
+    command: python3 tools/maintainer/test-python --scope=contracts --filter=test_quality_
     severity: hard_fail
 
   - id: maintenance-consistency
@@ -226,8 +233,9 @@ impact_areas:
 
   security:
     - id: security-review-contracts
-      depends_on: [configuration]
-      command: python3 tools/maintainer/testing/security.py
+      depends_on: [configuration, python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_security_services.py
       severity: hard_fail
 
     - id: repository-container-scan
@@ -245,12 +253,6 @@ impact_areas:
       severity: hard_fail
 
   tooling:
-    - id: python-toolchain
-      depends_on: [configuration]
-      exclusive_group: testing-state
-      command: python3 tools/maintainer/python-tool setup
-      severity: hard_fail
-
     - id: python-format
       depends_on: [python-toolchain]
       exclusive_group: testing-state

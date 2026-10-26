@@ -20,6 +20,7 @@ abstract class ToolingCommand extends Command
         'quality' => ['show', 'roadmap', 'final', 'status'],
         'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
         'security' => ['trivy', 'review-changed-surface', 'dependencies', 'secrets'],
+        'python' => ['setup', 'format', 'lint', 'typecheck'],
         'xdebug' => ['on', 'off', 'status'],
         'check' => ['debug-residue'], 'hook' => ['pre-commit', 'commit-msg'],
         'production' => ['validate', 'build', 'up', 'down', 'restart', 'status', 'logs', 'self-test', 'verify-ai-isolation'],

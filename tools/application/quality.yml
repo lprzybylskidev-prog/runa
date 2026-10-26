@@ -51,7 +51,27 @@ impact_areas:
   database: []
   development: []
   production: []
-  tooling: []
+  tooling:
+    - id: application-python-setup
+      depends_on: [application-config]
+      command: php artisan runa:python:setup
+      exclusive_group: testing-state
+      severity: hard_fail
+    - id: application-python-format
+      depends_on: [application-python-setup]
+      command: php artisan runa:python:format --check
+      exclusive_group: testing-state
+      severity: hard_fail
+    - id: application-python-lint
+      depends_on: [application-python-setup]
+      command: php artisan runa:python:lint
+      exclusive_group: testing-state
+      severity: hard_fail
+    - id: application-python-types
+      depends_on: [application-python-setup]
+      command: php artisan runa:python:typecheck
+      exclusive_group: testing-state
+      severity: hard_fail
   security: []
   ai_environment: []
   documentation: []
@@ -88,7 +108,13 @@ mandatory:
   ]
 groups:
   docs: [application-docs]
-  tooling: [application-tooling]
+  tooling:
+    [
+      application-tooling,
+      application-python-format,
+      application-python-lint,
+      application-python-types,
+    ]
   backend:
     [
       application-tests,

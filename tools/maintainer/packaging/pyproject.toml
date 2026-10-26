@@ -17,5 +17,5 @@ include-package-data = false
 version = {file = "VERSION"}
 
 [tool.setuptools.package-data]
-"tools.maintainer" = ["knowledge.json", "knowledge-golden.json", "requirements.lock", "pyright.lock.json", "pip-bootstrap.lock.json", "pytest.ini"]
+"tools.maintainer" = ["hook", "knowledge.json", "knowledge-golden.json"]
 "tools.maintainer.testing" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php", "php-alpine-host.sh"]

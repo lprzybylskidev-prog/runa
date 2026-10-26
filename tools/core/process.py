@@ -30,6 +30,7 @@ class OutputMode(Enum):
     INHERIT = "inherit"
     CAPTURE = "capture"
     STDERR = "stderr"
+    QUIET = "quiet"
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ class ProcessResult:
     stdout: bytes = field(default=b"", repr=False)
     stderr: bytes = field(default=b"", repr=False)
 
-    def checked(self) -> "ProcessResult":
+    def checked(self) -> ProcessResult:
         if self.returncode:
             raise SafeFailure("Child process failed.", self.returncode)
         return self
@@ -120,7 +121,11 @@ class SubprocessRunner:
         output = (
             subprocess.PIPE
             if spec.output is OutputMode.CAPTURE
-            else (2 if spec.output is OutputMode.STDERR else None)
+            else (
+                2
+                if spec.output is OutputMode.STDERR
+                else (subprocess.DEVNULL if spec.output is OutputMode.QUIET else None)
+            )
         )
         started = self.clock.monotonic()
         try:
@@ -130,24 +135,28 @@ class SubprocessRunner:
                 env=spec.env,
                 stdin=stdin,
                 stdout=output,
-                stderr=output,
+                stderr=None if spec.output is OutputMode.QUIET else output,
                 start_new_session=True,
             )
         except OSError:
             raise SafeFailure(
                 "Unable to start child process; check access and required tools."
             ) from None
-        pending_input = spec.input
         try:
-            if spec.output_limit is not None:
-                if spec.stdin is InputMode.BYTES:
-                    raise ValueError("Bounded discovery does not accept byte stdin.")
+            if spec.output_limit is not None or spec.stdin is InputMode.BYTES:
                 buffers = [bytearray(), bytearray()]
                 total = 0
+                input_offset = 0
+                payload = spec.input or b""
                 with selectors.DefaultSelector() as selector:
-                    assert child.stdout is not None and child.stderr is not None
-                    selector.register(child.stdout, selectors.EVENT_READ, 0)
-                    selector.register(child.stderr, selectors.EVENT_READ, 1)
+                    for stream, channel in ((child.stdout, 0), (child.stderr, 1)):
+                        if stream is not None:
+                            selector.register(stream, selectors.EVENT_READ, channel)
+                    if child.stdin is not None:
+                        if payload:
+                            selector.register(child.stdin, selectors.EVENT_WRITE, 2)
+                        else:
+                            child.stdin.close()
                     while selector.get_map() or child.poll() is None:
                         if self.cancellation is not None:
                             self.cancellation.checkpoint()
@@ -157,12 +166,24 @@ class SubprocessRunner:
                         ):
                             raise ProcessTimeout
                         for key, _ in selector.select(0.1):
+                            if key.data == 2:
+                                try:
+                                    input_offset += os.write(
+                                        key.fd, payload[input_offset : input_offset + 4096]
+                                    )
+                                except BrokenPipeError:
+                                    input_offset = len(payload)
+                                if input_offset >= len(payload):
+                                    selector.unregister(key.fd)
+                                    assert child.stdin is not None
+                                    child.stdin.close()
+                                continue
                             chunk = os.read(key.fd, 4096)
                             if not chunk:
                                 selector.unregister(key.fd)
                                 continue
                             total += len(chunk)
-                            if total > spec.output_limit:
+                            if spec.output_limit is not None and total > spec.output_limit:
                                 raise SafeFailure("Child output exceeded the transport limit.")
                             buffers[key.data].extend(chunk)
                     return ProcessResult(child.wait(), bytes(buffers[0]), bytes(buffers[1]))
@@ -178,12 +199,11 @@ class SubprocessRunner:
                     raise ProcessTimeout
                 interval = min(remaining, 0.1) if remaining is not None else 0.1
                 try:
-                    stdout, stderr = child.communicate(pending_input, timeout=interval)
+                    stdout, stderr = child.communicate(timeout=interval)
                     assert child.returncode is not None
                     return ProcessResult(child.returncode, stdout or b"", stderr or b"")
                 except subprocess.TimeoutExpired:
-                    # communicate retains partially written input across timeout retries.
-                    pending_input = None
+                    continue
         finally:
             try:
                 reap(child, spec.terminate_grace)

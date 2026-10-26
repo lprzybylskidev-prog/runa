@@ -36,6 +36,10 @@ class DevelopmentSetup:
                 "tools/application/development_config.py",
                 "tools/application/development_setup.py",
                 "tools/application/development_runtime.py",
+                "tools/application/python_toolchain.py",
+                "tools/application/python/requirements.lock",
+                "tools/application/python/pip-bootstrap.lock.json",
+                "tools/application/python/pyright.lock.json",
                 "tools/application/processes.py",
                 "tools/application/dependencies.py",
             )
@@ -118,6 +122,8 @@ class DevelopmentSetup:
         env = self.workspace.root / ".env"
         marker = self.workspace.root / ".runtime/dev/setup.sha256"
         required = [
+            ".runtime/python/venv/bin/python",
+            ".runtime/python/node/pyright/dist/pyright.js",
             "src/vendor/autoload.php",
             "src/node_modules/.modules.yaml",
             "src/public/build/index.html",
@@ -141,6 +147,11 @@ class DevelopmentSetup:
                 "Development setup is current; dependency installation and frontend build skipped."
             )
             return 0
+        self.processes.run(
+            ["python3", "-m", "tools.application.python_toolchain"],
+            cwd=self.workspace.root,
+            check=True,
+        )
         self.processes.run(
             ["python3", "-m", "tools.application.dependencies", "--check"],
             cwd=self.workspace.root,

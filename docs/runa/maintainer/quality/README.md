@@ -242,7 +242,7 @@ Commands execute as argument arrays without a shell. Missing commands fail with 
 
 A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. A final run always starts from the beginning.
 
-`python3 tools/maintainer/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/maintainer/testing/quality.py`.
+`python3 tools/maintainer/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Private scheduler/evidence contracts use `python3 tools/maintainer/test-python --scope=contracts --filter=test_quality_`; the former source path is a fixed compatibility launcher.
 
 ## Owner test routing
 
@@ -291,4 +291,15 @@ contracts. Setup is a prerequisite, all nodes retain hard failure and share
 reports and physical projection boundaries are documented in the
 [Python owner workflow](../tooling/python-rebuild/toolchain.md). These checks run
 in final verification; migration points do not claim the full Python scope passes.
-Customer quality retains application commands without private pytest dependencies.
+Customer quality includes the delivered frozen Python development infrastructure
+and application analysis commands. Owner suites remain private. Python setup is
+a real prerequisite of migrated owner scheduler/security contracts; those nodes
+share `testing-state` with the other native suites.
+
+Owner composition passes private roadmap/gate/state paths to the shared quality
+services. No owner code patches imported application modules. Release-only allowed
+paths belong to the private release validator. Owner `.githooks` select the private
+history policy only in receipt-free maintenance context; customer snapshots use
+shared staged checks. The RM-010 first-closure exception and the completed
+2026-10-22 version-backfill transition are retired; exact historical hashes remain
+protected and historical bytes/decisions are retained.

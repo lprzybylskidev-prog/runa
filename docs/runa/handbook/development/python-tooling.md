@@ -17,8 +17,9 @@ imports and explicit arguments; preserve existing source transports while the
 owning migration replaces their old imports. The public command registry remains
 Laravel Artisan; Python package names are not a customer extension API.
 
-Root `pyproject.toml` defines the core/application distribution, explicitly named
-packages/resources, Python language target, Ruff rules and strict Pyright policy.
+Root `pyproject.toml` defines the core/application distribution and private owner
+analysis scope. Delivered configuration and frozen development locks live under
+`tools/application/python`; both ownership contexts use the same reviewed versions.
 It declares no runtime or developer dependencies. Package versions follow root
 `VERSION`; Python packages do not receive independent releases. Private wheel
 preparation is an engineering check, not an operational installation requirement.
@@ -39,7 +40,9 @@ selection and app transport; production selection remains a separate policy.
 is an explicit copied mapping. Stdin is explicitly inherited, closed or bytes;
 output is inherited or captured as bytes. Timeouts are opt-in finite positive
 durations; no timeout means the caller deliberately allows a long operation.
-Results retain native return codes. `checked()` raises a safe failure without
+Results retain native return codes. Byte stdin and captured output use concurrent
+selector-driven exchange, preserving input across slow readers/backpressure and
+closing stdin explicitly at EOF. `checked()` raises a safe failure without
 including argv, environment or captured output. Inherited streams preserve the
 caller's terminal; no shell or pseudo-terminal is added.
 
@@ -103,8 +106,7 @@ Host state uses the core durable private JSON writer, independently of deploymen
 Socket binding uses a directory descriptor without changing the process cwd.
 
 Compatibility function modules and direct-file launchers remain for existing
-callers during the migration. They delegate to the package services; quality,
-deployment and knowledge domain redesigns retain their own owning points. New
+callers during the migration. They delegate to the package services; deployment and knowledge domain redesigns retain their own owning points. New
 consumers use these explicit services and qualified imports. Do not copy legacy
 process/Compose/state mechanics or introduce new path injection.
 
@@ -116,6 +118,66 @@ that setting in new transports. Reports, caches and unrelated operation state ar
 preserved during cleanup. See [artifact placement](../architecture/project-principles.md#generated-tooling-and-build-state).
 
 Application developers continue using the [supported commands](../tooling/commands.md)
-and [testing workflows](../testing/strategy.md). Owner pytest suites, dependency
-locks and package assembly are excluded from customer delivery. No developer
-dependency is needed to reopen or recover a customer installation.
+and [testing workflows](../testing/strategy.md). Private owner pytest suites and package assembly are excluded from customer delivery.
+The shared development toolchain, locks and pytest configuration are delivered.
+Host startup/recovery transports remain stdlib-only; container development setup
+prepares the frozen tools.
+
+## Delivered development tools and composition
+
+`./bin/artisan runa:python:setup` installs the reviewed, hash-locked pytest/Ruff/
+Pyright tools in the app container under `.runtime/python`. Normal development
+setup includes this preparation; a current reopen skips it. Host execution needs
+only Python/Docker/Git. Help, recovery and production operations do not install or
+import third-party Python packages. Production images exclude these tools.
+
+Use `runa:python:format [--check]`, `runa:python:lint` and
+`runa:python:typecheck` through Artisan (host `./bin/artisan`, container
+`php artisan`). Default analysis covers delivered core/application tooling and
+`src/app`. Application tests and private owner suites keep their existing separate
+runners. The shared pytest configuration supplies importlib discovery, strict
+markers and configuration; runners supply exact suite paths, workspace root,
+locks, cache, temporary paths and reports. Configuration is not a test suite.
+
+Applications may pass `--config=src/app/<file>` to Python format/lint/typecheck.
+Ruff configuration can extend `../../tools/application/python/ruff.toml` from a
+file directly under `src/app`; Pyright can extend the adjacent
+`pyrightconfig.json` with the equivalent relative path. Include application-owned
+module/tooling paths explicitly. Preserve strict typing/markers and workspace-root
+`.runtime/python` caches/reports. Keep custom configuration in `src/app` and leave
+protected tooling unchanged. The owner adds its private source/test and packaging
+scope through the root analysis configuration and private test selector.
+
+## Quality, diagnostics and staged checks
+
+`QualityPlanner` receives a configuration reader, roadmap directory and definition;
+`QualityService` adds the latest-run directory and command prefix;
+`QualityExecutor` receives workspace, location, environment and process launcher.
+The owner composes these same services with private paths, without replacing
+module globals or loading command files as implementation. Configuration parsing,
+graph selection, execution, status and closure evidence have separate modules.
+The private release validator supplies allowed closure metadata; customer closure
+uses application manifest/changelog defaults. Serialized scope, graph hashes,
+commands, timing and candidate checks retain their existing contracts.
+
+The concurrent scheduler owns its distinct multi-child lifecycle and uses core
+process-group cleanup. It preserves native exits, four ready-node slots,
+exclusive groups, dependency blocking, inherited latest-run locks and background
+handoff. Child groups are reaped on errors and interruption before releasing the
+run lock. New state uses atomic private JSON; safe operator-owned legacy mode-644
+state remains readable without permitting symlinks, hardlinks or foreign writes.
+
+`Diagnostics`, `SecurityService` and `SecretScanner` receive explicit workspace /
+process dependencies. Scanner findings and operational failures remain blocking;
+repository/image reports and both locked dependency audits are collected before
+aggregate refusal. Gitleaks uses the same strict default/redaction policy for
+whole-repository and staged snapshots. Review evidence still requires an actual
+report bound to current source hashes; tools never attest on an agent's behalf.
+
+Hooks format and lint staged Python bytes with pinned Ruff, including Python
+shebang launchers. Missing tools fail with the setup command. Dirty/partial staged
+files are never overwritten; lint, secret and knowledge checks precede publication.
+Closed history deletion/renaming is refused as well as content changes.
+Private immutable-history rules are injected by the owner hook composition and
+are excluded from customer tooling. Retired one-time history/closure exceptions
+have no active bypass code; immutable historical records remain preserved.

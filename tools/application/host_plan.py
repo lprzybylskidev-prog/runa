@@ -27,6 +27,7 @@ TOOLS = (
     "quality",
     "knowledge",
     "security",
+    "python",
     "xdebug",
     "check",
     "hook",

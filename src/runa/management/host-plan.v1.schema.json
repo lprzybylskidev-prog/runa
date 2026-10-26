@@ -45,7 +45,8 @@
         "tooling.test",
         "tooling.production",
         "tooling.deploy",
-        "tooling.host"
+        "tooling.host",
+        "tooling.python"
       ]
     },
     "parameters": {

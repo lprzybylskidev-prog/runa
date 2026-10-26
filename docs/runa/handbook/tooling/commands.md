@@ -241,7 +241,7 @@ Gate-specific doctor areas include `repository`, `config`, `maintenance`, `hooks
 
 ## Versioned Git hooks and internal launchers
 
-`./tools/application/bin/pre-commit` and `./tools/application/bin/commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Owner maintenance setup explicitly configures `git config --local core.hooksPath .githooks`; customer development startup does not alter Git hook configuration. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint/Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
+`./tools/application/bin/pre-commit` and `./tools/application/bin/commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Owner maintenance setup explicitly configures `git config --local core.hooksPath .githooks`; customer development setup configures missing hooks and preserves an existing local selection. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint, staged Ruff format/lint and Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
 
 If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `php artisan runa:knowledge:index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
 
@@ -359,3 +359,13 @@ replaces existing credentials. Production receipt/environment checks apply even
 with local APP_ENV or --force. Native db:seed/default/production seeding remain
 application-owned. See [seeding](../data/seeding.md#explicit-module-development-contributors)
 for prerequisites, independent tuning, contribution contracts and manual navigation.
+
+## Python development commands
+
+`./bin/artisan runa:python:setup` prepares the shared frozen Python tools in the
+app container. `runa:python:format [--check]`, `runa:python:lint` and
+`runa:python:typecheck` cover delivered tooling and application source. These three
+commands accept `--config=src/app/<file>` for application-owned composition;
+see [Python tooling](../development/python-tooling.md). Inside the container use
+`php artisan`. No host pip/package installation is needed. Private owner tests
+continue through the maintainer test transport, outside the customer registry.

@@ -683,7 +683,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     boundaries; add consistency contracts without removing independent validation.
   - Synchronize public commands, host executor/development docs and affected products.
 
-- [ ] 5. Rebuild shared quality, diagnostics, scanners and hook services.
+- [x] 5. Rebuild shared quality, diagnostics, scanners and hook services.
   - Prerequisites: point 4 guards and transports.
   - Reconcile shared customer development/test capability versus private owner
     policy. Refactor point 2's private-only Python setup/config/locks into delivered
@@ -1003,6 +1003,81 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
 - Incremental knowledge refresh passed (186 documents, 2896 chunks; 21 embedded and 12 removed; no stale/missing/orphan chunks and no parser change). Mandatory hooks accompany the point
   commit. VERSION stays 0.5.0; point 5 is next. Full compatibility/package/container
   acceptance and strict quality/security/AI gates remain point 10.
+
+### Point 5 — shared quality, diagnostics, scanners and hooks (2026-10-26)
+
+- Split YAML/frontmatter reading, immutable validated quality steps, pure graph
+  selection, planning, scheduling, state/status and candidate-bound closure evidence
+  into explicit application services. Owner composition supplies private paths and
+  release metadata policy; removed quality monkey-patching/runpy, maintainer context
+  path injection and duplicate private development diagnostics. Preserved selection,
+  graph/command hashes, dependency/exclusive scheduling, native exits, timings,
+  latest-run locks, background detachment and interruption/resource ownership.
+- Reused core group reaping and atomic JSON. Safe existing operator-owned mode-644
+  quality state is accepted through an explicit non-private file policy; new writes
+  remain private. State reads are bounded, reject unsafe file identities and validate
+  run/step status and child identity. Cleanup runs before lock release on errors.
+- Added injected Diagnostics, SecurityService and shared strict SecretScanner.
+  Repository/image findings, export/operational errors and both dependency audits
+  are collected and remain blocking. Reports remain private; archives are unique
+  and scoped. Isolated production discovery uses qualified imports and verifies
+  dependency locks against scanned source. Actual content/report-bound review
+  evidence remains mandatory; no synthetic project attestation was produced.
+- Delivered the unchanged reviewed Python development locks, shared setup/executor,
+  pytest/Ruff/Pyright configuration and public runa:python:setup/format/lint/typecheck
+  commands. Root owner analysis/private suite selections add private scope. Updated
+  PHP catalog, independently enforced host allowlist/schema, setup fingerprints,
+  package allowlists and both quality definitions together. Customer configuration
+  is composed under src/app; operational/cold Python remains stdlib-only.
+- Hooks run pinned Ruff against staged Python/shebang bytes and publish formatting
+  only after lint, secret, partial-staging and freshness checks. Private owner hook
+  composition injects immutable-history checks; receipts always retain customer
+  scope. Retired the completed 2026-10-22 backfill transition and RM-010 first-closure
+  bypass plus exception-specific tests. Reviewed their completed/first-use removal
+  conditions; resulting historical hashes and immutable records are preserved.
+- Migrated quality/security regression entrypoints to supported private pytest
+  selection. Preserved graph/catalogue/debug/evidence refusal contracts and added
+  injected multi-context, scheduling, background locking/reaping, scanner aggregation,
+  staged-Python atomicity, strict history and physical customer-import scenarios.
+  Legacy compatibility launchers remain tracked for point 9; aggregate native/tooling
+  test routing and comprehensive remaining legacy suite migration stay in point 8.
+- Knowledge was current at entry (186 documents, 2907 chunks); queried the local
+  index and opened the returned contracts. Loaded backend/security and Laravel
+  guidance; Boost confirmed the existing Artisan signature/option conventions.
+  Updated public Python/quality/commands guidance, owner quality/toolchain/ledger,
+  root owner and separately authored customer AGENTS/backend guidance. Other domain
+  skills need no change: no new Docker/database/frontend/application-domain rule.
+- Necessary focused checks: staged-Python full/partial/lint publication and strict
+  receipt/history cases passed (4); a focused closed-history deletion/rename
+  refusal regression also passed. Scanner/audit/review cases passed (6); injected
+  scheduler cases passed except initial legacy-state permissions (5 PASS, 1 FAIL).
+  Fixed safe legacy-state compatibility and received PASS for that exact case.
+  Candidate-bound closure regression, production-image/lock boundary and physical
+  customer import without owner packages each passed their focused selection.
+  Corrected an initial pytest cache path warning and repeated the exact closure
+  check cleanly. Nonexecuting owner plan and public Python command help succeeded.
+  Help/knowledge transports incurred management-image cache misses and prepared
+  their isolated registry images; no application/production image acceptance ran.
+  Knowledge refresh exposed a transitional bare-import collision with the legacy
+  knowledge configuration module; renamed the shared parser to configuration_reader
+  and repeated incremental indexing. Changed-file Ruff/formatting and mandatory
+  hooks are part of commit preparation;
+  broad tests, static analysis, scanner pipelines and full quality remain point 10.
+  The first commit attempt exposed a byte-stdin backpressure deadlock in the core
+  polling transport on the large roadmap sent to Prettier. Interrupted that exact
+  hook in its container and reaped its child group. Replaced timed communicate
+  retries for byte input with explicit selector-driven writes/reads and EOF; added
+  a slow-reader/bidirectional large-payload regression and received its focused
+  PASS before repeating mandatory hooks. Hook interruption now uses the scoped
+  signal adapter and returns 130 after cleanup.
+- Removed task-created unused management image tags
+  `runa-management:797e8a6c0eab19e3e092f98b` and
+  `runa-management:f63afca52162bcc1026e958f` after inspecting their exact labels and
+  confirming no container references. Their discovery containers removed themselves.
+  Preserved active development services, database volumes, Qdrant/model/builder
+  caches, backups and verification reports; no prune or database cleanup ran.
+- Point completion is recorded with its implementation commit. VERSION remains
+  0.5.0; point 6 is next. No production operation or database mutation occurred.
 
 ### Draft preparation validation (historical)
 

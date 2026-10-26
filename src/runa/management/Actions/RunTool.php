@@ -33,6 +33,9 @@ final class RunTool
         if ($tool === 'doctor' && isset($doctor[$arguments[0] ?? ''])) {
             return $this->process($doctor[$arguments[0]], $root, $output, $arguments[0] === 'database-migrations' ? ['APP_ENV' => 'testing'] : null);
         }
+        if ($tool === 'python') {
+            return $this->process(['python3', '-m', 'tools.application.python_cli', ...$arguments], $root, $output);
+        }
         if ($tool === 'dev') {
             return $this->process(['python3', '-m', 'tools.application.development', ...$arguments], $root, $output);
         }

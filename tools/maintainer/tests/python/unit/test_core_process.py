@@ -163,3 +163,27 @@ def test_command_boundary_does_not_report_sensitive_exception_payloads() -> None
     redacted = StringIO()
     TextReporter(redacted, secrets=("secret-value",)).error("Refused secret-value")
     assert redacted.getvalue() == "Refused [redacted]\n"
+
+
+def test_byte_input_survives_slow_consumer_and_bidirectional_backpressure(tmp_path: Path) -> None:
+    payload = b"x" * 300_000
+    code = (
+        "import sys,time; time.sleep(.2); "
+        'sys.stdout.buffer.write(b"o"*100000); sys.stdout.flush(); '
+        'sys.stderr.buffer.write(b"e"*100000); sys.stderr.flush(); '
+        "data=sys.stdin.buffer.read(); print(len(data))"
+    )
+    result = SubprocessRunner().run(
+        ProcessSpec(
+            (sys.executable, "-c", code),
+            tmp_path,
+            dict(os.environ),
+            stdin=InputMode.BYTES,
+            input=payload,
+            output=OutputMode.CAPTURE,
+            timeout=5,
+        )
+    )
+    assert result.returncode == 0
+    assert result.stdout == b"o" * 100_000 + b"300000\n"
+    assert result.stderr == b"e" * 100_000

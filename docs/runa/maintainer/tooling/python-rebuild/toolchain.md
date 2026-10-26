@@ -1,8 +1,8 @@
 # Python packages and development workflow
 
 The public [Python guide](../../../handbook/development/python-tooling.md) owns
-language, package direction and artifact placement. This guide owns private
-dependency installation, test discovery and artifact preparation.
+language, package direction and artifact placement. This guide owns private suite selection, owner analysis and artifact preparation.
+Shared dependency preparation/configuration is delivered through the public guide.
 
 ## Frozen tools
 
@@ -41,8 +41,10 @@ Lock updates are deliberate roadmap changes, never an implicit setup upgrade.
 
 ## Discovery and resource ownership
 
-`tools/maintainer/pytest.ini` discovers only `test_*.py` beneath explicit private
-unit/contracts/integration/e2e roots, with importlib mode and strict markers/config.
+The owner selector passes explicit private unit/contracts/integration/e2e paths
+to `tools/application/python/pytest.ini`, with an explicit workspace root, importlib
+mode and strict markers/config. The configuration and frozen locks are shared;
+private suites and owner analysis remain excluded from delivery.
 There is no import-path injection. Existing legacy unittest scripts remain called
 by their current gates until their family migrates; they are not silently dropped
 or collected twice. The original ledger retains their baseline identities.
@@ -84,8 +86,8 @@ Each ownership domain has explicit setuptools metadata: root core/application,
 `tools/maintainer/packaging/pyproject.toml` for owner, and
 `distribution/pyproject.toml` for external tooling. One canonical core is copied
 into the external build artifact. The owner wheel adds only `tools.maintainer`
-and never overwrites customer `tools/__init__.py`. Resource lists are allowlists;
-test discovery and development locks remain private.
+and never overwrites customer `tools/__init__.py`. Resource lists are allowlists; shared development locks/configuration ship with
+application tooling, while owner suite sources remain private.
 
 ```sh
 python3 tools/maintainer/python-tool packages --kind=application
@@ -105,5 +107,5 @@ migrations and final acceptance, not inferred from inert root imports.
 The tooling quality group and legacy tooling impact selection include toolchain
 setup, Python formatting/lint/strict typing, default unit/contracts and separate
 packaging contracts. Real prerequisites are graph edges and shared suite ownership
-is serialized by `testing-state`. Customer quality has no private Python suite
-node; existing application test and diagnostics commands remain its interface.
+is serialized by `testing-state`. Customer tooling quality includes delivered Python setup/format/lint/type checks;
+it never selects private owner tests. Aggregate suite routing is owned by point 8.

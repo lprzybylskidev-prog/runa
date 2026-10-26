@@ -53,7 +53,16 @@ def test_command(args: argparse.Namespace) -> list[str]:
         ):
             raise ValueError("Test path must belong to an explicitly selected scope.")
         paths = [str(base / args.path)]
-    command = [str(PYTHON), "-m", "pytest", "-c", "tools/maintainer/pytest.ini", *paths]
+    command = [
+        str(PYTHON),
+        "-m",
+        "pytest",
+        "-c",
+        "tools/application/python/pytest.ini",
+        "--rootdir",
+        str(ROOT),
+        *paths,
+    ]
     if args.filter:
         command += ["-k", args.filter]
     command += [
@@ -67,6 +76,8 @@ def test_command(args: argparse.Namespace) -> list[str]:
     command += [
         "--junitxml=" + str(STATE / f"reports/pytest-{selection}.xml"),
         "--basetemp=" + str(STATE / "cache/pytest-temp"),
+        "-o",
+        "cache_dir=" + str(STATE / "cache/pytest"),
     ]
     return command
 

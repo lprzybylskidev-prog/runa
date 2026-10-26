@@ -188,3 +188,31 @@ final gate; only specifically recorded focused diagnostics run in this point.
   executor receives only a fixed module bootstrap; sibling service migration and
   parser identity compatibility remain point 7. Production/global deployment
   state and quality policy migration remain points 5–6.
+
+## Point 5 quality, development tools and diagnostics
+
+- `configuration_reader`, `quality_models`, `quality_planning`, `quality_service`,
+  `quality_execution`, `quality_reporting` and `quality_evidence` now own distinct
+  parsing/validation, planning, scheduling, latest-run and closure responsibilities.
+  `quality_cli` is the shared import-safe composition root; owner paths and closure
+  metadata policy are passed explicitly. Removed owner monkey-patching/runpy and
+  the maintainer context path injection. Compatibility `quality` exports delegate.
+- `Diagnostics`, `SecurityService`, `SecretScanner` and staged hooks compose core
+  process/state policies. Both dependency audits and all image scans retain strict
+  aggregated failure. Security executors no longer assign an audit-root global;
+  isolated production-image discovery uses qualified imports across its actual
+  version/process boundary. Deployment operation engines remain point 6.
+- Shared Python execution/toolchain/configuration and unchanged frozen locks moved
+  to `tools/application`; public Artisan Python commands and setup/quality/hook
+  callers use them. The private selector adds its suite paths and root analysis
+  scope; it consumes shared pytest configuration with explicit root/cache locations.
+  Package projection includes the shared resources, never private test sources.
+- Owner hooks inject immutable-history protection. Retired RM-010 first-closure
+  bypass and completed metadata-backfill transition code/tests were removed after
+  reviewing their first-closure/completed-migration conditions; historical records
+  and exact resulting hashes remain immutable. Ordinary closure evidence, strict
+  history refusal and candidate/command binding retain regression scenarios.
+- Migrated quality/security suites use qualified pytest contracts. Old direct test
+  paths remain fixed supported-transport launchers. Legacy documentation tests no
+  longer import the retired transition exception; broader legacy-suite discovery
+  and aggregate backend/frontend/tooling routing remain points 8–9.

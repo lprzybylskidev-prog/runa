@@ -73,3 +73,8 @@ alternatives and configured branding. Reusing that layout does not authorize
 changing a module's delivery, recipient, secret-handling or retry contract. Auth
 private mail stays at its guarded synchronous delivery boundary; do not queue its
 Mailable or move recovery into general notification routing.
+
+For Python tooling changes, follow the [public Python tooling guide](../../../../docs/runa/handbook/development/python-tooling.md) for shared
+frozen tools, qualified packages, injected execution contexts and application-owned
+configuration. Keep private owner suites/release rules outside delivered services;
+verify staged Python through Ruff without running full suites in hooks.

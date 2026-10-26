@@ -21,7 +21,8 @@ def test_physical_projection_ownership(tmp_path: Path, kind: str) -> None:
         assert "tools/core/__init__.py" in files
         assert "tools/application/quality.yml" in files
         assert not any(p.startswith(("tools/maintainer/", "distribution/")) for p in files)
-        assert not any(p.endswith((".lock", "pytest.ini")) for p in files)
+        assert "tools/application/python/requirements.lock" in files
+        assert not any("tests/python" in p for p in files)
     elif kind == "maintainer":
         assert "tools/maintainer/__init__.py" in files
         assert "tools/__init__.py" not in files
@@ -99,3 +100,24 @@ def test_standalone_owner_launcher_help_from_unrelated_cwd(tmp_path: Path) -> No
     )
     assert result.returncode == 0
     assert "--scope" in result.stdout
+
+
+def test_delivered_quality_security_and_hooks_import_without_private_packages(
+    tmp_path: Path,
+) -> None:
+    stage("application", tmp_path)
+    subprocess.run(
+        [
+            sys.executable,
+            "-E",
+            "-s",
+            "-c",
+            "import sys; import tools.application.quality_cli, tools.application.security_cli, "
+            "tools.application.hooks, tools.application.python_cli, tools.application.diagnostics; "
+            "import tools.application.executors.doctor, tools.application.executors.quality_check; "
+            'assert not any(name.startswith("tools.maintainer") for name in sys.modules)',
+        ],
+        cwd=tmp_path,
+        check=True,
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )

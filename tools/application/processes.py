@@ -19,6 +19,7 @@ class ApplicationProcesses:
         argv: Sequence[str],
         *,
         cwd: Path,
+        input: bytes | str | None = None,
         capture_output: bool = False,
         text: bool = False,
         check: bool = False,
@@ -29,7 +30,12 @@ class ApplicationProcesses:
         stderr: int | None = None,
     ):
         redirected = stdout is not None or stderr is not None
-        if redirected and (stdout is not sys.stderr or stderr is not sys.stderr):
+        if redirected and not (
+            stdout is sys.stderr
+            and stderr is sys.stderr
+            or stdout == subprocess.DEVNULL
+            and stderr is None
+        ):
             raise ValueError("Unsupported application stream redirection.")
         try:
             result = self.runner.run(
@@ -37,10 +43,17 @@ class ApplicationProcesses:
                     tuple(argv),
                     cwd,
                     self.environment if env is None else env,
-                    stdin=InputMode.CLOSED if stdin == subprocess.DEVNULL else InputMode.INHERIT,
+                    stdin=InputMode.BYTES
+                    if input is not None
+                    else (InputMode.CLOSED if stdin == subprocess.DEVNULL else InputMode.INHERIT),
+                    input=input.encode() if isinstance(input, str) else input,
                     output=OutputMode.CAPTURE
                     if capture_output
-                    else (OutputMode.STDERR if redirected else OutputMode.INHERIT),
+                    else (
+                        OutputMode.QUIET
+                        if stdout == subprocess.DEVNULL
+                        else (OutputMode.STDERR if redirected else OutputMode.INHERIT)
+                    ),
                     timeout=timeout,
                 )
             )

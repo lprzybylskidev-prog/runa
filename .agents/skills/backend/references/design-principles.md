@@ -116,3 +116,8 @@ application production seeding separate, reject production even through direct
 fixture calls, exchange public references and preserve credentials/provenance with
 atomic Audit. Initial account passwords use hidden local prompts; never argv or
 distributed defaults.
+
+For Python tooling changes, follow the [public Python tooling guide](../../../../docs/runa/handbook/development/python-tooling.md) for shared
+frozen tools, qualified packages, injected execution contexts and application-owned
+configuration. Keep private owner suites/release rules outside delivered services;
+verify staged Python through Ruff without running full suites in hooks.

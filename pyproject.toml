@@ -17,7 +17,7 @@ include-package-data = false
 version = {file = "VERSION"}
 
 [tool.setuptools.package-data]
-"tools.application" = ["quality.yml", "read-yaml.php", "bin/git-hook", "bin/pre-commit", "bin/commit-msg"]
+"tools.application" = ["python/requirements.lock", "python/pyright.lock.json", "python/pip-bootstrap.lock.json", "python/pytest.ini", "python/ruff.toml", "python/pyrightconfig.json", "quality.yml", "read-yaml.php", "bin/git-hook", "bin/pre-commit", "bin/commit-msg"]
 "tools.application.knowledge" = ["config.json", "golden.json"]
 "tools.application.testing" = ["production-runtime.php"]
 
@@ -25,14 +25,14 @@ version = {file = "VERSION"}
 target-version = "py311"
 line-length = 100
 cache-dir = ".runtime/python/cache/ruff"
-include = ["**/*.py", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/application/bin/git-hook", "tools/maintainer/entrypoint", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/maintainer/test-python", "tools/maintainer/python-tool"]
+include = ["**/*.py", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/application/bin/git-hook", "tools/maintainer/entrypoint", "tools/maintainer/hook", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/maintainer/test-python", "tools/maintainer/python-tool"]
 extend-exclude = [".runtime", "src/vendor", "src/node_modules"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
 
 [tool.pyright]
-include = ["tools", "distribution", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/maintainer/test-python", "tools/maintainer/python-tool", "tools/maintainer/entrypoint", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/application/bin/git-hook"]
+include = ["tools", "distribution", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/maintainer/test-python", "tools/maintainer/python-tool", "tools/maintainer/entrypoint", "tools/maintainer/hook", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/application/bin/git-hook"]
 exclude = [".runtime", "src/vendor", "src/node_modules"]
 pythonVersion = "3.11"
 pythonPlatform = "Linux"

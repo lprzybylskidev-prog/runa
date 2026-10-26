@@ -2,8 +2,8 @@
 """Fixed-purpose owner entrypoints, selected only by their versioned filename."""
 
 import sys
-from pathlib import Path
-from tools.maintainer.context import ROOT, container, inside, compose
+
+from tools.maintainer.context import ROOT, container, inside
 
 
 def main():
@@ -45,7 +45,7 @@ def main():
         if arguments:
             raise SystemExit("This diagnostic takes no arguments.")
         if name == "check-frontend" and not inside():
-            from test_resources import endpoint
+            from tools.application.test_resources import endpoint
 
             with endpoint():
                 container(ROOT / "tools/maintainer" / name, arguments)
@@ -54,7 +54,7 @@ def main():
 
         area = CHECKS[name]
         if area in ("frontend", "database-migrations"):
-            from runtime import run
+            from tools.application.runtime import run
 
             run(
                 ["node", "src/runa/tools/testing/frontend.mjs"]
@@ -64,27 +64,20 @@ def main():
         else:
             getattr(checks, area)()
     elif name in QUALITY:
-        import runpy
-        from tools.application import quality
+        from tools.application.quality_cli import main as quality_main
+        from tools.application.quality_cli import service
 
-        try:
-            quality.arguments([QUALITY[name], *arguments])
-        except ValueError as error:
-            raise SystemExit(str(error)) from error
-        quality.RUN_DIRECTORY = ROOT / ".runtime/quality"
-        quality.COMMAND_PREFIX = "python3 tools/maintainer/quality-"
-        original_plan = quality.plan
-        quality.plan = lambda final=False, **selection: original_plan(
-            final,
-            ROOT / "docs/runa/maintainer/roadmaps/active",
-            ROOT / "docs/runa/maintainer/quality/gates.yml",
-            **selection,
+        quality = service(
+            ROOT,
+            roadmaps=ROOT / "docs/runa/maintainer/roadmaps/active",
+            definition=ROOT / "docs/runa/maintainer/quality/gates.yml",
+            directory=ROOT / ".runtime/quality",
+            command_prefix="python3 tools/maintainer/quality-",
         )
-        sys.argv = [sys.argv[0], QUALITY[name], *arguments]
-        runpy.run_path(str(ROOT / "tools/application/executors/quality.py"), run_name="__main__")
+        raise SystemExit(quality_main([QUALITY[name], *arguments], quality=quality))
     elif name in TESTS:
         if name == "test-e2e" and not inside():
-            from test_resources import endpoint
+            from tools.application.test_resources import endpoint
 
             with endpoint():
                 container(ROOT / "tools/maintainer" / name, arguments)

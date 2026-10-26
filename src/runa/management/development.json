@@ -411,5 +411,33 @@
     "prefix": ["templates"],
     "signature": "",
     "description": "Check environment example coverage"
+  },
+  {
+    "name": "runa:python:setup",
+    "tool": "python",
+    "prefix": ["setup"],
+    "signature": "",
+    "description": "Python development setup"
+  },
+  {
+    "name": "runa:python:format",
+    "tool": "python",
+    "prefix": ["format"],
+    "signature": " {--check} {--config=}",
+    "description": "Python development format"
+  },
+  {
+    "name": "runa:python:lint",
+    "tool": "python",
+    "prefix": ["lint"],
+    "signature": " {--config=}",
+    "description": "Python development lint"
+  },
+  {
+    "name": "runa:python:typecheck",
+    "tool": "python",
+    "prefix": ["typecheck"],
+    "signature": " {--config=}",
+    "description": "Python development typecheck"
   }
 ]

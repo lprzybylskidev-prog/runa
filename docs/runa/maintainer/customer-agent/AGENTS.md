@@ -238,6 +238,9 @@ Follow [Python tooling](docs/runa/handbook/development/python-tooling.md) for th
 stdlib runtime, package ownership, CPython floor and generated artifact contract.
 Host operation requires no pip/project install; development tools stay in containers.
 Use qualified package imports for new integrations and keep package initializers inert.
+Shared frozen Python development tools/configuration ship with application tooling;
+private Runa suites and release policy remain excluded. Use the public Python guide
+for application-owned configuration and staged Ruff checks.
 
 ## Generated tooling state
 

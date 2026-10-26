@@ -53,7 +53,7 @@ Explicit plan/roadmap/final resolve the same mandatory checks and dependency gra
 | Group       | Delivered application checks                                                       |
 | ----------- | ---------------------------------------------------------------------------------- |
 | docs        | Documentation consistency (also mandatory)                                         |
-| tooling     | Tooling diagnostics                                                                |
+| tooling     | Tooling diagnostics and shared Python setup/format/lint/strict typing              |
 | backend     | App tests, PHP analysis, module source/version contracts, formatting/lint          |
 | frontend    | Frontend build, types, tests, formatting/lint                                      |
 | e2e         | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
@@ -216,3 +216,8 @@ that invoke that CLI share the knowledge-state exclusive group. Even read comman
 hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
 refusal. Serialization retains strict checks and requires no automatic retry or
 weaker freshness policy.
+
+Quality planning, execution, state/status and evidence are shared services with
+explicit application paths. The private owner planner and release rules are not
+part of customer execution. See [Python tooling](../development/python-tooling.md)
+for the delivered development configuration and application composition contract.

@@ -148,13 +148,17 @@ class JsonStore:
     directory: StateDirectory
     max_bytes: int = 1024 * 1024
     durable: bool = True
+    private_files: bool = True
 
     def __post_init__(self) -> None:
         if self.max_bytes <= 0:
             raise ValueError("JSON size limit must be positive.")
 
     def read(self, name: str) -> JsonValue:
-        with self.directory.open() as directory, self.directory.file(directory, name) as source:
+        with (
+            self.directory.open() as directory,
+            self.directory.file(directory, name, private=self.private_files) as source,
+        ):
             if os.fstat(source).st_size > self.max_bytes:
                 raise StateFailure("State JSON exceeds its size limit.")
             with os.fdopen(os.dup(source), "rb") as stream:
@@ -178,7 +182,7 @@ class JsonStore:
         with self.directory.open() as directory:
             # Refuse replacing a symlink/special/foreign target, including dangling links.
             try:
-                with self.directory.file(directory, name):
+                with self.directory.file(directory, name, private=self.private_files):
                     pass
             except FileNotFoundError:
                 pass
