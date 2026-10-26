@@ -33,9 +33,8 @@ customer and owner behavior while removing duplicate implementation mechanisms.
 
 The predecessor is [RM-2026-011](../closed/RM-2026-011-audit-auth-permissions-core.md),
 released as 0.5.0. The owner explicitly requested **0.6.0 after this roadmap**.
-`feature` is the proposed release classification because Runa uses it for a MINOR
-increment with PATCH reset. Explicit classification confirmation remains pending;
-obtain it before activation. Creating this draft does not change VERSION, approve
+The owner confirmed `release_type: feature` and `proposed_version: 0.6.0` on
+2026-10-26: a MINOR increment with PATCH reset. Creating this draft does not change VERSION, approve
 the architecture for execution, activate a roadmap or create its branch.
 
 At authoring time the checkout is clean `main`, no roadmap is active or paused,
@@ -61,9 +60,8 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
 
 ### Decisions
 
-- 2026-10-26 — The owner selected projected platform version 0.6.0. Proposed
-  `release_type: feature` follows the existing 0.5.0 baseline and release rules;
-  confirmation is pending, independently of roadmap activation.
+- 2026-10-26 — The owner explicitly confirmed `release_type: feature` and
+  `proposed_version: 0.6.0`, independently of roadmap activation.
 - 2026-10-26 — Preserve the four ownership domains: reusable core, delivered
   application tooling, private maintainer tooling, and separately acquired
   external distribution tooling. Core ships with application tooling rather than
@@ -165,6 +163,36 @@ Pure functions need no wrapper class. Do not merge different security policies
 into an indiscriminate universal executor.
 
 ### Component migration inventory
+
+The owner's follow-up requested adjacent cleanup within this roadmap. Include
+the following cross-language integration work in the existing points, without
+expanding into unrelated business modules or a whole-application rewrite:
+
+- Reconcile command metadata across management JSON catalogs, the host-plan schema,
+  Python allowlists and executor routing. Keep one authoritative declaration for
+  each fact and explicit consistency checks for intentionally independent security
+  validators. Customer and owner catalogs remain separate; source declarations
+  must not turn into caller-controlled executable/plugin registration.
+- Consolidate repeated source/delivery policy and manifest-composition rules.
+  `OWNER_PATHS` currently appears in bootstrap, repository boundaries and updater
+  contracts; dependency composition also appears in application and updater code.
+  Use canonical reusable rules or verified build-time materialization where the
+  standalone bootstrap/version boundary prevents direct reuse. Preserve receipt
+  schema compatibility and independently enforced projection checks.
+- Make environment/configuration responsibilities explicit across PHP, Python,
+  Compose and Devcontainer adapters. Share technical parsing where semantics match;
+  retain raw secret values, literal dollar signs, production role checks and
+  intentional differences between Compose input and application configuration.
+- Finish the developer workflow across languages: document where formatting,
+  linting, typing and tests run; align editor Python interpreter/format settings
+  with the container toolchain; remove contradictory command/help/doc guidance.
+  Reuse resource ownership/reporting contracts for PHP/JS/Python suites while
+  retaining their native runners and distinct application/owner scopes.
+
+These are tooling integration outcomes, not authorization to redesign Auth,
+Audit, Permissions, module APIs, database architecture or frontend components.
+The current audit does not establish that all other application areas are free
+of maintainability issues.
 
 Paths in this table are current sources. Each row owns the complete named family,
 including its tests/configuration; point 1 expands the inventory into per-entrypoint
@@ -544,6 +572,8 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Update bin/hook bootstrap adapters, PHP paths and Compose/Devcontainer startup
     together. Add cold/host/container, invalid-plan, role/refusal, disconnect and
     compatibility regression scenarios. Keep application startup independent of AI.
+  - Reconcile catalog/schema/allowlist routing facts and environment parsing
+    boundaries; add consistency contracts without removing independent validation.
   - Synchronize public commands, host executor/development docs and affected products.
 
 - [ ] 5. Rebuild shared quality, diagnostics, scanners and hook services.
@@ -572,6 +602,8 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     orchestration. Break updater import cycles and preserve durable journal phases.
   - Preserve standalone bootstrap, verified sparse projection, external tool bundle
     operation, remote/history boundaries and PHP module/database gateways.
+  - Consolidate repeated delivery exclusions and manifest-composition rules across
+    acquisition, application and updater, including version-separated artifact checks.
   - Add 0.5.0 upgrade, two-release, interrupted source/data switch, TLS/SMTP,
     unsafe rollback and production/customer distribution regression scenarios.
   - Synchronize installation/update/production/security docs and package projections.
@@ -616,6 +648,8 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Finish full-scope Python annotations and rule configuration without hiding
     difficult modules. Complete semantic documentation and both instruction-product
     assessments; record all retained exceptions and their justified boundaries.
+  - Align editor/container Python settings and document one coherent cross-language
+    command workflow; retain native PHP/JS runners and existing quality ownership.
   - Prepare the final graph definitions and acceptance scenarios; do not run an
     early full gate, static analysis, image build or acceptance phase here.
 
