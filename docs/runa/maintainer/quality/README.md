@@ -281,3 +281,14 @@ that invoke that CLI share the knowledge-state exclusive group. Even read comman
 hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
 refusal. Serialization retains strict checks and requires no automatic retry or
 weaker freshness policy.
+
+## Python tooling group
+
+Both explicit `tooling` and legacy tooling impact selection include frozen Python
+setup, Ruff format/lint, strict Pyright, unit/contracts and separate wheel/package
+contracts. Setup is a prerequisite, all nodes retain hard failure and share
+`testing-state` ownership with native suites. Commands, scope filters, markers,
+reports and physical projection boundaries are documented in the
+[Python owner workflow](../tooling/python-rebuild/toolchain.md). These checks run
+in final verification; migration points do not claim the full Python scope passes.
+Customer quality retains application commands without private pytest dependencies.

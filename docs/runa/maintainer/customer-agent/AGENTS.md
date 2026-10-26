@@ -232,6 +232,13 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/handbook/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
+## Python tooling
+
+Follow [Python tooling](docs/runa/handbook/development/python-tooling.md) for the
+stdlib runtime, package ownership, CPython floor and generated artifact contract.
+Host operation requires no pip/project install; development tools stay in containers.
+Use qualified package imports for new integrations and keep package initializers inert.
+
 ## Generated tooling state
 
 Keep generated private build/tooling artifacts under the single workspace-root

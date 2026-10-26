@@ -65,3 +65,11 @@ Point 7 installed the selected formatting/analysis/test packages. The matching V
 Point 8 adds Boost 2.10.3 (MIT) with five new locked development packages and no upgrades to existing packages. Composer audit reported no advisories. Codex CLI 0.163.0 (Apache-2.0) supports Node >=16; its launcher selects one native platform package rather than a JavaScript runtime dependency tree. Xdebug 3.5.3 uses the Xdebug license and supports PHP 8.4. Both are development-only. Review sources: https://github.com/openai/codex, https://registry.npmjs.org/@openai/codex/0.163.0, https://xdebug.org/docs/compat and https://pecl.php.net/package/xdebug. No scanner result is suppressed.
 
 The isolated Codex 0.163.0 npm lock audit (launcher plus selected platform package, 3 audited packages) reported zero vulnerabilities on 2026-10-17. This temporary lock is diagnostic evidence under ignored `.runtime`, not an application dependency.
+
+## Python engineering tools
+
+The reviewed Python pins, complete wheel graph and official Pyright Node artifact
+are recorded in the [Python dependency review](../tooling/python-rebuild/dependency-review.md).
+Use the [private setup/testing workflow](../tooling/python-rebuild/toolchain.md);
+these tools do not change the host stdlib-only operational contract or customer
+Composer/pnpm manifests. No image rebuild is required to initialize this private venv.

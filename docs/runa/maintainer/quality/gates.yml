@@ -245,6 +245,42 @@ impact_areas:
       severity: hard_fail
 
   tooling:
+    - id: python-toolchain
+      depends_on: [configuration]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool setup
+      severity: hard_fail
+
+    - id: python-format
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool format --check
+      severity: hard_fail
+
+    - id: python-lint
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool lint
+      severity: hard_fail
+
+    - id: python-types
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool typecheck
+      severity: hard_fail
+
+    - id: python-tests
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=unit --scope=contracts
+      severity: hard_fail
+
+    - id: python-packages
+      depends_on: [python-tests]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --marker=packaging
+      severity: hard_fail
+
     - id: tool-ownership-contracts
       depends_on: [repository-state]
       command: python3 tools/maintainer/testing/tool-ownership.py
@@ -366,7 +402,16 @@ mandatory:
   ]
 groups:
   docs: [documentation-ownership-contracts]
-  tooling: [quality-runner-contract, tooling-help]
+  tooling:
+    [
+      quality-runner-contract,
+      tooling-help,
+      python-format,
+      python-lint,
+      python-types,
+      python-tests,
+      python-packages,
+    ]
   backend:
     [
       backend-tests,

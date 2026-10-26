@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runa-maintainer-tooling"
+dynamic = ["version"]
+description = "Private Runa owner tooling layered on application tooling"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+packages = ["tools.maintainer", "tools.maintainer.localization", "tools.maintainer.testing", "tools.maintainer.tests", "tools.maintainer.tests.python", "tools.maintainer.tests.python.support", "tools.maintainer.tests.python.unit", "tools.maintainer.tests.python.contracts", "tools.maintainer.tests.python.integration", "tools.maintainer.tests.python.e2e"]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.package-data]
+"tools.maintainer" = ["knowledge.json", "knowledge-golden.json", "requirements.lock", "pyright.lock.json", "pip-bootstrap.lock.json", "pytest.ini"]
+"tools.maintainer.testing" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php", "php-alpine-host.sh"]

@@ -1,0 +1,80 @@
+"""Physical projections and wheel isolation, scheduled in final verification."""
+
+import ast
+import os
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+import pytest
+
+from tools.maintainer.python_packages import build, stage
+from tools.maintainer.python_toolchain import ROOT
+
+
+@pytest.mark.parametrize("kind", ["application", "maintainer", "external"])
+def test_physical_projection_ownership(tmp_path: Path, kind: str) -> None:
+    stage(kind, tmp_path)
+    files = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file()}
+    if kind == "application":
+        assert "tools/core/__init__.py" in files
+        assert "tools/application/quality.yml" in files
+        assert not any(p.startswith(("tools/maintainer/", "distribution/")) for p in files)
+        assert not any(p.endswith((".lock", "pytest.ini")) for p in files)
+    elif kind == "maintainer":
+        assert "tools/maintainer/__init__.py" in files
+        assert "tools/__init__.py" not in files
+        assert not any(
+            p.startswith(("tools/core/", "tools/application/", "distribution/")) for p in files
+        )
+    else:
+        assert "tools/core/__init__.py" in files
+        assert "distribution/module-plan.php" in files
+        assert not any(p.startswith(("tools/application/", "tools/maintainer/")) for p in files)
+
+
+def test_package_initializers_are_inert() -> None:
+    for directory in (ROOT / "tools", ROOT / "distribution"):
+        for path in directory.rglob("__init__.py"):
+            tree = ast.parse(path.read_text())
+            assert all(
+                isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+                for node in tree.body
+            ), path
+
+
+@pytest.mark.packaging
+def test_wheels_layer_without_file_collisions_and_import_outside_checkout(tmp_path: Path) -> None:
+    outputs = {
+        kind: build(kind, tmp_path / kind) for kind in ("application", "maintainer", "external")
+    }
+    contents: dict[str, set[str]] = {}
+    for kind, output in outputs.items():
+        wheels = list(output.glob("*.whl"))
+        assert len(wheels) == 1
+        with zipfile.ZipFile(wheels[0]) as archive:
+            contents[kind] = set(archive.namelist())
+            archive.extractall(tmp_path / ("external-site" if kind == "external" else "owner-site"))
+    assert not contents["application"] & contents["maintainer"]
+    for site, modules in (
+        ("owner-site", "tools.core, tools.application, tools.maintainer"),
+        ("external-site", "tools.core, distribution"),
+    ):
+        subprocess.run(
+            [sys.executable, "-E", "-s", "-c", "import " + modules],
+            cwd=tmp_path / site,
+            check=True,
+            env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+        )
+
+
+def test_standalone_owner_launcher_help_from_unrelated_cwd(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools/maintainer/test-python"), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert "--scope" in result.stdout

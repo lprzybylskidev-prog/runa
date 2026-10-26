@@ -69,3 +69,8 @@ Inspect actual project/container state after editor transitions; current shutdow
 Runa application readiness excludes optional AI services. Keep Qdrant/CPU/CUDA startup and restartable first-index initialization independent of setup/post-create; do not add health/completion edges back into application dependencies. Host `./bin/artisan runa:dev:up` waits for application services before starting optional AI without a health wait. See `docs/runa/handbook/development/knowledge.md` for retries, explicit stale-index repair and strict AI acceptance.
 
 Environment creators/readers, template names and safe credential reconciliation are documented in docs/runa/handbook/development/environment-files.md. Preserve private backup configuration; no implicit credential rotation or volume reset. Development preparation checks both application and test credentials against initialization inputs.
+
+Python operational/source and development-tool boundaries follow
+[Python tooling](../../../../docs/runa/handbook/development/python-tooling.md).
+Keep the host stdlib-only and generated development state under `.runtime/python`;
+package preparation must not add Python tooling to production images.

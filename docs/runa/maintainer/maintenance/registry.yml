@@ -566,3 +566,93 @@ entries:
     review_every_days: 90
     used_by:
       - auth
+
+  - id: python-pytest
+    type: framework_tooling
+    name: Python pytest
+    version: 9.1.1
+    url: https://pypi.org/project/pytest/9.1.1/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-ruff
+    type: framework_tooling
+    name: Python ruff
+    version: 0.17.2
+    url: https://pypi.org/project/ruff/0.17.2/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-setuptools
+    type: framework_tooling
+    name: Python setuptools
+    version: 84.2.1
+    url: https://pypi.org/project/setuptools/84.2.1/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-pip
+    type: framework_tooling
+    name: Python pip
+    version: 26.2.2
+    url: https://pypi.org/project/pip/26.2.2/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-wheel
+    type: framework_tooling
+    name: Python wheel
+    version: 0.48.0
+    url: https://pypi.org/project/wheel/0.48.0/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-iniconfig
+    type: framework_tooling
+    name: Python iniconfig
+    version: 2.3.1
+    url: https://pypi.org/project/iniconfig/2.3.1/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-packaging
+    type: framework_tooling
+    name: Python packaging
+    version: 26.3
+    url: https://pypi.org/project/packaging/26.3/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-pluggy
+    type: framework_tooling
+    name: Python pluggy
+    version: 1.7.0
+    url: https://pypi.org/project/pluggy/1.7.0/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-pygments
+    type: framework_tooling
+    name: Python pygments
+    version: 2.21.0
+    url: https://pypi.org/project/pygments/2.21.0/
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90
+
+  - id: python-pyright
+    type: framework_tooling
+    name: Microsoft Pyright official Node distribution
+    version: 1.1.414
+    url: https://registry.npmjs.org/pyright/1.1.414
+    source: docs/runa/maintainer/tooling/python-rebuild/dependency-review.md
+    last_reviewed: 2026-10-26
+    review_every_days: 90

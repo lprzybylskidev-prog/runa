@@ -110,3 +110,21 @@ Baseline source snapshot and semantics are explained in [README](README.md). Eve
 | `tools/maintainer/testing/wrappers.py`                   |     8 | Private test/support and native-runner orchestration; preserve 4 directly defined test methods                    | planned     |
 
 The inventory separately records every alias/resource/caller and its planned disposition. Aliases remain transports; their implementation family owns behavior and point 9 reconciles every remaining caller. Recorded direct test references require manual review and do not attest coverage or PASS.
+
+## Point 2 additions and transitional consumers
+
+The original 104-file inventory remains the immutable migration baseline. Point 2
+adds inert initializers across declared packages, root/owner/external setuptools
+metadata, the frozen toolchain adapter and packaging service, stable `test-python`
+and `python-tool` transports, pytest configuration, private support factories and
+new adapter/projection/wheel contracts. These are new infrastructure rather than
+retirements of existing rows; all original test families retain their current gates.
+
+`python_cli` temporarily consumes application `runtime.compose/inside` and
+`repository_boundary.assert_development_context` through qualified imports. Point 3
+replaces lifecycle/process mechanics and adapts the recording fake to core process
+contracts; point 4 replaces environment/receipt composition with the migrated public
+APIs. No new sys.path/runpy compatibility harness was introduced. Package root
+imports are inert; legacy service imports and full wheel transport acceptance are
+completed by points 4–9 and executed at final verification. The unchanged standalone
+acquisition launcher retains its single-file behavior until point 6.

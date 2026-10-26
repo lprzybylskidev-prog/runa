@@ -543,7 +543,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Deliver the ledger and architecture documentation, test definitions and commit;
     do not turn this point into a new architecture-choice questionnaire.
 
-- [ ] 2. Establish packages, reproducible development tooling and test discovery.
+- [x] 2. Establish packages, reproducible development tooling and test discovery.
   - Prerequisites: point 1 contracts and packaging/delivery inventory.
   - Add explicit package initializers, customer/owner/external package metadata,
     allowlisted resources, CPython policy, frozen reviewed dependencies and registry
@@ -721,7 +721,58 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   reusable procedure. The maintainer README reflects activation; other current
   runtime claims remain valid. No test containers, networks, volumes or image tags
   were created; active development data, caches, backups and reports were preserved.
-- Point 2 remains open. No package/toolchain/runtime migration has started.
+- At point 1 closure, point 2 remained open and package/toolchain/runtime migration
+  had not started. The point 2 evidence below records its subsequent implementation.
+
+### Point 2 — packages, frozen tools and discovery (2026-10-26)
+
+- Added inert package initializers and explicit customer/owner/external setuptools
+  metadata. Core/application are one distribution; owner adds only its namespace;
+  external stages canonical core into its separate artifact. Versions follow VERSION
+  (still 0.5.0), with explicit resource lists and no runtime/developer requirements
+  in delivered metadata. Private staging keeps build/egg metadata in `.runtime/python`.
+- Added hash-locked pytest 9.1.1, Ruff 0.17.2, setuptools 84.2.1, pip 26.2.2,
+  wheel 0.48.0 and their complete Linux Python graph; official Node Pyright 1.1.414
+  uses a separate integrity lock with optional macOS fsevents omitted. Reviewed
+  activity, licenses, compatibility, dependency tree/size, advisory history and
+  overlap in [dependency review](../../tooling/python-rebuild/dependency-review.md)
+  and the existing maintenance registry. Exact-version OSV results were empty for
+  all ten selected distributions; this is dependency research, not final security PASS.
+  No Composer/pnpm dependency or manifest changed.
+- Added importlib pytest discovery with strict scopes/markers, recording runner,
+  workspace/Git/config factories, physical projection/wheel/isolation scenarios and
+  stable owner `test-python`/`python-tool` transports. Literal argv, host Compose
+  delegation, owner/development guards, native child status, shared native-suite lock,
+  signal restoration, process-group reaping and selection-specific reports are explicit.
+  Default tests exclude live-resource and packaging markers; selected prerequisites
+  fail normally rather than silently skipping. Old tests/gates remain callable.
+- Added strict Pyright and Ruff rules over all first-party source, executable adapters,
+  tests and fixtures. Wired Python setup/format/lint/types/unit/contracts/packages
+  into the existing tooling group and legacy tooling selection with real graph
+  prerequisites and testing-state serialization. Customer quality retains its own
+  application tests without owner pytest requirements.
+- Knowledge was current (183 documents, 2850 chunks); queried it before focused
+  source work and opened original command/toolchain/ownership guidance. Updated
+  public Python rules, private setup/testing/package guide, registry/quality/tools
+  docs and migration ledger. Root/customer AGENTS and Docker references now link
+  the public source of truth; CLAUDE already delegates to AGENTS. Other domain skills
+  need no change: no Laravel/frontend/database/security capability or procedure was
+  altered. Private test dependencies are not customer development requirements.
+- Focused evidence: frozen tool setup succeeded in the existing app container
+  (CPython 3.11.2), including pip-wheel bootstrap without ensurepip; six scoped
+  adapter/argument/archive-refusal cases passed through the supported test transport.
+  A collection-only packaging selection found exactly the intended wheel scenario.
+  `quality-plan --group=tooling` resolved the new nodes and prerequisites without
+  executing them. Source formatting covered only new Python files. Mandatory hooks
+  and staged knowledge freshness remain required for this commit.
+- No full suite, whole-tree lint/type analysis, wheel/image build, real installation
+  or broad acceptance was run. Those remain point 10 work; service migration and
+  full Python rule compliance are not claimed here. Temporary runtime/receipt API
+  consumers and lifecycle/fake adaptation are tracked for points 3–4 in the ledger.
+- No task-created containers, networks, volumes or image tags needed cleanup.
+  Existing development services/data and Qdrant/model caches were preserved, along
+  with dependency research and test reports under `.runtime/python`. Point 3 remains
+  open; shared infrastructure implementation has not started.
 
 ### Draft preparation validation (historical)
 
