@@ -17,7 +17,7 @@ include-package-data = false
 version = {file = "VERSION"}
 
 [tool.setuptools.package-data]
-"tools.application" = ["python/requirements.lock", "python/pyright.lock.json", "python/pip-bootstrap.lock.json", "python/pytest.ini", "python/ruff.toml", "python/pyrightconfig.json", "quality.yml", "read-yaml.php", "bin/git-hook", "bin/pre-commit", "bin/commit-msg"]
+"tools.application" = ["python/requirements.lock", "python/pyright.lock.json", "python/pip-bootstrap.lock.json", "python/pytest.ini", "python/ruff.toml", "python/pyrightconfig.json", "quality.yml", "gateway.json", "read-yaml.php", "bin/git-hook", "bin/pre-commit", "bin/commit-msg"]
 "tools.application.knowledge" = ["config.json", "golden.json"]
 "tools.application.testing" = ["production-runtime.php"]
 

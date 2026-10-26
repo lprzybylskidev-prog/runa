@@ -2,7 +2,16 @@
 
 The separately supplied updater operates on customer **development checkouts only**. Production receives complete customer commits through deployment. The external tool provides read-only preflight/plan, explicit apply and journaled resume. There is no customer update/integrity command, local trusted-source baseline, repair/force option or automatic infrastructure reconciliation.
 
-Keep distribution/update.py, update_contracts.py, update_runtime.py, update_customization.py, update_execution.py, update_modules.py, update_files.py, module-plan.php and bootstrap.py together outside customer source. The standard-library tool package runs independently of the maintenance checkout, using native Linux/Python/Git/Docker/Compose and an existing trusted owner toolchain image for isolated Composer/pnpm validation.
+Keep the complete separately prepared bundle together outside the selected customer
+installation: `distribution`, canonical `tools/core`, inert package parents and
+declared PHP resources. It runs as source with no host pip/install or maintainer
+package. Direct `update.py`/`initialize.py` adapters select their own fixed package
+from any cwd; they pass the customer workspace explicitly. `UpdatePlanner` receives
+acquisition/runtime/lock/module probes, and `UpdateExecutor` receives that planner
+and a runtime factory. Planning, customization/files, Docker ownership and execution
+have separate modules; none imports the command adapter. Source/data journal phases
+remain compatible. The 0.5.0-to-0.6.0 updater reads verified source/metadata and uses
+PHP/database processes; it never imports either customer Python release.
 
 ```sh
 python3 update.py --plan --installation /absolute/customer-development \

@@ -278,7 +278,7 @@ Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `pyt
 - bin: thin customer tool/setup/recovery transports.
 - tools/application: customer development, operations, security, hooks and knowledge implementations.
 - tools/maintainer: owner-only platform test harnesses, release metadata, diagnostics and quality entrypoints; excluded from customer projection.
-- distribution: external owner bootstrap/installation helpers and reserved updater; excluded from customer projection.
+- distribution: external acquisition/initialization, installation gateway adapters and development updater; excluded from customer projection.
 
 Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses src/app/tests. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
 

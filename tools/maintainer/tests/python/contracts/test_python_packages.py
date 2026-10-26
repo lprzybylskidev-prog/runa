@@ -121,3 +121,21 @@ def test_delivered_quality_security_and_hooks_import_without_private_packages(
         check=True,
         env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
     )
+
+
+def test_delivered_deployment_and_installer_import_without_external_or_owner(tmp_path):
+    stage("application", tmp_path)
+    subprocess.run(
+        [
+            sys.executable,
+            "-E",
+            "-s",
+            "-c",
+            "import sys; import tools.application.deployment_service, tools.application.installation_service, "
+            "tools.application.installation_gateway, tools.application.production_cli; "
+            'assert not any(name.startswith(("distribution", "tools.maintainer")) for name in sys.modules)',
+        ],
+        cwd=tmp_path,
+        check=True,
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )

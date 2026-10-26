@@ -34,7 +34,7 @@ class ApplicationProcesses:
             stdout is sys.stderr
             and stderr is sys.stderr
             or stdout == subprocess.DEVNULL
-            and stderr is None
+            and stderr in (None, subprocess.DEVNULL)
         ):
             raise ValueError("Unsupported application stream redirection.")
         try:

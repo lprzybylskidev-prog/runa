@@ -106,7 +106,7 @@ Host state uses the core durable private JSON writer, independently of deploymen
 Socket binding uses a directory descriptor without changing the process cwd.
 
 Compatibility function modules and direct-file launchers remain for existing
-callers during the migration. They delegate to the package services; deployment and knowledge domain redesigns retain their own owning points. New
+callers during the migration. They delegate to the package services; knowledge domain redesign retains its owning point. Deployment now uses explicit operator/release services. New
 consumers use these explicit services and qualified imports. Do not copy legacy
 process/Compose/state mechanics or introduce new path injection.
 
@@ -181,3 +181,26 @@ Closed history deletion/renaming is refused as well as content changes.
 Private immutable-history rules are injected by the owner hook composition and
 are excluded from customer tooling. Retired one-time history/closure exceptions
 have no active bypass code; immutable historical records remain preserved.
+
+## Deployment and external version boundaries
+
+`OperationContext` binds the operator workspace, execution location, process policy
+and production journal store. `SourceAcquisition`, `ProductionRuntime`,
+`DeploymentRuntime` and `DeploymentService` separate verified source, Compose/image
+policy, health/data mechanics and orchestration. Compose uses an immutable release
+identity and the operator's TLS overlay; it never replaces a module root. Safe
+operator-owned legacy coordination directories/lock modes remain accepted; newly
+written journals are private, bounded and durable through core state primitives.
+Secrets remain literal raw values. Core owns dependency composition and fixed
+delivery exclusions; standalone acquisition independently checks the same policy.
+
+The external installation adapter selects protocol 1 and starts the acquired
+application's fixed installation module as a separate process. The gateway checks
+its own source/workspace identity before importing installation services; it is
+internal tooling, excluded from runtime images. Historical first installs use their
+matching historical tool release. Upgrading an existing 0.5.0 development workspace
+does not require the old installation gateway: the separately supplied updater
+never imports customer application Python. It retains explicit source identities,
+file review consent, journal phases, forward data completion and fencing/resume.
+Customer Python configuration/tests/frozen inputs under `src/app` remain customer
+owned; delivered defaults change only through the existing reviewed file plan.

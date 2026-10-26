@@ -123,6 +123,20 @@
       "existing_evidence": "tool-ownership.py; repository-boundary.py; installation-host.py",
       "fixture_requirements": "isolated projections and package installs outside source cwd",
       "execution_point": 10
+    },
+    {
+      "id": "deployment-explicit-contexts",
+      "assertions": "Use distinct operator/release roots and TLS overlays in one interpreter; production source/data failures retain fencing and native exits; rollback refuses unproven data compatibility.",
+      "existing_evidence": "contracts/test_deployment_services.py; native production/installation harnesses (pending migrated fixture reconciliation)",
+      "fixture_requirements": "injected services now; isolated native production project in final verification",
+      "execution_point": 10
+    },
+    {
+      "id": "upgrade-050-development-tooling",
+      "assertions": "Acquire an independently verified 0.5.0 installation and exact 0.6.0 candidate; preserve customer Python config/tests/frozen inputs and reconcile shared defaults with exact consent. Interrupt source/data boundaries and resume without replaying committed effects. Verify initial installation with each release matching installer/gateway.",
+      "existing_evidence": "contracts/test_update_services.py; contracts/test_installation_services.py",
+      "fixture_requirements": "injected original/target projections now; real customer/Git/Compose/PHP/database/toolchain acceptance in point 10",
+      "execution_point": 10
     }
   ],
   "bindings": [

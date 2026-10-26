@@ -4,21 +4,12 @@ import json
 import os
 import posixpath
 import re
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-OWNER_PATHS = (
-    "distribution",
-    "tools/maintainer",
-    "bootstrap.py",
-    "bin/project",
-    "bin/install-prod",
-    "src/runa/tests",
-    "src/runa/tools",
-    "docs/runa/maintainer",
-    "src/runa/management/InstallCommand.php",
-    "src/runa/management/ProjectCommand.php",
-)
+from tools.core.delivery import OWNER_PATHS
 
 
 class RepositoryBoundaryError(ValueError):
@@ -27,10 +18,6 @@ class RepositoryBoundaryError(ValueError):
 
 class DevelopmentContextError(RepositoryBoundaryError):
     """A fixed, nonsecret development-mode denial safe to report to an operator."""
-
-
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)

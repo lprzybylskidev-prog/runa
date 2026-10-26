@@ -703,7 +703,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Add scheduler, evidence, hook/security and import-isolation scenarios. Update
     both gate definitions and quality/security/hook documentation in the same point.
 
-- [ ] 6. Migrate deployment and external acquisition/install/update.
+- [x] 6. Migrate deployment and external acquisition/install/update.
   - Prerequisites: points 4–5 shared services and policies.
   - Replace global production ROOT/STATE mutation with explicit release contexts;
     separate source acquisition, Compose/image validation, data transitions,
@@ -1078,6 +1078,66 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   caches, backups and verification reports; no prune or database cleanup ran.
 - Point completion is recorded with its implementation commit. VERSION remains
   0.5.0; point 6 is next. No production operation or database mutation occurred.
+
+### Point 6 — deployment and external acquisition/install/update (2026-10-26)
+
+- Replaced production ROOT/STATE mutation with explicit OperationContext and
+  immutable operator/release/Compose identities. Separated source acquisition,
+  production config/images, runtime/data/health and deployment/rollback services;
+  function facades remain only for caller migration through points 8–9. Production
+  and operation executors are import-safe fixed module transports.
+- Split external command/planning/Docker/runtime/file/customization/execution APIs;
+  UpdatePlanner injects acquisition/runtime/lock/module probes and UpdateExecutor
+  composes that planner with its runtime factory. Removed execution-to-CLI and
+  runtime/customization cycles. External processes use core reaping/timeout/stdio
+  mechanics; updater state/locks reuse durable bounded core infrastructure. Kept
+  exact journal phases, source/file review, data completion and refusal boundaries.
+- Application InstallationService owns host installation mechanics; external
+  bootstrap/initialization/adapter start its fixed versioned gateway in a separate
+  process. No customer Python is imported into the acquisition/updater process.
+  Protocol-1 initial installs need no sibling helper next to a copied bootstrap;
+  historical targets require their matching historical installer. Existing 0.5.0
+  development upgrades use independent source/PHP/database probes without needing
+  that older installation gateway. No host packages/dependencies were added.
+- Canonical core rules now own manifest composition, literal raw environment
+  parsing and delivery exclusions. Standalone bootstrap embeds its fixed policy
+  with an equality contract; independent security validation remains. Application
+  package resources include the gateway marker; external source projection contains
+  core/external packages and PHP resources, without application/maintainer imports.
+- Added focused regression cases for interleaved workspaces/releases, secret-copy
+  boundaries, deployment build/data/health failure fencing, repeat and unsafe
+  rollback, 0.5.0-to-0.6.0 updates, source-rename interruptions, committed-seed
+  recovery, customer tooling configuration/frozen inputs, SMTP/TLS refusals,
+  initial secret preservation and physical external import isolation. Existing
+  mature native acceptance/legacy suites remain for point 8 migration and final
+  execution, not claimed as passing for the refactored services.
+- Knowledge was current at entry (186 documents, 2918 chunks). Queried deployment,
+  updater and source contracts and opened their original guides. Loaded security,
+  Docker and backend guidance. Updated current installation/bootstrap/update,
+  deployment/commands/Python docs, package projections and migration ledger.
+  Assessed root AGENTS/owner skills and the separately authored customer products:
+  no reusable rule changed, no public Python extension API was added and existing
+  source ownership, supported-command, production and recovery guidance remains
+  valid; no instruction duplication or customer protected-edit permission is needed.
+- Necessary focused checks received PASS for interleaved contexts (1), deployment
+  failure/repeat/unsafe rollback (6), upgrade/source-rename recovery (3), standalone
+  policy/gateway and physical external imports (2), SMTP/TLS/settings preservation
+  (4), HTTPS redirect refusal (1) and physical application import isolation (1). Initial fixture errors (ProcessResult shape and private state-directory mode)
+  were repaired and affected cases repeated successfully. Source syntax/import
+  diagnostic passed. Changed-file Ruff exposed a missing moved HTTPS redirect handler;
+  restored it and received its focused refusal PASS before commit. Ruff preparation initially removed implicit facade re-exports; made these
+  explicit and repeated the exact committed-seed upgrade successfully. Nonexecuting
+  production/updater/gateway help exposed an incorrect lifecycle import; corrected
+  it and repeated all three help paths successfully. Changed-file formatting/lint and mandatory hooks are included
+  in commit preparation. Broad suites/static analysis/build/install/deployment/
+  scanners and all real 0.5.0 upgrade acceptance remain exclusively point 10.
+- The initial knowledge-status transport prepared its isolated cached management
+  registry image, without starting/building application or production images.
+  Task pytest fixtures cleaned their temporary source trees; reports remain under
+  .runtime/python/reports. Active development/database/Qdrant/model/builder state,
+  backups and reports are preserved. No production command or database mutation ran.
+- Completion is recorded with the implementation commit. VERSION remains 0.5.0;
+  point 7 is next.
 
 ### Draft preparation validation (historical)
 
