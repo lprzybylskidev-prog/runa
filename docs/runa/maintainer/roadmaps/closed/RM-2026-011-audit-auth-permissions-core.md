@@ -1,11 +1,11 @@
 ---
 id: RM-2026-011
 title: Audit, Auth and Permissions Core modules
-status: active
+status: closed
 branch: roadmap/RM-2026-011-audit-auth-permissions-core
 created_at: 2026-10-23
 activated_at: 2026-10-23
-closed_at: null
+closed_at: 2026-10-26
 release_type: feature
 proposed_version: 0.5.0
 quality_groups: all
@@ -38,7 +38,7 @@ Activated by the owner on 2026-10-23 after
 [RM-2026-010](../closed/RM-2026-010-manual-quality-group-selection.md) was released,
 closed and merged as maintenance 0.4.2 (baseline `0616673`, tag `v0.4.2`).
 The owner confirmed **feature 0.5.0**: increment MINOR and reset PATCH.
-VERSION remains 0.4.2 until release finalization.
+Released as feature 0.5.0 on 2026-10-26; the application version remains independent.
 
 ### Scope and non-goals
 
@@ -1283,7 +1283,7 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 - [x] 19zzk. Align the supplied application manifest with the agreed platform release.
   - Extend only its supported Runa range to include 0.5.0; preserve independent
     application identity/version and synchronize the current manifest guidance.
-- [ ] 20. Full integrated verification, feature release, merge and final report.
+- [x] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
     of its appearance. Owner explicitly accepted it on 2026-10-25 and authorized
@@ -1312,9 +1312,14 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
 
 ## Execution status
 
-Active on the roadmap branch. Points 1–10 deliver framework foundations, Audit, Auth identities/lifecycle, Fortify entry transport, tracked sessions/abuse defenses, password policy/recovery, second factors, trusted devices, reusable step-up, private profile/address/avatar/own-history contracts and durable account preferences/security delivery. Point 10 adds policy history, bounded privileged backend operations and trusted operator initialization/recovery contracts. Point 11 adds Auth entry and restricted-flow Vue screens. Point 12 adds configurable public welcome, authenticated application entry, own-account UI, dropdown sign-out and session-expiry integration. Point 13 delivers Permissions dictionaries, source-owned declaration synchronization, native current action grants and bounded authorized introspection. Point 14 delivers reviewed ordinary assignment/custom-role/preset/access-copy backend operations with version binding, fresh both-factor proof and aggregate Audit. Point 15 delivers dedicated protected authority, shared last-superadministrator lifecycle protection and confirmed custom-role force deletion. Point 16 delivers actual first-administrator/operator authority, resumable installer invitations, Permissions-selected Auth bulk operations, optional safe actor labels and Core management metadata. Point 17 delivers explicit extensible development-only contributors, real local account/role/direct/preset/Auth scenarios, private initial credential setup and the documented manual navigation path. Point 18 synchronizes current-state guidance and maps requirements to prepared backend, browser and customer-delivery acceptance. Point 19 delivers public frontend customization/replacement contracts, shared static-error customization and the minimal application scaffold. Points 1–19 are complete; point 19a consolidates runtime artifact placement and is complete before point 20, whose owner appearance gate is now satisfied. Point 19b prepares the real development environment and seeded administrator for review. The owner explicitly accepted the frontend on 2026-10-25 and authorized point 20 full verification. All implementation and correction points are committed; final verification/release remains open.
-Release metadata is owner-confirmed. Any newly discovered incompatible
-architectural premise requires discussion before dependent work.
+Closed for platform feature 0.5.0 after all 54 selected final gates passed on
+113696350140e02593d47d993a743fba1693ce9c. All implementation/fix points and final
+verification are complete. Audit, Auth and Permissions ship independent 1.0.0
+manifests, compatible dependent constraints and explicit forward upgrade edges.
+The final report records delivery, verification and release preparation. Earlier
+point notes and handoffs below are historical execution evidence, superseded by
+this closure state. Merge, tag and publication results are reported externally
+without later edits to this closed record.
 
 ## Point 1 delivery
 
@@ -4386,7 +4391,7 @@ architectural premise requires discussion before dependent work.
   cleanup and evidence rules. Release metadata/module 1.0.0 finalization, closure,
   merge and publication follow only after the complete gate passes.
 
-## Execution handoff
+## Historical execution handoff — 2026-10-25
 
 - Resumed on the native Linux Docker host on 2026-10-25, checkout
   /home/lprzybylski/Documents/php/runa, roadmap/RM-2026-011-audit-auth-permissions-core.
@@ -4929,3 +4934,48 @@ architectural premise requires discussion before dependent work.
   product changes are needed. Rerun focused docs/release checks before the complete
   all-group gate. The successful strict security result remains recorded in 19zzj;
   all groups, including security, execute again on the final committed source.
+
+
+## Final report
+
+RM-2026-011 delivers platform feature **0.5.0**, with **Audit 1.0.0, Auth 1.0.0
+and Permissions 1.0.0**. The supplied application stays at independent 0.0.0.
+All roadmap implementation/correction points are committed and complete.
+
+- Deliver transactional immutable Audit and approved history projections; secure
+  identity, sessions, recovery, factors, step-up, private profile/preferences and
+  own-account flows; native current grants, reviewed roles/presets and protected
+  authority. Customer presentation/replacement seams and development fixtures ship;
+  generic Admin management UI remains explicitly outside this roadmap.
+- Supply forward Core schema migrations, required seeds, first-administrator/operator
+  initialization and resumable installation/update integration. Stable-version
+  update edges and dependent constraints are verified. No real production deployment.
+- Final selection **all**, no excluded groups: **54/54 PASS**, 2323.625 seconds
+  (38 min 44 s), on 113696350140e02593d47d993a743fba1693ce9c. Backend: 579 tests,
+  5724 assertions; browser: 386 tests. Actual production/installation/update/team,
+  migration/constraint, frontend, strict image/dependency/security/review and AI
+  checks pass. Evidence: .runtime/artifacts/RM-2026-011/final-0.5.0/quality and the
+  retained raw security reports. Only reviewed release metadata follows this PASS.
+- Fix points repair fixture/worker isolation, transaction/lock cleanup, browser and
+  endpoint races, knowledge serialization, runtime vulnerabilities and scaffold
+  release compatibility. PHP 8.4.27 and corrected curl/Brotli/gosu pass without
+  scanner exemptions. PostgreSQL 18.6 runs nonroot using the source-pinned gosu
+  1.20/Go 1.27.3 derivative; MT-2026-001 tracks eventual official-image replacement.
+  Earlier native crashes are not assigned a proven PHP/Xdebug/hardware root cause.
+- Final native fixtures and browser/worker runners remove owned temporary containers,
+  networks, image tags and disposable volumes/databases. Active development/base
+  test data, model/Qdrant/shared build caches, backups, rollback images and all
+  verification reports remain. Earlier base-test fixture recovery is documented
+  in point 19zzd; the final runtime replacement performs no database reset.
+- Current-state review covers root README, public module/API/customization guides,
+  startup/toolchain/production/database/security guidance, supplied owner/customer
+  Docker references, exception retirement, quality catalogue and release workflows.
+  Current claims match the delivered source; dated assessments and earlier failed
+  verification remain historical evidence. Closure updates VERSION/platform.json,
+  maintainer CHANGELOG/README and this roadmap only, with focused docs/release
+  validation and knowledge refresh. Root/customer authority products already govern
+  the delivered lifecycle and need no further closure-only change.
+
+Release preparation authorizes the normal merge commit to main, short main sanity,
+annotated v0.5.0 tag, push/publication and roadmap-branch deletion after successful
+checks. These external outcomes are reported in chat; this record remains immutable.

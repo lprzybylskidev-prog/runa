@@ -2,6 +2,18 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.5.0] - 2026-10-26
+
+Feature release — RM-2026-011.
+
+- Deliver Audit, Auth and Permissions Core modules at independent version 1.0.0: transactional redacted history, secure identity/session/account flows and native action grants with protected authority.
+- Ship Polish/English authentication and account views, application entry/navigation, customer presentation contracts and extensible development fixtures; keep Admin management UI deferred.
+- Complete resumable operator/first-administrator and module installation/update integration, forward migrations and explicit stable-version upgrade edges.
+- Patch PHP, curl/Brotli and gosu runtime findings; remove temporary scanner policies, bypass callbacks and dedicated exception tests. Build nonroot PostgreSQL 18.6 with gosu 1.20/Go 1.27.3 while preserving its data layout.
+- Repair verification fixture isolation, concurrency/browser races and resource lifecycle defects. All 54 selected final gates pass, including 579 backend tests, 386 browser tests, real installation/update/production acceptance and strict security/AI checks.
+
+Platform 0.5.0 is independent of the supplied application version 0.0.0. No real production deployment occurred. Disposable acceptance resources were scoped-cleaned; active development/test data, model/build caches, backups, rollback material and reports were preserved. Native crash observations do not establish a root cause; the final verified candidate passed normally. Downstream PostgreSQL packaging retirement remains tracked by MT-2026-001.
+
 ## [0.4.2] - 2026-10-23
 
 Maintenance release — RM-2026-010.
