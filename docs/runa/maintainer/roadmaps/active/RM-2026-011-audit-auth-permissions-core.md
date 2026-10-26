@@ -1280,6 +1280,9 @@ resolves a concrete uncertainty. Do not run broad checks in points 1–19.
     policies and dedicated tests; preserve historical evidence and strict scanners.
   - Receive the focused native security result, then immediately restart all groups
     in the supported background workflow if it passes.
+- [x] 19zzk. Align the supplied application manifest with the agreed platform release.
+  - Extend only its supported Runa range to include 0.5.0; preserve independent
+    application identity/version and synchronize the current manifest guidance.
 - [ ] 20. Full integrated verification, feature release, merge and final report.
   - Entry gate: stop and notify the owner before starting this final point. The
     owner manually checks the frontend; proceed only after explicit acceptance
@@ -4912,3 +4915,17 @@ architectural premise requires discussion before dependent work.
   of the verified correction in the pending platform release. All exceptions,
   including their policies, callbacks, dedicated tests and obsolete current guidance,
   are removed. Point 20 remains open for the complete all-group gate and release.
+
+## Point 19zzk — Supplied application release compatibility
+
+- Pre-gate release validation identifies the supplied scaffold range
+  > =0.2.1 <0.5.0 as excluding the agreed platform target 0.5.0. Extend its upper
+  > bound to <0.6.0; preserve the existing lower bound, identity, independent 0.0.0
+  > application version and all behavior. No protected module/runtime/dependency or
+  > storage change. This is a compatible scaffold metadata correction.
+- The existing public runa:application:check --platform-version=0.5.0 command passes;
+  synchronize the manifest guide. Existing owner/customer instructions already
+  require deliberate range review and independent app versions, so no instruction
+  product changes are needed. Rerun focused docs/release checks before the complete
+  all-group gate. The successful strict security result remains recorded in 19zzj;
+  all groups, including security, execute again on the final committed source.
