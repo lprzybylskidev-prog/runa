@@ -357,6 +357,15 @@ See `docs/runa/handbook/architecture/language-and-naming.md`.
 
 When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/handbook/release/1.0-readiness.md` and apply its release-scale validation requirements.
 
+## Central test ownership
+
+Author tests in repository-root tests/backend, tests/frontend and tests/tools,
+using the app subtree for customer application tests and runa for private platform
+suites. Module cases use modules/<code> within their owning area. Reusable test
+infrastructure remains in its source package; private Runa suites are excluded
+from customer delivery and all tests from production images. Follow the public
+[testing guide](docs/runa/handbook/testing/strategy.md) for discovery/configuration.
+
 ## Supported commands and check completion
 
 The agent manually selects proportionate quality groups with repeated `--group=NAME`

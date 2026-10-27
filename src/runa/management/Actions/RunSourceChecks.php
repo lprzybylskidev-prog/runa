@@ -12,19 +12,23 @@ final class RunSourceChecks
     {
         $runner = new RunTool;
         $cwd = $root.'/src';
-        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'app/tests/frontend', 'app/tests/e2e', 'runa/tests/frontend', 'runa/tests/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
+        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'runa/Testing', '../tests/frontend/app/unit', '../tests/frontend/app/e2e', '../tests/frontend/runa/unit', '../tests/frontend/runa/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
         if ($tool === 'format') {
             if (! in_array($arguments, [[], ['--check']], true)) {
                 throw new InvalidArgumentException('Format supports only --check.');
             }
-            $status = $runner->process(['vendor/bin/pint', ...($arguments ? ['--test'] : [])], $cwd, $output);
+            $phpPaths = array_values(array_filter(['.', '../tests/backend/app', '../tests/backend/runa'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
+            $status = $runner->process(['vendor/bin/pint', ...($arguments ? ['--test'] : []), ...$phpPaths], $cwd, $output);
             if ($status !== 0) {
                 return $status;
             }
 
             return $runner->process(['pnpm', 'exec', 'prettier', $arguments ? '--check' : '--write', ...$sourcePaths, '*.mjs', 'package.json', 'tsconfig.json', 'pint.json', '../.prettierrc.json'], $cwd, $output);
         }
-        $commands = ['lint' => ['pnpm', 'exec', 'eslint', ...$sourcePaths, '*.mjs', '--max-warnings=0'],
+        if ($tool === 'lint') {
+            return $runner->process(['node', 'src/node_modules/eslint/bin/eslint.js', '--config', 'eslint.config.mjs', ...array_map(static fn (string $path): string => 'src/'.$path, $sourcePaths), 'src/*.mjs', '--max-warnings=0', ...$arguments], $root, $output);
+        }
+        $commands = [
             'typecheck' => ['pnpm', 'run', 'typecheck'], 'analyse' => ['vendor/bin/phpstan', 'analyse', '--memory-limit=1G']];
         if (isset($commands[$tool])) {
             return $runner->process([...$commands[$tool], ...$arguments], $cwd, $output);

@@ -27,7 +27,7 @@ def parser() -> argparse.ArgumentParser:
     )
     test.add_argument("--filter", default="", help="pytest -k expression")
     test.add_argument("--marker", default="", help="pytest -m expression")
-    test.add_argument("--path", help="One file/node relative to tests/python")
+    test.add_argument("--path", help="One file/node relative to tests/tools/runa")
     test.add_argument("--collect-only", action="store_true")
     commands.add_parser("setup", help="Install reviewed frozen development tools")
     formatter = commands.add_parser("format")
@@ -42,7 +42,7 @@ def parser() -> argparse.ArgumentParser:
 
 
 def test_command(args: argparse.Namespace) -> list[str]:
-    base = ROOT / "tools/maintainer/tests/python"
+    base = ROOT / "tests/tools/runa"
     scopes: list[str] = args.scope or ["unit", "contracts"]
     paths = [str(base / scope) for scope in dict.fromkeys(scopes)]
     if args.path:
@@ -127,7 +127,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         from tools.application.testing.runner import Selection, TestService
         from tools.maintainer.test_cli import OWNER
 
-        base = ROOT / "tools/maintainer/tests/python"
+        base = ROOT / "tests/tools/runa"
         paths = (
             (str(base / args.path),)
             if args.path

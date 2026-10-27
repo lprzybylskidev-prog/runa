@@ -297,13 +297,24 @@ class InstallationService:
             "database/migrations",
             "database/factories",
             "resources/js",
-            "tests/Feature",
         ):
             path = base / name
             if path.resolve() != path or path.is_symlink():
                 raise InstallationError(
                     "Application extension directories must not traverse symlinks."
                 )
+            path.mkdir(parents=True, exist_ok=True)
+        for relative in (
+            "tests/backend/app/Feature",
+            "tests/backend/app/Unit",
+            "tests/backend/app/modules",
+            "tests/frontend/app/unit",
+            "tests/frontend/app/e2e",
+            "tests/tools/app",
+        ):
+            path = self.context.workspace.root / relative
+            if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+                raise InstallationError("Application test directories must not traverse symlinks.")
             path.mkdir(parents=True, exist_ok=True)
         self.context.atomic(
             marker,

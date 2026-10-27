@@ -19,11 +19,11 @@ Set `RUNA_PRODUCTION_MODE=simulation` and pass `--simulation`. Installer `simula
 Run native installation/customer deployment acceptance on the Docker host:
 
 ```bash
-python3 -m tools.maintainer.testing.installation_host --customer-deployment
+python3 -m tests.tools.runa.acceptance.installation_host --customer-deployment
 ```
 
 The harness snapshots current source into isolated fixtures, exercises fresh customer dev/prod, native tests/docs/hooks, TLS/SMTP rejection/resume and repeated installation. The deployment extension uses an actual separate customer Git repository and production images/PostgreSQL/HTTP. It proves default/explicit targets, platform/application code/schema/reference-data changes, additional real Redis services, idempotent required seeds/no-op preservation, existing history/data/storage preservation, lock/manual-maintenance ownership, failed fetch/build/migration/seeding/health and recovery fencing. Fixture-only reviewed recovery retains partial data and never reverses schema. Reports live under `.runtime/ownership`; the harness prints exact task-created containers/networks/volumes before cleanup and preserves active development/test data, caches, backups and evidence.
 
 For focused production-only verification, add `--production-only`; it skips development installation/tests and retains fresh TLS/SMTP/platform setup and the full customer deployment extension. The harness also removes inspected unused image tags created by its own fixtures.
 
-Focused source and recovery contracts are `tools/maintainer/tests/python/contracts/test_customer_deployment.py` and `tools/maintainer/tests/python/contracts/test_operations.py`. Contract mocks do not replace native Docker/PostgreSQL acceptance or security/image scanning. Full production acceptance and final release gates remain required by the active roadmap.
+Focused source and recovery contracts are `tests/tools/runa/contracts/test_customer_deployment.py` and `tests/tools/runa/contracts/test_operations.py`. Contract mocks do not replace native Docker/PostgreSQL acceptance or security/image scanning. Full production acceptance and final release gates remain required by the active roadmap.

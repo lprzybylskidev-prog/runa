@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Current-state regressions with isolated files/Git; no developer data mutations."""
+
+from __future__ import annotations
+
+import contextlib
+import io
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+import tools.maintainer.docs_checks as docs_checks
+from tests.tools.runa.acceptance.documentation_fixture import copy_public
+from tools.application import quality_planning as quality
+from tools.application.configuration_reader import ConfigurationReader
+from tools.application.quality_models import quality_definition
+
+ROOT = Path(__file__).resolve().parents[4]
+reader = ConfigurationReader.for_workspace(ROOT)
+
+
+class DocumentationContracts(unittest.TestCase):
+    def setUp(self) -> None:
+        self.folder = tempfile.TemporaryDirectory()
+        self.addCleanup(self.folder.cleanup)
+        self.root = Path(self.folder.name)
+        copy_public(self.root)
+        subprocess.run(["git", "init", "-q", "-b", "main", str(self.root)], check=True)
+        self.write("VERSION", "0.1.0\n")
+        self.write("docs/runa/handbook/tooling/commands.md", "# Commands\n./bin/example\n")
+        self.write("bin/example", "#!/bin/sh\nexit 0\n").chmod(0o755)
+        self.readme = "# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n\n<!-- /runa:current-state -->\n"
+        self.write("docs/runa/maintainer/README.md", self.readme)
+
+    def write(self, name: str, content: str) -> Path:
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+        return path
+
+    def validate(self) -> None:
+        with contextlib.redirect_stdout(io.StringIO()):
+            docs_checks.validate(self.root)
+
+    def doctor(self, area: str) -> subprocess.CompletedProcess[str]:
+        module = (
+            "tools.maintainer.docs_checks" if area == "docs" else "tools.maintainer.release_checks"
+        )
+        script = (
+            "import sys; from pathlib import Path; from "
+            + module
+            + " import validate; validate(Path(sys.argv[1]))"
+        )
+        return subprocess.run(
+            [sys.executable, "-c", script, str(self.root)], cwd=ROOT, capture_output=True, text=True
+        )
+
+    def test_released_stale_readme_is_rejected_by_actual_doctor(self) -> None:
+        # The four stale claims in v0.1.0 survived the old command-name-only check.
+        stale = (
+            "# Runa\n\n## Current state\n\n"
+            "`RM-2026-001-development-environment` is active.\n\n"
+            "Initial version: `0.0.0`.\n\n"
+            "Remaining quality, knowledge, development-service and production-operation requirements are not yet delivered; this is not a completed release.\n\n"
+            "The first feature roadmap is expected to produce `0.1.0` when it is fully verified, closed, merged, tagged, and released.\n"
+        )
+        self.write("docs/runa/maintainer/README.md", stale)
+        result = self.doctor("docs")
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("exactly one runa:current-state block", result.stderr)
+
+    def test_independent_state_mismatches_are_rejected(self) -> None:
+        self.validate()
+        for old, new, message in [
+            ("`0.1.0`", "`0.0.0`", "Current version"),
+            ("`none`", "`RM-2026-001`", "Active roadmap"),
+        ]:
+            with self.subTest(field=message):
+                self.write("docs/runa/maintainer/README.md", self.readme.replace(old, new))
+                with self.assertRaisesRegex(ValueError, message):
+                    self.validate()
+
+    def test_missing_duplicate_malformed_and_reordered_fields_fail(self) -> None:
+        for text in [
+            self.readme.replace(docs_checks.END, ""),
+            self.readme * 2,
+            self.readme.replace("- Active roadmap: `none`\n", ""),
+            self.readme.replace("Active roadmap", "Current version"),
+            self.readme.replace("`none`", "none"),
+            self.readme.replace(docs_checks.START, "SWAP")
+            .replace(docs_checks.END, docs_checks.START)
+            .replace("SWAP", docs_checks.END),
+        ]:
+            with self.subTest(text=text):
+                self.write("docs/runa/maintainer/README.md", text)
+                with self.assertRaises(ValueError):
+                    self.validate()
+
+    def test_actual_doctor_accepts_history_but_rejects_unlisted_commands(self) -> None:
+        self.write(
+            "docs/runa/maintainer/README.md",
+            self.readme
+            + "\n## Release history\nInitial version 0.0.0. RM-2026-001 was active during bootstrap.\n",
+        )
+        self.write(
+            "docs/runa/maintainer/roadmaps/closed/RM-2026-001-history.md",
+            "Historical release 0.0.0, not a current claim.\n",
+        )
+        self.write(
+            "docs/runa/maintainer/workflows/example.md",
+            "```yaml\nid: RM-2026-003\nstatus: active\n```\n",
+        )
+        result = self.doctor("docs")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.write("docs/runa/handbook/tooling/commands.md", "# Commands\n")
+        result = self.doctor("docs")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Undocumented command: example", result.stderr)
+
+    def test_active_roadmap_location_frontmatter_and_branch(self) -> None:
+        path = self.write(
+            "docs/runa/maintainer/roadmaps/active/RM-2026-002-test.md",
+            "---\nid: RM-2026-002\nstatus: active\nbranch: main\n---\n# Fixture\n",
+        )
+        self.write("docs/runa/maintainer/README.md", self.readme.replace("`none`", "`RM-2026-002`"))
+        self.validate()
+        original = path.read_text()
+        for content in [
+            original.replace("status: active", "status: closed"),
+            original.replace("branch: main", "branch: other"),
+            original.replace("id: RM-2026-002", "id: RM-2026-999"),
+        ]:
+            self.write(str(path.relative_to(self.root)), content)
+            with self.assertRaises(ValueError):
+                self.validate()
+        path.write_text(original)
+        self.write("docs/runa/maintainer/roadmaps/active/RM-2026-003-second.md", original)
+        with self.assertRaisesRegex(ValueError, "Multiple active"):
+            self.validate()
+
+    def test_final_gate_includes_docs_without_documentation_impact(self) -> None:
+        definition = quality_definition(
+            reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        )
+        selected = quality.select(definition, [], True)
+        self.assertEqual(
+            selected["version-changelog-roadmap"]["command"],
+            "python3 tools/maintainer/check-release",
+        )
+        self.assertIn("--with-docs-and-knowledge", selected["release-metadata-contract"]["command"])
+        # Closed fixture metadata would otherwise pass the actual release doctor.
+        self.write("docs/runa/maintainer/CHANGELOG.md", "# Changelog\n\n## [0.1.0]\nRM-2026-001\n")
+        self.write(
+            "docs/runa/maintainer/roadmaps/closed/RM-2026-001-test.md",
+            "---\nid: RM-2026-001\nstatus: closed\nbranch: roadmap/RM-2026-001-test\nclosed_at: 2026-10-18\nrelease_type: feature\n---\n- [x] Complete\n## Final report\nRM-2026-001 delivers 0.1.0.\n",
+        )
+        self.assertEqual(self.doctor("release").returncode, 0)
+        self.write("docs/runa/maintainer/README.md", self.readme.replace("`0.1.0`", "`0.0.0`"))
+        result = self.doctor("release")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("README Current version", result.stderr)

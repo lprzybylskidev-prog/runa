@@ -24,7 +24,7 @@ final class ApplicationTestCommand extends TestCommand
     {
         $arguments = parent::commonArguments();
         if ($this->usingPest()) {
-            $arguments[] = '--test-directory=app/tests';
+            $arguments[] = '--test-directory=../tests/backend/app';
         }
 
         return $arguments;

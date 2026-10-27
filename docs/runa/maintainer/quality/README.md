@@ -326,7 +326,7 @@ the release quality graph. Final gates retain explicit focused suite nodes and
 resource exclusivity; ordinary aggregate commands are developer workflows.
 
 Private Python cases use importable `test_*.py` files under
-`tools/maintainer/tests/python/{unit,contracts,integration,e2e}`. Useful unittest
+`tests/tools/runa/{unit,contracts,integration,e2e}`. Useful unittest
 assertions remain collected by pytest. Private fixture objects live in `support`,
 without inheriting other suites. Shared customer fakes/workspace helpers ship
 under `tools/application/testing/support`; PHP and browser helpers under

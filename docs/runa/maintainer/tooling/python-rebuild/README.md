@@ -20,7 +20,7 @@ unchanged from the released 0.5.0 tree).
   path contracts, argparse declarations, migration point and source-level test links.
 - [migration-ledger.md](migration-ledger.md) gives a per-file target responsibility
   and point assignment. Update each row's disposition in its owning migration point.
-- [Python command contract fixtures](../../../../../tools/maintainer/testing/fixtures/python-command-contracts.json)
+- [Python command contract fixtures](../../../../../tests/tools/runa/acceptance/fixtures/python-command-contracts.json)
   bind 178 command/engine/test entry surfaces to 17 named regression scenarios,
   including the 72 exact management JSON declarations and their signatures/prefixes.
   They are declarative test inputs, not a runner or an executable command allowlist.

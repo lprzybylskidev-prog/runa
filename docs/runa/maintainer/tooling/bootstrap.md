@@ -112,7 +112,7 @@ not an installation-success marker or trusted file baseline. No local ownership 
 The owner runs the external launcher personally; the external launcher is excluded from customer tooling; internal installation mechanics remain in the delivered application tooling. It is never installed into bin or customer source.
 After verifying the **complete** release, acquisition applies a fixed non-cone
 sparse projection before atomic publication. Both now/later exclude
-`distribution/`, `tools/maintainer/`, `src/runa/tests/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
+`distribution/`, `tools/maintainer/`, `tests/backend/runa/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
 The credential-free receipt records the full source digest and projection version
 plus exact exclusions. Git remains detached at the verified commit with customer instruction substitutions staged where supplied;
 subsequent checkouts retain the sparse projection. Git objects/history may contain

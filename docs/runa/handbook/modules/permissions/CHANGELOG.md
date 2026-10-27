@@ -1,5 +1,9 @@
 # Permissions module changelog
 
+## 1.0.1 — 2026-10-27
+
+- Relocate module test metadata and cases to the central owner test tree; runtime APIs and data remain unchanged.
+
 ## 1.0.0
 
 Prepare the first stable Permissions release for verified closure of RM-2026-011.

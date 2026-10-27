@@ -2,15 +2,15 @@
   "schema_version": 1,
   "id": "app.reference",
   "kind": "optional",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "platform": ">=0.3.1 <1.0.0",
   "framework_api": "^1.0.0",
   "name": {
-    "pl": "Moduł referencyjny",
+    "pl": "Modu\u0142 referencyjny",
     "en": "Reference module"
   },
   "description": {
-    "pl": "Deweloperski przykład publicznych kontraktów modułów.",
+    "pl": "Deweloperski przyk\u0142ad publicznych kontrakt\u00f3w modu\u0142\u00f3w.",
     "en": "Development-only working example of public module contracts."
   },
   "dependencies": {
@@ -35,5 +35,5 @@
     "upgrades": ["App\\Modules\\Reference\\Definitions\\ReferenceUpgrades"]
   },
   "docs": ["docs/app/modules/reference/README.md"],
-  "tests": ["tests"]
+  "tests": ["tests/backend/app/modules/reference"]
 }

@@ -156,7 +156,7 @@ import third-party Python packages. Production images exclude these tools.
 Use `runa:python:format [--check]`, `runa:python:lint` and
 `runa:python:typecheck` through Artisan (host `./bin/artisan`, container
 `php artisan`). Default analysis covers delivered core/application tooling and
-`src/app`. Application and private owner suites share the delivered test lifecycle with
+`src/app` and `tests/tools/app`. Application and private owner suites share the delivered test lifecycle with
 explicit separate roots; default Runa test commands include tooling. The shared pytest configuration supplies importlib discovery, strict
 markers and configuration; runners supply exact suite paths, workspace root,
 locks, cache, temporary paths and reports. Configuration is not a test suite.

@@ -46,6 +46,9 @@ OWNER_PATHS = (
     "docs/runa/maintainer",
     "src/runa/management/InstallCommand.php",
     "src/runa/management/ProjectCommand.php",
+    "tests/backend/runa",
+    "tests/frontend/runa",
+    "tests/tools/runa",
 )
 
 
@@ -636,7 +639,7 @@ def acquire(
             "state": "downloaded",
             "installed_profile": "source",
             "reference_module": reference_module,
-            "projection": {"version": 1, "excluded": list(OWNER_PATHS)},
+            "projection": {"version": 2, "excluded": list(OWNER_PATHS)},
             "trust": "GitHub HTTPS + annotated tag and Git object hashes; no independent signature",
         }
         patterns = [
@@ -646,9 +649,13 @@ def acquire(
                 for name in OWNER_PATHS
             ],
         ]
-        patterns += ["!/src/app/modules/module_probe/"]
+        patterns += ["!/src/app/modules/module_probe/", "!/tests/backend/app/modules/module_probe/"]
         if not reference_module:
-            patterns += ["!/src/app/modules/reference/", "!/docs/app/modules/reference/"]
+            patterns += [
+                "!/src/app/modules/reference/",
+                "!/docs/app/modules/reference/",
+                "!/tests/backend/app/modules/reference/",
+            ]
         git(source, home, "sparse-checkout", "init", "--no-cone")
         git(
             source,

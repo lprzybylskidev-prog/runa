@@ -64,7 +64,8 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
 
 - 2026-10-26 — The owner authorized activation and point 1. Created
   `roadmap/RM-2026-012-python-tooling-architecture` from updated main; reviewed
-  implementation ordering and confirmed broad verification occurs only in point 10.
+  implementation ordering and confirmed broad verification occurs only in the final
+  point (originally 10, renumbered 11 by the central-test-layout decision).
 - 2026-10-26 — The owner explicitly confirmed `release_type: feature` and
   `proposed_version: 0.6.0`, independently of roadmap activation.
 - 2026-10-26 — Preserve the four ownership domains: reusable core, delivered
@@ -105,6 +106,21 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
   the agreed 0.6.0 roadmap; existing completed-point evidence is historical, and
   remaining points own reconciliation. No new dependency or production tooling
   inclusion is authorized by this clarification.
+
+- 2026-10-27 — The owner approved centralizing all authored tests under repository
+  `tests/backend/{app,runa}`, `tests/frontend/{app,runa}` and `tests/tools/{app,runa}`
+  (container `/workspace/tests`), explicitly choosing `tools` instead of `tooling`
+  as the directory name. Insert this implementation as point 10; full verification
+  becomes point 11. Existing public command/scope names retain their contracts.
+  Module cases and private native acceptance/fixtures move with their owning suite;
+  reusable runtime/development test infrastructure stays in its source package.
+  Keep customer tests configurable, private Runa suites excluded from delivery and
+  all test material excluded from production images. Source generators and test
+  metadata follow the central roots; legacy acquired receipts and module test
+  declarations remain readable. Existing customer-owned test files are never moved
+  or overwritten implicitly by an update; document explicit local reconciliation.
+  This is compatible development-tooling scope within confirmed feature 0.6.0;
+  no dependency or module business-API change/MAJOR release is authorized.
 
 ### Audit basis and limits
 
@@ -759,13 +775,13 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Keep focused backend/frontend/e2e/Python transports and route their scopes
     through the existing quality scheduler. Add aggregate ownership/failure and
     projected customer extension scenarios now; execute broad acceptance in point
-    10 only. Document exact commands, prerequisites and changed default semantics.
+    11 only. Document exact commands, prerequisites and changed default semantics.
 
 - [x] 9. Complete caller migration and retire the old architecture.
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 10.
+    Full strict analysis, artifact and runtime PASS belong to point 11.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -786,8 +802,26 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Prepare the final graph definitions and acceptance scenarios; do not run an
     early full gate, static analysis, image build or acceptance phase here.
 
-- [ ] 10. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–9 complete and committed, migration/coverage ledgers
+- [x] 10. Centralize authored tests by technology and ownership.
+  - Prerequisites: points 1–9 complete and committed; owner approval on 2026-10-27.
+  - Move PHP/application/platform/module cases and fixtures to tests/backend;
+    frontend/unit/browser/native scenarios to tests/frontend; Python/private native
+    tooling scenarios to tests/tools. Each area separates app and runa ownership.
+  - Update runner discovery/configurations, imports/autoloading, relative fixtures,
+    generators, module test metadata and source checks without duplicate suites or
+    symlink facades. Preserve public commands, scopes, native exits, locks/reports,
+    process/resource lifecycle and customer-owned extension configuration.
+  - Reconcile acquisition/update projection and old receipt compatibility, package
+    resources and strict analysis scopes; exclude private suites from customers and
+    every test root from production. Retain immutable historical source maps and
+    update current target mappings rather than rewriting their baseline identities.
+  - Synchronize public testing/module/command guides and both instruction products.
+    Include focused ownership/discovery/generator/projection regressions; full
+    suites, analysis, builds and live acceptance remain exclusively in point 11.
+  - Commit completed implementation, documentation and checklist together.
+
+- [ ] 11. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–10 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -1819,6 +1853,44 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   production setting changed. No disposable container/network/image/volume was
   created or removed; active development/test data, knowledge/model caches,
   rollback resources, backups and verification reports remain preserved.
+
+#### Point 10 completion — central test ownership (2026-10-27)
+
+- Relocated 275 authored cases, fixtures and native acceptance resources into
+  `tests/{backend,frontend,tools}/{app,runa}`. Public commands and scope names stay
+  compatible. Updated PHP autoload/discovery, module generators and metadata,
+  Python imports/packages and analysis targets, browser configuration, aliases,
+  source checks and staged hooks. Shared reusable testing infrastructure stays
+  with its owning source package; application test scaffolds remain minimal.
+- Acquisition projection 2 excludes every private test root; exact projection 1
+  receipts remain readable. Application test roots remain customer-owned during
+  update. Existing customer cases are never moved implicitly; unreconciled legacy
+  cases produce an explicit diagnostic instead of a successful empty run.
+  Production excludes the whole test tree, including legacy source test roots.
+- Auth, Audit and Permissions advance to 1.0.1 and Reference to 0.1.1 for relocated
+  test contracts. Explicit no-data upgrade edges preserve installed-module upgrade
+  continuity; runtime APIs remain unchanged. Both owner-scoped module version
+  checks against main passed with no errors. Composer autoload regeneration passed;
+  its module PSR-4 notices reflect the existing separate module autoloader.
+- Eleven focused pytest cases passed through supported tooling entrypoints: ownership,
+  exact old/current receipts, generator placement, dependency/config resolution,
+  extension roots, legacy refusal, real-Git customer acquisition and runner/adapter behavior. The application
+  welcome case passed in actual Chromium after relocation. Supported backend
+  discovery lists the application and Reference cases without executing the suite.
+  Initial path/resolution failures were corrected before these passing checks.
+- Updated public testing/Python/module/command guides, documentation ownership,
+  current migration targets and both owner/customer instruction products. Original
+  inventory identities, command baselines and dated/closed evidence are preserved.
+  Changed-file Ruff preparation and mandatory staged formatting/hooks apply.
+- No full suite, strict analysis, production build, scanner pipeline or broad
+  acceptance ran here; these remain in point 11. VERSION remains 0.5.0 with
+  projected feature release 0.6.0. No dependency was added or data migrated.
+  Normal host transport rebuilt its operational management image, retained for
+  supported operations. No disposable Docker test resource was created or removed;
+  development/test databases, rollback volumes, model caches, backups and reports
+  remain preserved. Removed the now-empty old application/platform/module test
+  directories and former private Python/native/browser acceptance directories; no
+  obsolete directory facade remains.
 
 ### Draft preparation validation (historical)
 

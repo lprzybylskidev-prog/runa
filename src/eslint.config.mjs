@@ -5,10 +5,10 @@ import vue from 'eslint-plugin-vue';
 export default ts.config(
   {
     ignores: [
-      'vendor/**',
-      'node_modules/**',
-      'public/build/**',
-      '../.runtime/**',
+      '**/vendor/**',
+      '**/node_modules/**',
+      'src/public/build/**',
+      '.runtime/**',
       'artifacts/**',
     ],
   },
@@ -25,9 +25,10 @@ export default ts.config(
   },
   {
     files: [
-      '{app,runa}/resources/**/*.{ts,vue}',
-      '{app,runa}/modules/**/*.{ts,vue}',
-      '{app,runa}/tests/frontend/**/*.{ts,vue}',
+      'src/{app,runa}/resources/**/*.{ts,vue}',
+      'src/{app,runa}/modules/**/*.{ts,vue}',
+      'tests/frontend/{app,runa}/unit/**/*.{ts,vue}',
+      'src/runa/Testing/**/*.ts',
     ],
     languageOptions: {
       globals: Object.fromEntries(
@@ -49,7 +50,7 @@ export default ts.config(
     },
   },
   {
-    files: ['**/*.mjs', '{app,runa}/tests/e2e/**/*.ts'],
+    files: ['**/*.mjs', 'tests/frontend/{app,runa}/e2e/**/*.ts'],
     languageOptions: {
       globals: {
         process: 'readonly',

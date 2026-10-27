@@ -7,7 +7,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_separately_delivered_single_file_runs_without_an_owner_checkout",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_separately_delivered_single_file_runs_without_an_owner_checkout",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_separately_delivered_single_file_runs_without_an_owner_checkout",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_separately_delivered_single_file_runs_without_an_owner_checkout"
     },
@@ -15,7 +15,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_repository_and_tag_reject_urls_secrets_options_and_paths",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_repository_and_tag_reject_urls_secrets_options_and_paths",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_repository_and_tag_reject_urls_secrets_options_and_paths",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_repository_and_tag_reject_urls_secrets_options_and_paths"
     },
@@ -23,7 +23,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_http_credentials_are_optional_and_never_sent_to_redirects",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_http_credentials_are_optional_and_never_sent_to_redirects",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_http_credentials_are_optional_and_never_sent_to_redirects",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_http_credentials_are_optional_and_never_sent_to_redirects"
     },
@@ -31,7 +31,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted"
     },
@@ -39,7 +39,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_private_file_permissions_type_symlink_and_token_validation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_private_file_permissions_type_symlink_and_token_validation",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_private_file_permissions_type_symlink_and_token_validation",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_private_file_permissions_type_symlink_and_token_validation"
     },
@@ -47,7 +47,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent"
     },
@@ -55,7 +55,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker"
     },
@@ -63,7 +63,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_existing_directory_file_symlink_and_disk_shortage_are_preserved",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_existing_directory_file_symlink_and_disk_shortage_are_preserved",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_existing_directory_file_symlink_and_disk_shortage_are_preserved",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_existing_directory_file_symlink_and_disk_shortage_are_preserved"
     },
@@ -71,7 +71,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_atomic_publish_cannot_replace_concurrently_created_empty_directory",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_atomic_publish_cannot_replace_concurrently_created_empty_directory",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_atomic_publish_cannot_replace_concurrently_created_empty_directory",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_atomic_publish_cannot_replace_concurrently_created_empty_directory"
     },
@@ -79,7 +79,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_real_git_download_verifies_objects_files_modes_links_and_clean_source",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_real_git_download_verifies_objects_files_modes_links_and_clean_source",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_real_git_download_verifies_objects_files_modes_links_and_clean_source",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_real_git_download_verifies_objects_files_modes_links_and_clean_source"
     },
@@ -87,7 +87,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_reference_choices_survive_reopen_and_production_projection",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_reference_choices_survive_reopen_and_production_projection",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_reference_choices_survive_reopen_and_production_projection",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_reference_choices_survive_reopen_and_production_projection"
     },
@@ -95,7 +95,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_delivered_application_contains_only_essential_extension_entrypoints",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_delivered_application_contains_only_essential_extension_entrypoints",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_delivered_application_contains_only_essential_extension_entrypoints",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_delivered_application_contains_only_essential_extension_entrypoints"
     },
@@ -103,7 +103,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_customer_agent_projection_survives_reapply_and_teammate_clone",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_customer_agent_projection_survives_reapply_and_teammate_clone",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_customer_agent_projection_survives_reapply_and_teammate_clone",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_customer_agent_projection_survives_reapply_and_teammate_clone"
     },
@@ -111,7 +111,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish"
     },
@@ -119,7 +119,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish"
     },
@@ -127,7 +127,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout"
     },
@@ -135,7 +135,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_interruption_removes_staging_and_does_not_publish",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_interruption_removes_staging_and_does_not_publish",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_interruption_removes_staging_and_does_not_publish",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_interruption_removes_staging_and_does_not_publish"
     },
@@ -143,7 +143,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_source_tampering_is_detected_against_git_objects",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_source_tampering_is_detected_against_git_objects",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_source_tampering_is_detected_against_git_objects",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_source_tampering_is_detected_against_git_objects"
     },
@@ -151,7 +151,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_release_identity_rejects_lightweight_tags_and_repository_mismatch",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_release_identity_rejects_lightweight_tags_and_repository_mismatch",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_release_identity_rejects_lightweight_tags_and_repository_mismatch",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_release_identity_rejects_lightweight_tags_and_repository_mismatch"
     },
@@ -159,7 +159,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_host_versions_and_failed_child_have_safe_errors_and_timeout",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_host_versions_and_failed_child_have_safe_errors_and_timeout",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_host_versions_and_failed_child_have_safe_errors_and_timeout",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_host_versions_and_failed_child_have_safe_errors_and_timeout"
     },
@@ -167,7 +167,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_interactive_lists_releases_and_asks_postponement",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_interactive_lists_releases_and_asks_postponement",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_interactive_lists_releases_and_asks_postponement",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_interactive_lists_releases_and_asks_postponement"
     },
@@ -175,7 +175,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_postponement_prints_exact_command_without_invoking_installer",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_postponement_prints_exact_command_without_invoking_installer",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_postponement_prints_exact_command_without_invoking_installer",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_postponement_prints_exact_command_without_invoking_installer"
     },
@@ -183,7 +183,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_unattended_reference_option_reaches_acquisition",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_unattended_reference_option_reaches_acquisition",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_unattended_reference_option_reaches_acquisition",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_unattended_reference_option_reaches_acquisition"
     },
@@ -191,7 +191,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_external_handoffs_ignore_customer_bin_and_installer_files",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_external_handoffs_ignore_customer_bin_and_installer_files",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_external_handoffs_ignore_customer_bin_and_installer_files",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_external_handoffs_ignore_customer_bin_and_installer_files"
     },
@@ -199,7 +199,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_release_acquisition_cannot_initialize_production",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_release_acquisition_cannot_initialize_production",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_release_acquisition_cannot_initialize_production",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_release_acquisition_cannot_initialize_production"
     },
@@ -207,7 +207,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_interactive_private_token_uses_hidden_input_and_is_not_printed",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_interactive_private_token_uses_hidden_input_and_is_not_printed",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_interactive_private_token_uses_hidden_input_and_is_not_printed",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_interactive_private_token_uses_hidden_input_and_is_not_printed"
     },
@@ -215,7 +215,7 @@
       "source": "tools/maintainer/testing/bootstrap.py",
       "scenario": "test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_bootstrap.py::BootstrapContracts::test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download",
+      "target": "tests/tools/runa/contracts/test_bootstrap.py::BootstrapContracts::test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download",
       "source_sha256": "0e0b8e5a76dffb0682269199ce0b0d7b34f32025cbcb8a9e22060a53c1681e19",
       "source_node": "BootstrapContracts::test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download"
     },
@@ -223,7 +223,7 @@
       "source": "tools/maintainer/testing/maintenance.py",
       "scenario": "test_current_registry_passes",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_maintenance.py::MaintenanceContracts::test_current_registry_passes",
+      "target": "tests/tools/runa/contracts/test_maintenance.py::MaintenanceContracts::test_current_registry_passes",
       "source_sha256": "adbaf5a7aeb837252b5bb0500aade37f6a49f8ec1f8256a366003fcd73741e33",
       "source_node": "MaintenanceContracts::test_current_registry_passes"
     },
@@ -231,7 +231,7 @@
       "source": "tools/maintainer/testing/maintenance.py",
       "scenario": "test_duplicate_id_and_dependency_version_drift_are_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_maintenance.py::MaintenanceContracts::test_duplicate_id_and_dependency_version_drift_are_rejected",
+      "target": "tests/tools/runa/contracts/test_maintenance.py::MaintenanceContracts::test_duplicate_id_and_dependency_version_drift_are_rejected",
       "source_sha256": "adbaf5a7aeb837252b5bb0500aade37f6a49f8ec1f8256a366003fcd73741e33",
       "source_node": "MaintenanceContracts::test_duplicate_id_and_dependency_version_drift_are_rejected"
     },
@@ -239,7 +239,7 @@
       "source": "tools/maintainer/testing/maintenance.py",
       "scenario": "test_incomplete_maintenance_and_deprecation_are_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_maintenance.py::MaintenanceContracts::test_incomplete_maintenance_and_deprecation_are_rejected",
+      "target": "tests/tools/runa/contracts/test_maintenance.py::MaintenanceContracts::test_incomplete_maintenance_and_deprecation_are_rejected",
       "source_sha256": "adbaf5a7aeb837252b5bb0500aade37f6a49f8ec1f8256a366003fcd73741e33",
       "source_node": "MaintenanceContracts::test_incomplete_maintenance_and_deprecation_are_rejected"
     },
@@ -247,7 +247,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_application_compatibility_does_not_change_release_arithmetic_or_customer_version",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_application_compatibility_does_not_change_release_arithmetic_or_customer_version",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_application_compatibility_does_not_change_release_arithmetic_or_customer_version",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_application_compatibility_does_not_change_release_arithmetic_or_customer_version"
     },
@@ -255,7 +255,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_pre_gate_allows_only_final_open_and_computes_version",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_pre_gate_allows_only_final_open_and_computes_version",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_pre_gate_allows_only_final_open_and_computes_version",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_pre_gate_allows_only_final_open_and_computes_version"
     },
@@ -263,7 +263,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_version_rules_and_major_target_are_explicit",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_version_rules_and_major_target_are_explicit",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_version_rules_and_major_target_are_explicit",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_version_rules_and_major_target_are_explicit"
     },
@@ -271,7 +271,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_active_version_and_branch_drift_fail",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_active_version_and_branch_drift_fail",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_active_version_and_branch_drift_fail",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_active_version_and_branch_drift_fail"
     },
@@ -279,7 +279,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_already_claimed_target_tag_is_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_already_claimed_target_tag_is_rejected",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_already_claimed_target_tag_is_rejected",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_already_claimed_target_tag_is_rejected"
     },
@@ -287,7 +287,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_closed_metadata_accepts_release_before_publication",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_closed_metadata_accepts_release_before_publication",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_closed_metadata_accepts_release_before_publication",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_closed_metadata_accepts_release_before_publication"
     },
@@ -295,7 +295,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_closed_checklist_report_and_release_type_drift_fail",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_closed_checklist_report_and_release_type_drift_fail",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_closed_checklist_report_and_release_type_drift_fail",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_closed_checklist_report_and_release_type_drift_fail"
     },
@@ -303,7 +303,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_changelog_mismatch_duplicates_and_missing_roadmap_fail",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_changelog_mismatch_duplicates_and_missing_roadmap_fail",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_changelog_mismatch_duplicates_and_missing_roadmap_fail",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_changelog_mismatch_duplicates_and_missing_roadmap_fail"
     },
@@ -311,7 +311,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_lightweight_and_wrong_commit_tags_are_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_lightweight_and_wrong_commit_tags_are_rejected",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_lightweight_and_wrong_commit_tags_are_rejected",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_lightweight_and_wrong_commit_tags_are_rejected"
     },
@@ -319,7 +319,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_main_allows_only_draft_planning_after_valid_release_tag",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_main_allows_only_draft_planning_after_valid_release_tag",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_main_allows_only_draft_planning_after_valid_release_tag",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_main_allows_only_draft_planning_after_valid_release_tag"
     },
@@ -327,7 +327,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_main_rejects_nonancestor_and_metadata_drift_tags",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_main_rejects_nonancestor_and_metadata_drift_tags",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_main_rejects_nonancestor_and_metadata_drift_tags",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_main_rejects_nonancestor_and_metadata_drift_tags"
     },
@@ -335,7 +335,7 @@
       "source": "tools/maintainer/testing/release.py",
       "scenario": "test_readme_is_checked_before_and_after_closure",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_release.py::ReleaseContracts::test_readme_is_checked_before_and_after_closure",
+      "target": "tests/tools/runa/contracts/test_release.py::ReleaseContracts::test_readme_is_checked_before_and_after_closure",
       "source_sha256": "4ba6f5da46a3f7c7ffea9aec4692c8cc6b630932bfa527e7c582e461b620a8cd",
       "source_node": "ReleaseContracts::test_readme_is_checked_before_and_after_closure"
     },
@@ -343,7 +343,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history"
     },
@@ -351,7 +351,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt"
     },
@@ -359,7 +359,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_customer_authoring_templates_never_enter_owner_retrieval",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_customer_authoring_templates_never_enter_owner_retrieval",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_customer_authoring_templates_never_enter_owner_retrieval",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_customer_authoring_templates_never_enter_owner_retrieval"
     },
@@ -367,7 +367,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_customer_template_links_use_installed_paths_and_public_boundaries",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_customer_template_links_use_installed_paths_and_public_boundaries",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_customer_template_links_use_installed_paths_and_public_boundaries",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_customer_template_links_use_installed_paths_and_public_boundaries"
     },
@@ -375,7 +375,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_public_link_cannot_require_owner_source_even_when_it_exists",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_public_link_cannot_require_owner_source_even_when_it_exists",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_public_link_cannot_require_owner_source_even_when_it_exists",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_public_link_cannot_require_owner_source_even_when_it_exists"
     },
@@ -383,7 +383,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_legacy_roots_and_materialized_owner_docs_are_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_legacy_roots_and_materialized_owner_docs_are_rejected",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_legacy_roots_and_materialized_owner_docs_are_rejected",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_legacy_roots_and_materialized_owner_docs_are_rejected"
     },
@@ -391,7 +391,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_missing_directories_duplicate_root_and_symlink_sources_fail",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_missing_directories_duplicate_root_and_symlink_sources_fail",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_missing_directories_duplicate_root_and_symlink_sources_fail",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_missing_directories_duplicate_root_and_symlink_sources_fail"
     },
@@ -399,7 +399,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_module_local_documentation_is_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_module_local_documentation_is_rejected",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_module_local_documentation_is_rejected",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_module_local_documentation_is_rejected"
     },
@@ -407,7 +407,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_owner_and_application_roadmap_ids_are_distinct_and_lifecycle_identity_is_stable"
     },
@@ -415,7 +415,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_commit_scope_uses_application_roadmap_despite_copied_owner_history",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_commit_scope_uses_application_roadmap_despite_copied_owner_history",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_commit_scope_uses_application_roadmap_despite_copied_owner_history",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_commit_scope_uses_application_roadmap_despite_copied_owner_history"
     },
@@ -423,7 +423,7 @@
       "source": "tools/maintainer/testing/documentation.py",
       "scenario": "test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_documentation.py::DocumentationOwnership::test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes",
+      "target": "tests/tools/runa/contracts/test_documentation.py::DocumentationOwnership::test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes",
       "source_sha256": "2e8f9d0422e1fa7ce07439ebca15dc5483071476538f7937db7aa749643adeca",
       "source_node": "DocumentationOwnership::test_closed_roadmaps_and_dated_reports_match_approved_immutable_hashes"
     },
@@ -431,7 +431,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_released_stale_readme_is_rejected_by_actual_doctor",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_released_stale_readme_is_rejected_by_actual_doctor",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_released_stale_readme_is_rejected_by_actual_doctor",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_released_stale_readme_is_rejected_by_actual_doctor"
     },
@@ -439,7 +439,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_independent_state_mismatches_are_rejected",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_independent_state_mismatches_are_rejected",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_independent_state_mismatches_are_rejected",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_independent_state_mismatches_are_rejected"
     },
@@ -447,7 +447,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_missing_duplicate_malformed_and_reordered_fields_fail",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_missing_duplicate_malformed_and_reordered_fields_fail",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_missing_duplicate_malformed_and_reordered_fields_fail",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_missing_duplicate_malformed_and_reordered_fields_fail"
     },
@@ -455,7 +455,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_actual_doctor_accepts_history_but_rejects_unlisted_commands",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_actual_doctor_accepts_history_but_rejects_unlisted_commands",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_actual_doctor_accepts_history_but_rejects_unlisted_commands",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_actual_doctor_accepts_history_but_rejects_unlisted_commands"
     },
@@ -463,7 +463,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_active_roadmap_location_frontmatter_and_branch",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_active_roadmap_location_frontmatter_and_branch",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_active_roadmap_location_frontmatter_and_branch",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_active_roadmap_location_frontmatter_and_branch"
     },
@@ -471,7 +471,7 @@
       "source": "tools/maintainer/testing/docs.py",
       "scenario": "test_final_gate_includes_docs_without_documentation_impact",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_docs.py::DocumentationContracts::test_final_gate_includes_docs_without_documentation_impact",
+      "target": "tests/tools/runa/contracts/test_docs.py::DocumentationContracts::test_final_gate_includes_docs_without_documentation_impact",
       "source_sha256": "f45241cb78ec5e7ea45a66d4aafe3fb97de64769b08bc17f4d19709040fa3ba3",
       "source_node": "DocumentationContracts::test_final_gate_includes_docs_without_documentation_impact"
     },
@@ -479,7 +479,7 @@
       "source": "tools/maintainer/testing/dependencies.py",
       "scenario": "test_combines_customer_dependencies_without_mutating_inputs",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_dependencies.py::DependencyContracts::test_combines_customer_dependencies_without_mutating_inputs",
+      "target": "tests/tools/runa/contracts/test_dependencies.py::DependencyContracts::test_combines_customer_dependencies_without_mutating_inputs",
       "source_sha256": "86be1c0478c2e903c74506d6cefaf37b4af03cbc08ccc804456aeaf11c03cd43",
       "source_node": "DependencyContracts::test_combines_customer_dependencies_without_mutating_inputs"
     },
@@ -487,7 +487,7 @@
       "source": "tools/maintainer/testing/dependencies.py",
       "scenario": "test_rejects_conflicting_and_unsupported_inputs",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_dependencies.py::DependencyContracts::test_rejects_conflicting_and_unsupported_inputs",
+      "target": "tests/tools/runa/contracts/test_dependencies.py::DependencyContracts::test_rejects_conflicting_and_unsupported_inputs",
       "source_sha256": "86be1c0478c2e903c74506d6cefaf37b4af03cbc08ccc804456aeaf11c03cd43",
       "source_node": "DependencyContracts::test_rejects_conflicting_and_unsupported_inputs"
     },
@@ -495,7 +495,7 @@
       "source": "tools/maintainer/testing/dependencies.py",
       "scenario": "test_checks_both_graphs_before_writes_and_preserves_locks",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_dependencies.py::DependencyContracts::test_checks_both_graphs_before_writes_and_preserves_locks",
+      "target": "tests/tools/runa/contracts/test_dependencies.py::DependencyContracts::test_checks_both_graphs_before_writes_and_preserves_locks",
       "source_sha256": "86be1c0478c2e903c74506d6cefaf37b4af03cbc08ccc804456aeaf11c03cd43",
       "source_node": "DependencyContracts::test_checks_both_graphs_before_writes_and_preserves_locks"
     },
@@ -503,7 +503,7 @@
       "source": "tools/maintainer/testing/module-development.py",
       "scenario": "test_stable_versions_and_bump_requirement",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_module_development.py::ModuleVersionContracts::test_stable_versions_and_bump_requirement",
+      "target": "tests/tools/runa/contracts/test_module_development.py::ModuleVersionContracts::test_stable_versions_and_bump_requirement",
       "source_sha256": "322f340e12b053586fcac988a77fc6fbb72734612ed9d6f077aee6bba753848d",
       "source_node": "ModuleVersionContracts::test_stable_versions_and_bump_requirement"
     },
@@ -511,7 +511,7 @@
       "source": "tools/maintainer/testing/module-development.py",
       "scenario": "test_real_git_implementation_test_only_and_new_module_changes",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_module_development.py::ModuleVersionContracts::test_real_git_implementation_test_only_and_new_module_changes",
+      "target": "tests/tools/runa/contracts/test_module_development.py::ModuleVersionContracts::test_real_git_implementation_test_only_and_new_module_changes",
       "source_sha256": "322f340e12b053586fcac988a77fc6fbb72734612ed9d6f077aee6bba753848d",
       "source_node": "ModuleVersionContracts::test_real_git_implementation_test_only_and_new_module_changes"
     },
@@ -519,7 +519,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit"
     },
@@ -527,7 +527,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_customer_origin_can_be_selected_without_rewriting_remotes_or_history",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_customer_origin_can_be_selected_without_rewriting_remotes_or_history",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_customer_origin_can_be_selected_without_rewriting_remotes_or_history",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_customer_origin_can_be_selected_without_rewriting_remotes_or_history"
     },
@@ -535,7 +535,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source"
     },
@@ -543,7 +543,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_modified_successful_release_is_rejected_before_compose_can_use_it",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_modified_successful_release_is_rejected_before_compose_can_use_it",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_modified_successful_release_is_rejected_before_compose_can_use_it",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_modified_successful_release_is_rejected_before_compose_can_use_it"
     },
@@ -551,7 +551,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_staging_uses_customer_source_and_retains_original_acquisition_identity",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_staging_uses_customer_source_and_retains_original_acquisition_identity",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_staging_uses_customer_source_and_retains_original_acquisition_identity",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_staging_uses_customer_source_and_retains_original_acquisition_identity"
     },
@@ -559,7 +559,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged"
     },
@@ -567,7 +567,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content"
     },
@@ -575,7 +575,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate"
     },
@@ -583,7 +583,7 @@
       "source": "tools/maintainer/testing/customer-deployment.py",
       "scenario": "test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_deployment.py::CustomerDeployment::test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied",
+      "target": "tests/tools/runa/contracts/test_customer_deployment.py::CustomerDeployment::test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied",
       "source_sha256": "4b492768ef299d96b362148b0ee4071ed417fdcf8be81a8b62fe15cf0e1a393a",
       "source_node": "CustomerDeployment::test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied"
     },
@@ -591,7 +591,7 @@
       "source": "tools/maintainer/testing/customer-initialization.py",
       "scenario": "test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_initialization.py::CustomerClones::test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin",
+      "target": "tests/tools/runa/contracts/test_customer_initialization.py::CustomerClones::test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin",
       "source_sha256": "5b8a72666be1ac5be83bf103b83073eaeb113da4c59433873e13c58795da1085",
       "source_node": "CustomerClones::test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin"
     },
@@ -599,7 +599,7 @@
       "source": "tools/maintainer/testing/customer-initialization.py",
       "scenario": "test_teammate_clone_prepares_local_role_without_first_workstation_metadata",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_initialization.py::CustomerClones::test_teammate_clone_prepares_local_role_without_first_workstation_metadata",
+      "target": "tests/tools/runa/contracts/test_customer_initialization.py::CustomerClones::test_teammate_clone_prepares_local_role_without_first_workstation_metadata",
       "source_sha256": "5b8a72666be1ac5be83bf103b83073eaeb113da4c59433873e13c58795da1085",
       "source_node": "CustomerClones::test_teammate_clone_prepares_local_role_without_first_workstation_metadata"
     },
@@ -607,7 +607,7 @@
       "source": "tools/maintainer/testing/customer-initialization.py",
       "scenario": "test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_initialization.py::CustomerClones::test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields",
+      "target": "tests/tools/runa/contracts/test_customer_initialization.py::CustomerClones::test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields",
       "source_sha256": "5b8a72666be1ac5be83bf103b83073eaeb113da4c59433873e13c58795da1085",
       "source_node": "CustomerClones::test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields"
     },
@@ -615,7 +615,7 @@
       "source": "tools/maintainer/testing/customer-initialization.py",
       "scenario": "test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_initialization.py::CustomerClones::test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication",
+      "target": "tests/tools/runa/contracts/test_customer_initialization.py::CustomerClones::test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication",
       "source_sha256": "5b8a72666be1ac5be83bf103b83073eaeb113da4c59433873e13c58795da1085",
       "source_node": "CustomerClones::test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication"
     },
@@ -623,7 +623,7 @@
       "source": "tools/maintainer/testing/customer-initialization.py",
       "scenario": "test_production_staging_keeps_full_versioned_development_configuration",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_customer_initialization.py::CustomerClones::test_production_staging_keeps_full_versioned_development_configuration",
+      "target": "tests/tools/runa/contracts/test_customer_initialization.py::CustomerClones::test_production_staging_keeps_full_versioned_development_configuration",
       "source_sha256": "5b8a72666be1ac5be83bf103b83073eaeb113da4c59433873e13c58795da1085",
       "source_node": "CustomerClones::test_production_staging_keeps_full_versioned_development_configuration"
     },
@@ -631,7 +631,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_unknown_and_maintenance_repositories_are_not_mutated",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_unknown_and_maintenance_repositories_are_not_mutated",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_unknown_and_maintenance_repositories_are_not_mutated",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_unknown_and_maintenance_repositories_are_not_mutated"
     },
@@ -639,7 +639,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_production_mode_uses_the_real_receipt_and_never_changes_it",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_production_mode_uses_the_real_receipt_and_never_changes_it",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_production_mode_uses_the_real_receipt_and_never_changes_it",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_production_mode_uses_the_real_receipt_and_never_changes_it"
     },
@@ -647,7 +647,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production"
     },
@@ -655,7 +655,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_customer_read_only_role_and_existing_customer_remote_preservation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_customer_read_only_role_and_existing_customer_remote_preservation",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_customer_read_only_role_and_existing_customer_remote_preservation",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_customer_read_only_role_and_existing_customer_remote_preservation"
     },
@@ -663,7 +663,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied"
     },
@@ -671,7 +671,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_customer_command_registry_excludes_maintenance_even_if_restored",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_customer_command_registry_excludes_maintenance_even_if_restored",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_customer_command_registry_excludes_maintenance_even_if_restored",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_customer_command_registry_excludes_maintenance_even_if_restored"
     },
@@ -679,7 +679,7 @@
       "source": "tools/maintainer/testing/repository-boundary.py",
       "scenario": "test_distribution_projection_is_fixed_and_shared",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_repository_boundary.py::RepositoryBoundary::test_distribution_projection_is_fixed_and_shared",
+      "target": "tests/tools/runa/contracts/test_repository_boundary.py::RepositoryBoundary::test_distribution_projection_is_fixed_and_shared",
       "source_sha256": "3724d503bccd1ab2c4edc0d8a3282c343e37ed4a0df2a70f3502a9e0b5b965d8",
       "source_node": "RepositoryBoundary::test_distribution_projection_is_fixed_and_shared"
     },
@@ -687,7 +687,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_native_update_uses_installed_source_tag_and_strictly_newer_target",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_native_update_uses_installed_source_tag_and_strictly_newer_target",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_native_update_uses_installed_source_tag_and_strictly_newer_target",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_native_update_uses_installed_source_tag_and_strictly_newer_target"
     },
@@ -695,7 +695,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_native_release_tags_bind_original_git_source_after_platform_release",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_native_release_tags_bind_original_git_source_after_platform_release",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_native_release_tags_bind_original_git_source_after_platform_release",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_native_release_tags_bind_original_git_source_after_platform_release"
     },
@@ -703,7 +703,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_ready_plan_lists_only_platform_data_steps_and_preserves_installation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_ready_plan_lists_only_platform_data_steps_and_preserves_installation",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_ready_plan_lists_only_platform_data_steps_and_preserves_installation",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_ready_plan_lists_only_platform_data_steps_and_preserves_installation"
     },
@@ -711,7 +711,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_original_is_independently_downloaded_not_adopted_from_receipt_or_git",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_original_is_independently_downloaded_not_adopted_from_receipt_or_git",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_original_is_independently_downloaded_not_adopted_from_receipt_or_git",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_original_is_independently_downloaded_not_adopted_from_receipt_or_git"
     },
@@ -719,7 +719,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_missing_unexpected_mode_and_unsafe_symlink_diagnostics",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_missing_unexpected_mode_and_unsafe_symlink_diagnostics",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_missing_unexpected_mode_and_unsafe_symlink_diagnostics",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_missing_unexpected_mode_and_unsafe_symlink_diagnostics"
     },
@@ -727,7 +727,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_application_storage_and_known_cache_are_preserved_without_hiding_source",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_application_storage_and_known_cache_are_preserved_without_hiding_source",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_application_storage_and_known_cache_are_preserved_without_hiding_source",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_application_storage_and_known_cache_are_preserved_without_hiding_source"
     },
@@ -735,7 +735,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_incompatible_and_unsupported_ranges_block",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_incompatible_and_unsupported_ranges_block",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_incompatible_and_unsupported_ranges_block",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_incompatible_and_unsupported_ranges_block"
     },
@@ -743,7 +743,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_unknown_versions_or_failed_reference_resolution_never_adopt_local_source",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_unknown_versions_or_failed_reference_resolution_never_adopt_local_source",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_unknown_versions_or_failed_reference_resolution_never_adopt_local_source",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_unknown_versions_or_failed_reference_resolution_never_adopt_local_source"
     },
@@ -751,7 +751,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_dependency_conflict_and_applied_migration_edit_block_but_infra_is_manual",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_dependency_conflict_and_applied_migration_edit_block_but_infra_is_manual",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_dependency_conflict_and_applied_migration_edit_block_but_infra_is_manual",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_dependency_conflict_and_applied_migration_edit_block_but_infra_is_manual"
     },
@@ -759,7 +759,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed"
     },
@@ -767,7 +767,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_actual_verified_git_download_checks_tag_and_content_without_install_mutation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_actual_verified_git_download_checks_tag_and_content_without_install_mutation",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_actual_verified_git_download_checks_tag_and_content_without_install_mutation",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_actual_verified_git_download_checks_tag_and_content_without_install_mutation"
     },
@@ -775,7 +775,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_runtime_failure_and_inside_installation_staging_never_change_customer_files",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_runtime_failure_and_inside_installation_staging_never_change_customer_files",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_runtime_failure_and_inside_installation_staging_never_change_customer_files",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_runtime_failure_and_inside_installation_staging_never_change_customer_files"
     },
@@ -783,7 +783,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_interrupted_download_cleans_external_staging_and_preserves_installation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_interrupted_download_cleans_external_staging_and_preserves_installation",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_interrupted_download_cleans_external_staging_and_preserves_installation",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_interrupted_download_cleans_external_staging_and_preserves_installation"
     },
@@ -791,7 +791,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_insufficient_disk_is_a_blocker_not_permission_to_reset_or_replace_locks",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_insufficient_disk_is_a_blocker_not_permission_to_reset_or_replace_locks",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_insufficient_disk_is_a_blocker_not_permission_to_reset_or_replace_locks",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_insufficient_disk_is_a_blocker_not_permission_to_reset_or_replace_locks"
     },
@@ -799,7 +799,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_frontend_and_error_customizations_remain_application_owned_across_review",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_frontend_and_error_customizations_remain_application_owned_across_review",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_frontend_and_error_customizations_remain_application_owned_across_review",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_frontend_and_error_customizations_remain_application_owned_across_review"
     },
@@ -807,7 +807,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_scaffold_edits_and_teammate_clones_need_no_original_receipt",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_scaffold_edits_and_teammate_clones_need_no_original_receipt",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_scaffold_edits_and_teammate_clones_need_no_original_receipt",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_scaffold_edits_and_teammate_clones_need_no_original_receipt"
     },
@@ -815,7 +815,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_production_rejected_before_download_or_probes",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_production_rejected_before_download_or_probes",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_production_rejected_before_download_or_probes",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_production_rejected_before_download_or_probes"
     },
@@ -823,7 +823,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application"
     },
@@ -831,7 +831,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_external_tool_package_runs_without_the_maintenance_checkout",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_external_tool_package_runs_without_the_maintenance_checkout",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_external_tool_package_runs_without_the_maintenance_checkout",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_external_tool_package_runs_without_the_maintenance_checkout"
     },
@@ -839,7 +839,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_bounded_version_grammar_matches_the_existing_php_contract",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_bounded_version_grammar_matches_the_existing_php_contract",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_bounded_version_grammar_matches_the_existing_php_contract",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_bounded_version_grammar_matches_the_existing_php_contract"
     },
@@ -847,7 +847,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_runtime_probe_blocks_missing_services_without_mutation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_runtime_probe_blocks_missing_services_without_mutation",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_runtime_probe_blocks_missing_services_without_mutation",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_runtime_probe_blocks_missing_services_without_mutation"
     },
@@ -855,7 +855,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_true_noop_requires_already_completed_exact_release_data_steps",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_true_noop_requires_already_completed_exact_release_data_steps",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_true_noop_requires_already_completed_exact_release_data_steps",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_true_noop_requires_already_completed_exact_release_data_steps"
     },
@@ -863,7 +863,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_invalid_application_version_or_boolean_schema_is_not_compatibility_approval",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_invalid_application_version_or_boolean_schema_is_not_compatibility_approval",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_invalid_application_version_or_boolean_schema_is_not_compatibility_approval",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_invalid_application_version_or_boolean_schema_is_not_compatibility_approval"
     },
@@ -871,7 +871,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_complete_project_review_distinguishes_upstream_local_and_instruction_conflicts",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_complete_project_review_distinguishes_upstream_local_and_instruction_conflicts",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_complete_project_review_distinguishes_upstream_local_and_instruction_conflicts",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_complete_project_review_distinguishes_upstream_local_and_instruction_conflicts"
     },
@@ -879,7 +879,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_project_review_tracks_executable_modes_and_rejects_symlink_parents",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_project_review_tracks_executable_modes_and_rejects_symlink_parents",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_project_review_tracks_executable_modes_and_rejects_symlink_parents",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_project_review_tracks_executable_modes_and_rejects_symlink_parents"
     },
@@ -887,7 +887,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_customization_reports_added_removed_services_without_secret_values",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_customization_reports_added_removed_services_without_secret_values",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_customization_reports_added_removed_services_without_secret_values",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_customization_reports_added_removed_services_without_secret_values"
     },
@@ -895,7 +895,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_untracked_infrastructure_changes_are_bound_to_exact_review",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_untracked_infrastructure_changes_are_bound_to_exact_review",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_untracked_infrastructure_changes_are_bound_to_exact_review",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_untracked_infrastructure_changes_are_bound_to_exact_review"
     },
@@ -903,7 +903,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_multiple_devcontainer_compose_files_and_override_services_are_reviewed",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_multiple_devcontainer_compose_files_and_override_services_are_reviewed",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_multiple_devcontainer_compose_files_and_override_services_are_reviewed",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_multiple_devcontainer_compose_files_and_override_services_are_reviewed"
     },
@@ -911,7 +911,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_native_compose_parser_preserves_literal_env_and_reports_custom_services",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_native_compose_parser_preserves_literal_env_and_reports_custom_services",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_native_compose_parser_preserves_literal_env_and_reports_custom_services",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_native_compose_parser_preserves_literal_env_and_reports_custom_services"
     },
@@ -919,7 +919,7 @@
       "source": "tools/maintainer/testing/update.py",
       "scenario": "test_shared_dockerfile_and_workspace_only_changes_are_reviewed",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update.py::Updater::test_shared_dockerfile_and_workspace_only_changes_are_reviewed",
+      "target": "tests/tools/runa/contracts/test_update.py::Updater::test_shared_dockerfile_and_workspace_only_changes_are_reviewed",
       "source_sha256": "bc24eccdc1a0594de5a7525c31e3070fca13bcbb550ac50e8e670a1bf602c8e9",
       "source_node": "Updater::test_shared_dockerfile_and_workspace_only_changes_are_reviewed"
     },
@@ -927,7 +927,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_replaces_only_platform_and_records_completion_without_git_writes",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_replaces_only_platform_and_records_completion_without_git_writes",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_replaces_only_platform_and_records_completion_without_git_writes",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_replaces_only_platform_and_records_completion_without_git_writes"
     },
@@ -935,7 +935,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_resume_refuses_lost_module_completion_history",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_resume_refuses_lost_module_completion_history",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_resume_refuses_lost_module_completion_history",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_resume_refuses_lost_module_completion_history"
     },
@@ -943,7 +943,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_legacy_target_without_module_phase_remains_supported",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_legacy_target_without_module_phase_remains_supported",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_legacy_target_without_module_phase_remains_supported",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_legacy_target_without_module_phase_remains_supported"
     },
@@ -951,7 +951,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects"
     },
@@ -959,7 +959,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_directory_rename_interruptions_revalidate_original_and_target_on_resume",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_directory_rename_interruptions_revalidate_original_and_target_on_resume",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_directory_rename_interruptions_revalidate_original_and_target_on_resume",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_directory_rename_interruptions_revalidate_original_and_target_on_resume"
     },
@@ -967,7 +967,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_gap_survives_another_failure_during_resume_fencing",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_gap_survives_another_failure_during_resume_fencing",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_gap_survives_another_failure_during_resume_fencing",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_gap_survives_another_failure_during_resume_fencing"
     },
@@ -975,7 +975,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_staging_symlink_is_rejected_before_source_or_data_mutations",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_staging_symlink_is_rejected_before_source_or_data_mutations",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_staging_symlink_is_rejected_before_source_or_data_mutations",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_staging_symlink_is_rejected_before_source_or_data_mutations"
     },
@@ -983,7 +983,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_customization_requires_explicit_choice_and_changed_resume_review",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_customization_requires_explicit_choice_and_changed_resume_review",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_customization_requires_explicit_choice_and_changed_resume_review",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_customization_requires_explicit_choice_and_changed_resume_review"
     },
@@ -991,7 +991,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_reviewed_non_platform_add_replace_remove_and_instruction_preservation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_reviewed_non_platform_add_replace_remove_and_instruction_preservation",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_reviewed_non_platform_add_replace_remove_and_instruction_preservation",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_reviewed_non_platform_add_replace_remove_and_instruction_preservation"
     },
@@ -999,7 +999,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_file_rename_interruptions_resume_from_saved_before_after_state",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_file_rename_interruptions_resume_from_saved_before_after_state",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_file_rename_interruptions_resume_from_saved_before_after_state",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_file_rename_interruptions_resume_from_saved_before_after_state"
     },
@@ -1007,7 +1007,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_customer_reconciles_configuration_before_publication_and_production_provision",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_customer_reconciles_configuration_before_publication_and_production_provision",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_customer_reconciles_configuration_before_publication_and_production_provision",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_customer_reconciles_configuration_before_publication_and_production_provision"
     },
@@ -1015,7 +1015,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden"
     },
@@ -1023,7 +1023,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history"
     },
@@ -1031,7 +1031,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_partial_staging_copy_restarts_only_verified_missing_files",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_partial_staging_copy_restarts_only_verified_missing_files",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_partial_staging_copy_restarts_only_verified_missing_files",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_partial_staging_copy_restarts_only_verified_missing_files"
     },
@@ -1039,7 +1039,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_oneoff_transport_failure_removes_only_its_owned_writer",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_oneoff_transport_failure_removes_only_its_owned_writer",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_oneoff_transport_failure_removes_only_its_owned_writer",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_oneoff_transport_failure_removes_only_its_owned_writer"
     },
@@ -1047,7 +1047,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_resume_rejects_changed_tag_object_before_mutations",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_resume_rejects_changed_tag_object_before_mutations",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_resume_rejects_changed_tag_object_before_mutations",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_resume_rejects_changed_tag_object_before_mutations"
     },
@@ -1055,7 +1055,7 @@
       "source": "tools/maintainer/testing/update-execution.py",
       "scenario": "test_execution_completed_operation_is_not_resurrected_after_cleanup_failure",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_update_execution.py::Execution::test_execution_completed_operation_is_not_resurrected_after_cleanup_failure",
+      "target": "tests/tools/runa/contracts/test_update_execution.py::Execution::test_execution_completed_operation_is_not_resurrected_after_cleanup_failure",
       "source_sha256": "bc7ef0819d2fd17fcda53d7aa081a87b7b985cc63fa8968e2d7281945fe53216",
       "source_node": "Execution::test_execution_completed_operation_is_not_resurrected_after_cleanup_failure"
     },
@@ -1063,7 +1063,7 @@
       "source": "tools/maintainer/testing/postgres-alpine-contracts.py",
       "scenario": "test_rejects_libc_version_drift_and_changed_equality",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_rejects_libc_version_drift_and_changed_equality",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_rejects_libc_version_drift_and_changed_equality",
       "source_sha256": "2ec31c4dae35038256cc675a8354c656bf23bf4a657cbfb941d66a7be7d4dd0d",
       "source_node": "CandidateProbeContracts::test_rejects_libc_version_drift_and_changed_equality"
     },
@@ -1071,7 +1071,7 @@
       "source": "tools/maintainer/testing/postgres-alpine-contracts.py",
       "scenario": "test_detects_index_order_disagreement_and_missing_index_plan",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_detects_index_order_disagreement_and_missing_index_plan",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_detects_index_order_disagreement_and_missing_index_plan",
       "source_sha256": "2ec31c4dae35038256cc675a8354c656bf23bf4a657cbfb941d66a7be7d4dd0d",
       "source_node": "CandidateProbeContracts::test_detects_index_order_disagreement_and_missing_index_plan"
     },
@@ -1079,7 +1079,7 @@
       "source": "tools/maintainer/testing/postgres-alpine-contracts.py",
       "scenario": "test_fixture_parses_and_accepts_complete_semantic_evidence",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_fixture_parses_and_accepts_complete_semantic_evidence",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_fixture_parses_and_accepts_complete_semantic_evidence",
       "source_sha256": "2ec31c4dae35038256cc675a8354c656bf23bf4a657cbfb941d66a7be7d4dd0d",
       "source_node": "CandidateProbeContracts::test_fixture_parses_and_accepts_complete_semantic_evidence"
     },
@@ -1087,7 +1087,7 @@
       "source": "tools/maintainer/testing/postgres-alpine-contracts.py",
       "scenario": "test_psql_failure_removes_only_its_disposable_container_and_credentials",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_psql_failure_removes_only_its_disposable_container_and_credentials",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py::CandidateProbeContracts::test_psql_failure_removes_only_its_disposable_container_and_credentials",
       "source_sha256": "2ec31c4dae35038256cc675a8354c656bf23bf4a657cbfb941d66a7be7d4dd0d",
       "source_node": "CandidateProbeContracts::test_psql_failure_removes_only_its_disposable_container_and_credentials"
     },
@@ -1095,7 +1095,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs"
     },
@@ -1103,7 +1103,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions"
     },
@@ -1111,7 +1111,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version"
     },
@@ -1119,7 +1119,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_partial_configuration_resume_reuses_original_application_key_and_database_password",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_partial_configuration_resume_reuses_original_application_key_and_database_password",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_partial_configuration_resume_reuses_original_application_key_and_database_password",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_partial_configuration_resume_reuses_original_application_key_and_database_password"
     },
@@ -1127,7 +1127,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_scaffold_is_once_only_and_preserves_customer_files_manifest_and_removed_extension_dirs",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_scaffold_is_once_only_and_preserves_customer_files_manifest_and_removed_extension_dirs",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_scaffold_is_once_only_and_preserves_customer_files_manifest_and_removed_extension_dirs",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_scaffold_is_once_only_and_preserves_customer_files_manifest_and_removed_extension_dirs"
     },
@@ -1135,7 +1135,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics"
     },
@@ -1143,7 +1143,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_failed_dependency_setup_stops_before_platform_database_initialization",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_failed_dependency_setup_stops_before_platform_database_initialization",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_failed_dependency_setup_stops_before_platform_database_initialization",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_failed_dependency_setup_stops_before_platform_database_initialization"
     },
@@ -1151,7 +1151,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration"
     },
@@ -1159,7 +1159,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_failed_production_install_keeps_configuration_and_resumes_without_regeneration",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_failed_production_install_keeps_configuration_and_resumes_without_regeneration",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_failed_production_install_keeps_configuration_and_resumes_without_regeneration",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_failed_production_install_keeps_configuration_and_resumes_without_regeneration"
     },
@@ -1167,7 +1167,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields"
     },
@@ -1175,7 +1175,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert"
     },
@@ -1183,7 +1183,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_resume_blocks_a_pending_update_or_another_target",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_resume_blocks_a_pending_update_or_another_target",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_resume_blocks_a_pending_update_or_another_target",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_resume_blocks_a_pending_update_or_another_target"
     },
@@ -1191,7 +1191,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets"
     },
@@ -1199,7 +1199,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume"
     },
@@ -1207,7 +1207,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_development_refuses_to_take_over_another_workspaces_containers",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_development_refuses_to_take_over_another_workspaces_containers",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_development_refuses_to_take_over_another_workspaces_containers",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_development_refuses_to_take_over_another_workspaces_containers"
     },
@@ -1215,7 +1215,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_production_tls_compose_overlay_is_explicit_and_simulation_project_cannot_target_dev",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_production_tls_compose_overlay_is_explicit_and_simulation_project_cannot_target_dev",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_production_tls_compose_overlay_is_explicit_and_simulation_project_cannot_target_dev",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_production_tls_compose_overlay_is_explicit_and_simulation_project_cannot_target_dev"
     },
@@ -1223,7 +1223,7 @@
       "source": "tools/maintainer/testing/installation.py",
       "scenario": "test_customer_host_transport_rejects_installation",
       "disposition": "migrated to injected installation/deployment context",
-      "target": "tools/maintainer/tests/python/contracts/test_installation.py::InstallationContracts::test_customer_host_transport_rejects_installation",
+      "target": "tests/tools/runa/contracts/test_installation.py::InstallationContracts::test_customer_host_transport_rejects_installation",
       "source_sha256": "1fe344fcf3a354ac3794c4dc6b6aaf8244c33c0a30fa05e07a468894c79b2d26",
       "source_node": "InstallationContracts::test_customer_host_transport_rejects_installation"
     },
@@ -1231,7 +1231,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set"
     },
@@ -1239,7 +1239,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work"
     },
@@ -1247,7 +1247,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers"
     },
@@ -1255,7 +1255,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure"
     },
@@ -1263,7 +1263,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_compose_cannot_consume_remaining_parent_script_input",
       "disposition": "replaced: Core process pipe/input tests and explicit DeploymentRuntime.dc stdin default",
-      "target": "tools/maintainer/tests/python/unit/test_core_process.py",
+      "target": "tests/tools/runa/unit/test_core_process.py",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_compose_cannot_consume_remaining_parent_script_input"
     },
@@ -1271,7 +1271,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_explicit_process_stream_and_input_are_preserved",
       "disposition": "replaced: Core ProcessSpec supports explicit input/capture; arbitrary stream object was a legacy implementation detail",
-      "target": "tools/maintainer/tests/python/unit/test_core_process.py",
+      "target": "tests/tools/runa/unit/test_core_process.py",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_explicit_process_stream_and_input_are_preserved"
     },
@@ -1279,7 +1279,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_atomic_evidence_is_private_and_valid_json",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_atomic_evidence_is_private_and_valid_json",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_atomic_evidence_is_private_and_valid_json",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_atomic_evidence_is_private_and_valid_json"
     },
@@ -1287,7 +1287,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools"
     },
@@ -1295,7 +1295,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_exact_target_rejects_shell_options_and_mutable_refs",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_exact_target_rejects_shell_options_and_mutable_refs",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_exact_target_rejects_shell_options_and_mutable_refs",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_exact_target_rejects_shell_options_and_mutable_refs"
     },
@@ -1303,7 +1303,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_failed_deploy_keeps_recovery_marker_when_schema_sources_change",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_failed_deploy_keeps_recovery_marker_when_schema_sources_change",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_failed_deploy_keeps_recovery_marker_when_schema_sources_change",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_failed_deploy_keeps_recovery_marker_when_schema_sources_change"
     },
@@ -1311,7 +1311,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_equal_source_hashes_do_not_prove_safe_data_rollback",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_equal_source_hashes_do_not_prove_safe_data_rollback",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_equal_source_hashes_do_not_prove_safe_data_rollback",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_equal_source_hashes_do_not_prove_safe_data_rollback"
     },
@@ -1319,7 +1319,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes"
     },
@@ -1327,7 +1327,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_default_customer_target_is_main_and_not_a_local_platform_ref",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_default_customer_target_is_main_and_not_a_local_platform_ref",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_default_customer_target_is_main_and_not_a_local_platform_ref",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_default_customer_target_is_main_and_not_a_local_platform_ref"
     },
@@ -1335,7 +1335,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_acquired_but_uninstalled_source_cannot_replace_platform_installation",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_acquired_but_uninstalled_source_cannot_replace_platform_installation",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_acquired_but_uninstalled_source_cannot_replace_platform_installation",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_acquired_but_uninstalled_source_cannot_replace_platform_installation"
     },
@@ -1343,7 +1343,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding"
     },
@@ -1351,7 +1351,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_build_seeding_and_health_failures_have_distinct_recovery_boundaries",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_build_seeding_and_health_failures_have_distinct_recovery_boundaries",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_build_seeding_and_health_failures_have_distinct_recovery_boundaries",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_build_seeding_and_health_failures_have_distinct_recovery_boundaries"
     },
@@ -1359,7 +1359,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_same_commit_verifies_health_without_replaying_data_steps",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_same_commit_verifies_health_without_replaying_data_steps",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_same_commit_verifies_health_without_replaying_data_steps",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_same_commit_verifies_health_without_replaying_data_steps"
     },
@@ -1367,7 +1367,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_exclusive_operation_lock",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_exclusive_operation_lock",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_exclusive_operation_lock",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_exclusive_operation_lock"
     },
@@ -1375,7 +1375,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_environment_file_rejects_duplicate_keys_and_multiline",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_environment_file_rejects_duplicate_keys_and_multiline",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_environment_file_rejects_duplicate_keys_and_multiline",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_environment_file_rejects_duplicate_keys_and_multiline"
     },
@@ -1383,7 +1383,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_rollback_blocks_migration_or_seeder_change_before_any_mutation",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_rollback_blocks_migration_or_seeder_change_before_any_mutation",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_rollback_blocks_migration_or_seeder_change_before_any_mutation",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_rollback_blocks_migration_or_seeder_change_before_any_mutation"
     },
@@ -1391,7 +1391,7 @@
       "source": "tools/maintainer/testing/operations.py",
       "scenario": "test_release_commands_pin_their_own_sha_and_clear_ambient_context",
       "disposition": "migrated to injected deployment components",
-      "target": "tools/maintainer/tests/python/contracts/test_operations.py::OperationContracts::test_release_commands_pin_their_own_sha_and_clear_ambient_context",
+      "target": "tests/tools/runa/contracts/test_operations.py::OperationContracts::test_release_commands_pin_their_own_sha_and_clear_ambient_context",
       "source_sha256": "e4fe8f4c1d16e4e671c4084c77217c40f3d88e7732159a2dff461a88a45e99f5",
       "source_node": "OperationContracts::test_release_commands_pin_their_own_sha_and_clear_ambient_context"
     },
@@ -1399,7 +1399,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_team_deployment_compares_production_projection_and_refuses_excluded_source",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_team_deployment_compares_production_projection_and_refuses_excluded_source",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_team_deployment_compares_production_projection_and_refuses_excluded_source",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_team_deployment_compares_production_projection_and_refuses_excluded_source"
     },
@@ -1407,7 +1407,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_every_production_action_is_blocked_before_locks_or_host_work_in_dev",
       "disposition": "consolidated: Receipt/mode matrix in test_application_transport.py::test_role_denial_precedes_state_processes_and_profile_files plus native role acceptance",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_every_production_action_is_blocked_before_locks_or_host_work_in_dev"
     },
@@ -1415,7 +1415,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden"
     },
@@ -1423,7 +1423,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_dev_block_preserves_files_even_with_production_settings_present",
       "disposition": "consolidated: test_role_denial_precedes_state_processes_and_profile_files",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_dev_block_preserves_files_even_with_production_settings_present"
     },
@@ -1431,7 +1431,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_runtime_topology_and_isolation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_runtime_topology_and_isolation",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_runtime_topology_and_isolation",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_runtime_topology_and_isolation"
     },
@@ -1439,7 +1439,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_emergency_scope_excludes_php_errors_and_sensitive_storage",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_emergency_scope_excludes_php_errors_and_sensitive_storage",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_emergency_scope_excludes_php_errors_and_sensitive_storage",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_emergency_scope_excludes_php_errors_and_sensitive_storage"
     },
@@ -1447,7 +1447,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_native_mail_runtime_inputs_are_shipped_without_review_fixtures",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_native_mail_runtime_inputs_are_shipped_without_review_fixtures",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_native_mail_runtime_inputs_are_shipped_without_review_fixtures",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_native_mail_runtime_inputs_are_shipped_without_review_fixtures"
     },
@@ -1455,7 +1455,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_shared_nginx_runtime_digest_stays_consistent",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_shared_nginx_runtime_digest_stays_consistent",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_shared_nginx_runtime_digest_stays_consistent",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_shared_nginx_runtime_digest_stays_consistent"
     },
@@ -1463,7 +1463,7 @@
       "source": "tools/maintainer/testing/production.py",
       "scenario": "test_context_and_argument_validation",
       "disposition": "migrated",
-      "target": "tools/maintainer/tests/python/contracts/test_production.py::ProductionContracts::test_context_and_argument_validation",
+      "target": "tests/tools/runa/contracts/test_production.py::ProductionContracts::test_context_and_argument_validation",
       "source_sha256": "7064b36fc2fb52c128da7842b73caf008878a4105b5ff589b88719e9404b00d9",
       "source_node": "ProductionContracts::test_context_and_argument_validation"
     },
@@ -1471,7 +1471,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_published_schema_and_executor_allowlist_agree",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::ManagementContracts::test_published_schema_and_executor_allowlist_agree",
+      "target": "tests/tools/runa/contracts/test_management.py::ManagementContracts::test_published_schema_and_executor_allowlist_agree",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_published_schema_and_executor_allowlist_agree"
     },
@@ -1479,7 +1479,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_rejects_unversioned_unbound_and_executable_payloads",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::ManagementContracts::test_rejects_unversioned_unbound_and_executable_payloads",
+      "target": "tests/tools/runa/contracts/test_management.py::ManagementContracts::test_rejects_unversioned_unbound_and_executable_payloads",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_rejects_unversioned_unbound_and_executable_payloads"
     },
@@ -1487,7 +1487,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::ManagementContracts::test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected",
+      "target": "tests/tools/runa/contracts/test_management.py::ManagementContracts::test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected"
     },
@@ -1495,7 +1495,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::ManagementContracts::test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments",
+      "target": "tests/tools/runa/contracts/test_management.py::ManagementContracts::test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments"
     },
@@ -1503,7 +1503,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_development_plans_are_denied_in_prod_before_state_locks_or_executors",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_development_plans_are_denied_in_prod_before_state_locks_or_executors"
     },
@@ -1511,7 +1511,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_worker_reports_a_fixed_nonsecret_development_mode_denial",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_worker_reports_a_fixed_nonsecret_development_mode_denial"
     },
@@ -1519,7 +1519,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_quality_queries_do_not_hold_the_production_lock_across_child_gates",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_quality_queries_do_not_hold_the_production_lock_across_child_gates"
     },
@@ -1527,7 +1527,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_transport_caps_output_and_duration",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_transport_caps_output_and_duration"
     },
@@ -1535,7 +1535,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_only_fixed_action_runs_under_the_existing_operation_lock",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_only_fixed_action_runs_under_the_existing_operation_lock"
     },
@@ -1543,7 +1543,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_recovery_evidence_blocks_mutation_and_lock_contention_blocks_all",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_recovery_evidence_blocks_mutation_and_lock_contention_blocks_all"
     },
@@ -1551,7 +1551,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_rejects_state_and_lock_symlinks",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_rejects_state_and_lock_symlinks"
     },
@@ -1559,7 +1559,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_no_network_mounts_environment_or_shell_in_management_container",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_no_network_mounts_environment_or_shell_in_management_container"
     },
@@ -1567,7 +1567,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_plan_only_and_parse_failure_never_execute",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_plan_only_and_parse_failure_never_execute"
     },
@@ -1575,7 +1575,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_interrupted_transport_removes_only_its_own_container",
       "disposition": "Consolidated into parameterized service tests in test_application_transport.py (explicit workspace, process runner, receipts, limits, lock/replay and cleanup)",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "ManagementContracts::test_interrupted_transport_removes_only_its_own_container"
     },
@@ -1583,7 +1583,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_cleanup_targets_only_run_labels_and_preserves_volumes",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_cleanup_targets_only_run_labels_and_preserves_volumes",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_cleanup_targets_only_run_labels_and_preserves_volumes",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_cleanup_targets_only_run_labels_and_preserves_volumes"
     },
@@ -1591,7 +1591,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_uncertain_container_or_journal_ownership_prevents_all_removal",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_uncertain_container_or_journal_ownership_prevents_all_removal",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_uncertain_container_or_journal_ownership_prevents_all_removal",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_uncertain_container_or_journal_ownership_prevents_all_removal"
     },
@@ -1599,7 +1599,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans"
     },
@@ -1607,7 +1607,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_partial_startup_failure_has_journal_before_creation_and_cleans",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_partial_startup_failure_has_journal_before_creation_and_cleans",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_partial_startup_failure_has_journal_before_creation_and_cleans",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_partial_startup_failure_has_journal_before_creation_and_cleans"
     },
@@ -1615,7 +1615,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_interrupted_startup_retains_journal_and_next_run_recovers_it",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_interrupted_startup_retains_journal_and_next_run_recovers_it",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_interrupted_startup_retains_journal_and_next_run_recovers_it",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_interrupted_startup_retains_journal_and_next_run_recovers_it"
     },
@@ -1623,7 +1623,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_busy_suite_prevents_endpoint_startup_and_orphan_recovery",
       "disposition": "migrated to explicit endpoint instance",
-      "target": "tools/maintainer/tests/python/contracts/test_management.py::TestResourceContracts::test_busy_suite_prevents_endpoint_startup_and_orphan_recovery",
+      "target": "tests/tools/runa/contracts/test_management.py::TestResourceContracts::test_busy_suite_prevents_endpoint_startup_and_orphan_recovery",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_busy_suite_prevents_endpoint_startup_and_orphan_recovery"
     },
@@ -1631,7 +1631,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_owner_runner_preserves_test_failure_and_reports_cleanup_failure",
       "disposition": "Shared TestService native status/cleanup tests in test_test_runner.py",
-      "target": "tools/maintainer/tests/python/unit/test_test_runner.py",
+      "target": "tests/tools/runa/unit/test_test_runner.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_owner_runner_preserves_test_failure_and_reports_cleanup_failure"
     },
@@ -1639,7 +1639,7 @@
       "source": "tools/maintainer/testing/management.py",
       "scenario": "test_owner_runner_refuses_to_start_after_failed_orphan_cleanup",
       "disposition": "Shared TestService pre-cleanup refusal in test_test_runner.py",
-      "target": "tools/maintainer/tests/python/unit/test_test_runner.py",
+      "target": "tests/tools/runa/unit/test_test_runner.py",
       "source_sha256": "8a094db96c9cdb5aef0bf602d214501c5419faadb56d7481f1f7113b6a1bfb07",
       "source_node": "TestResourceContracts::test_owner_runner_refuses_to_start_after_failed_orphan_cleanup"
     },
@@ -1647,7 +1647,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_request_is_bound_to_private_credentials_workspace_and_one_time_challenge",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_request_is_bound_to_private_credentials_workspace_and_one_time_challenge"
     },
@@ -1655,7 +1655,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_every_registered_command_name_can_reach_independent_validation",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_every_registered_command_name_can_reach_independent_validation"
     },
@@ -1663,7 +1663,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_transport_rejects_duplicate_and_oversized_frames",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_transport_rejects_duplicate_and_oversized_frames"
     },
@@ -1671,7 +1671,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_trusted_artisan_revalidates_literal_args_without_network_mounts_or_caller_shell",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_trusted_artisan_revalidates_literal_args_without_network_mounts_or_caller_shell"
     },
@@ -1679,7 +1679,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_registry_rejection_never_returns_an_executable_plan",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_registry_rejection_never_returns_an_executable_plan"
     },
@@ -1687,7 +1687,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_stop_recovers_only_known_workspace_paths_owned_by_the_operator",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_host_recovery.py::test_recovery_checks_current_workspace_process_identity",
+      "target": "tests/tools/runa/contracts/test_host_recovery.py::test_recovery_checks_current_workspace_process_identity",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_stop_recovers_only_known_workspace_paths_owned_by_the_operator"
     },
@@ -1695,7 +1695,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_state_directories_refuse_foreign_permissions_and_symlinks",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_state_directories_refuse_foreign_permissions_and_symlinks"
     },
@@ -1703,7 +1703,7 @@
       "source": "tools/maintainer/testing/host-executor.py",
       "scenario": "test_real_unix_authentication_replay_and_durable_completion",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/unit/test_application_transport.py",
+      "target": "tests/tools/runa/unit/test_application_transport.py",
       "source_sha256": "7ee9e778202b91fb9d00a6ad8f1ccc9a43cbf21ff66e887742e9e1932f9aee5b",
       "source_node": "HostContracts::test_real_unix_authentication_replay_and_durable_completion"
     },
@@ -1711,7 +1711,7 @@
       "source": "tools/maintainer/testing/wrappers.py",
       "scenario": "test_host_arguments_preserved_without_shell_interpretation",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_application_bootstrap.py",
+      "target": "tests/tools/runa/contracts/test_application_bootstrap.py",
       "source_sha256": "097b71bb26697fd7f537ae0bcaba5f668135e3cca78f36c6a8bb57c385e78151",
       "source_node": "WrapperContracts::test_host_arguments_preserved_without_shell_interpretation"
     },
@@ -1719,7 +1719,7 @@
       "source": "tools/maintainer/testing/wrappers.py",
       "scenario": "test_devcontainer_uses_installed_tool_directly",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_application_bootstrap.py",
+      "target": "tests/tools/runa/contracts/test_application_bootstrap.py",
       "source_sha256": "097b71bb26697fd7f537ae0bcaba5f668135e3cca78f36c6a8bb57c385e78151",
       "source_node": "WrapperContracts::test_devcontainer_uses_installed_tool_directly"
     },
@@ -1727,7 +1727,7 @@
       "source": "tools/maintainer/testing/wrappers.py",
       "scenario": "test_artisan_preserves_child_failure_exit_code",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_application_bootstrap.py",
+      "target": "tests/tools/runa/contracts/test_application_bootstrap.py",
       "source_sha256": "097b71bb26697fd7f537ae0bcaba5f668135e3cca78f36c6a8bb57c385e78151",
       "source_node": "WrapperContracts::test_artisan_preserves_child_failure_exit_code"
     },
@@ -1735,7 +1735,7 @@
       "source": "tools/maintainer/testing/wrappers.py",
       "scenario": "test_logs_default_and_help_are_nonmutating",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_application_bootstrap.py",
+      "target": "tests/tools/runa/contracts/test_application_bootstrap.py",
       "source_sha256": "097b71bb26697fd7f537ae0bcaba5f668135e3cca78f36c6a8bb57c385e78151",
       "source_node": "WrapperContracts::test_logs_default_and_help_are_nonmutating"
     },
@@ -1743,7 +1743,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_owner_data_entrypoints_cannot_select_application_paths_or_seeders",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_owner_data_entrypoints_cannot_select_application_paths_or_seeders"
     },
@@ -1751,7 +1751,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_owner_migration_and_seeder_arguments_use_fixed_platform_scope",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_owner_migration_and_seeder_arguments_use_fixed_platform_scope"
     },
@@ -1759,7 +1759,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_owner_entrypoints_reject_foreign_actions_before_running_anything",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_owner_entrypoints_reject_foreign_actions_before_running_anything"
     },
@@ -1767,7 +1767,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_owner_quality_rejects_invalid_options_before_reconfiguring_the_shared_runner",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_owner_quality_rejects_invalid_options_before_reconfiguring_the_shared_runner"
     },
@@ -1775,7 +1775,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_owner_test_runners_select_private_configurations",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_owner_test_runners_select_private_configurations"
     },
@@ -1783,7 +1783,7 @@
       "source": "tools/maintainer/testing/tool-ownership.py",
       "scenario": "test_customer_quality_does_not_require_a_runa_roadmap_or_maintainer_files",
       "disposition": "consolidated: obsolete module-global/runpy fixture; explicit service input/isolation tests plus native subprocess acceptance retain the public behavior",
-      "target": "tools/maintainer/tests/python/contracts/test_command_adapters.py",
+      "target": "tests/tools/runa/contracts/test_command_adapters.py",
       "source_sha256": "7b2c608127e841e498e1b8191978c3838d343afaa17d824be8abbd443960fdf0",
       "source_node": "ToolOwnership::test_customer_quality_does_not_require_a_runa_roadmap_or_maintainer_files"
     },
@@ -1791,7 +1791,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_pre_autoload_setup_uses_the_private_executor",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_pre_autoload_setup_uses_the_private_executor",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_pre_autoload_setup_uses_the_private_executor",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_pre_autoload_setup_uses_the_private_executor"
     },
@@ -1799,7 +1799,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_standalone_bootstrap_rejects_production_before_preparing_files",
       "disposition": "consolidated with injected knowledge lifecycle/production refusal cases",
-      "target": "tools/maintainer/tests/python/contracts/test_knowledge_services.py",
+      "target": "tests/tools/runa/contracts/test_knowledge_services.py",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_standalone_bootstrap_rejects_production_before_preparing_files"
     },
@@ -1807,7 +1807,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded"
     },
@@ -1815,7 +1815,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_selective_build_and_recreate_do_not_touch_siblings",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_selective_build_and_recreate_do_not_touch_siblings",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_selective_build_and_recreate_do_not_touch_siblings",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_selective_build_and_recreate_do_not_touch_siblings"
     },
@@ -1823,7 +1823,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_invalid_selective_scope_never_mutates_profile_or_calls_docker",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_invalid_selective_scope_never_mutates_profile_or_calls_docker",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_invalid_selective_scope_never_mutates_profile_or_calls_docker",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_invalid_selective_scope_never_mutates_profile_or_calls_docker"
     },
@@ -1831,7 +1831,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_config_validation_never_prints_expanded_environment",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_config_validation_never_prints_expanded_environment",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_config_validation_never_prints_expanded_environment",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_config_validation_never_prints_expanded_environment"
     },
@@ -1839,7 +1839,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_application_failure_is_not_swallowed",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_application_failure_is_not_swallowed",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_application_failure_is_not_swallowed",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_application_failure_is_not_swallowed"
     },
@@ -1847,7 +1847,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_failed_application_setup_never_writes_success_marker",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_failed_application_setup_never_writes_success_marker",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_failed_application_setup_never_writes_success_marker",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_failed_application_setup_never_writes_success_marker"
     },
@@ -1855,7 +1855,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_current_setup_skips_install_and_build_with_generated_error_document",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_current_setup_skips_install_and_build_with_generated_error_document",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_current_setup_skips_install_and_build_with_generated_error_document",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_current_setup_skips_install_and_build_with_generated_error_document"
     },
@@ -1863,7 +1863,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_missing_current_document_or_stale_fingerprint_runs_full_setup",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_missing_current_document_or_stale_fingerprint_runs_full_setup",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_missing_current_document_or_stale_fingerprint_runs_full_setup",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_missing_current_document_or_stale_fingerprint_runs_full_setup"
     },
@@ -1871,7 +1871,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_optional_probe_has_process_deadline",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_optional_probe_has_process_deadline",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_optional_probe_has_process_deadline",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_optional_probe_has_process_deadline"
     },
@@ -1879,7 +1879,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_initializer_retries_unavailable_ai_without_indexing",
       "disposition": "consolidated with injected knowledge lifecycle/production refusal cases",
-      "target": "tools/maintainer/tests/python/contracts/test_knowledge_services.py",
+      "target": "tests/tools/runa/contracts/test_knowledge_services.py",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_initializer_retries_unavailable_ai_without_indexing"
     },
@@ -1887,7 +1887,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_initializer_recovers_and_exits_after_success",
       "disposition": "consolidated with injected knowledge lifecycle/production refusal cases",
-      "target": "tools/maintainer/tests/python/contracts/test_knowledge_services.py",
+      "target": "tests/tools/runa/contracts/test_knowledge_services.py",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_initializer_recovers_and_exits_after_success"
     },
@@ -1895,7 +1895,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_missing_or_interrupted_empty_collection_initializes",
       "disposition": "consolidated with injected knowledge lifecycle/production refusal cases",
-      "target": "tools/maintainer/tests/python/contracts/test_knowledge_services.py",
+      "target": "tests/tools/runa/contracts/test_knowledge_services.py",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_missing_or_interrupted_empty_collection_initializes"
     },
@@ -1903,7 +1903,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_existing_stale_or_unidentified_collection_is_not_reindexed",
       "disposition": "consolidated with injected knowledge lifecycle/production refusal cases",
-      "target": "tools/maintainer/tests/python/contracts/test_knowledge_services.py",
+      "target": "tests/tools/runa/contracts/test_knowledge_services.py",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_existing_stale_or_unidentified_collection_is_not_reindexed"
     },
@@ -1911,7 +1911,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_app_health_does_not_require_ai",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::StartupContracts::test_app_health_does_not_require_ai",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::StartupContracts::test_app_health_does_not_require_ai",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "StartupContracts::test_app_health_does_not_require_ai"
     },
@@ -1919,7 +1919,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_customer_setup_configures_hooks_once_and_preserves_custom_choice",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::CustomerHookSetup::test_customer_setup_configures_hooks_once_and_preserves_custom_choice",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::CustomerHookSetup::test_customer_setup_configures_hooks_once_and_preserves_custom_choice",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "CustomerHookSetup::test_customer_setup_configures_hooks_once_and_preserves_custom_choice"
     },
@@ -1927,7 +1927,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::EnvironmentOwnership::test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::EnvironmentOwnership::test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "EnvironmentOwnership::test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values"
     },
@@ -1935,7 +1935,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_dangling_secret_links_are_rejected_before_any_creation",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::EnvironmentOwnership::test_dangling_secret_links_are_rejected_before_any_creation",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::EnvironmentOwnership::test_dangling_secret_links_are_rejected_before_any_creation",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "EnvironmentOwnership::test_dangling_secret_links_are_rejected_before_any_creation"
     },
@@ -1943,7 +1943,7 @@
       "source": "tools/maintainer/testing/development-startup.py",
       "scenario": "test_linked_secret_files_are_preserved_and_rejected",
       "disposition": "migrated to injected development/config/setup services",
-      "target": "tools/maintainer/tests/python/contracts/test_development_startup.py::EnvironmentOwnership::test_linked_secret_files_are_preserved_and_rejected",
+      "target": "tests/tools/runa/contracts/test_development_startup.py::EnvironmentOwnership::test_linked_secret_files_are_preserved_and_rejected",
       "source_sha256": "8d5069d293a698e74d24348fec7bc389530ad439347dac92ed6b470a083b7032",
       "source_node": "EnvironmentOwnership::test_linked_secret_files_are_preserved_and_rejected"
     },
@@ -1951,7 +1951,7 @@
       "source": "tools/maintainer/testing/postgres-switch-contracts.py",
       "scenario": "test_existing_target_refuses_before_stop_or_recreate",
       "disposition": "retired: one-time preproduction database-volume transition is complete; current collation/runtime and isolation probes remain covered without exposing an old destructive workstation transition",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py",
       "source_sha256": "f86846a3ba8d9feb6f5d88820d1e3038ae275b8d9801ee4483430f2ad1b14f59",
       "source_node": "SwitchContracts::test_existing_target_refuses_before_stop_or_recreate"
     },
@@ -1959,7 +1959,7 @@
       "source": "tools/maintainer/testing/postgres-switch-contracts.py",
       "scenario": "test_fingerprint_mount_is_readonly_and_has_no_socket",
       "disposition": "retired: one-time preproduction database-volume transition is complete; current collation/runtime and isolation probes remain covered without exposing an old destructive workstation transition",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py",
       "source_sha256": "f86846a3ba8d9feb6f5d88820d1e3038ae275b8d9801ee4483430f2ad1b14f59",
       "source_node": "SwitchContracts::test_fingerprint_mount_is_readonly_and_has_no_socket"
     },
@@ -1967,7 +1967,7 @@
       "source": "tools/maintainer/testing/postgres-switch-contracts.py",
       "scenario": "test_container_context_refuses_without_docker_call",
       "disposition": "retired: one-time preproduction database-volume transition is complete; current collation/runtime and isolation probes remain covered without exposing an old destructive workstation transition",
-      "target": "tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py",
+      "target": "tests/tools/runa/contracts/test_postgres_alpine_contracts.py",
       "source_sha256": "f86846a3ba8d9feb6f5d88820d1e3038ae275b8d9801ee4483430f2ad1b14f59",
       "source_node": "SwitchContracts::test_container_context_refuses_without_docker_call"
     },
@@ -1975,7 +1975,7 @@
       "source": "tools/maintainer/testing/knowledge_retrieval.py",
       "scenario": "test_hybrid_filter_exact_identifier_and_source_diversity",
       "disposition": "migrated with explicit knowledge marker; no configuration read at import",
-      "target": "tools/maintainer/tests/python/integration/test_knowledge_retrieval.py::RetrievalContracts::test_hybrid_filter_exact_identifier_and_source_diversity",
+      "target": "tests/tools/runa/integration/test_knowledge_retrieval.py::RetrievalContracts::test_hybrid_filter_exact_identifier_and_source_diversity",
       "source_sha256": "e52144c4eb22561d3c9192a2bf183803bceb6c9a28d204bd4650e4f13508cfb5",
       "source_node": "RetrievalContracts::test_hybrid_filter_exact_identifier_and_source_diversity"
     },
@@ -1983,7 +1983,7 @@
       "source": "tools/maintainer/testing/knowledge_retrieval.py",
       "scenario": "test_stale_branch_missing_orphan_and_mixed_model_are_rejected",
       "disposition": "migrated with explicit knowledge marker; no configuration read at import",
-      "target": "tools/maintainer/tests/python/integration/test_knowledge_retrieval.py::RetrievalContracts::test_stale_branch_missing_orphan_and_mixed_model_are_rejected",
+      "target": "tests/tools/runa/integration/test_knowledge_retrieval.py::RetrievalContracts::test_stale_branch_missing_orphan_and_mixed_model_are_rejected",
       "source_sha256": "e52144c4eb22561d3c9192a2bf183803bceb6c9a28d204bd4650e4f13508cfb5",
       "source_node": "RetrievalContracts::test_stale_branch_missing_orphan_and_mixed_model_are_rejected"
     },
@@ -1991,7 +1991,7 @@
       "source": "tools/maintainer/testing/knowledge_retrieval.py",
       "scenario": "test_explicit_rebuild_restores_deleted_collection",
       "disposition": "migrated with explicit knowledge marker; no configuration read at import",
-      "target": "tools/maintainer/tests/python/integration/test_knowledge_retrieval.py::RetrievalContracts::test_explicit_rebuild_restores_deleted_collection",
+      "target": "tests/tools/runa/integration/test_knowledge_retrieval.py::RetrievalContracts::test_explicit_rebuild_restores_deleted_collection",
       "source_sha256": "e52144c4eb22561d3c9192a2bf183803bceb6c9a28d204bd4650e4f13508cfb5",
       "source_node": "RetrievalContracts::test_explicit_rebuild_restores_deleted_collection"
     }

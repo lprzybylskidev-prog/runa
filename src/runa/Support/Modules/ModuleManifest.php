@@ -95,8 +95,14 @@ final readonly class ModuleManifest
         $paths = $data['tests'];
         self::stringList($paths);
         foreach ($paths as $path) {
+            if (preg_match('~\Atests/(backend|frontend|tools)/'.preg_quote($owner, '~').'/modules/'.preg_quote($code, '~').'(?:/[A-Za-z0-9_][A-Za-z0-9_.-]*)*\z~D', $path) === 1) {
+                continue;
+            }
             if ($path !== 'tests' && ! str_starts_with($path, 'tests/')) {
                 throw new InvalidArgumentException('Invalid module test path.');
+            }
+            if (preg_match('~\Atests/(backend|frontend|tools)/~', $path) === 1) {
+                throw new InvalidArgumentException('Module tests must use their own central owner/module root.');
             }
         }
 

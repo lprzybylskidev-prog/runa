@@ -118,18 +118,18 @@ Run application backend, frontend and tooling tests by default. Repeated
 `--filter=TEXT` selects native test names in each scope. Use one explicit scope
 for native options, for example `runa:test --scope=backend --parallel`.
 `runa:test:backend` remains PHP-only; `runa:test:python` discovers application Python
-tests and accepts `--path=src/app/tests/python/test_example.py`, `--marker=...`
+tests and accepts `--path=tests/tools/app/test_example.py`, `--marker=...`
 and `--collect-only`. Native `php artisan test` remains PHP-only. See
 [application testing](../testing/strategy.md) for authored roots, public support,
 empty/failure semantics, reports and guarded cleanup.
 
 ### `php artisan runa:test:frontend`
 
-Run only application Vitest/Vue component tests from `src/app/tests/frontend`, using `src/vitest.config.mjs`.
+Run only application Vitest/Vue component tests from `tests/frontend/app/unit`, using `src/vitest.config.mjs`.
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `tests/frontend/app/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 
@@ -288,7 +288,7 @@ Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `pyt
 - tools/maintainer: owner-only platform test harnesses, release metadata, diagnostics and quality entrypoints; excluded from customer projection.
 - distribution: external acquisition/initialization, installation gateway adapters and development updater; excluded from customer projection.
 
-Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses src/app/tests. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
+Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses tests/backend/app. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
 
 ### `php artisan runa:modules:settings [module]`
 

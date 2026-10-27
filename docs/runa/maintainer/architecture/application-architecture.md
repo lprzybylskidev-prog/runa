@@ -142,7 +142,7 @@ repository/
 
 Both owner roots place namespace directories/config/database/lang/resources/routes directly under src/app or src/runa; there is no extra nested src directory. Only delivered src/runa is the external updater's integrity/replacement boundary. Compose, hooks, bootstrap/build/test configuration, shared tools and root VERSION are customer-controlled scaffold. Customer repositories version the same complete project for development and production; private settings, data, dependencies and runtime artifacts differ.
 
-The owner checkout additionally contains distribution, tools/maintainer, platform tests/browser harnesses and docs/runa/maintainer. The fixed shared exclusion map in tools/core/delivery.py and its independently enforced standalone distribution/bootstrap.py projection keeps them out of customer delivery. Never infer a production host-source allowlist from the narrower runtime image contents. Platform test namespaces/autoloading are owner-only; native customer tests select src/app/tests. See [public tests](../../handbook/testing/strategy.md) and [owner testing](../testing/strategy.md).
+The owner checkout additionally contains distribution, tools/maintainer, platform tests/browser harnesses and docs/runa/maintainer. The fixed shared exclusion map in tools/core/delivery.py and its independently enforced standalone distribution/bootstrap.py projection keeps them out of customer delivery. Never infer a production host-source allowlist from the narrower runtime image contents. Platform test namespaces/autoloading are owner-only; native customer tests select tests/backend/app. See [public tests](../../handbook/testing/strategy.md) and [owner testing](../testing/strategy.md).
 
 ### Public extension points and runtime
 

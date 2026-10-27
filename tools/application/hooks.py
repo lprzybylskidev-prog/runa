@@ -147,19 +147,21 @@ def pre_commit(
                     (
                         "src/app/resources/",
                         "src/runa/resources/",
-                        "src/runa/tests/frontend/",
-                        "src/runa/tests/e2e/",
+                        "tests/frontend/app/unit/",
+                        "tests/frontend/app/e2e/",
+                        "tests/frontend/runa/unit/",
+                        "tests/frontend/runa/e2e/",
+                        "src/runa/Testing/",
                     )
                 )
                 or (name.startswith("src/") and name.count("/") == 1)
             ):
                 command(
                     [
-                        "pnpm",
-                        "--dir",
-                        str(tools_root / "src"),
-                        "exec",
-                        "eslint",
+                        "node",
+                        str(tools_root / "src/node_modules/eslint/bin/eslint.js"),
+                        "--config",
+                        str(tools_root / "eslint.config.mjs"),
                         "--stdin",
                         "--stdin-filename",
                         str(root / name),

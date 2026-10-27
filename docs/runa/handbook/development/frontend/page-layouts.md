@@ -42,7 +42,7 @@ Use `usePageResolver` with exact paths and matching named server entries; never 
 
 ## Isolated browser scenarios
 
-There are no application preview/catalog routes. Test customer pages through src/app/tests and the isolated testing Nginx endpoint; see docs/runa/handbook/testing/strategy.md. Platform fixture harnesses are owner-only.
+There are no application preview/catalog routes. Test customer pages through tests/backend/app and the isolated testing Nginx endpoint; see docs/runa/handbook/testing/strategy.md. Platform fixture harnesses are owner-only.
 
 Use public components directly; keep executable composition examples in the existing test fixtures and durable contracts in this skill. Do not add a catalog, demo navigation or environment-enabled preview route to the application merely to demonstrate a component.
 

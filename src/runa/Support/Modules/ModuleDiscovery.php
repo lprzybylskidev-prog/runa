@@ -71,6 +71,11 @@ final readonly class ModuleDiscovery
                 }
             }
             foreach ($manifest->paths as $relative) {
+                // Central test paths are development metadata, like central documentation.
+                // Production discovery never requires shipped tests or loads test code.
+                if (preg_match('~\Atests/(backend|frontend|tools)/~', $relative) === 1) {
+                    continue;
+                }
                 $target = self::ownedPath($path, $path.'/'.$relative);
                 if (! is_dir($target)) {
                     throw new InvalidArgumentException('Module test paths must be directories.');

@@ -259,7 +259,7 @@ automatic replacement of customer screens. Keep application code and guidance co
 customer repository. New platform defaults arrive under protected src/runa; compare
 new contracts with local presentation during the reviewed update.
 
-Owner-only examples and acceptance fixtures live under src/runa/tests and
+Owner-only examples and acceptance fixtures live under tests/backend/runa and
 maintainer tooling, never as added customer business screens/modules. Rendered
 responsive/theme/keyboard/security-flow and delivery acceptance runs in the final
 roadmap verification; custom code still needs its own rendered acceptance.

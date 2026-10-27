@@ -13,8 +13,19 @@ OWNER_PATHS = (
     "docs/runa/maintainer",
     "src/runa/management/InstallCommand.php",
     "src/runa/management/ProjectCommand.php",
+    "tests/backend/runa",
+    "tests/frontend/runa",
+    "tests/tools/runa",
 )
-DEVELOPMENT_MODULES = ("src/app/modules/module_probe", "src/app/modules/reference")
+LEGACY_OWNER_PATHS = OWNER_PATHS[:-3]
+PROJECTION_VERSION = 2
+APPLICATION_TEST_ROOTS = ("tests/backend/app", "tests/frontend/app", "tests/tools/app")
+DEVELOPMENT_MODULES = (
+    "src/app/modules/module_probe",
+    "src/app/modules/reference",
+    "tests/backend/app/modules/module_probe",
+    "tests/backend/app/modules/reference",
+)
 
 
 def production_patterns() -> list[str]:

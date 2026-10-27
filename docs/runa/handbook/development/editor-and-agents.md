@@ -89,3 +89,10 @@ For substantial Docker work:
 For sibling-only work, prefer `./bin/artisan runa:dev:restart <service>` when only a process restart is needed. Restart retains the existing image/configuration. Use `./bin/artisan runa:dev:build <service>` for a selected local image build, then `./bin/artisan runa:dev:recreate <service>` for image/configuration changes after dependency review; recreation uses `--no-deps` in the same Compose context and does not certify readiness. Check application/knowledge health as appropriate; record app container ID/start time before and after to verify it stayed running when no app change was necessary. `./bin/artisan runa:dev:build` without services builds all configured development images; `./bin/artisan runa:dev:down` affects the whole project and preserves volumes. Restart without a service affects the whole stack. Recreating the attached app needs a planned session transition.
 
 For generated/private inputs, template naming and credential mismatch recovery, use [environment file responsibilities](environment-files.md). Never repair an existing role by regenerating settings or deleting its volume.
+
+The root TypeScript configuration extends src/tsconfig.json so editor discovery
+includes central frontend tests. Test runner configurations stay in src beside
+the installed dependencies; cases live in tests/frontend/app or the excluded Runa
+suite. Python analysis includes tests/tools/app, with owner additions selected
+through the private maintainer configuration. See the public testing guide for
+central backend/frontend/tools ownership and shared test imports.

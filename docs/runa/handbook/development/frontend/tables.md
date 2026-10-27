@@ -124,7 +124,7 @@ const projectsProvider: TableProvider<ProjectRow> = (query, signal) =>
   loadProjects(query, signal);
 ```
 
-Pass `mode="server" :provider="projectsProvider"` and the same controlled query/columns/rowKey as client mode. For canonical Laravel API transport prefer `createApiTableProvider`, with allowlisted sort/filter keys and a decoder that rejects malformed unknown responses. The server independently authorizes every row, count, export and bulk operation. `src/runa/tests/frontend/fixtures/browser/ScenarioTables.vue` retains deterministic client/server/operation fixtures; production applications supply their own endpoint and operation provider. Column presentation uses `cell-<key>` slots; exports require explicit authorized `ExportColumn` descriptors and the documented budgets.
+Pass `mode="server" :provider="projectsProvider"` and the same controlled query/columns/rowKey as client mode. For canonical Laravel API transport prefer `createApiTableProvider`, with allowlisted sort/filter keys and a decoder that rejects malformed unknown responses. The server independently authorizes every row, count, export and bulk operation. `tests/frontend/runa/unit/fixtures/browser/ScenarioTables.vue` retains deterministic client/server/operation fixtures; production applications supply their own endpoint and operation provider. Column presentation uses `cell-<key>` slots; exports require explicit authorized `ExportColumn` descriptors and the documented budgets.
 
 For signed-in durable views, the owning module declares the exact `table-views`
 version 2 and optional `statistics.mode` version 1 keys with server validation.

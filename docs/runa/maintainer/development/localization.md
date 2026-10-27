@@ -16,7 +16,7 @@ Inside the devcontainer:
 
 ```sh
 python3 -m tools.maintainer.localization.snapshot check
-php tools/maintainer/testing/localization.php
+php tests/tools/runa/acceptance/localization.php
 ```
 
 The first command validates catalog keys and placeholders against installed Laravel and verifies the imported license hash. It reports local edits since import without overwriting them. The integration check exercises native Laravel validation, Polish message loading and nested parameter interpolation, while preserving the English technical default. Re-run both when upgrading Laravel or editing the snapshot.

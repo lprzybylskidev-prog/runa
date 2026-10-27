@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
 
 // The testing Compose profile serves the real application through Nginx/PHP-FPM.
@@ -10,7 +11,8 @@ if (!['http:', 'https:'].includes(new URL(baseURL).protocol)) {
 }
 
 export default defineConfig({
-  testDir: './app/tests/e2e',
+  tsconfig: fileURLToPath(new URL('./tsconfig.json', import.meta.url)),
+  testDir: './../tests/frontend/app/e2e',
   outputDir: '../.runtime/artifacts/playwright/application/results',
   reporter: [
     ['list'],

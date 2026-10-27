@@ -18,4 +18,6 @@ On 2026-10-22 the owner explicitly authorized a one-time metadata-only exception
 
 The knowledge allowlist includes app/public guidance and supplied skills. Owner checkouts explicitly add owner material through their excluded maintainer configuration. Customer receipt contexts never add maintainer documents even if private files were accidentally copied locally. Stage new durable sources before incremental indexing; knowledge freshness checks remain mandatory.
 
+Authored tests and private fixtures live under tests/backend, tests/frontend and tests/tools, each separating app and runa. Module tests use the owning central modules/<code> subtree; reusable development infrastructure remains in its source package.
+
 Module source does not own documentation directories. Runa module developer/operator guidance belongs in `docs/runa/handbook/modules/<code>/`; owner engineering records still belong in `docs/runa/maintainer`. Manifest documentation paths are repository-root-relative metadata and do not require documentation files at runtime. Generators follow the same central placement.

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from tools.application.processes import WorkspaceProcess
 from tools.application.repository_boundary_service import RepositoryPolicy
-from tools.core.delivery import OWNER_PATHS
+from tools.core.delivery import APPLICATION_TEST_ROOTS, OWNER_PATHS
 
 COMPOSED = {"src/composer.json", "src/composer.lock", "src/package.json", "src/pnpm-lock.yaml"}
 
@@ -39,7 +39,12 @@ class CustomerSource:
 
     @staticmethod
     def application_path(path: str) -> bool:
-        return path.startswith(("src/app/", "docs/app/")) or path in COMPOSED
+        return (
+            path.startswith(
+                ("src/app/", "docs/app/", *(root + "/" for root in APPLICATION_TEST_ROOTS))
+            )
+            or path in COMPOSED
+        )
 
     @staticmethod
     def excluded(path: str) -> bool:

@@ -105,7 +105,7 @@ Publish concrete target release requirements for manual reconciliation of depend
 ```sh
 python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update.py
 python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update_execution.py
-python3 -m tools.maintainer.testing.installation_host --updater-preflight --team-propagation --customer-knowledge --customer-deployment
+python3 -m tests.tools.runa.acceptance.installation_host --updater-preflight --team-propagation --customer-knowledge --customer-deployment
 ```
 
 Pure contracts cover independently verified Git acquisition, source ownership, dependency/compatibility failures, read-only preservation and customization decision binding. Run them inside the application toolchain for PHP grammar parity. Native disposable acceptance exercises real Docker Compose/Composer/pnpm/PostgreSQL, checks read-only development plans, real platform migration/seed execution, failure fencing/resume and production rejection, and preserves active development resources. Synthetic future release fixtures are not evidence of publication.

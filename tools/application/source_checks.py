@@ -31,7 +31,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     # never exempt a whole file or another echo/debug expression in the same file.
     intentional_output = {
         "src/runa/resources/views/errors/page.php": "echo strtr($template, [",
-        "src/runa/tests/Fixtures/browser-document.php": "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
+        "tests/backend/runa/Fixtures/browser-document.php": "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
     }
     failures = []
     paths = (

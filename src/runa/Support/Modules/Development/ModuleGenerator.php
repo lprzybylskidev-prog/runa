@@ -26,11 +26,13 @@ final readonly class ModuleGenerator
         $namespace = ($module->owner === 'app' ? 'App' : 'Runa').'\\Modules\\'.Str::studly($module->code);
         $directory = 'src/'.$module->owner.'/modules/'.$module->code;
         $docs = ($module->owner === 'app' ? 'docs/app/modules/' : 'docs/runa/handbook/modules/').$module->code;
-        $tokens = ['id' => $id, 'owner' => $module->owner, 'code' => $module->code, 'namespace' => $namespace, 'schema' => $module->schema(), 'testcase' => $module->owner === 'app' ? 'Tests\\TestCase' : 'Tests\\PlatformTestCase', 'test_command' => $module->owner === 'app' ? './bin/artisan runa:test --scope=backend app/modules/'.$module->code.'/tests' : 'python3 tools/maintainer/test-backend runa/modules/'.$module->code.'/tests'];
+        $tests = 'tests/backend/'.$module->owner.'/modules/'.$module->code;
+        $tokens = ['id' => $id, 'owner' => $module->owner, 'code' => $module->code, 'namespace' => $namespace, 'schema' => $module->schema(), 'testcase' => $module->owner === 'app' ? 'Tests\\TestCase' : 'Tests\\PlatformTestCase', 'test_command' => $module->owner === 'app' ? './bin/artisan runa:test --scope=backend ../tests/backend/app/modules/'.$module->code : 'python3 tools/maintainer/test-backend ../tests/backend/runa/modules/'.$module->code];
         $files = [];
         if ($type === 'module') {
             if ($name !== null || file_exists($this->root.'/'.$directory) || is_link($this->root.'/'.$directory)
-                || file_exists($this->root.'/'.$docs) || is_link($this->root.'/'.$docs)) {
+                || file_exists($this->root.'/'.$docs) || is_link($this->root.'/'.$docs)
+                || file_exists($this->root.'/'.$tests) || is_link($this->root.'/'.$tests)) {
                 throw new InvalidArgumentException('Skeleton targets must be new source and documentation directories.');
             }
             $declarations = array_fill_keys(ModuleManifest::CATEGORIES, []);
@@ -45,11 +47,11 @@ final readonly class ModuleGenerator
                 'name' => ['pl' => $module->code, 'en' => $module->code],
                 'description' => ['pl' => 'Moduł '.$module->code, 'en' => 'Module '.$module->code],
                 'dependencies' => ['required' => (object) [], 'optional' => (object) []],
-                'providers' => [], 'declarations' => $declarations, 'docs' => [$docs.'/README.md'], 'tests' => ['tests'],
+                'providers' => [], 'declarations' => $declarations, 'docs' => [$docs.'/README.md'], 'tests' => [$tests],
             ];
             $files[$directory.'/module.json'] = $this->json($manifest);
             $files[$directory.'/backend/Definitions/Lifecycle.php'] = $this->stub('lifecycle.php', $tokens);
-            $files[$directory.'/tests/ModuleContractTest.php'] = $this->stub('test.php', $tokens);
+            $files[$tests.'/ModuleContractTest.php'] = $this->stub('test.php', $tokens);
             $files[$docs.'/README.md'] = $this->stub('README.md', $tokens);
             $files[$docs.'/CHANGELOG.md'] = $this->stub('CHANGELOG.md', $tokens);
         } else {
@@ -83,11 +85,11 @@ final readonly class ModuleGenerator
                 'migration' => ['database/migrations/'.gmdate('Y_m_d_His').'_'.$module->schema().'_create_'.$tokens['table'].'.php' => 'migration.php'],
                 'api' => ['backend/Contracts/'.$name.'.php' => 'contract.php', 'backend/'.$name.'Handler.php' => 'handler.php', 'backend/'.$name.'Proxy.php' => 'proxy.php', 'backend/Definitions/'.$name.'Api.php' => 'api.php'],
                 'component' => ['resources/js/'.$name.'.vue' => 'component.vue'],
-                'test' => ['tests/'.$name.'.php' => 'test.php'],
+                'test' => [$name.'.php' => 'test.php'],
                 default => ['backend/'.($type === 'action' ? 'Actions' : 'Services').'/'.$name.'.php' => $type.'.php'],
             };
             foreach ($templates as $path => $stub) {
-                $files[$directory.'/'.$path] = $this->stub($stub, $tokens);
+                $files[($type === 'test' ? $tests : $directory).'/'.$path] = $this->stub($stub, $tokens);
             }
             if (in_array($type, ['controller', 'api'], true)) {
                 $manifest = json_decode((string) file_get_contents($this->root.'/'.$directory.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
@@ -127,7 +129,7 @@ final readonly class ModuleGenerator
         }
         foreach (array_keys($files) as $path) {
             $this->safe($path);
-            $this->context(str_starts_with($path, 'src/runa/') || str_starts_with($path, 'docs/runa/') ? 'runa' : 'app');
+            $this->context(str_starts_with($path, 'src/runa/') || str_starts_with($path, 'docs/runa/') || str_starts_with($path, 'tests/backend/runa/') ? 'runa' : 'app');
         }
         $lock = fopen(sys_get_temp_dir().'/runa-generator-'.hash('sha256', $this->root).'.lock', 'c');
         if ($lock === false || ! flock($lock, LOCK_EX | LOCK_NB)) {
@@ -217,7 +219,7 @@ final readonly class ModuleGenerator
 
     private function safe(string $relative): void
     {
-        if (preg_match('~\A(?:src/(?:app|runa)/modules/[a-z][a-z0-9_]*|docs/(?:app|runa/handbook)/modules/[a-z][a-z0-9_]*)/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_.-]+\z~D', $relative) !== 1
+        if (preg_match('~\A(?:src/(?:app|runa)/modules/[a-z][a-z0-9_]*|docs/(?:app|runa/handbook)/modules/[a-z][a-z0-9_]*|tests/backend/(?:app|runa)/modules/[a-z][a-z0-9_]*)/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_.-]+\z~D', $relative) !== 1
             || in_array('..', explode('/', $relative), true)) {
             throw new InvalidArgumentException('Generated path is outside owned module roots.');
         }

@@ -33,7 +33,7 @@
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "runa/Testing/",
-      "ApplicationTests\\": "app/tests/"
+      "ApplicationTests\\": "../tests/backend/app/"
     }
   },
   "scripts": {

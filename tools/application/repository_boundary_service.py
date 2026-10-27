@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from tools.application.processes import WorkspaceProcess
-from tools.core.delivery import OWNER_PATHS
+from tools.core.delivery import LEGACY_OWNER_PATHS, OWNER_PATHS, PROJECTION_VERSION
 from tools.core.state import JsonValue, StateFailure, json_value
 
 
@@ -56,10 +56,10 @@ class RepositoryPolicy:
             raise RepositoryBoundaryError("Invalid installation acquisition receipt.") from None
         if not isinstance(data, dict):
             raise RepositoryBoundaryError("Unsupported installation acquisition receipt.")
-        if data.get("schema_version") != 1 or data.get("projection") != {
-            "version": 1,
-            "excluded": list(OWNER_PATHS),
-        }:
+        if data.get("schema_version") != 1 or data.get("projection") not in (
+            {"version": 1, "excluded": list(LEGACY_OWNER_PATHS)},
+            {"version": PROJECTION_VERSION, "excluded": list(OWNER_PATHS)},
+        ):
             raise RepositoryBoundaryError(
                 "Unsupported installation source projection; request owner migration rather than repairing silently."
             )
@@ -248,7 +248,7 @@ class RepositoryPolicy:
                 "repository": "lprzybylskidev-prog/runa",
                 "mode": mode,
                 "source": "customer-repository",
-                "projection": {"version": 1, "excluded": list(OWNER_PATHS)},
+                "projection": {"version": PROJECTION_VERSION, "excluded": list(OWNER_PATHS)},
             }
         )
         if data.get("mode") != mode:

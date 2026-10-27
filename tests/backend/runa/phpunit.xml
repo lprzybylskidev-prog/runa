@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../src/vendor/phpunit/phpunit/phpunit.xsd" bootstrap="bootstrap.php" cacheDirectory="../../../.runtime/phpunit-runa" failOnWarning="true" failOnRisky="true" failOnDeprecation="true">
+    <testsuites><testsuite name="Runa"><directory>Feature</directory><directory>modules</directory></testsuite></testsuites>
+    <source><include><directory>../../../src/runa</directory></include></source>
+    <php><server name="APP_ENV" value="testing" force="true"/><env name="APP_ENV" value="testing" force="true"/></php>
+</phpunit>

@@ -33,11 +33,11 @@ class TestLayout:
 
 APPLICATION = TestLayout(
     "application",
-    "app/tests",
+    "../tests/backend/app",
     "phpunit.xml",
     "vitest.config.mjs",
     "playwright.config.mjs",
-    ("src/app/tests/python",),
+    ("tests/tools/app",),
 )
 
 
@@ -53,7 +53,7 @@ def application_layout(root: Path) -> TestLayout:
         not isinstance(data, dict)
         or set(data) != {"schema_version", "python_roots"}
         or type(data["schema_version"]) is not int
-        or data["schema_version"] != 1
+        or data["schema_version"] not in (1, 2)
     ):
         raise ValueError("Unsupported application testing configuration.")
     paths = data["python_roots"]
@@ -65,8 +65,11 @@ def application_layout(root: Path) -> TestLayout:
             for p in paths
         )
     ):
-        raise ValueError("Python roots must be explicit paths relative to src/app.")
-    roots = tuple("src/app/" + path for path in paths)
+        raise ValueError(
+            "Python roots must be explicit paths relative to the configured application test root."
+        )
+    prefix = "src/app/" if data["schema_version"] == 1 else "tests/tools/app/"
+    roots = tuple(str(Path(prefix) / path) for path in paths)
     if len(set(roots)) != len(roots):
         raise ValueError("Python roots must be unique.")
     return replace(APPLICATION, python_roots=roots)
@@ -191,15 +194,10 @@ class TestService:
                 for name in self.layout.python_roots
                 for path in (root / name).rglob("test_*.py")
             )
-        directory = (
-            root
-            / "src"
-            / (
-                self.layout.backend
-                if scope == "backend"
-                else self.layout.backend + ("/frontend" if scope == "frontend" else "/e2e")
-            )
-        )
+        owner = "app" if self.layout.owner == "application" else "runa"
+        directory = root / "tests" / ("backend" if scope == "backend" else "frontend") / owner
+        if scope != "backend":
+            directory /= "unit" if scope == "frontend" else "e2e"
         patterns = (
             ("*Test.php",)
             if scope == "backend"
@@ -209,6 +207,26 @@ class TestService:
 
     def run_scope(self, scope: Scope, selection: Selection) -> ScopeResult:
         if self.empty(scope, selection):
+            if self.layout.owner == "application":
+                legacy = self.workspace.root / "src/app/tests"
+                if scope == "backend":
+                    pattern, directory = "*Test.php", legacy
+                else:
+                    pattern = (
+                        "test_*.py"
+                        if scope == "tooling"
+                        else ("*.test.ts" if scope == "frontend" else "*.spec.ts")
+                    )
+                    directory = legacy / {
+                        "tooling": "python",
+                        "frontend": "frontend",
+                        "e2e": "e2e",
+                    }.get(scope, "")
+                if any(path.is_file() for path in directory.rglob(pattern)):
+                    self.report(
+                        "Legacy application tests require explicit reconciliation into the central tests tree; existing files were preserved."
+                    )
+                    return ScopeResult(scope, "blocked", 1)
             if self.layout.owner == "runa":
                 return ScopeResult(scope, "blocked", 1)
             return ScopeResult(scope, "empty", 0)
@@ -244,12 +262,14 @@ class TestService:
         return ScopeResult(scope, "passed" if status == cleanup == 0 else "failed", status, cleanup)
 
     def execute(self, selection: Selection) -> int:
-        ownership_root = self.workspace.root / (
-            "src/app" if self.layout.owner == "application" else "tools/maintainer/tests/python"
+        ownership_roots = (
+            (self.workspace.root / "tests/tools/app", self.workspace.root / "src/app")
+            if self.layout.owner == "application"
+            else (self.workspace.root / "tests/tools/runa",)
         )
         for name in self.layout.python_roots:
             root = self.workspace.root / name
-            if not root.resolve().is_relative_to(ownership_root):
+            if not any(root.resolve().is_relative_to(base) for base in ownership_roots):
                 raise ValueError("Python discovery must remain within the selected owner's source.")
         for scope in selection.scopes:
             if not self.empty(scope, selection):

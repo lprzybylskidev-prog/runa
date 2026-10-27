@@ -20,6 +20,7 @@ from distribution.update_file_models import (
     FileReview,
     Ownership,
 )
+from tools.core.delivery import APPLICATION_TEST_ROOTS
 
 PRESERVED_FILES = {
     "src/composer.json",
@@ -63,7 +64,10 @@ def ownership(name: str) -> Ownership:
         return "owner-excluded"
     if name.startswith("src/runa/"):
         return "protected-platform"
-    if name.startswith(("src/app/", "docs/app/")) or name in PRESERVED_FILES:
+    if (
+        name.startswith(("src/app/", "docs/app/", *(root + "/" for root in APPLICATION_TEST_ROOTS)))
+        or name in PRESERVED_FILES
+    ):
         return "application"
     if (
         name in GENERATED

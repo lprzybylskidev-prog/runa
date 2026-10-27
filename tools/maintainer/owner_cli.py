@@ -71,7 +71,7 @@ def main() -> None:
             processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
 
             processes.run(
-                ["node", "src/runa/tools/testing/frontend.mjs"]
+                ["node", "tests/frontend/runa/acceptance/frontend.mjs"]
                 if area == "frontend"
                 else [
                     "python3",

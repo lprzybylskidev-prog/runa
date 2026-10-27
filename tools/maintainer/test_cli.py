@@ -13,11 +13,11 @@ from tools.maintainer.context import ROOT
 
 OWNER = TestLayout(
     "runa",
-    "runa/tests",
-    "runa/tests/phpunit.xml",
-    "runa/tests/vitest.config.mjs",
-    "runa/tests/playwright.config.mjs",
-    ("tools/maintainer/tests/python",),
+    "../tests/backend/runa",
+    "../tests/backend/runa/phpunit.xml",
+    "runa/frontend/vitest.config.mjs",
+    "runa/frontend/playwright.config.mjs",
+    ("tests/tools/runa",),
 )
 
 

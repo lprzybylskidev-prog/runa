@@ -62,12 +62,12 @@ services:
     environment:
       <<: *development-environment
       APP_ENV: testing
-      LARAVEL_STORAGE_PATH: /workspace/.runtime/src/runa/tests/e2e
+      LARAVEL_STORAGE_PATH: /workspace/.runtime/tests/frontend/runa/e2e
     command:
       [
         sh,
         -c,
-        'mkdir -p .runtime/src/runa/tests/e2e/framework/cache/data .runtime/src/runa/tests/e2e/framework/views .runtime/src/runa/tests/e2e/framework/sessions .runtime/src/runa/tests/e2e/logs && php artisan runa:test-db:guard && exec php-fpm -F',
+        'mkdir -p .runtime/tests/frontend/runa/e2e/framework/cache/data .runtime/tests/frontend/runa/e2e/framework/views .runtime/tests/frontend/runa/e2e/framework/sessions .runtime/tests/frontend/runa/e2e/logs && php artisan runa:test-db:guard && exec php-fpm -F',
       ]
     depends_on:
       postgres: { condition: service_healthy }

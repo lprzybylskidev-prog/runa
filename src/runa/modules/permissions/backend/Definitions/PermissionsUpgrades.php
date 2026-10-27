@@ -18,6 +18,7 @@ use Runa\Modules\Permissions\UpgradeAuthRefresh;
 use Runa\Modules\Permissions\UpgradeAuthSecondaryDetails;
 use Runa\Modules\Permissions\UpgradeCoreIntegration;
 use Runa\Modules\Permissions\UpgradeDevelopmentFixtures;
+use Runa\Modules\Permissions\UpgradeTestLayout;
 
 final class PermissionsUpgrades implements UpgradeProvider
 {
@@ -39,7 +40,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('auth_refresh', '0.5.8', '0.5.9', UpgradeAuthRefresh::class),
             new UpgradeDefinition('history_dependencies', '0.5.9', '0.5.10', UpgradeAuthRefresh::class),
             new UpgradeDefinition('history_capture_dependencies', '0.5.10', '0.5.11', UpgradeAuthRefresh::class),
-            new UpgradeDefinition('stable_release', '0.5.11', '1.0.0', UpgradeAuthRefresh::class)];
+            new UpgradeDefinition('stable_release', '0.5.11', '1.0.0', UpgradeAuthRefresh::class),
+            new UpgradeDefinition('central_test_layout', '1.0.0', '1.0.1', UpgradeTestLayout::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

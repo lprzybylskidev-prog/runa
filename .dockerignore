@@ -36,11 +36,11 @@ public/ui-review
 
 src/storage
 src/bootstrap/cache/*.php
-src/app/tests
+tests/backend/app
 src/app/modules/module_probe
 src/app/docs
 
-src/runa/tests
+tests/backend/runa
 src/runa/tools
 src/public/build
 src/public/runa-error
@@ -56,3 +56,10 @@ src/runa/Testing
 distribution/
 
 src/app/modules/reference
+
+# Central test trees are development-only.
+/tests
+
+# Earlier customer source layouts are excluded too.
+src/app/tests
+src/runa/tests

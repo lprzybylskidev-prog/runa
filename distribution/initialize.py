@@ -216,7 +216,7 @@ class CustomerSource:
                 "source": "customer-repository",
                 "mode": "prod",
                 "commit": sha,
-                "projection": {"version": 1, "excluded": list(bootstrap.OWNER_PATHS)},
+                "projection": {"version": 2, "excluded": list(bootstrap.OWNER_PATHS)},
             }
             marker = source / ".git/runa-bootstrap.json"
             marker.write_text(json.dumps(receipt, indent=2) + "\n")

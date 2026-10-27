@@ -353,6 +353,15 @@ This root owner contract governs receipt-free Runa maintenance; customer applica
 
 For every reusable rule or delivered capability change, assess root AGENTS/.agents/skills and the customer bundle under docs/runa/maintainer/customer-agent. Update affected products and their references in the same implementation point; record why an unaffected product needs no change. Customer guidance supports ordinary Laravel plus optional app modules and never authorizes protected platform edits. Customer authors maintain their local application guidance independently. Authoring templates are excluded from owner retrieval. Do not duplicate handbook procedures in skills.
 
+## Central test ownership
+
+Author tests in repository-root tests/backend, tests/frontend and tests/tools,
+using the app subtree for customer application tests and runa for private platform
+suites. Module cases use modules/<code> within their owning area. Reusable test
+infrastructure remains in its source package; private Runa suites are excluded
+from customer delivery and all tests from production images. Follow the public
+[testing guide](docs/runa/handbook/testing/strategy.md) for discovery/configuration.
+
 ## Supported commands and check completion
 
 The agent manually selects proportionate quality groups with repeated `--group=NAME`

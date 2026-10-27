@@ -2,6 +2,33 @@
 
 Tests protect behavior and meaningful regressions. Use feature tests for Laravel/application boundaries and unit tests for isolated logic. Cover success, known validation, authorization, conflicts, cancellation and relevant failure paths; avoid arbitrary coverage goals and tests that mirror implementation.
 
+## Central test layout
+
+All authored suites and their private fixtures live below repository-root `tests`
+(`/workspace/tests` in the development container):
+
+```text
+tests/
+  backend/{app,runa}/       # PHP Feature, Unit and modules/<code>
+  frontend/{app,runa}/      # unit, e2e and private acceptance fixtures
+  tools/{app,runa}/         # Python and tooling acceptance
+```
+
+Application developers own the `app` directories. Runa's private `runa` directories
+are excluded from customer acquisition. Reusable development infrastructure stays
+in `src/runa/Testing` and `tools/application/testing`; it is not a private suite.
+Runtime images omit the entire test tree and development dependencies. Laravel
+and frontend runner configuration stays beside its source/dependency manifests in
+`src`; PHPUnit's private owner configuration/bootstrap lives with its backend suite.
+Commands retain the `tooling` scope name; `tools` is the directory name.
+
+Existing customer test files are preserved during updates. Reconcile their paths,
+autoload and runner configuration explicitly; updates do not move authored tests
+or replace customer test configuration silently. A default scope that detects old
+cases instead of central cases reports blocked reconciliation, rather than
+claiming a successful empty suite. Legacy explicitly configured
+Python roots under `src/app` remain readable; new suites use the central roots.
+
 ## Default and focused commands
 
 `php artisan runa:test` (host `./bin/artisan runa:test`, recovery `./bin/test`)
@@ -35,7 +62,7 @@ reports retain their established paths. Setup/reopen never executes these suites
 
 ## PHP
 
-Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and src/app/tests/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes application tests; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in src/app/tests/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=app/tests`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
+Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
 
 Development installation and `runa:dev:initialize` explicitly prepare platform data in both the development database and the isolated base `runa_test` database through the forward-only platform preparation primitive. Application test execution then applies only application-owned migrations. After platform updates, refresh the development clone through initialization before running native application tests.
 
@@ -43,7 +70,7 @@ Run `php artisan runa:test --scope=backend --parallel`; TEST_WORKERS defaults to
 
 ## Frontend
 
-`php artisan runa:test:frontend` uses src/vitest.config.mjs and src/app/tests/frontend. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. Keep TypeScript strict; no known-payload any.
+`php artisan runa:test:frontend` uses src/vitest.config.mjs and tests/frontend/app/unit. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. Keep TypeScript strict; no known-payload any.
 
 ## Browser endpoint and startup
 
@@ -55,7 +82,7 @@ For a deliberately persistent manual endpoint, start it on the host:
 docker compose --env-file .env.dev.local -f compose.yaml -f .devcontainer/compose.resources.yaml --profile testing up -d --wait nginx-test
 ```
 
-Then run `php artisan runa:test:e2e` inside the development container. Existing manually provisioned endpoints are preserved by automatic host runs. Their operator owns their eventual scoped teardown. src/playwright.config.mjs selects only src/app/tests/e2e and targets real Nginx/PHP-FPM at http://nginx-test:8080, never artisan serve or the owner fixture harness. RUNA_E2E_BASE_URL may select another provisioned HTTP(S) application test endpoint. No data reset is performed by the browser runner.
+Then run `php artisan runa:test:e2e` inside the development container. Existing manually provisioned endpoints are preserved by automatic host runs. Their operator owns their eventual scoped teardown. src/playwright.config.mjs selects only tests/frontend/app/e2e and targets real Nginx/PHP-FPM at http://nginx-test:8080, never artisan serve or the owner fixture harness. RUNA_E2E_BASE_URL may select another provisioned HTTP(S) application test endpoint. No data reset is performed by the browser runner.
 
 Chromium, Firefox and mobile Chromium use one worker and fresh contexts. The retained --critical spelling runs the application suite; use normal Playwright filters for specific cases. HTML report, screenshots and failure traces live under .runtime/artifacts/playwright/application. Browser binaries are supplied by the development image; production contains no browser/test tooling.
 
@@ -77,22 +104,23 @@ Do not weaken tests to obtain PASS. Investigate behavior versus test/isolation d
 
 ## Python tooling and public test support
 
-Place application Python tests in `src/app/tests/python/test_*.py`; put reusable
+Place application Python tests in `tests/tools/app/test_*.py`; put reusable
 application tooling in `src/app/tooling` or an application module. Import it with
 qualified workspace package names. For additional module/test roots, author
 `src/app/testing.json`, for example:
 
 ```json
 {
-  "schema_version": 1,
-  "python_roots": ["tests/python", "modules/example/tests/python"]
+  "schema_version": 2,
+  "python_roots": [".", "modules/example"]
 }
 ```
 
-Roots are explicit paths relative to `src/app`; escapes, duplicates and symlink
-redirection outside application source are refused. Absent configuration retains
+Schema 2 roots are explicit paths relative to `tests/tools/app`; escapes, duplicates
+and symlink redirection outside application ownership are refused. Schema 1 retains
+its existing `src/app`-relative meaning for configured customer projects. Absent configuration retains
 the default root. Configuration registers source paths, never executable commands.
-`runa:test:python --path=src/app/tests/python/test_example.py::test_case` selects a
+`runa:test:python --path=tests/tools/app/test_example.py::test_case` selects a
 file/node within those roots; `--collect-only` inspects tooling discovery.
 Shared pytest configuration enforces importlib discovery and strict registered
 markers. Docker/network/knowledge/database/packaging scenarios require explicit
@@ -114,3 +142,12 @@ errors and optionally the documented anonymous-session probe exception, without
 starting a browser. These helpers are development-only. Application tests,
 fixtures, discovery configuration and tooling remain customer-owned and are
 reconciled through reviewed updates; protected Runa helpers are consumed directly.
+
+Frontend tests import the existing public Vue facade as before. Import mount and
+Vue Test Utils helpers from `@runa/testing/vue`, and Vitest functions from `@runa/testing/vitest` so their dependencies resolve from
+the shared development source context. E2E tests can
+import `test`, `expect` and Playwright types from `@runa/testing/playwright`; the
+shared tsconfig/configuration resolves the installed container dependencies in
+`src/node_modules`. Vitest configurations use those same Vue/Vitest/test-utils
+instances for central files, without a second dependency install or import-path
+injection.

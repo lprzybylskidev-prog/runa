@@ -9,7 +9,7 @@ selected graph only after the owner's explicit frontend appearance acceptance.
 
 ## Backend and integration
 
-Paths in this table are relative to `src/runa/tests/Feature`. The normal owner
+Paths in this table are relative to `tests/backend/runa/Feature`. The normal owner
 backend suite discovers these tests; `core-integration` groups the focused Core
 composition cases without replacing the full suite. Real PostgreSQL transactions,
 separate worker processes and deliberate Audit write failures provide lock/rollback
@@ -41,14 +41,14 @@ evidence; frontend request interception does not provide that evidence.
 
 ## Rendered Auth and delivery
 
-- `src/runa/tests/frontend/auth-entry.test.ts` prepares the full verification →
+- `tests/frontend/runa/unit/auth-entry.test.ts` prepares the full verification →
   factor → password restriction sequence, mandatory TOTP choice, explicit token
   submission/private fragment cleanup, late-response cancellation and CSRF retry.
-- `src/runa/tests/frontend/auth-account.test.ts` prepares safe memory-only drafts,
+- `tests/frontend/runa/unit/auth-account.test.ts` prepares safe memory-only drafts,
   same/different-account reauthentication, no write replay, revision conflicts,
   polling versus activity, profile/dropdown logout, secondary-address edits and
   private factor material acknowledgement/cleanup.
-- `src/runa/tests/e2e/auth-entry.spec.ts` prepares rendered login keyboard/error
+- `tests/frontend/runa/e2e/auth-entry.spec.ts` prepares rendered login keyboard/error
   feedback at desktop/tablet/phone sizes in both themes on every configured browser
   project; entry token flows cover PL/EN, reduced motion, private fragment removal
   and no automatic POST. `auth-account.spec.ts` prepares the same size/theme matrix
@@ -63,12 +63,12 @@ evidence; frontend request interception does not provide that evidence.
   preferences, enabled avatar/history and private factor controls. Never record
   private credentials/proofs in screenshots/reports. Appearance acceptance is the
   owner's explicit decision; automated rendering does not replace it.
-- `tools/maintainer/tests/python/contracts/test_bootstrap.py` prepares actual authored customer
+- `tests/tools/runa/contracts/test_bootstrap.py` prepares actual authored customer
   AGENTS/skills acquisition with and without reference module, sparse reapply and
   teammate clone. Backend/Laravel/PostgreSQL/security retain manual Audit guidance;
   those products plus frontend must carry Auth/profile/preferences/operator,
   Permissions/authority and corpus guide references. Owner instructions never ship.
-- `tools/maintainer/tests/python/contracts/test_update.py` prepares reviewed instruction changes while
+- `tests/tools/runa/contracts/test_update.py` prepares reviewed instruction changes while
   preserving customer root/domain extensions, including frontend. The execution
   case `test_reviewed_non_platform_add_replace_remove_and_instruction_preservation`
   in `update-execution.py` protects actual publication/reconciliation behavior.

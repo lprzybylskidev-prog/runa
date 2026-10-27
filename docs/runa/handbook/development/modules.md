@@ -48,7 +48,7 @@ editing the protected catalogue.
 ./bin/artisan runa:modules:check app
 ./bin/artisan runa:modules:sync app
 ./bin/artisan runa:modules:check app --runtime
-./bin/artisan runa:test --scope=backend app/modules/documents/tests
+./bin/artisan runa:test --scope=backend ../tests/backend/app/modules/documents
 python3 tools/application/module_versions.py --owner app --base main
 ```
 
@@ -56,7 +56,7 @@ Static mode does not need registry synchronization or execute module classes. It
 
 `Runa\Support\Modules\Development\ModuleContractSuite::source(moduleId)` is reusable in module tests. Runtime `runtime(ModuleRecord)` checks synchronized declaration ownership/interfaces/schema versions through normal resolvers, lifecycle plans, health definitions, typed APIs, HTTP endpoints, jobs/commands/events, settings defaults, frontend pages, data paths and upgrade descriptors. It loads trusted pure metadata only; it never invokes lifecycle preparation, health checks, business APIs/jobs, settings application or upgrade handlers. Runtime descriptor failure returns a bounded safe code. Slot/schedule/management/integration providers are interface-checked and their metadata read; full contextual validation still occurs in their normal runtime adapters and dedicated platform regression tests.
 
-Generated app tests explicitly use the delivered Tests\TestCase; owner tests use the owner PlatformTestCase. Run owner module tests with the owner bootstrap/configuration and their explicit path. Module tests are not automatically added to ordinary app test discovery; wire the relevant module paths into your application's test command/configuration. The generated source test does not replace module-specific health/lifecycle/work/storage/API/settings/event/frontend/update behavior tests. Existing platform regressions cover framework guarantees; a new module needs its own observable success/failure cases and concurrency checks where applicable.
+Generated app tests explicitly use the delivered Tests\TestCase; owner tests use the owner PlatformTestCase. Run owner module tests with the owner bootstrap/configuration and their explicit path. Module PHP tests under tests/backend/app/modules/<code> are included in ordinary application discovery. The generated source test does not replace module-specific health/lifecycle/work/storage/API/settings/event/frontend/update behavior tests. Existing platform regressions cover framework guarantees; a new module needs its own observable success/failure cases and concurrency checks where applicable.
 
 Literal checks are deliberately pragmatic. Aliases, dynamic class/path/SQL construction, raw fully-qualified facade calls, reflection and external effects can evade them. They cannot prove semantic isolation, SQL safety, complete entrypoint classification or backwards compatibility. Review changed module entrypoints and data/contract boundaries; use runtime fences/adapters, PostgreSQL constraints and module-specific tests together. Never describe these checks as a sandbox.
 
@@ -112,3 +112,14 @@ public contract, independent module version/changelog, owner/customer skills and
 meaningful default/custom consumer/update/clone regressions in the owning point.
 When a view participates in native/emergency errors, preserve the shared static
 CSP-constrained presentation build as well as normal browser composition.
+
+## Central module tests
+
+Generated test files live in `tests/backend/<owner>/modules/<code>`; frontend and
+Python cases use `tests/frontend/<owner>/modules/<code>` and
+`tests/tools/<owner>/modules/<code>` with their owning runner configuration.
+Manifest `tests` paths for new modules are repository-root metadata constrained
+to that module's own central roots. They do not require test files in production
+or load test code during discovery. Existing module-relative `tests` declarations
+retain their prior ownership checks. Generator previews and exact overwrite
+hashes cover central test files, with owner/receipt and symlink guards unchanged.

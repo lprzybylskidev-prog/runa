@@ -51,8 +51,8 @@ ordinary qualified imports. Native acceptance runs through fixed package modules
 Obsolete filename adapters have been removed; the original ledger and scenario
 map retain their baseline identities.
 
-Default scopes are unit and contracts. Repeat `--scope`, use a `--filter` pytest
-keyword expression, or provide one `--path` relative to `tests/python` (including
+Private cases and support live in tests/tools/runa, with native acceptance under acceptance. Default scopes are unit and contracts. Repeat `--scope`, use a `--filter` pytest
+keyword expression, or provide one `--path` relative to `tests/tools/runa` (including
 its scope directory, optionally followed by `::node`). Unknown scopes, escaping
 paths and files outside selected scopes are refused before delegation. Docker,
 network, knowledge, database and packaging markers are excluded by default; select
@@ -139,3 +139,10 @@ identity, not a retained source adapter or a second executor implementation.
 Serialized deployment journals, receipts and quality evidence retain their
 compatibility/read policies. Native PHP/JS runners and source-owned command
 registries remain unchanged.
+
+Central test relocation changes Python imports to `tests.tools.runa`. Owner wheel
+metadata declares the inert parent test packages and private support/acceptance
+resources explicitly. The application wheel contains reusable tooling support,
+without private cases. Customer source acquisition excludes each runa subtree
+under tests; old exact projection-1 receipts remain readable while new acquisitions
+record projection 2. Both versions refuse materialized private central test roots.

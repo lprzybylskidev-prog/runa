@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.setuptools]
-packages = ["tools.maintainer", "tools.maintainer.localization", "tools.maintainer.testing", "tools.maintainer.tests", "tools.maintainer.tests.python", "tools.maintainer.tests.python.support", "tools.maintainer.tests.python.unit", "tools.maintainer.tests.python.contracts", "tools.maintainer.tests.python.integration", "tools.maintainer.tests.python.e2e"]
+packages = ["tools.maintainer", "tools.maintainer.localization", "tests.tools.runa.acceptance", "tests", "tests.tools", "tests.tools.runa", "tests.tools.runa.support", "tests.tools.runa.unit", "tests.tools.runa.contracts", "tests.tools.runa.integration", "tests.tools.runa.e2e"]
 include-package-data = false
 
 [tool.setuptools.dynamic]
@@ -18,4 +18,4 @@ version = {file = "VERSION"}
 
 [tool.setuptools.package-data]
 "tools.maintainer" = ["hook", "knowledge.json", "knowledge-golden.json", "python/ruff.toml", "python/pyrightconfig.json"]
-"tools.maintainer.testing" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php"]
+"tests.tools.runa.acceptance" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php"]

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.auth",
   "kind": "core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "platform": ">=0.4.2 <0.6.0",
   "framework_api": "^1.0.0",
   "name": {
@@ -10,7 +10,7 @@
     "en": "Authentication"
   },
   "description": {
-    "pl": "Tożsamości użytkowników i niezależny cykl życia kont.",
+    "pl": "To\u017csamo\u015bci u\u017cytkownik\u00f3w i niezale\u017cny cykl \u017cycia kont.",
     "en": "Human identities and independent account lifecycle."
   },
   "dependencies": {
@@ -52,5 +52,5 @@
     "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/auth/README.md"],
-  "tests": ["tests"]
+  "tests": ["tests/backend/runa/modules/auth"]
 }

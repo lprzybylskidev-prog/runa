@@ -85,6 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "tools/core",
                 "tools/application",
                 "src/app",
+                "tests/tools/app",
             )
     return PythonToolExecutor(workspace, runner, env).execute(command)
 

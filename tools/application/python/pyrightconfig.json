@@ -2,7 +2,8 @@
   "include": [
     "../../../tools/core",
     "../../../tools/application",
-    "../../../src/app"
+    "../../../src/app",
+    "../../../tests/tools/app"
   ],
   "exclude": [
     "../../../.runtime",

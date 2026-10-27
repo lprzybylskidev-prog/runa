@@ -38,6 +38,7 @@ use Runa\Modules\Auth\UpgradeSecondaryDetails;
 use Runa\Modules\Auth\UpgradeSessions;
 use Runa\Modules\Auth\UpgradeSessionSorting;
 use Runa\Modules\Auth\UpgradeShellAvatar;
+use Runa\Modules\Auth\UpgradeTestLayout;
 use Runa\Modules\Auth\UpgradeTotpQr;
 use Runa\Modules\Auth\UpgradeUserPanel;
 use Runa\Modules\Auth\UpgradeWelcomeHeader;
@@ -101,7 +102,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('history_details', '0.21.15', '0.22.0', UpgradeFactorSpacing::class),
             new UpgradeDefinition('concrete_history', '0.22.0', '0.23.0', UpgradeFactorSpacing::class),
             new UpgradeDefinition('registration_confirmation', '0.23.0', '0.23.1', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('stable_release', '0.23.1', '1.0.0', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('stable_release', '0.23.1', '1.0.0', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('central_test_layout', '1.0.0', '1.0.1', UpgradeTestLayout::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string
