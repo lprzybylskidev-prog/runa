@@ -256,6 +256,13 @@ lists. The isolated module planner validates its returned records, including PHP
 empty associative maps, and shares one injected process policy with its cleanup.
 These contracts remain internal to the separately supplied external bundle and
 canonical core.
+Execution declares its runtime factory, planner/consent inputs, report and recovery
+records separately from read-only planning. Resume validates consumed source,
+review, database baseline and module-completion fields before source/data changes;
+unknown evidence and legacy absent optional records remain preserved. Database
+mount identities use JSON lists throughout capture and durable storage, so the
+same mounts remain comparable after restart. A different database still blocks
+resume, and committed data completion is never silently replayed.
 External preflight also declares its acquisition/runtime/lock/module probe contracts,
 release identity projection, plan and report fields. Request-local probe overrides
 leave the planner's composed dependencies intact. Blocked reports retain completed

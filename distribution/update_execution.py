@@ -7,9 +7,11 @@ import shutil
 import stat
 import tempfile
 import uuid
-from contextlib import contextmanager
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import AbstractContextManager, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Unpack
 
 from distribution import bootstrap, update_customization, update_files, update_runtime
 from distribution import update_planning as update
@@ -23,31 +25,32 @@ from distribution.update_contracts import (
     supports,
 )
 from distribution.update_docker import DockerRuntime
-from distribution.update_file_models import file_journal
+from distribution.update_execution_models import (
+    CompletedModuleStep,
+    ExecutionJournal,
+    ExecutionOptions,
+    ExecutionReport,
+    Preflight,
+    RuntimeFactory,
+    UpdateRuntime,
+    baseline_metadata,
+    execution_journal,
+    journal_review,
+)
+from distribution.update_file_models import CustomizationReview
+from distribution.update_models import DatabaseMetadata, SeedRun
+from distribution.update_plan_models import LockProbe, PreflightReport, ReleaseDownload
 from tools.core.reporting import SafeFailure
+from tools.core.state import json_value
 
 SEEDER = "Runa\\Database\\Seeders\\DatabaseSeeder"
-STEPS = (
-    "planned",
-    "preflight-passed",
-    "customization-reviewed",
-    "maintenance",
-    "source-replaced",
-    "staged/built",
-    "platform-migrations",
-    "platform-seeders/upgrades",
-    "platform-modules",
-    "switch",
-    "health",
-    "completed",
-)
 
 
-def stamp():
+def stamp() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def private_directory(path):
+def private_directory(path: Path) -> None:
     if any(item.is_symlink() for item in [path, *path.parents]):
         raise Blocker("unsafe-operation-state", "Update state must not traverse symlinks.")
     path.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -58,14 +61,14 @@ def private_directory(path):
         )
 
 
-def atomic(path, value):
+def atomic(path: Path, value: object) -> None:
     from tools.core.state import JsonStore, StateDirectory
 
-    JsonStore(StateDirectory(path.parent, anchor=path.parent)).write(path.name, value)
+    JsonStore(StateDirectory(path.parent, anchor=path.parent)).write(path.name, json_value(value))
 
 
 @contextmanager
-def lock(root):
+def lock(root: Path) -> Iterator[Path]:
     from tools.core.state import FileLock, StateDirectory
 
     state = root / ".runtime/production"
@@ -82,7 +85,7 @@ def lock(root):
         ) from None
 
 
-def read_journal(root, client, tag):
+def read_journal(root: Path, client: bootstrap.GitHub, tag: str) -> ExecutionJournal:
     name = ".runtime/production/in-progress.json"
     path = root / name
     value = document(root, name, 2 * 1024**2)
@@ -90,42 +93,17 @@ def read_journal(root, client, tag):
         raise Blocker(
             "unsafe-operation-state", "Update journal must be private and operator-owned."
         )
-    if (
-        value.get("schema_version") != 1
-        or value.get("kind") != "development-update"
-        or value.get("root") != str(root)
-        or value.get("repository") != client.repository.lower()
-        or value.get("target", {}).get("tag") != tag
-        or not re.fullmatch("[a-f0-9]{32}", value.get("id", ""))
-        or not re.fullmatch("[a-z0-9][a-z0-9_-]{0,127}", value.get("project", ""))
-        or not isinstance(value.get("baseline"), dict)
-        or value.get("phase") not in (*STEPS, "source-replacing")
-        or not isinstance(value.get("completed"), list)
-        or any(step not in STEPS for step in value["completed"])
-    ):
-        raise Blocker(
-            "journal-identity",
-            "Pending operation is not this development update; preserve its evidence.",
-        )
-    for key in ("original", "target"):
-        identity = value.get(key, {})
-        if (
-            not re.fullmatch(bootstrap.TAG, identity.get("tag", ""))
-            or not re.fullmatch(bootstrap.SHA, identity.get("commit", ""))
-            or not re.fullmatch(bootstrap.SHA, identity.get("tag_object", ""))
-        ):
-            raise Blocker("journal-identity", "Update release identities are invalid.")
-    file_journal(value)
-    return value
+    return execution_journal(value, root, client.repository, tag)
 
 
-def target_inputs(root, target):
+def target_inputs(root: Path, target: Path) -> None:
     application = document(root, "src/app/application.json")
+    version = application.get("version")
     if (
         type(application.get("schema_version")) is not int
         or application.get("schema_version") != 1
-        or not isinstance(application.get("version"), str)
-        or not re.fullmatch(SEMVER, application["version"])
+        or not isinstance(version, str)
+        or not re.fullmatch(SEMVER, version)
         or not supports(application.get("runa"), platform(target))
     ):
         raise Blocker(
@@ -147,7 +125,7 @@ def target_inputs(root, target):
             )
 
 
-def move(source, destination):
+def move(source: Path, destination: Path) -> None:
     os.rename(source, destination)
     for parent in (source.parent, destination.parent):
         descriptor = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
@@ -157,7 +135,7 @@ def move(source, destination):
             os.close(descriptor)
 
 
-def stage_shape(operation):
+def stage_shape(operation: Path) -> None:
     for child in operation.iterdir():
         if (
             child.name not in ("incoming", "previous", "project-files")
@@ -183,7 +161,12 @@ def stage_shape(operation):
                 )
 
 
-def references(client, journal, directory, download):
+def references(
+    client: bootstrap.GitHub,
+    journal: ExecutionJournal,
+    directory: Path,
+    download: ReleaseDownload,
+) -> tuple[Path, Path]:
     result = []
     for key in ("original", "target"):
         root = directory / key
@@ -200,10 +183,12 @@ def references(client, journal, directory, download):
                 "Independently acquired release identity changed; preserve the update journal.",
             )
         result.append(root)
-    return result
+    return result[0], result[1]
 
 
-def source_state(root, operation, original, target, journal):
+def source_state(
+    root: Path, operation: Path, original: Path, target: Path, journal: ExecutionJournal
+) -> str:
     incoming, previous = operation / "incoming", operation / "previous"
     for name, expected in ((incoming, target), (previous, original)):
         path = name / "src/runa"
@@ -244,32 +229,35 @@ def source_state(root, operation, original, target, journal):
 
 
 def execute(
-    value,
-    client,
-    tag,
+    value: str | Path,
+    client: bootstrap.GitHub,
+    tag: str,
     *,
-    resume=False,
-    choice=None,
-    fingerprint=None,
-    toolchain="runa-development:dev",
-    expected_commit=None,
-    download=bootstrap.acquire,
-    runtime_factory=DockerRuntime,
-    lock_probe=update_runtime.validate_locks,
-    choose=None,
-    planner=update.preflight,
-):
-    report = {
+    resume: bool = False,
+    choice: str | None = None,
+    fingerprint: str | None = None,
+    toolchain: str = "runa-development:dev",
+    expected_commit: str | None = None,
+    download: ReleaseDownload = bootstrap.acquire,
+    runtime_factory: RuntimeFactory = DockerRuntime,
+    lock_probe: LockProbe = update_runtime.validate_locks,
+    choose: Callable[[CustomizationReview], str | None] | None = None,
+    planner: Preflight = update.preflight,
+) -> ExecutionReport:
+    report: ExecutionReport = {
         "schema_version": 1,
         "mode": "resume" if resume else "apply",
         "dry_run": False,
         "status": "blocked",
         "checks": [],
     }
-    journal = None
-    runtime = None
-    root = None
-    locked = None
+    journal: ExecutionJournal | None = None
+    runtime: UpdateRuntime | None = None
+    root: Path | None = None
+    locked: AbstractContextManager[Path] | None = None
+    snapshot: PreflightReport | None = None
+    approved: str | None = None
+    review: CustomizationReview | None = None
     mutation_started = False
     try:
         root = update.installation(value, allow_pending=resume)
@@ -291,10 +279,12 @@ def execute(
             )
             if snapshot["status"] != "ready":
                 return {**snapshot, "mode": "apply", "dry_run": False}
-            report["customization_review"] = snapshot["customization_review"]
-            if snapshot["plan"]["no_op"]:
+            review, plan = snapshot.get("customization_review"), snapshot.get("plan")
+            if review is None or plan is None:
+                raise ValueError("Incomplete ready update preflight.")
+            report["customization_review"] = review
+            if plan["no_op"]:
                 return {**report, "status": "completed", "no_op": True}
-            review = snapshot["customization_review"]
             if fingerprint is not None and fingerprint != review["fingerprint"]:
                 raise Blocker(
                     "customization-changed",
@@ -341,16 +331,29 @@ def execute(
             )
             if fresh["status"] != "ready":
                 return {**fresh, "mode": "apply", "dry_run": False}
-            if any(
-                fresh[key] != snapshot[key]
-                for key in ("installed_release", "target_release", "customization_review")
+            assert snapshot is not None and review is not None
+            installed_release = fresh.get("installed_release")
+            target_release = fresh.get("target_release")
+            runtime_summary = fresh.get("runtime")
+            fresh_plan = fresh.get("plan")
+            if (
+                installed_release is None
+                or target_release is None
+                or runtime_summary is None
+                or fresh_plan is None
+            ):
+                raise ValueError("Incomplete ready update preflight.")
+            if (
+                installed_release != snapshot.get("installed_release")
+                or target_release != snapshot.get("target_release")
+                or fresh.get("customization_review") != review
             ):
                 raise Blocker(
                     "preflight-changed",
                     "Source/review changed before the exclusive lock; inspect a fresh plan.",
                 )
             runtime.manual()
-            runtime.bind(fresh["runtime"]["project"])
+            runtime.bind(runtime_summary["project"])
             baseline = runtime.metadata()
             journal = {
                 "schema_version": 1,
@@ -358,14 +361,14 @@ def execute(
                 "id": uuid.uuid4().hex,
                 "root": str(root),
                 "repository": client.repository.lower(),
-                "project": fresh["runtime"]["project"],
-                "baseline": baseline,
-                "original": fresh["installed_release"],
-                "target": fresh["target_release"],
-                "module_plan": fresh["plan"].get("modules", []),
+                "project": runtime_summary["project"],
+                "baseline": baseline_metadata(baseline),
+                "original": installed_release,
+                "target": target_release,
+                "module_plan": fresh_plan.get("modules", []),
                 "phase": "planned",
                 "completed": ["planned", "preflight-passed", "customization-reviewed"],
-                "review": review,
+                "review": journal_review(review),
                 "decision": approved,
                 "file_actions": update_files.actions(review),
                 "file_action_history": [],
@@ -412,7 +415,7 @@ def execute(
                     )
                 update_files.renew_actions(reviewed, journal)
                 journal["decision"] = update_customization.decision(reviewed, choice)
-                journal["review"] = reviewed
+                journal["review"] = journal_review(reviewed)
                 atomic(pending, journal)
             elif choice == "abort":
                 raise Blocker(
@@ -433,7 +436,7 @@ def execute(
             metadata = runtime.metadata()
             baseline = journal["baseline"]
 
-            def pairs(rows):
+            def pairs(rows: Sequence[SeedRun]) -> set[tuple[str, str]]:
                 return {(row["release_sha"], row["seeder"]) for row in rows}
 
             if json.dumps(baseline.get("database_mounts"), sort_keys=True) != json.dumps(
@@ -451,7 +454,9 @@ def execute(
                     "Previously recorded platform data/history is missing; do not adopt a different database.",
                 )
 
-            def module_records(rows):
+            def module_records(
+                rows: Sequence[CompletedModuleStep],
+            ) -> set[tuple[str, str, str, str]]:
                 return {
                     (row["module"], row["step"], row["fingerprint"], row["status"]) for row in rows
                 }
@@ -472,8 +477,12 @@ def execute(
                         "Recorded completed module steps are missing or changed.",
                     )
                 for module in journal.get("module_plan", []):
-                    actual = metadata.get("modules", {}).get(module["module"], {})
-                    if actual.get("installed") != module["to"] or not actual.get("registered"):
+                    actual = metadata.get("modules", {}).get(module["module"])
+                    if (
+                        actual is None
+                        or actual["installed"] != module["to"]
+                        or not actual["registered"]
+                    ):
                         raise Blocker(
                             "module-version-mismatch",
                             "Recorded completed module installed version is missing or changed.",
@@ -487,10 +496,11 @@ def execute(
                     "Database contains platform migration history absent from the verified target.",
                 )
 
-            def seed_done(value):
+            target_commit = journal["target"]["commit"]
+
+            def seed_done(value: DatabaseMetadata) -> bool:
                 return any(
-                    row.get("release_sha") == journal["target"]["commit"]
-                    and row.get("seeder") == SEEDER
+                    row.get("release_sha") == target_commit and row.get("seeder") == SEEDER
                     for row in value["seed_runs"]
                 )
 
@@ -507,11 +517,13 @@ def execute(
                     "Recorded required seed completion is missing from the database.",
                 )
 
-            def begin(step):
+            def begin(step: str) -> None:
+                assert journal is not None
                 journal.update(phase=step, state="running", updated_at=stamp())
                 atomic(pending, journal)
 
-            def done(step):
+            def done(step: str) -> None:
+                assert journal is not None
                 if step not in journal["completed"]:
                     journal["completed"].append(step)
                 journal.update(updated_at=stamp())
@@ -637,6 +649,7 @@ def execute(
         try:
             if report["status"] != "completed" and journal is not None:
                 if mutation_started:
+                    assert root is not None and runtime is not None
                     journal.update(
                         state="interrupted" if report["status"] == "interrupted" else "failed",
                         updated_at=stamp(),
@@ -659,11 +672,19 @@ def execute(
 
 
 class UpdateExecutor:
-    def __init__(self, planner, *, runtime_factory=DockerRuntime):
+    def __init__(
+        self, planner: update.UpdatePlanner, *, runtime_factory: RuntimeFactory = DockerRuntime
+    ) -> None:
         self.planner = planner
         self.runtime_factory = runtime_factory
 
-    def execute(self, workspace, client, tag, **options):
+    def execute(
+        self,
+        workspace: str | Path,
+        client: bootstrap.GitHub,
+        tag: str,
+        **options: Unpack[ExecutionOptions],
+    ) -> ExecutionReport:
         return execute(
             workspace,
             client,

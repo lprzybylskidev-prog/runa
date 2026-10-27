@@ -438,5 +438,19 @@ isolation and partial blocked reports without live Docker/data operations. Exist
 external source projection includes the authored model module automatically. Owner/
 customer instruction products already document typed injected boundaries and guarded
 recovery; these internal types introduce no public extension API or new authority.
-Bootstrap/initialization, update execution, knowledge and remaining private case
-annotations stay open, followed by full caller/resource/inline reconciliation.
+Bootstrap/initialization, knowledge and remaining private case annotations stay
+open, followed by full caller/resource/inline reconciliation.
+
+External execution now declares runtime/factory, planner/consent, options, report
+and consumed journal contracts in `distribution/update_execution_models.py`.
+Resume validates consumed release/review/database/module fields before source/data
+mutation, retains unknown nested evidence and accepts legacy omitted optional lists.
+Database mount capture uses JSON lists instead of tuples, matching durable state
+validation and preserving exact identity comparison after restart. Focused cases
+cover malformed-journal refusal without rewriting it, legacy/extra evidence,
+changed mounts, interrupted directory switches, exact releases, customization
+consent and committed-seed non-replay. A recording runner captures nonempty bind/
+volume metadata through the real runtime decoder and durable writer without Docker.
+Existing package projection includes the authored module; no resource exclusion,
+dependency or customer extension API changes. Full strict analysis and broad/live
+acceptance remain in point 10.

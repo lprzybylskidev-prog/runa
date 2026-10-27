@@ -92,7 +92,7 @@ class DatabaseMetadata(TypedDict):
     seed_runs: list[SeedRun]
     modules: dict[str, ModuleRecord]
     module_steps: list[ModuleStep]
-    database_mounts: NotRequired[list[tuple[str, str, str]]]
+    database_mounts: NotRequired[list[list[str]]]
 
 
 class RuntimeSnapshot(DatabaseMetadata):

@@ -83,16 +83,7 @@ class RuntimeSummary(TypedDict):
     services: list[str]
 
 
-class PreflightReport(TypedDict):
-    schema_version: int
-    mode: Literal["preflight"]
-    dry_run: bool
-    status: Literal["blocked", "ready"]
-    checks: list[PreflightCheck]
-    execution_available: bool
-    mismatches: list[SourceChange]
-    temporary_downloads: list[str]
-    temporary_downloads_cleaned: bool
+class PreflightDetails(TypedDict):
     installed_version: NotRequired[str]
     target_version: NotRequired[str]
     installed_release: NotRequired[ReleaseIdentity]
@@ -103,6 +94,18 @@ class PreflightReport(TypedDict):
     runtime: NotRequired[RuntimeSummary]
     plan: NotRequired[UpdatePlan]
     customization_review: NotRequired[CustomizationReview]
+
+
+class PreflightReport(PreflightDetails):
+    execution_available: bool
+    mismatches: list[SourceChange]
+    temporary_downloads: list[str]
+    temporary_downloads_cleaned: bool
+    schema_version: int
+    mode: Literal["preflight"]
+    dry_run: bool
+    status: Literal["blocked", "ready"]
+    checks: list[PreflightCheck]
 
 
 def release_identity(value: Mapping[str, object]) -> ReleaseIdentity:

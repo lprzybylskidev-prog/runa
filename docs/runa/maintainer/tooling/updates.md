@@ -13,6 +13,16 @@ have separate modules; none imports the command adapter. Source/data journal pha
 remain compatible. The 0.5.0-to-0.6.0 updater reads verified source/metadata and uses
 PHP/database processes; it never imports either customer Python release.
 
+Execution has explicit runtime, planner, consent, journal and report contracts.
+Before resumed source/data work it validates consumed release identities, review
+fields, migration/seed baseline, database mounts and module-completion records.
+Malformed evidence produces a fixed blocking diagnostic and remains untouched.
+Unknown evidence is preserved, including nested baseline/review additions; optional
+legacy module/action lists and manual-reconciliation metadata may remain absent.
+Database mount identities are JSON lists when captured and stored, preserving
+comparison across restart; a changed database still refuses resume. No journal
+validation authorizes repair, source adoption or replay of committed data work.
+
 Preflight declares typed acquisition/runtime/lock/module probe inputs and results,
 release identities, plans and reports. Only the consumed tag/commit/tag-object fields
 from acquisition enter the report; additional receipt metadata is not published.

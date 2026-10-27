@@ -83,7 +83,7 @@ class DockerRuntime:
                 "runtime-ownership", "Database container does not belong to this checkout/project."
             )
         mounts = sorted(
-            (item["Type"], item.get("Name") or item["Source"], item["Destination"])
+            [item["Type"], item.get("Name") or item["Source"], item["Destination"]]
             for item in actual.get("Mounts", [])
             if item["Type"] in ("bind", "volume")
         )

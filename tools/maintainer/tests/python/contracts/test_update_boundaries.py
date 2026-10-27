@@ -12,6 +12,7 @@ from distribution import update_runtime
 from distribution.processes import ExternalProcesses
 from distribution.update_contracts import Blocker, document
 from distribution.update_docker import DockerRuntime
+from distribution.update_execution import atomic
 from distribution.update_models import (
     available_metadata,
     compose_configuration,
@@ -176,6 +177,17 @@ def test_runtime_probes_and_database_metadata_share_the_injected_transport(tmp_p
             }
         ]
     ).encode()
+    database_inspection = json.loads(inspection)
+    database_inspection[0]["Mounts"] = [
+        {
+            "Type": "volume",
+            "Name": "fixture-data",
+            "Source": "/host/data",
+            "Destination": "/database",
+            "RW": True,
+        },
+        {"Type": "bind", "Source": "/host/config", "Destination": "/config", "RW": False},
+    ]
     database = b'{"migrations":["initial"],"seed_runs":[]}'
     optional = b'{"modules":false,"steps":false}'
     runner = RecordingRunner(
@@ -195,7 +207,7 @@ def test_runtime_probes_and_database_metadata_share_the_injected_transport(tmp_p
                 ProcessResult(0, database),
                 ProcessResult(0, optional),
                 ProcessResult(0, b"fixture"),
-                ProcessResult(0, inspection),
+                ProcessResult(0, json.dumps(database_inspection).encode()),
                 ProcessResult(0, database),
                 ProcessResult(0, optional),
             ]
@@ -222,7 +234,14 @@ def test_runtime_probes_and_database_metadata_share_the_injected_transport(tmp_p
     assert snapshot["project"] == "fixture" and snapshot["migrations"] == ["initial"]
     assert snapshot["modules"] == {} and snapshot["module_steps"] == []
     metadata = runtime.metadata()
-    assert metadata["migrations"] == ["initial"] and metadata["database_mounts"] == []
+    assert metadata["migrations"] == ["initial"]
+    assert metadata["database_mounts"] == [
+        ["bind", "/host/config", "/config"],
+        ["volume", "fixture-data", "/database"],
+    ]
+    evidence = tmp_path / "operation" / "metadata.json"
+    atomic(evidence, metadata)
+    assert json.loads(evidence.read_text()) == metadata
     assert not runner.outcomes
     for call in runner.calls:
         assert call.stdin is InputMode.CLOSED and call.output is OutputMode.CAPTURE

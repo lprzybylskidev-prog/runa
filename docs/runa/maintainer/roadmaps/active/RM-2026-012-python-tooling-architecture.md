@@ -1655,6 +1655,47 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   changed. No container/network/image/volume was created or removed. Active
   development/test data, knowledge/model caches, backups and reports are preserved.
 
+#### Point 9 continuation — external execution and recovery records (2026-10-27)
+
+- Typed update runtime/factory, planner, consent/options, report, file-journal and
+  consumed release/review/database/module recovery contracts. Planning and apply
+  share report detail records without changing serialized fields or mode semantics.
+  Per-operation state and runtime dependencies remain explicit; ready preflight
+  inputs are checked before use and repeated under the existing exclusive lock.
+- Resume validates consumed journal types before source/data mutation, including
+  boolean schema-version refusal, source-transition proof, migrations/seeds,
+  three-part database mount identities, review fields and module-completion rows.
+  Fixed diagnostics retain malformed evidence without rewriting or re-fencing it.
+  Unknown top-level/nested baseline/review evidence and legacy absent optional
+  module/action/manual-reconciliation records remain supported.
+- Found and corrected a concrete capture/storage mismatch: Docker metadata used
+  tuples for database mounts, while the core JSON writer accepts lists. Capture now
+  uses JSON lists, preserving serialized identities and refusal of a changed
+  database. The recording-runner case covers actual nonempty bind/volume capture
+  through the decoder and durable writer; it starts no Docker resource.
+- Ten distinct necessary focused cases passed via supported test-python: three
+  new malformed/legacy/mount journal cases, injected runtime capture/storage,
+  existing source replacement/no-op, exact tag-object refusal, interrupted directory
+  renames, repeated resume-fencing interruption, explicit customization consent and
+  0.5.0-to-0.6.0 committed-seed non-replay. Initial fixture failures correctly refused
+  unclaimed retained file staging and Compose/mount disagreement; fixed the fixtures
+  to retain actual action records and separate database inspection from service
+  inspection, then received PASS. The implementation's refusal checks remain intact.
+- Synchronized the public Python guide, owner updater guide and migration ledger.
+  Root/customer AGENTS and backend/security skill products already require typed
+  injected boundaries, safe recovery, preserved evidence and private/public
+  ownership. These internal records introduce no public extension API, authority or
+  security exception requiring another rule. Package source projection includes the
+  authored model module automatically. No independently versioned module changed.
+- Point 9 remains open for bootstrap/initialization, knowledge and remaining private
+  fixture/test annotations, then complete caller/resource/inline reconciliation.
+  Point 10 has not started: no full suite, strict analysis, package/image build,
+  scanner or live acceptance ran. Changed-file pinned Ruff preparation and mandatory
+  commit hooks apply. VERSION remains 0.5.0; proposed_version remains 0.6.0.
+- No dependency, migration, production setting or disposable Docker resource changed.
+  No container/network/image/volume was created or removed. Active development/test
+  data, knowledge/model caches, backups and reports remain preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

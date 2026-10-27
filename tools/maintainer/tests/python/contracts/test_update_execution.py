@@ -4,10 +4,14 @@ import os
 import shutil
 import unittest
 from pathlib import Path
+from typing import Unpack, cast
 from unittest.mock import Mock, patch
 
 import distribution.update_contracts as update_contracts
 import distribution.update_execution as execution
+from distribution.update_execution_models import ExecutionOptions, ExecutionReport
+from distribution.update_models import DatabaseMetadata, RuntimeSnapshot
+from tools.core.state import json_value
 from tools.maintainer.testing import update_host as acceptance_update_host
 from tools.maintainer.tests.python.support.deployment import deployment
 from tools.maintainer.tests.python.support.updater import UpdaterWorkspace
@@ -20,41 +24,41 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class Runtime:
-    def __init__(self, fixture):
+    def __init__(self, fixture: UpdaterWorkspace) -> None:
         self.fixture = fixture
         self.root = fixture.installed
-        self.fail = None
-        self.events = []
+        self.fail: str | None = None
+        self.events: list[str] = []
         self.fenced = False
         self.seeds = 0
 
-    def bind(self, project):
+    def bind(self, project: str) -> None:
         if project != "fixture":
             raise ValueError("Wrong project")
 
-    def probe(self, *args):
+    def probe(self, root: Path, mode: str, operator: Path) -> RuntimeSnapshot:
         return self.fixture.runtime
 
-    def metadata(self):
-        return json.loads(json.dumps(self.fixture.runtime))
+    def metadata(self) -> DatabaseMetadata:
+        return cast(DatabaseMetadata, json_value(self.fixture.runtime))
 
-    def manual(self):
+    def manual(self) -> None:
         pass
 
-    def event(self, name):
+    def event(self, name: str) -> None:
         self.events.append(name)
         if self.fail == name:
             self.fail = None
             raise RuntimeError("Injected failure: " + name)
 
-    def fence(self, identity):
+    def fence(self, identity: str) -> None:
         self.fenced = True
         self.event("fence")
 
-    def build(self):
+    def build(self) -> None:
         self.event("build")
 
-    def data(self, phase, release):
+    def data(self, phase: str, release: str) -> None:
         self.event(phase)
         if phase == "migrations":
             self.fixture.runtime["migrations"] = sorted(
@@ -67,16 +71,16 @@ class Runtime:
             self.seeds += 1
         self.event(phase + "-committed")
 
-    def activate(self, identity):
+    def activate(self, identity: str) -> None:
         self.fenced = False
         self.event("activate")
 
-    def health(self):
+    def health(self) -> None:
         self.event("health")
 
 
 class Execution(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.fixture = UpdaterWorkspace(self.addCleanup)
         (self.fixture.installed / ".runtime/production").chmod(0o700)
         modules = self.fixture.target / "src/runa/Support/Modules/Updates/ModuleUpdates.php"
@@ -84,7 +88,7 @@ class Execution(unittest.TestCase):
         modules.write_text("<?php // target module update capability fixture")
         self.engine = Runtime(self.fixture)
 
-    def apply(self, **kwargs):
+    def apply(self, **kwargs: Unpack[ExecutionOptions]) -> ExecutionReport:
         kwargs.setdefault("choose", lambda review: kwargs.get("choice", "continue"))
         return execution.execute(
             self.fixture.installed,
@@ -101,7 +105,104 @@ class Execution(unittest.TestCase):
             (self.fixture.installed / ".runtime/production/in-progress.json").read_text()
         )
 
-    def test_execution_replaces_only_platform_and_records_completion_without_git_writes(self):
+    def test_execution_resume_refuses_invalid_consumed_journal_without_mutation(self) -> None:
+        self.engine.fail = "build"
+        self.assertEqual(self.apply()["status"], "blocked")
+        pending = self.fixture.installed / ".runtime/production/in-progress.json"
+        original = pending.read_bytes()
+        before = list(self.engine.events)
+        invalid: tuple[tuple[tuple[str, ...], object], ...] = (
+            (("schema_version",), True),
+            (("target",), []),
+            (("id",), 42),
+            (("baseline", "migrations"), [True]),
+            (("baseline", "seed_runs"), [{"release_sha": [], "seeder": "fixed"}]),
+            (("baseline", "database_mounts"), [["volume", "name"]]),
+            (("review", "fingerprint"), []),
+            (("review", "services"), "app"),
+            (("review", "devcontainer"), 1),
+            (("review", "manual_reconciliation"), [None]),
+            (("source_transition",), "true"),
+            (("module_plan",), [{"module": "runa.fixture", "to": False}]),
+            (("module_steps",), [{"module": "runa.fixture"}]),
+        )
+        for keys, value in invalid:
+            with self.subTest(field=keys):
+                changed = json_value(json.loads(original))
+                assert isinstance(changed, dict)
+                container = changed
+                for key in keys[:-1]:
+                    child = container[key]
+                    assert isinstance(child, dict)
+                    container = child
+                container[keys[-1]] = json_value(value)
+                pending.write_text(json.dumps(changed))
+                evidence = pending.read_bytes()
+                result = self.apply(resume=True)
+                self.assertEqual(result["status"], "blocked", result)
+                self.assertEqual(result["checks"][-1]["id"], "journal-identity", result)
+                self.assertEqual(self.engine.events, before)
+                self.assertEqual(pending.read_bytes(), evidence)
+        pending.write_bytes(original)
+        self.assertEqual(self.apply(resume=True)["status"], "completed")
+
+    def test_execution_resume_preserves_extra_evidence_and_legacy_optional_fields(self) -> None:
+        self.engine.fail = "build"
+        self.assertEqual(self.apply()["status"], "blocked")
+        pending = self.fixture.installed / ".runtime/production/in-progress.json"
+        journal = self.journal()
+        journal["future_evidence"] = {"diagnostic": ["retained", 17]}
+        journal["baseline"]["future_baseline"] = {"retained": True}
+        journal["review"]["future_review"] = {"retained": True}
+        for key in ("module_steps", "module_plan"):
+            journal.pop(key, None)
+        journal["baseline"].pop("module_steps", None)
+        journal["review"].pop("manual_reconciliation", None)
+        pending.write_text(json.dumps(journal))
+        legacy = json_value(journal)
+        assert isinstance(legacy, dict)
+        for key in ("file_actions", "file_action_history"):
+            legacy.pop(key, None)
+        self.assertIs(
+            execution.execution_journal(
+                legacy, self.fixture.installed, self.fixture.client.repository, "v0.3.0"
+            ),
+            legacy,
+        )
+        result = self.apply(resume=True)
+        self.assertEqual(result["status"], "completed", result)
+        self.assertEqual(result["manual_reconciliation"], [])
+        complete = (
+            self.fixture.installed / ".runtime/production/updates" / (journal["id"] + ".json")
+        )
+        retained = json.loads(complete.read_text())
+        self.assertEqual(retained["future_evidence"], journal["future_evidence"])
+        self.assertEqual(retained["baseline"]["future_baseline"], {"retained": True})
+        self.assertEqual(retained["review"]["future_review"], {"retained": True})
+        self.assertEqual(self.engine.seeds, 1)
+
+    def test_execution_database_mount_identity_is_json_safe_and_blocks_changed_database(
+        self,
+    ) -> None:
+        self.fixture.runtime["database_mounts"] = [
+            ["volume", "fixture-postgres", "/var/lib/postgresql/data"]
+        ]
+        self.engine.fail = "build"
+        self.assertEqual(self.apply()["status"], "blocked")
+        self.assertEqual(
+            self.journal()["baseline"]["database_mounts"], self.fixture.runtime["database_mounts"]
+        )
+        self.fixture.runtime["database_mounts"][0][1] = "another-database"
+        before = list(self.engine.events)
+        result = self.apply(resume=True)
+        self.assertEqual(result["checks"][-1]["id"], "database-identity", result)
+        self.assertEqual(self.engine.events, before)
+        self.fixture.runtime["database_mounts"][0][1] = "fixture-postgres"
+        self.assertEqual(self.apply(resume=True)["status"], "completed")
+
+    def test_execution_replaces_only_platform_and_records_completion_without_git_writes(
+        self,
+    ) -> None:
         (self.fixture.installed / "src/app/customer.php").write_text("<?php // customer")
         before = {
             name: (self.fixture.installed / name).read_bytes()
@@ -134,7 +235,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(self.apply()["status"], "completed")
         self.assertEqual(self.engine.seeds, 1)
 
-    def test_execution_resume_refuses_lost_module_completion_history(self):
+    def test_execution_resume_refuses_lost_module_completion_history(self) -> None:
         row = {
             "module": "runa.fixture",
             "step": "upgrade:initialize:install:0.1.0",
@@ -150,13 +251,15 @@ class Execution(unittest.TestCase):
         self.assertEqual(result["checks"][-1]["id"], "module-history-missing")
         self.assertTrue(self.engine.fenced)
 
-    def test_execution_legacy_target_without_module_phase_remains_supported(self):
+    def test_execution_legacy_target_without_module_phase_remains_supported(self) -> None:
         (self.fixture.target / "src/runa/Support/Modules/Updates/ModuleUpdates.php").unlink()
         result = self.apply()
         self.assertEqual(result["status"], "completed", result)
         self.assertNotIn("modules", self.engine.events)
 
-    def test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects(self):
+    def test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects(
+        self,
+    ) -> None:
         for phase in (
             "fence",
             "build",
@@ -189,7 +292,7 @@ class Execution(unittest.TestCase):
 
     def test_execution_directory_rename_interruptions_revalidate_original_and_target_on_resume(
         self,
-    ):
+    ) -> None:
         original_rename = os.rename
         for boundary in (1, 2):
             case = Execution(
@@ -218,7 +321,7 @@ class Execution(unittest.TestCase):
             finally:
                 case.doCleanups()
 
-    def test_execution_gap_survives_another_failure_during_resume_fencing(self):
+    def test_execution_gap_survives_another_failure_during_resume_fencing(self) -> None:
         original_rename = os.rename
 
         def interrupted(source, destination):
@@ -234,7 +337,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(self.apply(resume=True)["status"], "blocked")
         self.assertEqual(self.apply(resume=True)["status"], "completed")
 
-    def test_execution_staging_symlink_is_rejected_before_source_or_data_mutations(self):
+    def test_execution_staging_symlink_is_rejected_before_source_or_data_mutations(self) -> None:
         self.engine.fail = "build"
         self.apply()
         operation = (
@@ -247,7 +350,9 @@ class Execution(unittest.TestCase):
         self.assertEqual(result["checks"][-1]["id"], "source-staging-changed", result)
         self.assertEqual(self.engine.events, before)
 
-    def test_execution_customization_requires_explicit_choice_and_changed_resume_review(self):
+    def test_execution_customization_requires_explicit_choice_and_changed_resume_review(
+        self,
+    ) -> None:
         self.fixture.installed.joinpath("compose.yaml").write_text(
             '{"services":{"redis":{"image":"redis"}}}'
         )
@@ -275,7 +380,7 @@ class Execution(unittest.TestCase):
             (self.fixture.target / "compose.yaml").read_bytes(),
         )
 
-    def test_reviewed_non_platform_add_replace_remove_and_instruction_preservation(self):
+    def test_reviewed_non_platform_add_replace_remove_and_instruction_preservation(self) -> None:
         for root in (self.fixture.original, self.fixture.target, self.fixture.installed):
             for name in ("README.md", "obsolete.txt", "AGENTS.md"):
                 (root / name).write_text("baseline")
@@ -297,7 +402,7 @@ class Execution(unittest.TestCase):
         )
         self.assertIn("AGENTS.md", result["manual_reconciliation"])
 
-    def test_file_rename_interruptions_resume_from_saved_before_after_state(self):
+    def test_file_rename_interruptions_resume_from_saved_before_after_state(self) -> None:
         for root in (self.fixture.original, self.fixture.target, self.fixture.installed):
             (root / "README.md").write_text("baseline")
             self.fixture.git(root, "add", "README.md")
@@ -321,7 +426,9 @@ class Execution(unittest.TestCase):
         self.assertEqual(self.apply(resume=True)["status"], "completed")
         self.assertEqual((self.fixture.installed / "README.md").read_text(), "target")
 
-    def test_customer_reconciles_configuration_before_publication_and_production_provision(self):
+    def test_customer_reconciles_configuration_before_publication_and_production_provision(
+        self,
+    ) -> None:
         from tools.application import installation_service as installer
 
         templates = (".env.dev.example", ".env.prod.example")
@@ -402,7 +509,9 @@ class Execution(unittest.TestCase):
             installer_service.provision(settings, self.fixture.after, True)
         self.assertEqual(private, {name: (production / name).read_bytes() for name in private})
 
-    def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(self):
+    def test_execution_source_tampering_and_changed_release_identity_cannot_be_overridden(
+        self,
+    ) -> None:
         self.engine.fail = "build"
         self.apply()
         original = self.fixture.installed / "src/runa/Support/example.php"
@@ -423,7 +532,9 @@ class Execution(unittest.TestCase):
         previous.write_text("tampered backup")
         self.assertEqual(self.apply(resume=True)["checks"][-1]["id"], "protected-source-mismatch")
 
-    def test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history(self):
+    def test_execution_preserves_unknown_staging_content_and_rejects_missing_database_history(
+        self,
+    ) -> None:
         self.engine.fail = "build"
         self.apply()
         self.fixture.runtime["migrations"] = []
@@ -438,7 +549,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(result["checks"][-1]["id"], "source-staging-changed", result)
         self.assertEqual(sentinel.read_text(), "preserve")
 
-    def test_execution_partial_staging_copy_restarts_only_verified_missing_files(self):
+    def test_execution_partial_staging_copy_restarts_only_verified_missing_files(self) -> None:
         original_copy = shutil.copytree
         interrupted = False
 
@@ -458,7 +569,7 @@ class Execution(unittest.TestCase):
             self.apply()
         self.assertEqual(self.apply(resume=True)["status"], "completed")
 
-    def test_execution_oneoff_transport_failure_removes_only_its_owned_writer(self):
+    def test_execution_oneoff_transport_failure_removes_only_its_owned_writer(self) -> None:
         runtime = execution.DockerRuntime.__new__(execution.DockerRuntime)
         runtime.root = self.fixture.installed
         runtime.project = "fixture"
@@ -498,7 +609,7 @@ class Execution(unittest.TestCase):
             runtime.command(["run", "--rm", "app", "php", "prepare.php"])
         self.assertEqual(commands[-1], ["docker", "rm", "--force", "container-id"])
 
-    def test_execution_resume_rejects_changed_tag_object_before_mutations(self):
+    def test_execution_resume_rejects_changed_tag_object_before_mutations(self) -> None:
         self.engine.fail = "build"
         self.apply()
         before = list(self.engine.events)
@@ -514,7 +625,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(blocked["checks"][-1]["id"], "release-changed", blocked)
         self.assertEqual(self.engine.events, before)
 
-    def test_execution_completed_operation_is_not_resurrected_after_cleanup_failure(self):
+    def test_execution_completed_operation_is_not_resurrected_after_cleanup_failure(self) -> None:
         original_remove = shutil.rmtree
 
         def interrupted(path, *args, **kwargs):
