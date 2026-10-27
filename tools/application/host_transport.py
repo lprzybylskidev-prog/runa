@@ -3,7 +3,6 @@
 import base64
 import contextlib
 import fcntl
-import hmac
 import json
 import os
 import re
@@ -17,11 +16,31 @@ import subprocess
 import sys
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
+from types import FrameType
+from typing import BinaryIO, Protocol
 
 from tools.application.development_runtime import execution_location
+from tools.application.host_plan import HostPlanPayload
+from tools.application.host_transport_models import (
+    LIMIT,
+    Credentials,
+    OperationRecord,
+    RegistryRequest,
+    challenge_value,
+    credentials,
+    decode_object,
+    exit_code,
+    input_frame,
+    output_content,
+    read_json,
+    recovery_pid,
+    stdin_content,
+    validate_request,
+)
 from tools.application.management_service import ManagementService
 from tools.application.processes import ApplicationProcesses
 from tools.application.repository_boundary_service import DevelopmentContextError
@@ -29,86 +48,60 @@ from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import SubprocessRunner
 from tools.core.reporting import SafeFailure
-from tools.core.state import JsonStore, StateDirectory
+from tools.core.state import JsonStore, JsonValue, StateDirectory, json_value
 
-LIMIT = 65536
 OUTPUT_LIMIT = 64 * 1024 * 1024
 
 
-def encode(value):
-    return json.dumps(value, separators=(",", ":")).encode() + b"\n"
+class WorkerFactory(Protocol):
+    def __call__(
+        self,
+        args: Sequence[str],
+        *,
+        cwd: Path,
+        stdin: int | None = None,
+        stdout: int | BinaryIO | None = None,
+        stderr: int | BinaryIO | None = None,
+        start_new_session: bool = False,
+        env: Mapping[str, str] | None = None,
+    ) -> subprocess.Popen[bytes]: ...
 
 
-def read_json(stream):
-    raw = stream.readline(LIMIT + 1)
-    if not raw or len(raw) > LIMIT or not raw.endswith(b"\n"):
-        raise ValueError("Missing or oversized transport frame.")
-
-    def unique(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError("Duplicate transport field.")
-            result[key] = value
-        return result
-
-    return json.loads(raw, object_pairs_hook=unique)
-
-
-def validate_request(value, credentials, challenge):
-    if (
-        not isinstance(value, dict)
-        or set(value)
-        != {
-            "version",
-            "workspace",
-            "token",
-            "challenge",
-            "id",
-            "command",
-            "arguments",
-            "interactive",
-        }
-        or type(value["version"]) is not int
-        or value["version"] != 1
-        or not isinstance(value["token"], str)
-        or not hmac.compare_digest(value["token"], credentials["token"])
-        or value["workspace"] != credentials["workspace"]
-        or value["challenge"] != challenge
-        or not isinstance(value["id"], str)
-        or not re.fullmatch("[a-f0-9]{32}", value["id"])
-        or not isinstance(value["command"], str)
-        or not re.fullmatch("runa:[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)*", value["command"])
-        or type(value["interactive"]) is not bool
-        or not isinstance(value["arguments"], list)
-        or len(value["arguments"]) > 128
-        or any(
-            not isinstance(arg, str) or len(arg.encode()) > 4096 or "\0" in arg
-            for arg in value["arguments"]
-        )
-    ):
-        raise ValueError("Unauthorized or invalid workspace request.")
-    if any(
-        arg == "--host-request"
-        or arg.startswith("--host-request=")
-        or arg in ("--plan", "--help", "-h", "--")
-        for arg in value["arguments"]
-    ):
-        raise ValueError("Transport-only options are forbidden in execution requests.")
-    return value
+def encode(value: object) -> bytes:
+    return json.dumps(value, separators=(",", ":"), allow_nan=False).encode() + b"\n"
 
 
 class Server(socketserver.ThreadingUnixStreamServer):
     daemon_threads = False
     block_on_close = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        address: str,
+        handler: type[socketserver.BaseRequestHandler],
+        *,
+        service: "HostExecutor",
+        credentials: Credentials,
+        image: str,
+        identity: str,
+        environment: Mapping[str, str],
+    ) -> None:
         self.max_children = threading.BoundedSemaphore(8)
-        super().__init__(*args, **kwargs)
+        self.service = service
+        self.credentials = credentials
+        self.image = image
+        self.identity = identity
+        self.environment = environment
+        super().__init__(address, handler)
+
+    def public_status(self, request: str | None = None) -> dict[str, JsonValue]:
+        return self.service.status(self.credentials, request)
 
 
 class Handler(socketserver.StreamRequestHandler):
-    def handle(self):
+    server: Server
+
+    def handle(self) -> None:
         if not self.server.max_children.acquire(blocking=False):
             return
         try:
@@ -128,7 +121,7 @@ class Handler(socketserver.StreamRequestHandler):
         finally:
             self.server.max_children.release()
 
-    def execute(self):
+    def execute(self) -> None:
         self.connection.settimeout(15)
         _, uid, _ = struct.unpack(
             "3i", self.connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12)
@@ -146,7 +139,7 @@ class Handler(socketserver.StreamRequestHandler):
         request = value["id"]
         receipt = self.server.service.directory() / "operations" / (request + ".json")
         descriptor = os.open(receipt, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-        state = {
+        state: OperationRecord = {
             "id": request,
             "command": value["command"],
             "state": "validating",
@@ -190,7 +183,9 @@ class Handler(socketserver.StreamRequestHandler):
             state["finished_at"] = time.time()
             self.server.service.atomic(receipt, state)
 
-    def run_operation(self, plan, interactive, state, receipt):
+    def run_operation(
+        self, plan: HostPlanPayload, interactive: bool, state: OperationRecord, receipt: Path
+    ) -> None:
         # Fresh process owns existing locking/executors. Its stdin contains one
         # trusted plan frame followed by explicit operator input, never shell code.
         command = [sys.executable, "-m", "tools.application.host_transport", "--worker"]
@@ -203,6 +198,7 @@ class Handler(socketserver.StreamRequestHandler):
             start_new_session=True,
             env=self.server.environment,
         )
+        assert child.stdin is not None and child.stdout is not None and child.stderr is not None
         child.stdin.write(encode(plan))
         child.stdin.flush()
         if not interactive:
@@ -237,27 +233,23 @@ class Handler(socketserver.StreamRequestHandler):
                             while b"\n" in client_buffer:
                                 line, _, rest = client_buffer.partition(b"\n")
                                 client_buffer = bytearray(rest)
-                                message = json.loads(line)
-                                if message == {"type": "cancel"}:
+                                message = input_frame(line, interactive)
+                                if message["type"] == "cancel":
                                     os.killpg(child.pid, signal.SIGINT)
                                     state["cancel_requested"] = True
-                                elif (
-                                    set(message) == {"type", "data"}
-                                    and message["type"] == "stdin"
-                                    and interactive
-                                ):
-                                    content = base64.b64decode(message["data"], validate=True)
-                                    if len(content) > 4096 or child.stdin.closed:
+                                elif message["type"] == "stdin":
+                                    content = stdin_content(message)
+                                    if child.stdin.closed:
                                         raise ValueError("Invalid interactive input.")
                                     child.stdin.write(content)
                                     child.stdin.flush()
-                                elif message == {"type": "eof"}:
+                                elif message["type"] == "eof":
                                     if not child.stdin.closed:
                                         child.stdin.close()
                                 else:
                                     raise ValueError("Invalid input frame.")
                         else:
-                            raw = os.read(key.fileobj.fileno(), 4096)
+                            raw = os.read(key.fd, 4096)
                             if not raw:
                                 selector.unregister(key.fileobj)
                                 continue
@@ -305,32 +297,32 @@ class Handler(socketserver.StreamRequestHandler):
 class HostExecutor:
     workspace: WorkspaceContext
     processes: ApplicationProcesses
-    spawn: Callable = subprocess.Popen
+    spawn: WorkerFactory = subprocess.Popen
     location: ExecutionLocation = ExecutionLocation.HOST
 
     @property
-    def management(self):
+    def management(self) -> ManagementService:
         return ManagementService(
             self.workspace, self.processes, ExecutionLocation.HOST, self.browser_endpoint
         )
 
-    def browser_endpoint(self):
+    def browser_endpoint(self) -> AbstractContextManager[None]:
         from tools.application.test_resources import EndpointService
 
         return EndpointService(self.workspace, self.processes).endpoint()
 
     @contextlib.contextmanager
-    def socket_path(self):
+    def socket_path(self) -> Iterator[str]:
         descriptor = os.open(self.directory(), os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
             yield "/proc/self/fd/" + str(descriptor) + "/executor.sock"
         finally:
             os.close(descriptor)
 
-    def directory(self):
+    def directory(self) -> Path:
         return self.workspace.root / ".runtime/host"
 
-    def connect(self, client):
+    def connect(self, client: socket.socket) -> None:
         # /proc/self/fd avoids the Unix pathname limit for long host checkout paths;
         # the client container uses its short mounted /workspace or /run path.
         descriptor = os.open(self.directory(), os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -339,10 +331,12 @@ class HostExecutor:
         finally:
             os.close(descriptor)
 
-    def atomic(self, path, value):
-        JsonStore(StateDirectory(path.parent, anchor=self.workspace.root)).write(path.name, value)
+    def atomic(self, path: Path, value: object) -> None:
+        JsonStore(StateDirectory(path.parent, anchor=self.workspace.root)).write(
+            path.name, json_value(value)
+        )
 
-    def validated_plan(self, value, image):
+    def validated_plan(self, value: RegistryRequest, image: str) -> HostPlanPayload:
         # Reparse caller arguments in the trusted isolated Artisan registry. Do not
         # execute a caller-supplied plan or trust container-side argument validation.
         request = value["id"]
@@ -382,7 +376,7 @@ class HostExecutor:
             raise ValueError("Artisan rejected this operation or its arguments.")
         return self.management.validate_plan(output, request)
 
-    def serve(self):
+    def serve(self) -> None:
         self.management.private_directory(self.directory())
         self.management.private_directory(self.directory() / "operations")
         descriptor = os.open(
@@ -396,7 +390,7 @@ class HostExecutor:
                 raise ValueError("Host socket must not be a symlink.")
             if endpoint.exists():
                 endpoint.unlink()
-            credentials = {
+            client_credentials: Credentials = {
                 "version": 1,
                 "workspace": secrets.token_hex(32),
                 "token": secrets.token_hex(32),
@@ -409,39 +403,22 @@ class HostExecutor:
                 if name.startswith(("GIT_", "COMPOSE_", "DOCKER_")):
                     environment.pop(name)
             environment["RUNA_HOST_WORKER"] = "1"
-            with self.socket_path() as socket_path, Server(socket_path, Handler) as server:
-                server.service = self
+            with (
+                self.socket_path() as socket_path,
+                Server(
+                    socket_path,
+                    Handler,
+                    service=self,
+                    credentials=client_credentials,
+                    image=image,
+                    identity=self.management.image_identity(),
+                    environment=environment,
+                ) as server,
+            ):
                 os.chmod(endpoint, 0o600)
-                server.credentials, server.image, server.identity, server.environment = (
-                    credentials,
-                    image,
-                    self.management.image_identity(),
-                    environment,
-                )
+                self.atomic(self.directory() / "client.json", client_credentials)
 
-                def status(request=None):
-                    if request:
-                        if not re.fullmatch("[a-f0-9]{32}", request):
-                            raise ValueError("Invalid operation ID.")
-                        return json.loads(
-                            (self.directory() / "operations" / (request + ".json")).read_text()
-                        )
-                    return {
-                        "state": "ready",
-                        "workspace": credentials["workspace"],
-                        "pid": os.getpid(),
-                        "operations": [
-                            json.loads(path.read_text())
-                            for path in sorted((self.directory() / "operations").glob("*.json"))[
-                                -50:
-                            ]
-                        ],
-                    }
-
-                server.public_status = status
-                self.atomic(self.directory() / "client.json", credentials)
-
-                def stop(signum, frame):
+                def stop(signum: int, frame: FrameType | None) -> None:
                     threading.Thread(target=server.shutdown, daemon=True).start()
 
                 signal.signal(signal.SIGTERM, stop)
@@ -454,7 +431,24 @@ class HostExecutor:
                     endpoint.unlink(missing_ok=True)
                     (self.directory() / "client.json").unlink(missing_ok=True)
 
-    def ensure(self):
+    def status(self, info: Credentials, request: str | None = None) -> dict[str, JsonValue]:
+        if request:
+            if not re.fullmatch("[a-f0-9]{32}", request):
+                raise ValueError("Invalid operation ID.")
+            return decode_object(
+                (self.directory() / "operations" / (request + ".json")).read_text()
+            )
+        return {
+            "state": "ready",
+            "workspace": info["workspace"],
+            "pid": os.getpid(),
+            "operations": [
+                decode_object(path.read_text())
+                for path in sorted((self.directory() / "operations").glob("*.json"))[-50:]
+            ],
+        }
+
+    def ensure(self) -> None:
         if self.location is ExecutionLocation.CONTAINER:
             raise ValueError("Host executor recovery must run on the native host.")
         self.management.private_directory(self.directory())
@@ -464,13 +458,13 @@ class HostExecutor:
                 self.connect(client)
                 response = read_json(client.makefile("rb"))
                 if response.get("type") == "challenge":
-                    info = json.loads((self.directory() / "client.json").read_text())
+                    info = credentials(
+                        decode_object((self.directory() / "client.json").read_text())
+                    )
                     # Pin source identity too: an old daemon must be deliberately stopped
                     # before a changed command registry can acquire host privileges.
-                    if (
-                        info.get("identity")
-                        and info["identity"] != self.management.image_identity()
-                    ):
+                    identity = info.get("identity")
+                    if identity and identity != self.management.image_identity():
                         raise ValueError("Executor registry changed; stop it before recovery.")
                     return
         except (OSError, ValueError, KeyError):
@@ -513,9 +507,9 @@ class HostExecutor:
             "Host executor did not become ready. Inspect its private daemon.log and recover explicitly."
         )
 
-    def control(self, arguments):
+    def control(self, arguments: Sequence[str]) -> int:
         """Recovery-only native client, using the same authenticated protocol."""
-        credentials = json.loads((self.directory() / "client.json").read_text())
+        info = credentials(decode_object((self.directory() / "client.json").read_text()))
         with socket.socket(socket.AF_UNIX) as client:
             self.connect(client)
             stream = client.makefile("rwb", buffering=0)
@@ -524,9 +518,9 @@ class HostExecutor:
                 encode(
                     {
                         "version": 1,
-                        "workspace": credentials["workspace"],
-                        "token": credentials["token"],
-                        "challenge": challenge["value"],
+                        "workspace": info["workspace"],
+                        "token": info["token"],
+                        "challenge": challenge_value(challenge),
                         "id": secrets.token_hex(16),
                         "command": "runa:host:" + arguments[0],
                         "arguments": arguments[1:],
@@ -537,15 +531,15 @@ class HostExecutor:
             while True:
                 frame = read_json(stream)
                 if frame["type"] == "exit":
-                    return frame["code"]
+                    return exit_code(frame)
                 if frame["type"] == "error":
                     raise ValueError("Host executor rejected control; inspect private receipts.")
                 if frame["type"] in ("stdout", "stderr"):
                     target = sys.stdout.buffer if frame["type"] == "stdout" else sys.stderr.buffer
-                    target.write(base64.b64decode(frame["data"], validate=True))
+                    target.write(output_content(frame))
                     target.flush()
 
-    def stop(self):
+    def stop(self) -> None:
         """Graceful recovery even when the old registry cannot validate new commands."""
         descriptor = os.open(self.directory() / "daemon.lock", os.O_RDWR | os.O_NOFOLLOW)
         with os.fdopen(descriptor, "w") as lock:
@@ -553,8 +547,7 @@ class HostExecutor:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 return
             except BlockingIOError:
-                credentials = json.loads((self.directory() / "client.json").read_text())
-                pid = credentials["pid"]
+                pid = recovery_pid(decode_object((self.directory() / "client.json").read_text()))
                 cmdline = Path("/proc", str(pid), "cmdline").read_bytes().split(b"\0")
                 # Recover the exact previous release path after the approved tooling relocation.
                 scripts = (
@@ -582,7 +575,7 @@ class HostExecutor:
         )
 
 
-def default_service():
+def default_service() -> HostExecutor:
     return HostExecutor(
         WorkspaceContext(Path(__file__).resolve().parents[2]),
         ApplicationProcesses(SubprocessRunner(), dict(os.environ)),
@@ -590,16 +583,19 @@ def default_service():
     )
 
 
-def main(arguments=None):
+def main(arguments: list[str] | None = None) -> None:
     service = default_service()
     arguments = sys.argv[1:] if arguments is None else arguments
     try:
         if arguments == ["--serve"]:
             service.serve()
         elif arguments == ["--worker"] and os.environ.get("RUNA_HOST_WORKER") == "1":
-            plan = read_json(sys.stdin.buffer)
+            payload = read_json(sys.stdin.buffer)
+            request_id = payload.get("request_id")
+            if not isinstance(request_id, str):
+                raise ValueError("Invalid worker request ID.")
             with interrupt_signals():
-                raise SystemExit(service.management.execute_plan(plan, plan["request_id"]))
+                raise SystemExit(service.management.execute_plan(payload, request_id))
         elif arguments[:1] == ["--control"]:
             raise SystemExit(service.control(arguments[1:]))
         else:

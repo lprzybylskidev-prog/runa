@@ -19,7 +19,9 @@ from tools.core.context import WorkspaceContext
     "module,allowed",
     [("tools.application.host_transport", True), ("foreign.host_transport", False)],
 )
-def test_recovery_checks_current_workspace_process_identity(tmp_path, module, allowed):
+def test_recovery_checks_current_workspace_process_identity(
+    tmp_path: Path, module: str, allowed: bool
+) -> None:
     service = HostExecutor(WorkspaceContext(tmp_path), ApplicationProcesses(RecordingRunner(), {}))
     directory = tmp_path / ".runtime/host"
     directory.mkdir(parents=True)

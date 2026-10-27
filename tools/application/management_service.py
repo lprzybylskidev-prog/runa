@@ -7,7 +7,7 @@ import re
 import stat
 import sys
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import partial
@@ -18,7 +18,7 @@ from tools.application.development_runtime import (
     development_compose,
     execution_location,
 )
-from tools.application.host_plan import OPERATIONS, HostPlan
+from tools.application.host_plan import OPERATIONS, HostPlan, HostPlanPayload
 from tools.application.processes import ApplicationProcesses
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
@@ -90,7 +90,7 @@ class ManagementService:
             raise ValueError("Development setup did not complete successfully.")
         print("PASS: host Compose service/container health and setup exit status.")
 
-    def image_identity(self):
+    def image_identity(self) -> str:
         digest = hashlib.sha256()
         paths = [
             self.workspace.root / name
@@ -123,7 +123,7 @@ class ManagementService:
             )
         return digest.hexdigest()
 
-    def ensure_image(self):
+    def ensure_image(self) -> str:
         identity = self.image_identity()
         tag = "runa-management:" + identity[:24]
         inspect = [
@@ -185,7 +185,7 @@ class ManagementService:
             )
         return fields[0]
 
-    def bounded_output(self, command):
+    def bounded_output(self, command: Sequence[str]) -> tuple[int, str, str]:
         result = self.processes.runner.run(
             ProcessSpec(
                 tuple(command),
@@ -199,10 +199,10 @@ class ManagementService:
         )
         return result.returncode, result.stdout.decode("utf-8"), result.stderr.decode("utf-8")
 
-    def validate_plan(self, raw, request):
+    def validate_plan(self, raw: str, request: str) -> HostPlanPayload:
         return HostPlan.parse(raw, request).as_dict()
 
-    def private_directory(self, path):
+    def private_directory(self, path: Path) -> None:
         for parent in reversed([path, *path.parents]):
             if parent.is_symlink():
                 raise ValueError("Management state must not traverse symlinks.")
@@ -217,7 +217,7 @@ class ManagementService:
                 "Management state directory must be private and owned by the current operator."
             )
 
-    def execute_plan(self, plan, request):
+    def execute_plan(self, plan: object, request: str) -> int:
         # Revalidate at the execution boundary; no caller can supply shell/argv/env/path fields.
         plan = self.validate_plan(json.dumps(plan), request)
         self.assert_operation_context(plan)
@@ -400,7 +400,10 @@ class ManagementService:
         except BaseException:
             # Killing the Docker client alone does not reliably remove its daemon-side process.
             self.processes.run(
-                ["docker", "rm", "--force", name], capture_output=True, timeout=TIMEOUT
+                ["docker", "rm", "--force", name],
+                cwd=self.workspace.root,
+                capture_output=True,
+                timeout=TIMEOUT,
             )
             raise
         if status:

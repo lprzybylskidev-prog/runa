@@ -104,11 +104,18 @@ registry/image discovery and allowlisted execution. Source-owned PHP catalogs an
 the independently enforced Python allowlist/schema have an explicit consistency
 contract; plan data cannot register an executable. Discovery uses a shared 64 KiB
 stdout/stderr bound and 30-second timeout through the core runner. `HostExecutor`
-receives the selected workspace/process dependencies and a worker factory. Its
-bidirectional streaming protocol owns a distinct child lifecycle; disconnect
+receives the selected workspace/process dependencies and a typed binary worker
+factory. Its server receives credentials, registry identity and environment through
+explicit construction. Transport frames validate JSON objects, duplicate/non-finite
+values and consumed request/input/control fields before use; interactive input
+retains its decoded-byte limit. Recovery validates a positive integer PID before
+checking exact process ownership, while older records may omit registry identity.
+Its bidirectional streaming protocol owns a distinct child lifecycle; disconnect
 continues accepted work and persists completion, while request IDs prevent replay.
 Host state uses the core durable private JSON writer, independently of deployment.
 Socket binding uses a directory descriptor without changing the process cwd.
+Failed registry discovery removes only its named container in the selected workspace;
+recovery and operation receipts retain additional historical evidence fields.
 
 Command adapters compose the explicit development, management, diagnostics,
 quality, security and deployment services. Internal PHP/Compose callers start fixed

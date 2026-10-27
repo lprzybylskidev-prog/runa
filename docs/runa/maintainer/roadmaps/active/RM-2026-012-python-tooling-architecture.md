@@ -1506,6 +1506,47 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Docker resources were created or removed; active development/test data, knowledge/
   model caches, backups and verification reports are preserved.
 
+#### Point 9 continuation — host transport and recovery records (2026-10-27)
+
+- Declared typed host requests, credentials, operation records, input frames, binary
+  worker factory and bounded stream reader. The server receives its service,
+  credentials, image/registry identities and environment explicitly at construction;
+  status is an ordinary service method rather than an attached closure. Discovery,
+  plan validation and execution boundaries now declare inputs/results, with guarded
+  execution retaining its independent plan validation.
+- Transport decoding rejects non-object, duplicate, malformed and non-finite JSON
+  before field use. Interactive/control fields validate bytes and native status;
+  request Unicode failures produce safe refusal. Recovery validates positive integer
+  PIDs before process inspection/signaling, preserves PID-only legacy recovery and
+  optional old registry identity, and retains extra receipt evidence. Existing
+  authentication, replay, disconnect and exact owned-process checks remain intact.
+- Source review found registry-discovery failure cleanup omitted the required
+  workspace argument after process migration. Added the selected workspace and a
+  scripted regression asserting only the request's named container is targeted.
+  This diagnostic executes no Docker operation. Private transport fixtures now use
+  explicit typed process/server composition and validated JSON inputs.
+- Thirteen distinct necessary focused cases passed through supported test-python:
+  six new decoder/input/control/recovery/status cases; request refusal and literal
+  binding; named validator cleanup; catalogue/allowlist agreement; local single-worker
+  socket disconnect/replay; two owned-process recovery cases; and discovery failure
+  cleanup. Decoder cases passed again after the final stdin-field refinement. No
+  full suite, strict analysis, package build, scanner or live Docker acceptance ran.
+  Changed-file pinned Ruff preparation passed; mandatory commit hooks remain in force.
+- Synchronized the public Python guide and owner migration ledger. Root owner and
+  customer AGENTS already require qualified composition, guarded tooling and private
+  suite separation. Owner/customer backend/security products already route typed
+  boundaries and recovery to the public guides; no new customer extension API,
+  permission, infrastructure authority or security exception requires another rule.
+  Package source projection already includes the new module; frozen pins/exclusions
+  remain unchanged and no independent business-module version changes.
+- Point 9 remains open for quality scheduling/status/evidence, remaining registry
+  and installation services, external bootstrap/planning/execution, knowledge and
+  remaining private fixture/test annotations, then complete caller/resource/inline
+  reconciliation. Point 10 has not started. VERSION stays 0.5.0 and proposed_version
+  remains 0.6.0. No dependency, migration, production setting or disposable Docker
+  resource changed. Development/test data, knowledge/model caches, backups and
+  verification reports are preserved; no containers/images/networks/volumes removed.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

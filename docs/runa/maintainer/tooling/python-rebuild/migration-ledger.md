@@ -339,8 +339,8 @@ without altering serialized schemas or discarding extra evidence. Missing legacy
 rollback proof remains refusal, and optional profiled services retain their
 existing deferred image requirement. Private boundary cases cover malformed
 records, exact evidence preservation, response formats and text/bytes/stdin/check
-semantics. Installation, external update orchestration, quality, host, knowledge and remaining
-private fixture annotations still require their own completion; this entry does
+semantics. Installation, external update orchestration, quality, knowledge and remaining
+registry/private fixture annotations still require their own completion; this entry does
 not attest full-scope strict-analysis or acceptance success.
 
 Quality definitions, roadmap inputs, graphs, legacy/named selections and planner
@@ -371,6 +371,22 @@ resolution. Isolated module results validate PHP's associative-map serialization
 one selected process policy owns execution and exact named-worker cleanup.
 Bootstrap/initialization, update planning/execution and remaining private fixture
 annotations stay open; there is no full strict-analysis or artifact acceptance claim.
+
+Host transport now declares request, credential, operation-record, binary worker,
+stream-reader and server/service contracts. `host_transport_models.py` validates
+finite object frames, consumed input/control fields and positive recovery PIDs;
+legacy credential identity omission and PID-only recovery records remain supported.
+The server receives all dependencies in its constructor rather than attaching
+service attributes or a status closure after binding. Status preserves additional
+receipt fields, and worker execution still reparses its plan at the guarded service
+boundary. Management discovery/plan/process entrypoints and private transport
+fixtures now declare their inputs/results; remaining registry orchestration/source
+response annotations are still open. Fixed failure cleanup's missing workspace
+argument, with a scripted regression proving exact named-container removal without
+Docker. Focused socket coverage preserves disconnected completion and replay
+refusal. Package source projection already includes the new authored model module;
+no resource allowlist exception or runtime dependency is added. Strict full-scope
+analysis and broad/native acceptance remain final-point work.
 
 ## Retired implementation-era resources
 
