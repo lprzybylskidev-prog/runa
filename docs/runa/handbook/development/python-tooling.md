@@ -204,3 +204,13 @@ never imports customer application Python. It retains explicit source identities
 file review consent, journal phases, forward data completion and fencing/resume.
 Customer Python configuration/tests/frozen inputs under `src/app` remain customer
 owned; delivered defaults change only through the existing reviewed file plan.
+
+## Development knowledge services
+
+The delivered `tools.application.knowledge` package composes corpus/configuration,
+provider/store, incremental indexing, retrieval and optional startup using explicit
+workspace/process/clock and HTTP dependencies. Private corpus and golden additions
+are composed by excluded owner tooling; customer loaders never import it. Typed
+configuration and payload contracts preserve the existing collection schema. See
+[knowledge lifecycle and parser freshness](knowledge.md#package-and-ownership-composition)
+for migration, pending-write recovery and nondestructive incremental refresh.

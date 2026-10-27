@@ -723,7 +723,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Synchronize installation/update/production/security docs and package projections.
     Do not run real installation/build/deployment acceptance yet.
 
-- [ ] 7. Migrate development-only knowledge and owner extensions.
+- [x] 7. Migrate development-only knowledge and owner extensions.
   - Prerequisites: points 3–5 context/process/config services and owner injection.
   - Package corpus/config/provider/store/index/retrieval/startup with typed models,
     injected HTTP/store/clock and explicit owner corpus/golden composition.
@@ -1138,6 +1138,58 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   backups and reports are preserved. No production command or database mutation ran.
 - Completion is recorded with the implementation commit. VERSION remains 0.5.0;
   point 7 is next.
+
+### Point 7 — development knowledge and owner composition (2026-10-27)
+
+- Packaged knowledge configuration/corpus/provider/storage/index/retrieval/startup
+  through qualified imports. Added validated typed configuration, payload/effect
+  contracts, explicit workspace/process/clock context and injected store/provider/
+  HTTP/retry dependencies. KnowledgeIndexer owns ingestion, rebuild and freshness;
+  Retriever owns hybrid selection and uses injected time for evaluation evidence.
+- Public configuration/golden loaders read delivered resources only. Excluded
+  owner composition adds private corpus/golden inputs explicitly. Fixed source
+  transports select the receipt-scoped composition root; corpus enforcement refuses
+  private sources even under an explicit owner context when a receipt is present.
+  Production/environment guards precede startup/network operations. Optional
+  readiness remains bounded and initialization retries independently of app setup.
+- Preserved model/collection/schema, source/chunk identities, pending-write repair,
+  metadata filters, BM25/RRF behavior, golden expectations and controlled CPU fallback.
+  Parser fingerprint remains tied to actual corpus source; migration marks it stale
+  for incremental reparse while unchanged semantic vectors are reused. No rebuild,
+  collection reset or model/cache deletion was performed. Source exclusions now
+  inspect workspace-relative paths, so a fixture checkout under root .runtime is
+  not incorrectly treated as entirely excluded.
+- Moved all 14 offline ingestion contracts into unified discovery with injected
+  indexing dependencies. Packaged live CPU/CUDA and retrieval scenarios behind
+  fixed historical transports and migrated customer fixture imports. Added owner/
+  customer isolation, injected HTTP/time, configuration refusal, production/startup
+  and physical projected-package regressions. Aggregate integration remains point 8.
+- Local knowledge was unavailable initially because app was stopped. Status transport
+  prepared its isolated cached management registry image. Supported dev:up restored
+  the existing development services after narrowing an inspected operator-owned
+  regular .runtime/production/operation.lock from 0644 to 0600; no lock inode/data
+  was replaced. After recovery, status reported 186 documents/2928 chunks and only
+  parser staleness. Used focused source navigation rather than stale retrieval.
+- Necessary focused diagnostics received PASS: parser reparse/pending recovery/model
+  refusal (3), explicit owner/receipt/physical customer isolation/parser relocation
+  (4), optional production/startup and HTTP retries (3), malformed remote manifest
+  and GPU identity refusal (2). Production refusal was repeated after guard
+  injection. Incremental knowledge refresh reached current state: 186 documents,
+  2934 chunks, 24 changed chunks embedded, 18 obsolete chunks removed, zero
+  missing/orphan chunks, without collection/model reset. The first isolation fixture
+  exposed absolute-path exclusion of .runtime ancestors; corrected relative source
+  filtering and repeated those four cases successfully. Syntax/import and mandatory
+  changed-file preparation accompany commit. No broad suite/static analysis/image
+  acceptance or real retrieval/AI gate was run; those remain exclusively point 10.
+- Updated public knowledge/Python guides, migration ledger, owner RAG reference and
+  the separately authored customer RAG reference. Root AGENTS and main skill files
+  remain correct: no new public command, dependency, protected-edit permission,
+  roadmap rule or production capability was introduced; references own the detail.
+- Development/database/Qdrant/model/builder state, backups and reports are preserved.
+  Focused pytest workspaces are disposable runner-owned fixtures; no task-created
+  Docker simulation resources require removal. Active development services remain
+  available. No production operation or business-data migration ran. Completion is
+  recorded by the implementation commit; VERSION remains 0.5.0 and point 8 is next.
 
 ### Draft preparation validation (historical)
 
