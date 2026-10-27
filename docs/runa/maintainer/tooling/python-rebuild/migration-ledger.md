@@ -332,6 +332,17 @@ final gate; only specifically recorded focused diagnostics run in this point.
   every baseline alias/resource/non-Python/inline record against final sources.
   This table is source disposition evidence, not full acceptance or annotation PASS.
 
+Deployment context/source/production/runtime/orchestration now declare their
+workspace, release, callback, process-option and return contracts. The new
+`deployment_models` boundary validates journal and consumed Compose/Docker fields
+without altering serialized schemas or discarding extra evidence. Missing legacy
+rollback proof remains refusal, and optional profiled services retain their
+existing deferred image requirement. Private boundary cases cover malformed
+records, exact evidence preservation, response formats and text/bytes/stdin/check
+semantics. Installation, external update, quality, host, knowledge and remaining
+private fixture annotations still require their own completion; this entry does
+not attest full-scope strict-analysis or acceptance success.
+
 ## Retired implementation-era resources
 
 `tools/maintainer/testing/php-alpine-host.sh` was an unused PHP-only acceptance

@@ -200,6 +200,13 @@ policy, health/data mechanics and orchestration. Compose uses an immutable relea
 identity and the operator's TLS overlay; it never replaces a module root. Safe
 operator-owned legacy coordination directories/lock modes remain accepted; newly
 written journals are private, bounded and durable through core state primitives.
+Deployment source, runtime and orchestration services carry explicit input/result
+types. Their process adapters preserve text/bytes results, literal input, default
+checked execution and explicit unchecked probes. Journal readers validate release
+fields before use, retain additional historical evidence and treat a missing
+rollback-safety flag as unproven. Compose/Docker readers validate consumed response
+fields with fixed diagnostics; optional profiled services can omit an image until
+that service is selected. These are internal contracts, not a new customer API.
 Secrets remain literal raw values. Core owns dependency composition and fixed
 delivery exclusions; standalone acquisition independently checks the same policy.
 

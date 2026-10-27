@@ -2,7 +2,10 @@
 
 import re
 import uuid
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 
+from tools.application.deployment_context import OperationContext
 from tools.core.context import ComposeContext, WorkspaceContext
 
 SERVICES = ("app", "nginx", "postgres", "queue", "scheduler")
@@ -11,13 +14,13 @@ SERVICES = ("app", "nginx", "postgres", "queue", "scheduler")
 class ProductionRuntime:
     SERVICES = SERVICES
 
-    def __init__(self, context):
+    def __init__(self, context: OperationContext) -> None:
         self.context = context
 
-    def compose(self, root=None, tls_root=None):
+    def compose(self, root: Path | None = None, tls_root: Path | None = None) -> list[str]:
         root = root or self.context.workspace.root
         path = root / ".env.prod.compose"
-        values = {}
+        values: dict[str, str] = {}
         for line in path.read_text().splitlines():
             if not line.strip() or line.lstrip().startswith("#"):
                 continue
@@ -67,10 +70,12 @@ class ProductionRuntime:
             files.append(overlay)
         return list(ComposeContext(WorkspaceContext(root), tuple(files), path, project).command())
 
-    def verify_images(self, command, environment, source=None):
+    def verify_images(
+        self, command: Sequence[str], environment: Mapping[str, str], source: Path | None = None
+    ) -> None:
         """Inspect the exact images selected by Compose, without starting a deployment."""
         images = self.context.run(
-            command + ["config", "--images"], env=environment, capture_output=True, text=True
+            [*command, "config", "--images"], env=environment, capture_output=True, text=True
         ).stdout.splitlines()
         php = next(image for image in images if image.startswith("runa-production:"))
         nginx = next(image for image in images if image.startswith("runa-nginx:"))

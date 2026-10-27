@@ -1,23 +1,36 @@
 """Production Compose, images, health and forward data transitions."""
 
-import json
 import re
 import shutil
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal, Unpack, overload
 
-from tools.application.deployment_context import read_env
+from tools.application.deployment_context import OperationContext, read_env
+from tools.application.deployment_models import (
+    ComposeConfiguration,
+    compose_configuration,
+    container_inspection,
+    service_image,
+    service_status,
+)
+from tools.application.deployment_source import SourceAcquisition
+from tools.application.processes import ProcessOptions
+from tools.application.production_runtime import ProductionRuntime
 
 WRITERS = ["queue", "scheduler", "app"]
 
 
 class DeploymentRuntime:
-    def __init__(self, context, source, production):
+    def __init__(
+        self, context: OperationContext, source: SourceAcquisition, production: ProductionRuntime
+    ) -> None:
         self.context = context
         self.source = source
         self.production = production
 
-    def command(self, release=None):
+    def command(self, release: Path | str | None = None) -> list[str]:
         selected = Path(release) if release else self.context.workspace.root
         identity = self.context.release(selected, selected.name if release else "operator")
         context = identity.source.root
@@ -44,22 +57,87 @@ class DeploymentRuntime:
                     )
         return self.production.compose(context, tls_root=self.context.workspace.root)
 
-    def dc(self, args, release=None, **kwargs):
+    @overload
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[True],
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str]: ...
+
+    @overload
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[False] = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[bytes]: ...
+
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: bool = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
         # Noninteractive Compose clients must not consume the caller's shell script.
         if "stdin" not in kwargs and "input" not in kwargs:
             kwargs["stdin"] = subprocess.DEVNULL
-        return self.context.run(
-            self.command(release) + args, env=self.context.environment(), **kwargs
-        )
+        kwargs["env"] = self.context.environment()
+        command = [*self.command(release), *args]
+        if text:
+            return self.context.run(command, text=True, **kwargs)
+        return self.context.run(command, **kwargs)
 
-    def artisan(self, args, release=None, **kwargs):
-        return self.dc(
-            ["run", "--rm", "--no-deps", "-T", "app", "php", "artisan", *args, "--no-interaction"],
-            release,
-            **kwargs,
-        )
+    @overload
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[True],
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str]: ...
 
-    def http_maintenance(self, enabled, release=None):
+    @overload
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[False] = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[bytes]: ...
+
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: bool = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
+        command = [
+            "run",
+            "--rm",
+            "--no-deps",
+            "-T",
+            "app",
+            "php",
+            "artisan",
+            *args,
+            "--no-interaction",
+        ]
+        if text:
+            return self.dc(command, release, text=True, **kwargs)
+        return self.dc(command, release, **kwargs)
+
+    def http_maintenance(self, enabled: bool, release: Path | str | None = None) -> None:
         # Dedicated shared directory: Nginx never needs session/cache/private-upload access.
         program = (
             '$directory = "/workspace/src/storage/framework/maintenance"; '
@@ -74,13 +152,13 @@ class DeploymentRuntime:
             ["run", "--rm", "--no-deps", "-T", "--entrypoint", "php", "app", "-r", program], release
         )
 
-    def pause_http(self, release=None):
+    def pause_http(self, release: Path | str | None = None) -> None:
         self.http_maintenance(True, release)
         # Keep the static serving process alive even when app DNS/PHP is absent.
         self.dc(["up", "-d", "--no-build", "--no-deps", "nginx"], release)
         self.dc(["stop", *WRITERS], release)
 
-    def resume_http(self, release=None, recreate=False):
+    def resume_http(self, release: Path | str | None = None, recreate: bool = False) -> None:
         self.dc(
             [
                 "up",
@@ -115,7 +193,7 @@ class DeploymentRuntime:
             self.http_maintenance(True, release)
             raise
 
-    def validate(self, release=None):
+    def validate(self, release: Path | str | None = None) -> None:
         for name in (".env.prod", ".env.prod.database", ".env.prod.compose"):
             path = self.context.workspace.root / name
             if path.is_symlink() or not path.is_file() or path.stat().st_mode & 0o077:
@@ -136,12 +214,12 @@ class DeploymentRuntime:
         self.dc(["config", "--quiet"], release)
         self.artisan(["runa:config:validate"], release)
 
-    def resolved(self, release=None):
-        return json.loads(
+    def resolved(self, release: Path | str | None = None) -> ComposeConfiguration:
+        return compose_configuration(
             self.dc(["config", "--format", "json"], release, capture_output=True, text=True).stdout
         )
 
-    def platform_data(self, sha, phase, release=None):
+    def platform_data(self, sha: str, phase: str, release: Path | str | None = None) -> None:
         self.dc(
             [
                 "run",
@@ -157,10 +235,10 @@ class DeploymentRuntime:
             release,
         )
 
-    def images(self, release):
+    def images(self, release: Path | str | None) -> dict[str, str]:
         config = self.resolved(release)
         names = {
-            service["image"]
+            service_image(service)
             for service in config["services"].values()
             if not service.get("profiles")
         }
@@ -173,7 +251,7 @@ class DeploymentRuntime:
             for name in sorted(names)
         }
 
-    def health(self, release=None, verify_source=False):
+    def health(self, release: Path | str | None = None, verify_source: bool = False) -> None:
         current = self.context.read_state()["current"]
         if (
             current
@@ -182,14 +260,10 @@ class DeploymentRuntime:
         ):
             raise ValueError("Selected image IDs differ from the recorded successful deployment.")
         config = self.resolved(release)
-        rows = self.dc(
+        payload = self.dc(
             ["ps", "--all", "--format", "json"], release, capture_output=True, text=True
         ).stdout.strip()
-        rows = (
-            json.loads(rows)
-            if rows.startswith("[")
-            else [json.loads(line) for line in rows.splitlines() if line]
-        )
+        rows = service_status(payload)
         services = {row["Service"]: row for row in rows}
         required = {name for name, value in config["services"].items() if not value.get("profiles")}
         if not required <= services.keys() or services.keys() - config["services"].keys():
@@ -213,7 +287,7 @@ class DeploymentRuntime:
         self.isolation(release, verify_source)
         print("PASS: production services, root page, readiness and isolation.")
 
-    def isolation(self, release=None, verify_source=False):
+    def isolation(self, release: Path | str | None = None, verify_source: bool = False) -> None:
         config = self.resolved(release)
         if not set(self.production.SERVICES) <= config["services"].keys():
             raise ValueError("Required production runtime services are missing.")
@@ -258,13 +332,13 @@ class DeploymentRuntime:
                 continue
             if not container:
                 raise ValueError("Missing production container: " + name)
-            actual = json.loads(
+            actual = container_inspection(
                 self.context.run(
                     ["docker", "inspect", container], capture_output=True, text=True
                 ).stdout
-            )[0]
+            )
             expected_image = self.context.run(
-                ["docker", "image", "inspect", "--format", "{{.Id}}", service["image"]],
+                ["docker", "image", "inspect", "--format", "{{.Id}}", service_image(service)],
                 capture_output=True,
                 text=True,
             ).stdout.strip()
@@ -281,9 +355,8 @@ class DeploymentRuntime:
                 )
             ):
                 raise ValueError("Running production privileges/mount/network violate isolation.")
-            if (
-                name in ("app", "queue", "scheduler")
-                and "KNOWLEDGE_ENABLED=false" not in actual["Config"]["Env"]
+            if name in ("app", "queue", "scheduler") and "KNOWLEDGE_ENABLED=false" not in (
+                actual["Config"]["Env"] or []
             ):
                 raise ValueError("Knowledge is not disabled in the running container.")
         if verify_source:
@@ -296,7 +369,7 @@ class DeploymentRuntime:
             + " isolation."
         )
 
-    def build_images(self, release=None):
+    def build_images(self, release: Path | str | None = None) -> None:
         from tools.application.dependencies import materialize
 
         materialize(Path(release) if release else self.context.workspace.root, check=True)
@@ -329,7 +402,7 @@ class DeploymentRuntime:
             source=Path(release) if release else self.context.workspace.root,
         )
 
-    def maintenance_active(self, release):
+    def maintenance_active(self, release: Path | str | None) -> bool:
         result = self.dc(
             [
                 "run",

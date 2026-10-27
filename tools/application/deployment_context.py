@@ -8,12 +8,13 @@ from functools import partial
 from pathlib import Path
 
 from tools.application.customer_source_service import CustomerSource
+from tools.application.deployment_models import DeploymentState, deployment_state
 from tools.application.development_runtime import execution_location
-from tools.application.processes import ApplicationProcesses
+from tools.application.processes import ApplicationProcesses, WorkspaceProcess
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionLocation, ReleaseContext, WorkspaceContext
 from tools.core.process import SubprocessRunner
-from tools.core.state import FileLock, JsonStore, StateDirectory
+from tools.core.state import FileLock, JsonStore, StateDirectory, json_value
 
 
 def stamp() -> str:
@@ -77,42 +78,21 @@ class OperationContext:
             if not key.startswith(("COMPOSE_", "DOCKER_", "RUNA_"))
         }
 
-    def run(self, args, **kwargs):
-        kwargs.setdefault("cwd", self.workspace.root)
-        kwargs.setdefault("check", True)
-        return self.processes.run(args, **kwargs)
+    @property
+    def run(self) -> WorkspaceProcess:
+        return partial(self.processes.run, cwd=self.workspace.root, check=True)
 
     def store(self, directory: Path) -> JsonStore:
         return JsonStore(StateDirectory(directory, private=False, anchor=self.workspace.root))
 
-    def atomic(self, path, value):
-        self.store(path.parent).write(path.name, value)
+    def atomic(self, path: Path, value: object) -> None:
+        self.store(path.parent).write(path.name, json_value(value))
 
-    def read_state(self):
+    def read_state(self) -> DeploymentState:
         path = self.state / "deployment.json"
         if not path.exists() and not path.is_symlink():
             return {"current": None, "previous": None}
-        value = self.store(self.state).read(path.name)
-        if (
-            not isinstance(value, dict)
-            or set(value) != {"current", "previous"}
-            or any(row is not None and not isinstance(row, dict) for row in value.values())
-        ):
-            raise ValueError("Invalid deployment journal; preserve operation evidence.")
-        for row in value.values():
-            if row is not None:
-                import re
-
-                sha = row.get("sha")
-                if (
-                    not isinstance(sha, str)
-                    or not re.fullmatch("[a-f0-9]{40}", sha)
-                    or row.get("path") != str(self.state / "releases" / sha)
-                ):
-                    raise ValueError(
-                        "Deployment release identity differs from its operator workspace."
-                    )
-        return value
+        return deployment_state(self.store(self.state).read(path.name), self.state)
 
     def lock(self) -> AbstractContextManager[None]:
         return FileLock(

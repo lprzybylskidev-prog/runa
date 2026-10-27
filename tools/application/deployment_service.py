@@ -1,11 +1,14 @@
 """Deployment and rollback orchestration over explicit services."""
 
 import argparse
-import json
 import re
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from tools.application.deployment_context import OperationContext, read_env, stamp
+from tools.application.deployment_models import DeploymentProgress, ReleaseRecord, manifest_version
+from tools.application.deployment_runtime import DeploymentRuntime
+from tools.application.deployment_source import SourceAcquisition
 from tools.application.processes import ApplicationProcesses
 from tools.core.context import ExecutionLocation, WorkspaceContext
 
@@ -19,8 +22,6 @@ class DeploymentService:
         processes: ApplicationProcesses | None = None,
         location: ExecutionLocation | None = None,
     ) -> "DeploymentService":
-        from tools.application.deployment_runtime import DeploymentRuntime
-        from tools.application.deployment_source import SourceAcquisition
         from tools.application.production_runtime import ProductionRuntime
 
         context = OperationContext.create(
@@ -30,16 +31,18 @@ class DeploymentService:
         runtime = DeploymentRuntime(context, source=source, production=ProductionRuntime(context))
         return cls(context, source, runtime)
 
-    def __init__(self, context, source, runtime):
+    def __init__(
+        self, context: OperationContext, source: SourceAcquisition, runtime: DeploymentRuntime
+    ) -> None:
         self.context = context
         self.source = source
         self.runtime = runtime
 
-    def active_release(self):
+    def active_release(self) -> str | None:
         current = self.context.read_state()["current"]
         return current["path"] if current else None
 
-    def set_tag(self, sha):
+    def set_tag(self, sha: str) -> str:
         path = self.context.workspace.root / ".env.prod.compose"
         old = path.read_text()
         if not re.search(r"^RUNA_IMAGE_TAG=.*$", old, re.M):
@@ -50,12 +53,12 @@ class DeploymentService:
 
     def deploy(
         self,
-        target="main",
-        simulation=False,
-        initial_resume=False,
-        verification=None,
-        database_setup=None,
-    ):
+        target: str = "main",
+        simulation: bool = False,
+        initial_resume: bool = False,
+        verification: Callable[[Path], None] | None = None,
+        database_setup: Callable[[Path], None] | None = None,
+    ) -> None:
         self.context.policy.assert_production_installation(self.context.workspace.root)
         if database_setup is not None:
             # Private external installer callback; never selected by customer commands.
@@ -81,13 +84,13 @@ class DeploymentService:
 
     def deploy_revision(
         self,
-        sha,
-        simulation,
-        initial_resume=False,
-        verification=None,
-        database_setup=None,
-        source=None,
-    ):
+        sha: str,
+        simulation: bool,
+        initial_resume: bool = False,
+        verification: Callable[[Path], None] | None = None,
+        database_setup: Callable[[Path], None] | None = None,
+        source: Path | None = None,
+    ) -> None:
         previous = self.context.read_state()["current"]
         mode = read_env(self.context.workspace.root / ".env.prod.compose").get(
             "RUNA_PRODUCTION_MODE", "real"
@@ -144,7 +147,7 @@ class DeploymentService:
         )
         old_config = self.set_tag(sha)
         mutation_started = False
-        pending = {
+        pending: DeploymentProgress = {
             "target": sha,
             "previous": previous,
             "started_at": stamp(),
@@ -152,7 +155,7 @@ class DeploymentService:
             "data_steps_started": False,
         }
 
-        def phase(value):
+        def phase(value: str) -> None:
             pending["phase"] = value
             self.context.atomic(self.context.state / "in-progress.json", pending)
 
@@ -187,13 +190,11 @@ class DeploymentService:
             self.runtime.health(release, verify_source=True)
             if verification is not None:
                 verification(release)
-            identity = {
+            identity: ReleaseRecord = {
                 "sha": sha,
-                "version": json.loads((release / "src/runa/platform.json").read_text())["version"],
+                "version": manifest_version(release / "src/runa/platform.json"),
                 "path": str(release),
-                "application_version": json.loads(
-                    (release / "src/app/application.json").read_text()
-                )["version"],
+                "application_version": manifest_version(release / "src/app/application.json"),
                 "database_tree": self.source.tree_hash(sha, release),
                 "rollback_safe": False,
                 "deployed_at": stamp(),
@@ -222,7 +223,7 @@ class DeploymentService:
                 )
             raise
 
-    def rollback(self):
+    def rollback(self) -> None:
         self.context.policy.assert_production_installation(self.context.workspace.root)
         state = self.context.read_state()
         current, previous = state["current"], state["previous"]
@@ -275,7 +276,7 @@ class DeploymentService:
             + "; database unchanged."
         )
 
-    def main(self, name, args):
+    def main(self, name: str, args: Sequence[str]) -> None:
         if name != "deploy":
             raise ValueError("Unsupported internal operation family.")
         parser = argparse.ArgumentParser(prog="./bin/" + name)

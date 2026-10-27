@@ -74,8 +74,9 @@ def dispatch(service: DeploymentService, args: list[str]) -> None:
         service.runtime.build_images()
         print("PASS: production build.")
         return
-    if commands[action]:
-        service.context.run(command + commands[action], env=environment)
+    arguments = commands[action]
+    if arguments:
+        service.context.run(command + arguments, env=environment)
     print("PASS: production " + action + ".")
 
 

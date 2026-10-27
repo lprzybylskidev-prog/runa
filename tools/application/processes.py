@@ -5,9 +5,23 @@ import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Protocol, TextIO, overload
+from typing import Literal, Protocol, TextIO, TypedDict, overload
 
 from tools.core.process import InputMode, OutputMode, ProcessRunner, ProcessSpec, ProcessTimeout
+
+
+class ProcessOptions(TypedDict, total=False):
+    """Options forwarded by workspace-bound application process adapters."""
+
+    cwd: Path
+    input: bytes | str | None
+    capture_output: bool
+    check: bool
+    timeout: float | None
+    env: Mapping[str, str] | None
+    stdin: int | None
+    stdout: int | TextIO | None
+    stderr: int | TextIO | None
 
 
 class WorkspaceProcess(Protocol):

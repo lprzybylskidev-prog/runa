@@ -2,17 +2,19 @@
 
 import hashlib
 import re
+from pathlib import Path
 
+from tools.application.deployment_context import OperationContext
 from tools.core.delivery import DEVELOPMENT_MODULES, OWNER_PATHS, production_patterns
 
 DELIVERY = production_patterns()
 
 
 class SourceAcquisition:
-    def __init__(self, context):
+    def __init__(self, context: OperationContext) -> None:
         self.context = context
 
-    def resolve(self, target):
+    def resolve(self, target: str) -> str:
         if not re.fullmatch(r"(?:v\d+\.\d+\.\d+|[a-f0-9]{40})", target):
             raise ValueError("Target must be an exact vX.Y.Z release or full lowercase Git SHA.")
         if (
@@ -30,7 +32,7 @@ class SourceAcquisition:
             raise ValueError("Invalid commit identity.")
         return sha
 
-    def tree_hash(self, sha, repository=None):
+    def tree_hash(self, sha: str, repository: Path | None = None) -> str:
         # Conservatively include module migrations/upgrades and their owned helper implementations.
         return hashlib.sha256(
             self.context.run(
@@ -53,7 +55,7 @@ class SourceAcquisition:
             ).stdout
         ).hexdigest()
 
-    def checkout(self, sha, source=None):
+    def checkout(self, sha: str, source: Path | None = None) -> Path:
         data = self.context.policy.receipt(self.context.workspace.root)
         if not re.fullmatch("[a-f0-9]{40}", sha):
             raise ValueError("Staging requires an exact commit identity.")
@@ -110,7 +112,7 @@ class SourceAcquisition:
         )
         return path
 
-    def assert_delivery(self, path):
+    def assert_delivery(self, path: Path) -> None:
         if any(
             (path / name).exists() or (path / name).is_symlink()
             for name in (*OWNER_PATHS, *DEVELOPMENT_MODULES)

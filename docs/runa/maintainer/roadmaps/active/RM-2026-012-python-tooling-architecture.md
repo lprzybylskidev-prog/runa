@@ -1366,6 +1366,39 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   No disposable Docker resource was created or removed by this continuation;
   active development/test data, knowledge/model caches, backups and reports remain.
 
+#### Point 9 continuation — deployment data and process contracts (2026-10-27)
+
+- Annotated deployment context/source, production policy, Compose/runtime and
+  orchestration inputs/results, release callbacks and progress/identity records.
+  Workspace-bound execution reuses `WorkspaceProcess`; forwarded `ProcessOptions`
+  retain literal input, text/bytes results, default checked execution, explicit
+  unchecked probes, noninteractive Compose stdin and isolated operator environment.
+- Added typed journal/Compose/service-status/container-inspection decoders. They
+  validate consumed fields before use, retain unknown historical/customer fields
+  and keep existing serialization. The 0.5.0 producer uses the same release fields;
+  an absent legacy `rollback_safe` remains unproven, never permission to roll back.
+  Optional profiled services can omit an image until selected. Null Docker Env is
+  handled as absent configuration, preserving the fixed knowledge-isolation refusal.
+  Manifest versions are checked without imposing platform SemVer on customer data.
+- Five focused boundary cases passed through the supported `test-python` runner,
+  then passed again after extending explicit check/stdin/environment assertions.
+  Three selected existing regressions passed: interleaved workspaces/releases,
+  successful repeat without data replay, and unsafe rollback refusal before runtime
+  work. These use scripted process outcomes; no Docker acceptance or data mutation
+  was performed. Full suites, strict analysis, builds/scanners and acceptance remain
+  exclusively point 10. Mandatory staged hooks apply to this continuation.
+- Synchronized the public Python guide and owner migration ledger. Owner/customer
+  AGENTS and backend/security products already require qualified typed boundaries,
+  explicit contexts and safe journal/process handling; no new public extension API,
+  authority, customer action or security exception requires changing those products.
+  No independently versioned module, dependency, migration or production setting
+  changed. No disposable Docker resource was created or removed; development/test
+  data, knowledge/model caches, backups and verification reports are preserved.
+- Point 9 remains open: quality/host transport, installation/external update,
+  knowledge and remaining private fixture/test annotation completion, followed by
+  the final complete alias/resource/non-Python/inline ledger reconciliation.
+  Point 10 has not started; VERSION remains 0.5.0 and proposed_version is 0.6.0.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,
