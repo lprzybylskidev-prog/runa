@@ -1,12 +1,15 @@
 """Private immutable history protection; migration exceptions have expired."""
 
+from __future__ import annotations
+
 import hashlib
 import json
+from pathlib import Path
 
 from tools.application.documentation import maintainer_checkout
 
 
-def immutable_history(root, name, data):
+def immutable_history(root: Path, name: str, data: bytes | None) -> bool:
     if not maintainer_checkout(root):
         return False
     mapping = root / "docs/runa/maintainer/documentation-map.json"

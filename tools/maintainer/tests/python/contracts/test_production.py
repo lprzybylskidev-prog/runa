@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Production topology and command-boundary contracts without Docker privileges."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
@@ -8,7 +10,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from tools.application import production_runtime as production
 from tools.application.repository_boundary_service import RepositoryPolicy
@@ -19,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class ProductionContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.deployment = deployment(Path(self.temporary.name))
@@ -29,7 +31,9 @@ class ProductionContracts(unittest.TestCase):
         boundary.start()
         self.addCleanup(boundary.stop)
 
-    def test_team_deployment_compares_production_projection_and_refuses_excluded_source(self):
+    def test_team_deployment_compares_production_projection_and_refuses_excluded_source(
+        self,
+    ) -> None:
         from tools.maintainer.testing.team_update_host import production_source_matches as matches
 
         with tempfile.TemporaryDirectory() as folder:
@@ -50,7 +54,7 @@ class ProductionContracts(unittest.TestCase):
 
     def test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden(
         self,
-    ):
+    ) -> None:
         config = {
             "services": {
                 name: {"image": "fixture", "environment": {"KNOWLEDGE_ENABLED": "false"}}
@@ -58,10 +62,10 @@ class ProductionContracts(unittest.TestCase):
             }
         }
 
-        def dc(arguments, *args, **kwargs):
+        def dc(arguments: list[str], *args: object, **kwargs: object) -> Mock:
             return subprocess.CompletedProcess(arguments, 0, arguments[-1])
 
-        def run(arguments, **kwargs):
+        def run(arguments: list[str], **kwargs: object) -> Mock:
             actual = {
                 "Image": "exact",
                 "HostConfig": {},
@@ -89,7 +93,7 @@ class ProductionContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "AI/development"):
                 self.deployment.runtime.isolation()
 
-    def test_runtime_topology_and_isolation(self):
+    def test_runtime_topology_and_isolation(self) -> None:
         data = yaml(ROOT / "compose.production.yaml")
         services = data["services"]
         self.assertEqual(set(services), set(production.SERVICES))
@@ -137,7 +141,7 @@ class ProductionContracts(unittest.TestCase):
         self.assertIn('ENTRYPOINT ["runa-production-entrypoint"]', production_stage)
         self.assertIn('CMD ["php-fpm", "-F"]', production_stage)
 
-    def test_emergency_scope_excludes_php_errors_and_sensitive_storage(self):
+    def test_emergency_scope_excludes_php_errors_and_sensitive_storage(self) -> None:
         config = (ROOT / "docker/nginx/production.conf").read_text()
         self.assertIn("fastcgi_intercept_errors off;", config)
         self.assertIn("error_page 502 503 504 =503 $runa_error_document;", config)
@@ -155,7 +159,7 @@ class ProductionContracts(unittest.TestCase):
             2,
         )
 
-    def test_native_mail_runtime_inputs_are_shipped_without_review_fixtures(self):
+    def test_native_mail_runtime_inputs_are_shipped_without_review_fixtures(self) -> None:
         stage = (
             (ROOT / "docker/php/Dockerfile")
             .read_text()
@@ -175,7 +179,7 @@ class ProductionContracts(unittest.TestCase):
             "COPY --chown=runa:runa src/runa/resources/ /workspace/src/runa/resources/", stage
         )
 
-    def test_shared_nginx_runtime_digest_stays_consistent(self):
+    def test_shared_nginx_runtime_digest_stays_consistent(self) -> None:
         development = yaml(ROOT / "compose.yaml")["services"]
         image = development["nginx"]["image"]
         self.assertRegex(image, r"^nginx:[^@]+@sha256:[a-f0-9]{64}$")
@@ -184,7 +188,7 @@ class ProductionContracts(unittest.TestCase):
             "FROM " + image + " AS production-nginx", (ROOT / "docker/php/Dockerfile").read_text()
         )
 
-    def test_context_and_argument_validation(self):
+    def test_context_and_argument_validation(self) -> None:
         from tools.application.production_cli import main
 
         with (

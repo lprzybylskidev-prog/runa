@@ -5,6 +5,8 @@ Fresh PostgreSQL/storage volumes, synthetic TLS/SMTP, real migrations/builds/HTT
 Never reuses development data or production projects. Prints scoped cleanup first.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -16,8 +18,10 @@ import tempfile
 import urllib.error
 import urllib.request
 import uuid
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Unpack
 
 from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
 from tools.core.context import WorkspaceContext
@@ -25,33 +29,45 @@ from tools.maintainer.testing import customer_deployment_host as acceptance_cust
 from tools.maintainer.testing import customer_knowledge as acceptance_customer_knowledge
 from tools.maintainer.testing import team_update_host as acceptance_team_update_host
 from tools.maintainer.testing import update_host as acceptance_update_host
-from tools.maintainer.testing.acceptance import AcceptanceContext
+from tools.maintainer.testing.acceptance import (
+    AcceptanceContext,
+    ComposeFixture,
+    OutputOptions,
+    RemovedResources,
+    Report,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
 REPORTS = ROOT / ".runtime/ownership"
 
 
-def call(arguments, cwd=ROOT, env=None, capture=False, check=True):
+def call(
+    arguments: Sequence[str],
+    cwd: Path = ROOT,
+    env: Mapping[str, str] | None = None,
+    capture: bool = False,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
     return ACCEPTANCE.call(arguments, cwd=cwd, env=env, capture=capture, check=check)
 
 
-def output(arguments, **kwargs):
+def output(arguments: Sequence[str], **kwargs: Unpack[OutputOptions]) -> str:
     return ACCEPTANCE.output(arguments, **kwargs)
 
 
-def port():
+def port() -> int:
     with socket.socket() as stream:
         stream.bind(("127.0.0.1", 0))
         return stream.getsockname()[1]
 
 
-def yaml_source(name):
+def yaml_source(name: str) -> ComposeFixture:
     code = 'require "src/vendor/autoload.php"; echo json_encode(Symfony\\Component\\Yaml\\Yaml::parseFile($argv[1]), JSON_THROW_ON_ERROR);'
     return json.loads(output(ACCEPTANCE.app("php", "-r", code, name)))
 
 
-def snapshot(root):
+def snapshot(root: Path) -> None:
     call(["git", "clone", "--quiet", "--shared", "--no-checkout", str(ROOT), str(root)])
     paths = output(["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"]).split(
         "\0"
@@ -68,11 +84,11 @@ def snapshot(root):
                 shutil.copy2(source, destination)
 
 
-def commit(root):
+def commit(root: Path) -> str:
     return ACCEPTANCE.commit(root)
 
 
-def customer_snapshot(source, destination):
+def customer_snapshot(source: Path, destination: Path) -> None:
     destination.mkdir()
     names = output(
         ["git", "-C", str(source), "ls-files", "--cached", "--others", "--exclude-standard", "-z"]
@@ -99,7 +115,7 @@ def customer_snapshot(source, destination):
     call(["git", "init", "--quiet", "-b", "main", str(destination)])
 
 
-def project_customer(root, sha):
+def project_customer(root: Path, sha: str) -> None:
     import distribution.bootstrap as bootstrap
 
     product = bootstrap.customer_agent(root)
@@ -151,7 +167,7 @@ def project_customer(root, sha):
         assert not output(["git", "-C", str(root), "status", "--porcelain"])
 
 
-def installer(root, mode, sha):
+def installer(root: Path, mode: str, sha: str) -> list[str]:
     # Owner delivery invokes a fixed internal library, never an installed launcher.
     return [
         sys.executable,
@@ -162,8 +178,8 @@ def installer(root, mode, sha):
     ]
 
 
-def remove_project(project, report):
-    def ids(kind):
+def remove_project(project: str, report: Report) -> None:
+    def ids(kind: str) -> list[str]:
         return output(
             ["docker", kind, "ls", "-q", "--filter", "label=com.docker.compose.project=" + project]
         ).splitlines()
@@ -171,7 +187,7 @@ def remove_project(project, report):
     containers = output(
         ["docker", "ps", "-a", "-q", "--filter", "label=com.docker.compose.project=" + project]
     ).splitlines()
-    resources = {
+    resources: RemovedResources = {
         "project": project,
         "containers": containers,
         "networks": ids("network"),
@@ -192,20 +208,20 @@ def remove_project(project, report):
     report.setdefault("cleanup", []).append(resources)
 
 
-def persistent_development_containers():
+def persistent_development_containers() -> list[str]:
     # One Docker snapshot provides IDs and ownership labels, avoiding a race with
     # the browser runner removing its own endpoints before a separate inspect.
     return ACCEPTANCE.protected_containers()
 
 
-def main():
+def main() -> None:
     if Path("/.dockerenv").exists():
         raise SystemExit("Run this acceptance from the native Docker host.")
     if "--team-propagation" in sys.argv[1:] and "--updater-preflight" not in sys.argv[1:]:
         raise SystemExit("--team-propagation requires --updater-preflight.")
     REPORTS.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex[:10]
-    report = {
+    report: Report = {
         "result": "RUNNING",
         "checks": [],
         "preserved": [
@@ -218,7 +234,7 @@ def main():
     }
     report_path = REPORTS / ("installation-host-" + token + ".json")
 
-    def check(condition, text):
+    def check(condition: bool, text: str) -> None:
         if not condition:
             raise RuntimeError(text)
         report["checks"].append(text)
@@ -534,7 +550,16 @@ def main():
 
             if "--customer-knowledge" in sys.argv[1:]:
                 acceptance_customer_knowledge.exercise(
-                    dev, dev_project, data, env, check, report, call, output, yaml_source
+                    dev,
+                    dev_project,
+                    data,
+                    env,
+                    check,
+                    report,
+                    call,
+                    output,
+                    yaml_source,
+                    owner=ACCEPTANCE,
                 )
 
             secrets = {

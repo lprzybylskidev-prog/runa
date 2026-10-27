@@ -1,5 +1,7 @@
 """Physical projections and wheel isolation, scheduled in final verification."""
 
+from __future__ import annotations
+
 import ast
 import os
 import subprocess
@@ -152,7 +154,9 @@ def test_delivered_quality_security_and_hooks_import_without_private_packages(
     )
 
 
-def test_delivered_deployment_and_installer_import_without_external_or_owner(tmp_path):
+def test_delivered_deployment_and_installer_import_without_external_or_owner(
+    tmp_path: Path,
+) -> None:
     stage("application", tmp_path)
     subprocess.run(
         [
@@ -227,3 +231,33 @@ def test_external_source_bundle_needs_no_install_or_application_tree(tmp_path: P
         )
         assert result.returncode == 0, result.stderr
         assert b"usage:" in result.stdout.lower()
+
+
+def test_migration_reconciliation_covers_every_baseline_identity() -> None:
+    import json
+
+    directory = ROOT / "docs/runa/maintainer/tooling/python-rebuild"
+    baseline = json.loads((directory / "inventory.json").read_text())
+    current = json.loads((directory / "reconciliation.json").read_text())
+    assert current["baseline_commit"] == baseline["baseline_commit"]
+    for group in (
+        "components",
+        "aliases",
+        "resources",
+        "non_python_references",
+        "inline_integrations",
+    ):
+        rows = current[group]
+        assert len(rows) == len({row["path"] for row in rows})
+        assert {row["path"] for row in rows} == {row["path"] for row in baseline[group]}
+        for row in rows:
+            path = ROOT / row["path"]
+            if row["disposition"] == "retired":
+                assert not path.exists() and not path.is_symlink(), row["path"]
+            else:
+                assert path.is_file(), row["path"]
+            for target in row.get("targets", []):
+                assert (ROOT / target).is_file(), (row["path"], target)
+            if group == "aliases":
+                assert path.is_symlink() and os.readlink(path) == row["target"]
+                assert path.resolve() == ROOT / row["resolved_target"]

@@ -1,13 +1,18 @@
 """Real customer commit/push/pull/data/deploy propagation in disposable projects."""
 
+from __future__ import annotations
+
 import json
 import os
 import shutil
 import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from tools.maintainer.testing.acceptance import AcceptanceCall, AcceptanceOutput, Check, Report
 
-def production_source_matches(active, peer, names):
+
+def production_source_matches(active: Path, peer: Path, names: Sequence[str]) -> bool:
     from tools.application.repository_boundary_service import OWNER_PATHS
     from tools.core.delivery import DEVELOPMENT_MODULES
 
@@ -24,7 +29,18 @@ def production_source_matches(active, peer, names):
 
 
 class Team:
-    def __init__(self, dev, fixture, project, check, report, call, output, commit, snapshot):
+    def __init__(
+        self,
+        dev: Path,
+        fixture: Path,
+        project: str,
+        check: Check,
+        report: Report,
+        call: AcceptanceCall,
+        output: AcceptanceOutput,
+        commit: Callable[[Path], str],
+        snapshot: Callable[[Path, Path], None],
+    ) -> None:
         self.dev, self.fixture, self.project = dev, fixture, project
         self.dev_project = json.loads((dev / "compose.yaml").read_text())["name"]
         self.check, self.report, self.call, self.output, self.commit = (
@@ -127,7 +143,7 @@ class Team:
             "teammate has real old application data/history before the development update",
         )
 
-    def sql(self, project, statement):
+    def sql(self, project: str, statement: str) -> str:
         return self.output(
             [
                 "docker",
@@ -146,7 +162,7 @@ class Team:
             ]
         )
 
-    def publish(self):
+    def publish(self) -> None:
         migration = self.dev / "src/app/database/migrations/2099_01_01_000011_team_upgrade.php"
         migration.write_text(
             "<?php return new class extends \\Illuminate\\Database\\Migrations\\Migration { public function up(): void { \\Illuminate\\Support\\Facades\\DB::statement('ALTER TABLE team_probe.records ADD COLUMN note text'); } };\n"
@@ -179,7 +195,7 @@ class Team:
         )
         self.report["team_update"] = {"original": self.original, "updated": self.updated}
 
-    def pull(self, expected):
+    def pull(self, expected: str) -> None:
         self.call(["git", "-C", str(self.peer), "pull", "--ff-only", "origin", "main"])
         self.check(
             self.output(["git", "-C", str(self.peer), "rev-parse", "HEAD"]) == expected,
@@ -237,7 +253,7 @@ class Team:
             "manual reconciliation and teammate preparation preserve selected customer dependency locks",
         )
 
-    def deploy(self, prod, project, expected):
+    def deploy(self, prod: Path, project: str, expected: str) -> None:
         self.check(
             self.sql(project, "SELECT to_regclass('shared.update_reference') IS NULL") == "t",
             "previous production revision has not received the target platform schema",

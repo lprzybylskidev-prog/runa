@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Dependency ownership conflicts and lock preservation contracts."""
 
+from __future__ import annotations
+
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,7 +11,7 @@ from tools.application.dependencies import compose, materialize
 
 
 class DependencyContracts(unittest.TestCase):
-    def test_combines_customer_dependencies_without_mutating_inputs(self):
+    def test_combines_customer_dependencies_without_mutating_inputs(self) -> None:
         platform = {"require": {"framework": "1.0"}, "scripts": {"build": "protected"}}
         application = {"require": {"customer": "2.0"}}
         result = compose(platform, application, "composer")
@@ -17,7 +19,7 @@ class DependencyContracts(unittest.TestCase):
         self.assertEqual(platform["require"], {"framework": "1.0"})
         self.assertEqual(result["scripts"], platform["scripts"])
 
-    def test_rejects_conflicting_and_unsupported_inputs(self):
+    def test_rejects_conflicting_and_unsupported_inputs(self) -> None:
         for app in (
             {"require": {"framework": "2.0"}},
             {"require-dev": {"framework": "1.0"}},
@@ -28,7 +30,7 @@ class DependencyContracts(unittest.TestCase):
             with self.subTest(app=app), self.assertRaises(ValueError):
                 compose({"require": {"framework": "1.0"}}, app, "composer")
 
-    def test_checks_both_graphs_before_writes_and_preserves_locks(self):
+    def test_checks_both_graphs_before_writes_and_preserves_locks(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             for owner in ("runa", "app"):

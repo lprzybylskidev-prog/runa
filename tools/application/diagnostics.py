@@ -1,14 +1,17 @@
 """Read-only application diagnostics over injected workspace and process policies."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
 import time
 import urllib.request
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 
-from tools.application.processes import ApplicationProcesses
+from tools.application.processes import ApplicationProcesses, WorkspaceProcess
 from tools.core.context import WorkspaceContext
 
 
@@ -18,17 +21,18 @@ class Diagnostics:
     processes: ApplicationProcesses
 
     @classmethod
-    def for_workspace(cls, root: Path) -> "Diagnostics":
+    def for_workspace(cls, root: Path) -> Diagnostics:
         from tools.core.process import SubprocessRunner
 
         return cls(
             WorkspaceContext(root), ApplicationProcesses(SubprocessRunner(), dict(os.environ))
         )
 
-    def command(self, args, **kwargs):
-        return self.processes.run(args, cwd=self.workspace.root, check=True, **kwargs)
+    @property
+    def command(self) -> WorkspaceProcess:
+        return partial(self.processes.run, cwd=self.workspace.root, check=True)
 
-    def repository(self):
+    def repository(self) -> None:
         active = list((self.workspace.root / "docs/app/roadmaps/active").glob("*.md"))
         if len(active) > 1:
             raise ValueError("Multiple active application roadmaps.")
@@ -42,16 +46,16 @@ class Diagnostics:
                 raise ValueError("Active application roadmap status/branch mismatch.")
         print("PASS: application repository/roadmap state.")
 
-    def maintenance(self):
+    def maintenance(self) -> None:
         self.repository()
         print("PASS: application maintenance context; platform release maintenance is owner-only.")
 
-    def docs(self):
+    def docs(self) -> None:
         from tools.application.docs_checks import validate
 
         validate(self.workspace.root)
 
-    def tooling(self):
+    def tooling(self) -> None:
         for path in sorted((self.workspace.root / "bin").iterdir()):
             if path.is_file() and os.access(path, os.X_OK) and path.name != "check":
                 result = self.command([str(path), "--help"], capture_output=True, text=True)
@@ -95,7 +99,7 @@ class Diagnostics:
             "PASS: command help/exit contracts, PHP extensions and pinned PHP/Node/pnpm/Composer/Codex/Gitleaks."
         )
 
-    def development(self):
+    def development(self) -> None:
         self.command(["php", "artisan", "runa:config:validate"])
         self.command(["php", "artisan", "runa:config:templates"])
         if any((self.workspace.root / "src/app/database/migrations").glob("*.php")):
@@ -121,7 +125,7 @@ class Diagnostics:
             "PASS: config, database/migrations, queue/scheduler, Nginx, Mailpit and effective resources; optional AI availability reported separately."
         )
 
-    def boost(self):
+    def boost(self) -> None:
         commands = self.command(
             ["php", "artisan", "list", "--raw"], capture_output=True, text=True
         ).stdout

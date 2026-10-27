@@ -1,6 +1,9 @@
 """Private owner composition of the delivered test lifecycle."""
 
+from __future__ import annotations
+
 import sys
+from collections.abc import Sequence
 
 from tools.application.documentation import maintainer_checkout
 from tools.application.testing.cli import boundary
@@ -18,7 +21,7 @@ OWNER = TestLayout(
 )
 
 
-def main(argv=None):
+def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     if "--help" not in arguments and not maintainer_checkout(ROOT):
         raise ValueError("Owner tests require a receipt-free maintenance checkout.")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Real Git role fencing: no maintenance/customer source or remote repair."""
 
+from __future__ import annotations
+
 import json
 import os
 import shutil
@@ -20,14 +22,14 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class RepositoryBoundary(unittest.TestCase):
-    def git(self, root, *arguments):
+    def git(self, root: Path, *arguments: str) -> str:
         return (
             subprocess.check_output(["git", "-C", str(root), *arguments], stderr=subprocess.DEVNULL)
             .decode()
             .strip()
         )
 
-    def fixture(self, root):
+    def fixture(self, root: Path) -> None:
         self.git(root, "init", "--quiet")
         self.git(root, "remote", "add", "origin", "https://github.com/fixture/runa.git")
         self.git(root, "config", "remote.origin.pushurl", "disabled://runa-read-only-upstream")
@@ -40,7 +42,7 @@ class RepositoryBoundary(unittest.TestCase):
             },
         )
 
-    def test_unknown_and_maintenance_repositories_are_not_mutated(self):
+    def test_unknown_and_maintenance_repositories_are_not_mutated(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             self.git(root, "init", "--quiet")
@@ -61,7 +63,7 @@ class RepositoryBoundary(unittest.TestCase):
             self.assertEqual((root / ".git/config").read_bytes(), original)
             self.assertEqual(self.git(root, "status", "--porcelain"), "")
 
-    def test_production_mode_uses_the_real_receipt_and_never_changes_it(self):
+    def test_production_mode_uses_the_real_receipt_and_never_changes_it(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             self.fixture(root)
@@ -83,7 +85,9 @@ class RepositoryBoundary(unittest.TestCase):
                         RepositoryPolicy.for_workspace(root).assert_production_installation(root)
                 self.assertEqual(path.read_bytes(), before)
 
-    def test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production(self):
+    def test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             with patch.dict(os.environ, {"APP_ENV": "local"}):
@@ -105,7 +109,7 @@ class RepositoryBoundary(unittest.TestCase):
                     RepositoryPolicy.for_workspace(root).assert_development_context(root)
             self.assertFalse((root / ".runtime").exists())
 
-    def test_customer_read_only_role_and_existing_customer_remote_preservation(self):
+    def test_customer_read_only_role_and_existing_customer_remote_preservation(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             self.fixture(root)
@@ -126,7 +130,7 @@ class RepositoryBoundary(unittest.TestCase):
                 RepositoryPolicy.for_workspace(root).assert_installation(root)
             self.assertEqual((root / ".git/config").read_bytes(), config)
 
-    def test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied(self):
+    def test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / "installation"
             root.mkdir()
@@ -155,14 +159,14 @@ class RepositoryBoundary(unittest.TestCase):
             with self.assertRaises(ValueError):
                 RepositoryPolicy.for_workspace(root).assert_installation(root)
 
-    def test_customer_command_registry_excludes_maintenance_even_if_restored(self):
+    def test_customer_command_registry_excludes_maintenance_even_if_restored(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             source = root / "src/runa/management"
             shutil.copytree(ROOT / "src/runa/management", source)
             program = 'require $argv[1]; $classes = require $argv[2]; foreach ($classes as $command) { echo $command->getName(), "\\n"; }'
 
-            def names():
+            def names() -> list[str]:
                 return (
                     subprocess.check_output(
                         [
@@ -193,7 +197,7 @@ class RepositoryBoundary(unittest.TestCase):
             (root / ".git/runa-bootstrap.json").unlink()
             self.assertNotIn("runa:install", names())
 
-    def test_distribution_projection_is_fixed_and_shared(self):
+    def test_distribution_projection_is_fixed_and_shared(self) -> None:
         from distribution import bootstrap as standalone
 
         self.assertEqual(standalone.OWNER_PATHS, boundary.OWNER_PATHS)

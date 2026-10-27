@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Real-service retrieval acceptance, isolated from the developer collection."""
 
+from __future__ import annotations
+
 import contextlib
 import copy
 import io
@@ -24,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 @pytest.mark.knowledge
 class RetrievalContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.config, _ = configuration(ROOT)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -55,17 +57,17 @@ class RetrievalContracts(unittest.TestCase):
         )
         self.index()
 
-    def git(self, *args):
+    def git(self, *args: str) -> None:
         subprocess.run(["git", *args], cwd=self.root, check=True, capture_output=True)
 
-    def index(self):
+    def index(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(self.indexer.index(), 0)
 
-    def cleanup_collection(self):
+    def cleanup_collection(self) -> None:
         self.store.http.request("DELETE", self.store.path)
 
-    def test_hybrid_filter_exact_identifier_and_source_diversity(self):
+    def test_hybrid_filter_exact_identifier_and_source_diversity(self) -> None:
         r = Retriever(self.root, self.config, context=self.context, store=self.store)
         hits = r.search("frobnicator_739")
         self.assertEqual(hits[0]["payload"]["status"], "closed")
@@ -87,7 +89,7 @@ class RetrievalContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             r.search("test", filters={"unknown": "value"})
 
-    def test_stale_branch_missing_orphan_and_mixed_model_are_rejected(self):
+    def test_stale_branch_missing_orphan_and_mixed_model_are_rejected(self) -> None:
         original = self.store.manifest()
         manifest = copy.deepcopy(original)
         manifest["pending"] = True
@@ -123,7 +125,7 @@ class RetrievalContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             Retriever(self.root, self.config, context=self.context, store=self.store)
 
-    def test_explicit_rebuild_restores_deleted_collection(self):
+    def test_explicit_rebuild_restores_deleted_collection(self) -> None:
         before = set(self.store.all_points())
         self.store.http.request("DELETE", self.store.path)
         self.assertEqual(self.indexer.status()["state"], "missing")

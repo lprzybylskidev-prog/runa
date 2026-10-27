@@ -1,13 +1,28 @@
 """Real customer deployment acceptance inside the installer's disposable prod project."""
 
+from __future__ import annotations
+
 import fcntl
 import json
 import sys
+from collections.abc import Callable
+from pathlib import Path
 
+from tools.application.deployment_models import DeploymentState
 from tools.maintainer.service_fixtures import redis_image
+from tools.maintainer.testing.acceptance import AcceptanceCall, AcceptanceOutput, Check, Report
 
 
-def exercise(prod, fixture, project, check, report, call, output, commit):
+def exercise(
+    prod: Path,
+    fixture: Path,
+    project: str,
+    check: Check,
+    report: Report,
+    call: AcceptanceCall,
+    output: AcceptanceOutput,
+    commit: Callable[[Path], str],
+) -> None:
     customer = fixture / "customer-repository"
     if not (customer / ".git").is_dir():
         raise RuntimeError(
@@ -18,10 +33,10 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     head = output(["git", "-C", str(prod), "rev-parse", "HEAD"])
     state = prod / ".runtime/production"
 
-    def deployment():
+    def deployment() -> DeploymentState:
         return json.loads((state / "deployment.json").read_text())
 
-    def sql(statement):
+    def sql(statement: str) -> str:
         return output(
             [
                 "docker",
@@ -40,7 +55,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             ]
         )
 
-    def execute(*args, success=True):
+    def execute(*args: str, success: bool = True) -> None:
         # First deploy also traverses real cold PHP
         # parsing and the fixed host recovery executor, rather than a mocked plan.
         if not args and not report.get("customer_command_transport"):
@@ -64,7 +79,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             + (" ".join(args) or "default main"),
         )
 
-    def maintenance():
+    def maintenance() -> str:
         return output(
             [
                 "docker",
@@ -76,7 +91,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             ]
         )
 
-    def assert_fenced(phase):
+    def assert_fenced(phase: str) -> None:
         pending = json.loads((state / "in-progress.json").read_text())
         stopped = [
             output(
@@ -95,7 +110,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             "failed " + phase + " retains recorded phase, HTTP maintenance and stopped writers",
         )
 
-    def recover_fixture():
+    def recover_fixture() -> None:
         # Fixture-only reviewed recovery: migrations failed before changes or seed
         # effects were inspected. Restore known previous code; never undo data.
         code = 'from pathlib import Path; from tools.application.deployment_service import DeploymentService; service = DeploymentService.for_workspace; o=service(Path.cwd()); old=o.context.read_state()["current"]; o.set_tag(old["sha"]); o.runtime.resume_http(old["path"],recreate=True); o.runtime.health(old["path"],verify_source=True); (o.context.state/"in-progress.json").unlink()'

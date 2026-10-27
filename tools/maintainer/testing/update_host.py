@@ -1,25 +1,39 @@
 """Exercise real updater planning, execution and recovery in disposable customer development/production fixtures."""
 
+from __future__ import annotations
+
 import hashlib
 import json
+from collections.abc import Callable
 from pathlib import Path
+from typing import Unpack
 from unittest.mock import patch
 
 import distribution.bootstrap as bootstrap
 import distribution.update_execution as update_execution
 import distribution.update_planning as update
 import distribution.update_runtime as update_runtime
+from distribution.bootstrap import ReleaseIdentity
+from tools.core.state import JsonValue
 from tools.maintainer.service_fixtures import redis_image
+from tools.maintainer.testing.acceptance import (
+    AcceptanceCall,
+    AcceptanceOutput,
+    Check,
+    GitOptions,
+    Report,
+    Snapshot,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def release_tags(installed_version):
+def release_tags(installed_version: str) -> tuple[str, str]:
     major, minor, patch = map(int, installed_version.split("."))
     return "v" + installed_version, f"v{major}.{minor}.{patch + 1}"
 
 
-def reconcile_fixture_configuration(root, services):
+def reconcile_fixture_configuration(root: Path, services: dict[str, JsonValue]) -> None:
     """Explicit customer action after the updater applies its approved target."""
     path = root / "compose.yaml"
     value = json.loads(path.read_text())
@@ -41,7 +55,16 @@ def reconcile_fixture_configuration(root, services):
         template.write_text(content.rstrip("\n") + "\n\nTEAM_RELEASE_MARKER=\n")
 
 
-def exercise(prod, fixture, project, check, report, call, output, commit):
+def exercise(
+    prod: Path,
+    fixture: Path,
+    project: str,
+    check: Check,
+    report: Report,
+    call: AcceptanceCall,
+    output: AcceptanceOutput,
+    commit: Callable[[Path], str],
+) -> None:
     mode = json.loads((prod / ".git/runa-bootstrap.json").read_text())["mode"]
     installed_version = json.loads((prod / "src/runa/platform.json").read_text())["version"]
     original_tag, target_tag = release_tags(installed_version)
@@ -56,7 +79,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     repository = fixture / ("reference-releases-" + mode)
     call(["git", "clone", "--quiet", "--no-hardlinks", str(prod), str(repository)])
 
-    def git(*args):
+    def git(*args: str) -> str:
         return output(["git", "-C", str(repository), *args])
 
     for tag in (original_tag, target_tag):
@@ -152,7 +175,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     call([*update_runtime.compose(prod, "dev", prod), "up", "-d", "--wait", "redis"], cwd=prod)
     client = bootstrap.GitHub("fixture/runa")
 
-    def local_git(source, home, *args, **kwargs):
+    def local_git(source: Path, home: Path, *args: str, **kwargs: Unpack[GitOptions]) -> bytes:
         if args[:3] == ("remote", "add", "origin"):
             args = (*args[:3], str(repository))
         env = bootstrap.git_environment(home)
@@ -163,14 +186,14 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             input_data=kwargs.get("input_data"),
         )
 
-    def resolve(tag):
+    def resolve(tag: str) -> ReleaseIdentity:
         return {
             "release_id": 1,
             "tag_object": git("rev-parse", tag),
             "commit": git("rev-parse", tag + "^{commit}"),
         }
 
-    def sql():
+    def sql() -> str:
         return output(
             [
                 "docker",
@@ -187,7 +210,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             ]
         )
 
-    def files():
+    def files() -> Snapshot:
         result = {}
         active = (
             prod
@@ -223,7 +246,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
                     )
         return result
 
-    def services():
+    def services() -> dict[str, str]:
         return {
             name: output(
                 [
@@ -319,7 +342,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         git_head = output(["git", "-C", str(prod), "rev-parse", "HEAD"])
 
         class InterruptedHealth(update_execution.DockerRuntime):
-            def health(self):
+            def health(self) -> None:
                 super().health()
                 raise RuntimeError("Synthetic lost response after actual healthy switch")
 
@@ -357,7 +380,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
             "failed development update stops HTTP and application writers while retaining PostgreSQL",
         )
 
-        def query(statement):
+        def query(statement: str) -> str:
             return output(
                 [
                     "docker",

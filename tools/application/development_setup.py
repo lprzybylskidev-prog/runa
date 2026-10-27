@@ -1,6 +1,9 @@
 """Application dependency/bootstrap setup with a content-bound freshness marker."""
 
+from __future__ import annotations
+
 import hashlib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,7 +18,7 @@ class DevelopmentSetup:
     processes: ApplicationProcesses
     configuration: DevelopmentConfig
 
-    def setup_fingerprint(self):
+    def setup_fingerprint(self) -> str:
         paths = [
             self.workspace.root / p
             for p in (
@@ -59,7 +62,7 @@ class DevelopmentSetup:
             digest.update(path.read_bytes())
         return digest.hexdigest()
 
-    def register_boost(self):
+    def register_boost(self) -> None:
         # Register in the container user's configuration before project trust is established.
         self.processes.run(
             [
@@ -74,7 +77,7 @@ class DevelopmentSetup:
             check=True,
         )
 
-    def register_hooks(self):
+    def register_hooks(self) -> None:
         # Owner hooks are configured deliberately by the maintainer workflow.
         if (self.workspace.root / "tools/maintainer").exists() or not (
             self.workspace.root / ".git"
@@ -111,7 +114,7 @@ class DevelopmentSetup:
                 check=True,
             )
 
-    def application_setup(self, args):
+    def application_setup(self, args: Sequence[str]) -> int:
         self.configuration.environment_files()
         self.register_hooks()
         self.processes.run(

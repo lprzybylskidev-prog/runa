@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Application startup failure boundaries and independent knowledge recovery."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
 import subprocess
 import tempfile
 import unittest
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class DevelopmentFixture(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.processes = Mock()
@@ -33,7 +36,7 @@ class DevelopmentFixture(unittest.TestCase):
         self.arguments = []
 
     @contextmanager
-    def bind(self, root, real=False):
+    def bind(self, root: Path, real: bool = False) -> Iterator[None]:
         previous = self.dev
         processes = ApplicationProcesses(SubprocessRunner(), {}) if real else self.processes
         self.dev = DevelopmentService(WorkspaceContext(root), processes, ExecutionLocation.HOST)
@@ -43,13 +46,13 @@ class DevelopmentFixture(unittest.TestCase):
             self.dev = previous
 
     @contextmanager
-    def arguments_for(self, argv):
+    def arguments_for(self, argv: list[str]) -> Iterator[None]:
         self.arguments = argv[1:]
         yield
 
 
 class StartupContracts(DevelopmentFixture):
-    def test_pre_autoload_setup_uses_the_private_executor(self):
+    def test_pre_autoload_setup_uses_the_private_executor(self) -> None:
         self.assertIn(
             "command: [python3, -m, tools.application.development, setup, --if-needed]",
             (ROOT / "compose.yaml").read_text(),
@@ -62,10 +65,10 @@ class StartupContracts(DevelopmentFixture):
             ["python3", "-m", "tools.application.development", "setup", "--if-needed"],
         )
 
-    def host_context(self):
+    def host_context(self) -> contextlib.AbstractContextManager[None]:
         return contextlib.nullcontext()
 
-    def test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded(self):
+    def test_application_wait_excludes_optional_ai_and_optional_failure_is_degraded(self) -> None:
         values = dict(EMBEDDINGS_CUDA="1")
         results = [
             SimpleNamespace(returncode=0),
@@ -92,7 +95,7 @@ class StartupContracts(DevelopmentFixture):
         self.assertIn("knowledge-init", optional)
         self.assertEqual(diagnostics[-1], "runa:dev:knowledge-status")
 
-    def test_selective_build_and_recreate_do_not_touch_siblings(self):
+    def test_selective_build_and_recreate_do_not_touch_siblings(self) -> None:
         for action, service in (("build", "mailpit"), ("recreate", "qdrant")):
             with (
                 self.host_context(),
@@ -116,7 +119,7 @@ class StartupContracts(DevelopmentFixture):
                 self.assertIn("--force-recreate", command)
                 self.assertNotIn("--wait", command)
 
-    def test_invalid_selective_scope_never_mutates_profile_or_calls_docker(self):
+    def test_invalid_selective_scope_never_mutates_profile_or_calls_docker(self) -> None:
         for args in (
             ["recreate"],
             ["recreate", "nginx;false"],
@@ -140,7 +143,7 @@ class StartupContracts(DevelopmentFixture):
                 persist.assert_not_called()
                 resolve.assert_not_called()
 
-    def test_config_validation_never_prints_expanded_environment(self):
+    def test_config_validation_never_prints_expanded_environment(self) -> None:
         with (
             self.host_context(),
             patch.object(
@@ -155,7 +158,7 @@ class StartupContracts(DevelopmentFixture):
             self.assertEqual(self.dev.main(self.arguments), 0)
         self.assertEqual(run.call_args.args[0][-2:], ["config", "--quiet"])
 
-    def test_application_failure_is_not_swallowed(self):
+    def test_application_failure_is_not_swallowed(self) -> None:
         with (
             self.host_context(),
             patch.object(
@@ -169,17 +172,17 @@ class StartupContracts(DevelopmentFixture):
             self.assertEqual(self.dev.main(self.arguments), 7)
             self.assertEqual(run.call_count, 1)
 
-    def test_failed_application_setup_never_writes_success_marker(self):
+    def test_failed_application_setup_never_writes_success_marker(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / ".env").write_text("APP_KEY=test\n")
             (root / ".env.testing").write_text("APP_KEY=test\n")
             exists = Path.exists
 
-            def present(path):
+            def present(path: Path) -> bool:
                 return str(path) == "/.dockerenv" or exists(path)
 
-            def command(args, **kwargs):
+            def command(args: list[str], **kwargs: object) -> SimpleNamespace:
                 if args[:3] == ["php", "artisan", "runa:config:validate"]:
                     raise subprocess.CalledProcessError(1, args)
                 self.assertNotIn("knowledge", " ".join(args))
@@ -198,7 +201,7 @@ class StartupContracts(DevelopmentFixture):
                     self.dev.main(self.arguments)
             self.assertFalse((root / ".runtime/dev/setup.sha256").exists())
 
-    def setup_fixture(self, root):
+    def setup_fixture(self, root: Path) -> Path:
         for name in (
             "src/vendor/autoload.php",
             "src/node_modules/.modules.yaml",
@@ -216,7 +219,7 @@ class StartupContracts(DevelopmentFixture):
         marker.write_text("current\n")
         return marker
 
-    def test_current_setup_skips_install_and_build_with_generated_error_document(self):
+    def test_current_setup_skips_install_and_build_with_generated_error_document(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             marker = self.setup_fixture(root)
@@ -244,7 +247,7 @@ class StartupContracts(DevelopmentFixture):
             self.assertIn("frontend build skipped", output.getvalue())
             self.assertEqual(marker.read_text(), "current\n")
 
-    def test_missing_current_document_or_stale_fingerprint_runs_full_setup(self):
+    def test_missing_current_document_or_stale_fingerprint_runs_full_setup(self) -> None:
         for reason in ("missing_document", "stale_fingerprint"):
             with self.subTest(reason=reason), tempfile.TemporaryDirectory() as folder:
                 root = Path(folder)
@@ -279,7 +282,7 @@ class StartupContracts(DevelopmentFixture):
                 self.assertIn(["php", "src/runa/resources/errors/build.php"], commands)
                 self.assertEqual(marker.read_text(), "current\n")
 
-    def test_optional_probe_has_process_deadline(self):
+    def test_optional_probe_has_process_deadline(self) -> None:
         with (
             patch.object(
                 self.processes, "run", side_effect=subprocess.TimeoutExpired("probe", 5)
@@ -290,7 +293,7 @@ class StartupContracts(DevelopmentFixture):
         self.assertEqual(run.call_args.kwargs["timeout"], 5)
         self.assertIn("DEGRADED", output.getvalue())
 
-    def test_app_health_does_not_require_ai(self):
+    def test_app_health_does_not_require_ai(self) -> None:
         rows = [
             {"Service": name, "State": "running", "Health": "healthy"}
             for name in ("app", "nginx", "postgres", "queue", "scheduler", "mailpit")
@@ -308,7 +311,7 @@ class StartupContracts(DevelopmentFixture):
 
 
 class CustomerHookSetup(DevelopmentFixture):
-    def test_customer_setup_configures_hooks_once_and_preserves_custom_choice(self):
+    def test_customer_setup_configures_hooks_once_and_preserves_custom_choice(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
@@ -336,7 +339,7 @@ class CustomerHookSetup(DevelopmentFixture):
 
 
 class EnvironmentOwnership(DevelopmentFixture):
-    def test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values(self):
+    def test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in (".env.dev.example", ".env.test.example"):
@@ -359,7 +362,7 @@ class EnvironmentOwnership(DevelopmentFixture):
                 with self.assertRaisesRegex(ValueError, "private owned regular"):
                     self.dev.configuration.environment_files()
 
-    def test_dangling_secret_links_are_rejected_before_any_creation(self):
+    def test_dangling_secret_links_are_rejected_before_any_creation(self) -> None:
         for name in (".env", ".env.dev.database", ".env.testing"):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -371,7 +374,7 @@ class EnvironmentOwnership(DevelopmentFixture):
                 self.assertFalse(outside.exists())
                 self.assertTrue((root / name).is_symlink())
 
-    def test_linked_secret_files_are_preserved_and_rejected(self):
+    def test_linked_secret_files_are_preserved_and_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / ".env.dev.example").write_text("DB_PASSWORD=\n")

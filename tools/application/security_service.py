@@ -1,16 +1,20 @@
 """Workspace-bound security scans, strict aggregate audits and review evidence."""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 
 from tools.application.development_runtime import DevelopmentRuntime
-from tools.application.processes import ApplicationProcesses
+from tools.application.processes import ApplicationProcesses, WorkspaceProcess
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
 from tools.core.reporting import SafeFailure
 
@@ -23,7 +27,7 @@ class SecurityService:
     audit_root: Path | None = None
 
     @classmethod
-    def for_workspace(cls, root: Path, *, audit_root: Path | None = None) -> "SecurityService":
+    def for_workspace(cls, root: Path, *, audit_root: Path | None = None) -> SecurityService:
         from tools.application.development_runtime import execution_location
         from tools.core.process import SubprocessRunner
 
@@ -34,20 +38,16 @@ class SecurityService:
             audit_root,
         )
 
-    def app_command(self, args):
+    def app_command(self, args: Sequence[str]) -> tuple[str, ...]:
         return DevelopmentRuntime(
             ExecutionContext(self.workspace, self.workspace, self.location)
         ).app_command(tuple(args))
 
-    def command(self, args, **kwargs):
-        return self.processes.run(
-            args,
-            cwd=kwargs.pop("cwd", self.workspace.root),
-            check=kwargs.pop("check", True),
-            **kwargs,
-        )
+    @property
+    def command(self) -> WorkspaceProcess:
+        return partial(self.processes.run, cwd=self.workspace.root, check=True)
 
-    def surface(self, reference="main"):
+    def surface(self, reference: str = "main") -> dict[str, str]:
         files = set(
             self.command(
                 ["git", "diff", "--name-only", reference, "--"], capture_output=True, text=True
@@ -68,7 +68,7 @@ class SecurityService:
             if not name.startswith(("docs/", ".agents/"))
         }
 
-    def review(self):
+    def review(self) -> None:
         path = self.workspace.root / ".runtime/security-review.json"
         if not path.is_file():
             raise ValueError(
@@ -95,7 +95,7 @@ class SecurityService:
             raise ValueError("Security review report is missing or changed.")
         print("PASS: actual agent security review evidence matches the current changed surface.")
 
-    def production_images(self, root):
+    def production_images(self, root: Path) -> list[str]:
         """Resolve images inside the selected customer's own prepared production context."""
         from functools import partial
 
@@ -130,7 +130,9 @@ class SecurityService:
             raise ValueError("Selected production context contains no runtime images.")
         return selected["images"]
 
-    def trivy(self, production_root=None, *, additional_images=()):
+    def trivy(
+        self, production_root: Path | None = None, *, additional_images: Sequence[str] = ()
+    ) -> None:
         if self.location is ExecutionLocation.CONTAINER:
             raise ValueError("Run repository and runtime-image scanning on the Docker host.")
         # Owner acceptance scans the owner repository and a separate customer fixture's
@@ -145,7 +147,7 @@ class SecurityService:
             pass
         failures = []
 
-        def scan_command(arguments, label):
+        def scan_command(arguments: Sequence[str], label: str) -> None:
             print("Scanning: " + label, flush=True)
             try:
                 self.command(arguments)
@@ -156,7 +158,7 @@ class SecurityService:
                     flush=True,
                 )
 
-        def report(name):
+        def report(name: str) -> str:
             path = reports / name
             # A failed scanner must not leave an old report looking freshly generated.
             path.unlink(missing_ok=True)
@@ -273,7 +275,7 @@ class SecurityService:
             "PASS: repository/image security policy and locked dependency audits; raw reports are retained."
         )
 
-    def dependencies(self):
+    def dependencies(self) -> None:
         root = self.workspace.root
         if self.audit_root is not None:
             if self.location is ExecutionLocation.CONTAINER:
@@ -296,7 +298,7 @@ class SecurityService:
                 )
             )
 
-            def command(args):
+            def command(args: Sequence[str]) -> tuple[str, ...]:
                 return runtime.app_command(tuple(args))
         else:
             command = self.app_command
@@ -312,7 +314,7 @@ class SecurityService:
         if failures:
             raise ValueError("Locked dependency audits failed: " + ", ".join(failures))
 
-    def secrets_scan(self):
+    def secrets_scan(self) -> None:
         if self.location is not ExecutionLocation.CONTAINER:
             self.command(self.app_command(["php", "artisan", "runa:security:secrets"]))
             return

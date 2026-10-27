@@ -1,9 +1,51 @@
 """Fresh customer Qdrant acceptance inside the existing isolated installation fixture."""
 
+from __future__ import annotations
+
 import json
+import subprocess
+from collections.abc import Callable, Mapping
+from pathlib import Path
+
+from tools.maintainer.testing.acceptance import (
+    AcceptanceCall,
+    AcceptanceContext,
+    AcceptanceOutput,
+    Check,
+    ComposeFixture,
+    Report,
+)
 
 
-def exercise(root, project, data, env, check, report, call, output, yaml_source):
+def model_cache(owner: AcceptanceContext) -> str:
+    identities = owner.output(owner.compose("ps", "--quiet", "embeddings")).splitlines()
+    if len(identities) != 1:
+        raise ValueError("One active owner embeddings service is required for cache reuse.")
+    inspected = json.loads(owner.output(["docker", "inspect", identities[0]]))
+    caches = [
+        mount["Name"]
+        for item in inspected
+        for mount in item["Mounts"]
+        if mount["Type"] == "volume" and mount["Destination"] == "/data"
+    ]
+    if len(caches) != 1 or not isinstance(caches[0], str) or not caches[0]:
+        raise ValueError("One inspected model cache is required; owner knowledge is never copied.")
+    return caches[0]
+
+
+def exercise(
+    root: Path,
+    project: str,
+    data: ComposeFixture,
+    env: Mapping[str, str],
+    check: Check,
+    report: Report,
+    call: AcceptanceCall,
+    output: AcceptanceOutput,
+    yaml_source: Callable[[str], ComposeFixture],
+    *,
+    owner: AcceptanceContext,
+) -> None:
     compose = [
         "docker",
         "compose",
@@ -17,25 +59,19 @@ def exercise(root, project, data, env, check, report, call, output, yaml_source)
         str(root / ".devcontainer/compose.resources.yaml"),
     ]
 
-    def command(*args):
+    def command(*args: str) -> subprocess.CompletedProcess[str]:
         return call([*compose, *args], cwd=root, env=env)
 
-    def app(*args):
+    def app(*args: str) -> str:
         return output(["docker", "exec", "-w", "/workspace", project + "-app-1", *args])
 
-    # Reuse model files only; never reuse owner Qdrant storage or collection.
-    owner = json.loads(output(["docker", "inspect", "runa-dev-embeddings-1"]))[0]
-    caches = [
-        m["Name"] for m in owner["Mounts"] if m["Type"] == "volume" and m["Destination"] == "/data"
-    ]
-    check(
-        len(caches) == 1, "one inspected model cache is available without copying owner knowledge"
-    )
+    # Resolve the owner's actual Compose service, independent of its project name.
+    cache = model_cache(owner)
     source = yaml_source("compose.yaml")
     for key in ("qdrant", "embeddings", "knowledge-init"):
         data["services"][key] = source["services"][key]
     data["volumes"]["qdrant-data"] = {}
-    data["volumes"]["embedding-cache"] = {"external": True, "name": caches[0]}
+    data["volumes"]["embedding-cache"] = {"external": True, "name": cache}
     (root / "compose.yaml").write_text(json.dumps(data, indent=2) + "\n")
     command("up", "-d", "--no-build", "--wait", "--wait-timeout", "240", "qdrant", "embeddings")
     actual = json.loads(output(["docker", "inspect", project + "-qdrant-1"]))[0]
@@ -132,7 +168,7 @@ print(json.dumps(sorted(paths)))"""
     )
     report["customer_knowledge"] = {
         "qdrant_volume": volumes[0],
-        "preserved_model_cache": caches[0],
+        "preserved_model_cache": cache,
         "sources": paths,
     }
     # The outer fixture owns scoped cleanup. External model cache is never removed.

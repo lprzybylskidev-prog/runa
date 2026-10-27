@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Isolated release metadata acceptance/rejection contracts."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import subprocess
@@ -13,7 +15,7 @@ from tools.maintainer.testing.documentation_fixture import copy_public
 
 
 class ReleaseContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
@@ -36,30 +38,30 @@ class ReleaseContracts(unittest.TestCase):
         self.write(self.active, self.roadmap())
         self.readme("0.0.0", "RM-2026-001")
 
-    def git(self, *args):
+    def git(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             ["git", *args], cwd=self.root, check=True, capture_output=True, text=True
         )
 
-    def write(self, name, text):
+    def write(self, name: str, text: str) -> None:
         p = self.root / name
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)
 
-    def readme(self, version, roadmap):
+    def readme(self, version: str, roadmap: str) -> None:
         self.write(
             "docs/runa/maintainer/README.md",
             f"# Fixture\n\n<!-- runa:current-state -->\n\n- Current version: `{version}`\n- Active roadmap: `{roadmap}`\n\n<!-- /runa:current-state -->\n",
         )
 
-    def roadmap(self):
+    def roadmap(self) -> str:
         return f"---\nid: RM-2026-001\nstatus: active\nbranch: {self.branch}\nrelease_type: feature\nclosed_at: null\n---\n\n- [x] Implementation\n- [ ] Full final verification and release\n"
 
-    def validate(self):
+    def validate(self) -> str:
         with contextlib.redirect_stdout(io.StringIO()):
             return release.validate(self.root)
 
-    def close(self):
+    def close(self) -> None:
         (self.root / self.active).unlink()
         text = (
             self.roadmap()
@@ -76,7 +78,9 @@ class ReleaseContracts(unittest.TestCase):
             "# Changelog\n\n## 0.1.0 — 2026-10-18\nFeature: RM-2026-001 foundation.\n",
         )
 
-    def test_application_compatibility_does_not_change_release_arithmetic_or_customer_version(self):
+    def test_application_compatibility_does_not_change_release_arithmetic_or_customer_version(
+        self,
+    ) -> None:
         self.write("src/composer.json", "{}")
         self.write(
             "src/runa/platform.json",
@@ -102,13 +106,13 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "manifest"):
             release.check_application(self.root, "0.1.0")
 
-    def test_pre_gate_allows_only_final_open_and_computes_version(self):
+    def test_pre_gate_allows_only_final_open_and_computes_version(self) -> None:
         self.assertEqual(self.validate(), "0.1.0")
         self.write(self.active, self.roadmap() + "- [ ] Unfinished fix\n")
         with self.assertRaisesRegex(ValueError, "Only the final"):
             self.validate()
 
-    def test_version_rules_and_major_target_are_explicit(self):
+    def test_version_rules_and_major_target_are_explicit(self) -> None:
         self.assertEqual(release.expected("1.12.2", "feature"), "1.13.0")
         self.assertEqual(release.expected("1.12.2", "fix"), "1.12.3")
         self.assertEqual(release.expected("1.12.2", "maintenance"), "1.12.3")
@@ -119,7 +123,7 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             release.version("01.0.0")
 
-    def test_active_version_and_branch_drift_fail(self):
+    def test_active_version_and_branch_drift_fail(self) -> None:
         self.write("VERSION", "0.1.0\n")
         with self.assertRaisesRegex(ValueError, "Active roadmap VERSION"):
             self.validate()
@@ -128,12 +132,12 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "branch mismatch"):
             self.validate()
 
-    def test_already_claimed_target_tag_is_rejected(self):
+    def test_already_claimed_target_tag_is_rejected(self) -> None:
         self.git("tag", "v0.1.0")
         with self.assertRaisesRegex(ValueError, "already exists"):
             self.validate()
 
-    def test_closed_metadata_accepts_release_before_publication(self):
+    def test_closed_metadata_accepts_release_before_publication(self) -> None:
         self.close()
         self.assertEqual(self.validate(), "0.1.0")
         self.git("add", ".")
@@ -141,7 +145,7 @@ class ReleaseContracts(unittest.TestCase):
         self.git("tag", "-a", "v0.1.0", "-m", "fixture release")
         self.assertEqual(self.validate(), "0.1.0")
 
-    def test_closed_checklist_report_and_release_type_drift_fail(self):
+    def test_closed_checklist_report_and_release_type_drift_fail(self) -> None:
         self.close()
         original = (self.root / self.closed).read_text()
         for changed, message in [
@@ -154,7 +158,7 @@ class ReleaseContracts(unittest.TestCase):
                 self.validate()
         self.write(self.closed, original)
 
-    def test_changelog_mismatch_duplicates_and_missing_roadmap_fail(self):
+    def test_changelog_mismatch_duplicates_and_missing_roadmap_fail(self) -> None:
         self.close()
         original = (self.root / "docs/runa/maintainer/CHANGELOG.md").read_text()
         for content in [
@@ -166,7 +170,7 @@ class ReleaseContracts(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.validate()
 
-    def test_lightweight_and_wrong_commit_tags_are_rejected(self):
+    def test_lightweight_and_wrong_commit_tags_are_rejected(self) -> None:
         self.close()
         self.git("tag", "v0.1.0")
         with self.assertRaisesRegex(ValueError, "annotated"):
@@ -178,7 +182,7 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "identify HEAD"):
             self.validate()
 
-    def merge_release(self):
+    def merge_release(self) -> None:
         self.close()
         self.git("add", ".")
         self.git("commit", "-m", "fixture closure")
@@ -186,7 +190,7 @@ class ReleaseContracts(unittest.TestCase):
         self.git("merge", "--no-ff", self.branch, "-m", "fixture release merge")
         self.git("tag", "-a", "v0.1.0", "-m", "fixture published release")
 
-    def test_main_allows_only_draft_planning_after_valid_release_tag(self):
+    def test_main_allows_only_draft_planning_after_valid_release_tag(self) -> None:
         self.merge_release()
         self.assertEqual(self.validate(), "0.1.0")
         self.write("docs/runa/maintainer/roadmaps/draft/RM-2026-002-test.md", "# Draft planning\n")
@@ -200,7 +204,7 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "draft-planning baseline"):
             self.validate()
 
-    def test_main_rejects_nonancestor_and_metadata_drift_tags(self):
+    def test_main_rejects_nonancestor_and_metadata_drift_tags(self) -> None:
         self.merge_release()
         self.write(
             self.closed, (self.root / self.closed).read_text() + "\nUnexpected report edit.\n"
@@ -218,7 +222,7 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "draft-planning baseline"):
             self.validate()
 
-    def test_readme_is_checked_before_and_after_closure(self):
+    def test_readme_is_checked_before_and_after_closure(self) -> None:
         self.readme("0.0.0", "none")
         with self.assertRaisesRegex(ValueError, "README Active roadmap"):
             self.validate()

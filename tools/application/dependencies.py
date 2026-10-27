@@ -1,7 +1,10 @@
 """Compose declared owner inputs without resolving dependencies or replacing locks."""
 
+from __future__ import annotations
+
 import argparse
 import json
+from collections.abc import Sequence
 from pathlib import Path
 
 from tools.core.dependencies import compose
@@ -10,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SECTIONS = {"composer": ("require", "require-dev"), "package": ("dependencies", "devDependencies")}
 
 
-def materialize(root, check=False):
+def materialize(root: Path, check: bool = False) -> None:
     prepared = {}
     for kind in SECTIONS:
         inputs = [root / "src" / owner / (kind + ".json") for owner in ("runa", "app")]
@@ -31,7 +34,7 @@ def materialize(root, check=False):
         target.write_text(content)
 
 
-def main(arguments=None):
+def main(arguments: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(arguments)

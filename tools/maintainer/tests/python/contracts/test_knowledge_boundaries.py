@@ -7,41 +7,14 @@ from pathlib import Path
 
 import pytest
 
-from tools.application.knowledge.configuration import KnowledgeConfig, load
+from tools.application.knowledge.configuration import load
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
 from tools.application.knowledge.transport import RequestError
 from tools.core.state import JsonValue
+from tools.maintainer.tests.python.support.knowledge import Client, capabilities
 
 ROOT = Path(__file__).resolve().parents[5]
-
-
-class Client:
-    def __init__(self, base: str, responses: list[JsonValue | RequestError]) -> None:
-        self.base = base
-        self.responses = deque(responses)
-        self.calls: list[tuple[str, str, object]] = []
-
-    def request(self, method: str, path: str, body: object = None) -> JsonValue:
-        self.calls.append((method, path, body))
-        result = self.responses.popleft()
-        if isinstance(result, RequestError):
-            raise result
-        return result
-
-
-def capabilities(config: KnowledgeConfig) -> dict[str, JsonValue]:
-    return {
-        "model_id": config["model_id"],
-        "model_sha": config["model_revision"],
-        "version": config["runtime_version"],
-        "model_dtype": config["dtype"],
-        "model_type": {"embedding": {"pooling": config["pooling"]}},
-        "max_input_length": config["max_input_tokens"],
-        "auto_truncate": False,
-        "max_client_batch_size": config["batch_size"],
-        "unconsumed_metadata": "preserved",
-    }
 
 
 @pytest.mark.parametrize(

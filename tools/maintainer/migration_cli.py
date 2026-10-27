@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Create a Runa migration; excluded from customer delivery."""
 
+from __future__ import annotations
+
 import subprocess
 import sys
 
 from tools.maintainer.context import ROOT, container
 
 
-def main():
+def main() -> None:
     args = sys.argv[1:]
     if args == ["--help"]:
         print("Create a Runa migration under src/runa/database/migrations.")

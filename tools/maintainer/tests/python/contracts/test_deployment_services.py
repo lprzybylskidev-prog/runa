@@ -1,7 +1,10 @@
 """Release isolation and failure fencing without production Docker/data mutations."""
 
+from __future__ import annotations
+
 import json
 from collections import deque
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -14,7 +17,7 @@ from tools.core.context import ExecutionLocation
 from tools.core.process import ProcessResult
 
 
-def workspace(root, sha="a" * 40):
+def workspace(root: Path, sha: str = "a" * 40) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     for name in (".env.prod", ".env.prod.database"):
         path = root / name
@@ -26,7 +29,7 @@ def workspace(root, sha="a" * 40):
     return root
 
 
-def test_interleaved_workspaces_and_releases_keep_operator_secrets_and_tls(tmp_path):
+def test_interleaved_workspaces_and_releases_keep_operator_secrets_and_tls(tmp_path: Path) -> None:
     first, second = [workspace(tmp_path / name) for name in ("first", "second")]
     runner = RecordingRunner()
     processes = ApplicationProcesses(runner, {})
@@ -55,51 +58,51 @@ def test_interleaved_workspaces_and_releases_keep_operator_secrets_and_tls(tmp_p
 
 
 class Runtime:
-    def __init__(self, fail=None):
-        self.events = []
+    def __init__(self, fail: str | None = None) -> None:
+        self.events: list[str] = []
         self.fail = fail
 
-    def event(self, name):
+    def event(self, name: str) -> None:
         self.events.append(name)
         if self.fail == name:
             raise ValueError("Injected failure")
 
-    def dc(self, args, release=None, **kwargs):
+    def dc(self, args: list[str], release: Path | None = None, **kwargs: object) -> SimpleNamespace:
         self.event(args[0])
         return SimpleNamespace(stdout="")
 
-    def build_images(self, release):
+    def build_images(self, release: Path) -> None:
         self.event("build")
 
-    def validate(self, release):
+    def validate(self, release: Path) -> None:
         self.event("validate")
 
-    def pause_http(self, release):
+    def pause_http(self, release: Path) -> None:
         self.event("fence")
 
-    def resume_http(self, release, **kwargs):
+    def resume_http(self, release: Path, **kwargs: object) -> None:
         self.event("activate")
 
-    def platform_data(self, sha, phase, release):
+    def platform_data(self, sha: str, phase: str, release: Path) -> None:
         self.event(phase)
 
-    def artisan(self, args, release):
+    def artisan(self, args: list[str], release: Path) -> None:
         self.event(args[0])
 
-    def health(self, release, **kwargs):
+    def health(self, release: Path | None, **kwargs: object) -> None:
         self.event("health")
 
-    def maintenance_active(self, release):
+    def maintenance_active(self, release: Path | None) -> bool:
         return False
 
-    def images(self, release):
+    def images(self, release: Path) -> dict[str, str]:
         return {"runtime": "sha256:fixed"}
 
-    def command(self):
+    def command(self) -> list[str]:
         return ["--project-name", "runa-prod-simulation-fixture"]
 
 
-def deployment(tmp_path, fail=None):
+def deployment(tmp_path: Path, fail: str | None = None) -> tuple[DeploymentService, Runtime, str]:
     root = workspace(tmp_path)
     runner = RecordingRunner(deque([ProcessResult(0)]))
     instance = DeploymentService.for_workspace(
@@ -120,7 +123,9 @@ def deployment(tmp_path, fail=None):
 
 
 @pytest.mark.parametrize("failure", ["build", "migrations", "required-seeds", "health"])
-def test_failure_restores_pre_data_selection_or_retains_fenced_journal(tmp_path, failure):
+def test_failure_restores_pre_data_selection_or_retains_fenced_journal(
+    tmp_path: Path, failure: str
+) -> None:
     deploy, runtime, sha = deployment(tmp_path, failure)
     original = (tmp_path / ".env.prod.compose").read_bytes()
     with pytest.raises(ValueError, match="Injected"):
@@ -135,7 +140,7 @@ def test_failure_restores_pre_data_selection_or_retains_fenced_journal(tmp_path,
         assert state["phase"] in ("platform-migrations", "platform-seeding", "restart-and-health")
 
 
-def test_successful_repeat_verifies_health_without_replaying_data(tmp_path):
+def test_successful_repeat_verifies_health_without_replaying_data(tmp_path: Path) -> None:
     deploy, runtime, sha = deployment(tmp_path)
     deploy.deploy_revision(sha, True)
     before = list(runtime.events)
@@ -145,7 +150,9 @@ def test_successful_repeat_verifies_health_without_replaying_data(tmp_path):
     assert deploy.context.read_state()["current"]["rollback_safe"] is False
 
 
-def test_unsafe_data_rollback_refuses_before_runtime_work(tmp_path, monkeypatch):
+def test_unsafe_data_rollback_refuses_before_runtime_work(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     deploy, runtime, sha = deployment(tmp_path)
     deploy.deploy_revision(sha, True)
     state = deploy.context.read_state()

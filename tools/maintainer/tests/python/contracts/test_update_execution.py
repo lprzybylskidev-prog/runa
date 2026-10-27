@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import json
 import os
@@ -9,8 +11,10 @@ from unittest.mock import Mock, patch
 
 import distribution.update_contracts as update_contracts
 import distribution.update_execution as execution
-from distribution.update_execution_models import ExecutionOptions, ExecutionReport
+from distribution import bootstrap
+from distribution.update_execution_models import ExecutionJournal, ExecutionOptions, ExecutionReport
 from distribution.update_models import DatabaseMetadata, RuntimeSnapshot
+from distribution.update_plan_models import ReleaseIdentity
 from tools.core.state import json_value
 from tools.maintainer.testing import update_host as acceptance_update_host
 from tools.maintainer.tests.python.support.deployment import deployment
@@ -100,7 +104,7 @@ class Execution(unittest.TestCase):
             **kwargs,
         )
 
-    def journal(self):
+    def journal(self) -> ExecutionJournal:
         return json.loads(
             (self.fixture.installed / ".runtime/production/in-progress.json").read_text()
         )
@@ -301,7 +305,9 @@ class Execution(unittest.TestCase):
             case.setUp()
             calls = []
 
-            def interrupted(source, destination, calls=calls, boundary=boundary):
+            def interrupted(
+                source: Path, destination: Path, calls: list[Path] = calls, boundary: int = boundary
+            ) -> None:
                 original_rename(source, destination)
                 calls.append(destination)
                 if len(calls) == boundary:
@@ -324,7 +330,7 @@ class Execution(unittest.TestCase):
     def test_execution_gap_survives_another_failure_during_resume_fencing(self) -> None:
         original_rename = os.rename
 
-        def interrupted(source, destination):
+        def interrupted(source: Path, destination: Path) -> None:
             original_rename(source, destination)
             raise KeyboardInterrupt
 
@@ -410,7 +416,7 @@ class Execution(unittest.TestCase):
         rename = execution.os.rename
         interrupted = False
 
-        def interrupt(source, destination):
+        def interrupt(source: Path, destination: Path) -> None:
             nonlocal interrupted
             rename(source, destination)
             if Path(source) == self.fixture.installed / "README.md" and not interrupted:
@@ -553,14 +559,18 @@ class Execution(unittest.TestCase):
         original_copy = shutil.copytree
         interrupted = False
 
-        def copy(source, destination, *args, **kwargs):
+        def copy(
+            source: Path, destination: Path, *, symlinks: bool = False, dirs_exist_ok: bool = False
+        ) -> Path:
             nonlocal interrupted
             if str(destination).endswith("/incoming/src/runa") and not interrupted:
                 interrupted = True
                 Path(destination).mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(Path(source) / "platform.json", Path(destination) / "platform.json")
                 raise KeyboardInterrupt
-            return original_copy(source, destination, *args, **kwargs)
+            return original_copy(
+                source, destination, symlinks=symlinks, dirs_exist_ok=dirs_exist_ok
+            )
 
         with (
             patch.object(execution.shutil, "copytree", side_effect=copy),
@@ -576,7 +586,7 @@ class Execution(unittest.TestCase):
         runtime.args = ["docker", "compose"]
         commands = []
 
-        def command(arguments, *args, **kwargs):
+        def command(arguments: list[str], *args: object, **kwargs: object) -> str:
             commands.append(arguments)
             if arguments[:3] == ["docker", "compose", "run"]:
                 raise RuntimeError("Lost client")
@@ -615,8 +625,14 @@ class Execution(unittest.TestCase):
         before = list(self.engine.events)
         download = self.fixture.download
 
-        def changed(*args, **kwargs):
-            identity = download(*args, **kwargs)
+        def changed(
+            client: bootstrap.GitHub,
+            tag: str,
+            destination: Path,
+            mode: str,
+            expected_commit: str | None = None,
+        ) -> ReleaseIdentity:
+            identity = download(client, tag, destination, mode, expected_commit)
             identity["tag_object"] = "a" * 40
             return identity
 
@@ -628,10 +644,10 @@ class Execution(unittest.TestCase):
     def test_execution_completed_operation_is_not_resurrected_after_cleanup_failure(self) -> None:
         original_remove = shutil.rmtree
 
-        def interrupted(path, *args, **kwargs):
+        def interrupted(path: Path) -> None:
             if "update-staging" in str(path):
                 raise OSError("Cleanup failure")
-            return original_remove(path, *args, **kwargs)
+            return original_remove(path)
 
         with patch.object(execution.shutil, "rmtree", side_effect=interrupted):
             result = self.apply()

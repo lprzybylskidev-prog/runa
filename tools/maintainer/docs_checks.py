@@ -1,5 +1,7 @@
 """Bounded README state projection and documented command coverage, read-only."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -11,7 +13,7 @@ END = "<!-- /runa:current-state -->"
 FIELDS = ("Current version", "Active roadmap")
 
 
-def validate(root):
+def validate(root: Path) -> None:
     root = Path(root)
     text = (root / "docs/runa/maintainer/README.md").read_text()
     if text.count(START) != 1 or text.count(END) != 1:

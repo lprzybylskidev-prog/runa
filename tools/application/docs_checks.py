@@ -1,6 +1,9 @@
 """Customer documentation completeness, placement and local-link diagnostics."""
 
+from __future__ import annotations
+
 import re
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 REQUIRED = (
@@ -36,7 +39,12 @@ REQUIRED = (
 )
 
 
-def links(root, paths, public=True, logical_paths=None):
+def links(
+    root: Path,
+    paths: Sequence[Path],
+    public: bool = True,
+    logical_paths: Mapping[Path, Path] | None = None,
+) -> None:
     root = Path(root).resolve()
     for path in paths:
         fence = None
@@ -76,7 +84,7 @@ def links(root, paths, public=True, logical_paths=None):
                     )
 
 
-def validate(root):
+def validate(root: Path) -> None:
     root = Path(root).resolve()
     for name in REQUIRED:
         path = root / name

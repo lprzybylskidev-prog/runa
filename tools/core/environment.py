@@ -1,9 +1,11 @@
 """Literal unquoted environment parsing; no interpolation or secret normalization."""
 
+from __future__ import annotations
+
 import re
 
 
-def raw_environment(content):
+def raw_environment(content: str) -> dict[str, str]:
     values = {}
     for line in content.splitlines():
         if not line or line.startswith("#"):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """External development updater command; services never import this module."""
 
+from __future__ import annotations
+
 import argparse
 import getpass
 import json
@@ -8,7 +10,11 @@ import re
 import signal
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
+from types import FrameType
+
+from distribution.update_file_models import CustomizationReview
 
 if __name__ == "__main__" and not __package__:
     raise SystemExit(
@@ -21,7 +27,7 @@ if __name__ == "__main__" and not __package__:
 from distribution import bootstrap
 
 
-def main(arguments=None):
+def main(arguments: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight", action="store_true")
@@ -79,7 +85,7 @@ def main(arguments=None):
             from distribution.update_execution import UpdateExecutor
             from distribution.update_planning import UpdatePlanner
 
-            def choose(review):
+            def choose(review: CustomizationReview) -> str:
                 print(
                     "Customized services: "
                     + ", ".join(review["services"])
@@ -182,7 +188,7 @@ def main(arguments=None):
 
 if __name__ == "__main__":
 
-    def interrupt(signum, frame):
+    def interrupt(signum: int, frame: FrameType | None) -> None:
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Development-only queue -> SMTP -> Mailpit integration smoke; leaves one identifiable test message."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import secrets
@@ -12,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def main():
+def main() -> None:
     argparse.ArgumentParser(description=__doc__).parse_args()
     subject = "Runa runtime smoke " + secrets.token_hex(8)
     code = r"""

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Host-plan trust boundary, locking and bounded transport regression checks."""
 
+from __future__ import annotations
+
 import contextlib
 import json
 import subprocess
 import tempfile
 import unittest
 from collections import deque
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -18,6 +21,7 @@ from tools.application.testing.runner import TestService as SuiteService
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import WorkspaceContext
 from tools.core.process import ProcessResult
+from tools.core.state import JsonValue
 from tools.maintainer.test_cli import OWNER
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -26,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[5]
 class ManagementContracts(unittest.TestCase):
     request = "a" * 32
 
-    def plan(self, **changes):
+    def plan(self, **changes: JsonValue) -> dict[str, JsonValue]:
         return dict(
             schema_version=1,
             request_id=self.request,
@@ -35,14 +39,14 @@ class ManagementContracts(unittest.TestCase):
             **changes,
         )
 
-    def test_published_schema_and_executor_allowlist_agree(self):
+    def test_published_schema_and_executor_allowlist_agree(self) -> None:
         schema = json.loads((ROOT / "src/runa/management/host-plan.v1.schema.json").read_text())
         self.assertEqual(set(schema["properties"]["operation"]["enum"]), set(OPERATIONS))
         self.assertFalse(schema["additionalProperties"])
         self.assertFalse(schema["properties"]["parameters"]["additionalProperties"])
         self.assertEqual(set(schema["required"]), set(self.plan()))
 
-    def test_rejects_unversioned_unbound_and_executable_payloads(self):
+    def test_rejects_unversioned_unbound_and_executable_payloads(self) -> None:
         variants = [
             self.plan() | {"operation": "tooling." + retired}
             for retired in ("backup", "integrity", "project")
@@ -70,7 +74,7 @@ class ManagementContracts(unittest.TestCase):
                 self.request,
             )
 
-    def test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected(self):
+    def test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected(self) -> None:
         arguments = ["--filter=literal $(false); value", "line\nbreak"]
         plan = self.plan() | {"operation": "tooling.test", "parameters": {"arguments": arguments}}
         validated = ManagementService.for_workspace(ROOT).validate_plan(
@@ -90,7 +94,7 @@ class ManagementContracts(unittest.TestCase):
                     json.dumps(plan | {"parameters": parameters}), self.request
                 )
 
-    def test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments(self):
+    def test_reverse_transport_uses_explicit_names_and_preserves_literal_arguments(self) -> None:
         cases = [
             ("dev", ["profile"], ["runa:dev:profile"]),
             (
@@ -121,7 +125,7 @@ class ManagementContracts(unittest.TestCase):
 
 
 class TestResourceContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
@@ -136,10 +140,10 @@ class TestResourceContracts(unittest.TestCase):
             test_resources.LABEL: self.run,
         }
 
-    def test_cleanup_targets_only_run_labels_and_preserves_volumes(self):
+    def test_cleanup_targets_only_run_labels_and_preserves_volumes(self) -> None:
         calls = []
 
-        def read(command):
+        def read(command: list[str]) -> str:
             calls.append(command)
             return "owned-id\n" if command[1] == "ps" else json.dumps(self.labels)
 
@@ -155,7 +159,7 @@ class TestResourceContracts(unittest.TestCase):
             [["docker", "stop", "-t", "10", "owned-id"], ["docker", "rm", "owned-id"]],
         )
 
-    def test_uncertain_container_or_journal_ownership_prevents_all_removal(self):
+    def test_uncertain_container_or_journal_ownership_prevents_all_removal(self) -> None:
         for field, value in [
             ("com.docker.compose.project", "foreign"),
             ("com.docker.compose.project.working_dir", "/foreign"),
@@ -180,8 +184,8 @@ class TestResourceContracts(unittest.TestCase):
                 self.endpoints.cleanup({"project": "foreign", "run": self.run}, self.project)
             read.assert_not_called()
 
-    def endpoint(self, existing=()):
-        def read(command):
+    def endpoint(self, existing: Sequence[str] = ()) -> Callable[[list[str]], str]:
+        def read(command: list[str]) -> str:
             if "config" in command:
                 return json.dumps({"name": self.project})
             if "ps" in command:
@@ -190,7 +194,7 @@ class TestResourceContracts(unittest.TestCase):
 
         return read
 
-    def test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans(self):
+    def test_manual_endpoint_is_not_recreated_or_owned_and_failure_still_cleans(self) -> None:
         with (
             contextlib.nullcontext(),
             patch.object(
@@ -213,8 +217,8 @@ class TestResourceContracts(unittest.TestCase):
             cleanup.assert_called_once()
             self.assertFalse((self.root / ".runtime/tests/endpoint.json").exists())
 
-    def test_partial_startup_failure_has_journal_before_creation_and_cleans(self):
-        def fail(command, **kwargs):
+    def test_partial_startup_failure_has_journal_before_creation_and_cleans(self) -> None:
+        def fail(command: list[str], **kwargs: object) -> None:
             self.assertTrue((self.root / ".runtime/tests/endpoint.json").exists())
             override = json.loads((self.root / ".runtime/tests/endpoint.compose.json").read_text())
             self.assertEqual(set(override["services"]), set(test_resources.SERVICES))
@@ -234,7 +238,7 @@ class TestResourceContracts(unittest.TestCase):
                     self.fail("Cannot run against a failed endpoint")
             cleanup.assert_called_once()
 
-    def test_interrupted_startup_retains_journal_and_next_run_recovers_it(self):
+    def test_interrupted_startup_retains_journal_and_next_run_recovers_it(self) -> None:
         with (
             contextlib.nullcontext(),
             patch.object(self.endpoints, "read", side_effect=self.endpoint()),
@@ -263,7 +267,7 @@ class TestResourceContracts(unittest.TestCase):
             self.assertEqual(cleanup.call_count, 2)
             self.assertFalse((self.root / ".runtime/tests/endpoint.json").exists())
 
-    def test_busy_suite_prevents_endpoint_startup_and_orphan_recovery(self):
+    def test_busy_suite_prevents_endpoint_startup_and_orphan_recovery(self) -> None:
         import fcntl
 
         directory = self.root / ".runtime/tests"

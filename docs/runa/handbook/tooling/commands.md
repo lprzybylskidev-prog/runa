@@ -279,7 +279,7 @@ An isolated installer checkout can run `php artisan runa:security:trivy --depend
 
 ## Source ownership and dependency inputs
 
-Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `python3 tools/application/dependencies.py` composes the reviewed src manifests and `--check` validates consistency without writing. It never changes locks or resolves packages. Unsupported customer fields or conflicting production/development constraints block composition. Dependency approval, Composer lock validation and frozen pnpm installation remain mandatory. Development setup and production build preparation verify composition before installation/build.
+Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `python3 -m tools.application.dependencies` composes the reviewed src manifests and `--check` validates consistency without writing. It never changes locks or resolves packages. Unsupported customer fields or conflicting production/development constraints block composition. Dependency approval, Composer lock validation and frozen pnpm installation remain mandatory. Development setup and production build preparation verify composition before installation/build.
 
 ## Owner tooling and delivery layout
 

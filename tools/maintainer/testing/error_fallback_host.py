@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Host-only real production Nginx tests. Isolated disposable resources, no DB or deployment."""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import secrets
@@ -10,8 +12,12 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Sequence
+from email.message import Message
+from functools import partial
 from pathlib import Path
 
+from tools.application.processes import WorkspaceProcess
 from tools.core.context import WorkspaceContext
 from tools.maintainer.testing.acceptance import AcceptanceContext
 
@@ -19,15 +25,14 @@ ROOT = Path(__file__).resolve().parents[3]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
 
 
-def run(args, **kwargs):
-    return ACCEPTANCE.processes.run(args, cwd=ROOT, check=True, **kwargs)
+run: WorkspaceProcess = partial(ACCEPTANCE.processes.run, cwd=ROOT, check=True)
 
 
-def output(args):
+def output(args: Sequence[str]) -> str:
     return ACCEPTANCE.output(args)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 1:
         raise SystemExit(
             "Usage: python3 -m tools.maintainer.testing.error_fallback_host (native host only)"
@@ -67,7 +72,7 @@ def main():
     build_started = False
     verification_passed = False
 
-    def check(condition, label):
+    def check(condition: bool, label: str) -> None:
         if not condition:
             raise AssertionError(label)
         checks.append(label)
@@ -167,7 +172,9 @@ def main():
             port = output(["docker", "port", frontend, "8080/tcp"]).rsplit(":", 1)[1]
             base = "http://127.0.0.1:" + port
 
-            def fetch(path, headers=None, method="GET"):
+            def fetch(
+                path: str, headers: dict[str, str] | None = None, method: str = "GET"
+            ) -> tuple[int, Message, bytes]:
                 request = urllib.request.Request(base + path, headers=headers or {}, method=method)
                 try:
                     response = urllib.request.urlopen(request, timeout=10)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import cast
 
@@ -100,7 +100,7 @@ def main(
     return TestService(workspace, selected_layout, runner, env).execute(selection)
 
 
-def boundary(action) -> int:
+def boundary(action: Callable[[], int]) -> int:
     try:
         return action()
     except KeyboardInterrupt:

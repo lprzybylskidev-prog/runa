@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Native PHP -> private host executor -> isolated Docker lifecycle acceptance."""
 
+from __future__ import annotations
+
 import json
 import os
 import shutil
@@ -8,50 +10,36 @@ import subprocess
 import tempfile
 import time
 import uuid
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Unpack
 
 from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
-from tools.maintainer.testing.acceptance import AcceptanceContext
+from tools.maintainer.testing.acceptance import AcceptanceContext, OutputOptions
 
 ROOT = Path(__file__).resolve().parents[3]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
 
 
-def output(args, **kwargs):
+def output(args: Sequence[str], **kwargs: Unpack[OutputOptions]) -> str:
     return ACCEPTANCE.output(args, **kwargs)
 
 
-def main():
+def main() -> None:
     if Path("/.dockerenv").exists():
         raise SystemExit("Run native host acceptance outside containers.")
     project = "runa-host-acceptance-" + uuid.uuid4().hex[:10]
     report = {"result": "RUNNING", "project": project, "checks": []}
     image = ManagementService.for_workspace(ROOT).ensure_image()
     report["image"] = image
-    active = output(
-        ["docker", "ps", "-q", "--filter", "label=com.docker.compose.project=runa-dev"]
-    ).splitlines()
-    active = [
-        item
-        for item in active
-        if output(
-            [
-                "docker",
-                "inspect",
-                "--format",
-                '{{index .Config.Labels "com.docker.compose.project"}}',
-                item,
-            ]
-        )
-        == "runa-dev"
-    ]
+    active = ACCEPTANCE.protected_containers()
     before = {
         item: output(["docker", "inspect", "--format", "{{.State.StartedAt}}", item])
         for item in active
     }
 
-    def check(ok, text):
+    def check(ok: bool, text: str) -> None:
         if not ok:
             raise AssertionError(text)
         report["checks"].append(text)

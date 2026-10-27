@@ -1,5 +1,7 @@
 """Preserved graph, evidence, catalogue and debug-output refusal contracts."""
 
+from __future__ import annotations
+
 import contextlib
 import json
 import shutil
@@ -23,7 +25,7 @@ reader = ConfigurationReader.for_workspace(ROOT)
 
 
 class QualityCompatibility(unittest.TestCase):
-    def test_closure_allows_only_exact_predecessor_link_updates_in_existing_drafts(self):
+    def test_closure_allows_only_exact_predecessor_link_updates_in_existing_drafts(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
@@ -84,7 +86,7 @@ class QualityCompatibility(unittest.TestCase):
             "groups": {"docs": ["cheap"], "backend": ["runtime"], "containers": ["expensive"]},
         }
 
-    def test_explicit_all_and_legacy_keep_distinct_honest_scope(self):
+    def test_explicit_all_and_legacy_keep_distinct_honest_scope(self) -> None:
         definition = self.grouped_definition()
         nodes, scope = quality.resolve(definition, [], all_groups=True)
         self.assertIn("expensive", nodes)
@@ -94,7 +96,7 @@ class QualityCompatibility(unittest.TestCase):
         self.assertEqual(legacy, quality.select(definition, ["tooling"]))
         self.assertEqual(scope["mode"], "legacy")
 
-    def test_group_validation_rejects_invalid_and_cyclic_selections(self):
+    def test_group_validation_rejects_invalid_and_cyclic_selections(self) -> None:
         for args in (
             ["show", "--group="],
             ["status", "--all"],
@@ -124,7 +126,7 @@ class QualityCompatibility(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Missing"):
             quality.resolve(definition, [], groups=["broken"])
 
-    def test_real_catalogues_cover_existing_steps_without_owner_customer_leaks(self):
+    def test_real_catalogues_cover_existing_steps_without_owner_customer_leaks(self) -> None:
         owner = quality_definition(reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml"))
         customer = quality_definition(reader.yaml(ROOT / "tools/application/quality.yml"))
         owner_nodes, _ = quality.resolve(owner, [], all_groups=True)
@@ -153,7 +155,7 @@ class QualityCompatibility(unittest.TestCase):
             with self.assertRaises(ValueError):
                 quality.resolve(customer, [], groups=[group])
 
-    def test_closure_requires_agreed_scope_complete_results_and_unchanged_candidate(self):
+    def test_closure_requires_agreed_scope_complete_results_and_unchanged_candidate(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             subprocess.run(["git", "init", "-q", "-b", "roadmap/test", str(root)], check=True)
@@ -269,7 +271,7 @@ class QualityCompatibility(unittest.TestCase):
                         reader=SimpleNamespace(yaml=lambda path: definition),
                     )
 
-    def test_debug_check_allows_only_reviewed_output_statements(self):
+    def test_debug_check_allows_only_reviewed_output_statements(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / "bin").mkdir()
@@ -310,7 +312,7 @@ class QualityCompatibility(unittest.TestCase):
             other.write_text("<?php\n" + sources["src/runa/resources/views/errors/page.php"] + "\n")
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
-    def test_actual_host_production_gates_share_the_operation_group(self):
+    def test_actual_host_production_gates_share_the_operation_group(self) -> None:
         definition = quality_definition(
             reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
         )

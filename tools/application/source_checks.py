@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """Reject temporary debug statements in application sources."""
 
+from __future__ import annotations
+
 import re
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def main(argv=None):
+def main(argv: Sequence[str] | None = None) -> None:
     if list(sys.argv[1:] if argv is None else argv) == ["--help"]:
         print(
             "Usage: ./bin/artisan runa:check:debug-residue\nReject debug statements in application/test sources and visible scratch files. No files are modified."

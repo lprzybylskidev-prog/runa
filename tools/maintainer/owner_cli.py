@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Fixed-purpose owner entrypoints, selected only by their versioned filename."""
 
+from __future__ import annotations
+
 import sys
 
 from tools.maintainer.context import ROOT, container, inside
 
 
-def main():
+def main() -> None:
     name = sys.argv[1]
     arguments = sys.argv[2:]
     CHECKS = {

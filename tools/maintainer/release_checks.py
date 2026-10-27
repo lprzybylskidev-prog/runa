@@ -1,25 +1,32 @@
 """Read-only roadmap/version/changelog checks before and after release metadata edits."""
 
+from __future__ import annotations
+
 import re
 import subprocess
+from collections.abc import Mapping
 from pathlib import Path
+
+from tools.application.quality_evidence import ClosurePolicy
+from tools.core.state import JsonValue
 
 VERSION = r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
 
 
-def git(root, *args):
+def git(root: Path, *args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=root, check=True, text=True, capture_output=True
     ).stdout.strip()
 
 
-def version(text):
+def version(text: str) -> tuple[int, int, int]:
     if not re.fullmatch(VERSION, text):
         raise ValueError("Invalid canonical X.Y.Z version: " + text)
-    return tuple(map(int, text.split(".")))
+    major, minor, patch = map(int, text.split("."))
+    return major, minor, patch
 
 
-def expected(base, kind, target=None):
+def expected(base: str, kind: str, target: str | None = None) -> str:
     major, minor, patch = version(base)
     if kind == "feature":
         return f"{major}.{minor + 1}.0"
@@ -32,12 +39,12 @@ def expected(base, kind, target=None):
     raise ValueError("Invalid release_type or missing explicit target_version.")
 
 
-def metadata(path):
+def metadata(path: Path) -> tuple[dict[str, JsonValue], str]:
     text = path.read_text()
     if not text.startswith("---\n") or "\n---\n" not in text[4:]:
         raise ValueError("Missing roadmap frontmatter.")
     front = text.split("\n---\n", 1)[0][4:]
-    result = dict(re.findall(r"^([a-z_]+): ([^\n]+)$", front, re.M))
+    result: dict[str, JsonValue] = dict(re.findall(r"^([a-z_]+): ([^\n]+)$", front, re.M))
     if "quality_groups" in result:
         from tools.application.configuration_reader import ConfigurationReader
 
@@ -54,7 +61,7 @@ def metadata(path):
     return result, text
 
 
-def check_application(root, target):
+def check_application(root: Path, target: str) -> None:
     # Minimal release fixtures have no Laravel composition; real applications must have a manifest.
     if not (root / "src/composer.json").is_file():
         return
@@ -87,7 +94,7 @@ def check_application(root, target):
         )
 
 
-def closure_policy():
+def closure_policy() -> ClosurePolicy:
     from tools.application.quality_evidence import ClosurePolicy
 
     docs = "docs/runa/maintainer"
@@ -99,7 +106,7 @@ def closure_policy():
     )
 
 
-def check_quality_evidence(root, data):
+def check_quality_evidence(root: Path, data: Mapping[str, JsonValue]) -> None:
     from tools.application.quality_evidence import check_evidence
 
     check_evidence(
@@ -111,7 +118,7 @@ def check_quality_evidence(root, data):
     )
 
 
-def validate(root):
+def validate(root: Path) -> str:
     root = Path(root)
     current = (root / "VERSION").read_text().strip()
     version(current)

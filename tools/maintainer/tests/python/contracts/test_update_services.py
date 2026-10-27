@@ -1,8 +1,11 @@
 """Version-separated upgrade and durable resume using fake runtime/data effects."""
 
+from __future__ import annotations
+
 import json
 import shutil
 import subprocess
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -10,11 +13,13 @@ import pytest
 from distribution import bootstrap, update_execution
 from distribution.application_gateway import GatewayError, installation_command
 from distribution.update_execution import SEEDER, UpdateExecutor
+from distribution.update_models import DatabaseMetadata, RuntimeSnapshot
+from distribution.update_plan_models import ReleaseIdentity
 from distribution.update_planning import UpdatePlanner
 from tools.core.delivery import OWNER_PATHS
 
 
-def write(root, name, content):
+def write(root: Path, name: str, content: str) -> Path:
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
@@ -22,8 +27,8 @@ def write(root, name, content):
 
 
 class Runtime:
-    def __init__(self):
-        self.data_state = {
+    def __init__(self) -> None:
+        self.data_state: DatabaseMetadata = {
             "migrations": [],
             "seed_runs": [],
             "modules": {},
@@ -31,34 +36,34 @@ class Runtime:
             "database_mounts": [],
         }
         self.seed_effects = 0
-        self.events = []
-        self.failure = None
+        self.events: list[str] = []
+        self.failure: str | None = None
 
-    def bind(self, project):
+    def bind(self, project: str) -> None:
         assert project == "fixture"
 
-    def probe(self, *args):
+    def probe(self, *args: object) -> RuntimeSnapshot:
         return dict(self.data_state, project="fixture", services=["app", "postgres"])
 
-    def metadata(self):
+    def metadata(self) -> DatabaseMetadata:
         return json.loads(json.dumps(self.data_state))
 
-    def manual(self):
+    def manual(self) -> None:
         pass
 
-    def fence(self, identity):
+    def fence(self, identity: str) -> None:
         self.events.append("fence")
 
-    def build(self):
+    def build(self) -> None:
         self.events.append("build")
 
-    def activate(self, identity):
+    def activate(self, identity: str) -> None:
         self.events.append("activate")
 
-    def health(self):
+    def health(self) -> None:
         self.events.append("health")
 
-    def data(self, phase, release):
+    def data(self, phase: str, release: str) -> None:
         self.events.append(phase)
         if phase == "required-seeds":
             self.seed_effects += 1
@@ -68,7 +73,7 @@ class Runtime:
                 raise RuntimeError("Injected process loss after committed effects")
 
 
-def upgrade(tmp_path):
+def upgrade(tmp_path: Path) -> tuple[Path, Runtime, UpdateExecutor]:
     original, target, installed = [tmp_path / name for name in ("original", "target", "installed")]
     for version, root in [("0.5.0", original), ("0.6.0", target)]:
         files = {
@@ -103,7 +108,13 @@ def upgrade(tmp_path):
     write(installed, "src/app/tests/tooling/test_extension.py", "# customer")
     runtime = Runtime()
 
-    def download(client, tag, destination, mode, expected_commit=None):
+    def download(
+        client: bootstrap.GitHub,
+        tag: str,
+        destination: Path,
+        mode: str,
+        expected_commit: str | None = None,
+    ) -> ReleaseIdentity:
         shutil.copytree(original if tag == "v0.5.0" else target, destination)
         commit = "a" * 40 if tag == "v0.5.0" else "b" * 40
         return dict(tag=tag, commit=commit, tag_object="c" * 40)
@@ -117,7 +128,9 @@ def upgrade(tmp_path):
     return installed, runtime, UpdateExecutor(planner, runtime_factory=lambda root: runtime)
 
 
-def test_upgrade_050_to_060_preserves_customer_tooling_and_does_not_replay_committed_seed(tmp_path):
+def test_upgrade_050_to_060_preserves_customer_tooling_and_does_not_replay_committed_seed(
+    tmp_path: Path,
+) -> None:
     installed, runtime, executor = upgrade(tmp_path)
     runtime.failure = "committed-seed"
     client = SimpleNamespace(repository="fixture/runa")
@@ -134,13 +147,15 @@ def test_upgrade_050_to_060_preserves_customer_tooling_and_does_not_replay_commi
 
 
 @pytest.mark.parametrize("boundary", [1, 2])
-def test_rename_interruption_reconciles_both_release_identities(tmp_path, monkeypatch, boundary):
+def test_rename_interruption_reconciles_both_release_identities(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, boundary: int
+) -> None:
     installed, runtime, executor = upgrade(tmp_path)
     client = SimpleNamespace(repository="fixture/runa")
     rename = update_execution.os.rename
     calls = []
 
-    def interrupted(source, destination):
+    def interrupted(source: Path, destination: Path) -> None:
         rename(source, destination)
         calls.append(destination)
         if len(calls) == boundary:
@@ -155,7 +170,9 @@ def test_rename_interruption_reconciles_both_release_identities(tmp_path, monkey
     assert runtime.seed_effects == 1
 
 
-def test_standalone_projection_matches_canonical_policy_and_gateway_is_versioned(tmp_path):
+def test_standalone_projection_matches_canonical_policy_and_gateway_is_versioned(
+    tmp_path: Path,
+) -> None:
     assert bootstrap.OWNER_PATHS == OWNER_PATHS
     write(
         tmp_path, "tools/application/gateway.json", '{"schema_version":1,"installation_protocol":1}'
@@ -172,7 +189,9 @@ def test_standalone_projection_matches_canonical_policy_and_gateway_is_versioned
         installation_command(tmp_path, ["dev", "a" * 40])
 
 
-def test_external_bundle_imports_and_commands_do_not_depend_on_customer_or_maintainer(tmp_path):
+def test_external_bundle_imports_and_commands_do_not_depend_on_customer_or_maintainer(
+    tmp_path: Path,
+) -> None:
     from tools.maintainer.python_packages import stage
 
     stage("external", tmp_path)

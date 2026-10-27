@@ -1,22 +1,27 @@
 """Fast staged-content checks; no full test/static-analysis suite."""
 
+from __future__ import annotations
+
 import os
 import re
 import subprocess
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 
 from tools.application.processes import ApplicationProcesses
 from tools.core.process import SubprocessRunner
 
 
-def git_command(root, *args, data=None, processes):
+def git_command(
+    root: Path, *args: str, data: bytes | None = None, processes: ApplicationProcesses
+) -> bytes:
     return processes.run(
         ["git", *args], cwd=root, input=data, check=True, capture_output=True
     ).stdout
 
 
-def commit_message(root, path):
+def commit_message(root: Path, path: Path) -> None:
     lines = Path(path).read_text().splitlines()
     first = lines[0] if lines else ""
     match = re.fullmatch(
@@ -37,7 +42,14 @@ def commit_message(root, path):
             raise ValueError("Commit scope must match the active roadmap ID.")
 
 
-def pre_commit(root, tools_root=None, check_knowledge=True, *, history=None, processes=None):
+def pre_commit(
+    root: Path,
+    tools_root: Path | None = None,
+    check_knowledge: bool = True,
+    *,
+    history: Callable[[Path, str, bytes | None], bool] | None = None,
+    processes: ApplicationProcesses | None = None,
+) -> None:
     from functools import partial
 
     processes = processes or ApplicationProcesses(SubprocessRunner(), dict(os.environ))
@@ -240,7 +252,7 @@ def pre_commit(root, tools_root=None, check_knowledge=True, *, history=None, pro
     )
 
 
-def git(root, *args, data=None):
+def git(root: Path, *args: str, data: bytes | None = None) -> bytes:
     return git_command(
         root, *args, data=data, processes=ApplicationProcesses(SubprocessRunner(), dict(os.environ))
     )

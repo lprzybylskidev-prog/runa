@@ -87,7 +87,8 @@ the target. Compose setup and devcontainer post-create use the same
 `DevelopmentService` receives workspace, process policies and execution location; it composes separate `DevelopmentConfig` profile/secret preparation and `DevelopmentSetup` dependency/bootstrap services.
 `RepositoryPolicy` receives the operator environment and process function.
 `CustomerSource` keeps credential-isolated Git and exact source/projection checks.
-Both source policies consume the typed `WorkspaceProcess` callable contract;
+Source policies and workspace-bound diagnostics/security adapters consume the
+typed `WorkspaceProcess` callable contract;
 captured text and bytes remain distinct, and workspace/environment selection
 stays at their composition root. Configuration and receipt readers validate decoded
 JSON before returning recursive `JsonValue` mappings. Host-plan payload types retain

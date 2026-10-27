@@ -1,8 +1,11 @@
 """Physical customer tooling composition without private source or test imports."""
 
+from __future__ import annotations
+
 import json
 import os
 from collections import deque
+from pathlib import Path
 
 import pytest
 
@@ -16,7 +19,9 @@ from tools.core.process import ProcessResult, SubprocessRunner
 from tools.maintainer.python_packages import stage
 
 
-def test_application_owned_roots_can_extend_tooling_without_private_discovery(tmp_path):
+def test_application_owned_roots_can_extend_tooling_without_private_discovery(
+    tmp_path: Path,
+) -> None:
     fixture = workspace(tmp_path)
     fixture.write(
         "src/app/testing.json",
@@ -43,7 +48,9 @@ def test_application_owned_roots_can_extend_tooling_without_private_discovery(tm
         application_layout(tmp_path)
 
 
-def test_projected_customer_runs_real_python_extension_and_reports_collection_failure(tmp_path):
+def test_projected_customer_runs_real_python_extension_and_reports_collection_failure(
+    tmp_path: Path,
+) -> None:
     stage("application", tmp_path)
     fixture = workspace(tmp_path)
     fixture.write("src/app/tooling/calculation.py", "def total(values):\n    return sum(values)\n")
@@ -79,7 +86,9 @@ def test_extension():
     assert evidence["scopes"][0]["status"] == "failed"
 
 
-def test_projected_customer_aggregate_native_scopes_keep_ownership_and_all_results(tmp_path):
+def test_projected_customer_aggregate_native_scopes_keep_ownership_and_all_results(
+    tmp_path: Path,
+) -> None:
     stage("application", tmp_path)
     fixture = workspace(tmp_path)
     for name in (

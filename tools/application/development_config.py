@@ -1,11 +1,15 @@
 """Development resource profiles and private local environment preparation."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
 import secrets
 import subprocess
+from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 from tools.application.processes import ApplicationProcesses
 from tools.core.context import ExecutionLocation, WorkspaceContext
@@ -33,15 +37,15 @@ class DevelopmentConfig:
     location: ExecutionLocation
 
     @property
-    def local(self):
+    def local(self) -> Path:
         return self.workspace.root / ".env.dev.local"
 
     @property
-    def override(self):
+    def override(self) -> Path:
         return self.workspace.root / ".devcontainer/compose.resources.yaml"
 
-    def load(self):
-        values = dict(zip(KEYS, PRESETS["standard"]))
+    def load(self) -> dict[str, str]:
+        values = dict(zip(KEYS, PRESETS["standard"], strict=True))
         values.update(
             DEV_PROFILE="standard",
             RUNA_UID=str(os.getuid()),
@@ -60,7 +64,7 @@ class DevelopmentConfig:
         self.validate(values)
         return values
 
-    def validate(self, values):
+    def validate(self, values: Mapping[str, str]) -> None:
         if values["EMBEDDINGS_DEVICE"] not in ("auto", "cpu", "cuda") or values[
             "EMBEDDINGS_CUDA"
         ] not in ("0", "1"):
@@ -78,7 +82,7 @@ class DevelopmentConfig:
             if not values[key].isdigit() or int(values[key]) < 1:
                 raise ValueError(f"{key} must be a positive integer.")
 
-    def persist(self, values):
+    def persist(self, values: Mapping[str, str]) -> None:
         self.validate(values)
         self.local.write_text(
             "".join(
@@ -190,7 +194,7 @@ class DevelopmentConfig:
             json.dumps({"services": {"app": service, **siblings}}, indent=2) + "\n"
         )
 
-    def resolve_embeddings(self, values):
+    def resolve_embeddings(self, values: dict[str, str]) -> None:
         if self.location is ExecutionLocation.CONTAINER:
             return
         enabled = False
@@ -226,7 +230,7 @@ class DevelopmentConfig:
             else "Embeddings: CPU (CUDA disabled or unavailable)."
         )
 
-    def private_environment(self, path):
+    def private_environment(self, path: Path) -> dict[str, str]:
         """Read local generated secrets without exposing values in diagnostics."""
         import stat
 
@@ -254,7 +258,7 @@ class DevelopmentConfig:
             if "=" in line and not line.startswith("#")
         )
 
-    def environment_files(self):
+    def environment_files(self) -> None:
         # A dangling link reports exists=False; reject it before any secret creation.
         for name in (".env", ".env.dev.database", ".env.testing"):
             path = self.workspace.root / name

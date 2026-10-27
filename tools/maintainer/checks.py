@@ -1,5 +1,7 @@
 """Focused deterministic project diagnostics. Checks never repair runtime state."""
 
+from __future__ import annotations
+
 import json
 
 # Public development diagnostics are the same service in both ownership contexts.
@@ -7,10 +9,12 @@ import os
 import re
 from datetime import UTC, date, datetime, timedelta
 from functools import partial
+from pathlib import Path
 
 from tools.application.diagnostics import Diagnostics
 from tools.application.processes import ApplicationProcesses
 from tools.core.process import SubprocessRunner
+from tools.core.state import JsonValue
 from tools.maintainer.context import ROOT
 
 processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
@@ -21,13 +25,13 @@ development = diagnostics.development
 tooling = diagnostics.tooling
 
 
-def yaml(path):
+def yaml(path: Path) -> dict[str, JsonValue]:
     from tools.application.configuration_reader import ConfigurationReader
 
     return ConfigurationReader.for_workspace(ROOT).yaml(path)
 
 
-def repository():
+def repository() -> None:
     active = list((ROOT / "docs/runa/maintainer/roadmaps/active").glob("*.md"))
     if len(active) > 1:
         raise ValueError("Multiple active roadmaps.")
@@ -48,7 +52,7 @@ def repository():
     )
 
 
-def maintenance():
+def maintenance() -> None:
     registry = yaml(ROOT / "docs/runa/maintainer/maintenance/registry.yml")
     ids = set()
     for entry in registry["entries"]:
@@ -150,13 +154,13 @@ def maintenance():
     )
 
 
-def docs():
+def docs() -> None:
     from tools.maintainer.docs_checks import validate
 
     validate(ROOT)
 
 
-def cleanliness():
+def cleanliness() -> None:
     for folder in ("tools/scratch", ".playwright/scratch"):
         if (ROOT / folder).exists() and any(
             p.is_file() and p.name != ".gitkeep" for p in (ROOT / folder).rglob("*")
@@ -170,7 +174,7 @@ def cleanliness():
     print("PASS: no unreviewed scratch/untracked/unstaged source residue.")
 
 
-def release():
+def release() -> None:
     from tools.maintainer.release_checks import validate
 
     repository()

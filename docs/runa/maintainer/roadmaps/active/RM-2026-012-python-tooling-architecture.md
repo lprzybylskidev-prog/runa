@@ -761,11 +761,11 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     projected customer extension scenarios now; execute broad acceptance in point
     10 only. Document exact commands, prerequisites and changed default semantics.
 
-- [ ] 9. Complete caller migration and retire the old architecture.
-  - Progress: caller/facade retirement, explicit service composition, private
-    analysis separation, source-bundle preparation and editor/docs updates are
-    implemented. Full-scope annotation completion and final alias/resource/inline
-    reconciliation remain open; this point is not complete.
+- [x] 9. Complete caller migration and retire the old architecture.
+  - Completed: caller/facade retirement, explicit service composition, private
+    analysis separation, source-bundle preparation, full-scope function/fixture
+    annotations and complete alias/resource/non-Python/inline reconciliation.
+    Full strict analysis, artifact and runtime PASS belong to point 10.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1771,6 +1771,54 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   data, knowledge/model caches, backups and verification reports remain preserved.
   Only ordinary incremental knowledge refresh is needed for source freshness;
   no migration or production setting changed.
+
+#### Point 9 completion — declarations, fixtures and complete reconciliation (2026-10-27)
+
+- Completed remaining development/configuration/setup, diagnostics/security,
+  dependencies/hooks/module versions, release/docs/localization and CLI signatures,
+  including all private cases, callbacks and native SMTP/FastCGI/PostgreSQL peers.
+  Source inventory now finds 1,349 declared functions with input/result annotations
+  and no missing signatures. This is declaration evidence, not strict-analysis PASS;
+  strict scope, rules, exclusions and frozen pins are unchanged.
+- Workspace-bound diagnostic/security calls compose the existing overloaded
+  process contract, retaining text/bytes and explicit option overrides. Private
+  acceptance callbacks, report/Compose/resource records and fixture boundaries are
+  typed. Shared private knowledge provider/storage/HTTP fakes live in support;
+  suites no longer import another suite. GPU fallback now constructs the actual
+  provider with scripted capabilities/responses rather than replacing its method.
+- Completed source reconciliation for all 104 baseline components, 37 unchanged
+  symlink aliases, 37 resources, 68 non-Python references and 58 inline candidates
+  in `tooling/python-rebuild/reconciliation.json`. Preserved baseline inventories,
+  scenario identities, immutable dated evidence and retained process/version/
+  daemon-recovery boundaries. Added the final source reconciliation contract;
+  broad source/package contracts remain scheduled for point 10.
+- Removed remaining native acceptance assumptions about the owner's `runa-dev`
+  project/container name. Management/host preservation uses exact checkout labels;
+  model-cache reuse resolves the owner's configured embeddings service and inspects
+  its actual volume. An explicit owner context reaches customer knowledge acceptance;
+  customer collection isolation and cache preservation are unchanged. Corrected
+  remaining package command examples and obsolete executor guidance.
+- Eight necessary focused cases passed through supported test-python: configured
+  owner cache discovery, existing credential-preserving development reentry,
+  interrupted knowledge write recovery, parser relocation without collection/model
+  reset, native temporary-Git module version checks, active release arithmetic,
+  aggregate security audit collection/workspace routing and transient-versus-permanent
+  provider failure. No live Docker/GitHub/service operation, full suite, strict
+  analysis, image/wheel build, scanner or broad acceptance ran. Changed-file pinned
+  Ruff preparation and mandatory staged hooks apply.
+- Consolidated the migration ledger's obsolete incremental status into current
+  architecture/disposition guidance; synchronized its README/toolchain, public
+  Python/command guide, owner localization/command migration and tools ownership.
+  Root/customer AGENTS and owner/customer backend/security/Laravel/RAG products
+  already cover qualified typed/injected APIs, guarded effects, recovery and scope.
+  Internal annotations/support and caller corrections introduce no new public
+  extension API, authority or exception, so those instruction products need no
+  further rule. No independently versioned business module changed.
+- Point 9 implementation is complete; point 10 is the only open point. VERSION
+  remains 0.5.0, projected feature release 0.6.0. No dependency, migration or
+  production setting changed. No disposable container/network/image/volume was
+  created or removed; active development/test data, knowledge/model caches,
+  rollback resources, backups and verification reports remain preserved.
 
 ### Draft preparation validation (historical)
 

@@ -1,8 +1,12 @@
 """Aggregate failure, ownership, filtering and resource lifecycle contracts."""
 
+from __future__ import annotations
+
 import json
 from collections import deque
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Never
 
 import pytest
 
@@ -11,11 +15,14 @@ from tools.application.testing.runner import APPLICATION, Selection
 from tools.application.testing.runner import TestService as SuiteService
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import WorkspaceContext
-from tools.core.process import ProcessResult
+from tools.core.process import ProcessResult, ProcessSpec
+from tools.core.state import JsonValue
 from tools.maintainer.test_cli import OWNER
 
 
-def fixture(root: Path, outcomes=(0, 0, 0, 0, 0)):
+def fixture(
+    root: Path, outcomes: Sequence[int] = (0, 0, 0, 0, 0)
+) -> tuple[SuiteService, RecordingRunner]:
     for name in (
         "src/app/tests/Feature/ExampleTest.php",
         "src/app/tests/frontend/example.test.ts",
@@ -29,11 +36,11 @@ def fixture(root: Path, outcomes=(0, 0, 0, 0, 0)):
     return SuiteService(WorkspaceContext(root), APPLICATION, runner, {}, lambda _: None), runner
 
 
-def results(root):
+def results(root: Path) -> list[dict[str, JsonValue]]:
     return json.loads((root / ".runtime/tests/application-results.json").read_text())["scopes"]
 
 
-def test_defaults_run_all_independent_scopes_and_keep_native_failures(tmp_path):
+def test_defaults_run_all_independent_scopes_and_keep_native_failures(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (0, 7, 0, 3, 5))
     assert service.execute(Selection()) == 1
     assert [row["exit_code"] for row in results(tmp_path)] == [7, 3, 5]
@@ -44,7 +51,7 @@ def test_defaults_run_all_independent_scopes_and_keep_native_failures(tmp_path):
     assert runner.calls[4].cwd == tmp_path
 
 
-def test_backend_cleanup_failure_is_recorded_and_does_not_skip_frontend(tmp_path):
+def test_backend_cleanup_failure_is_recorded_and_does_not_skip_frontend(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (0, 0, 9, 0, 0))
     assert service.execute(Selection()) == 1
     assert results(tmp_path)[0]["cleanup_exit_code"] == 9
@@ -52,7 +59,7 @@ def test_backend_cleanup_failure_is_recorded_and_does_not_skip_frontend(tmp_path
     assert len(runner.calls) == 5
 
 
-def test_missing_tooling_prerequisite_blocks_without_skipping_other_scopes(tmp_path):
+def test_missing_tooling_prerequisite_blocks_without_skipping_other_scopes(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (0, 0, 0, 0))
     (tmp_path / ".runtime/python/venv/bin/python").unlink()
     assert service.execute(Selection()) == 1
@@ -61,7 +68,7 @@ def test_missing_tooling_prerequisite_blocks_without_skipping_other_scopes(tmp_p
     assert len(runner.calls) == 4
 
 
-def test_empty_customer_tooling_never_discovers_copied_private_tests(tmp_path):
+def test_empty_customer_tooling_never_discovers_copied_private_tests(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path)
     (tmp_path / "src/app/tests/python/test_example.py").unlink()
     private = tmp_path / "tools/maintainer/tests/python/unit/test_private.py"
@@ -74,19 +81,19 @@ def test_empty_customer_tooling_never_discovers_copied_private_tests(tmp_path):
         service.command("tooling", Selection(("tooling",), python_paths=(str(private),)))
 
 
-def test_owner_empty_scope_is_a_failure(tmp_path):
+def test_owner_empty_scope_is_a_failure(tmp_path: Path) -> None:
     service = SuiteService(WorkspaceContext(tmp_path), OWNER, RecordingRunner(), {}, lambda _: None)
     assert service.execute(Selection(("tooling",))) == 1
 
 
-def test_interruption_stops_scheduling_and_records_pending_scopes(tmp_path):
+def test_interruption_stops_scheduling_and_records_pending_scopes(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path)
 
     # A native runner reaps its process group before raising this interruption.
     class Interrupted:
         calls = []
 
-        def run(self, spec):
+        def run(self, spec: ProcessSpec) -> Never:
             self.calls.append(spec)
             raise KeyboardInterrupt
 
@@ -96,7 +103,7 @@ def test_interruption_stops_scheduling_and_records_pending_scopes(tmp_path):
     assert len(service.runner.calls) == 1
 
 
-def test_filters_are_native_and_raw_arguments_require_an_explicit_scope(tmp_path):
+def test_filters_are_native_and_raw_arguments_require_an_explicit_scope(tmp_path: Path) -> None:
     service, _ = fixture(tmp_path)
     assert parse([]).scopes == ("backend", "frontend", "tooling")
     assert parse(["--scope=tooling", "--filter=invoice"]).filter == "invoice"
@@ -109,7 +116,7 @@ def test_filters_are_native_and_raw_arguments_require_an_explicit_scope(tmp_path
         parse(["--scope=frontend", "--scope=frontend"])
 
 
-def test_scoped_native_exit_and_discovery_do_not_cleanup_workers(tmp_path):
+def test_scoped_native_exit_and_discovery_do_not_cleanup_workers(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (7,))
     assert service.execute(Selection(("backend",), ("--list-tests",))) == 7
     assert len(runner.calls) == 1
@@ -117,21 +124,21 @@ def test_scoped_native_exit_and_discovery_do_not_cleanup_workers(tmp_path):
     assert not (tmp_path / ".runtime/tests/suite.lock").exists()
 
 
-def test_missing_process_continues_independent_scopes(tmp_path):
+def test_missing_process_continues_independent_scopes(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path)
     runner.outcomes = deque([FileNotFoundError(), ProcessResult(0)])
     assert service.execute(Selection(("frontend", "tooling"))) == 1
     assert [row["status"] for row in results(tmp_path)] == ["blocked", "passed"]
 
 
-def test_failed_orphan_cleanup_never_starts_backend_but_other_scopes_run(tmp_path):
+def test_failed_orphan_cleanup_never_starts_backend_but_other_scopes_run(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (9, 0, 0))
     assert service.execute(Selection()) == 1
     assert [row["status"] for row in results(tmp_path)] == ["blocked", "passed", "passed"]
     assert not any(call.argv[0] == "vendor/bin/pest" for call in runner.calls)
 
 
-def test_nested_suite_lock_refuses_without_starting_any_child(tmp_path):
+def test_nested_suite_lock_refuses_without_starting_any_child(tmp_path: Path) -> None:
     from tools.core.reporting import SafeFailure
     from tools.core.state import FileLock, StateDirectory
 
@@ -143,7 +150,7 @@ def test_nested_suite_lock_refuses_without_starting_any_child(tmp_path):
     assert not runner.calls
 
 
-def test_symlink_cannot_redirect_customer_discovery_to_private_suite(tmp_path):
+def test_symlink_cannot_redirect_customer_discovery_to_private_suite(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path)
     (tmp_path / "src/app/tests/python/test_example.py").unlink()
     (tmp_path / "src/app/tests/python").rmdir()
@@ -155,7 +162,9 @@ def test_symlink_cannot_redirect_customer_discovery_to_private_suite(tmp_path):
     assert not runner.calls
 
 
-def test_cached_php_configuration_does_not_skip_independent_frontend_or_tooling(tmp_path):
+def test_cached_php_configuration_does_not_skip_independent_frontend_or_tooling(
+    tmp_path: Path,
+) -> None:
     service, runner = fixture(tmp_path, (0, 0))
     cache = tmp_path / "src/bootstrap/cache/config.php"
     cache.parent.mkdir(parents=True)

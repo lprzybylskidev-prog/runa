@@ -1,5 +1,7 @@
 """Injected quality contexts, graph safety and candidate evidence regressions."""
 
+from __future__ import annotations
+
 import json
 import os
 import signal
@@ -19,7 +21,7 @@ from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.maintainer.tests.python.support.quality import FixturePlanner, definition, node
 
 
-def test_selection_prerequisites_hash_and_declared_scope():
+def test_selection_prerequisites_hash_and_declared_scope() -> None:
     nodes, scope = resolve(definition(), [], groups=["docs"])
     assert set(nodes) == {"base", "closure"}
     assert scope["mode"] == "groups"
@@ -38,7 +40,7 @@ def test_selection_prerequisites_hash_and_declared_scope():
             arguments(argv)
 
 
-def test_owner_and_customer_composition_do_not_mutate_each_other(tmp_path):
+def test_owner_and_customer_composition_do_not_mutate_each_other(tmp_path: Path) -> None:
     owner = service(
         tmp_path,
         roadmaps=tmp_path / "owner",
@@ -54,10 +56,10 @@ def test_owner_and_customer_composition_do_not_mutate_each_other(tmp_path):
     assert owner.planner.allow_application_default is False
 
 
-def test_failure_blocks_dependents_preserves_native_exit_and_host_transport(tmp_path):
+def test_failure_blocks_dependents_preserves_native_exit_and_host_transport(tmp_path: Path) -> None:
     calls = []
 
-    def delegate(argv):
+    def delegate(argv: list[str]) -> list[str]:
         calls.append(argv)
         return ["true"]
 
@@ -81,7 +83,7 @@ def test_failure_blocks_dependents_preserves_native_exit_and_host_transport(tmp_
     assert not (tmp_path / "blocked.log").exists()
 
 
-def test_exclusive_groups_serialize_independent_steps_overlap(tmp_path):
+def test_exclusive_groups_serialize_independent_steps_overlap(tmp_path: Path) -> None:
     script = tmp_path / "step.py"
     script.write_text(
         "import time\nprint(time.time(), flush=True)\ntime.sleep(.15)\nprint(time.time())\n"
@@ -112,7 +114,9 @@ def test_exclusive_groups_serialize_independent_steps_overlap(tmp_path):
     assert intervals["c"][0] < intervals["a"][1]
 
 
-def test_abandoned_status_marks_interruption_and_tails(tmp_path, capsys):
+def test_abandoned_status_marks_interruption_and_tails(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     (tmp_path / "state.json").write_text(
         json.dumps(dict(status="running", steps={"step": dict(status="running")}))
     )
@@ -124,7 +128,7 @@ def test_abandoned_status_marks_interruption_and_tails(tmp_path, capsys):
     assert "Overall status: interrupted" in out
 
 
-def test_background_lock_signal_and_reaping(tmp_path):
+def test_background_lock_signal_and_reaping(tmp_path: Path) -> None:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     subprocess.run(
         [
@@ -194,7 +198,9 @@ def test_background_lock_signal_and_reaping(tmp_path):
                 pass
 
 
-def test_invalid_selection_and_preview_never_replace_prior_evidence(tmp_path, capsys):
+def test_invalid_selection_and_preview_never_replace_prior_evidence(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     directory = tmp_path / ".runtime/quality"
     directory.mkdir(parents=True)
     sentinel = directory / "state.json"
@@ -215,7 +221,7 @@ def test_invalid_selection_and_preview_never_replace_prior_evidence(tmp_path, ca
     assert "Excluded groups (not run): backend" in capsys.readouterr().out
 
 
-def test_empty_command_and_unknown_execution_context_refused():
+def test_empty_command_and_unknown_execution_context_refused() -> None:
     for item in [node("a", ""), dict(node("a"), execution_context="arbitrary")]:
         with pytest.raises(ValueError):
             select(dict(base=[item], impact_areas={}, final=[]), [])

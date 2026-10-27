@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Exercise real TEI/Qdrant contracts using a disposable collection and checkout."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
@@ -12,6 +14,7 @@ import uuid
 from pathlib import Path
 
 from tools.application.knowledge.context import KnowledgeContext
+from tools.application.knowledge.contracts import Health
 from tools.application.knowledge.corpus import identity
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
@@ -20,7 +23,7 @@ from tools.application.knowledge.store import Store
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def main():
+def main() -> None:
     if os.environ.get("APP_ENV") == "production":
         raise ValueError("Knowledge acceptance is development-only.")
     config = json.loads((ROOT / "tools/application/knowledge/config.json").read_text())
@@ -52,10 +55,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix="runa-knowledge-") as directory:
         root = Path(directory)
 
-        def git(*args):
+        def git(*args: str) -> None:
             subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
 
-        def run_index(device="auto"):
+        def run_index(device: str = "auto") -> Health:
             with contextlib.redirect_stdout(io.StringIO()) as output:
                 assert (
                     KnowledgeIndexer(

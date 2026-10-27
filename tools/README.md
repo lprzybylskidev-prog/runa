@@ -6,4 +6,5 @@ Do not add owner Artisan aliases. Reuse application primitives internally, while
 
 Python package ownership, language and generated-state rules are documented in the
 [public Python guide](../docs/runa/handbook/development/python-tooling.md).
-Existing command families retain their transports during their package migration.
+Command families use qualified package services and fixed thin transports;
+public CLI names and native PHP/JS runners retain their documented contracts.

@@ -1,5 +1,7 @@
 """Host-owned, journaled lifecycle for disposable browser endpoint containers."""
 
+from __future__ import annotations
+
 import contextlib
 import fcntl
 import json
@@ -7,19 +9,23 @@ import os
 import re
 import signal
 import uuid
+from collections.abc import Iterator, Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
+from types import FrameType
 
 from tools.application.development_runtime import development_compose
 from tools.application.processes import ApplicationProcesses
 from tools.core.context import WorkspaceContext
 from tools.core.process import SubprocessRunner
+from tools.core.state import JsonValue
 
 SERVICES = ("app-test", "nginx-test")
 LABEL = "runa.testing.run"
 
 
-def interrupted(signum, frame):
+def interrupted(signum: int, frame: FrameType | None) -> None:
     raise KeyboardInterrupt
 
 
@@ -28,12 +34,12 @@ class EndpointService:
     workspace: WorkspaceContext
     processes: ApplicationProcesses
 
-    def read(self, command):
+    def read(self, command: Sequence[str]) -> str:
         return self.processes.run(
             command, cwd=self.workspace.root, check=True, capture_output=True, text=True
         ).stdout
 
-    def cleanup(self, state, project):
+    def cleanup(self, state: dict[str, JsonValue], project: str) -> None:
         if (
             set(state) != {"project", "run"}
             or state["project"] != project
@@ -73,7 +79,7 @@ class EndpointService:
             self.processes.run(["docker", "rm", *ids], cwd=self.workspace.root, check=True)
 
     @contextlib.contextmanager
-    def endpoint(self):
+    def endpoint(self) -> Iterator[None]:
         """Preserve manual endpoints; label/journal only containers this run creates."""
         from tools.application.repository_boundary_service import RepositoryPolicy
 
@@ -189,7 +195,7 @@ class EndpointService:
                     signal.signal(signal.SIGTERM, previous)
 
 
-def endpoint():
+def endpoint() -> AbstractContextManager[None]:
     root = Path(__file__).resolve().parents[2]
     return EndpointService(
         WorkspaceContext(root), ApplicationProcesses(SubprocessRunner(), dict(os.environ))

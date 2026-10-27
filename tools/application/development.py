@@ -1,8 +1,11 @@
 """Workspace-scoped development command adapter; startup never requires AI."""
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
@@ -27,23 +30,23 @@ class DevelopmentService:
     configuration: DevelopmentConfig = field(init=False)
     setup: DevelopmentSetup = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         configuration = DevelopmentConfig(self.workspace, self.processes, self.location)
         object.__setattr__(self, "configuration", configuration)
         object.__setattr__(
             self, "setup", DevelopmentSetup(self.workspace, self.processes, configuration)
         )
 
-    def application_setup(self, arguments):
+    def application_setup(self, arguments: Sequence[str]) -> int:
         return self.setup.application_setup(arguments)
 
     @property
-    def policy(self):
+    def policy(self) -> RepositoryPolicy:
         return RepositoryPolicy(
             partial(self.processes.run, cwd=self.workspace.root), self.processes.environment
         )
 
-    def knowledge_availability(self):
+    def knowledge_availability(self) -> None:
         # A separate process bounds DNS/connect/read and prevents optional probes from
         # inheriting the indexing transport's long retries.
         try:
@@ -74,7 +77,7 @@ class DevelopmentService:
         except subprocess.TimeoutExpired:
             print("DEGRADED: optional knowledge probe timed out; use source search.")
 
-    def main(self, arguments):
+    def main(self, arguments: Sequence[str]) -> int:
         args = list(arguments)
         if not args or args[0] in ("--help", "-h"):
             print(
@@ -380,7 +383,7 @@ class DevelopmentService:
         return result.returncode
 
 
-def main(arguments=None):
+def main(arguments: Sequence[str] | None = None) -> int:
     workspace = WorkspaceContext(Path(__file__).resolve().parents[2])
     location = execution_location()
     service = DevelopmentService(

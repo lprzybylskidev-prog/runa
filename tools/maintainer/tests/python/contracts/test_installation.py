@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Failure-first first-install, source preservation and private configuration contracts."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
@@ -8,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -21,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class InstallationContracts(unittest.TestCase):
-    def test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs(self):
+    def test_persistent_snapshot_preserves_manual_endpoints_and_skips_automatic_runs(self) -> None:
         from tools.core.context import WorkspaceContext
         from tools.maintainer.testing.acceptance import AcceptanceContext
 
@@ -40,7 +43,7 @@ class InstallationContracts(unittest.TestCase):
         with patch.object(type(acceptance), "output", return_value=listing):
             self.assertEqual(acceptance.protected_containers(), ["app-id", "manual-endpoint"])
 
-    def setUp(self):
+    def setUp(self) -> None:
         boundary = patch.object(
             RepositoryPolicy, "assert_installation", return_value={"mode": "prod"}
         )
@@ -75,15 +78,15 @@ class InstallationContracts(unittest.TestCase):
         self.installer = installer.InstallationService(self.deployment, Mock())
         self.sha = "a" * 40
 
-    def settings_file(self):
+    def settings_file(self) -> Path:
         path = self.root / "settings.json"
         path.write_text(json.dumps(self.settings))
         path.chmod(0o600)
         return path
 
     @contextlib.contextmanager
-    def tools(self, failure=None):
-        def run(arguments, **kwargs):
+    def tools(self, failure: Exception | None = None) -> Iterator[Mock]:
+        def run(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
             if arguments[:3] == ["git", "rev-parse", "HEAD"]:
                 return subprocess.CompletedProcess(arguments, 0, self.sha + "\n")
             if arguments[:3] == ["git", "status", "--porcelain"]:
@@ -102,7 +105,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions(
         self,
-    ):
+    ) -> None:
         variants = [
             {"app_url": "https://user:password@customer.example"},
             {"extra": True},
@@ -124,7 +127,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_initial_provision_and_repeated_provision_preserve_every_secret_and_customer_version(
         self,
-    ):
+    ) -> None:
         external = self.root / ".env.prod.backup"
         external.write_text("customer-managed backup configuration\n")
         self.installer.provision(self.settings, self.sha, True)
@@ -148,7 +151,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_partial_configuration_resume_reuses_original_application_key_and_database_password(
         self,
-    ):
+    ) -> None:
         self.installer.provision(self.settings, self.sha, True)
         original = (self.root / ".env.prod").read_bytes()
         (self.root / ".env.prod.database").unlink()
@@ -161,7 +164,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_scaffold_is_once_only_and_preserves_customer_files_manifest_and_removed_extension_dirs(
         self,
-    ):
+    ) -> None:
         business = self.root / "src/app/custom.php"
         business.write_text("customer sentinel")
         original = (self.root / "src/app/application.json").read_bytes()
@@ -173,7 +176,7 @@ class InstallationContracts(unittest.TestCase):
         self.assertEqual(business.read_text(), "customer sentinel")
         self.assertEqual((self.root / "src/app/application.json").read_bytes(), original)
 
-    def test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics(self):
+    def test_dev_fresh_repeat_failure_and_explicit_resume_reuse_existing_mechanics(self) -> None:
         with self.tools(subprocess.CalledProcessError(1, ["fixture"])):
             with self.assertRaises(subprocess.CalledProcessError):
                 self.installer.install("dev", self.sha, profile="low")
@@ -214,11 +217,13 @@ class InstallationContracts(unittest.TestCase):
             self.assertEqual(len(process.call_args_list), count + 1)
         self.assertFalse((self.state / "first-deploy.json").exists())
 
-    def test_failed_dependency_setup_stops_before_platform_database_initialization(self):
+    def test_failed_dependency_setup_stops_before_platform_database_initialization(self) -> None:
         with self.tools() as process:
             original = process.side_effect
 
-            def fail_setup(arguments, **kwargs):
+            def fail_setup(
+                arguments: list[str], **kwargs: object
+            ) -> subprocess.CompletedProcess[str]:
                 if arguments[-2:] == ["wait", "setup"]:
                     raise subprocess.CalledProcessError(1, arguments)
                 return original(arguments, **kwargs)
@@ -231,7 +236,9 @@ class InstallationContracts(unittest.TestCase):
             json.loads((self.state / "install-dev.json").read_text())["state"], "failed"
         )
 
-    def test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration(self):
+    def test_production_requires_explicit_settings_and_refuses_unowned_existing_configuration(
+        self,
+    ) -> None:
         with self.tools(), self.assertRaisesRegex(ValueError, "--settings-file"):
             self.installer.install("prod", self.sha, non_interactive=True)
         self.assertFalse((self.state / "install-prod.json").exists())
@@ -239,7 +246,9 @@ class InstallationContracts(unittest.TestCase):
         with self.tools(), self.assertRaisesRegex(ValueError, "existing production settings"):
             self.installer.install("prod", self.sha, settings_file=self.settings_file())
 
-    def test_failed_production_install_keeps_configuration_and_resumes_without_regeneration(self):
+    def test_failed_production_install_keeps_configuration_and_resumes_without_regeneration(
+        self,
+    ) -> None:
         with (
             self.tools(),
             patch.object(self.deployment, "deploy", side_effect=ValueError("synthetic")),
@@ -264,7 +273,7 @@ class InstallationContracts(unittest.TestCase):
         )
         self.assertFalse((self.state / "first-deploy.json").exists())
 
-    def test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields(self):
+    def test_administrator_settings_are_explicit_and_reject_secret_or_unknown_fields(self) -> None:
         administrator = {
             "email": "initial@example.invalid",
             "name": "Initial administrator",
@@ -288,7 +297,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_administrator_admission_failure_resumes_same_installed_release_and_complete_repeat_is_inert(
         self,
-    ):
+    ) -> None:
         self.settings["administrator"] = {
             "email": "initial@example.invalid",
             "name": "Initial administrator",
@@ -337,12 +346,14 @@ class InstallationContracts(unittest.TestCase):
         self.assertTrue(journal["administrator_invited"])
         self.assertEqual(journal["state"], "complete")
 
-    def test_resume_blocks_a_pending_update_or_another_target(self):
+    def test_resume_blocks_a_pending_update_or_another_target(self) -> None:
         self.context.atomic(self.state / "in-progress.json", {"target": "b" * 40, "previous": None})
         with self.assertRaisesRegex(ValueError, "not this initial installation"):
             self.installer.resume_is_owned({"sha": self.sha})
 
-    def test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets(self):
+    def test_explicit_smtp_correction_on_resume_preserves_application_and_database_secrets(
+        self,
+    ) -> None:
         self.installer.provision(self.settings, self.sha, True)
         original = ops.read_env(self.root / ".env.prod")
         database = (self.root / ".env.prod.database").read_bytes()
@@ -359,7 +370,7 @@ class InstallationContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "infrastructure"):
             self.installer.resume_settings(self.settings_file(), True)
 
-    def test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume(self):
+    def test_corrected_certificate_inputs_refresh_private_readonly_mounts_on_resume(self) -> None:
         directory = self.root / "inputs"
         directory.mkdir(mode=0o700)
         for name in ("certificate.pem", "private-key.pem"):
@@ -395,8 +406,8 @@ class InstallationContracts(unittest.TestCase):
             all(mount["read_only"] for mount in overlay["services"]["nginx"]["volumes"])
         )
 
-    def test_development_refuses_to_take_over_another_workspaces_containers(self):
-        def run(arguments, **kwargs):
+    def test_development_refuses_to_take_over_another_workspaces_containers(self) -> None:
+        def run(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
             return Mock(
                 stdout="fixture-id\n"
                 if arguments[:2] == ["docker", "ps"]
@@ -421,7 +432,7 @@ class InstallationContracts(unittest.TestCase):
 
     def test_production_tls_compose_overlay_is_explicit_and_simulation_project_cannot_target_dev(
         self,
-    ):
+    ) -> None:
         (self.root / ".env.prod.compose").write_text(
             "RUNA_IMAGE_TAG="
             + self.sha
@@ -444,7 +455,7 @@ class InstallationContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.deployment.runtime.production.compose()
 
-    def test_customer_host_transport_rejects_installation(self):
+    def test_customer_host_transport_rejects_installation(self) -> None:
         plan = {
             "schema_version": 1,
             "request_id": "a" * 32,
@@ -453,3 +464,50 @@ class InstallationContracts(unittest.TestCase):
         }
         with self.assertRaises(ValueError):
             ManagementService.for_workspace(ROOT).validate_plan(json.dumps(plan), "a" * 32)
+
+
+def test_model_cache_uses_configured_owner_compose_identity(tmp_path: Path) -> None:
+    from collections import deque
+
+    from tools.application.processes import ApplicationProcesses
+    from tools.application.testing.support.process import RecordingRunner
+    from tools.core.context import WorkspaceContext
+    from tools.core.process import ProcessResult
+    from tools.maintainer.testing.acceptance import AcceptanceContext
+    from tools.maintainer.testing.customer_knowledge import model_cache
+
+    runner = RecordingRunner(
+        deque(
+            [
+                ProcessResult(0, b"custom-owner-embeddings-id\n"),
+                ProcessResult(
+                    0,
+                    json.dumps(
+                        [
+                            {
+                                "Mounts": [
+                                    {
+                                        "Type": "volume",
+                                        "Destination": "/data",
+                                        "Name": "retained-model-cache",
+                                    },
+                                    {
+                                        "Type": "volume",
+                                        "Destination": "/other",
+                                        "Name": "unrelated",
+                                    },
+                                ]
+                            }
+                        ]
+                    ).encode(),
+                ),
+            ]
+        )
+    )
+    owner = AcceptanceContext(WorkspaceContext(tmp_path), ApplicationProcesses(runner, {}))
+    assert model_cache(owner) == "retained-model-cache"
+    assert runner.calls[0].argv[-3:] == ("ps", "--quiet", "embeddings")
+    assert runner.calls[0].argv[runner.calls[0].argv.index("--project-directory") + 1] == str(
+        tmp_path
+    )
+    assert runner.calls[1].argv == ("docker", "inspect", "custom-owner-embeddings-id")

@@ -1,7 +1,10 @@
 """Delivered Python developer commands; host operation remains stdlib-only."""
 
+from __future__ import annotations
+
 import argparse
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
@@ -13,7 +16,7 @@ from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
 from tools.core.reporting import SafeFailure
 
 
-def main(argv=None):
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["setup", "format", "lint", "typecheck"])
     parser.add_argument("--check", action="store_true")

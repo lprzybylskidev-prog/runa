@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Versioned Git hook entrypoint."""
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from tools.application.development_runtime import development_compose, execution_location
@@ -16,7 +19,12 @@ from tools.core.process import SubprocessRunner
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def main(arguments, *, history=None, module="tools.application.git_hook"):
+def main(
+    arguments: Sequence[str],
+    *,
+    history: Callable[[Path, str, bytes | None], bool] | None = None,
+    module: str = "tools.application.git_hook",
+) -> None:
     processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
     try:
         args = list(arguments)

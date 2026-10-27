@@ -1,5 +1,7 @@
 """Staged Python formatting/lint and private history never overwrite dirty drafts."""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import subprocess
@@ -9,11 +11,11 @@ import pytest
 
 from tools.application.hooks import pre_commit
 from tools.application.processes import ApplicationProcesses
-from tools.core.process import ProcessResult, SubprocessRunner
+from tools.core.process import ProcessResult, ProcessSpec, SubprocessRunner
 from tools.maintainer.hook_policy import immutable_history
 
 
-def fixture(tmp_path):
+def fixture(tmp_path: Path) -> Path:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     python = tmp_path / ".runtime/python/venv/bin/python"
     python.parent.mkdir(parents=True)
@@ -28,11 +30,11 @@ def fixture(tmp_path):
 
 
 class HookRunner:
-    def __init__(self, fail_lint=False):
+    def __init__(self, fail_lint: bool = False) -> None:
         self.fail_lint = fail_lint
         self.scanned = None
 
-    def run(self, spec):
+    def run(self, spec: ProcessSpec) -> ProcessResult:
         if spec.argv[0] == "git":
             return SubprocessRunner().run(spec)
         if "ruff" in spec.argv:
@@ -45,7 +47,7 @@ class HookRunner:
         raise AssertionError(spec.argv)
 
 
-def test_python_partial_staging_refused_without_index_or_worktree_mutation(tmp_path):
+def test_python_partial_staging_refused_without_index_or_worktree_mutation(tmp_path: Path) -> None:
     target = fixture(tmp_path)
     target.write_text("x=2\n")
     runner = HookRunner()
@@ -56,7 +58,7 @@ def test_python_partial_staging_refused_without_index_or_worktree_mutation(tmp_p
     assert runner.scanned is None
 
 
-def test_python_lint_failure_prevents_any_publication(tmp_path):
+def test_python_lint_failure_prevents_any_publication(tmp_path: Path) -> None:
     target = fixture(tmp_path)
     with pytest.raises(subprocess.CalledProcessError):
         pre_commit(
@@ -66,7 +68,7 @@ def test_python_lint_failure_prevents_any_publication(tmp_path):
     assert subprocess.check_output(["git", "-C", str(tmp_path), "show", ":fixture.py"]) == b"x=1\n"
 
 
-def test_python_full_staging_formats_only_after_scan(tmp_path):
+def test_python_full_staging_formats_only_after_scan(tmp_path: Path) -> None:
     target = fixture(tmp_path)
     runner = HookRunner()
     pre_commit(tmp_path, check_knowledge=False, processes=ApplicationProcesses(runner, {}))
@@ -77,7 +79,7 @@ def test_python_full_staging_formats_only_after_scan(tmp_path):
     assert runner.scanned == b"x=1\n"
 
 
-def test_private_history_is_exact_and_receipt_always_removes_owner_scope(tmp_path):
+def test_private_history_is_exact_and_receipt_always_removes_owner_scope(tmp_path: Path) -> None:
     (tmp_path / "tools/maintainer").mkdir(parents=True)
     contract = tmp_path / "docs/runa/maintainer/agent-contract.md"
     contract.parent.mkdir(parents=True)
@@ -93,7 +95,7 @@ def test_private_history_is_exact_and_receipt_always_removes_owner_scope(tmp_pat
     assert not immutable_history(tmp_path, name, b"changed")
 
 
-def test_closed_application_history_cannot_be_deleted_or_renamed(tmp_path):
+def test_closed_application_history_cannot_be_deleted_or_renamed(tmp_path: Path) -> None:
     target = tmp_path / "docs/app/roadmaps/closed/RM-2026-999-fixture.md"
     target.parent.mkdir(parents=True)
     target.write_text("Immutable fixture history.\n")

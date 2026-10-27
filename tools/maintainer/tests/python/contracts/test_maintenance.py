@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Maintenance validator rejection contracts; no repository fixtures are written."""
 
+from __future__ import annotations
+
 import contextlib
 import copy
 import io
@@ -14,23 +16,23 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class MaintenanceContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.data = {
             kind: checks.yaml(ROOT / f"docs/runa/maintainer/maintenance/{kind}.yml")
             for kind in ("registry", "backlog", "deprecations")
         }
 
-    def validate(self):
+    def validate(self) -> None:
         with (
             patch.object(checks, "yaml", side_effect=lambda path: self.data[path.stem]),
             contextlib.redirect_stdout(io.StringIO()),
         ):
             checks.maintenance()
 
-    def test_current_registry_passes(self):
+    def test_current_registry_passes(self) -> None:
         self.validate()
 
-    def test_duplicate_id_and_dependency_version_drift_are_rejected(self):
+    def test_duplicate_id_and_dependency_version_drift_are_rejected(self) -> None:
         original = copy.deepcopy(self.data)
         self.data["registry"]["entries"].append(copy.deepcopy(self.data["registry"]["entries"][0]))
         with self.assertRaisesRegex(ValueError, "Duplicate"):
@@ -42,7 +44,7 @@ class MaintenanceContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Dependency version"):
             self.validate()
 
-    def test_incomplete_maintenance_and_deprecation_are_rejected(self):
+    def test_incomplete_maintenance_and_deprecation_are_rejected(self) -> None:
         for kind in ("backlog", "deprecations"):
             self.data[kind]["items"] = [{"id": "MT-2026-999"}]
             with self.assertRaisesRegex(ValueError, "Incomplete"):

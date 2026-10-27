@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Isolated TLS SMTP acceptance fixture; synthetic messages only, never production."""
 
+from __future__ import annotations
+
 import socketserver
 import ssl
 from pathlib import Path
 
 
 class Handler(socketserver.StreamRequestHandler):
-    def handle(self):
-        def reply(message):
+    def handle(self) -> None:
+        def reply(message: str) -> None:
             self.wfile.write(message.encode() + b"\r\n")
             self.wfile.flush()
 
@@ -42,13 +44,14 @@ class Handler(socketserver.StreamRequestHandler):
 
 class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
+    context: ssl.SSLContext
 
-    def get_request(self):
+    def get_request(self) -> tuple[ssl.SSLSocket, tuple[str, int]]:
         connection, address = super().get_request()
         return self.context.wrap_socket(connection, server_side=True), address
 
 
-def main():
+def main() -> None:
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain("/fixture/certificate.pem", "/fixture/private-key.pem")
     with Server(("0.0.0.0", 2465), Handler) as server:

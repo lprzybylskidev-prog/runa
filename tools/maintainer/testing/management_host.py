@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
 """Native-host cold Artisan/Compose recovery acceptance with isolated disposable process fixtures."""
 
+from __future__ import annotations
+
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
 import uuid
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Unpack
 
 from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
-from tools.maintainer.testing.acceptance import AcceptanceContext
+from tools.maintainer.testing.acceptance import AcceptanceContext, OutputOptions
 
 ROOT = Path(__file__).resolve().parents[3]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
 
 
-def output(command, **kwargs):
+def output(command: Sequence[str], **kwargs: Unpack[OutputOptions]) -> str:
     return ACCEPTANCE.output(command, **kwargs)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 1 or Path("/.dockerenv").exists():
         raise SystemExit(
             "Run python3 -m tools.maintainer.testing.management_host on the native Docker host."
@@ -42,23 +46,13 @@ def main():
     )
     project = "runa-rm005-management-" + uuid.uuid4().hex[:10]
     report["project"] = project
-    protected = output(
-        [
-            "docker",
-            "ps",
-            "-aq",
-            "--filter",
-            "label=com.docker.compose.project=runa-dev",
-            "--filter",
-            "label=com.docker.compose.service=app",
-        ]
-    ).splitlines()
+    protected = ACCEPTANCE.protected_containers()
     before = {
         name: output(["docker", "inspect", "--format", "{{.Id}} {{.State.StartedAt}}", name])
         for name in protected
     }
 
-    def check(condition, label):
+    def check(condition: bool, label: str) -> None:
         if not condition:
             raise AssertionError(label)
         checks.append(label)

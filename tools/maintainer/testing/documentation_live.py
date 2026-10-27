@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Real embeddings/Qdrant ownership transition in a uniquely named disposable collection."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
@@ -11,7 +13,7 @@ import uuid
 from dataclasses import replace
 from pathlib import Path
 
-from tools.application.knowledge.configuration import load
+from tools.application.knowledge.configuration import KnowledgeConfig, load
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.corpus import sources
 from tools.application.knowledge.ingest import KnowledgeIndexer
@@ -26,17 +28,17 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="runa-documentation-live-") as folder:
         root = Path(folder)
 
-        def write(name, value):
+        def write(name: str, value: str) -> None:
             p = root / name
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(value)
 
-        def copy(name):
+        def copy(name: str) -> None:
             p = root / name
             p.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, p)
 
-        def git(*args):
+        def git(*args: str) -> None:
             subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
 
         git("init", "-q", "-b", "documentation-acceptance")
@@ -70,14 +72,14 @@ def main() -> None:
             "fixture baseline",
         )
 
-        def config():
+        def config() -> KnowledgeConfig:
             additions = json.loads((root / "tools/maintainer/knowledge.json").read_text())
             return {**load(root, additions=additions), "collection": collection}
 
         context = replace(KnowledgeContext.for_workspace(root), owner_corpus=True)
         store = Store(config())
 
-        def indexer():
+        def indexer() -> KnowledgeIndexer:
             return KnowledgeIndexer(context, config(), store, device="cpu")
 
         if store.exists():

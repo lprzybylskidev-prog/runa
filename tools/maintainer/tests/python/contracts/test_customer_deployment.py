@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Real Git customer fetch/staging and complete-source and safe-path contracts; no production data."""
 
+from __future__ import annotations
+
 import subprocess
 import tempfile
 import unittest
@@ -117,7 +119,7 @@ class CustomerDeployment(unittest.TestCase):
 
     def test_selected_platform_and_scaffold_changes_are_accepted_independently_of_operator_source(
         self,
-    ):
+    ) -> None:
         for repository in (self.root, self.remote):
             (repository / "VERSION").write_text("customer-scaffold-version")
             self.commit(repository)
@@ -186,7 +188,7 @@ class CustomerDeployment(unittest.TestCase):
 
     def test_platform_file_changes_additions_deletions_and_modes_are_customer_revision_content(
         self,
-    ):
+    ) -> None:
         for mutation in ("change", "add", "delete", "mode"):
             self.git(self.remote, "reset", "--hard", self.target)
             path = self.remote / "src/runa/platform.json"
@@ -208,7 +210,7 @@ class CustomerDeployment(unittest.TestCase):
 
     def test_application_symlinks_and_failed_fetch_block_but_operator_edits_are_not_a_source_gate(
         self,
-    ):
+    ) -> None:
         (self.remote / "src/app/escape").symlink_to("/etc/passwd")
         self.commit(self.remote)
         with self.assertRaisesRegex(ValueError, "symlinks"):

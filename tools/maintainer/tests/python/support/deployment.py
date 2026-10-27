@@ -1,6 +1,11 @@
 """Private deployment composition with a nonexecuting process boundary."""
 
+from __future__ import annotations
+
+from collections.abc import Iterator
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Protocol
 from unittest.mock import Mock
 
 from tools.application.deployment_context import OperationContext
@@ -13,7 +18,11 @@ from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation, WorkspaceContext
 
 
-def deployment(root):
+class DeploymentFixture(Protocol):
+    deployment: DeploymentService
+
+
+def deployment(root: Path) -> DeploymentService:
     actual = OperationContext(
         WorkspaceContext(root),
         ApplicationProcesses(RecordingRunner(), {"RUNA_HOST_WORKER": "1"}),
@@ -30,7 +39,7 @@ def deployment(root):
 
 
 @contextmanager
-def bind_deployment(case, root):
+def bind_deployment(case: DeploymentFixture, root: Path) -> Iterator[None]:
     previous = case.deployment
     case.deployment = deployment(root)
     try:

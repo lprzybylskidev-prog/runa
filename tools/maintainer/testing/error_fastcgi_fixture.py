@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Disposable FastCGI peer for the real Nginx fallback integration test; no application data."""
 
+from __future__ import annotations
+
 import socket
 import struct
 
 
-def read(stream, length):
+def read(stream: socket.socket, length: int) -> bytes:
     output = b""
     while len(output) < length:
         part = stream.recv(length - len(output))
@@ -15,7 +17,7 @@ def read(stream, length):
     return output
 
 
-def decode(data):
+def decode(data: bytes) -> dict[str, str]:
     values = {}
     position = 0
     while position < len(data):
@@ -36,11 +38,11 @@ def decode(data):
     return values
 
 
-def record(kind, request_id, data):
+def record(kind: int, request_id: int, data: bytes) -> bytes:
     return struct.pack("!BBHHBB", 1, kind, request_id, len(data), 0, 0) + data
 
 
-def main():
+def main() -> None:
     server = socket.socket()
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(("0.0.0.0", 9000))

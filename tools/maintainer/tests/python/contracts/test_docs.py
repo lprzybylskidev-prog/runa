@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Current-state regressions with isolated files/Git; no developer data mutations."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import subprocess
@@ -20,7 +22,7 @@ reader = ConfigurationReader.for_workspace(ROOT)
 
 
 class DocumentationContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
@@ -32,17 +34,17 @@ class DocumentationContracts(unittest.TestCase):
         self.readme = "# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n\n<!-- /runa:current-state -->\n"
         self.write("docs/runa/maintainer/README.md", self.readme)
 
-    def write(self, name, content):
+    def write(self, name: str, content: str) -> Path:
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
         return path
 
-    def validate(self):
+    def validate(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()):
             docs_checks.validate(self.root)
 
-    def doctor(self, area):
+    def doctor(self, area: str) -> subprocess.CompletedProcess[str]:
         module = (
             "tools.maintainer.docs_checks" if area == "docs" else "tools.maintainer.release_checks"
         )
@@ -55,7 +57,7 @@ class DocumentationContracts(unittest.TestCase):
             [sys.executable, "-c", script, str(self.root)], cwd=ROOT, capture_output=True, text=True
         )
 
-    def test_released_stale_readme_is_rejected_by_actual_doctor(self):
+    def test_released_stale_readme_is_rejected_by_actual_doctor(self) -> None:
         # The four stale claims in v0.1.0 survived the old command-name-only check.
         stale = (
             "# Runa\n\n## Current state\n\n"
@@ -69,7 +71,7 @@ class DocumentationContracts(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("exactly one runa:current-state block", result.stderr)
 
-    def test_independent_state_mismatches_are_rejected(self):
+    def test_independent_state_mismatches_are_rejected(self) -> None:
         self.validate()
         for old, new, message in [
             ("`0.1.0`", "`0.0.0`", "Current version"),
@@ -80,7 +82,7 @@ class DocumentationContracts(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, message):
                     self.validate()
 
-    def test_missing_duplicate_malformed_and_reordered_fields_fail(self):
+    def test_missing_duplicate_malformed_and_reordered_fields_fail(self) -> None:
         for text in [
             self.readme.replace(docs_checks.END, ""),
             self.readme * 2,
@@ -96,7 +98,7 @@ class DocumentationContracts(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.validate()
 
-    def test_actual_doctor_accepts_history_but_rejects_unlisted_commands(self):
+    def test_actual_doctor_accepts_history_but_rejects_unlisted_commands(self) -> None:
         self.write(
             "docs/runa/maintainer/README.md",
             self.readme
@@ -117,7 +119,7 @@ class DocumentationContracts(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("Undocumented command: example", result.stderr)
 
-    def test_active_roadmap_location_frontmatter_and_branch(self):
+    def test_active_roadmap_location_frontmatter_and_branch(self) -> None:
         path = self.write(
             "docs/runa/maintainer/roadmaps/active/RM-2026-002-test.md",
             "---\nid: RM-2026-002\nstatus: active\nbranch: main\n---\n# Fixture\n",
@@ -138,7 +140,7 @@ class DocumentationContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Multiple active"):
             self.validate()
 
-    def test_final_gate_includes_docs_without_documentation_impact(self):
+    def test_final_gate_includes_docs_without_documentation_impact(self) -> None:
         definition = quality_definition(
             reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
         )

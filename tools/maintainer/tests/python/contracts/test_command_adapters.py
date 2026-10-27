@@ -1,5 +1,7 @@
 """Real private transports refuse scope overrides before Docker or application work."""
 
+from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path
@@ -25,7 +27,9 @@ ROOT = Path(__file__).resolve().parents[5]
         ("test", ["--scope=unknown"]),
     ],
 )
-def test_owner_adapters_reject_scope_overrides_without_docker(tmp_path, name, arguments):
+def test_owner_adapters_reject_scope_overrides_without_docker(
+    tmp_path: Path, name: str, arguments: list[str]
+) -> None:
     result = subprocess.run(
         [sys.executable, str(ROOT / "tools/maintainer" / name), *arguments],
         cwd=tmp_path,
@@ -35,7 +39,7 @@ def test_owner_adapters_reject_scope_overrides_without_docker(tmp_path, name, ar
     assert b"Traceback" not in result.stderr
 
 
-def test_owner_native_test_configurations_are_explicit_and_separate(tmp_path):
+def test_owner_native_test_configurations_are_explicit_and_separate(tmp_path: Path) -> None:
     service = SuiteService(WorkspaceContext(tmp_path), OWNER, RecordingRunner(), {})
     for scope, config in (
         ("backend", "phpunit.xml"),
@@ -51,7 +55,7 @@ def test_owner_native_test_configurations_are_explicit_and_separate(tmp_path):
 @pytest.mark.parametrize(
     "name", ["test", "test-backend", "test-frontend", "test-e2e", "test-python"]
 )
-def test_test_transports_help_is_independent_of_cwd(tmp_path, name):
+def test_test_transports_help_is_independent_of_cwd(tmp_path: Path, name: str) -> None:
     result = subprocess.run(
         [sys.executable, str(ROOT / "tools/maintainer" / name), "--help"],
         cwd=tmp_path,

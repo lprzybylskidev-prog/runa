@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Failure-first contracts for deployment identity and maintenance recovery boundaries."""
 
+from __future__ import annotations
+
 import contextlib
 import io
 import json
@@ -20,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class OperationContracts(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.deployment = deployment(Path(self.temporary.name))
@@ -30,7 +32,7 @@ class OperationContracts(unittest.TestCase):
         boundary.start()
         self.addCleanup(boundary.stop)
 
-    def test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set(self):
+    def test_exact_release_builds_or_reuses_the_complete_php_nginx_postgres_set(self) -> None:
         images = [
             "runa-production:" + "a" * 40,
             "runa-nginx:" + "a" * 40,
@@ -38,7 +40,9 @@ class OperationContracts(unittest.TestCase):
         ]
         for codes in ([1, 1, 1], [0, 0, 0], [0, 1, 0]):
 
-            def dc(arguments, *args, **kwargs):
+            def dc(
+                arguments: list[str], *args: object, **kwargs: object
+            ) -> subprocess.CompletedProcess[str]:
                 return subprocess.CompletedProcess(arguments, 0, stdout="\n".join(images))
 
             results = [subprocess.CompletedProcess([], code) for code in codes]
@@ -66,7 +70,9 @@ class OperationContracts(unittest.TestCase):
                         [["build", "app", "nginx", "postgres"]] if codes == [1, 1, 1] else [],
                     )
 
-    def test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work(self):
+    def test_deploy_and_rollback_require_production_mode_before_any_state_or_source_work(
+        self,
+    ) -> None:
         for mode in ("dev", None, "unknown"):
             for simulation in (False, True):
                 with (
@@ -97,7 +103,7 @@ class OperationContracts(unittest.TestCase):
                     lock.assert_not_called()
                     run.assert_not_called()
 
-    def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self):
+    def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self) -> None:
         events = []
         with (
             patch.object(
@@ -116,10 +122,12 @@ class OperationContracts(unittest.TestCase):
         self.assertEqual(events[1][1], ["up", "-d", "--no-build", "--no-deps", "nginx"])
         self.assertEqual(events[2][1], ["stop", "queue", "scheduler", "app"])
 
-    def test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure(self):
+    def test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure(
+        self,
+    ) -> None:
         events = []
 
-        def dc(args, release):
+        def dc(args: list[str], release: Path | None) -> None:
             events.append(("compose", args))
             if args == ["up", "-d", "--wait", "--no-build", "--no-deps", "nginx"]:
                 raise ValueError("nginx health failed")
@@ -149,7 +157,7 @@ class OperationContracts(unittest.TestCase):
         self.assertEqual(events[2], ("marker", False))
         self.assertEqual(events[-1], ("marker", True))
 
-    def test_atomic_evidence_is_private_and_valid_json(self):
+    def test_atomic_evidence_is_private_and_valid_json(self) -> None:
         with tempfile.TemporaryDirectory() as folder, bind_deployment(self, Path(folder)):
             path = Path(folder) / "private/state.json"
             self.deployment.context.atomic(path, {"phase": "migrations"})
@@ -159,7 +167,7 @@ class OperationContracts(unittest.TestCase):
 
     def test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools(
         self,
-    ):
+    ) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / "repository"
             root.mkdir()
@@ -280,20 +288,20 @@ class OperationContracts(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "modified"):
                     self.deployment.source.checkout(sha)
 
-    def test_exact_target_rejects_shell_options_and_mutable_refs(self):
+    def test_exact_target_rejects_shell_options_and_mutable_refs(self) -> None:
         with patch.object(self.deployment.context, "run") as call:
             for target in ("main", "latest", "--help", "abc123", "v1.2.3;false", "v1.2.3\n"):
                 with self.assertRaises(ValueError):
                     self.deployment.source.resolve(target)
             call.assert_not_called()
 
-    def test_failed_deploy_keeps_recovery_marker_when_schema_sources_change(self):
+    def test_failed_deploy_keeps_recovery_marker_when_schema_sources_change(self) -> None:
         self.check_failed_deploy(compatible=False)
 
-    def test_equal_source_hashes_do_not_prove_safe_data_rollback(self):
+    def test_equal_source_hashes_do_not_prove_safe_data_rollback(self) -> None:
         self.check_failed_deploy(compatible=True)
 
-    def check_failed_deploy(self, compatible):
+    def check_failed_deploy(self, compatible: bool) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             state = root / "state"
@@ -313,7 +321,9 @@ class OperationContracts(unittest.TestCase):
             )
             calls = []
 
-            def dc(args, release=None, **kwargs):
+            def dc(
+                args: list[str], release: Path | None = None, **kwargs: object
+            ) -> subprocess.CompletedProcess[str]:
                 calls.append((args, release))
                 return subprocess.CompletedProcess(args, 0, stdout="")
 
@@ -350,7 +360,7 @@ class OperationContracts(unittest.TestCase):
                     any("migrate:rollback" in arg for args, _ in calls for arg in args)
                 )
 
-    def test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes(self):
+    def test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes(self) -> None:
         previous = {
             "simulation": True,
             "path": "/previous",
@@ -373,7 +383,7 @@ class OperationContracts(unittest.TestCase):
             checkout.assert_not_called()
             tag.assert_not_called()
 
-    def test_default_customer_target_is_main_and_not_a_local_platform_ref(self):
+    def test_default_customer_target_is_main_and_not_a_local_platform_ref(self) -> None:
 
         with (
             patch.object(CustomerSource, "fetch") as fetch,
@@ -396,7 +406,7 @@ class OperationContracts(unittest.TestCase):
             deploy.assert_called_once_with("a" * 40, False, source=Path("/customer"))
             resolve.assert_not_called()
 
-    def test_acquired_but_uninstalled_source_cannot_replace_platform_installation(self):
+    def test_acquired_but_uninstalled_source_cannot_replace_platform_installation(self) -> None:
 
         with (
             patch.object(self.deployment.context, "read_state", return_value={"current": None}),
@@ -406,7 +416,7 @@ class OperationContracts(unittest.TestCase):
                 self.deployment.deploy()
             fetch.assert_not_called()
 
-    def test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding(self):
+    def test_unchanged_migration_sources_do_not_authorize_code_rollback_after_seeding(self) -> None:
         with (
             tempfile.TemporaryDirectory() as folder,
             patch.object(self.deployment.context, "state", Path(folder)),
@@ -424,7 +434,7 @@ class OperationContracts(unittest.TestCase):
                 self.deployment.rollback()
             tag.assert_not_called()
 
-    def test_build_seeding_and_health_failures_have_distinct_recovery_boundaries(self):
+    def test_build_seeding_and_health_failures_have_distinct_recovery_boundaries(self) -> None:
         sha = "a" * 40
         previous = {
             "sha": "b" * 40,
@@ -498,7 +508,7 @@ class OperationContracts(unittest.TestCase):
                     )
                 )
 
-                def artisan(args, release, failure=failure):
+                def artisan(args: list[str], release: Path | None, failure: str = failure) -> None:
                     if failure == "seed" and args[0] == "db:seed":
                         raise ValueError("seed failed")
 
@@ -506,7 +516,9 @@ class OperationContracts(unittest.TestCase):
                     patch.object(self.deployment.runtime, "artisan", side_effect=artisan)
                 )
 
-                def platform_data(sha, phase, release, failure=failure):
+                def platform_data(
+                    sha: str, phase: str, release: Path | None, failure: str = failure
+                ) -> None:
                     if (
                         (failure == "platform-migration" and phase == "migrations")
                         or (failure == "platform-seed" and phase == "required-seeds")
@@ -548,7 +560,7 @@ class OperationContracts(unittest.TestCase):
                         [] if failure.startswith("platform-") else ["migrate", "db:seed"],
                     )
 
-    def test_same_commit_verifies_health_without_replaying_data_steps(self):
+    def test_same_commit_verifies_health_without_replaying_data_steps(self) -> None:
         previous = {
             "sha": "a" * 40,
             "path": "/previous",
@@ -573,7 +585,7 @@ class OperationContracts(unittest.TestCase):
             checkout.assert_not_called()
             artisan.assert_not_called()
 
-    def test_exclusive_operation_lock(self):
+    def test_exclusive_operation_lock(self) -> None:
         with (
             tempfile.TemporaryDirectory() as folder,
             patch.object(self.deployment.context, "state", Path(folder)),
@@ -583,7 +595,7 @@ class OperationContracts(unittest.TestCase):
                     with self.deployment.context.lock():
                         pass
 
-    def test_environment_file_rejects_duplicate_keys_and_multiline(self):
+    def test_environment_file_rejects_duplicate_keys_and_multiline(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "env"
             for text in ("DB_PASSWORD=x\nDB_PASSWORD=y\n", "INVALID LINE\n", "BAD_KEY=a\x00b\n"):
@@ -593,7 +605,7 @@ class OperationContracts(unittest.TestCase):
             path.write_text("DB_PASSWORD=$literal#value\n")
             self.assertEqual(read_env(path)["DB_PASSWORD"], "$literal#value")
 
-    def test_rollback_blocks_migration_or_seeder_change_before_any_mutation(self):
+    def test_rollback_blocks_migration_or_seeder_change_before_any_mutation(self) -> None:
         current = {"database_tree": "new"}
         previous = {"database_tree": "old"}
         with (
@@ -612,7 +624,7 @@ class OperationContracts(unittest.TestCase):
             dc.assert_not_called()
             tag.assert_not_called()
 
-    def test_release_commands_pin_their_own_sha_and_clear_ambient_context(self):
+    def test_release_commands_pin_their_own_sha_and_clear_ambient_context(self) -> None:
         with tempfile.TemporaryDirectory() as folder, bind_deployment(self, Path(folder)):
             root = Path(folder)
             sha = "a" * 40

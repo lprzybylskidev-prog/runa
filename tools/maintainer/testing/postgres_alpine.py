@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Host-only disposable official PostgreSQL candidate probe; never mounts an existing volume."""
 
+from __future__ import annotations
+
 import json
 import secrets
 import signal
@@ -8,8 +10,11 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal, overload
 
+from tools.core.state import JsonValue
 from tools.maintainer.context import inside
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -35,14 +40,45 @@ ROLLBACK;
 """
 
 
-def run(args, **kwargs):
-    kwargs.setdefault("stdin", subprocess.DEVNULL)
-    if "input" in kwargs:
-        kwargs.pop("stdin")
-    return subprocess.run(args, cwd=ROOT, check=True, **kwargs)
+@overload
+def run(
+    args: Sequence[str],
+    *,
+    input: str | None = None,
+    capture_output: bool = False,
+    text: Literal[True],
+) -> subprocess.CompletedProcess[str]: ...
 
 
-def decode(text):
+@overload
+def run(
+    args: Sequence[str],
+    *,
+    input: bytes | None = None,
+    capture_output: bool = False,
+    text: Literal[False] = False,
+) -> subprocess.CompletedProcess[bytes]: ...
+
+
+def run(
+    args: Sequence[str],
+    *,
+    input: str | bytes | None = None,
+    capture_output: bool = False,
+    text: bool = False,
+) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        args,
+        cwd=ROOT,
+        check=True,
+        input=input,
+        stdin=subprocess.DEVNULL if input is None else None,
+        capture_output=capture_output,
+        text=text,
+    )
+
+
+def decode(text: str) -> list[JsonValue]:
     decoder = json.JSONDecoder()
     items = []
     while text.strip():
@@ -52,7 +88,7 @@ def decode(text):
     return items
 
 
-def verify(items):
+def verify(items: list[JsonValue]) -> None:
     rows = {item["kind"]: item for item in items if isinstance(item, dict)}
     meta = rows["metadata"]
     if (
@@ -88,7 +124,7 @@ def verify(items):
     print(json.dumps(meta, ensure_ascii=False))
 
 
-def main():
+def main() -> None:
     if inside():
         raise ValueError(
             "Run this disposable Docker probe on the host; no Docker socket is required in the devcontainer."

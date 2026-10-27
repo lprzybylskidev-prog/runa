@@ -21,8 +21,9 @@ python3 tools/maintainer/python-tool typecheck
 Implementation points use only necessary focused diagnostics; the commands above
 are a catalogue, not instructions to run broad checks after each point. Full
 format/lint/strict typing, suites, wheels and live acceptance run in final quality.
-Caller retirement and annotation completion are tracked separately in roadmap
-point 9. A clean full-scope analysis is established only by final verification.
+Caller retirement and annotation implementation are complete; the migration
+[reconciliation](reconciliation.json) records each baseline identity. A clean
+full-scope analysis is established only by final verification.
 
 The two stable launchers select fixed module adapters with their own checkout as
 cwd; they work from unrelated directories and preserve literal arguments. Help
@@ -72,7 +73,7 @@ suite lock and scoped interrupt handler. Host app delegation uses the shared
 development Compose context. The existing suite directory/readable lock uses an
 explicit non-private policy; it still refuses other-user writes and unsafe file
 identities. No lock inode or running native-suite coordination is replaced.
-Environment/receipt discovery retains its existing guard until point 4.
+Environment/receipt discovery uses the shared guarded development context.
 
 Common support provides scripted `ProcessResult` outcomes and records actual
 immutable `ProcessSpec` values, plus temporary workspace/Git factories and canonical

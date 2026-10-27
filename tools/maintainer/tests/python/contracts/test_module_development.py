@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Module version policy regressions and live owned-source acceptance."""
 
+from __future__ import annotations
+
 import json
 import subprocess
 import sys
@@ -14,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class ModuleVersionContracts(unittest.TestCase):
-    def test_stable_versions_and_bump_requirement(self):
+    def test_stable_versions_and_bump_requirement(self) -> None:
         for invalid in ["01.0.0", "1.0", "1.0.0-rc.1", "1.0.0+build", "1.0.1000000000"]:
             with self.assertRaises(ValueError):
                 version(invalid)
@@ -33,11 +35,11 @@ class ModuleVersionContracts(unittest.TestCase):
             assess("1.0.0", "1.0.1", True, "## 1.0.0"), ["module_version_requires_changelog_entry"]
         )
 
-    def test_real_git_implementation_test_only_and_new_module_changes(self):
+    def test_real_git_implementation_test_only_and_new_module_changes(self) -> None:
         with tempfile.TemporaryDirectory(prefix="runa-module-versions-") as directory:
             root = Path(directory)
 
-            def git(*args):
+            def git(*args: str) -> bytes:
                 return subprocess.run(
                     ["git", "-C", directory, *args], check=True, capture_output=True
                 )
@@ -74,7 +76,7 @@ class ModuleVersionContracts(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 check(root, "app", "missing-ref")
 
-    def test_installed_module_source_and_version_contracts(self):
+    def test_installed_module_source_and_version_contracts(self) -> None:
         for owner in ("runa", "app"):
             subprocess.run(
                 [str(ROOT / "bin/artisan"), "runa:modules:check", owner], cwd=ROOT, check=True
