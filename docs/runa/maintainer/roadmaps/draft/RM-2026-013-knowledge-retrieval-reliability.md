@@ -1,6 +1,6 @@
 ---
 id: RM-2026-013
-title: Knowledge retrieval reliability and agent grounding
+title: Knowledge retrieval and agent guidance maintainability
 status: draft
 branch: roadmap/RM-2026-013-knowledge-retrieval-reliability
 created_at: 2026-10-28
@@ -9,7 +9,7 @@ closed_at: null
 release_type: maintenance
 proposed_version: 0.6.1
 quality_groups: docs,tooling,backend,development,knowledge,installation,updates,production,security
-quality_rationale: Knowledge command contracts, locks, corpus ownership, provenance, retrieval and agent guidance affect delivered development tooling. Include real customer acquisition/update, production isolation and security evidence alongside strict knowledge and tooling checks; preserve mandatory checks and all actual prerequisites. Reconcile the selection with the implemented scope before final verification.
+quality_rationale: Knowledge command contracts, locks, corpus ownership, provenance, retrieval and the owner/customer instruction and documentation system affect delivered development tooling. Include real customer acquisition/update, production isolation and security evidence alongside documentation, instruction-product, strict knowledge and tooling checks; preserve mandatory checks and all actual prerequisites. Reconcile the selection with the implemented scope before final verification.
 impact_areas:
   - ai_environment
   - tooling
@@ -18,7 +18,7 @@ impact_areas:
   - security
 ---
 
-# RM-2026-013 — Knowledge retrieval reliability and agent grounding
+# RM-2026-013 — Knowledge retrieval and agent guidance maintainability
 
 ## Overview
 
@@ -28,6 +28,13 @@ Make the existing local knowledge system useful for architectural history,
 cross-module reasoning and consistency audits through supported commands. Improve
 both retrieval mechanics and the agent workflow that consumes them. Preserve
 Qdrant as a rebuildable development aid, with source documents as authority.
+
+Review AGENTS, skills and documentation as one maintained knowledge system, rather
+than optimizing retrieval over an increasingly duplicated corpus. Establish clear
+homes for rules, concise instruction entrypoints and an ongoing editing procedure
+that prevents avoidable growth. Together with RM-012's architecture boundaries,
+this reduces recurring structural rework; it cannot guarantee that future product
+requirements will never justify a refactor.
 
 Three owner-requested exercises exposed concrete limitations: recovering five
 earlier decisions, explaining Auth/Permissions/Audit integration, and auditing
@@ -49,6 +56,11 @@ lock diagnostics; explicit temporal/provenance metadata; current/history/audit
 retrieval behavior; source documentation reconciliation; representative retrieval
 evaluations; owner and customer agent consumption guidance. Include the existing
 Python engine and narrow Artisan adapters required to expose these capabilities.
+Review root owner AGENTS, all existing owner skills/references/provenance, the
+separately authored customer AGENTS/CLAUDE/skills product, and current repository,
+public and maintainer documentation. Include ownership, duplication, conflicting
+instructions, obsolete claims, discoverability, context cost and corpus composition.
+Preserve historical evidence and local customer extensions during reconciliation.
 
 ### Out of scope
 
@@ -61,6 +73,10 @@ Qdrant internals without evidence of a storage/filtering bottleneck.
 
 Closed roadmaps and dated evidence remain immutable. Do not turn every historic
 wording difference into a defect or promise complete contradiction detection.
+Do not add an instruction framework, a second documentation registry, arbitrary
+hard file-size limits or a new universal quality gate. Policy changes beyond the
+agreed editorial maintenance scope require separate owner discussion. This roadmap
+does not reopen RM-012's platform architecture or impose new customer app layers.
 
 ## Specification
 
@@ -73,6 +89,13 @@ wording difference into a defect or promise complete contradiction detection.
   reporting alongside the engine. The exercises do not establish that the current
   embedding model must be replaced. Measure retrieval gaps before proposing that
   separately reviewed change.
+- 2026-10-28 — The owner expands this draft to review AGENTS, all skills and the
+  documentation system together with Qdrant, and to prevent future instruction
+  bloat. Retain confirmed maintenance 0.6.1: this is compatible consolidation and
+  maintenance, with no new platform capability or change to constitutional gates.
+  RM-012 establishes implementation boundaries; RM-013 reconciles how agents and
+  humans discover and maintain the resulting contracts. Avoid duplicate work by
+  reviewing the predecessor's final delivery before applying residual corrections.
 - 2026-10-28 — Correct the first exercise's preliminary diagnosis: existing
   `--explain` already returns full retrieved content and structured metadata.
   The confirmed gap is convenient supported evidence reading/context expansion,
@@ -289,6 +312,82 @@ freshness/AI gates; do not fail hooks merely because an LLM suspects a contradic
 Place local evaluation reports under `.runtime/knowledge/` and preserve existing
 reports, model/Qdrant caches and development/test data.
 
+### Instruction and documentation architecture
+
+Apply the existing [documentation ownership](../../../../README.md) and
+[skills policy](../../../handbook/ai/skills-policy.md) to the whole current system.
+Use one maintained source for each procedure or contract and purposeful references
+from its consumers. A concise critical invariant may remain in AGENTS when it is
+needed before any retrieval; detailed procedures and examples belong in their
+authoritative handbook/maintainer guide. Do not remove essential safety, authority
+or failure rules solely to shorten a file. Explicit summaries must link to their
+canonical source and must not become an independently evolving specification.
+
+Review and reconcile these responsibilities:
+
+- Root owner AGENTS: authority, essential invariants, workflow entrypoints and
+  ownership boundaries required for every task, without accumulating delivery
+  reports, per-command recipes or repeated domain procedures.
+- SKILL.md entrypoints: precise activation criteria, minimal domain workflow and
+  selective reference loading. Existing domain references guide implementation
+  choices and route shared procedures to the authoritative documentation. No
+  automatic loading of every skill or all its references.
+- Public handbook: delivered contracts, usage, supported commands and procedures
+  for ordinary Laravel applications and optional app modules. Maintainer guides:
+  private platform engineering, release policy and audit evidence. App docs:
+  customer-owned application decisions and procedures.
+- Customer AGENTS/CLAUDE/skills: a separately authored application product, with
+  no owner authority or protected-platform editing permission. Keep role-specific
+  differences intentional, preserve local extensions and avoid maintaining two
+  conflicting copies of the same installed customer rule.
+- Qdrant: discoverable, correctly classified context from the allowed current and
+  historical sources. Root/skill navigation must work when RAG is unavailable;
+  a retrieval hit is never an instruction override or proof of current behavior.
+
+Create a compact review record using the existing documentation map and roadmap
+evidence locations rather than a parallel inventory system. Cover all existing
+skills and the current documentation tree; group documents by owning contract
+where useful, but do not describe a sample as a complete review. Record ownership,
+canonical source, duplicates/conflicts, applicability and concrete disposition.
+Check commands, examples, public signatures, dependency/version/delivery claims and
+links against delivered source during implementation. Review source provenance
+without claiming upstream content or licenses were freshly researched when they
+were not; a substantive upstream update follows the existing review policy.
+
+Classify immutable history and dated evidence separately from current guides.
+Preserve their bytes, annotate externally where needed and prevent them from
+masquerading as current instructions. Keep authoring templates out of owner
+retrieval and private owner sources out of customer corpora. Navigation and
+allowlisting must follow relocations without broadening source authority.
+
+### Preventing recurring instruction growth
+
+Use an editing procedure in the existing authoritative guides, referenced briefly
+from owner/customer entrypoints. For each reusable guidance change, identify its
+reader, trigger, canonical home and affected products; update or replace an
+existing rule before adding another. Explain why anything added to always-loaded
+instructions is needed for all tasks. Remove superseded duplicate text and retain
+only justified summaries with links. Keep task progress and abandoned approaches
+in their proper execution/history records, outside current instruction products.
+
+Record reproducible before/after line or word counts and review actual mandatory
+context loaded for representative tasks. Counts reveal growth and duplication;
+they are review signals, not correctness metrics or arbitrary hard caps. A larger
+rule needs a scope/placement explanation, not an automatic exception system.
+Keep review evidence compact and avoid replacing prose bloat with sprawling links,
+tiny files or an ever-growing rule registry. Extend existing checks only for
+deterministic broken ownership/link/structure contracts within their present
+scope; do not delegate semantic truth or approval to an LLM classifier.
+
+Acceptance must demonstrate ordinary navigation without prior chat context:
+starting a backend or frontend task, using a public module contract, finding a
+current operational procedure, tracing a historical decision and maintaining a
+customer extension. The agent should select the relevant skill/reference and
+canonical document without reading the entire corpus. Include RAG available and
+unavailable paths, historical counterexamples and owner/customer separation.
+Implement these scenarios before final verification; run broad acceptance only
+after all implementation points are complete.
+
 ## Implementation plan
 
 Only necessary small, fast checks resolving a concrete uncertainty may run before
@@ -305,6 +404,9 @@ acceptance as a prerequisite for subsequent implementation.
     Do not modify module runtime behavior to make prose agree.
   - Define fixed expected evidence, uncertainty labels and baseline result budgets;
     implement regression fixtures without executing broad/live acceptance.
+  - Inventory the instruction products and current documentation by reader and
+    canonical contract; capture size/context baselines and predecessor coverage.
+    Plan all-skill review without loading every reference before its own review task.
 
 - [ ] 2. Deliver supported full evidence reading, citations and context expansion.
   - Prerequisite: point 1 ownership/source map and existing typed engine boundaries.
@@ -319,7 +421,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Separate shared reads from exclusive writers with bounded lock behavior.
     Prevent pending/mixed-index reads and retain lock ownership/inode safeguards.
   - Implement deterministic reader/reader, reader/writer, interruption and recovery
-    scenarios; defer broad real-service concurrency acceptance to point 8.
+    scenarios; defer broad real-service concurrency acceptance to point 10.
 
 - [ ] 4. Deliver explicit applicability and decision-history metadata.
   - Prerequisite: point 1 claim ledger and point 3 isolation contract.
@@ -348,10 +450,39 @@ acceptance as a prerequisite for subsequent implementation.
     source/hash/branch/lifecycle, reader isolation, customer install/update and
     production-denial scenarios to the existing final verification harnesses.
   - Implement the scenarios now; run their full comparison and live acceptance
-    only in point 8. Do not weaken existing golden expectations to make changes pass.
+    only in point 10. Do not weaken existing golden expectations to make changes pass.
 
-- [ ] 7. Synchronize agent behavior, delivery and durable guidance.
-  - Prerequisite: points 2–6 stable supported behavior.
+- [ ] 7. Review and reconcile the current documentation system.
+  - Prerequisites: point 1 review inventory, RM-012 final architecture and points
+    2–6 supported knowledge behavior.
+  - Review all existing owner/customer skill products and current documentation
+    coverage; map each reusable rule/procedure to its canonical home. Identify
+    duplicated/conflicting guidance, stale commands/contracts/version claims,
+    broken navigation and mixed current/historical ownership with concrete evidence.
+  - Correct current guides, consolidate duplicate procedures and repair references
+    and corpus classification. Preserve historical bytes and distinguish deliberate
+    owner/customer differences from accidental drift. Record reviewed coverage and
+    disposition in existing owner documentation/roadmap evidence locations.
+  - Keep any behavior or constitutional question requiring a changed premise in
+    discussion; do not resolve an architectural conflict by rewriting guidance alone.
+
+- [ ] 8. Consolidate instruction products and establish growth prevention.
+  - Prerequisite: point 7 canonical ownership and reviewed corrections.
+  - Refine owner AGENTS and every affected existing SKILL.md/reference to retain
+    essential invariants, precise triggers and selective loading. Move duplicated
+    procedural detail to the authoritative guide with purposeful navigation.
+  - Reconcile separately authored customer AGENTS/CLAUDE/skills without copying
+    owner policy, broadening public APIs or overwriting local application extensions.
+    Record explicit reasons for each reviewed product requiring no edit.
+  - Document the rule-placement/update procedure in existing skills/documentation
+    guidance. Record before/after size and representative context costs, justified
+    retained summaries and supported maintenance checks. No arbitrary hard cap,
+    new skill for this task, parallel rule registry or automatic semantic gate.
+  - Add navigation/selection and duplicate-removal regression scenarios to existing
+    harnesses; broad end-to-end acceptance remains point 10.
+
+- [ ] 9. Synchronize agent behavior, delivery and knowledge composition.
+  - Prerequisite: points 2–8 stable supported behavior and concise source products.
   - Update affected root owner guidance and existing RAG skill/references, plus
     separately authored customer guidance. Teach query intent, English baseline
     queries, evidence expansion, source verification and explicit unknowns.
@@ -362,8 +493,8 @@ acceptance as a prerequisite for subsequent implementation.
     production exclusions. Record unaffected instruction products with reasons.
     This planning-only draft itself changes no delivered capability or agent rule.
 
-- [ ] 8. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–7 complete and committed; only this point remains open.
+- [ ] 10. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–9 complete and committed; only this point remains open.
   - Review current-state docs, CLI/help, source/version claims, owner/customer
     products, startup and production exclusions against actual implementation.
     Record findings and preserve closed roadmaps and dated evidence.
@@ -382,6 +513,12 @@ acceptance as a prerequisite for subsequent implementation.
     success, protected writes, preserved source/schema/branch identities and no
     unexplained regression in fixed retrieval expectations or bounded latency.
     Report measured limits; do not claim perfect knowledge or factual verification.
+  - Verify the complete instruction/documentation review record and justified
+    remaining duplication. Run representative fresh-context navigation cases with
+    and without RAG, correct skill/reference selection, customer extension
+    preservation and retrieval of canonical current versus historical sources.
+    Compare documented size/context baselines without treating fewer words as
+    sufficient proof of quality. No critical invariant may disappear for brevity.
   - If verification requires changes, insert a fix point immediately before this
     point and rerun the entire selected graph. Discuss any changed premise.
   - Inspect and show exact task-created disposable resources before scoped cleanup;
