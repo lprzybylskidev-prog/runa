@@ -3,10 +3,11 @@
 import argparse
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
-from tools.application.knowledge.configuration import golden, load
+from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfig, golden, load
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.retrieval import FILTERS, Retriever, doctor, evaluate
@@ -18,7 +19,13 @@ from tools.core.reporting import SafeFailure
 from tools.core.state import FileLock, StateDirectory
 
 
-def run(argv, *, context, config=None, dataset=None):
+def run(
+    argv: Sequence[str],
+    *,
+    context: KnowledgeContext,
+    config: KnowledgeConfig | None = None,
+    dataset: Sequence[GoldenCase] | None = None,
+) -> int:
     ROOT = context.workspace.root
     parser = argparse.ArgumentParser(
         description="Development-only knowledge indexing and hybrid retrieval."
@@ -140,7 +147,13 @@ def run(argv, *, context, config=None, dataset=None):
         return 1 if result["stale"] else 0
 
 
-def main(argv=None, *, context=None, config=None, dataset=None):
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    context: KnowledgeContext | None = None,
+    config: KnowledgeConfig | None = None,
+    dataset: Sequence[GoldenCase] | None = None,
+) -> int:
     try:
         with interrupt_signals():
             return run(

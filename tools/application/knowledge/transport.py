@@ -5,13 +5,14 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
+from contextlib import AbstractContextManager
 from typing import Protocol
 
 from tools.core.state import JsonValue, json_value
 
 
 class RequestError(RuntimeError):
-    def __init__(self, message: str, status: int | None = None):
+    def __init__(self, message: str, status: int | None = None) -> None:
         super().__init__(message)
         self.status = status
 
@@ -22,10 +23,33 @@ class JsonTransport(Protocol):
     def request(self, method: str, path: str, body: object = None) -> JsonValue: ...
 
 
+class HttpResponse(Protocol):
+    @property
+    def status(self) -> int: ...
+
+    def read(self, size: int = -1) -> bytes: ...
+
+
+class HttpOpener(Protocol):
+    def open(
+        self, fullurl: str | urllib.request.Request, /, *, timeout: float
+    ) -> AbstractContextManager[HttpResponse]: ...
+
+
+class TransportFactory(Protocol):
+    def __call__(self, base: str) -> JsonTransport: ...
+
+
 class Http:
-    def __init__(self, base: str, *, opener=None, sleep: Callable[[float], None] = time.sleep):
+    def __init__(
+        self,
+        base: str,
+        *,
+        opener: HttpOpener | None = None,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
         self.base = base
-        self.opener = (
+        self.opener: HttpOpener = (
             opener
             if opener is not None
             else urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -33,6 +57,7 @@ class Http:
         self.sleep = sleep
 
     def request(self, method: str, path: str, body: object = None) -> JsonValue:
+        failure = RequestError("Knowledge service unavailable.")
         for attempt in range(3):
             request = urllib.request.Request(
                 self.base + path,
@@ -60,3 +85,4 @@ class Http:
             if attempt == 2:
                 raise failure
             self.sleep(0.25 * (2**attempt))
+        raise failure

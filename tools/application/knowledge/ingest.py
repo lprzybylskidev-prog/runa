@@ -1,7 +1,7 @@
 """Incremental ingestion with prepare-before-write and recoverable remote state."""
 
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import cast
 
@@ -63,8 +63,8 @@ class KnowledgeIndexer:
         *,
         provider_factory: ProviderFactory = Embeddings,
         device: str = "auto",
-        parser_fingerprint=parser_hash,
-    ):
+        parser_fingerprint: Callable[[], str] = parser_hash,
+    ) -> None:
         self.context = context
         self.config = config
         self.store = store
@@ -141,14 +141,15 @@ class KnowledgeIndexer:
         state: dict[str, SourceState] = {}
         new_vectors = 0
         for name, (path, text) in documents.items():
-            old = previous["sources"].get(name, {})
+            old = previous["sources"].get(name)
             if (
-                previous.get("parser_hash") == self.parser_fingerprint()
+                old is not None
+                and previous.get("parser_hash") == self.parser_fingerprint()
                 and old.get("source_hash") == digest(text)
                 and all(i in current for i in old["chunks"])
             ):
                 meta = metadata(path, root, text)
-                rows = [{"id": i, "payload": dict(current[i])} for i in old["chunks"]]
+                rows: list[Point] = [{"id": i, "payload": current[i].copy()} for i in old["chunks"]]
             else:
                 meta, rows = chunks(path, root, text, provider, config)
             changed = [

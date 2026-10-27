@@ -4,7 +4,7 @@ import math
 from typing import cast
 
 from tools.application.knowledge.configuration import KnowledgeConfig
-from tools.application.knowledge.contracts import ChunkPayload, Manifest, Point
+from tools.application.knowledge.contracts import ChunkPayload, Manifest, Point, QueryPoint
 from tools.application.knowledge.corpus import identity
 from tools.application.knowledge.transport import Http, JsonTransport, RequestError
 from tools.core.state import JsonValue
@@ -13,7 +13,7 @@ MANIFEST = identity("index-manifest")
 
 
 class Store:
-    def __init__(self, config: KnowledgeConfig, *, http: JsonTransport | None = None):
+    def __init__(self, config: KnowledgeConfig, *, http: JsonTransport | None = None) -> None:
         self.http = http if http is not None else Http(config["qdrant_url"])
         self.path = "/collections/" + config["collection"]
         self.config = config
@@ -49,7 +49,7 @@ class Store:
     def drop(self) -> None:
         self.http.request("DELETE", self.path)
 
-    def query(self, body: dict[str, object]) -> list[dict[str, object]]:
+    def query(self, body: dict[str, object]) -> list[QueryPoint]:
         points = self.object_result("POST", self.path + "/points/query", body).get("points")
         if not isinstance(points, list) or any(
             not isinstance(point, dict)
@@ -59,7 +59,7 @@ class Store:
             for point in points
         ):
             raise ValueError("Invalid Qdrant query points.")
-        return cast(list[dict[str, object]], points)
+        return cast(list[QueryPoint], points)
 
     def create(self) -> None:
         self.http.request(
@@ -134,7 +134,7 @@ class Store:
         result: dict[str, ChunkPayload] = {}
         offset = None
         while True:
-            body = {"limit": 256, "with_payload": True, "with_vector": False}
+            body: dict[str, object] = {"limit": 256, "with_payload": True, "with_vector": False}
             if offset is not None:
                 body["offset"] = offset
             response = self.object_result("POST", self.path + "/points/scroll", body)

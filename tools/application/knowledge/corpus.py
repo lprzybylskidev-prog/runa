@@ -28,7 +28,7 @@ def sources(
     # cannot become knowledge merely by appearing under docs/.
     context = context or KnowledgeContext.for_workspace(root)
     result = context.git("ls-files", "-z")
-    paths = []
+    paths: list[Path] = []
     receipt = root / ".git/runa-bootstrap.json"
     owner = context.owner_corpus and not receipt.exists() and not receipt.is_symlink()
     for name in result.decode().split("\0"):
@@ -73,10 +73,10 @@ def read_source(path: Path) -> str:
 
 
 def sections(text: str, markdown: bool = True) -> Iterator[tuple[list[str], str]]:
-    heading_path = []
-    heading_levels = []
-    lines = []
-    fence = None
+    heading_path: list[str] = []
+    heading_levels: list[tuple[int, str]] = []
+    lines: list[str] = []
+    fence: tuple[str, int] | None = None
     for line in text.splitlines():
         marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
         if marker:
@@ -148,7 +148,7 @@ def metadata(path: Path, root: Path, text: str) -> ChunkPayload:
                 ("roadmap:" if location[1].startswith("runa/") else "application-roadmap:")
                 + identifier
             )
-            if identifier
+            if identifier and location
             else "source:" + name
         ),
         "source_path": name,
@@ -190,7 +190,7 @@ def chunks(
         # Keep whole sections when they fit. Split oversized sections at paragraph,
         # then line/word boundaries; preserve all text and no silent truncation.
         queue = [body]
-        pieces = []
+        pieces: list[tuple[str, str]] = []
         while queue:
             piece = queue.pop(0)
             embedded = (context + "\n\n" + piece).strip()

@@ -471,3 +471,20 @@ native installer exit, real temporary Git cloning and standalone help. Existing
 external source projection already includes these modules; no resource exception
 or dependency is added. Knowledge/private test typing and complete caller/resource/
 inline reconciliation remain open; full analysis/build/acceptance stays in point 10.
+
+Knowledge HTTP opener/response, transport factory, provider, store query, hybrid
+ranking, golden evaluation and doctor records now declare their inputs/results.
+Indexer parser callbacks and corpus collections declare their contracts; immutable
+per-source metadata copies preserve unchanged vectors and branch refresh. Literal
+integer capability limits, explicitly disabled truncation and finite numeric vector
+coordinates refuse malformed service data before use. Unknown service metadata
+remains accepted. Scripted query coverage preserves dense/lexical signal shape,
+branch/source conditions and exclusion of foreign point IDs. Focused cases cover
+retry/fallback, model mismatch, interrupted-write recovery, idempotence and parser/
+branch refresh without live network or collection changes. Public package source
+projection already includes all changed modules; pins/resources/exclusions remain
+unchanged. Owner/customer RAG/backend products already require capability validation,
+injected boundaries and source grounding, so no new instruction rule or authority
+is introduced. Remaining private fixture/test annotations and complete caller/
+resource/inline reconciliation stay open; full analysis/build/live acceptance is
+reserved for point 10.

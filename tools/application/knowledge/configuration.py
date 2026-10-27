@@ -4,7 +4,7 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import NotRequired, TypedDict, cast
 from urllib.parse import urlsplit
 
 
@@ -40,12 +40,12 @@ class KnowledgeConfig(TypedDict):
     retrieval: RetrievalConfig
 
 
-class GoldenCase(TypedDict, total=False):
+class GoldenCase(TypedDict):
     query: str
     source_path: str
-    top_k: int
-    section: str
-    filters: dict[str, str]
+    top_k: NotRequired[int]
+    section: NotRequired[str]
+    filters: NotRequired[dict[str, str]]
 
 
 def source_paths(value: object) -> list[str]:

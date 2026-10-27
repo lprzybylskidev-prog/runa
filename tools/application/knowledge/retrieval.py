@@ -4,8 +4,21 @@ import math
 import re
 import statistics
 from collections import Counter
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 
+from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfig
 from tools.application.knowledge.context import KnowledgeContext
+from tools.application.knowledge.contracts import (
+    CaseResult,
+    ChunkPayload,
+    DoctorReport,
+    Evaluation,
+    KnowledgeStore,
+    ProviderFactory,
+    RankSignal,
+    SearchHit,
+)
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
@@ -13,19 +26,19 @@ from tools.application.knowledge.store import Store
 FILTERS = ("document_type", "scope", "roadmap_id", "status", "source_path")
 
 
-def tokens(text):
+def tokens(text: str) -> list[str]:
     return re.findall(r"[\w]+(?:[-/.][\w]+)*", text.lower())
 
 
-def lexical(query, points):
+def lexical(query: str, points: Mapping[str, ChunkPayload]) -> list[tuple[str, float]]:
     terms = set(tokens(query))
     bags = {key: Counter(tokens(p["content"])) for key, p in points.items()}
     sizes = {key: sum(bag.values()) for key, bag in bags.items()}
     average = sum(sizes.values()) / max(1, len(sizes)) or 1
     frequencies = {term: sum(term in bag for bag in bags.values()) for term in terms}
-    scores = {}
+    scores: dict[str, float] = {}
     for key, bag in bags.items():
-        score = 0
+        score = 0.0
         for term in terms:
             count = bag[term]
             idf = math.log(1 + (len(bags) - frequencies[term] + 0.5) / (frequencies[term] + 0.5))
@@ -37,8 +50,15 @@ def lexical(query, points):
 
 class Retriever:
     def __init__(
-        self, root, config, device="cpu", *, context=None, store=None, provider_factory=Embeddings
-    ):
+        self,
+        root: Path,
+        config: KnowledgeConfig,
+        device: str = "cpu",
+        *,
+        context: KnowledgeContext | None = None,
+        store: KnowledgeStore | None = None,
+        provider_factory: ProviderFactory = Embeddings,
+    ) -> None:
         self.root, self.config = root, config
         self.context = context or KnowledgeContext.for_workspace(root)
         self.store = store if store is not None else Store(config)
@@ -52,29 +72,29 @@ class Retriever:
         self.provider = provider_factory(config, device)
         self.health = health
 
-    def search(self, query, top_k=5, filters=None):
-        if not query.strip() or not 1 <= top_k <= 50:
+    def search(
+        self, query: str, top_k: int = 5, filters: Mapping[str, str] | None = None
+    ) -> list[SearchHit]:
+        if not query.strip() or type(top_k) is not int or not 1 <= top_k <= 50:
             raise ValueError("Provide a nonempty query and top-k between 1 and 50.")
         filters = filters or {}
         if set(filters) - set(FILTERS):
             raise ValueError("Unsupported metadata filter.")
         settings = self.config["retrieval"]
         if any(
-            not isinstance(settings[k], (int, float))
-            or not math.isfinite(settings[k])
-            or settings[k] <= 0
-            for k in (
-                "dense_weight",
-                "lexical_weight",
-                "rrf_k",
-                "active_boost",
-                "historical_weight",
+            type(value) not in (int, float) or not math.isfinite(value) or value <= 0
+            for value in (
+                settings["dense_weight"],
+                settings["lexical_weight"],
+                settings["rrf_k"],
+                settings["active_boost"],
+                settings["historical_weight"],
             )
         ):
             raise ValueError("Retrieval weights and RRF constant must be positive finite numbers.")
         if any(
-            type(settings[k]) is not int or not 1 <= settings[k] <= 1000
-            for k in ("candidates", "per_source")
+            type(value) is not int or not 1 <= value <= 1000
+            for value in (settings["candidates"], settings["per_source"])
         ):
             raise ValueError("Candidate/per-source limits must be integers between 1 and 1000.")
         vector = self.provider.embed([self.config["query_prefix"] + query])[0]
@@ -98,12 +118,14 @@ class Retriever:
         )
         dense = [(p["id"], p["score"]) for p in response if p["id"] in selected]
         sparse = lexical(query, selected)[: max(settings["candidates"], top_k * 4)]
-        scores, diagnostics = {}, {}
-        for name, ranking in [("dense", dense), ("lexical", sparse)]:
+        scores: dict[str, float] = {}
+        diagnostics: dict[str, dict[str, RankSignal]] = {}
+        for name, weight, ranking in [
+            ("dense", settings["dense_weight"], dense),
+            ("lexical", settings["lexical_weight"], sparse),
+        ]:
             for rank, (key, score) in enumerate(ranking, 1):
-                scores[key] = scores.get(key, 0) + settings[name + "_weight"] / (
-                    settings["rrf_k"] + rank
-                )
+                scores[key] = scores.get(key, 0) + weight / (settings["rrf_k"] + rank)
                 diagnostics.setdefault(key, {})[name] = {"rank": rank, "score": score}
         for key in scores:
             state = selected[key].get("status")
@@ -114,7 +136,8 @@ class Retriever:
                 if state in ("closed", "paused", "deprecated")
                 else 1
             )
-        results, counts = [], Counter()
+        results: list[SearchHit] = []
+        counts: Counter[str] = Counter()
         for key in sorted(scores, key=lambda key: (-scores[key], key)):
             point = selected[key]
             if counts[point["source_path"]] >= settings["per_source"]:
@@ -128,8 +151,8 @@ class Retriever:
         return results
 
 
-def evaluate(retriever, dataset):
-    results = []
+def evaluate(retriever: Retriever, dataset: Sequence[GoldenCase]) -> Evaluation:
+    results: list[CaseResult] = []
     for case in dataset:
         started = retriever.context.clock.monotonic()
         hits = retriever.search(case["query"], case.get("top_k", 5), case.get("filters"))
@@ -149,7 +172,7 @@ def evaluate(retriever, dataset):
     return {"passed": all(row["passed"] for row in results), "cases": results}
 
 
-def doctor(retriever):
+def doctor(retriever: Retriever) -> DoctorReport:
     points = retriever.points
     expected = {
         "embedding_provider": "tei",

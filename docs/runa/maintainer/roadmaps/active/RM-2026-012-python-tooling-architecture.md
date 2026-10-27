@@ -1735,6 +1735,43 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   removed; active development/test data, knowledge/model caches, backups and reports
   remain preserved.
 
+#### Point 9 continuation — knowledge provider and retrieval contracts (2026-10-27)
+
+- Typed HTTP opener/response and transport factory, provider/store query, hybrid
+  ranking, golden-case/evaluation and doctor records; CLI/owner composition,
+  parser callbacks and corpus collections declare inputs/results. Collection,
+  manifest, search diagnostics and serialized report fields remain unchanged.
+- Provider limits reject booleans/nonintegers, require explicitly disabled
+  truncation and turn missing consumed capability fields into fixed contract
+  errors. Vector coordinates reject booleans/nonfinite values. Transient GPU
+  failures still validate CPU before repeating the same request; model mismatch
+  refuses without fallback. Extra service metadata remains accepted.
+- Twenty-four distinct necessary focused cases passed through supported test-python:
+  fourteen new capability/vector/query/ranking cases plus ten existing retry,
+  production-guard, malformed-manifest/model refusal, parser refresh, interrupted
+  write recovery, idempotent edit/delete and branch refresh cases. The scripted
+  retrieval case exercises actual index status and composed storage/provider/Git
+  boundaries, preserves both ranking signals and exact branch/source conditions,
+  excludes foreign point IDs and refuses boolean top-k before another query.
+  Initial collection failures exposed an out-of-order type definition and a
+  deferred JSON-alias annotation; corrected both and received PASS. No live
+  service acceptance or collection rebuild was run.
+- Synchronized the public Python/knowledge guides and migration ledger. Root and
+  customer AGENTS plus RAG/backend products already require injected typed
+  boundaries, capability validation, source grounding and private/public ownership;
+  these internal contracts introduce no extension API or authority requiring a
+  new instruction rule. Package projection already includes the changed modules;
+  no dependency, frozen pin, exclusion or independently versioned module changed.
+- Point 9 remains open for remaining private fixture/test annotations and complete
+  caller/alias/resource/non-Python/inline reconciliation. Point 10 has not started:
+  no full suite, strict analysis, package/image build, scanner or broad acceptance
+  ran. Changed-file pinned Ruff preparation and mandatory commit hooks apply.
+  VERSION remains 0.5.0; proposed_version remains 0.6.0.
+- No container, network, image or volume was created or removed. Development/test
+  data, knowledge/model caches, backups and verification reports remain preserved.
+  Only ordinary incremental knowledge refresh is needed for source freshness;
+  no migration or production setting changed.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

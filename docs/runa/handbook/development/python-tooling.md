@@ -289,7 +289,12 @@ The delivered `tools.application.knowledge` package composes corpus/configuratio
 provider/store, incremental indexing, retrieval and optional startup using explicit
 workspace/process/clock and HTTP dependencies. Private corpus and golden additions
 are composed by excluded owner tooling; customer loaders never import it. Typed
-configuration and payload contracts preserve the existing collection schema. See
+configuration, HTTP opener/response, provider, ranked-hit and evaluation contracts
+preserve the existing collection schema and diagnostic fields. Provider metadata
+requires literal integer limits and disabled truncation; embedding coordinates
+must be finite numbers, with booleans refused. Transient GPU failures still validate
+the CPU service before retrying the same request; incompatible model metadata is
+refused without fallback. See
 [knowledge lifecycle and parser freshness](knowledge.md#package-and-ownership-composition)
 for migration, pending-write recovery and nondestructive incremental refresh.
 

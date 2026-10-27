@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from tools.application.knowledge.configuration import load
 from tools.application.knowledge.context import KnowledgeContext
+from tools.application.knowledge.transport import HttpOpener
 from tools.core.process import ProcessSpec
 from tools.core.reporting import SafeFailure
 
@@ -16,7 +17,7 @@ from tools.core.reporting import SafeFailure
 @dataclass
 class KnowledgeStartup:
     context: KnowledgeContext
-    opener: urllib.request.OpenerDirector = field(
+    opener: HttpOpener = field(
         default_factory=lambda: urllib.request.build_opener(urllib.request.ProxyHandler({}))
     )
     sleep: Callable[[float], None] = time.sleep

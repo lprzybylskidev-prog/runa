@@ -3,9 +3,16 @@
 import math
 import sys
 from dataclasses import dataclass
+from typing import cast
 
 from tools.application.knowledge.configuration import KnowledgeConfig
-from tools.application.knowledge.transport import Http, RequestError
+from tools.application.knowledge.transport import (
+    Http,
+    JsonTransport,
+    RequestError,
+    TransportFactory,
+)
+from tools.core.state import JsonValue
 
 
 @dataclass(frozen=True)
@@ -20,7 +27,13 @@ class Capabilities:
 
 
 class Embeddings:
-    def __init__(self, config: KnowledgeConfig, device: str = "auto", *, http_factory=Http):
+    def __init__(
+        self,
+        config: KnowledgeConfig,
+        device: str = "auto",
+        *,
+        http_factory: TransportFactory = Http,
+    ) -> None:
         if device not in ("cpu", "auto"):
             raise ValueError("Unsupported embedding device.")
         self.config = config
@@ -37,7 +50,7 @@ class Embeddings:
         self.cpu = http_factory(config["cpu_url"])
         self.gpu = http_factory(config["cuda_url"])
         self.client = self.cpu
-        self.validated = set()
+        self.validated: set[str] = set()
         if device != "cpu":
             try:
                 self.validate(self.gpu)
@@ -46,7 +59,7 @@ class Embeddings:
                 print("CUDA embeddings unavailable; using CPU fallback.", file=sys.stderr)
         self.validate(self.client)
 
-    def validate(self, client):
+    def validate(self, client: JsonTransport) -> None:
         if client.base in self.validated:
             return
         info = client.request("GET", "/info")
@@ -64,15 +77,20 @@ class Embeddings:
             )
         if info.get("model_type") != {"embedding": {"pooling": self.config["pooling"]}}:
             raise ValueError("Embedding pooling/model type differs from the knowledge contract.")
-        if info["max_input_length"] != self.capabilities.max_tokens or info["auto_truncate"]:
+        if (
+            type(info.get("max_input_length")) is not int
+            or info["max_input_length"] != self.capabilities.max_tokens
+            or info.get("auto_truncate") is not False
+        ):
             raise ValueError(
                 "Embedding service input limits/truncation differ from the knowledge contract."
             )
-        if info["max_client_batch_size"] < self.capabilities.batch_size:
+        batch_size = info.get("max_client_batch_size")
+        if type(batch_size) is not int or batch_size < self.capabilities.batch_size:
             raise ValueError("Embedding service batch limit is too small.")
         self.validated.add(client.base)
 
-    def request(self, path, body):
+    def request(self, path: str, body: object) -> JsonValue:
         try:
             return self.client.request("POST", path, body)
         except RequestError as error:
@@ -87,7 +105,7 @@ class Embeddings:
             return self.client.request("POST", path, body)
 
     def counts(self, texts: list[str]) -> list[int]:
-        result = []
+        result: list[int] = []
         for start in range(0, len(texts), self.capabilities.batch_size):
             batch = texts[start : start + self.capabilities.batch_size]
             tokens = self.request("/tokenize", {"inputs": batch, "add_special_tokens": True})
@@ -97,7 +115,7 @@ class Embeddings:
                 or any(not isinstance(row, list) for row in tokens)
             ):
                 raise ValueError("Tokenizer response count mismatch.")
-            result.extend(len(row) for row in tokens)
+            result.extend(len(row) for row in cast(list[list[JsonValue]], tokens))
         return result
 
     def embed(self, texts: list[str]) -> list[list[float]]:
@@ -105,7 +123,7 @@ class Embeddings:
             raise ValueError(
                 "Embedding input exceeds the model token budget; truncation is forbidden."
             )
-        result = []
+        result: list[list[float]] = []
         for start in range(0, len(texts), self.capabilities.batch_size):
             batch = texts[start : start + self.capabilities.batch_size]
             vectors = self.request(
@@ -118,10 +136,12 @@ class Embeddings:
                 if (
                     not isinstance(vector, list)
                     or len(vector) != self.capabilities.dimension
-                    or not all(isinstance(x, (float, int)) and math.isfinite(x) for x in vector)
+                    or not all(
+                        type(x) in (float, int) and math.isfinite(cast(float, x)) for x in vector
+                    )
                 ):
                     raise ValueError("Invalid embedding dimension or non-finite value.")
                 if not any(vector):
                     raise ValueError("Embedding service returned a zero vector.")
-            result.extend(vectors)
+            result.extend(cast(list[list[float]], vectors))
         return result

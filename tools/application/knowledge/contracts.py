@@ -78,6 +78,11 @@ class ProviderFactory(Protocol):
     def __call__(self, config: KnowledgeConfig, device: str) -> EmbeddingProvider: ...
 
 
+class QueryPoint(TypedDict):
+    id: str
+    score: float
+
+
 class KnowledgeStore(Protocol):
     def exists(self) -> bool: ...
     def create(self) -> None: ...
@@ -88,4 +93,36 @@ class KnowledgeStore(Protocol):
     def upsert(self, points: list[Point]) -> None: ...
     def payload(self, point_id: str, payload: ChunkPayload) -> None: ...
     def delete(self, ids: list[str]) -> None: ...
-    def query(self, body: dict[str, object]) -> list[dict[str, object]]: ...
+    def query(self, body: dict[str, object]) -> list[QueryPoint]: ...
+
+
+class RankSignal(TypedDict):
+    rank: int
+    score: float
+
+
+class SearchHit(TypedDict):
+    id: str
+    score: float
+    signals: dict[str, RankSignal]
+    payload: ChunkPayload
+
+
+class CaseResult(TypedDict):
+    query: str
+    passed: bool
+    seconds: float
+    sources: list[str]
+
+
+class Evaluation(TypedDict):
+    passed: bool
+    cases: list[CaseResult]
+
+
+class DoctorReport(Health):
+    invalid_metadata_chunks: int
+    average_chunk_words: float
+    median_chunk_words: float
+    smoke: Evaluation
+    passed: bool
