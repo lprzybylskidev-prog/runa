@@ -1,35 +1,53 @@
 """Concurrent quality scheduling with explicit transport and owned child groups."""
 
 import os
-import shlex
 import signal
 import subprocess
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
+from types import FrameType
+from typing import Protocol, TextIO
 
+from tools.application.quality_models import QualityStep
 from tools.application.quality_reporting import save
+from tools.application.quality_state import RunRecord
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.process import reap, signal_group
+
+
+class QualitySpawn(Protocol):
+    def __call__(
+        self,
+        args: Sequence[str],
+        *,
+        cwd: Path,
+        env: dict[str, str],
+        stdout: TextIO,
+        stderr: int,
+        start_new_session: bool,
+    ) -> subprocess.Popen[bytes]: ...
 
 
 @dataclass(frozen=True)
 class QualityExecutor:
     workspace: WorkspaceContext
     location: ExecutionLocation
-    app_command: Callable
-    spawn: Callable = subprocess.Popen
+    app_command: Callable[[Sequence[str]], Sequence[str]]
+    spawn: QualitySpawn = subprocess.Popen
     environment: dict[str, str] = field(default_factory=lambda: dict(os.environ), repr=False)
 
-    def execute(self, directory, state):
-        running = {}
-        started = {}
+    def execute(self, directory: Path, state: RunRecord) -> int:
+        definitions = {key: QualityStep.parse(node) for key, node in state["steps"].items()}
+        running: dict[str, tuple[subprocess.Popen[bytes], TextIO]] = {}
+        started: dict[str, float] = {}
         run_started = time.monotonic()
         state["started_at"] = datetime.now(UTC).isoformat()
         interrupted = False
 
-        def stop(signum, frame):
+        def stop(signum: int, frame: FrameType | None) -> None:
             nonlocal interrupted
             interrupted = True
 
@@ -63,23 +81,24 @@ class QualityExecutor:
                         )
                     state["status"] = "interrupted"
                     break
-                groups = {state["steps"][k].get("exclusive_group") for k in running}
+                groups = {definitions[k].exclusive_group for k in running}
                 for key, node in state["steps"].items():
                     if node["status"] != "pending":
                         continue
-                    deps = [state["steps"][d]["status"] for d in node["depends_on"]]
+                    definition = definitions[key]
+                    deps = [state["steps"][d]["status"] for d in definition.dependencies]
                     if any(s in ("failed", "blocked", "interrupted") for s in deps):
                         node["status"] = "blocked"
                     elif all(s == "passed" for s in deps) and len(running) < 4:
-                        group = node.get("exclusive_group")
+                        group = definition.exclusive_group
                         if group and group in groups:
                             continue
                         log = (directory / (key + ".log")).open("w")
                         started[key] = time.monotonic()
                         node["started_at"] = datetime.now(UTC).isoformat()
                         try:
-                            arguments = shlex.split(node["command"])
-                            if node.get("execution_context") == "host":
+                            arguments: Sequence[str] = list(definition.command)
+                            if definition.execution_context == "host":
                                 if self.location is ExecutionLocation.CONTAINER:
                                     raise OSError(
                                         "This gate requires the host coordinator: invoke the selected explicit quality workflow through the Docker host executor."
@@ -114,8 +133,9 @@ class QualityExecutor:
                     state["status"] = (
                         "failed"
                         if any(
-                            n["status"] in ("failed", "blocked") and n["severity"] == "hard_fail"
-                            for n in state["steps"].values()
+                            n["status"] in ("failed", "blocked")
+                            and definitions[k].severity == "hard_fail"
+                            for k, n in state["steps"].items()
                         )
                         else "passed"
                     )

@@ -181,7 +181,12 @@ Definition/frontmatter decoders validate source-owned planning fields; typed gra
 and scope contracts preserve definition order, conditional dependencies and command
 hashes. `QualityPlanSource` permits an explicitly injected planner without mutating
 the scheduler. Status rendering accepts legacy scope metadata and validates named
-group selections. Parsing a definition does not execute its commands.
+group selections. Run-state decoding validates native exit codes, positive child
+identities, finite nonnegative durations and timezone-aware timestamps before
+rendering or marking abandoned work interrupted. Unknown historical evidence and
+minimal legacy step records remain preserved. The scheduler receives a typed
+process launcher and command transport; closure receives a separate configuration
+reader contract. Parsing a definition does not execute its commands.
 The private release validator supplies allowed closure metadata; customer closure
 uses application manifest/changelog defaults. Serialized scope, graph hashes,
 commands, timing and candidate checks retain their existing contracts.

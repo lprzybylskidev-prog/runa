@@ -1587,6 +1587,40 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   network, image or volume was created or removed; active development/test data,
   knowledge/model caches, backups and verification reports remain preserved.
 
+#### Point 9 continuation — quality scheduling and run evidence (2026-10-27)
+
+- Typed scheduler process/command boundaries, run/step records, status publication
+  and closure configuration/policy inputs/results. Scheduling consumes the existing
+  immutable step parser; literal transport arguments remain lists. Serialized graph,
+  selection, candidate hashes, four-slot/exclusive scheduling and native exits keep
+  their contracts. No real quality graph was started.
+- Added consumed-field run-state decoding before status/evidence use. It validates
+  exit codes without accepting booleans, positive PIDs, finite nonnegative timings,
+  timezone-aware timestamps and selection metadata. Minimal legacy status records,
+  optional/null timing/identity fields and unknown evidence remain preserved. A live
+  coordinator's status stays read-only; invalid abandoned evidence is not rewritten.
+- Eight distinct necessary focused cases passed through supported test-python:
+  four new decoding/status/start-refusal cases; existing native failure/dependent
+  blocking and host routing, abandoned log-tail status, nonmutating preview and
+  exact graph/scope/candidate closure. The routing case initially exposed a changed
+  list-to-tuple transport argument; restored its established list shape and received
+  PASS. Start refusal uses an injected process, asserts exact workspace/environment,
+  fixed diagnostic, closed log and restored signals; it starts no external worker.
+- Synchronized the public Python guide and migration ledger. Owner/customer AGENTS
+  and backend/security products already cover explicit typed composition, guarded
+  processes/state and public/private ownership. These internal records add no public
+  extension API, customer action, authority or security exception needing another
+  rule. Existing package projection includes the authored module without exclusions
+  or dependency changes. No independently versioned business module changed.
+- Point 9 remains open for external bootstrap/planning/execution, knowledge and
+  remaining private fixture/test annotations, followed by complete caller/resource/
+  inline reconciliation. Point 10 has not started: no full suite, strict analysis,
+  package/image build, scanner or live acceptance ran. Changed-file pinned Ruff and
+  mandatory commit hooks apply. VERSION stays 0.5.0; proposed_version stays 0.6.0.
+- No disposable Docker container, network, image or volume was created or removed.
+  Active development/test data, knowledge/model caches, backups and reports remain
+  preserved. No migration or production setting changed.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

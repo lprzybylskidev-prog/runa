@@ -413,3 +413,15 @@ fixture and checks the complete runtime image set through the supported native
 installation/security graph. Historical PHP/PostgreSQL evidence is preserved.
 The unused Docker inventory script and private knowledge/database filename
 adapters are also removed; the ledger above records their dispositions.
+
+Quality scheduling, reporting and closure evidence now declare run/step records,
+process-launch/command-transport and configuration-reader inputs/results. The
+`quality_state` decoder retains minimal historical records and extra evidence,
+validates consumed exit/PID/timing/selection fields and refuses malformed state
+before abandoned-status publication. Scheduler command parsing uses the existing
+validated immutable step while preserving the transport's literal list arguments.
+Closure still binds the exact graph, scope, candidate and permitted metadata;
+boolean exit codes cannot satisfy successful evidence. Focused private cases cover
+these boundaries and fixed start-failure diagnostics; background/concurrency/full
+quality acceptance and strict analysis remain point 10. Remaining full-scope
+annotations and complete caller/resource/inline reconciliation are still open.

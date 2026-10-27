@@ -20,6 +20,7 @@ from tools.application.quality_models import (
 )
 from tools.application.quality_planning import arguments, resolve, show_scope, validate_declared
 from tools.application.quality_reporting import read_state, save, status
+from tools.application.quality_state import run_record
 from tools.core.context import ExecutionLocation
 
 
@@ -158,17 +159,19 @@ class QualityService:
             def git(*args: str) -> str:
                 return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
 
-            state = {
-                "status": "running",
-                "mode": argv[0],
-                "roadmap": roadmap["id"],
-                "impact_areas": roadmap["impact_areas"],
-                "branch": git("branch", "--show-current"),
-                "commit": git("rev-parse", "HEAD"),
-                "steps": {key: dict(node, status="pending") for key, node in nodes.items()},
-                "selection": selection,
-                "rationale": roadmap.get("quality_rationale"),
-            }
+            state = run_record(
+                {
+                    "status": "running",
+                    "mode": argv[0],
+                    "roadmap": roadmap["id"],
+                    "impact_areas": roadmap["impact_areas"],
+                    "branch": git("branch", "--show-current"),
+                    "commit": git("rev-parse", "HEAD"),
+                    "steps": {key: dict(node, status="pending") for key, node in nodes.items()},
+                    "selection": selection,
+                    "rationale": roadmap.get("quality_rationale"),
+                }
+            )
             save(directory, state, anchor=root)
             if background:
                 pid = os.fork()
