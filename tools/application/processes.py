@@ -5,9 +5,47 @@ import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, TextIO, overload
+from typing import Literal, Protocol, TextIO, overload
 
 from tools.core.process import InputMode, OutputMode, ProcessRunner, ProcessSpec, ProcessTimeout
+
+
+class WorkspaceProcess(Protocol):
+    """Application process call with a workspace already selected by its composition root."""
+
+    @overload
+    def __call__(
+        self,
+        argv: Sequence[str],
+        *,
+        cwd: Path = ...,
+        input: bytes | str | None = None,
+        capture_output: bool = False,
+        text: Literal[True],
+        check: bool = False,
+        timeout: float | None = None,
+        env: Mapping[str, str] | None = None,
+        stdin: int | None = None,
+        stdout: int | TextIO | None = None,
+        stderr: int | TextIO | None = None,
+    ) -> subprocess.CompletedProcess[str]: ...
+
+    @overload
+    def __call__(
+        self,
+        argv: Sequence[str],
+        *,
+        cwd: Path = ...,
+        input: bytes | str | None = None,
+        capture_output: bool = False,
+        text: Literal[False] = False,
+        check: bool = False,
+        timeout: float | None = None,
+        env: Mapping[str, str] | None = None,
+        stdin: int | None = None,
+        stdout: int | TextIO | None = None,
+        stderr: int | TextIO | None = None,
+    ) -> subprocess.CompletedProcess[bytes]: ...
 
 
 @dataclass(frozen=True)

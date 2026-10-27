@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections import deque
 from pathlib import Path
 from unittest.mock import patch
 
@@ -16,8 +17,12 @@ import pytest
 import distribution.bootstrap as bootstrap
 import distribution.update_contracts as contracts
 import distribution.update_customization as update_customization
+import distribution.update_modules as update_modules
 import distribution.update_planning as update
 import distribution.update_runtime as update_runtime
+from distribution.processes import ExternalProcesses
+from tools.application.testing.support.process import RecordingRunner
+from tools.core.process import ProcessResult
 from tools.maintainer.testing import update_host as acceptance_update_host
 from tools.maintainer.tests.python.support.updater import UpdaterWorkspace
 
@@ -336,25 +341,21 @@ class Updater(unittest.TestCase):
         self.assertEqual(result["temporary_downloads"], [])
 
     def test_module_plan_isolated_mounts_do_not_expose_private_settings_or_run_application(self):
-        import update_modules
-
         directory = self.fixture.target / "src/runa/modules/example"
         directory.mkdir(parents=True)
         (directory / "module.json").write_text("{}")
-        from unittest.mock import patch
-
-        result = subprocess.CompletedProcess([], 0, stdout="[]", stderr="")
-        with patch.object(update_modules.subprocess, "run", return_value=result) as execute:
-            self.assertEqual(
-                update_modules.plan(
-                    self.fixture.installed,
-                    self.fixture.target,
-                    self.fixture.runtime,
-                    "sha256:" + "a" * 64,
-                ),
-                [],
-            )
-        command = execute.call_args_list[0].args[0]
+        runner = RecordingRunner(deque([ProcessResult(0, b"[]"), ProcessResult(0)]))
+        self.assertEqual(
+            update_modules.plan(
+                self.fixture.installed,
+                self.fixture.target,
+                self.fixture.runtime,
+                "sha256:" + "a" * 64,
+                processes=ExternalProcesses(runner, {}),
+            ),
+            [],
+        )
+        command = runner.calls[0].argv
         self.assertIn("--read-only", command)
         self.assertEqual(command[command.index("--network") + 1], "none")
         mounts = [command[i + 1] for i, value in enumerate(command) if value == "--mount"]

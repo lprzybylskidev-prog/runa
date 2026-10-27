@@ -4,13 +4,15 @@ import json
 import os
 import posixpath
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from tools.application.processes import WorkspaceProcess
 from tools.core.delivery import OWNER_PATHS
+from tools.core.state import JsonValue, StateFailure, json_value
 
 
 class RepositoryBoundaryError(ValueError):
@@ -23,7 +25,7 @@ class DevelopmentContextError(RepositoryBoundaryError):
 
 @dataclass(frozen=True)
 class RepositoryPolicy:
-    run: Callable
+    run: WorkspaceProcess
     environment: Mapping[str, str] = field(repr=False)
 
     @classmethod
@@ -35,7 +37,7 @@ class RepositoryPolicy:
         processes = ApplicationProcesses(SubprocessRunner(), environment)
         return cls(partial(processes.run, cwd=root), environment)
 
-    def receipt(self, root):
+    def receipt(self, root: Path) -> dict[str, JsonValue]:
         root = Path(root)
         if any(key.startswith("GIT_") and key != "GIT_PAGER" for key in self.environment):
             raise RepositoryBoundaryError(
@@ -48,7 +50,12 @@ class RepositoryPolicy:
             raise RepositoryBoundaryError(
                 "Missing trusted installation acquisition receipt. Refusing the Runa maintenance/unknown checkout."
             )
-        data = json.loads(path.read_text())
+        try:
+            data = json_value(json.loads(path.read_text()))
+        except (ValueError, RecursionError, StateFailure):
+            raise RepositoryBoundaryError("Invalid installation acquisition receipt.") from None
+        if not isinstance(data, dict):
+            raise RepositoryBoundaryError("Unsupported installation acquisition receipt.")
         if data.get("schema_version") != 1 or data.get("projection") != {
             "version": 1,
             "excluded": list(OWNER_PATHS),
@@ -62,7 +69,14 @@ class RepositoryPolicy:
             )
         return data
 
-    def assert_installation(self, root):
+    @staticmethod
+    def repository_name(data: Mapping[str, JsonValue]) -> str:
+        repository = data.get("repository")
+        if not isinstance(repository, str) or not repository:
+            raise RepositoryBoundaryError("Missing installation repository identity.")
+        return repository
+
+    def assert_installation(self, root: Path) -> dict[str, JsonValue]:
         data = self.receipt(root)
         configured = self.run(
             ["git", "-C", str(root), "config", "--local", "--get-all", "runa.applicationRemote"],
@@ -81,7 +95,7 @@ class RepositoryPolicy:
             text=True,
             check=True,
         ).stdout.strip()
-        expected = "https://github.com/" + data["repository"] + ".git"
+        expected = "https://github.com/" + self.repository_name(data) + ".git"
         if origin != expected:
             raise RepositoryBoundaryError(
                 "Recorded read-only release upstream differs; preserve customer remotes and inspect ownership."
@@ -98,7 +112,9 @@ class RepositoryPolicy:
             )
         return data
 
-    def application_remote(self, root, data=None):
+    def application_remote(
+        self, root: Path, data: Mapping[str, JsonValue] | None = None
+    ) -> tuple[str, str]:
         """Explicit customer selection; no remote repair, inference or upstream fetch."""
         data = data or self.receipt(root)
         result = self.run(
@@ -112,11 +128,13 @@ class RepositoryPolicy:
             )
         return self.named_application_remote(root, result.stdout.strip(), data)
 
-    def named_application_remote(self, root, name, data):
+    def named_application_remote(
+        self, root: Path, name: str, data: Mapping[str, JsonValue]
+    ) -> tuple[str, str]:
         if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", name):
             raise RepositoryBoundaryError("Select exactly one named customer application remote.")
 
-        def git(*args):
+        def git(*args: str) -> str:
             result = self.run(["git", "-C", str(root), *args], capture_output=True, text=True)
             if result.returncode:
                 raise RepositoryBoundaryError("Customer repository remote is unavailable.")
@@ -151,14 +169,14 @@ class RepositoryPolicy:
         repository = posixpath.normpath(unquote(path)).strip("/").lower().removesuffix(".git")
         if (
             host.rstrip(".").lower() in ("github.com", "www.github.com", "ssh.github.com")
-            and repository == data["repository"].lower()
+            and repository == self.repository_name(data).lower()
         ):
             raise RepositoryBoundaryError(
                 "Application deployment cannot fetch the owner Runa repository; select the customer repository."
             )
         return name, url
 
-    def assert_production_installation(self, root):
+    def assert_production_installation(self, root: Path) -> dict[str, JsonValue]:
         """Bind operations to installer-selected target mode, never the caller's APP_ENV."""
         data = self.assert_installation(root)
         if data.get("mode") != "prod":
@@ -167,7 +185,7 @@ class RepositoryPolicy:
             )
         return data
 
-    def assert_development_context(self, root):
+    def assert_development_context(self, root: Path) -> None:
         """Deny installed production even when a caller supplies a development APP_ENV."""
         root = Path(root)
         marker = root / ".git/runa-bootstrap.json"
@@ -193,14 +211,16 @@ class RepositoryPolicy:
                 "Development tooling is blocked in the production environment."
             )
 
-    def write_staging_receipt(self, root, data):
+    def write_staging_receipt(self, root: Path, data: Mapping[str, object]) -> None:
         path = Path(root) / ".git/runa-bootstrap.json"
         if path.is_symlink():
             raise RepositoryBoundaryError("Staging acquisition receipt must not be a symlink.")
         path.write_text(json.dumps(data, indent=2) + "\n")
         path.chmod(0o600)
 
-    def prepare_customer_context(self, root, mode, remote="origin"):
+    def prepare_customer_context(
+        self, root: Path, mode: str, remote: str = "origin"
+    ) -> dict[str, JsonValue]:
         """Record this clone's local role; never require another workstation's receipt."""
         root = Path(root).absolute()
         if (
@@ -220,7 +240,7 @@ class RepositoryPolicy:
         if any((root / name).exists() or (root / name).is_symlink() for name in OWNER_PATHS):
             raise RepositoryBoundaryError("Customer preparation refuses materialized owner source.")
         marker = root / ".git/runa-bootstrap.json"
-        data = (
+        data: dict[str, JsonValue] = (
             self.receipt(root)
             if marker.exists() or marker.is_symlink()
             else {

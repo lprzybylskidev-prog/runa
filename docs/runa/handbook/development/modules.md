@@ -48,7 +48,7 @@ editing the protected catalogue.
 ./bin/artisan runa:modules:check app
 ./bin/artisan runa:modules:sync app
 ./bin/artisan runa:modules:check app --runtime
-./bin/artisan runa:test app/modules/documents/tests
+./bin/artisan runa:test --scope=backend app/modules/documents/tests
 python3 tools/application/module_versions.py --owner app --base main
 ```
 

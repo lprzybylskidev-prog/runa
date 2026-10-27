@@ -30,7 +30,7 @@ def output(args):
 def main():
     if len(sys.argv) != 1:
         raise SystemExit(
-            "Usage: python3 tools/maintainer/testing/error-fallback-host.py (native host only)"
+            "Usage: python3 -m tools.maintainer.testing.error_fallback_host (native host only)"
         )
     if Path("/.dockerenv").exists():
         raise SystemExit(

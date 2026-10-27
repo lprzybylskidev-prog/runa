@@ -87,6 +87,12 @@ the target. Compose setup and devcontainer post-create use the same
 `DevelopmentService` receives workspace, process policies and execution location; it composes separate `DevelopmentConfig` profile/secret preparation and `DevelopmentSetup` dependency/bootstrap services.
 `RepositoryPolicy` receives the operator environment and process function.
 `CustomerSource` keeps credential-isolated Git and exact source/projection checks.
+Both source policies consume the typed `WorkspaceProcess` callable contract;
+captured text and bytes remain distinct, and workspace/environment selection
+stays at their composition root. Configuration and receipt readers validate decoded
+JSON before returning recursive `JsonValue` mappings. Host-plan payload types retain
+the distinction between omitted development arguments and an explicit empty list;
+the request binding, bounds and source-owned operation allowlist remain enforced.
 Dependency composition remains pure and never resolves packages or edits locks;
 module checks accept their process dependency without importing module code.
 Container detection happens at composition roots, recognizes Docker/Podman marker
@@ -109,6 +115,9 @@ quality, security and deployment services. Internal PHP/Compose callers start fi
 package modules using `python3 -m` from the selected tool checkout. Bin, Git-hook
 and standalone external launchers retain their documented file interfaces.
 Do not reintroduce legacy process/Compose/state mechanics or import-path injection.
+Development setup selects the import-safe `tools.application.scanner_installation`
+module, which receives the workspace and process policy and retains the reviewed
+scanner version/checksum. Its preparation is separate from scanner execution.
 
 All generated private Python state belongs under the workspace-root
 `.runtime/python`: `venv`, `cache`, `build`, `pycache`, `node` and `reports`.

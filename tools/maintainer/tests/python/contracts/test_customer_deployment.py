@@ -6,9 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import customer_source as source
-
 import tools.application.repository_boundary_service as boundary
+from tools.application.customer_source_service import CustomerSource
 from tools.application.deployment_service import DeploymentService
 from tools.application.repository_boundary_service import RepositoryPolicy
 
@@ -16,14 +15,14 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class CustomerDeployment(unittest.TestCase):
-    def git(self, root, *args):
+    def git(self, root: Path, *args: str) -> str:
         return (
             subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.DEVNULL)
             .decode()
             .strip()
         )
 
-    def commit(self, root):
+    def commit(self, root: Path) -> str:
         self.git(root, "add", "--all")
         self.git(
             root,
@@ -39,11 +38,12 @@ class CustomerDeployment(unittest.TestCase):
         )
         return self.git(root, "rev-parse", "HEAD")
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         base = Path(self.directory.name)
         self.root, self.remote, self.state = base / "installed", base / "customer", base / "state"
+        self.source = CustomerSource.for_workspace(self.root)
         self.root.mkdir()
         self.state.mkdir()
         self.git(self.root, "init", "-q", "-b", "main")
@@ -79,7 +79,7 @@ class CustomerDeployment(unittest.TestCase):
         (self.remote / "src/app/new.php").write_text("<?php // customer transition")
         self.target = self.commit(self.remote)
 
-    def test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit(self):
+    def test_default_branch_lightweight_tag_arbitrary_version_and_exact_commit(self) -> None:
         self.git(self.remote, "tag", "customer-release-42")
         self.git(self.remote, "branch", "release/customer-v2")
         before = (self.root / ".git/config").read_bytes()
@@ -92,7 +92,7 @@ class CustomerDeployment(unittest.TestCase):
         ):
             with (
                 self.subTest(target=target),
-                source.fetch(self.root, self.state, target) as (download, sha),
+                self.source.fetch(self.root, self.state, target) as (download, sha),
             ):
                 self.assertEqual(sha, self.target)
                 self.assertTrue(download.exists())
@@ -101,7 +101,7 @@ class CustomerDeployment(unittest.TestCase):
         self.assertEqual(self.git(self.root, "rev-parse", "HEAD"), self.installed)
         self.assertEqual((self.root / ".git/config").read_bytes(), before)
 
-    def test_customer_origin_can_be_selected_without_rewriting_remotes_or_history(self):
+    def test_customer_origin_can_be_selected_without_rewriting_remotes_or_history(self) -> None:
         self.git(self.root, "remote", "set-url", "origin", str(self.remote))
         self.git(self.root, "config", "runa.applicationRemote", "origin")
         before = (self.root / ".git/config").read_bytes()
@@ -111,7 +111,7 @@ class CustomerDeployment(unittest.TestCase):
             ],
             "prod",
         )
-        with source.fetch(self.root, self.state) as (_, sha):
+        with self.source.fetch(self.root, self.state) as (_, sha):
             self.assertEqual(sha, self.target)
         self.assertEqual(before, (self.root / ".git/config").read_bytes())
 
@@ -124,11 +124,11 @@ class CustomerDeployment(unittest.TestCase):
         (self.remote / "src/runa/platform.json").write_text('{"version":"0.3.0"}')
         (self.remote / "compose.production.yaml").write_text("custom services")
         target = self.commit(self.remote)
-        with source.fetch(self.root, self.state) as (download, sha):
+        with self.source.fetch(self.root, self.state) as (download, sha):
             self.assertEqual(sha, target)
-            self.assertTrue("src/runa/platform.json" in source.tree(download, sha))
+            self.assertTrue("src/runa/platform.json" in self.source.tree(download, sha))
 
-    def test_modified_successful_release_is_rejected_before_compose_can_use_it(self):
+    def test_modified_successful_release_is_rejected_before_compose_can_use_it(self) -> None:
         installed = Path(self.directory.name) / "previous-release"
         self.git(self.root, "clone", "-q", str(self.root), str(installed))
         RepositoryPolicy.for_workspace(installed).write_staging_receipt(
@@ -136,15 +136,15 @@ class CustomerDeployment(unittest.TestCase):
         )
         (installed / "compose.production.yaml").write_text("unsafe drift")
         with self.assertRaisesRegex(ValueError, "Successful release checkout is modified"):
-            with source.fetch(self.root, self.state, installed=installed):
+            with self.source.fetch(self.root, self.state, installed=installed):
                 pass
         self.commit(installed)
         with self.assertRaisesRegex(ValueError, "Successful release checkout is modified"):
-            with source.fetch(self.root, self.state, installed=installed):
+            with self.source.fetch(self.root, self.state, installed=installed):
                 pass
 
-    def test_staging_uses_customer_source_and_retains_original_acquisition_identity(self):
-        with source.fetch(self.root, self.state) as (download, sha):
+    def test_staging_uses_customer_source_and_retains_original_acquisition_identity(self) -> None:
+        with self.source.fetch(self.root, self.state) as (download, sha):
             service = DeploymentService.for_workspace(self.root)
             release = service.source.checkout(sha, download)
             self.assertEqual(
@@ -164,7 +164,7 @@ class CustomerDeployment(unittest.TestCase):
         self.assertTrue(release.exists())
         self.assertFalse(download.exists())
 
-    def test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged(self):
+    def test_missing_ambiguous_and_invalid_refs_leave_running_checkout_unchanged(self) -> None:
         self.git(self.remote, "tag", "main")
         for target in (
             "main",
@@ -178,9 +178,9 @@ class CustomerDeployment(unittest.TestCase):
             "feature//bad",
         ):
             with self.subTest(target=target), self.assertRaises(ValueError):
-                with source.fetch(self.root, self.state, target):
+                with self.source.fetch(self.root, self.state, target):
                     self.fail("invalid target accepted")
-        with source.fetch(self.root, self.state, "refs/heads/main") as (_, sha):
+        with self.source.fetch(self.root, self.state, "refs/heads/main") as (_, sha):
             self.assertEqual(sha, self.target)
         self.assertEqual(list(self.state.iterdir()), [])
 
@@ -199,7 +199,10 @@ class CustomerDeployment(unittest.TestCase):
             else:
                 path.chmod(0o755)
             target = self.commit(self.remote)
-            with self.subTest(mutation=mutation), source.fetch(self.root, self.state) as (_, sha):
+            with (
+                self.subTest(mutation=mutation),
+                self.source.fetch(self.root, self.state) as (_, sha),
+            ):
                 self.assertEqual(sha, target)
         self.assertEqual(list(self.state.iterdir()), [])
 
@@ -209,19 +212,19 @@ class CustomerDeployment(unittest.TestCase):
         (self.remote / "src/app/escape").symlink_to("/etc/passwd")
         self.commit(self.remote)
         with self.assertRaisesRegex(ValueError, "symlinks"):
-            with source.fetch(self.root, self.state):
+            with self.source.fetch(self.root, self.state):
                 pass
         self.git(self.remote, "reset", "--hard", self.target)
         (self.root / "VERSION").write_text("dirty")
-        with source.fetch(self.root, self.state) as (_, sha):
+        with self.source.fetch(self.root, self.state) as (_, sha):
             self.assertEqual(sha, self.target)
         self.git(self.root, "remote", "set-url", "customer", str(self.remote / "missing"))
         with self.assertRaisesRegex(ValueError, "Git operation failed"):
-            with source.fetch(self.root, self.state):
+            with self.source.fetch(self.root, self.state):
                 pass
         self.assertEqual(list(self.state.iterdir()), [])
 
-    def test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied(self):
+    def test_owner_remote_credentials_helpers_and_ambiguous_remote_config_are_denied(self) -> None:
         for url in (
             "https://github.com/fixture/runa.git",
             "git@github.com:fixture/runa.git",

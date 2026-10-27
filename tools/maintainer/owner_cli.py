@@ -73,9 +73,10 @@ def main():
                 if area == "frontend"
                 else [
                     "python3",
-                    "tools/maintainer/test-python",
-                    "--scope=contracts",
-                    "--path=contracts/test_database_guards.py",
+                    "tools/maintainer/test-backend",
+                    "--parallel",
+                    "--processes=1",
+                    "--filter=DatabaseTest",
                 ],
                 cwd=ROOT,
                 check=True,

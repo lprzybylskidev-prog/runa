@@ -1306,6 +1306,66 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   it is retained for current tooling, not disposable acceptance. Development/test
   data, knowledge/model caches, backups and reports are preserved.
 
+#### Point 9 continuation — typed boundaries and remaining callers (2026-10-27)
+
+- Added the overloaded `WorkspaceProcess` contract for workspace-bound source
+  policies, preserving text/bytes results and explicit environment/stdio options.
+  Annotated the configuration reader, source policy and customer Git service;
+  decoded configuration/receipts now return validated recursive JSON mappings
+  with fixed diagnostics for invalid/non-finite payloads. Typed host-plan payloads
+  preserve omitted versus empty arguments and the existing independent validation.
+- Source inspection found remaining nested bare imports in native installation,
+  updater contracts and management contracts, plus the removed customer-source
+  facade imported by the deployment contracts. Replaced them with qualified
+  imports, explicit service composition and injected process outcomes. Preserved
+  cleanup/failure assertions instead of retaining globals from retired runners.
+  Added a nested-import package contract for final verification; it has not been
+  executed as an early repository-wide analysis gate.
+- Corrected `check-database-migrations`: it previously selected a nonexistent
+  `test_database_guards.py`; it now uses the existing native backend runner with
+  `--parallel --processes=1 --filter=DatabaseTest`, consistent with the current
+  worker/quality documentation. Its focused regression records the command without
+  starting PHP, Docker or a database suite. No quality prerequisite/severity changed.
+- Removed unused private knowledge/database filename adapters, the one-off Docker
+  inventory and obsolete PHP-only simulation shell helper. Removed the shell
+  resource from owner package data and recorded retirement in the ledger. Original
+  inventory/command fixtures remain baseline records; historical evidence is unchanged.
+  Development setup now selects `tools.application.scanner_installation`; its
+  import-safe implementation receives workspace/process dependencies and retains
+  the same reviewed scanner version/checksum and download policy.
+- Reconciled all 37 baseline aliases against their actual symlink targets: no
+  differences or missing resolved files. Source searches across current callers
+  found and corrected obsolete command/documentation paths; the old host-executor
+  identity remains deliberately supported only for owned-daemon recovery. Complete
+  ledger/resource metadata reconciliation and final semantic review remain open.
+- Fixed the generated application-module test command and public module example to
+  select `runa:test --scope=backend` before native path arguments. Updated owner
+  and customer Laravel references together. The generator is platform framework
+  tooling outside independently versioned modules; no module manifest/changelog
+  bump is required. No business module contract changed.
+- Updated public Python/module guides and current owner architecture, bootstrap,
+  installation/update, production, test, maintenance and release command guidance.
+  Root owner/customer AGENTS already specify qualified imports, aggregate defaults
+  and explicit focused ownership; no authority change is needed. Backend/security
+  skills retain their existing injection and boundary rules; the implementation
+  adds no new customer extension API or security-policy exception.
+- Twelve necessary focused cases passed through `tools/maintainer/test-python`:
+  five decoder/receipt/frontmatter cases; native database routing; duplicate/literal
+  host-plan handling; real Git branch/tag/SHA acquisition; interleaved scanner reuse;
+  two native-runner cleanup/failure cases; and read-only module-plan mounts. The
+  first Git case exposed the stale facade import, which was corrected before its
+  successful rerun. No full suite, Pyright, wheel/build, scanner or live production
+  acceptance was run. Changed-file pinned Ruff preparation passed after correcting
+  the owner config's cache path from `../../../.runtime` (which resolved outside the
+  workspace) to `.runtime/python/cache/ruff`.
+- Point 9 stays open. Next work is full-scope typed JSON/protocol/service and private
+  fixture/test completion across quality/host transport, deployment/installation,
+  knowledge and external tooling, followed by the remaining ledger/resource audit.
+  Strict scope/exclusions and frozen dependency pins are unchanged. Point 10 has
+  not started; VERSION remains 0.5.0 and the agreed feature projection remains 0.6.0.
+  No disposable Docker resource was created or removed by this continuation;
+  active development/test data, knowledge/model caches, backups and reports remain.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

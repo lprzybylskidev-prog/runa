@@ -149,9 +149,9 @@ without touching application source, configuration, images, services or data.
 For normal later source changes use the application lifecycle or platform
 deployment/update procedure, rather than another first installation.
 
-Offline contracts: `python3 tools/maintainer/testing/installation.py`; PHP acceptance:
+Offline contracts: `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_installation.py`; PHP acceptance:
 `runa:test --filter=InstallationTest`. Native disposable acceptance:
-`python3 tools/maintainer/testing/installation-host.py` (requires the active development image
+`python3 -m tools.maintainer.testing.installation_host` (requires the active development image
 and YAML reader). It uses isolated projects/ports/fresh volumes and synthetic
 TLS/SMTP, preserves active development and model caches, prints exact cleanup
 scope, and keeps verification reports. Simulation acceptance is not a real

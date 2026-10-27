@@ -5,11 +5,13 @@ import posixpath
 import re
 import subprocess
 import tempfile
-from collections.abc import Callable, Mapping
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from tools.application.processes import WorkspaceProcess
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.delivery import OWNER_PATHS
 
 COMPOSED = {"src/composer.json", "src/composer.lock", "src/package.json", "src/pnpm-lock.yaml"}
@@ -17,7 +19,7 @@ COMPOSED = {"src/composer.json", "src/composer.lock", "src/package.json", "src/p
 
 @dataclass(frozen=True)
 class CustomerSource:
-    run: Callable
+    run: WorkspaceProcess
     environment: Mapping[str, str] = field(repr=False)
 
     @classmethod
@@ -32,20 +34,18 @@ class CustomerSource:
         return cls(partial(processes.run, cwd=root), environment)
 
     @property
-    def policy(self):
-        from tools.application.repository_boundary_service import RepositoryPolicy
-
+    def policy(self) -> RepositoryPolicy:
         return RepositoryPolicy(self.run, self.environment)
 
     @staticmethod
-    def application_path(path):
+    def application_path(path: str) -> bool:
         return path.startswith(("src/app/", "docs/app/")) or path in COMPOSED
 
     @staticmethod
-    def excluded(path):
+    def excluded(path: str) -> bool:
         return any(path == item or path.startswith(item + "/") for item in OWNER_PATHS)
 
-    def git(self, root, *arguments):
+    def git(self, root: Path, *arguments: str) -> bytes:
         environment = {
             key: value for key, value in self.environment.items() if not key.startswith("GIT_")
         }
@@ -75,7 +75,7 @@ class CustomerSource:
             ) from None
 
     @staticmethod
-    def validate_target(target):
+    def validate_target(target: object) -> str:
         if (
             not isinstance(target, str)
             or len(target) > 255
@@ -90,8 +90,8 @@ class CustomerSource:
             raise ValueError("Only branch/tag refs are supported.")
         return target
 
-    def tree(self, root, ref):
-        entries = {}
+    def tree(self, root: Path, ref: str) -> dict[str, tuple[str, str]]:
+        entries: dict[str, tuple[str, str]] = {}
         for row in self.git(root, "ls-tree", "-rz", ref).split(b"\0"):
             if row:
                 metadata, name = row.split(b"\t", 1)
@@ -120,7 +120,7 @@ class CustomerSource:
         for name, (mode, _) in entries.items():
             if mode != "120000":
                 continue
-            visited = set()
+            visited: set[str] = set()
             current = name
             while entries[current][0] == "120000":
                 if current in visited or len(visited) >= 32:
@@ -140,7 +140,7 @@ class CustomerSource:
                     )
         return entries
 
-    def validate_release(self, installed):
+    def validate_release(self, installed: Path) -> None:
         """A recorded immutable deployment must remain its own exact commit."""
 
         recorded = self.policy.receipt(installed)
@@ -153,7 +153,9 @@ class CustomerSource:
             )
 
     @contextmanager
-    def fetch(self, root, state, target="main", installed=None):
+    def fetch(
+        self, root: Path, state: Path, target: str = "main", installed: Path | None = None
+    ) -> Iterator[tuple[Path, str]]:
         target = self.validate_target(target)
         _, url = self.policy.application_remote(root)
         with tempfile.TemporaryDirectory(prefix="customer-source-", dir=state) as directory:

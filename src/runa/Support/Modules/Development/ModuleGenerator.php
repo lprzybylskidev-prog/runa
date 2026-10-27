@@ -26,7 +26,7 @@ final readonly class ModuleGenerator
         $namespace = ($module->owner === 'app' ? 'App' : 'Runa').'\\Modules\\'.Str::studly($module->code);
         $directory = 'src/'.$module->owner.'/modules/'.$module->code;
         $docs = ($module->owner === 'app' ? 'docs/app/modules/' : 'docs/runa/handbook/modules/').$module->code;
-        $tokens = ['id' => $id, 'owner' => $module->owner, 'code' => $module->code, 'namespace' => $namespace, 'schema' => $module->schema(), 'testcase' => $module->owner === 'app' ? 'Tests\\TestCase' : 'Tests\\PlatformTestCase', 'test_command' => $module->owner === 'app' ? './bin/artisan runa:test app/modules/'.$module->code.'/tests' : 'python3 tools/maintainer/test-backend runa/modules/'.$module->code.'/tests'];
+        $tokens = ['id' => $id, 'owner' => $module->owner, 'code' => $module->code, 'namespace' => $namespace, 'schema' => $module->schema(), 'testcase' => $module->owner === 'app' ? 'Tests\\TestCase' : 'Tests\\PlatformTestCase', 'test_command' => $module->owner === 'app' ? './bin/artisan runa:test --scope=backend app/modules/'.$module->code.'/tests' : 'python3 tools/maintainer/test-backend runa/modules/'.$module->code.'/tests'];
         $files = [];
         if ($type === 'module') {
             if ($name !== null || file_exists($this->root.'/'.$directory) || is_link($this->root.'/'.$directory)

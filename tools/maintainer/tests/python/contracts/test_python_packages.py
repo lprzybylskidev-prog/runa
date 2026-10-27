@@ -64,6 +64,33 @@ def test_core_depends_only_on_stdlib_and_core() -> None:
                 ), (path, name)
 
 
+def test_project_imports_use_qualified_packages_including_nested_imports() -> None:
+    for directory in ("tools", "distribution", "bin"):
+        for path in (ROOT / directory).rglob("*"):
+            if path.is_symlink() or not path.is_file():
+                continue
+            if path.suffix != ".py" and not path.read_bytes().startswith(
+                b"#!/usr/bin/env python3\n"
+            ):
+                continue
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node, ast.Import):
+                    names = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom):
+                    assert node.level == 0, path
+                    names = [node.module or ""]
+                else:
+                    continue
+                for name in names:
+                    top = name.split(".")[0]
+                    assert (
+                        top in sys.stdlib_module_names
+                        or top in ("tools", "distribution")
+                        or top == "pytest"
+                        and path.is_relative_to(ROOT / "tools/maintainer/tests")
+                    ), (path, name)
+
+
 @pytest.mark.packaging
 def test_wheels_layer_without_file_collisions_and_import_outside_checkout(tmp_path: Path) -> None:
     outputs = {

@@ -18,4 +18,4 @@ version = {file = "VERSION"}
 
 [tool.setuptools.package-data]
 "tools.maintainer" = ["hook", "knowledge.json", "knowledge-golden.json", "python/ruff.toml", "python/pyrightconfig.json"]
-"tools.maintainer.testing" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php", "php-alpine-host.sh"]
+"tools.maintainer.testing" = ["fixtures/python-command-contracts.json", "fixtures/installation-smtp.py", "localization.php", "runtime.php"]

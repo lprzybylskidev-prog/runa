@@ -24,7 +24,7 @@ def output(command, **kwargs):
 def main():
     if len(sys.argv) != 1 or Path("/.dockerenv").exists():
         raise SystemExit(
-            "Run python3 tools/maintainer/testing/management-host.py on the native Docker host."
+            "Run python3 -m tools.maintainer.testing.management_host on the native Docker host."
         )
     report_path = ROOT / ".runtime/ownership/RM-2026-005-management-host-latest.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)

@@ -115,7 +115,7 @@ class DevelopmentSetup:
         self.configuration.environment_files()
         self.register_hooks()
         self.processes.run(
-            ["python3", "tools/application/install-scanners.py"],
+            ["python3", "-m", "tools.application.scanner_installation"],
             cwd=self.workspace.root,
             check=True,
         )

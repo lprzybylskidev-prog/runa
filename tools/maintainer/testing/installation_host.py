@@ -716,7 +716,7 @@ def main():
                 ]
             )
             sha = commit(prod)
-        import initialize
+        from distribution import initialize
 
         customer_repository = fixture_directory / "customer-repository"
         prod.rename(customer_repository)
@@ -920,11 +920,12 @@ def main():
             "public production validation, health and AI isolation gates run only against the dedicated customer production fixture",
         )
         if "--security-scan" in sys.argv[1:]:
-            import security
-
+            from tools.application.security_service import SecurityService
             from tools.maintainer.service_fixtures import redis_image
 
-            security.trivy(production_root=prod, additional_images=[redis_image()])
+            SecurityService.for_workspace(ROOT).trivy(
+                production_root=prod, additional_images=[redis_image()]
+            )
             check(
                 True,
                 "owner repository and exact customer images satisfy security policy and dependency audits; unfiltered raw scans are retained",

@@ -137,7 +137,7 @@ do not reacquire into that directory. Ordinary lifecycle/recovery uses
 `php artisan` and the restricted host executor. External development updater preflight/plan, apply and journaled resume are separate from acquisition. See [owner updates](updates.md).
 See [installation](installation.md) for settings, preservation and recovery.
 
-Offline acceptance: `python3 tools/maintainer/testing/bootstrap.py`. The local quality graph
+Offline acceptance: `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py`. The local quality graph
 includes `bootstrap-source-contracts`; tests use synthetic credentials and real
 temporary Git repositories/atomic filesystem operations. Live public acquisition
 checks the real API/ref/file identities without provisioning services. See

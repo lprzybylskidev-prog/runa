@@ -6,13 +6,19 @@ import json
 import subprocess
 import tempfile
 import unittest
+from collections import deque
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 from tools.application import test_resources
 from tools.application.host_plan import OPERATIONS
 from tools.application.management_service import ManagementService
+from tools.application.testing.runner import Selection
+from tools.application.testing.runner import TestService as SuiteService
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import WorkspaceContext
+from tools.core.process import ProcessResult
+from tools.maintainer.test_cli import OWNER
 
 ROOT = Path(__file__).resolve().parents[5]
 
@@ -278,29 +284,31 @@ class TestResourceContracts(unittest.TestCase):
                 cleanup.assert_not_called()
                 read.assert_not_called()
 
-    def test_owner_runner_preserves_test_failure_and_reports_cleanup_failure(self):
-        import owner_tests
-
+    def test_owner_runner_preserves_test_failure_and_reports_cleanup_failure(self) -> None:
+        fixture = self.root / "src/runa/tests/Feature/ExampleTest.php"
+        fixture.parent.mkdir(parents=True)
+        fixture.touch()
         for child_status, cleanup_status, expected in [(5, 1, 5), (0, 1, 1), (0, 0, 0)]:
-            with (
-                self.subTest(child=child_status, cleanup=cleanup_status),
-                patch.object(owner_tests, "ROOT", self.root),
-                patch.object(
-                    owner_tests, "worker_cleanup", side_effect=[0, cleanup_status]
-                ) as cleanup,
-                patch.object(owner_tests.subprocess, "Popen") as popen,
-            ):
-                popen.return_value.__enter__.return_value.wait.return_value = child_status
-                self.assertEqual(owner_tests.execute("backend", ["--filter=Example"]), expected)
-                self.assertEqual(cleanup.call_count, 2)
+            with self.subTest(child=child_status, cleanup=cleanup_status):
+                runner = RecordingRunner(
+                    deque(ProcessResult(code) for code in (0, child_status, cleanup_status))
+                )
+                service = SuiteService(
+                    WorkspaceContext(self.root), OWNER, runner, {}, lambda _: None
+                )
+                self.assertEqual(
+                    service.execute(Selection(("backend",), filter="Example")), expected
+                )
+                self.assertEqual(len(runner.calls), 3)
+                self.assertEqual(runner.calls[0].argv, runner.calls[2].argv)
+                self.assertIn("--filter=Example", runner.calls[1].argv)
 
-    def test_owner_runner_refuses_to_start_after_failed_orphan_cleanup(self):
-        import owner_tests
-
-        with (
-            patch.object(owner_tests, "ROOT", self.root),
-            patch.object(owner_tests, "worker_cleanup", return_value=1),
-            patch.object(owner_tests.subprocess, "Popen") as popen,
-        ):
-            self.assertEqual(owner_tests.execute("backend", []), 1)
-            popen.assert_not_called()
+    def test_owner_runner_refuses_to_start_after_failed_orphan_cleanup(self) -> None:
+        fixture = self.root / "src/runa/tests/Feature/ExampleTest.php"
+        fixture.parent.mkdir(parents=True)
+        fixture.touch()
+        runner = RecordingRunner(deque([ProcessResult(1)]))
+        service = SuiteService(WorkspaceContext(self.root), OWNER, runner, {}, lambda _: None)
+        self.assertEqual(service.execute(Selection(("backend",))), 1)
+        self.assertEqual(len(runner.calls), 1)
+        self.assertEqual(runner.calls[0].argv, ("php", "runa/Testing/worker-databases.php"))
