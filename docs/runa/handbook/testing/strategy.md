@@ -151,3 +151,11 @@ shared tsconfig/configuration resolves the installed container dependencies in
 `src/node_modules`. Vitest configurations use those same Vue/Vitest/test-utils
 instances for central files, without a second dependency install or import-path
 injection.
+
+Use the same shared facades for dynamic `import()` calls. Resolve relative lazy
+imports from the central test file's actual directory, including imports inside
+unselected tests: Vitest's dependency scanner visits every configured suite entry
+before applying file/name selections. An unresolved import can abort initial
+optimization and reload the browser with mismatched Vitest runtime state. A warm
+cache can hide this failure; dependency-resolution diagnostics must also cover a
+cold optimizer cache without deleting retained reports or other tooling state.

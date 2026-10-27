@@ -1233,7 +1233,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     suites, analysis, builds and live acceptance remain exclusively in point 20.
   - Commit completed implementation, documentation and checklist together.
 
-- [ ] 11. Repair central frontend test package resolution.
+- [x] 11. Repair central frontend test package resolution.
   - Prerequisites: completed point 10; observed F25 collection failure.
   - Repair Vue Test Utils/Vitest dependency resolution and shared module identity
     for suites outside src using the existing installed packages. Preserve central
@@ -2490,6 +2490,49 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   No additional tests were run for these guidance edits. VERSION stays 0.5.0;
   confirmed compatible feature projection remains 0.6.0. Breaking public/module
   changes still require a separate explicit owner/version decision.
+
+### Point 11 completion — cold frontend dependency scanning (2026-10-27)
+
+- Continued implementation under the owner's instruction to proceed. Committed
+  the existing architecture review/roadmap rename and owner/customer boundary
+  guidance separately as `5a8a68cc`; this preserves the planning boundary.
+- Knowledge status initially reported stale sources and a renamed branch; used
+  focused original sources, then staged and refreshed the corpus incrementally.
+- Reproduced F25 with a cold optimizer cache. A warm run had misleadingly passed
+  all five selected customization cases. The browser scanner visits every configured
+  suite entry, including unselected files: lazy bare Test Utils/Vitest imports in
+  account-preferences first broke pnpm resolution, and stale relative lazy imports
+  in account-preferences/http then broke source resolution. Subsequent runtime
+  optimization reloaded stateful Vitest modules and lost the current suite.
+- Migrated the remaining lazy package imports to the existing shared testing
+  facades and corrected relative source imports from the central suite directory.
+  Retained package pins, central placement, configuration, assertions and native
+  diagnostics. No alias workaround, duplicate installation or scanner suppression
+  remains. Added a private regression checking lazy imports across central frontend
+  sources, so an unselected file cannot silently reintroduce this scan failure.
+- Focused supported diagnostic, with a cold cache after the final correction:
+  `python3 tools/maintainer/test-frontend ../tests/frontend/runa/unit/auth-entry.test.ts ../tests/frontend/runa/unit/auth-account.test.ts --filter=customization:`
+  returned exit 0: two files, five cases passed, 69 intentionally skipped. No scan
+  failure, optimizer reload or missing-current-suite error remained. Evidence:
+  `.runtime/artifacts/playwright/rm012-p11-cold-fixed.log`. Earlier failed diagnostic
+  logs and optimizer caches remain preserved under `.runtime`.
+- Focused new import-regression check through the supported owner Python runner
+  returned exit 0: one passed, seven deselected. No broad suite, build, static
+  analysis, acceptance or final gate ran. Browser diagnostics still report an
+  upstream module-runner dynamic-import warning and reactive presentation-component
+  warnings; these were not suppressed. Review component identity handling in the
+  already planned presentation/orchestration points 15–16 before final verification.
+- Updated the public testing guide for lazy imports, full-entry dependency scanning
+  and cold-cache diagnostics. Owner/customer AGENTS and skills already route to
+  these public test contracts; no additional instruction-product change is needed
+  for correcting private suite imports. Public testing support APIs are unchanged.
+- No disposable containers, networks or volumes were created by these test runs.
+  The supported host knowledge transport prepared its operational management image
+  `runa-management:7b4060d299cfd85922f842e3`; retain it for ongoing development/hook
+  transport. Preserve active development services, all database/model/Qdrant data,
+  cache backups and reports. No resource deletion or data operation was performed.
+- Point 12 is next; points 12–20 remain open. VERSION remains 0.5.0 and the confirmed
+  compatible feature projection remains 0.6.0.
 
 ### Draft preparation validation (historical)
 

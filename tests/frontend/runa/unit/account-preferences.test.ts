@@ -112,12 +112,12 @@ it('fences queued writes on logout and resets from server defaults', async () =>
 });
 
 it('renders localized rejected-save feedback through the shared layout control', async () => {
-  const { mount } = await import('@vue/test-utils');
+  const { mount } = await import('@runa/testing/vue');
   const { nextTick } = await import('vue');
   const { accountPreferences } =
-    await import('../../resources/js/lib/preferenceStore');
+    await import('../../../../src/runa/resources/js/lib/preferenceStore');
   const Feedback = (
-    await import('../../resources/js/components/AppPreferenceFeedback.vue')
+    await import('../../../../src/runa/resources/js/components/AppPreferenceFeedback.vue')
   ).default;
   accountPreferences.hold('00000000-0000-7000-8000-000000000001');
   const wrapper = mount(Feedback, {
@@ -139,10 +139,10 @@ it('renders localized rejected-save feedback through the shared layout control',
 });
 
 it('mounts display consumers during delayed hydration without writes and persists explicit changes', async () => {
-  const { mount, flushPromises } = await import('@vue/test-utils');
-  const { vi } = await import('vitest');
+  const { mount, flushPromises } = await import('@runa/testing/vue');
+  const { vi } = await import('@runa/testing/vitest');
   const { accountPreferences } =
-    await import('../../resources/js/lib/preferenceStore');
+    await import('../../../../src/runa/resources/js/lib/preferenceStore');
   const Consumer = (await import('./fixtures/PreferenceDisplayConsumer.vue'))
     .default;
   const account = '00000000-0000-7000-8000-000000000001';
@@ -212,7 +212,8 @@ it('mounts display consumers during delayed hydration without writes and persist
 });
 
 it('does not turn explicit document cancellation into preference failures while retaining real load errors', async () => {
-  const { RequestCancelledError } = await import('../../resources/js/lib/http');
+  const { RequestCancelledError } =
+    await import('../../../../src/runa/resources/js/lib/http');
   let cancel = true;
   const store = createAccountPreferenceStore(guest(), async () => {
     if (cancel) throw new RequestCancelledError();
@@ -337,10 +338,11 @@ it('same-account refresh retains cached values and fences a late snapshot after 
 });
 
 it('a forbidden session refresh clears cached account preferences into a restricted hold', async () => {
-  const { vi } = await import('vitest');
+  const { vi } = await import('@runa/testing/vitest');
   const { accountPreferences } =
-    await import('../../resources/js/lib/preferenceStore');
-  const { request } = await import('../../resources/js/lib/http');
+    await import('../../../../src/runa/resources/js/lib/preferenceStore');
+  const { request } =
+    await import('../../../../src/runa/resources/js/lib/http');
   const account = '00000000-0000-7000-8000-000000000001';
   const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
     String(input).endsWith('/session')

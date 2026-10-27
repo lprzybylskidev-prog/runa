@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from functools import partial
 from pathlib import Path
@@ -107,6 +108,28 @@ if (!browser.testDir.endsWith('tests/frontend/runa/e2e')) process.exit(13);
         ["node", "--input-type=module", "-e", code], cwd=ROOT, capture_output=True, text=True
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_central_frontend_dynamic_imports_are_scannable_without_warm_cache() -> None:
+    # Vitest scans every suite entry, including files excluded by a name filter.
+    # A broken lazy import elsewhere must not abort that scan and reload the
+    # browser with a second version of the stateful Vitest runtime.
+    imports = re.compile(r"\bimport\s*\(\s*['\"]([^'\"]+)['\"]\s*\)")
+    sources = ROOT / "tests/frontend"
+    for path in sorted(sources.rglob("*")):
+        if path.suffix not in {".ts", ".vue"}:
+            continue
+        for specifier in imports.findall(path.read_text()):
+            assert specifier not in {"@vue/test-utils", "vitest"}, (
+                f"{path.relative_to(ROOT)}: use the shared @runa/testing facade "
+                f"for lazy {specifier} imports outside src/node_modules"
+            )
+            if specifier.startswith("."):
+                target = path.parent / specifier
+                candidates = (target, target.with_suffix(".ts"), target / "index.ts")
+                assert any(candidate.is_file() for candidate in candidates), (
+                    f"{path.relative_to(ROOT)}: unresolved lazy import {specifier}"
+                )
 
 
 def test_central_application_cases_are_customer_owned_and_preserved() -> None:

@@ -55,7 +55,8 @@ it('preserves API errors and rejects an invalid health payload', async () => {
 });
 
 it('cancels departing-document reads/writes without claiming success or replaying and permits later explicit requests', async () => {
-  const { RequestCancelledError } = await import('../../resources/js/lib/http');
+  const { RequestCancelledError } =
+    await import('../../../../src/runa/resources/js/lib/http');
   const fetchMock = vi.spyOn(window, 'fetch').mockImplementation(
     (_url, options) =>
       new Promise((_resolve, reject) => {
@@ -83,7 +84,8 @@ it('cancels departing-document reads/writes without claiming success or replayin
 });
 
 it('keeps prevented unload requests alive and preserves ordinary network failure', async () => {
-  const { RequestCancelledError } = await import('../../resources/js/lib/http');
+  const { RequestCancelledError } =
+    await import('../../../../src/runa/resources/js/lib/http');
   let signal: AbortSignal | null | undefined;
   const networkError = new TypeError('Synthetic network failure');
   let reject!: (reason: unknown) => void;
