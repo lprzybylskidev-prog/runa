@@ -1,12 +1,13 @@
 """Versioned internal installation process boundary, invoked only by external tools."""
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
 
 PROTOCOL = 1
 
 
-def main(arguments=None):
+def main(arguments: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", required=True, type=int, choices=(PROTOCOL,))
     parser.add_argument("--workspace", required=True)

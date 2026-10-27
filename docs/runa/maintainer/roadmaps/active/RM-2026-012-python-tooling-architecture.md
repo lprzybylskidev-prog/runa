@@ -1547,6 +1547,46 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   resource changed. Development/test data, knowledge/model caches, backups and
   verification reports are preserved; no containers/images/networks/volumes removed.
 
+#### Point 9 continuation — registry and installation boundaries (2026-10-27)
+
+- Typed registry orchestration, command/plan/process and browser lifecycle inputs
+  and results. Source catalog decoding validates consumed name/tool/prefix fields,
+  preserves metadata and leaves independent executable allowlists intact. Shared
+  Compose status decoding handles both arrays and line responses and refuses a
+  boolean/noninteger setup exit status before accepting development health.
+- Typed installer/gateway settings, paths, journals, resources and process/service
+  contracts. Private JSON reads retain the 64 KiB bound during reading and reject
+  duplicate/non-finite fields with fixed diagnostics. Consumed settings fields
+  validate before URL/TLS/SMTP use; recovery validates source/project/volume/label
+  records while retaining additional evidence and legacy optional journal fields.
+  Null/missing container labels establish no ownership. Explicit SMTP-only resume
+  correction, raw literal values and generated application/database secrets remain
+  preserved. Private service fixtures use explicit management composition rather
+  than a dynamic namespace. No installed external release is imported.
+- Eighteen distinct necessary focused cases passed through supported test-python:
+  nine decoder/health/refusal cases, three unsafe-settings variants, preservation
+  of production secrets/raw values, redirect refusal, SMTP correction, foreign
+  pending-operation refusal, literal reverse-command transport and TLS input refresh.
+  Two decoder/settings cases passed again after final field-check refinements.
+  These use temporary files or scripted processes; no live Docker operation or
+  database mutation was run. Changed-file pinned Ruff preparation passed; mandatory
+  staged hooks remain required. No full suite, strict analysis, package/image build,
+  scanner or live acceptance was run; these remain final-point work.
+- Synchronized the public Python guide and migration ledger. Root owner/customer
+  AGENTS and backend/security skill products already require typed injected
+  boundaries, guarded execution, safe recovery and public/private test separation;
+  these internal records add no customer extension API, authority or security
+  exception requiring another rule. Existing source projection includes both new
+  authored model modules without a resource exception. Frozen pins, strict scope
+  and exclusions remain unchanged; no independently versioned module changed.
+- Point 9 remains open for quality scheduling/status/evidence, external bootstrap/
+  planning/execution, knowledge and remaining private fixture/test annotations,
+  followed by complete caller/resource/inline reconciliation. Point 10 has not
+  started. VERSION stays 0.5.0 and proposed_version remains 0.6.0. No dependency,
+  migration, production setting or disposable Docker resource changed. No container,
+  network, image or volume was created or removed; active development/test data,
+  knowledge/model caches, backups and verification reports remain preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

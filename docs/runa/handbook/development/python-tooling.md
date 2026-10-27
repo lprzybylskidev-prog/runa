@@ -116,6 +116,11 @@ Host state uses the core durable private JSON writer, independently of deploymen
 Socket binding uses a directory descriptor without changing the process cwd.
 Failed registry discovery removes only its named container in the selected workspace;
 recovery and operation receipts retain additional historical evidence fields.
+Registry orchestration declares its command/plan/process contracts. Source catalog
+readers validate command names, tool identities and literal prefix lists before
+reverse lookup; the execution allowlist remains independent. Development health
+shares the consumed Compose status decoder and requires an integer setup exit
+code, accepting both array and line-oriented responses.
 
 Command adapters compose the explicit development, management, diagnostics,
 quality, security and deployment services. Internal PHP/Compose callers start fixed
@@ -226,7 +231,14 @@ The external installation adapter selects protocol 1 and starts the acquired
 application's fixed installation module as a separate process. The gateway checks
 its own source/workspace identity before importing installation services; it is
 internal tooling, excluded from runtime images. Historical first installs use their
-matching historical tool release. Upgrading an existing 0.5.0 development workspace
+matching historical tool release. Installer services declare settings, journal,
+resource and process inputs/results. Private JSON reads remain bounded at 64 KiB
+and reject duplicate/non-finite fields. Settings types are checked before semantic
+TLS/SMTP validation or raw environment use; recovery validates consumed source,
+project, volume and container-label fields while retaining additional evidence.
+Absent container labels establish no workspace ownership. Resume still permits
+only explicit SMTP corrections and preserves generated application/database secrets.
+Upgrading an existing 0.5.0 development workspace
 does not require the old installation gateway: the separately supplied updater
 never imports customer application Python. It retains explicit source identities,
 file review consent, journal phases, forward data completion and fencing/resume.

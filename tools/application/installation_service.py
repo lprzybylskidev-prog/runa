@@ -8,7 +8,6 @@ import argparse
 import base64
 import getpass
 import ipaddress
-import json
 import os
 import re
 import secrets
@@ -21,23 +20,38 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from collections.abc import Sequence
+from functools import partial
 from pathlib import Path
+from typing import NoReturn
 
 from tools.application.deployment_context import read_env, stamp
+from tools.application.deployment_models import manifest_version
 from tools.application.deployment_service import DeploymentService
 from tools.application.development_runtime import development_compose
+from tools.application.installation_models import (
+    InstallationError,
+    InstallationIdentity,
+    InstallationJournal,
+    InstallationSettings,
+    SmtpSettings,
+    TlsSettings,
+    container_labels,
+    installation_compose,
+    installation_journal,
+    installation_resources,
+    json_object,
+    settings_fields,
+)
 from tools.application.management_service import ManagementService
 from tools.application.repository_boundary_service import RepositoryBoundaryError
 from tools.core.reporting import SafeFailure
+from tools.core.state import JsonValue, json_value
 
 
-class InstallationError(ValueError):
-    """Fixed, safe installer diagnostics; external exceptions remain redacted."""
-
-
-def private_json(path):
+def private_json(path: str | Path) -> dict[str, JsonValue]:
     descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
-    with os.fdopen(descriptor) as stream:
+    with os.fdopen(descriptor, "rb") as stream:
         info = os.fstat(stream.fileno())
         if (
             not stat.S_ISREG(info.st_mode)
@@ -48,13 +62,13 @@ def private_json(path):
             raise InstallationError(
                 "Settings must be an owned private regular JSON file, at most 64 KiB."
             )
-        value = json.load(stream)
-    if not isinstance(value, dict):
-        raise InstallationError("Installer settings must be a JSON object.")
-    return value
+        payload = stream.read(65537)
+        if len(payload) > 65536:
+            raise InstallationError("Installer settings exceed 64 KiB.")
+        return json_object(payload)
 
 
-def regular_file(value, private=False):
+def regular_file(value: str | Path, private: bool = False) -> Path:
     path = Path(value)
     if (
         "," in str(path)
@@ -76,12 +90,13 @@ def regular_file(value, private=False):
     return path
 
 
-def validate_settings(value, simulation):
+def validate_settings(value: object, simulation: bool) -> InstallationSettings:
+    value = settings_fields(value)
     if set(value) - {"app_url", "http_port", "tls", "smtp", "simulation_project", "administrator"}:
         raise InstallationError("Unknown installer settings field.")
 
     # Reject newlines/NUL recursively before serializing any raw environment value.
-    def strings(item):
+    def strings(item: JsonValue) -> None:
         if isinstance(item, dict):
             for key, child in item.items():
                 strings(key)
@@ -91,8 +106,8 @@ def validate_settings(value, simulation):
         elif isinstance(item, str) and any(char in item for char in "\r\n\0"):
             raise InstallationError("Installer strings must be single-line values.")
 
-    strings(value)
-    url = urllib.parse.urlsplit(value.get("app_url", ""))
+    strings(json_value(value))
+    url = urllib.parse.urlsplit(value["app_url"])
     if (
         url.scheme != "https"
         or not url.hostname
@@ -108,7 +123,7 @@ def validate_settings(value, simulation):
     if not simulation and url.hostname in ("localhost", "127.0.0.1", "0.0.0.0"):
         raise InstallationError("Real production requires a publicly configured HTTPS hostname.")
 
-    def port(item):
+    def port(item: object) -> int:
         if type(item) is not int or not 1 <= item <= 65535:
             raise InstallationError("Ports must be integers from 1 to 65535.")
         return item
@@ -116,9 +131,7 @@ def validate_settings(value, simulation):
     http = port(value.get("http_port", 8081))
     if http < 1024:
         raise InstallationError("Loopback HTTP port must be unprivileged.")
-    tls, smtp = (value.get(key) for key in ("tls", "smtp"))
-    if not all(isinstance(item, dict) for item in (tls, smtp)):
-        raise InstallationError("TLS and SMTP settings objects are required.")
+    tls, smtp = value["tls"], value["smtp"]
     if set(tls) - {
         "mode",
         "certificate",
@@ -143,51 +156,42 @@ def validate_settings(value, simulation):
         raise InstallationError(
             "External termination does not accept built-in listener/certificate settings."
         )
-    if tls.get("ca_file"):
-        regular_file(tls["ca_file"])
+    ca_file = tls.get("ca_file")
+    if ca_file:
+        regular_file(ca_file)
     if set(smtp) - {"host", "port", "scheme", "username", "password", "from", "recipient"}:
         raise InstallationError("Unknown SMTP setting.")
-    if (
-        not isinstance(smtp.get("host"), str)
-        or not re.fullmatch(r"[a-zA-Z0-9.-]+", smtp["host"])
-        or smtp["host"] in ("localhost", "127.0.0.1", "mailpit", "smtp.example.com")
+    if not re.fullmatch(r"[a-zA-Z0-9.-]+", smtp["host"]) or smtp["host"] in (
+        "localhost",
+        "127.0.0.1",
+        "mailpit",
+        "smtp.example.com",
     ):
         raise InstallationError("A configured outbound SMTP hostname is required.")
     port(smtp.get("port"))
     if smtp.get("scheme") not in ("smtp", "smtps"):
         raise InstallationError("SMTP scheme must be smtp or smtps; TLS is always required.")
-    if not all(isinstance(smtp.get(key, ""), str) for key in ("username", "password")) or bool(
-        smtp.get("username")
-    ) != bool(smtp.get("password")):
+    if bool(smtp.get("username")) != bool(smtp.get("password")):
         raise InstallationError("SMTP username/password must be supplied together.")
-    for key in ("from", "recipient"):
-        if not isinstance(smtp.get(key), str) or not re.fullmatch(
-            r"[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+", smtp[key]
-        ):
+    for address in (smtp["from"], smtp["recipient"]):
+        if not re.fullmatch(r"[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+", address):
             raise InstallationError(
                 "Explicit sender and verification recipient email addresses are required."
             )
     administrator = value.get("administrator")
     if administrator is not None:
-        if not isinstance(administrator, dict) or set(administrator) - {"email", "name", "login"}:
+        if set(administrator) - {"email", "name", "login"}:
             raise InstallationError(
                 "Administrator settings accept email, name and optional login only."
             )
-        if not isinstance(administrator.get("email"), str) or not re.fullmatch(
-            r"[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+", administrator["email"]
-        ):
+        if not re.fullmatch(r"[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+", administrator["email"]):
             raise InstallationError("Administrator email is required.")
-        if (
-            not isinstance(administrator.get("name"), str)
-            or not administrator["name"].strip()
-            or len(administrator["name"]) > 160
-        ):
+        if not administrator["name"].strip() or len(administrator["name"]) > 160:
             raise InstallationError(
                 "Administrator display name is required, at most 160 characters."
             )
-        if "login" in administrator and (
-            not isinstance(administrator["login"], str)
-            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", administrator["login"])
+        if "login" in administrator and not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", administrator["login"]
         ):
             raise InstallationError("Administrator login must match the Auth identifier contract.")
     project = value.get("simulation_project")
@@ -200,13 +204,13 @@ def validate_settings(value, simulation):
     return value
 
 
-def collect_settings():
+def collect_settings() -> InstallationSettings:
     print(
         "Production setup requires supplied certificates or an explicitly configured TLS terminator, SMTP settings."
     )
     url = input("HTTPS application origin: ").strip()
     mode = input("TLS mode [builtin/external; default builtin]: ").strip() or "builtin"
-    tls = {"mode": mode}
+    tls: TlsSettings = {"mode": mode}
     if mode == "builtin":
         tls.update(
             certificate=input("Absolute certificate/full-chain path: ").strip(),
@@ -217,7 +221,7 @@ def collect_settings():
     ca = input("Custom trusted HTTPS CA file (empty for system trust): ").strip()
     if ca:
         tls["ca_file"] = ca
-    smtp = {
+    smtp: SmtpSettings = {
         "host": input("SMTP host: ").strip(),
         "port": int(input("SMTP port [587]: ").strip() or "587"),
         "scheme": input("SMTP scheme [smtp/smtps]: ").strip() or "smtp",
@@ -226,7 +230,7 @@ def collect_settings():
         "from": input("Sender email: ").strip(),
         "recipient": input("Installation verification recipient email: ").strip(),
     }
-    settings = {
+    settings: InstallationSettings = {
         "app_url": url,
         "tls": tls,
         "smtp": smtp,
@@ -244,17 +248,17 @@ def collect_settings():
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args):
+    def redirect_request(self, *args: object, **kwargs: object) -> NoReturn:
         raise InstallationError("HTTPS verification must not redirect to a different origin/path.")
 
 
 class InstallationService:
-    def __init__(self, deployment, management):
+    def __init__(self, deployment: DeploymentService, management: ManagementService) -> None:
         self.deployment = deployment
         self.context = deployment.context
         self.management = management
 
-    def host_checks(self):
+    def host_checks(self) -> None:
         if sys.platform != "linux" or sys.version_info < (3, 11):
             raise InstallationError("Installation requires native Linux and Python >=3.11.")
         for command, minimum in (
@@ -269,7 +273,7 @@ class InstallationService:
                     "Require Git >=2.39, Docker Engine >=26 and Compose >=2.35 with daemon access."
                 )
 
-    def scaffold(self, sha, mode):
+    def scaffold(self, sha: str, mode: str) -> None:
         marker = self.context.state / ("scaffold-" + mode + ".json")
         if marker.is_symlink():
             raise InstallationError("Scaffold state must not be a symlink.")
@@ -307,11 +311,11 @@ class InstallationService:
                 "schema_version": 1,
                 "source": sha,
                 "created_at": stamp(),
-                "application_version": json.loads(manifest.read_text())["version"],
+                "application_version": manifest_version(manifest),
             },
         )
 
-    def provision_tls(self, settings):
+    def provision_tls(self, settings: InstallationSettings) -> None:
         if settings["tls"]["mode"] != "builtin":
             return
         tls = settings["tls"]
@@ -332,10 +336,12 @@ class InstallationService:
             "--user",
             str(os.getuid()) + ":" + str(os.getgid()),
             "--mount",
-            "type=bind,src=" + str(regular_file(tls["certificate"])) + ",dst=/inputs/cert,readonly",
+            "type=bind,src="
+            + str(regular_file(tls.get("certificate", "")))
+            + ",dst=/inputs/cert,readonly",
             "--mount",
             "type=bind,src="
-            + str(regular_file(tls["private_key"], True))
+            + str(regular_file(tls.get("private_key", ""), True))
             + ",dst=/inputs/key,readonly",
             "--entrypoint",
             "php",
@@ -359,7 +365,10 @@ class InstallationService:
             raise InstallationError(
                 "TLS runtime directory must be private and owned by the operator."
             )
-        for key, name in (("certificate", "certificate.pem"), ("private_key", "private-key.pem")):
+        for source, name in (
+            (tls.get("certificate", ""), "certificate.pem"),
+            (tls.get("private_key", ""), "private-key.pem"),
+        ):
             # Parent remains 700; individual read-only mounts let nonroot Nginx read
             # files independent of host UID without exposing the private host directory.
             destination = directory / name
@@ -368,7 +377,7 @@ class InstallationService:
             descriptor, temporary = tempfile.mkstemp(dir=directory)
             try:
                 with os.fdopen(descriptor, "wb") as stream:
-                    stream.write(Path(tls[key]).read_bytes())
+                    stream.write(Path(source).read_bytes())
                     os.fchmod(stream.fileno(), 0o444)
                 os.replace(temporary, destination)
             finally:
@@ -423,7 +432,7 @@ class InstallationService:
         # JSON is valid Compose YAML; use the standard library, no host YAML dependency.
         self.context.atomic(directory / "compose.json", overlay)
 
-    def provision(self, settings, sha, simulation):
+    def provision(self, settings: InstallationSettings, sha: str, simulation: bool) -> None:
         smtp = settings["smtp"]
         values = read_env(self.context.workspace.root / ".env.prod.example")
         values.update(
@@ -458,10 +467,9 @@ class InstallationService:
                 "RUNA_TLS_MODE": settings["tls"]["mode"],
             },
         }
-        if settings.get("simulation_project"):
-            mappings[".env.prod.compose"]["RUNA_SIMULATION_PROJECT"] = settings[
-                "simulation_project"
-            ]
+        project = settings.get("simulation_project")
+        if project:
+            mappings[".env.prod.compose"]["RUNA_SIMULATION_PROJECT"] = project
         for name, mapping in mappings.items():
             path = self.context.workspace.root / name
             # Resume writes only missing files; keep every previously generated secret.
@@ -493,7 +501,9 @@ class InstallationService:
                 "Partial configuration credentials differ; preserve files and reconcile before resuming."
             )
 
-    def resume_settings(self, settings_file, simulation):
+    def resume_settings(
+        self, settings_file: str | Path | None, simulation: bool
+    ) -> InstallationSettings:
         path = self.context.state / "install-settings.json"
         settings = validate_settings(private_json(path), simulation)
         if not settings_file:
@@ -543,7 +553,7 @@ class InstallationService:
             self.context.atomic(path, candidate)
         return candidate
 
-    def verify_endpoints(self, settings, release):
+    def verify_endpoints(self, settings: InstallationSettings, release: Path) -> None:
         context = ssl.create_default_context(cafile=settings["tls"].get("ca_file"))
         opener = urllib.request.build_opener(
             urllib.request.ProxyHandler({}),
@@ -557,7 +567,7 @@ class InstallationService:
                     if (
                         response.status != 200
                         or len(body) > 65536
-                        or (path == "/api/ready" and json.loads(body).get("status") != "ok")
+                        or (path == "/api/ready" and json_object(body).get("status") != "ok")
                     ):
                         raise InstallationError("HTTPS application/readiness verification failed.")
         except (OSError, urllib.error.URLError, ValueError):
@@ -566,10 +576,10 @@ class InstallationService:
             ) from None
         self.deployment.runtime.artisan(["runa:mail:test", settings["smtp"]["recipient"]], release)
 
-    def resume_is_owned(self, journal):
+    def resume_is_owned(self, journal: InstallationIdentity) -> bool:
         pending_path = self.context.state / "in-progress.json"
         if pending_path.exists():
-            pending = json.loads(pending_path.read_text())
+            pending = json_object(pending_path.read_text())
             if pending.get("target") != journal["sha"] or pending.get("previous") is not None:
                 raise InstallationError(
                     "Pending operation is not this initial installation; use deployment recovery."
@@ -577,12 +587,12 @@ class InstallationService:
         ledger = self.context.state / "install-resources.json"
         if not ledger.exists():
             return False
-        recorded = json.loads(ledger.read_text())
+        recorded = installation_resources(ledger.read_text())
         if recorded.get("sha") != journal["sha"]:
             raise InstallationError(
                 "Initial installation resource record differs from this target."
             )
-        config = json.loads(
+        config = installation_compose(
             self.deployment.runtime.dc(
                 ["config", "--format", "json"], capture_output=True, text=True
             ).stdout
@@ -616,18 +626,18 @@ class InstallationService:
             ["ps", "--all", "--quiet"], capture_output=True, text=True
         ).stdout.splitlines()
         for container in containers:
-            data = json.loads(
+            labels = container_labels(
                 self.context.run(
                     ["docker", "inspect", container], capture_output=True, text=True
                 ).stdout
-            )[0]
-            if data["Config"]["Labels"].get("com.docker.compose.project.working_dir") != release:
+            )
+            if labels.get("com.docker.compose.project.working_dir") != release:
                 raise InstallationError(
                     "Installation resources do not match the recorded source; inspect before recovery."
                 )
         return True
 
-    def development_context(self):
+    def development_context(self) -> None:
         project = self.context.processes.environment.get("COMPOSE_PROJECT_NAME", "runa-dev")
         if not re.fullmatch(r"runa-dev(?:-[a-z0-9-]+)?", project):
             raise InstallationError(
@@ -647,19 +657,19 @@ class InstallationService:
             text=True,
         ).stdout.splitlines()
         for container in containers:
-            info = json.loads(
+            labels = container_labels(
                 self.context.run(
                     ["docker", "inspect", container], capture_output=True, text=True
                 ).stdout
-            )[0]
-            if info["Config"]["Labels"].get("com.docker.compose.project.working_dir") != str(
+            )
+            if labels.get("com.docker.compose.project.working_dir") != str(
                 self.context.workspace.root
             ):
                 raise InstallationError(
                     "Development project belongs to another checkout. Preserve it; use the owning workspace or a separate project."
                 )
 
-    def platform_database(self, release_sha, mode, release=None):
+    def platform_database(self, release_sha: str, mode: str, release: Path | None = None) -> None:
         arguments = ["php", "src/runa/database/prepare.php", release_sha]
         if mode == "dev":
             self.context.run(self.dev_compose() + ["exec", "-T", "app", *arguments])
@@ -671,24 +681,24 @@ class InstallationService:
                 ["run", "--rm", "--no-deps", "-T", "app", *arguments], release
             )
 
-    def initialize_database(self, sha, release):
+    def initialize_database(self, sha: str, release: Path) -> None:
         self.platform_database(sha, "prod", release)
         self.deployment.runtime.artisan(["migrate", "--force"], release)
         self.deployment.runtime.artisan(["db:seed", "--force"], release)
 
-    def dev_compose(self):
+    def dev_compose(self) -> list[str]:
         return list(development_compose(self.context.workspace).command())
 
     def install(
         self,
-        mode,
-        target,
-        simulation=False,
-        settings_file=None,
-        profile=None,
-        resume=False,
-        non_interactive=False,
-    ):
+        mode: str,
+        target: str,
+        simulation: bool = False,
+        settings_file: str | Path | None = None,
+        profile: str | None = None,
+        resume: bool = False,
+        non_interactive: bool = False,
+    ) -> None:
         self.context.policy.assert_installation(self.context.workspace.root)
         sha = self.deployment.source.resolve(target)
         head = self.context.run(
@@ -699,7 +709,9 @@ class InstallationService:
                 "First installation must target the exact checked-out commit; acquire the selected release first."
             )
         journal_path = self.context.state / ("install-" + mode + ".json")
-        journal = private_json(journal_path) if journal_path.exists() else None
+        journal = (
+            installation_journal(private_json(journal_path)) if journal_path.exists() else None
+        )
         if journal and (journal.get("sha") != sha or journal.get("simulation") != simulation):
             raise InstallationError(
                 "Existing installer context differs. Use platform deployment/update for version changes."
@@ -770,15 +782,15 @@ class InstallationService:
                     )
             else:
                 settings = None
-            journal = {
-                "schema_version": 1,
-                "mode": mode,
-                "sha": sha,
-                "simulation": simulation,
-                "state": "started",
-                "started_at": stamp(),
-                "profile": profile,
-            }
+            journal = InstallationJournal(
+                schema_version=1,
+                mode=mode,
+                sha=sha,
+                simulation=simulation,
+                state="started",
+                started_at=stamp(),
+                profile=profile,
+            )
             self.context.atomic(journal_path, journal)
             if settings:
                 self.context.atomic(self.context.state / "install-settings.json", settings)
@@ -821,8 +833,8 @@ class InstallationService:
                         sha,
                         simulation,
                         initial_resume=owned_resume,
-                        verification=lambda release: self.verify_endpoints(settings, release),
-                        database_setup=lambda release: self.initialize_database(sha, release),
+                        verification=partial(self.verify_endpoints, settings),
+                        database_setup=partial(self.initialize_database, sha),
                     )
                 administrator = settings.get("administrator")
                 if administrator and not journal.get("administrator_invited", False):
@@ -838,8 +850,9 @@ class InstallationService:
                         "--invite",
                         "--confirm",
                     ]
-                    if administrator.get("login"):
-                        arguments.append("--login=" + administrator["login"])
+                    login = administrator.get("login")
+                    if login:
+                        arguments.append("--login=" + login)
                     self.deployment.runtime.artisan(arguments, Path(current["path"]))
                     journal["administrator_invited"] = True
                     self.context.atomic(journal_path, journal)
@@ -863,7 +876,7 @@ class InstallationService:
             )
             raise
 
-    def main(self, arguments):
+    def main(self, arguments: Sequence[str]) -> int:
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("mode", choices=("dev", "prod"))
         parser.add_argument("target")
@@ -882,7 +895,15 @@ class InstallationService:
         try:
             self.host_checks()
             with self.context.lock():
-                self.install(**vars(args))
+                self.install(
+                    args.mode,
+                    args.target,
+                    simulation=args.simulation,
+                    settings_file=args.settings_file,
+                    profile=args.profile,
+                    resume=args.resume,
+                    non_interactive=args.non_interactive,
+                )
             return 0
         except KeyboardInterrupt:
             print(
@@ -909,7 +930,7 @@ class InstallationService:
             return 1
 
 
-def main(arguments, root=None):
+def main(arguments: Sequence[str], root: Path | None = None) -> int:
     deployment = DeploymentService.for_workspace(root or Path(__file__).resolve().parents[2])
     return InstallationService(
         deployment,

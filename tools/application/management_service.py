@@ -8,17 +8,19 @@ import stat
 import sys
 import uuid
 from collections.abc import Callable, Sequence
-from contextlib import AbstractContextManager
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
+from tools.application.deployment_models import service_status
 from tools.application.development_runtime import (
     DevelopmentRuntime,
     development_compose,
     execution_location,
 )
 from tools.application.host_plan import OPERATIONS, HostPlan, HostPlanPayload
+from tools.application.management_models import command_definitions
 from tools.application.processes import ApplicationProcesses
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
@@ -34,7 +36,7 @@ class ManagementService:
     workspace: WorkspaceContext
     processes: ApplicationProcesses
     location: ExecutionLocation
-    browser_endpoint: Callable[[], AbstractContextManager] | None = None
+    browser_endpoint: Callable[[], AbstractContextManager[object]] | None = None
 
     @classmethod
     def for_workspace(cls, root: Path) -> "ManagementService":
@@ -48,16 +50,16 @@ class ManagementService:
         )
 
     @property
-    def policy(self):
+    def policy(self) -> RepositoryPolicy:
         return RepositoryPolicy(
             partial(self.processes.run, cwd=self.workspace.root), self.processes.environment
         )
 
     @property
-    def runtime(self):
+    def runtime(self) -> DevelopmentRuntime:
         return DevelopmentRuntime(ExecutionContext(self.workspace, self.workspace, self.location))
 
-    def operation_lock(self):
+    def operation_lock(self) -> AbstractContextManager[None]:
         return FileLock(
             StateDirectory(
                 self.workspace.runtime("production"), private=False, anchor=self.workspace.root
@@ -65,7 +67,7 @@ class ManagementService:
             "operation.lock",
         ).acquire()
 
-    def host_stack_health(self):
+    def host_stack_health(self) -> None:
         result = self.processes.run(
             development_compose(self.workspace).command("ps", "--all", "--format", "json"),
             cwd=self.workspace.root,
@@ -73,20 +75,14 @@ class ManagementService:
             text=True,
             check=True,
         ).stdout.strip()
-        rows = (
-            json.loads(result)
-            if result.startswith("[")
-            else [json.loads(line) for line in result.splitlines() if line]
-        )
+        rows = service_status(result)
         services = {row["Service"]: row for row in rows}
         for service in ("app", "nginx", "postgres", "queue", "scheduler", "mailpit"):
-            row = services.get(service, {})
-            if row.get("State") != "running" or row.get("Health") != "healthy":
+            row = services.get(service)
+            if row is None or row.get("State") != "running" or row.get("Health") != "healthy":
                 raise ValueError("Development container is missing/not healthy: " + service)
-        if (
-            services.get("setup", {}).get("State") != "exited"
-            or services.get("setup", {}).get("ExitCode") != 0
-        ):
+        setup = services.get("setup")
+        if setup is None or setup.get("State") != "exited" or setup.get("ExitCode") != 0:
             raise ValueError("Development setup did not complete successfully.")
         print("PASS: host Compose service/container health and setup exit status.")
 
@@ -230,8 +226,6 @@ class ManagementService:
         ):
             if path.is_symlink():
                 raise ValueError("Operation state/lock must not be a symlink.")
-        from contextlib import nullcontext
-
         with (
             self.operation_lock() if plan["operation"].startswith("development.") else nullcontext()
         ):
@@ -255,9 +249,10 @@ class ManagementService:
                     from tools.application.testing.cli import parse
 
                     browser = "e2e" in parse(plan["parameters"].get("arguments", [])).scopes
-                if browser and self.browser_endpoint is None:
+                endpoint = self.browser_endpoint
+                if browser and endpoint is None:
                     raise ValueError("Browser endpoint lifecycle is unavailable.")
-                with self.browser_endpoint() if browser else nullcontext():
+                with endpoint() if browser and endpoint is not None else nullcontext():
                     result = self.processes.run(
                         self.execution_command(plan), cwd=self.workspace.root
                     )
@@ -265,14 +260,15 @@ class ManagementService:
             finally:
                 path.unlink()
 
-    def public_command(self, tool, arguments):
+    def public_command(self, tool: str, arguments: Sequence[str]) -> list[str]:
         """Resolve only fixed public definitions; the destination reparses its own options."""
-        definitions = json.loads(
+        arguments = list(arguments)
+        definitions = command_definitions(
             (self.workspace.root / "src/runa/management/operations.json").read_text()
         )
         development = self.workspace.root / "src/runa/management/development.json"
         if development.exists():
-            definitions += json.loads(development.read_text())
+            definitions += command_definitions(development.read_text())
         candidates = [
             entry
             for entry in definitions
@@ -290,11 +286,11 @@ class ManagementService:
         entry = candidates[0]
         return [entry["name"], *arguments[len(entry["prefix"]) :]]
 
-    def assert_operation_context(self, plan):
+    def assert_operation_context(self, plan: HostPlanPayload) -> None:
         if plan["operation"] not in ("tooling.production", "tooling.deploy", "tooling.host"):
             self.policy.assert_development_context(self.workspace.root)
 
-    def execution_command(self, plan):
+    def execution_command(self, plan: HostPlanPayload) -> Sequence[str]:
         """Fixed executable families only; plan data never supplies an executable or shell."""
         self.assert_operation_context(plan)
         operation = plan["operation"]
@@ -348,7 +344,7 @@ class ManagementService:
                 self.host_stack_health()
         return self.runtime.app_command(["php", "artisan", *self.public_command(tool, arguments)])
 
-    def is_management_command(self, name):
+    def is_management_command(self, name: str) -> bool:
         # Reuse the same bounded, named-container lifecycle as every other discovery.
         import contextlib
         import io
@@ -359,7 +355,7 @@ class ManagementService:
             raise ValueError("Management command discovery failed.")
         return name in {line.split()[0] for line in output.getvalue().splitlines() if line.strip()}
 
-    def launch(self, args):
+    def launch(self, args: Sequence[str]) -> int:
         if any(arg == "--host-request" or arg.startswith("--host-request=") for arg in args):
             raise ValueError("--host-request is reserved for the host transport.")
         request = uuid.uuid4().hex

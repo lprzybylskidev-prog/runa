@@ -52,6 +52,7 @@ class ServiceStatus(TypedDict):
     Service: str
     State: NotRequired[str]
     Health: NotRequired[str]
+    ExitCode: NotRequired[int]
 
 
 class ContainerHost(TypedDict, total=False):
@@ -166,6 +167,7 @@ def service_status(payload: str) -> list[ServiceStatus]:
             not isinstance(row, dict)
             or not isinstance(row.get("Service"), str)
             or any(key in row and not isinstance(row[key], str) for key in ("State", "Health"))
+            or ("ExitCode" in row and type(row["ExitCode"]) is not int)
         ):
             raise ValueError("Invalid production service status row.")
     return cast(list[ServiceStatus], value)

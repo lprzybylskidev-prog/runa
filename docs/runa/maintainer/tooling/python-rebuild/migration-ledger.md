@@ -339,8 +339,8 @@ without altering serialized schemas or discarding extra evidence. Missing legacy
 rollback proof remains refusal, and optional profiled services retain their
 existing deferred image requirement. Private boundary cases cover malformed
 records, exact evidence preservation, response formats and text/bytes/stdin/check
-semantics. Installation, external update orchestration, quality, knowledge and remaining
-registry/private fixture annotations still require their own completion; this entry does
+semantics. External update orchestration, quality, knowledge and remaining
+private fixture annotations still require their own completion; this entry does
 not attest full-scope strict-analysis or acceptance success.
 
 Quality definitions, roadmap inputs, graphs, legacy/named selections and planner
@@ -380,13 +380,29 @@ The server receives all dependencies in its constructor rather than attaching
 service attributes or a status closure after binding. Status preserves additional
 receipt fields, and worker execution still reparses its plan at the guarded service
 boundary. Management discovery/plan/process entrypoints and private transport
-fixtures now declare their inputs/results; remaining registry orchestration/source
-response annotations are still open. Fixed failure cleanup's missing workspace
+fixtures now declare their inputs/results. Fixed failure cleanup's missing workspace
 argument, with a scripted regression proving exact named-container removal without
 Docker. Focused socket coverage preserves disconnected completion and replay
 refusal. Package source projection already includes the new authored model module;
 no resource allowlist exception or runtime dependency is added. Strict full-scope
 analysis and broad/native acceptance remain final-point work.
+
+Registry orchestration now declares source catalog, process, command/plan and browser
+lifecycle contracts. Source command records validate consumed name/tool/prefix fields
+and retain metadata; lookup accepts literal sequences without authorizing executable
+families. Development health reuses the shared array/line Compose decoder and checks
+native integer setup exit status. Installer/gateway services declare settings,
+recovery, resource, path and process input/result contracts. Private settings/state
+decoding rejects duplicate/non-finite objects with fixed diagnostics, and keeps the
+64 KiB bound during reads. Consumed settings, journal, Compose volume and Docker label
+fields validate before use; extra evidence and legacy optional journal fields stay
+available. Null/missing labels establish no ownership. Focused recording-runner and
+file cases preserve refusal before mutation, literal secrets and explicit SMTP-only
+resume correction. Private service cases use explicit management composition instead
+of a dynamic namespace. Existing source package projection includes the new authored
+model modules; no resource/dependency exception is needed. Remaining private fixture
+annotations, quality scheduling/evidence, external planning/execution and knowledge
+completion remain open, followed by full caller/resource/inline reconciliation.
 
 ## Retired implementation-era resources
 
