@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from functools import partial
 
 from tools.application.development_runtime import DevelopmentRuntime, development_compose
-from tools.application.host_plan import DEVELOPMENT_ACTIONS, OPERATIONS, TOOLS, HostPlan
+from tools.application.host_plan import OPERATIONS, HostPlan
 from tools.application.processes import ApplicationProcesses
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
@@ -234,9 +234,11 @@ class ManagementService:
                     json.dump(plan, stream)
                     stream.write("\n")
                 # Fixed trusted executable and action, never instructions from release/retrieval text.
-                browser = plan["operation"] == "tooling.test" and plan["parameters"].get(
-                    "arguments", []
-                )[:1] == ["e2e"]
+                browser = False
+                if plan["operation"] == "tooling.test":
+                    from tools.application.testing.cli import parse
+
+                    browser = "e2e" in parse(plan["parameters"].get("arguments", [])).scopes
                 if browser and self.browser_endpoint is None:
                     raise ValueError("Browser endpoint lifecycle is unavailable.")
                 with self.browser_endpoint() if browser else nullcontext():

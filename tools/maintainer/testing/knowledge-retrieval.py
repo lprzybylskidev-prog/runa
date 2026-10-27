@@ -8,7 +8,14 @@ from pathlib import Path
 if __name__ == "__main__":
     raise SystemExit(
         subprocess.call(
-            [sys.executable, "-m", "tools.maintainer.testing.knowledge_retrieval", *sys.argv[1:]],
+            [
+                sys.executable,
+                str(Path(__file__).resolve().parents[1] / "test-python"),
+                "--scope=integration",
+                "--path=integration/test_knowledge_retrieval.py",
+                "--marker=knowledge",
+                *sys.argv[1:],
+            ],
             cwd=Path(__file__).resolve().parents[3],
         )
     )

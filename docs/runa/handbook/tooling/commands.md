@@ -41,7 +41,7 @@ Management discovery runs the inspected immutable image ID with no network, moun
 
 ### Explicit operation commands
 
-Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
+Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
 
 Internal Python services live under `tools/application`; fixed package adapters and compatibility source transports under `executors/` do not form a public bin registry. Development setup starts `python3 -m tools.application.development` from the selected tool checkout. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
@@ -111,9 +111,17 @@ operator commands, with no public issuance endpoint or development-only dependen
 - `php artisan runa:typecheck`
 - `php artisan runa:analyse`
 
-### `php artisan runa:test --parallel`
+### `php artisan runa:test`
 
-Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration, suite lock and guarded worker cleanup. See [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle).
+Run application backend, frontend and tooling tests by default. Repeated
+`--scope=backend|frontend|tooling|e2e` selects scopes; e2e is opt-in.
+`--filter=TEXT` selects native test names in each scope. Use one explicit scope
+for native options, for example `runa:test --scope=backend --parallel`.
+`runa:test:backend` remains PHP-only; `runa:test:python` discovers application Python
+tests and accepts `--path=src/app/tests/python/test_example.py`, `--marker=...`
+and `--collect-only`. Native `php artisan test` remains PHP-only. See
+[application testing](../testing/strategy.md) for authored roots, public support,
+empty/failure semantics, reports and guarded cleanup.
 
 ### `php artisan runa:test:frontend`
 

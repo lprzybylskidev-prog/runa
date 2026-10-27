@@ -303,3 +303,35 @@ history policy only in receipt-free maintenance context; customer snapshots use
 shared staged checks. The RM-010 first-closure exception and the completed
 2026-10-22 version-backfill transition are retired; exact historical hashes remain
 protected and historical bytes/decisions are retained.
+
+## Shared aggregate tests and private suite discovery
+
+`python3 tools/maintainer/test` runs Runa backend/frontend/tooling by default.
+Repeated `--scope=backend|frontend|tooling|e2e` and `--filter=TEXT` select scopes;
+native arguments require one scope. Focused `test-backend`, `test-frontend` and
+`test-e2e` retain their native engines. `test-python --scope=unit|contracts|integration|e2e`
+selects private pytest directories and accepts `--path`, `--filter`, `--marker`
+and `--collect-only`. Owner commands delegate to the configured app container;
+no host Python development install is required. E2E endpoints retain host-owned
+journals. A customer receipt refuses owner test commands, even if private source
+was copied there. Public Artisan always composes application ownership.
+
+The shared delivered `TestService` owns one suite lock, process-group lifecycle,
+worker cleanup and honest scope reporting. Owner results live in
+`.runtime/tests/runa-results.json` and Python JUnit in
+`.runtime/python/reports/runa-pytest.xml`. All independent scopes run after a
+failure; focused runs return native statuses, aggregates return 1 on failure or
+130 on interruption. Empty owner suites are failures. The command does not run
+the release quality graph. Final gates retain explicit focused suite nodes and
+resource exclusivity; ordinary aggregate commands are developer workflows.
+
+Private Python cases use importable `test_*.py` files under
+`tools/maintainer/tests/python/{unit,contracts,integration,e2e}`. Useful unittest
+assertions remain collected by pytest. Private fixture objects live in `support`,
+without inheriting other suites. Shared customer fakes/workspace helpers ship
+under `tools/application/testing/support`; PHP and browser helpers under
+`src/runa/Testing` remain delivered development support. Platform cases/fixtures
+and native acceptance harnesses stay private. Native Docker acceptance modules
+run on the host through their supported quality nodes; pytest live-service cases
+have explicit registered markers/prerequisites. No unit fixture starts services.
+The scenario map is [test migration](../tooling/python-rebuild/test-migration.json).

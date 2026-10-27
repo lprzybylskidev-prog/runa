@@ -5,8 +5,8 @@ use Illuminate\Filesystem\Filesystem;
 use Runa\Support\ConfigurationValidator;
 use Runa\Support\RuntimeHeartbeat;
 
-require __DIR__.'/../../src/vendor/autoload.php';
-$app = require __DIR__.'/../../src/bootstrap/app.php';
+require dirname(__DIR__, 3).'/src/vendor/autoload.php';
+$app = require dirname(__DIR__, 3).'/src/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 $root = sys_get_temp_dir().'/runa-health-'.bin2hex(random_bytes(6));
 $app->useStoragePath($root);

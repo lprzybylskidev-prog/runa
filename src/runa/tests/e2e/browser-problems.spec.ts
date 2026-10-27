@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { recordBrowserProblems } from './support/browserProblems';
+import { recordBrowserProblems } from '../../Testing/browserProblems';
 
 test('guest diagnostics accept only same-origin session 401 and retain other HTTP failures', async ({
   page,

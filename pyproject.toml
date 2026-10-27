@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.setuptools]
-packages = ["tools", "tools.core", "tools.application", "tools.application.executors", "tools.application.knowledge", "tools.application.testing"]
+packages = ["tools", "tools.core", "tools.application", "tools.application.executors", "tools.application.knowledge", "tools.application.testing", "tools.application.testing.support"]
 include-package-data = false
 
 [tool.setuptools.dynamic]

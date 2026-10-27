@@ -388,14 +388,28 @@
     "name": "runa:test",
     "tool": "test",
     "prefix": [],
-    "signature": "{arguments?*} {--parallel} {--processes=} {--filter=} {--compact}",
+    "signature": "{arguments?*} {--scope=*} {--parallel} {--processes=} {--filter=} {--compact} {--path=*} {--marker=} {--collect-only}",
+    "description": "Run application backend, frontend and tooling tests"
+  },
+  {
+    "name": "runa:test:backend",
+    "tool": "test",
+    "prefix": ["backend"],
+    "signature": "{arguments?*} {--filter=}",
     "description": "Run application backend tests"
+  },
+  {
+    "name": "runa:test:python",
+    "tool": "test",
+    "prefix": ["tooling"],
+    "signature": "{arguments?*} {--filter=}",
+    "description": "Run application-owned Python tooling tests"
   },
   {
     "name": "runa:test:frontend",
     "tool": "test",
     "prefix": ["frontend"],
-    "signature": "{arguments?*}",
+    "signature": "{arguments?*} {--filter=}",
     "description": "Run application frontend unit tests"
   },
   {

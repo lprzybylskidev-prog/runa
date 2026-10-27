@@ -1,4 +1,4 @@
-import { recordBrowserProblems } from './support/browserProblems';
+import { recordBrowserProblems } from '../../Testing/browserProblems';
 import { test, expect } from '@playwright/test';
 for (const [device, width, height] of [
   ['desktop', 1440, 900],

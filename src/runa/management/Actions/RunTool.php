@@ -27,8 +27,8 @@ final class RunTool
             'hooks' => ['python3', 'tools/application/testing/hooks.py'],
             'frontend' => [PHP_BINARY, 'artisan', 'runa:typecheck'],
             'database-migrations' => [PHP_BINARY, 'artisan', 'runa:test-db:guard', '--env=testing'],
-            'database' => [PHP_BINARY, 'artisan', 'runa:test', '--filter=Database'],
-            'seeding' => [PHP_BINARY, 'artisan', 'runa:test', '--filter=Seeding'],
+            'database' => [PHP_BINARY, 'artisan', 'runa:test', '--scope=backend', '--filter=Database'],
+            'seeding' => [PHP_BINARY, 'artisan', 'runa:test', '--scope=backend', '--filter=Seeding'],
         ];
         if ($tool === 'doctor' && isset($doctor[$arguments[0] ?? ''])) {
             return $this->process($doctor[$arguments[0]], $root, $output, $arguments[0] === 'database-migrations' ? ['APP_ENV' => 'testing'] : null);

@@ -134,8 +134,8 @@ import third-party Python packages. Production images exclude these tools.
 Use `runa:python:format [--check]`, `runa:python:lint` and
 `runa:python:typecheck` through Artisan (host `./bin/artisan`, container
 `php artisan`). Default analysis covers delivered core/application tooling and
-`src/app`. Application tests and private owner suites keep their existing separate
-runners. The shared pytest configuration supplies importlib discovery, strict
+`src/app`. Application and private owner suites share the delivered test lifecycle with
+explicit separate roots; default Runa test commands include tooling. The shared pytest configuration supplies importlib discovery, strict
 markers and configuration; runners supply exact suite paths, workspace root,
 locks, cache, temporary paths and reports. Configuration is not a test suite.
 
@@ -214,3 +214,8 @@ are composed by excluded owner tooling; customer loaders never import it. Typed
 configuration and payload contracts preserve the existing collection schema. See
 [knowledge lifecycle and parser freshness](knowledge.md#package-and-ownership-composition)
 for migration, pending-write recovery and nondestructive incremental refresh.
+
+`runa:test:python` discovers only application-owned Python roots; the default
+`runa:test` includes it alongside PHP and frontend scopes. Public fakes/workspace
+support lives in `tools.application.testing.support`, separately from private
+suite roots. See [testing and extension configuration](../testing/strategy.md#python-tooling-and-public-test-support).

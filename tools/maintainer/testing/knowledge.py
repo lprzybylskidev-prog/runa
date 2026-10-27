@@ -10,8 +10,9 @@ if __name__ == "__main__":
         subprocess.call(
             [
                 sys.executable,
-                "-m",
-                "tools.maintainer.tests.python.contracts.test_knowledge_ingestion",
+                str(Path(__file__).resolve().parents[1] / "test-python"),
+                "--scope=contracts",
+                "--path=contracts/test_knowledge_ingestion.py",
                 *sys.argv[1:],
             ],
             cwd=Path(__file__).resolve().parents[3],

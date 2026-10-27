@@ -78,3 +78,5 @@ For Python tooling changes, follow the [public Python tooling guide](../../../..
 frozen tools, qualified packages, injected execution contexts and application-owned
 configuration. Keep private owner suites/release rules outside delivered services;
 verify staged Python through Ruff without running full suites in hooks.
+
+Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.

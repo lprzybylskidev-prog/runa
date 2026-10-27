@@ -38,3 +38,5 @@ Choose quality groups proportionately, record the final selection/rationale in t
 roadmap and preview it through supported commands. Mandatory checks/hooks and real
 prerequisites remain required; selected security/AI gates remain strict. Excluded
 groups are not PASS. See docs/runa/maintainer/quality/README.md for the catalogue and evidence contract.
+
+Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.

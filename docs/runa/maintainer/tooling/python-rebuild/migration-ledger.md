@@ -265,3 +265,44 @@ final gate; only specifically recorded focused diagnostics run in this point.
   are qualified. Point 8 owns aggregate/native test integration, and point 9 reviews
   remaining delegation-only ingest facades and fixed script transports after their
   last callers migrate. Real-service scenarios execute only in point 10.
+
+## Point 8 shared test lifecycle and discovery
+
+- Delivered `testing.runner` / `testing.cli` compose explicit application roots;
+  excluded `maintainer.test_cli` supplies Runa roots. Aggregate defaults include
+  backend/frontend/tooling; native engines remain Pest/Vitest/pytest/Playwright.
+  One suite lock encloses the selected run, backend pre/post worker cleanup and
+  native child reaping. Independent failures continue; interruption stops scheduling.
+  Reports retain per-scope native/cleanup statuses, empty/blocked states and ownership.
+- Public stdlib recording process, workspace/Git, clock/HTTP and Compose/image
+  support is packaged independently from private cases. Optional source-owned
+  `src/app/testing.json` registers Python roots; protected/private roots are refused.
+  PHP guarded TestCase/ModuleContractSuite remain public; reusable browser problem
+  observation moved out of private cases into `src/runa/Testing/browserProblems.ts`.
+- Retained unittest cases now use qualified pytest discovery, explicit domain
+  contexts and separate fixture objects. Updater execution no longer inherits the
+  planning TestCase; `support.updater.UpdaterWorkspace` contains no tests. Old
+  module-global/runpy fixture cases were consolidated into the injected-service,
+  subprocess and native-acceptance contracts. The exact source/scenario retention
+  map is `test-migration.json`; it is not a passing-test claim.
+- Native acceptance has importable underscore modules and common explicit
+  `AcceptanceContext` process/Git/Compose handling. Development app/container
+  identity is resolved through Compose, with checkout-label ownership snapshots.
+  Run-specific cleanup/journal paths and preserved persistent resources remain.
+  SMTP/FastCGI/queue helpers import without starting listeners or sending messages;
+  PHP localization/runtime fixtures resolve the actual repository root.
+- Retired only the completed one-time workstation ICU volume-switch tool and its
+  transition-specific contracts. Existing historical evidence stays unchanged.
+  Pinned disposable PostgreSQL collation/resource probes and current production
+  health/isolation acceptance remain available. No database reset was performed.
+- Public PHP source-check adapters delegate tests to the shared lifecycle; focused
+  quality nodes retain exact ownership. Owner database/migration transports refuse
+  scope overrides before container delegation. Production command composition now
+  follows `runtime.production`, repairing an outdated point-6 member reference.
+  Remaining compatibility filename transports and final annotation/caller review
+  belong to point 9; they delegate rather than implement a second engine.
+- Owner/customer AGENTS and backend/Laravel guidance, public testing/Python/command
+  docs and private quality docs reflect the accepted aggregate default. Vue/Tailwind
+  and presentation skill products need no change: no rendered UI or component
+  behavior changed. The browser observer contract is documented in the public test
+  guide. Frozen dependency inputs and production build inputs are unchanged.

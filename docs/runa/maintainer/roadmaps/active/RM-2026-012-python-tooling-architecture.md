@@ -736,7 +736,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Migrate fake/live knowledge scenarios and docs, with real retrieval/AI gates
     deferred to the final point. Preserve caches and collections.
 
-- [ ] 8. Deliver shared test infrastructure, aggregate runners and private suites.
+- [x] 8. Deliver shared test infrastructure, aggregate runners and private suites.
   - Prerequisites: points 4–7 migrated domain APIs and their test code.
   - Move remaining unittest cases into unified discovery; retain useful assertions,
     replace fixture inheritance/runpy with support factories and qualified imports,
@@ -1190,6 +1190,58 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Docker simulation resources require removal. Active development services remain
   available. No production operation or business-data migration ran. Completion is
   recorded by the implementation commit; VERSION remains 0.5.0 and point 8 is next.
+
+### Point 8 — shared tests, aggregate defaults and private discovery (2026-10-27)
+
+- Delivered `tools.application.testing` composes application ownership; private
+  `tools.maintainer.test_cli` composes Runa ownership over the same lifecycle.
+  Default `runa:test` / `bin/test` and `tools/maintainer/test` select backend,
+  frontend and tooling; browser/e2e remains explicit. Focused transports and
+  scope/filter/path selection retain native engines and container transport.
+- The shared runner acquires the suite lock once, preserves worker cleanup,
+  process-group reaping, per-scope child/cleanup codes and reports, continues
+  independent failures and records interruption/unstarted scopes honestly.
+  Customer empty tooling is explicit; missing owner suites and prerequisites fail.
+  Native `php artisan test` remains PHP-only and uses the same lock identity.
+- Shared recording process, workspace/Git, clock/HTTP and Compose/image support
+  ships independently of private suites. Application `src/app/testing.json` can
+  register application/module Python roots without private imports or protected
+  edits. Existing PHP bases remain delivered; reusable browser observation moved
+  into `src/runa/Testing`. Projected customer/default/failure and native extension
+  acceptance scenarios were added for final verification.
+- Migrated the remaining useful unittest assertions into pytest discovery with
+  qualified imports and domain context composition. Updater fixture extraction
+  eliminates inherited test duplication and runpy fixture loading. Recorded 249
+  baseline scenario dispositions in `tooling/python-rebuild/test-migration.json`;
+  consolidated implementation-specific cases retain injected-service/subprocess
+  successors. Live retrieval has an explicit knowledge marker and no import-time
+  configuration read. No broad suite collection or acceptance was run here.
+- Native acceptance helpers use importable modules and explicit process/Compose
+  context; removed fixed development container naming. Preserved scoped cleanup,
+  resource labels, ownership snapshots and recovery journals. SMTP/FastCGI/queue
+  imports are inert; localization/runtime PHP fixtures resolve this checkout.
+  The completed one-time workstation PostgreSQL ICU switch and transition-only
+  tests were retired; current disposable collation/runtime probes remain.
+- Test migration found a stale production composition member reference from point
+  6; corrected it to `runtime.production`. Owner database/migration validation now
+  rejects scope overrides before Docker delegation. Both quality definitions use
+  scoped supported test commands and explicit tooling prerequisites.
+- Synchronized public testing/command/Python guidance, private quality/migration
+  records and both owner/customer AGENTS plus backend/Laravel references. Vue,
+  Tailwind and presentation products require no changes because no UI behavior
+  changed; the shared browser observer is covered by the public testing contract.
+- Necessary focused diagnostic: supported `python3 tools/maintainer/test-python
+--scope=unit --path=unit/test_test_runner.py`. Initial 9 cases passed; after
+  adding cleanup/lock/symlink and independent-scope coverage, **13 passed in 0.09s**, without
+  collection warnings. This resolves the new runner's failure/ownership/lifecycle
+  uncertainty; it is not final suite, analysis, packaging or live-service evidence.
+  Mandatory commit hooks apply. Full verification remains point 10.
+- No disposable test Docker resources were created or removed. Incremental
+  knowledge refresh rebuilt the development management registry image after its
+  catalogue changed; that operational image is retained for current tooling.
+  Active development/test data, Qdrant/model caches, backups and reports remain
+  preserved. No new
+  dependency, database migration or production deployment occurred.
 
 ### Draft preparation validation (historical)
 

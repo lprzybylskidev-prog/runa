@@ -36,7 +36,7 @@ def dispatch(service, args):
         action not in ("restart", "logs") or len(services) != 1 or services[0] not in SERVICES
     ):
         raise ValueError("Only restart/logs accept one known production service.")
-    command = service.production.compose()
+    command = service.runtime.production.compose()
     environment = service.context.environment()
     for key in ("RUNA_IMAGE_TAG", "RUNA_HTTP_PORT"):
         environment.pop(key, None)

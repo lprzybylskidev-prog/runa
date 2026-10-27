@@ -22,7 +22,7 @@ base:
     severity: hard_fail
   - id: application-tests
     depends_on: [application-config]
-    command: php artisan runa:test
+    command: php artisan runa:test --scope=backend
     exclusive_group: testing-state
     severity: hard_fail
   - id: application-docs
@@ -72,6 +72,11 @@ impact_areas:
       command: php artisan runa:python:typecheck
       exclusive_group: testing-state
       severity: hard_fail
+    - id: application-python-tests
+      depends_on: [application-python-setup]
+      command: php artisan runa:test:python
+      exclusive_group: testing-state
+      severity: hard_fail
   security: []
   ai_environment: []
   documentation: []
@@ -114,6 +119,7 @@ groups:
       application-python-format,
       application-python-lint,
       application-python-types,
+      application-python-tests,
     ]
   backend:
     [

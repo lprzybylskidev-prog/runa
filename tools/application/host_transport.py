@@ -315,11 +315,9 @@ class HostExecutor:
         )
 
     def browser_endpoint(self):
-        from tools.application.test_resources import endpoint
+        from tools.application.test_resources import EndpointService
 
-        if self.workspace.root != Path(__file__).resolve().parents[2]:
-            raise ValueError("Browser endpoints require the selected tool workspace.")
-        return endpoint()
+        return EndpointService(self.workspace, self.processes).endpoint()
 
     @contextlib.contextmanager
     def socket_path(self):
@@ -573,7 +571,7 @@ class HostExecutor:
                 ):
                     raise ValueError(
                         "Executor PID ownership is uncertain; inspect it before recovery."
-                    )
+                    ) from None
                 os.kill(pid, signal.SIGTERM)
         for _ in range(100):
             if not (self.directory() / "client.json").exists():
@@ -613,19 +611,19 @@ def main(arguments=None):
             "Host operation interrupted. Inspect its receipt and existing recovery markers before retrying.",
             file=sys.stderr,
         )
-        raise SystemExit(130)
+        raise SystemExit(130) from None
     except DevelopmentContextError:
         print(
             "Development tooling is blocked in production or unknown installation context.",
             file=sys.stderr,
         )
-        raise SystemExit(2)
+        raise SystemExit(2) from None
     except (ValueError, OSError, KeyError, TypeError, subprocess.SubprocessError, SafeFailure):
         print(
             "Host execution failed. Inspect the private operation receipt; do not retry a mutation blindly.",
             file=sys.stderr,
         )
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
 
 if __name__ == "__main__":

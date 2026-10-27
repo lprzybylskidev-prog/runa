@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Private owner database transports, with fixed per-file purpose."""
 
-from pathlib import Path
 import subprocess
 import sys
+
 from tools.maintainer.context import ROOT, container
 
 
@@ -34,7 +34,6 @@ def main():
             + "\nPlatform scope only; resets retain the isolated test-database guard."
         )
         raise SystemExit(0)
-    container(ROOT / "tools/maintainer" / name, args)
     from tools.application.repository_boundary import assert_development_context
 
     assert_development_context(ROOT)
@@ -46,6 +45,7 @@ def main():
         if len(args) != 1 or not args[0].startswith("Runa\\Database\\Seeders\\"):
             raise SystemExit("Provide one explicit Runa\\Database\\Seeders\\ClassName.")
         args = ["--class=" + args[0]]
+    container(ROOT / "tools/maintainer" / name, sys.argv[1:])
     raise SystemExit(
         subprocess.run(
             ["php", str(ROOT / "distribution/platform-database.php"), commands[name], *args],

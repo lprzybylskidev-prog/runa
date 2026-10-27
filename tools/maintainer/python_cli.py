@@ -123,6 +123,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.action == "setup":
         return execute([sys.executable, "-m", "tools.maintainer.python_toolchain"])
+    if args.action == "test":
+        from tools.application.testing.runner import Selection, TestService
+        from tools.maintainer.test_cli import OWNER
+
+        base = ROOT / "tools/maintainer/tests/python"
+        paths = (
+            (str(base / args.path),)
+            if args.path
+            else tuple(
+                str(base / scope) for scope in dict.fromkeys(args.scope or ["unit", "contracts"])
+            )
+        )
+        return TestService(workspace, OWNER, SubprocessRunner(), environment()).execute(
+            Selection(
+                ("tooling",),
+                filter=args.filter,
+                python_paths=paths,
+                marker=args.marker or Selection().marker,
+                collect_only=args.collect_only,
+            )
+        )
     if not PYTHON.is_file():
         raise ValueError("Install tools first: python3 tools/maintainer/python-tool setup")
     if args.action == "packages":

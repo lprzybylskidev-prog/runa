@@ -110,6 +110,7 @@ base:
 impact_areas:
   backend:
     - id: module-development-contracts
+      exclusive_group: testing-state
       depends_on: [configuration]
       description: Check owned module source boundaries, independent module versions/changelogs and generator policy regressions.
       command: python3 tools/maintainer/testing/module-development.py
@@ -168,12 +169,14 @@ impact_areas:
   production:
     - id: production-operation-contracts
       depends_on: [configuration]
-      command: python3 tools/maintainer/testing/operations.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_operations.py
       severity: hard_fail
 
     - id: customer-deployment-source-contracts
       depends_on: [configuration]
-      command: python3 tools/maintainer/testing/customer-deployment.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_customer_deployment.py
       severity: hard_fail
 
     - id: production-acceptance
@@ -188,12 +191,14 @@ impact_areas:
     - id: dependency-composition-contracts
       depends_on: [repository-state]
       description: Verify owner dependency composition, conflict rejection and lock preservation.
-      command: python3 tools/maintainer/testing/dependencies.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_dependencies.py
       severity: hard_fail
 
     - id: development-startup-contract
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/development-startup.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_development_startup.py
       severity: hard_fail
 
     - id: development-stack
@@ -206,7 +211,8 @@ impact_areas:
   ai_environment:
     - id: documentation-ownership-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/documentation.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_documentation.py
       severity: hard_fail
     - id: documentation-ownership-live
       depends_on: [configuration]
@@ -285,12 +291,14 @@ impact_areas:
 
     - id: tool-ownership-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/tool-ownership.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_command_adapters.py
       severity: hard_fail
 
     - id: host-executor-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/host-executor.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=unit --path=unit/test_application_transport.py
       severity: hard_fail
 
     - id: host-executor-acceptance
@@ -302,7 +310,8 @@ impact_areas:
 
     - id: installation-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/installation.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_installation.py
       severity: hard_fail
 
     - id: installation-host-acceptance
@@ -314,32 +323,38 @@ impact_areas:
 
     - id: update-preflight-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/update.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update.py
       severity: hard_fail
 
     - id: update-execution-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/update-execution.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update_execution.py
       severity: hard_fail
 
     - id: bootstrap-source-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/bootstrap.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py
       severity: hard_fail
 
     - id: customer-initialization-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/customer-initialization.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_customer_initialization.py
       severity: hard_fail
 
     - id: repository-boundary-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/repository-boundary.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_repository_boundary.py
       severity: hard_fail
 
     - id: management-transport-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/management.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_management.py
       severity: hard_fail
 
     - id: management-host-acceptance

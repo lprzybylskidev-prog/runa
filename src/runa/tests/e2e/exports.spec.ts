@@ -1,4 +1,4 @@
-import { recordBrowserProblems } from './support/browserProblems';
+import { recordBrowserProblems } from '../../Testing/browserProblems';
 import { test, expect } from '@playwright/test';
 test('downloads real bounded files, selects across pages and recovers partial operations', async ({
   page,

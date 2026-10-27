@@ -27,6 +27,13 @@ def main():
         "quality-status": "status",
     }
     TESTS = {"test-backend": "backend", "test-frontend": "frontend", "test-e2e": "e2e"}
+    if name == "test" or name in TESTS:
+        from tools.maintainer.test_cli import boundary
+        from tools.maintainer.test_cli import main as test_main
+
+        raise SystemExit(
+            boundary(lambda: test_main([*([TESTS[name]] if name in TESTS else []), *arguments]))
+        )
     if arguments == ["--help"]:
         print(
             "Usage: python3 tools/maintainer/"
@@ -75,16 +82,6 @@ def main():
             command_prefix="python3 tools/maintainer/quality-",
         )
         raise SystemExit(quality_main([QUALITY[name], *arguments], quality=quality))
-    elif name in TESTS:
-        if name == "test-e2e" and not inside():
-            from tools.application.test_resources import endpoint
-
-            with endpoint():
-                container(ROOT / "tools/maintainer" / name, arguments)
-        container(ROOT / "tools/maintainer" / name, arguments)
-        from tools.maintainer.owner_tests import execute
-
-        raise SystemExit(execute(TESTS[name], arguments))
     else:
         raise SystemExit("Invoke a named owner entrypoint; this module has no public actions.")
 

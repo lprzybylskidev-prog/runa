@@ -3,7 +3,6 @@
 namespace Runa\Management\Actions;
 
 use InvalidArgumentException;
-use Runa\Testing\TestRun;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class RunSourceChecks
@@ -33,28 +32,7 @@ final class RunSourceChecks
         if ($tool !== 'test') {
             throw new InvalidArgumentException('Unsupported source check.');
         }
-        $run = function () use ($arguments, $runner, $cwd, $output): int {
-            if (($arguments[0] ?? null) === 'frontend') {
-                return $runner->process(['pnpm', 'exec', 'vitest', 'run', '--config=vitest.config.mjs', ...array_slice($arguments, 1)], $cwd, $output);
-            }
-            if (($arguments[0] ?? null) === 'e2e') {
-                $status = $runner->process([PHP_BINARY, 'runa/resources/errors/build.php'], $cwd, $output);
 
-                return $status !== 0 ? $status : $runner->process(['pnpm', 'exec', 'playwright', 'test', '--config=playwright.config.mjs', ...array_values(array_filter(array_slice($arguments, 1), static fn (string $argument): bool => $argument !== '--critical'))], $cwd, $output);
-            }
-            if (is_file($cwd.'/bootstrap/cache/config.php')) {
-                throw new InvalidArgumentException('Clear cached development config before testing: php artisan config:clear');
-            }
-            if (in_array('--parallel', $arguments, true) && ! array_any($arguments, static fn (string $value): bool => str_starts_with($value, '--processes'))) {
-                $arguments[] = '--processes='.(getenv('TEST_WORKERS') ?: '4');
-            }
-
-            return $runner->process(['vendor/bin/pest', '--configuration=phpunit.xml', '--test-directory=app/tests', ...$arguments], $cwd, $output, ['APP_ENV' => 'testing']);
-        };
-        if (array_intersect($arguments, ['--list-tests', '--list-tests-xml', '--list-suites', '--list-groups']) !== []) {
-            return $run();
-        }
-
-        return TestRun::execute($root, $output, $run, ! in_array($arguments[0] ?? null, ['frontend', 'e2e'], true));
+        return $runner->process(['python3', '-m', 'tools.application.testing.cli', ...$arguments], $root, $output);
     }
 }

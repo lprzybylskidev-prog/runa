@@ -2,13 +2,44 @@
 
 Tests protect behavior and meaningful regressions. Use feature tests for Laravel/application boundaries and unit tests for isolated logic. Cover success, known validation, authorization, conflicts, cancellation and relevant failure paths; avoid arbitrary coverage goals and tests that mirror implementation.
 
+## Default and focused commands
+
+`php artisan runa:test` (host `./bin/artisan runa:test`, recovery `./bin/test`)
+runs application backend, frontend and tooling tests in that order. The default
+includes Python tooling tests; it replaces the former backend-only default.
+Browser/e2e remains an explicit selection. Select repeated `--scope=backend`,
+`--scope=frontend`, `--scope=tooling` or `--scope=e2e` to run a subset. The focused
+commands `runa:test:backend`, `runa:test:frontend`, `runa:test:python` and
+`runa:test:e2e` use the same lifecycle. Existing recovery positional spellings
+`./bin/test backend|frontend|tooling|e2e` remain supported.
+
+`--filter=TEXT` becomes a Pest filter, Vitest name pattern, pytest `-k` expression
+or Playwright grep in each selected scope. Native runner options/paths require
+one explicit scope: for example `runa:test --scope=backend --parallel` or
+`runa:test --scope=frontend path/to/example.test.ts`. A filter with no collected
+matches is a failure; use a focused scope when names belong to one language.
+All independently runnable scopes run after another scope fails. Missing tools,
+collection errors and interrupted/unstarted work remain visible failures. A
+customer scope containing no authored tests is explicitly `empty`, never evidence
+of platform verification. A missing owner suite is a failure.
+
+The shared service holds `.runtime/tests/suite.lock` once for the selected run,
+reaps child processes before backend cleanup and releases the lock after reporting.
+Native `php artisan test` retains its own PHP lifecycle. The two commands share
+the lock, without invoking each other's locked wrapper. Latest native scope/cleanup
+codes and statuses are written to `.runtime/tests/application-results.json`;
+focused commands return the native failure, while a multi-scope run returns 1 on
+any failure and 130 on interruption. No scope is silently retried. Python JUnit
+output is `.runtime/python/reports/application-pytest.xml`; frontend/browser
+reports retain their established paths. Setup/reopen never executes these suites.
+
 ## PHP
 
-Native `php artisan test` and `php artisan runa:test` select src/phpunit.xml and src/app/tests/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes application tests; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in src/app/tests/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=app/tests`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
+Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and src/app/tests/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes application tests; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in src/app/tests/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=app/tests`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
 
 Development installation and `runa:dev:initialize` explicitly prepare platform data in both the development database and the isolated base `runa_test` database through the forward-only platform preparation primitive. Application test execution then applies only application-owned migrations. After platform updates, refresh the development clone through initialization before running native application tests.
 
-Run `php artisan runa:test --parallel`; TEST_WORKERS defaults to the selected resource profile. Each worker validates APP_ENV=testing, PostgreSQL test host/role/database and actual connection identity before any destructive DDL; only explicit isolated test database names are accepted. Worker database/storage/cache namespaces are isolated. The guarded worker database is selected before provider boot, so registry/maintenance and other singleton services retain the same connection as test transactions; never switch/purge it after booted services have captured it. Application migrations run only for application-owned objects and preserve Runa data/history. Use transactions or guarded resets for database mutation and deterministic fixtures. Never reset development/production data for tests. The test base uses synchronous queues and array mail.
+Run `php artisan runa:test --scope=backend --parallel`; TEST_WORKERS defaults to the selected resource profile. Each worker validates APP_ENV=testing, PostgreSQL test host/role/database and actual connection identity before any destructive DDL; only explicit isolated test database names are accepted. Worker database/storage/cache namespaces are isolated. The guarded worker database is selected before provider boot, so registry/maintenance and other singleton services retain the same connection as test transactions; never switch/purge it after booted services have captured it. Application migrations run only for application-owned objects and preserve Runa data/history. Use transactions or guarded resets for database mutation and deterministic fixtures. Never reset development/production data for tests. The test base uses synchronous queues and array mail.
 
 ## Frontend
 
@@ -38,8 +69,48 @@ Automatic host browser startup serializes endpoint ownership with `.runtime/test
 
 ## Concurrency and acceptance
 
-The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before test execution so .env.testing remains effective.
+The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before backend test execution so .env.testing remains effective.
 
 Visually inspect significant frontend changes at desktop/tablet/mobile sizes, light/dark and PL/EN as relevant. Check keyboard/focus semantics, meaningful labels, console/network errors, long content and responsive overflow. Keep durable browser tests focused on critical application flows and reproducible regressions. Temporary exploration lives under .playwright/scratch or tools/scratch; promote useful coverage or remove scratch before closure, preserving ignored artifacts.
 
 Do not weaken tests to obtain PASS. Investigate behavior versus test/isolation defects. Implementation points produce code, tests and documentation without routine check runs; only small, fast, focused checks for a concrete uncertainty belong there. Full suites, broad integration/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI and production checks run after all implementation in final verification, followed by fixes and repeated final verification. Mandatory commit hooks remain in force. If any supplied roadmap requires broad verification earlier, stop and notify the user regardless of its author; follow the [roadmap workflow](../workflows/roadmaps.md#roadmap-points) before proceeding. See [quality](../quality/README.md) and [security](../security/baseline.md).
+
+## Python tooling and public test support
+
+Place application Python tests in `src/app/tests/python/test_*.py`; put reusable
+application tooling in `src/app/tooling` or an application module. Import it with
+qualified workspace package names. For additional module/test roots, author
+`src/app/testing.json`, for example:
+
+```json
+{
+  "schema_version": 1,
+  "python_roots": ["tests/python", "modules/example/tests/python"]
+}
+```
+
+Roots are explicit paths relative to `src/app`; escapes, duplicates and symlink
+redirection outside application source are refused. Absent configuration retains
+the default root. Configuration registers source paths, never executable commands.
+`runa:test:python --path=src/app/tests/python/test_example.py::test_case` selects a
+file/node within those roots; `--collect-only` inspects tooling discovery.
+Shared pytest configuration enforces importlib discovery and strict registered
+markers. Docker/network/knowledge/database/packaging scenarios require explicit
+marker selection and provisioned prerequisites; no unit helper starts a stack.
+
+Delivered `tools.application.testing.support.process.RecordingRunner` records
+literal `ProcessSpec` inputs and consumes scripted results/errors.
+`support.workspaces` provides opt-in temporary workspace/Git factories;
+`support.fakes` supplies a manual clock, recording HTTP boundary and Compose/image
+JSON responses. Compose these with application services using explicit contexts.
+They import only stdlib/core support and never import private test cases. Actual
+Git repositories are created only when the repository factory is called.
+
+PHP tests extend the delivered `Tests\TestCase`; module authors can use the
+public ModuleContractSuite from the module development guide. Browser tests may
+import `recordBrowserProblems` from `src/runa/Testing/browserProblems.ts` (for an
+application e2e test: `../../../runa/Testing/browserProblems`). It records browser
+errors and optionally the documented anonymous-session probe exception, without
+starting a browser. These helpers are development-only. Application tests,
+fixtures, discovery configuration and tooling remain customer-owned and are
+reconciled through reviewed updates; protected Runa helpers are consumed directly.

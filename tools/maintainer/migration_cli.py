@@ -3,17 +3,14 @@
 
 import subprocess
 import sys
-from pathlib import Path
+
 from tools.maintainer.context import ROOT, container
 
 
 def main():
-    container(ROOT / "tools/maintainer/make-migration", sys.argv[1:])
     args = sys.argv[1:]
     if args == ["--help"]:
-        print(
-            "Create a Runa migration under src/runa/database/migrations."
-        )
+        print("Create a Runa migration under src/runa/database/migrations.")
         raise SystemExit(0)
     if (
         not args
@@ -22,6 +19,7 @@ def main():
     ):
         raise SystemExit("Provide a migration name.")
     command = ["make:migration", args[0], "--path=runa/database/migrations", *args[1:]]
+    container(ROOT / "tools/maintainer/make-migration", args)
     raise SystemExit(subprocess.run(["php", "artisan", *command], cwd=ROOT / "src").returncode)
 
 
