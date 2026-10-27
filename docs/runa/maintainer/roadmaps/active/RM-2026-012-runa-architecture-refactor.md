@@ -1246,7 +1246,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     focused diagnostic; no broad frontend suite or acceptance runs here.
   - Synchronize affected test support guidance and commit the completed fix.
 
-- [ ] 12. Define the complete public/internal API and placement map.
+- [x] 12. Define the complete public/internal API and placement map.
   - Prerequisites: point 11 complete; review F01–F25 and existing public guides.
   - Record each source area's owner, public extension/consumption entrypoints,
     trusted integration and internal implementation, separately from dev/runtime
@@ -1266,6 +1266,8 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     Keep ordinary Laravel and optional app modules equally supported; no full-DDD
     conversion or mandatory customer domain/repository/mapper layers.
   - Document the agreed map and migration dependencies; no broad checks here.
+  - Frozen specification: [API and placement map](../../architecture/api-boundary/README.md),
+    with complete baseline file and source-anchored signature inventories.
 
 - [ ] 13. Reorganize platform PHP internals and composition.
   - Prerequisites: point 12's compatible target map; findings F03–F07 and F22–F23.
@@ -2533,6 +2535,49 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   cache backups and reports. No resource deletion or data operation was performed.
 - Point 12 is next; points 12–20 remain open. VERSION remains 0.5.0 and the confirmed
   compatible feature projection remains 0.6.0.
+
+### Point 12 completion — API audience, signature and placement map (2026-10-27)
+
+- Refreshed the renamed active roadmap and completed point 11. Local knowledge
+  status was current: 187 documents, 3060 chunks, no changed/deleted/missing/orphan
+  chunks. Retrieved public API/module boundary guidance and opened the original
+  public API, module, frontend, testing and seeding sources before recording rules.
+- Added the owner-only [map specification](../../architecture/api-boundary/README.md),
+  [file inventory](../../architecture/api-boundary/source-map.json) and
+  [signature/consumer inventory](../../architecture/api-boundary/signatures.json).
+  Baseline source objects record the exact pre-move commit. All 859 tracked
+  src/runa files have explicit owner/audience/mode, customer/production disposition
+  and exact targets; 165 private file relocations are assigned to owning points.
+- Recorded 302 signature sources, 195 consumer/reference sources and exact named
+  source callers for 17 reserved contracts. Complete Git source objects preserve
+  PHPDoc, base/callback/value/exception signatures, SFC props/emits/slots and inferred
+  frontend controller members; extracted declarations/reference matches are
+  navigation evidence, not a semantic parser or a blanket import permission.
+- Kept public Support adapters, WorkHandler/WorkContext, module contracts and
+  frontend facade identities compatible. Consumer review additionally retained
+  SeedGraph, ModuleSettings, ModuleFrontend, VersionCompatibility, the welcome
+  route controller, public test bridges/browser/config entrypoints and the module
+  Vite plugin's supported path. Private suite configs still move to owner tooling.
+  Retained upgrade classes/edges/fingerprints and migration bytes deliberately;
+  no historical-handler consolidation is authorized by directory cleanup.
+- Froze ModuleFramework internals outside the guarded Modules namespace, named
+  Core integration, provider responsibilities, module HTTP/work placement,
+  frontend type/controller collaborators, generator/build/management ownership
+  and source/image migration dependencies. These are migration targets, not
+  claims that runtime or Docker projection has already changed.
+- Focused inventory diagnostic PASS: exact 859/859 tracked-file coverage and
+  source hashes, unique destination paths, unchanged public file/FQCN identities,
+  and existing signature/named-caller source files. The diagnostic caught the
+  public Vite plugin relocation proposal; corrected the map to retain its entry.
+  No application implementation, runtime configuration, tests, builds, production
+  operations or broad verification were executed in this point.
+- Instruction-product assessment: root AGENTS and owner/customer backend,
+  Laravel/frontend skills already route to the authoritative public boundary and
+  require signature classification before moves. No new reusable customer rule
+  or delivered capability changed here; those products remain valid unchanged.
+  Exact delivered-layout updates belong to their implementation points and the
+  point-19 reconciliation. Public boundary guidance now records the stable-entry
+  compatibility constraint without publishing owner-only migration artifacts.
 
 ### Draft preparation validation (historical)
 

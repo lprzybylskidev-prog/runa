@@ -30,7 +30,12 @@ exceptions, base classes, callbacks, props, slots and controller return members.
 The current source has mixed locations. Existing documented public helper paths
 remain valid until an explicit compatible migration is delivered. Do not infer
 that all `Support` classes are internal or that all module `Contracts` are public.
-The planned source reorganization does not yet establish new physical paths.
+Internal reorganization preserves these public file/FQCN identities and supported
+frontend/test/build entrypoints. This includes public helpers used by the supplied
+application scaffold, generated consumers and application test/build configuration.
+A cleaner directory grouping alone does not authorize changing their import paths.
+New internal homes become current guidance only when their owning implementation
+is delivered.
 
 ## Backend and modules
 
