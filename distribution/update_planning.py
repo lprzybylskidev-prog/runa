@@ -8,8 +8,10 @@ import re
 import shutil
 import stat
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
+from typing import BinaryIO, Unpack
 
 from distribution import bootstrap, update_customization, update_modules, update_runtime
 from distribution.update_contracts import (
@@ -25,13 +27,25 @@ from distribution.update_contracts import (
     stable,
     supports,
 )
+from distribution.update_models import RuntimeSnapshot
+from distribution.update_plan_models import (
+    LockProbe,
+    ModulePlanner,
+    PreflightOptions,
+    PreflightReport,
+    ReleaseDownload,
+    ReleaseIdentity,
+    RuntimeProbe,
+    UpdatePlan,
+    release_identity,
+)
 
 
 @contextmanager
-def operation_snapshot(root):
+def operation_snapshot(root: Path) -> Iterator[None]:
     """Observe existing locks without creating a lock/state directory in dry-run."""
     path = root / ".runtime/production/operation.lock"
-    stream = None
+    stream: BinaryIO | None = None
     try:
         if path.exists() or path.is_symlink():
             if any(p.is_symlink() for p in [path, *path.parents]):
@@ -56,7 +70,7 @@ def operation_snapshot(root):
             stream.close()
 
 
-def installation(value, *, allow_pending=False):
+def installation(value: str | Path, *, allow_pending: bool = False) -> Path:
     root = Path(value).absolute()
     if (
         root.resolve() != root
@@ -104,7 +118,9 @@ def installation(value, *, allow_pending=False):
     return root
 
 
-def candidate(root, target, directory, *, current_platform=None):
+def candidate(
+    root: Path, target: Path, directory: Path, *, current_platform: Path | None = None
+) -> Path:
     destination = directory / "candidate"
     (destination / "src").mkdir(parents=True)
     for kind in ("composer", "package"):
@@ -124,7 +140,14 @@ def candidate(root, target, directory, *, current_platform=None):
     return destination
 
 
-def plan(root, target, original, target_identity, installed_identity, runtime):
+def plan(
+    root: Path,
+    target: Path,
+    original: Path,
+    target_identity: ReleaseIdentity,
+    installed_identity: ReleaseIdentity,
+    runtime: RuntimeSnapshot,
+) -> UpdatePlan:
     delta = changes(original, target)
     migrations = sorted(p.stem for p in (target / "src/runa/database/migrations").glob("*.php"))
     applied = set(runtime["migrations"])
@@ -191,19 +214,19 @@ def plan(root, target, original, target_identity, installed_identity, runtime):
 
 
 def preflight(
-    value,
-    client,
-    tag,
+    value: str | Path,
+    client: bootstrap.GitHub,
+    tag: str,
     *,
-    toolchain="runa-development:dev",
-    download=bootstrap.acquire,
-    runtime_probe=update_runtime.probe,
-    lock_probe=update_runtime.validate_locks,
-    expected_commit=None,
-    lock_held=False,
-    module_plan=update_modules.plan,
-):
-    report = {
+    toolchain: str = "runa-development:dev",
+    download: ReleaseDownload = bootstrap.acquire,
+    runtime_probe: RuntimeProbe = update_runtime.probe,
+    lock_probe: LockProbe = update_runtime.validate_locks,
+    expected_commit: str | None = None,
+    lock_held: bool = False,
+    module_plan: ModulePlanner = update_modules.plan,
+) -> PreflightReport:
+    report: PreflightReport = {
         "schema_version": 1,
         "mode": "preflight",
         "dry_run": True,
@@ -215,7 +238,7 @@ def preflight(
         "temporary_downloads_cleaned": False,
     }
 
-    def passed(name):
+    def passed(name: str) -> None:
         report["checks"].append({"id": name, "status": "passed"})
 
     try:
@@ -254,15 +277,15 @@ def preflight(
                     )
                 report["temporary_downloads"] = [str(staging / "original"), str(staging / "target")]
                 original, target = staging / "original", staging / "target"
-                installed_identity = download(client, "v" + version, original, "dev")
+                installed_identity = release_identity(
+                    download(client, "v" + version, original, "dev")
+                )
                 if platform(original) != version:
                     raise Blocker(
                         "original-release",
                         "Original release platform identity does not match the installed version.",
                     )
-                report["installed_release"] = {
-                    key: installed_identity[key] for key in ("tag", "commit", "tag_object")
-                }
+                report["installed_release"] = installed_identity
                 passed("original-release")
                 report["mismatches"] = compare(root, original)
                 if report["mismatches"]:
@@ -271,25 +294,24 @@ def preflight(
                         "Protected source differs from the independently downloaded installed release; no repair or consent override exists.",
                     )
                 passed("protected-source")
-                target_identity = download(
-                    client, tag, target, "dev", expected_commit=expected_commit
+                target_identity = release_identity(
+                    download(client, tag, target, "dev", expected_commit=expected_commit)
                 )
                 if platform(target) != tag[1:]:
                     raise Blocker(
                         "target-release", "Target release platform identity does not match its tag."
                     )
-                report["target_release"] = {
-                    key: target_identity[key] for key in ("tag", "commit", "tag_object")
-                }
+                report["target_release"] = target_identity
                 passed("target-release")
                 applications = [("development", root)]
                 for location, source in applications:
                     application = document(source, "src/app/application.json", 16384)
+                    application_version = application.get("version")
                     if (
                         type(application.get("schema_version")) is not int
                         or application.get("schema_version") != 1
-                        or not isinstance(application.get("version"), str)
-                        or not re.fullmatch(SEMVER, application["version"])
+                        or not isinstance(application_version, str)
+                        or not re.fullmatch(SEMVER, application_version)
                         or not supports(application.get("runa"), tag[1:])
                     ):
                         raise Blocker(
@@ -307,37 +329,34 @@ def preflight(
                 report["free_bytes"] = free
                 passed("disk-permissions")
                 report["dependency_checks"] = []
-                for location, source in applications:
-                    report["toolchain_image"] = lock_probe(
-                        candidate(source, target, staging / location), toolchain
-                    )
-                    report["dependency_checks"].append(location)
+                image = lock_probe(candidate(root, target, staging / "development"), toolchain)
+                report["toolchain_image"] = image
+                report["dependency_checks"].append("development")
                 passed("preserved-dependency-locks")
                 runtime = runtime_probe(root, "dev", root)
                 report["runtime"] = {"project": runtime["project"], "services": runtime["services"]}
                 passed("runtime-and-database")
-                report["plan"] = plan(
+                update_plan = plan(
                     root, target, original, target_identity, installed_identity, runtime
                 )
-                report["plan"]["modules"] = module_plan(
-                    root, target, runtime, report["toolchain_image"]
-                )
-                report["plan"]["no_op"] = report["plan"]["no_op"] and all(
+                report["plan"] = update_plan
+                modules = module_plan(root, target, runtime, image)
+                update_plan["modules"] = modules
+                update_plan["no_op"] = update_plan["no_op"] and all(
                     row["from"] == row["to"]
                     and not row["pending_migrations"]
                     and not row["pending_upgrades"]
-                    for row in report["plan"]["modules"]
+                    for row in modules
                 )
-                report["customization_review"] = update_customization.review(
+                customization = update_customization.review(
                     root,
                     original,
                     target,
                     {"original": report["installed_release"], "target": report["target_release"]},
                 )
+                report["customization_review"] = customization
                 passed("delivered-file-review")
-                report["plan"]["no_op"] = (
-                    report["plan"]["no_op"] and not report["customization_review"]["required"]
-                )
+                update_plan["no_op"] = update_plan["no_op"] and not customization["required"]
                 report["status"] = "ready"
     except Blocker as error:
         report["checks"].append({"id": error.code, "status": "blocked", "message": str(error)})
@@ -373,17 +392,23 @@ class UpdatePlanner:
     def __init__(
         self,
         *,
-        download=bootstrap.acquire,
-        runtime_probe=update_runtime.probe,
-        lock_probe=update_runtime.validate_locks,
-        module_plan=update_modules.plan,
-    ):
+        download: ReleaseDownload = bootstrap.acquire,
+        runtime_probe: RuntimeProbe = update_runtime.probe,
+        lock_probe: LockProbe = update_runtime.validate_locks,
+        module_plan: ModulePlanner = update_modules.plan,
+    ) -> None:
         self.download = download
         self.runtime_probe = runtime_probe
         self.lock_probe = lock_probe
         self.module_plan = module_plan
 
-    def preflight(self, workspace, client, tag, **options):
+    def preflight(
+        self,
+        workspace: str | Path,
+        client: bootstrap.GitHub,
+        tag: str,
+        **options: Unpack[PreflightOptions],
+    ) -> PreflightReport:
         options.setdefault("download", self.download)
         options.setdefault("runtime_probe", self.runtime_probe)
         options.setdefault("lock_probe", self.lock_probe)

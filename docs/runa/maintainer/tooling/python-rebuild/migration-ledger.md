@@ -425,3 +425,18 @@ boolean exit codes cannot satisfy successful evidence. Focused private cases cov
 these boundaries and fixed start-failure diagnostics; background/concurrency/full
 quality acceptance and strict analysis remain point 10. Remaining full-scope
 annotations and complete caller/resource/inline reconciliation are still open.
+
+External preflight now declares acquisition/runtime/lock/module probe contracts,
+consumed release identities and plan/report records in `distribution/update_plan_models.py`.
+The planner keeps request-local overrides separate from its composed dependencies;
+partial plan/check evidence remains present when later module planning refuses.
+Acquisition receipt metadata beyond the three consumed identity fields stays outside
+the report. Private updater workspace support declares its cleanup, Git, download,
+runtime, snapshot and plan contracts and uses the composed planner. Focused cases
+cover download cleanup, selected probes, same-release pending modules, override
+isolation and partial blocked reports without live Docker/data operations. Existing
+external source projection includes the authored model module automatically. Owner/
+customer instruction products already document typed injected boundaries and guarded
+recovery; these internal types introduce no public extension API or new authority.
+Bootstrap/initialization, update execution, knowledge and remaining private case
+annotations stay open, followed by full caller/resource/inline reconciliation.

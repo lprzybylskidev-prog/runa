@@ -1621,6 +1621,40 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Active development/test data, knowledge/model caches, backups and reports remain
   preserved. No migration or production setting changed.
 
+#### Point 9 continuation — external planning contracts (2026-10-27)
+
+- Typed external preflight acquisition/runtime/lock/module dependencies, release
+  identity projection, plan/report records, read-only lock observation and staged
+  dependency composition. Per-request overrides retain the composed planner's
+  dependencies. Consumed acquired identity fields validate before use; additional
+  receipt metadata stays outside reports. Acquisition retains independent source
+  verification. Serialized fields, partial blocked-plan evidence and download
+  cleanup remain intact; same-release pending module work prevents a no-op result.
+- Typed private updater workspace cleanup/Git/download/runtime/snapshot/plan
+  boundaries and composed it through UpdatePlanner. Four new focused cases passed
+  via supported test-python: selected dependencies/identity projection, invalid
+  identity refusal before probes, same-release module work/request overrides and
+  partial evidence on module refusal. Six existing focused cases also passed:
+  ready-plan preservation, runtime/staging refusal, dependency/applied-migration
+  refusal, lock/pending-state refusal, completed source replacement and changed-tag
+  resume refusal. Fixtures use temporary Git/files and scripted runtimes; no live
+  Docker operation or database mutation ran. Changed-file pinned Ruff preparation
+  passed; mandatory commit hooks remain required.
+- Synchronized the public Python guide, owner updater guide and migration ledger.
+  Root/customer AGENTS and backend/security skill products already require typed
+  injection, safe refusal/recovery and private/public ownership. These internal
+  planning records introduce no customer extension API, authority or security
+  exception requiring another rule. External source projection includes the new
+  authored model module; frozen pins, exclusions and strict scope are unchanged.
+- Point 9 remains open for bootstrap/initialization, update execution, knowledge
+  and remaining private fixture/test annotations, then complete caller/resource/
+  inline reconciliation. Point 10 has not started: no full suite, strict analysis,
+  package/image build, scanner or live acceptance ran. VERSION remains 0.5.0 and
+  proposed_version remains 0.6.0; no independently versioned module changed.
+- No dependency, migration, production setting or disposable Docker resource
+  changed. No container/network/image/volume was created or removed. Active
+  development/test data, knowledge/model caches, backups and reports are preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

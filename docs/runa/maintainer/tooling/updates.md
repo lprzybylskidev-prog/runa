@@ -13,6 +13,15 @@ have separate modules; none imports the command adapter. Source/data journal pha
 remain compatible. The 0.5.0-to-0.6.0 updater reads verified source/metadata and uses
 PHP/database processes; it never imports either customer Python release.
 
+Preflight declares typed acquisition/runtime/lock/module probe inputs and results,
+release identities, plans and reports. Only the consumed tag/commit/tag-object fields
+from acquisition enter the report; additional receipt metadata is not published.
+Acquisition remains responsible for independently verified source identities.
+Per-request probe overrides do not mutate the composed planner. Blocked reports keep
+completed checks and any partial plan, including when the module probe refuses.
+Same-release plans still report pending module migrations/upgrades before concluding
+that there is no work. Downloads remain external and are cleaned on handled failure.
+
 External process adapters distinguish captured text from bytes and retain literal
 arguments, closed stdin, native exits and fixed failure diagnostics. `DockerRuntime`
 passes its injected command transport through runtime and read-only database probes;

@@ -256,6 +256,12 @@ lists. The isolated module planner validates its returned records, including PHP
 empty associative maps, and shares one injected process policy with its cleanup.
 These contracts remain internal to the separately supplied external bundle and
 canonical core.
+External preflight also declares its acquisition/runtime/lock/module probe contracts,
+release identity projection, plan and report fields. Request-local probe overrides
+leave the planner's composed dependencies intact. Blocked reports retain completed
+checks and any partial plan; handled failures still clean external downloads without
+writing to the customer installation. Same-release plans include pending module
+work before reporting that no update is needed.
 Customer Python configuration/tests/frozen inputs under `src/app` remain customer
 owned; delivered defaults change only through the existing reviewed file plan.
 

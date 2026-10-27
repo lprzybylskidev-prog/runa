@@ -5,25 +5,30 @@ import json
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
+from typing import Unpack, cast
 from unittest.mock import patch
 
 import distribution.bootstrap as bootstrap
 import distribution.update_customization as update_customization
 import distribution.update_planning as update
+from distribution.update_models import RuntimeSnapshot, response_json
+from distribution.update_plan_models import PreflightOptions, PreflightReport, ReleaseIdentity
+from tools.core.state import JsonValue
 
 ROOT = Path(__file__).resolve().parents[5]
 
 
 class UpdaterWorkspace:
-    def git(self, root, *args):
+    def git(self, root: Path, *args: str) -> str:
         return (
             subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.DEVNULL)
             .decode()
             .strip()
         )
 
-    def commit(self, root):
+    def commit(self, root: Path) -> str:
         self.git(root, "add", "--all")
         self.git(
             root,
@@ -39,15 +44,20 @@ class UpdaterWorkspace:
         )
         return self.git(root, "rev-parse", "HEAD")
 
-    def __init__(self, cleanup):
+    def __init__(self, cleanup: Callable[[Callable[[], object]], object]) -> None:
         self.addCleanup = cleanup
         # Pure review contracts use JSON Compose data; native host acceptance exercises Docker's parser.
         self.native_configuration = update_customization.configuration
-        parser = patch.object(
-            update_customization,
-            "configuration",
-            side_effect=lambda root, name: json.loads((root / name).read_text())["services"],
-        )
+
+        def configuration(root: Path, name: str) -> dict[str, dict[str, JsonValue]]:
+            value = response_json((root / name).read_text())
+            assert isinstance(value, dict)
+            services = value["services"]
+            assert isinstance(services, dict)
+            assert all(isinstance(service, dict) for service in services.values())
+            return cast(dict[str, dict[str, JsonValue]], services)
+
+        parser = patch.object(update_customization, "configuration", side_effect=configuration)
         parser.start()
         self.addCleanup(parser.stop)
         self.temporary = tempfile.TemporaryDirectory()
@@ -135,19 +145,28 @@ class UpdaterWorkspace:
         (self.installed / ".env").write_text("APP_ENV=local\n")
         (self.installed / ".env").chmod(0o600)
         self.client = bootstrap.GitHub("fixture/runa")
-        self.runtime = {
+        self.runtime: RuntimeSnapshot = {
             "project": "fixture",
             "services": ["app", "postgres"],
             "migrations": ["2026_01_01_000001_initial"],
             "seed_runs": [],
+            "modules": {},
+            "module_steps": [],
         }
 
-    def manifest(self, root, version):
+    def manifest(self, root: Path, version: str) -> None:
         (root / "src/runa/platform.json").write_text(
             json.dumps({"schema_version": 1, "id": "runa", "name": "Runa", "version": version})
         )
 
-    def download(self, client, tag, destination, mode, expected_commit=None):
+    def download(
+        self,
+        client: bootstrap.GitHub,
+        tag: str,
+        destination: Path,
+        mode: str,
+        expected_commit: str | None = None,
+    ) -> ReleaseIdentity:
         source = self.original if tag == "v0.2.1" else self.target
         shutil.copytree(source, destination)
         return {
@@ -156,18 +175,20 @@ class UpdaterWorkspace:
             "tag_object": "f" * 40,
         }
 
-    def run_plan(self, **kwargs):
-        return update.preflight(
+    def run_plan(self, **kwargs: Unpack[PreflightOptions]) -> PreflightReport:
+        planner = update.UpdatePlanner(
+            download=self.download,
+            runtime_probe=lambda root, mode, operator: self.runtime,
+            lock_probe=lambda candidate, image: "sha256:" + "f" * 64,
+        )
+        return planner.preflight(
             self.installed,
             self.client,
             "v0.3.0",
-            download=self.download,
-            runtime_probe=lambda *a: self.runtime,
-            lock_probe=lambda *a: "sha256:" + "f" * 64,
             **kwargs,
         )
 
-    def snapshot(self):
+    def snapshot(self) -> dict[str, tuple[int, bytes]]:
         return {
             p.relative_to(self.installed).as_posix(): (p.stat().st_mode, p.read_bytes())
             for p in self.installed.rglob("*")
