@@ -1,16 +1,42 @@
 """Bounded native Docker transport and read-only probes; no installed code is imported."""
 
-import json
 import os
 import re
 import subprocess
 import uuid
+from collections.abc import Sequence
+from pathlib import Path
+from typing import Protocol
 
 from distribution.processes import ExternalProcesses
 from distribution.update_contracts import Blocker, document, regular
+from distribution.update_models import (
+    DatabaseMetadata,
+    RuntimeSnapshot,
+    available_metadata,
+    compose_configuration,
+    container_inspection,
+    database_metadata,
+    module_records,
+    module_steps,
+    project_identity,
+    service_status,
+)
 
 
-def command(arguments, cwd=None, timeout=90, *, processes=None):
+class RuntimeCommand(Protocol):
+    def __call__(
+        self, arguments: Sequence[str], cwd: Path | None = None, timeout: float = 90
+    ) -> str: ...
+
+
+def command(
+    arguments: Sequence[str],
+    cwd: Path | None = None,
+    timeout: float = 90,
+    *,
+    processes: ExternalProcesses | None = None,
+) -> str:
     processes = processes or ExternalProcesses()
     environment = {
         k: v
@@ -28,14 +54,14 @@ def command(arguments, cwd=None, timeout=90, *, processes=None):
             timeout=timeout,
             check=True,
         ).stdout
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError, UnicodeError):
         raise Blocker(
             "probe-failed",
             "Host/container operation failed; inspect the recorded phase, operator access and runtime prerequisites.",
         ) from None
 
 
-def env_file(root, name):
+def env_file(root: Path, name: str) -> dict[str, str]:
     from tools.core.environment import raw_environment
 
     try:
@@ -47,7 +73,7 @@ def env_file(root, name):
     return result
 
 
-def compose(root, mode, operator):
+def compose(root: Path, mode: str, operator: Path) -> list[str]:
     if mode != "dev" or root != operator:
         raise Blocker(
             "development-only", "Updater runtime probes require the selected development checkout."
@@ -63,19 +89,24 @@ def compose(root, mode, operator):
     ]
     workspace = root / ".devcontainer/devcontainer.json"
     files = ["compose.yaml", ".devcontainer/compose.resources.yaml"]
-    if workspace.exists() and "dockerComposeFile" in document(
-        root, ".devcontainer/devcontainer.json"
-    ):
-        value = document(root, ".devcontainer/devcontainer.json")["dockerComposeFile"]
+    configuration = document(root, ".devcontainer/devcontainer.json") if workspace.exists() else {}
+    if "dockerComposeFile" in configuration:
+        value = configuration["dockerComposeFile"]
         if isinstance(value, str):
             value = [value]
-        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        if not isinstance(value, list):
             raise Blocker(
                 "customization-review-unavailable", "Invalid devcontainer Compose selection."
             )
         from distribution.update_contracts import local_path
 
-        files = [local_path(root, item, workspace.parent) for item in value]
+        files = []
+        for item in value:
+            if not isinstance(item, str):
+                raise Blocker(
+                    "customization-review-unavailable", "Invalid devcontainer Compose selection."
+                )
+            files.append(local_path(root, item, workspace.parent))
     for name in ("compose.override.yaml", "compose.override.yml"):
         if (root / name).exists() and name not in files:
             files.append(name)
@@ -85,11 +116,14 @@ def compose(root, mode, operator):
     return args
 
 
-def probe(root, mode, operator):
+def probe(
+    root: Path, mode: str, operator: Path, *, transport: RuntimeCommand | None = None
+) -> RuntimeSnapshot:
+    execute = transport or command
     args = compose(root, mode, operator)
-    config = json.loads(command(args + ["config", "--format", "json"], root))
+    config = compose_configuration(execute(args + ["config", "--format", "json"], root))
     required = {"app", "nginx", "postgres", "queue", "scheduler", "mailpit"}
-    if not required <= config.get("services", {}).keys():
+    if not required <= config["services"].keys():
         raise Blocker(
             "runtime-unavailable",
             "Required development services are missing from the selected configuration.",
@@ -107,12 +141,7 @@ def probe(root, mode, operator):
         for mount in service.get("volumes", []):
             if "docker.sock" in mount.get("source", ""):
                 raise Blocker("runtime-isolation", "A service exposes Docker transport: " + name)
-    raw = command(args + ["ps", "--all", "--format", "json"], root).strip()
-    rows = (
-        json.loads(raw)
-        if raw.startswith("[")
-        else [json.loads(line) for line in raw.splitlines() if line]
-    )
+    rows = service_status(execute(args + ["ps", "--all", "--format", "json"], root))
     services = {row["Service"]: row for row in rows}
     if not required <= services.keys():
         raise Blocker("runtime-unavailable", "Required runtime/database services are missing.")
@@ -122,14 +151,14 @@ def probe(root, mode, operator):
             raise Blocker(
                 "runtime-unavailable", "Required runtime/database service is not healthy: " + name
             )
-        actual = json.loads(command(["docker", "inspect", row["ID"]]))[0]
-        labels = actual["Config"].get("Labels", {})
+        actual = container_inspection(execute(["docker", "inspect", row["ID"]]))
+        labels = actual["Config"].get("Labels") or {}
         if labels.get("com.docker.compose.project.working_dir") != str(root):
             raise Blocker(
                 "runtime-ownership", "Runtime service belongs to a different checkout: " + name
             )
         actual_env = dict(
-            item.split("=", 1) for item in actual["Config"].get("Env", []) if "=" in item
+            item.split("=", 1) for item in (actual["Config"].get("Env") or []) if "=" in item
         )
         if any(
             str(v) != actual_env.get(k)
@@ -139,25 +168,42 @@ def probe(root, mode, operator):
                 "runtime-configuration",
                 "Actual service environment differs from the selected customer inputs: " + name,
             )
-        expected_image = command(
-            ["docker", "image", "inspect", "--format", "{{.Id}}", config["services"][name]["image"]]
+        image = config["services"][name].get("image")
+        if image is None:
+            raise Blocker("runtime-identity", "Required development service has no image: " + name)
+        expected_image = execute(
+            ["docker", "image", "inspect", "--format", "{{.Id}}", image]
         ).strip()
+        host = actual.get("HostConfig")
+        if host is None:
+            raise Blocker(
+                "invalid-runtime-response", "Updater container host configuration is missing."
+            )
         if (
-            actual["Image"] != expected_image
-            or actual["HostConfig"].get("Privileged")
-            or actual["HostConfig"].get("CapAdd")
-            or actual["HostConfig"].get("NetworkMode") == "host"
+            actual.get("Image") != expected_image
+            or host.get("Privileged")
+            or host.get("CapAdd")
+            or host.get("NetworkMode") == "host"
         ):
             raise Blocker(
                 "runtime-identity",
                 "Running image/privileges differ from the selected standard runtime: " + name,
             )
-        expected_mounts = set()
+        expected_mounts: set[tuple[str, str, str, bool]] = set()
         for mount in config["services"][name].get("volumes", []):
             kind = mount["type"]
-            source = (
-                config["volumes"][mount["source"]]["name"] if kind == "volume" else mount["source"]
-            )
+            source = mount.get("source")
+            if source is None:
+                raise Blocker(
+                    "runtime-mounts", "Required service has an unsupported mount: " + name
+                )
+            if kind == "volume":
+                volume = config.get("volumes", {}).get(source)
+                if volume is None:
+                    raise Blocker(
+                        "runtime-mounts", "Required service has an unknown volume: " + name
+                    )
+                source = volume["name"]
             expected_mounts.add((kind, source, mount["target"], bool(mount.get("read_only"))))
         actual_mounts = {
             (
@@ -177,43 +223,54 @@ def probe(root, mode, operator):
         for mount in actual.get("Mounts", []):
             if "docker.sock" in mount.get("Source", ""):
                 raise Blocker("production-isolation", "Runtime exposes Docker transport.")
-    return {"project": config["name"], "services": sorted(required), **metadata(root, args)}
+    return {
+        "project": project_identity(config),
+        "services": sorted(required),
+        **metadata(root, args, transport=execute),
+    }
 
 
-def metadata(root, args=None):
+def metadata(
+    root: Path, args: list[str] | None = None, *, transport: RuntimeCommand | None = None
+) -> DatabaseMetadata:
+    execute = transport or command
     args = args or compose(root, "dev", root)
     sql = "BEGIN READ ONLY; SELECT json_build_object('migrations',(SELECT coalesce(json_agg(migration ORDER BY id),'[]') FROM shared.migrations),'seed_runs',(SELECT coalesce(json_agg(json_build_object('release_sha',release_sha,'seeder',seeder)),'[]') FROM shared.platform_seed_runs)); ROLLBACK;"
     # Fixed shell program; password stays inside the existing PostgreSQL
     # environment, never host argv/output. SQL is a fixed positional argument.
     query = 'PGPASSWORD="$APP_DB_PASSWORD" exec psql -h 127.0.0.1 -X -qAt -U runa -d runa -v ON_ERROR_STOP=1 -c "$1"'
-    database = json.loads(
-        command(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", sql], root)
+    database = database_metadata(
+        execute(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", sql], root)
     )
     # Probe optional module metadata without referring to tables absent in older releases.
     exists_sql = "BEGIN READ ONLY; SELECT json_build_object('modules',to_regclass('shared.modules') IS NOT NULL,'steps',to_regclass('shared.module_update_steps') IS NOT NULL); ROLLBACK;"
-    available = json.loads(
-        command(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", exists_sql], root)
+    available = available_metadata(
+        execute(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", exists_sql], root)
     )
-    database.update(modules={}, module_steps=[])
     if available["modules"]:
         module_sql = "BEGIN READ ONLY; SELECT coalesce(json_object_agg(module_id,json_build_object('installed',installed_version,'version',source_version,'registered',registered AND source_present,'required',manifest->'dependencies'->'required')),'{}') FROM shared.modules; ROLLBACK;"
-        database["modules"] = json.loads(
-            command(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", module_sql], root)
+        database["modules"] = module_records(
+            execute(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", module_sql], root)
         )
     if available["steps"]:
         step_sql = "BEGIN READ ONLY; SELECT coalesce(json_agg(json_build_object('module',m.module_id,'step',s.step,'fingerprint',s.fingerprint,'status',s.status,'operation',s.operation)),'[]') FROM shared.module_update_steps s JOIN shared.modules m ON m.id=s.module_id; ROLLBACK;"
-        database["module_steps"] = json.loads(
-            command(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", step_sql], root)
+        database["module_steps"] = module_steps(
+            execute(args + ["exec", "-T", "postgres", "sh", "-c", query, "--", step_sql], root)
         )
     return database
 
 
-def validate_locks(candidate, image):
+def validate_locks(
+    candidate: Path, image: str, *, processes: ExternalProcesses | None = None
+) -> str:
+    processes = processes or ExternalProcesses()
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]{0,255}", image):
         raise Blocker(
             "toolchain-identity", "Select one supported local owner toolchain image reference."
         )
-    identity = command(["docker", "image", "inspect", "--format", "{{.Id}}", image]).strip()
+    identity = command(
+        ["docker", "image", "inspect", "--format", "{{.Id}}", image], processes=processes
+    ).strip()
     if not re.fullmatch("sha256:[a-f0-9]{64}", identity):
         raise Blocker("toolchain-unavailable", "Owner toolchain image has no exact local identity.")
     name = "runa-update-locks-" + uuid.uuid4().hex
@@ -258,7 +315,8 @@ def validate_locks(candidate, image):
                 "validate",
                 "--no-check-publish",
                 "--no-interaction",
-            ]
+            ],
+            processes=processes,
         )
         # Structural frozen-lock check only. Registry supply-chain policy/audits
         # remain mandatory during real install/build; no packages are installed.
@@ -274,7 +332,8 @@ def validate_locks(candidate, image):
                 "--offline",
                 "--store-dir=/tmp/store",
                 "--config.manage-package-manager-versions=false",
-            ]
+            ],
+            processes=processes,
         )
     except Blocker:
         raise Blocker(
@@ -283,5 +342,5 @@ def validate_locks(candidate, image):
         ) from None
     finally:
         # Only this uniquely named disposable probe; never touch runtime services.
-        ExternalProcesses().run(["docker", "rm", "--force", name], capture_output=True, timeout=30)
+        processes.run(["docker", "rm", "--force", name], capture_output=True, timeout=30)
     return identity

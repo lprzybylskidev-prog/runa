@@ -1430,6 +1430,45 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   resource changed. Development/test data, caches, backups and reports are preserved.
   Point 10 has not started; VERSION stays 0.5.0, proposed feature release 0.6.0.
 
+#### Point 9 continuation — external runtime and source boundaries (2026-10-27)
+
+- Added explicit text/bytes process overloads, runtime transport and source-change
+  contracts, and annotated the external installation/gateway, compatibility/source,
+  Compose/runtime and Docker service inputs/results. Shared dependency composition
+  now declares recursive JSON inputs/results without changing composition policy.
+  External document decoding retains duplicate-key refusal and additionally rejects
+  non-finite/invalid recursive values with fixed diagnostics, preserving input files.
+- Added consumed-field decoders for external Compose/container/service responses
+  and migration/seed/module metadata. Unknown response fields remain available;
+  old releases without module tables retain empty optional metadata. Optional
+  profiled services and their tmpfs mounts remain readable, null Docker Env/Labels
+  behave as absent values, and required service image/host/mount/ownership checks
+  remain blocking. No installed Python release is imported.
+- Fixed incomplete injection: DockerRuntime's runtime/database probes now use its
+  selected command transport, and lock validation uses one process policy through
+  image/probe execution and exact scoped cleanup. All added diagnostic scenarios
+  use scripted processes; they start no Docker worker or database operation.
+- Ten necessary focused cases passed through the supported test-python runner:
+  six new process/decoder/transport/cleanup cases, the existing owned-worker client
+  failure cleanup case, missing-service refusal, dependency/applied-migration refusal
+  and shared manifest/version refusal. Changed-file pinned Ruff import/lint and
+  formatting preparation passed. No full suite, strict analysis, build, scanner or
+  live acceptance was run; mandatory staged hooks remain required.
+- Synchronized the public Python guide, owner updater guide and migration ledger.
+  Owner/customer AGENTS and backend/security products already require explicit
+  contexts, typed boundaries, isolated processes and safe refusal/recovery. These
+  internal external-bundle types introduce no customer extension API, authority or
+  security exception, so those products need no new rule. Existing package source
+  projection includes the new model module without changing resource exclusions.
+- Point 9 stays open for quality scheduling/status/evidence, host transport,
+  installation services, external bootstrap/planning/files/module/execution,
+  knowledge and remaining private fixture/test annotations, followed by complete
+  alias/resource/non-Python/inline reconciliation. Point 10 has not started.
+  No module version, dependency, migration or production setting changed; VERSION
+  stays 0.5.0 and proposed_version remains 0.6.0. No disposable Docker resources
+  were created or removed; active development/test data, knowledge/model caches,
+  backups and reports are preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

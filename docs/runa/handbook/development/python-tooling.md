@@ -223,6 +223,9 @@ matching historical tool release. Upgrading an existing 0.5.0 development worksp
 does not require the old installation gateway: the separately supplied updater
 never imports customer application Python. It retains explicit source identities,
 file review consent, journal phases, forward data completion and fencing/resume.
+Its process and read-only runtime probes have typed injected boundaries, including
+validated Compose/Docker and database metadata. These contracts remain internal
+to the separately supplied external bundle and canonical core.
 Customer Python configuration/tests/frozen inputs under `src/app` remain customer
 owned; delivered defaults change only through the existing reviewed file plan.
 

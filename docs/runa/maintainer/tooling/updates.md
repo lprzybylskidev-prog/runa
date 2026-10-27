@@ -13,6 +13,16 @@ have separate modules; none imports the command adapter. Source/data journal pha
 remain compatible. The 0.5.0-to-0.6.0 updater reads verified source/metadata and uses
 PHP/database processes; it never imports either customer Python release.
 
+External process adapters distinguish captured text from bytes and retain literal
+arguments, closed stdin, native exits and fixed failure diagnostics. `DockerRuntime`
+passes its injected command transport through runtime and read-only database probes;
+lock validation uses one process policy for its probes and scoped worker cleanup.
+Compose, container, service-status and migration/seed/module metadata decoders check
+consumed fields before comparison without discarding additional response fields.
+Missing old-release module tables remain absent metadata, not a reason to create
+tables or execute customer code. Null Docker environment/label collections are
+treated as absent; required image, ownership, mount and privilege checks still apply.
+
 ```sh
 python3 update.py --plan --installation /absolute/customer-development \
   --repository lprzybylskidev-prog/runa --target v0.4.1 --json

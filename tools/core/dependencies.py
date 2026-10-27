@@ -2,16 +2,20 @@
 
 import copy
 
+from tools.core.state import JsonValue
+
 SECTIONS = {"composer": ("require", "require-dev"), "package": ("dependencies", "devDependencies")}
 
 
-def compose(platform, application, kind):
+def compose(
+    platform: dict[str, JsonValue], application: dict[str, JsonValue], kind: str
+) -> dict[str, JsonValue]:
     if not isinstance(platform, dict) or not isinstance(application, dict):
         raise ValueError("Dependency manifests must be JSON objects.")
     if set(application) - set(SECTIONS[kind]):
         raise ValueError("Unsupported application dependency declaration field.")
     result = copy.deepcopy(platform)
-    owned = {}
+    owned: dict[str, tuple[str, str]] = {}
     for section in SECTIONS[kind]:
         for source in (platform, application):
             values = source.get(section, {})
@@ -23,5 +27,7 @@ def compose(platform, application, kind):
                 if name in owned and owned[name] != (section, constraint):
                     raise ValueError("Conflicting dependency declaration: " + name)
                 owned[name] = (section, constraint)
-                result.setdefault(section, {})[name] = constraint
+                target = result.setdefault(section, {})
+                assert isinstance(target, dict)
+                target[name] = constraint
     return result

@@ -2,31 +2,76 @@
 
 import os
 import subprocess
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Literal, overload
 
-from tools.core.process import InputMode, OutputMode, ProcessSpec, ProcessTimeout, SubprocessRunner
+from tools.core.process import (
+    InputMode,
+    OutputMode,
+    ProcessRunner,
+    ProcessSpec,
+    ProcessTimeout,
+    SubprocessRunner,
+)
 
 
 class ExternalProcesses:
-    def __init__(self, runner=None, environment=None):
+    def __init__(
+        self, runner: ProcessRunner | None = None, environment: Mapping[str, str] | None = None
+    ) -> None:
         self.runner = runner or SubprocessRunner()
         self.environment = dict(os.environ if environment is None else environment)
 
+    @overload
     def run(
         self,
-        arguments,
+        arguments: Sequence[str],
         *,
-        cwd=None,
-        env=None,
-        input=None,
-        timeout=None,
-        check=False,
-        capture_output=False,
-        text=False,
-        stdin=None,
-        stdout=None,
-        stderr=None,
-    ):
+        cwd: Path | None = None,
+        env: Mapping[str, str] | None = None,
+        input: bytes | str | None = None,
+        timeout: float | None = None,
+        check: bool = False,
+        capture_output: bool = False,
+        text: Literal[True],
+        stdin: int | None = None,
+        stdout: int | None = None,
+        stderr: int | None = None,
+    ) -> subprocess.CompletedProcess[str]: ...
+
+    @overload
+    def run(
+        self,
+        arguments: Sequence[str],
+        *,
+        cwd: Path | None = None,
+        env: Mapping[str, str] | None = None,
+        input: bytes | str | None = None,
+        timeout: float | None = None,
+        check: bool = False,
+        capture_output: bool = False,
+        text: Literal[False] = False,
+        stdin: int | None = None,
+        stdout: int | None = None,
+        stderr: int | None = None,
+    ) -> subprocess.CompletedProcess[bytes]: ...
+
+    def run(
+        self,
+        arguments: Sequence[str],
+        *,
+        cwd: Path | None = None,
+        env: Mapping[str, str] | None = None,
+        input: bytes | str | None = None,
+        timeout: float | None = None,
+        check: bool = False,
+        capture_output: bool = False,
+        text: bool = False,
+        stdin: int | None = None,
+        stdout: int | None = None,
+        stderr: int | None = None,
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
         environment = self.environment if env is None else env
         if stdout not in (None, subprocess.DEVNULL) or stderr not in (None, subprocess.DEVNULL):
             raise ValueError("External process redirection is unsupported.")
@@ -48,9 +93,10 @@ class ExternalProcesses:
             raise subprocess.TimeoutExpired(["external command"], timeout) from None
         if check and result.returncode:
             raise subprocess.CalledProcessError(result.returncode, ["external command"])
+        if text:
+            return subprocess.CompletedProcess(
+                arguments, result.returncode, result.stdout.decode(), result.stderr.decode()
+            )
         return subprocess.CompletedProcess(
-            arguments,
-            result.returncode,
-            result.stdout.decode() if text else result.stdout,
-            result.stderr.decode() if text else result.stderr,
+            arguments, result.returncode, result.stdout, result.stderr
         )

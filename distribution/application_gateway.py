@@ -2,6 +2,7 @@
 
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 
@@ -9,7 +10,7 @@ class GatewayError(ValueError):
     pass
 
 
-def installation_command(workspace, arguments):
+def installation_command(workspace: Path, arguments: Sequence[str]) -> list[str]:
     workspace = Path(workspace)
     if not workspace.is_absolute() or workspace.resolve() != workspace:
         raise GatewayError("Installation workspace must be absolute without symlinks.")

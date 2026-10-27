@@ -339,7 +339,7 @@ without altering serialized schemas or discarding extra evidence. Missing legacy
 rollback proof remains refusal, and optional profiled services retain their
 existing deferred image requirement. Private boundary cases cover malformed
 records, exact evidence preservation, response formats and text/bytes/stdin/check
-semantics. Installation, external update, quality, host, knowledge and remaining
+semantics. Installation, external update orchestration, quality, host, knowledge and remaining
 private fixture annotations still require their own completion; this entry does
 not attest full-scope strict-analysis or acceptance success.
 
@@ -351,6 +351,20 @@ plan source without a dynamic namespace or service-global replacement. Command
 order, dependency expansion, graph hashing, scope refusal and candidate binding
 retain focused regression coverage. Scheduler/state/evidence annotations and the
 remaining private cases are still open; no early full analysis/acceptance was run.
+
+External installation/gateway adapters, process policy, source/compatibility helpers,
+runtime/Compose probes and Docker ownership/data mechanics now declare inputs and
+results. Shared dependency composition returns validated recursive JSON contracts.
+`distribution/update_models.py` checks consumed external Compose/container/status
+and database migration/seed/module fields; unknown response fields stay available.
+The Docker transport propagates through every runtime/database probe, and one
+injected process policy owns lock validation and worker cleanup. Focused cases use
+the delivered recording runner and preserve closed stdin, credential/environment
+isolation, old-release metadata and exact cleanup identities. External packaging
+already projects every authored `.py` in the declared distribution package, so the
+new model module needs no resource exception. Bootstrap/initialization, update
+planning/files/customization/module results/execution and remaining private fixture
+annotations stay open; there is no full strict-analysis or artifact acceptance claim.
 
 ## Retired implementation-era resources
 

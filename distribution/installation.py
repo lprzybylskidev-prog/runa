@@ -4,10 +4,11 @@
 import os
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 
-def main(arguments=None, *, workspace=None):
+def main(arguments: Sequence[str] | None = None, *, workspace: Path | str | None = None) -> int:
     arguments = list(sys.argv[1:] if arguments is None else arguments)
     if not __package__:
         if not any(arg.startswith("--workspace=") for arg in arguments):
