@@ -232,6 +232,17 @@ that service is selected. These are internal contracts, not a new customer API.
 Secrets remain literal raw values. Core owns dependency composition and fixed
 delivery exclusions; standalone acquisition independently checks the same policy.
 
+Standalone acquisition declares its release client, exact release identity, tree
+entries, projection and receipt contracts without importing another package. Its
+GitHub consumers check object/list shapes, string identities, positive non-boolean
+IDs and boolean release flags before use; diagnostics do not echo response bodies.
+The standalone file retains its own isolated Git/process and atomic publication
+primitives because first acquisition has no adjacent package. Customer-repository
+initialization composes `CustomerSource` with an explicit environment and the core
+process runner; tree parsing and file verification stay shared with bootstrap.
+Its CLI composes the same runner for closed-stdin installation and preserves that
+installer's native exit status. Neither path imports customer application Python.
+
 The external installation adapter selects protocol 1 and starts the acquired
 application's fixed installation module as a separate process. The gateway checks
 its own source/workspace identity before importing installation services; it is

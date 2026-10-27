@@ -1696,6 +1696,45 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   No container/network/image/volume was created or removed. Active development/test
   data, knowledge/model caches, backups and reports remain preserved.
 
+#### Point 9 continuation — acquisition and customer initialization contracts (2026-10-27)
+
+- Typed standalone release-client/identity, projection/receipt, tree, HTTP callback,
+  process and CLI boundaries. Consumed GitHub object/list shapes, string identities,
+  positive non-boolean IDs and boolean release flags validate before use; unrelated
+  API fields remain accepted and diagnostics never include response bodies.
+- Kept bootstrap's independent stdlib process/Git/publication mechanism as the
+  intentional single-file first-acquisition boundary; it has no adjacent core
+  package. Customer repository initialization instead composes `CustomerSource`
+  with a copied environment and injected core runner for every Git operation,
+  including tree reads and closed-stdin installer handoff. Pure tree parsing and
+  verified file publication remain shared; no installed Python is imported.
+- Annotated private bootstrap/customer-clone fixture inputs/results and migrated
+  obsolete installer-file expectations to the fixed protocol-1 module gateway.
+  Mocked acquisition now creates the required gateway marker, so handoff tests
+  exercise the actual command builder rather than replacing it with a legacy path.
+- Sixteen necessary focused cases passed through supported test-python: five new
+  metadata/runner/handoff cases, standalone copied-file help, real temporary Git
+  acquisition, real customer clone/source equality, unsafe owner-source/ref refusal,
+  annotated identity refusal, exact gateway commands, interactive postponement,
+  reference selection, hidden token handling and closed-stdin install failure.
+  No live GitHub request, Docker resource, image build, full suite, strict analysis,
+  scanner or broad acceptance ran. Mandatory staged formatting/lint/secret/freshness
+  hooks remain required; point 10 has not started.
+- Synchronized the public Python guide, owner bootstrap guide and migration ledger.
+  Corrected the owner guide's stale bootstrap native-exit claim: standalone first
+  acquisition reports installer failure through its established safe boundary;
+  customer initialization propagates the installer exit. Root/customer AGENTS and
+  backend/security products already require typed injected boundaries and guarded
+  process/source handling; these internal contracts introduce no customer extension
+  API or authority requiring new instructions. Existing external package projection
+  includes both modules automatically. No independently versioned module changed.
+- Point 9 stays open for knowledge and remaining private fixture/test annotations,
+  followed by complete alias/resource/non-Python/inline reconciliation. VERSION
+  remains 0.5.0 and proposed_version remains 0.6.0. No dependency, migration or
+  production setting changed. No container/network/image/volume was created or
+  removed; active development/test data, knowledge/model caches, backups and reports
+  remain preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

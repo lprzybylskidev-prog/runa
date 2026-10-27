@@ -11,7 +11,10 @@ import sys
 import tempfile
 import unittest
 import urllib.error
+from collections.abc import Iterator
+from email.message import Message
 from pathlib import Path
+from typing import TypedDict
 from unittest.mock import Mock, patch
 
 from distribution import bootstrap
@@ -21,8 +24,43 @@ from tools.application.deployment_source import DELIVERY
 ROOT = Path(__file__).resolve().parents[5]
 
 
+class ExpectedSource(TypedDict, total=False):
+    expected_commit: str
+    expected_digest: str
+
+
 class BootstrapContracts(unittest.TestCase):
-    def test_separately_delivered_single_file_runs_without_an_owner_checkout(self):
+    @staticmethod
+    def prepared_source(
+        client: bootstrap.ReleaseClient,
+        tag: str,
+        destination: Path,
+        mode: str,
+        expected_commit: str | None = None,
+        expected_digest: str | None = None,
+        reference_module: bool = False,
+    ) -> bootstrap.AcquisitionReceipt:
+        gateway = destination / "tools/application/gateway.json"
+        gateway.parent.mkdir(parents=True)
+        gateway.write_text('{"schema_version": 1, "installation_protocol": 1}')
+        return {
+            "schema_version": 1,
+            "repository": client.repository,
+            "repository_id": 7,
+            "tag": tag,
+            "release_id": 1,
+            "tag_object": "c" * 40,
+            "commit": "a" * 40,
+            "source_sha256": "b" * 64,
+            "mode": mode,
+            "state": "downloaded",
+            "installed_profile": "source",
+            "reference_module": reference_module,
+            "projection": {"version": 1, "excluded": list(bootstrap.OWNER_PATHS)},
+            "trust": "synthetic fixture",
+        }
+
+    def test_separately_delivered_single_file_runs_without_an_owner_checkout(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             launcher = Path(folder) / "customer-installer.py"
             shutil.copyfile(ROOT / "distribution/bootstrap.py", launcher)
@@ -39,7 +77,7 @@ class BootstrapContracts(unittest.TestCase):
                 sorted(path.name for path in Path(folder).iterdir()), ["customer-installer.py"]
             )
 
-    def test_repository_and_tag_reject_urls_secrets_options_and_paths(self):
+    def test_repository_and_tag_reject_urls_secrets_options_and_paths(self) -> None:
         for value in (
             "https://github.com/a/b",
             "a/b.git",
@@ -62,7 +100,7 @@ class BootstrapContracts(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(bootstrap.BootstrapError):
                 client.resolve(value)
 
-    def test_http_credentials_are_optional_and_never_sent_to_redirects(self):
+    def test_http_credentials_are_optional_and_never_sent_to_redirects(self) -> None:
         for token in ("", "synthetic_not_a_real_token"):
             client = bootstrap.GitHub("owner/repository", token)
             stream = Mock()
@@ -82,9 +120,11 @@ class BootstrapContracts(unittest.TestCase):
                 "http://api.github.com/",
             ):
                 with self.assertRaises(bootstrap.BootstrapError):
-                    bootstrap.NoRedirect().redirect_request(request, None, 302, token, {}, target)
+                    bootstrap.NoRedirect().redirect_request(
+                        request, io.BytesIO(), 302, token, Message(), target
+                    )
 
-    def test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted(self):
+    def test_denied_revoked_rate_limited_and_interrupted_requests_are_redacted(self) -> None:
         client = bootstrap.GitHub("owner/repository", "synthetic_not_a_real_token")
         for status in (301, 401, 403, 404, 500):
             error = urllib.error.HTTPError(
@@ -103,7 +143,7 @@ class BootstrapContracts(unittest.TestCase):
             client.get()
         self.assertNotIn("synthetic", str(caught.exception))
 
-    def test_private_file_permissions_type_symlink_and_token_validation(self):
+    def test_private_file_permissions_type_symlink_and_token_validation(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             file = Path(folder) / "credential"
             file.write_text("synthetic_not_a_real_token\n")
@@ -123,7 +163,9 @@ class BootstrapContracts(unittest.TestCase):
             with self.assertRaises(bootstrap.BootstrapError):
                 bootstrap.token_from_file(Path(folder))
 
-    def test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent(self):
+    def test_git_secrets_are_transient_and_host_git_trace_tls_proxy_overrides_are_absent(
+        self,
+    ) -> None:
         with patch.dict(
             os.environ,
             {
@@ -150,7 +192,9 @@ class BootstrapContracts(unittest.TestCase):
             self.assertIn("http.followRedirects=false", argv)
             self.assertIn("http.sslVerify=true", argv)
 
-    def test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker(self):
+    def test_automation_missing_inputs_and_credential_prompts_fail_before_network_or_docker(
+        self,
+    ) -> None:
         for arguments in (
             [],
             ["--non-interactive"],
@@ -164,7 +208,7 @@ class BootstrapContracts(unittest.TestCase):
                 bootstrap.main(arguments)
             checks.assert_not_called()
 
-    def test_existing_directory_file_symlink_and_disk_shortage_are_preserved(self):
+    def test_existing_directory_file_symlink_and_disk_shortage_are_preserved(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "destination"
             path.mkdir()
@@ -186,7 +230,7 @@ class BootstrapContracts(unittest.TestCase):
             ):
                 bootstrap.destination_path(str(path))
 
-    def test_atomic_publish_cannot_replace_concurrently_created_empty_directory(self):
+    def test_atomic_publish_cannot_replace_concurrently_created_empty_directory(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             source, destination = Path(folder) / "staging", Path(folder) / "destination"
             source.mkdir()
@@ -200,11 +244,15 @@ class BootstrapContracts(unittest.TestCase):
             self.assertFalse(source.exists())
             self.assertTrue(destination.is_dir())
 
-    def fixture(self, folder, link=None):
+    def fixture(
+        self,
+        folder: str,
+        link: str | None = None,
+    ) -> tuple[bootstrap.GitHub, bootstrap.ReleaseIdentity]:
         repo = Path(folder) / "repository"
         repo.mkdir()
 
-        def git(*args):
+        def git(*args: str) -> str:
             return (
                 subprocess.check_output(
                     [
@@ -252,7 +300,7 @@ class BootstrapContracts(unittest.TestCase):
         git("add", ".")
         git("commit", "-qm", "fixture")
         git("tag", "-a", "v1.0.0", "-m", "fixture")
-        identity = {
+        identity: bootstrap.ReleaseIdentity = {
             "release_id": 1,
             "tag_object": git("rev-parse", "v1.0.0"),
             "commit": git("rev-parse", "HEAD"),
@@ -264,10 +312,10 @@ class BootstrapContracts(unittest.TestCase):
         return client, identity
 
     @contextlib.contextmanager
-    def local_git(self):
+    def local_git(self) -> Iterator[None]:
         environment = bootstrap.git_environment
 
-        def local(home, token=""):
+        def local(home: Path, token: str = "") -> dict[str, str]:
             # Test-only local object transport; production exposes no URL/protocol overrides.
             env = environment(home)
             env["GIT_ALLOW_PROTOCOL"] = "file"
@@ -276,7 +324,7 @@ class BootstrapContracts(unittest.TestCase):
         with patch.object(bootstrap, "git_environment", side_effect=local):
             yield
 
-    def test_real_git_download_verifies_objects_files_modes_links_and_clean_source(self):
+    def test_real_git_download_verifies_objects_files_modes_links_and_clean_source(self) -> None:
         with tempfile.TemporaryDirectory() as folder, self.local_git():
             client, identity = self.fixture(folder)
             destination = Path(folder) / "download"
@@ -328,7 +376,7 @@ class BootstrapContracts(unittest.TestCase):
             )
             self.assertTrue(all(not (second / name).exists() for name in bootstrap.OWNER_PATHS))
 
-    def test_reference_choices_survive_reopen_and_production_projection(self):
+    def test_reference_choices_survive_reopen_and_production_projection(self) -> None:
         for include in (False, True):
             with (
                 self.subTest(include=include),
@@ -384,7 +432,7 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertFalse((production / "src/app/modules/reference").exists())
                 self.assertFalse((production / "src/app/modules/module_probe").exists())
 
-    def test_delivered_application_contains_only_essential_extension_entrypoints(self):
+    def test_delivered_application_contains_only_essential_extension_entrypoints(self) -> None:
         expected = {
             "Providers/AppServiceProvider.php",
             "providers.php",
@@ -420,7 +468,7 @@ class BootstrapContracts(unittest.TestCase):
         self.assertNotIn("window.location", (ROOT / "src/app/resources/js/App.vue").read_text())
         self.assertIn("createApplication", (ROOT / "src/app/resources/js/main.ts").read_text())
 
-    def test_customer_agent_projection_survives_reapply_and_teammate_clone(self):
+    def test_customer_agent_projection_survives_reapply_and_teammate_clone(self) -> None:
         for include in (False, True):
             with (
                 self.subTest(include=include),
@@ -470,7 +518,7 @@ class BootstrapContracts(unittest.TestCase):
                     check=True,
                     capture_output=True,
                 )
-                identity = {
+                identity: bootstrap.ReleaseIdentity = {
                     **client.resolve.return_value,
                     "commit": subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"])
                     .decode()
@@ -632,7 +680,7 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertFalse((clone / ".git/runa-bootstrap.json").exists())
                 self.assertFalse((clone / "docs/runa/maintainer").exists())
 
-    def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self):
+    def test_mutated_tag_and_independent_commit_or_digest_mismatch_never_publish(self) -> None:
         for failure in ("commit", "digest", "changed-ref", "fetched-ref"):
             with (
                 self.subTest(failure=failure),
@@ -640,7 +688,7 @@ class BootstrapContracts(unittest.TestCase):
                 self.local_git(),
             ):
                 client, identity = self.fixture(folder)
-                kwargs = {}
+                kwargs: ExpectedSource = {}
                 if failure == "commit":
                     kwargs["expected_commit"] = "a" * 40
                 elif failure == "digest":
@@ -655,7 +703,7 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertFalse(destination.exists())
                 self.assertFalse(list(Path(folder).glob(".runa-bootstrap-*")))
 
-    def test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish(self):
+    def test_unsafe_absolute_escaping_dangling_and_cyclic_symlinks_never_publish(self) -> None:
         for link in ("/etc/passwd", "../../outside", "missing", "alias"):
             with self.subTest(link=link), tempfile.TemporaryDirectory() as folder, self.local_git():
                 client, _ = self.fixture(folder, link)
@@ -663,7 +711,7 @@ class BootstrapContracts(unittest.TestCase):
                     bootstrap.acquire(client, "v1.0.0", Path(folder) / "download", "dev")
                 self.assertFalse((Path(folder) / "download").exists())
 
-    def test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout(self):
+    def test_tree_rejects_path_traversal_submodules_and_size_limit_before_checkout(self) -> None:
         records = [
             b"100644 blob " + b"a" * 40 + b" 1\t../escape\0",
             b"100644 blob " + b"a" * 40 + b" 1\t.git/config\0",
@@ -677,7 +725,7 @@ class BootstrapContracts(unittest.TestCase):
             ):
                 bootstrap.inspect_tree(Path("/source"), Path("/home"), "a" * 40)
 
-    def test_interruption_removes_staging_and_does_not_publish(self):
+    def test_interruption_removes_staging_and_does_not_publish(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             client = bootstrap.GitHub("owner/repository")
             client.resolve = Mock(return_value={"commit": "a" * 40})
@@ -690,7 +738,7 @@ class BootstrapContracts(unittest.TestCase):
             self.assertFalse(list(Path(folder).glob(".runa-bootstrap-*")))
             self.assertFalse((Path(folder) / "download").exists())
 
-    def test_source_tampering_is_detected_against_git_objects(self):
+    def test_source_tampering_is_detected_against_git_objects(self) -> None:
         with tempfile.TemporaryDirectory() as folder, self.local_git():
             client, identity = self.fixture(folder)
             source = Path(client.url)
@@ -699,7 +747,7 @@ class BootstrapContracts(unittest.TestCase):
             with self.assertRaisesRegex(bootstrap.BootstrapError, "hash"):
                 bootstrap.verify_files(source, entries)
 
-    def test_release_identity_rejects_lightweight_tags_and_repository_mismatch(self):
+    def test_release_identity_rejects_lightweight_tags_and_repository_mismatch(self) -> None:
         client = bootstrap.GitHub("owner/repository")
         with (
             patch.object(
@@ -724,7 +772,7 @@ class BootstrapContracts(unittest.TestCase):
         ):
             client.resolve("v1.0.0")
 
-    def test_host_versions_and_failed_child_have_safe_errors_and_timeout(self):
+    def test_host_versions_and_failed_child_have_safe_errors_and_timeout(self) -> None:
         for outputs in (
             [b"git version 2.38.0"],
             [b"git version 2.39.0", b"25.0.0"],
@@ -747,7 +795,7 @@ class BootstrapContracts(unittest.TestCase):
         with self.assertRaisesRegex(bootstrap.BootstrapError, "timed out"):
             bootstrap.process([sys.executable, "-c", "import time; time.sleep(10)"], timeout=0.05)
 
-    def test_interactive_lists_releases_and_asks_postponement(self):
+    def test_interactive_lists_releases_and_asks_postponement(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / "download"
             answers = ["owner/repository", "n", "v1.0.0", str(destination), "later", "y"]
@@ -761,14 +809,14 @@ class BootstrapContracts(unittest.TestCase):
                 patch.object(
                     bootstrap,
                     "acquire",
-                    return_value={"commit": "a" * 40, "source_sha256": "b" * 64},
+                    side_effect=self.prepared_source,
                 ),
                 contextlib.redirect_stdout(io.StringIO()) as output,
             ):
                 self.assertEqual(bootstrap.main([]), 0)
             self.assertIn("Accessible stable releases: v1.0.0", output.getvalue())
 
-    def test_postponement_prints_exact_command_without_invoking_installer(self):
+    def test_postponement_prints_exact_command_without_invoking_installer(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / "download"
             output = io.StringIO()
@@ -778,7 +826,7 @@ class BootstrapContracts(unittest.TestCase):
                 patch.object(
                     bootstrap,
                     "acquire",
-                    return_value={"commit": "a" * 40, "source_sha256": "b" * 64},
+                    side_effect=self.prepared_source,
                 ),
                 patch.object(bootstrap.subprocess, "run") as run,
                 contextlib.redirect_stdout(output),
@@ -801,9 +849,11 @@ class BootstrapContracts(unittest.TestCase):
                 )
             run.assert_not_called()
             self.assertIn("Installation has not run", output.getvalue())
-            self.assertIn("installation.py", output.getvalue())
+            self.assertIn(
+                "-m tools.application.installation_gateway --protocol=1", output.getvalue()
+            )
 
-    def test_unattended_reference_option_reaches_acquisition(self):
+    def test_unattended_reference_option_reaches_acquisition(self) -> None:
         for option, included in (("include", True), ("exclude", False)):
             with self.subTest(option=option), tempfile.TemporaryDirectory() as folder:
                 with (
@@ -812,7 +862,7 @@ class BootstrapContracts(unittest.TestCase):
                     patch.object(
                         bootstrap,
                         "acquire",
-                        return_value={"commit": "a" * 40, "source_sha256": "b" * 64},
+                        side_effect=self.prepared_source,
                     ) as acquire,
                     contextlib.redirect_stdout(io.StringIO()),
                 ):
@@ -833,15 +883,21 @@ class BootstrapContracts(unittest.TestCase):
                     )
                 self.assertEqual(acquire.call_args.kwargs["reference_module"], included)
 
-    def test_external_handoffs_ignore_customer_bin_and_installer_files(self):
+    def test_external_handoffs_ignore_customer_bin_and_installer_files(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / "bin").mkdir()
             (root / "bin/artisan").touch()
-            self.assertIn(
-                str(ROOT / "distribution/installation.py"),
-                bootstrap.install_command(root, "dev", "a" * 40),
+            with self.assertRaisesRegex(bootstrap.BootstrapError, "historical installer"):
+                bootstrap.install_command(root, "dev", "a" * 40)
+            gateway = root / "tools/application/gateway.json"
+            gateway.parent.mkdir(parents=True)
+            gateway.write_text('{"schema_version": 1, "installation_protocol": 1}')
+            command = bootstrap.install_command(root, "dev", "a" * 40)
+            self.assertEqual(
+                command[:3], [sys.executable, "-m", "tools.application.installation_gateway"]
             )
+            self.assertIn("--workspace=" + str(root), command)
             marker = root / "distribution/installation.py"
             marker.parent.mkdir(parents=True)
             marker.touch()
@@ -852,11 +908,13 @@ class BootstrapContracts(unittest.TestCase):
                 bootstrap.install_command(root, "prod", "a" * 40)[-2:], ["prod", "a" * 40]
             )
 
-    def test_release_acquisition_cannot_initialize_production(self):
+    def test_release_acquisition_cannot_initialize_production(self) -> None:
         with self.assertRaisesRegex(bootstrap.BootstrapError, "development-only"):
-            bootstrap.acquire(None, "v1.0.0", Path("/unused"), "prod")
+            bootstrap.acquire(
+                bootstrap.GitHub("owner/repository"), "v1.0.0", Path("/unused"), "prod"
+            )
 
-    def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self):
+    def test_interactive_private_token_uses_hidden_input_and_is_not_printed(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             args = [
                 "--repository",
@@ -882,7 +940,7 @@ class BootstrapContracts(unittest.TestCase):
                 patch.object(
                     bootstrap,
                     "acquire",
-                    return_value={"commit": "a" * 40, "source_sha256": "b" * 64},
+                    side_effect=self.prepared_source,
                 ) as acquire,
                 contextlib.redirect_stdout(io.StringIO()) as output,
             ):
@@ -893,7 +951,7 @@ class BootstrapContracts(unittest.TestCase):
 
     def test_install_now_automation_closes_stdin_and_reports_failure_without_retrying_download(
         self,
-    ):
+    ) -> None:
         with tempfile.TemporaryDirectory() as folder:
             destination = Path(folder) / "download"
             with (
@@ -907,7 +965,7 @@ class BootstrapContracts(unittest.TestCase):
                 patch.object(
                     bootstrap,
                     "acquire",
-                    return_value={"commit": "a" * 40, "source_sha256": "b" * 64},
+                    side_effect=self.prepared_source,
                 ),
                 patch.object(bootstrap.subprocess, "run", return_value=Mock(returncode=17)) as run,
                 contextlib.redirect_stdout(io.StringIO()),

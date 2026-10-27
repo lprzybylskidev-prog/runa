@@ -720,7 +720,9 @@ def main():
 
         customer_repository = fixture_directory / "customer-repository"
         prod.rename(customer_repository)
-        initialize.acquire(str(customer_repository), "initial-production" if team else "main", prod)
+        initialize.CustomerSource().acquire(
+            str(customer_repository), "initial-production" if team else "main", prod
+        )
         if team:
             call(["git", "-C", str(customer_repository), "checkout", "main"])
         check(

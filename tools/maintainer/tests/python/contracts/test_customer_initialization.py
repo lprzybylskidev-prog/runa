@@ -16,14 +16,14 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class CustomerClones(unittest.TestCase):
-    def git(self, root, *args):
+    def git(self, root: Path, *args: str) -> str:
         return (
             subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.DEVNULL)
             .decode()
             .strip()
         )
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.base = Path(self.temporary.name)
@@ -46,7 +46,7 @@ class CustomerClones(unittest.TestCase):
             path.write_text(content)
         self.commit()
 
-    def commit(self):
+    def commit(self) -> str:
         self.git(self.repository, "add", "--all")
         self.git(
             self.repository,
@@ -60,9 +60,11 @@ class CustomerClones(unittest.TestCase):
         )
         return self.git(self.repository, "rev-parse", "HEAD")
 
-    def test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin(self):
+    def test_production_clone_versions_the_same_complete_customer_source_and_preserves_origin(
+        self,
+    ) -> None:
         destination = self.base / "production"
-        sha = initialize.acquire(str(self.repository), "main", destination)
+        sha = initialize.CustomerSource().acquire(str(self.repository), "main", destination)
         self.assertEqual(sha, self.git(self.repository, "rev-parse", "HEAD"))
         for path in self.git(self.repository, "ls-files").splitlines():
             self.assertEqual(
@@ -78,10 +80,10 @@ class CustomerClones(unittest.TestCase):
         with self.assertRaises(ValueError):
             RepositoryPolicy.for_workspace(destination).assert_development_context(destination)
         with self.assertRaises(bootstrap.BootstrapError):
-            initialize.acquire(str(self.repository), "main", destination)
+            initialize.CustomerSource().acquire(str(self.repository), "main", destination)
         self.assertEqual(self.git(destination, "rev-parse", "HEAD"), sha)
 
-    def test_teammate_clone_prepares_local_role_without_first_workstation_metadata(self):
+    def test_teammate_clone_prepares_local_role_without_first_workstation_metadata(self) -> None:
         destination = self.base / "teammate"
         self.git(self.base, "clone", "--quiet", str(self.repository), str(destination))
         self.assertFalse((destination / ".git/runa-bootstrap.json").exists())
@@ -101,7 +103,9 @@ class CustomerClones(unittest.TestCase):
                 destination, "prod"
             )
 
-    def test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields(self):
+    def test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields(
+        self,
+    ) -> None:
         destination = self.base / "operator"
         self.git(self.base, "clone", "--quiet", str(self.repository), str(destination))
         before = self.git(destination, "remote", "-v")
@@ -116,7 +120,9 @@ class CustomerClones(unittest.TestCase):
         self.assertEqual(self.git(destination, "remote", "-v"), before)
         self.assertEqual(self.git(destination, "status", "--porcelain"), "")
 
-    def test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication(self):
+    def test_owner_source_unsafe_refs_and_owner_remote_are_rejected_before_publication(
+        self,
+    ) -> None:
         for value in (
             "https://github.com/lprzybylskidev-prog/runa.git",
             "https://user:secret@example.invalid/repo",
@@ -126,19 +132,21 @@ class CustomerClones(unittest.TestCase):
                 initialize.customer_url(value)
         for target in ("--help", "../main", "refs/notes/private"):
             with self.assertRaises(bootstrap.BootstrapError):
-                initialize.acquire(str(self.repository), target, self.base / "invalid")
+                initialize.CustomerSource().acquire(
+                    str(self.repository), target, self.base / "invalid"
+                )
         private = self.repository / "tools/maintainer/private.py"
         private.parent.mkdir(parents=True)
         private.write_text("private")
         self.commit()
         with self.assertRaisesRegex(bootstrap.BootstrapError, "owner-only"):
-            initialize.acquire(str(self.repository), "main", self.base / "invalid")
+            initialize.CustomerSource().acquire(str(self.repository), "main", self.base / "invalid")
         self.assertFalse((self.base / "invalid").exists())
         self.assertFalse(list(self.base.glob(".runa-customer-*")))
 
-    def test_production_staging_keeps_full_versioned_development_configuration(self):
+    def test_production_staging_keeps_full_versioned_development_configuration(self) -> None:
         destination = self.base / "production"
-        sha = initialize.acquire(str(self.repository), "main", destination)
+        sha = initialize.CustomerSource().acquire(str(self.repository), "main", destination)
         with contextlib.nullcontext(DeploymentService.for_workspace(destination)) as service:
             staged = service.source.checkout(sha)
             service.source.assert_delivery(staged)

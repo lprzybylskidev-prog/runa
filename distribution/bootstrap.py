@@ -23,7 +23,11 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+from collections.abc import Mapping, Sequence
+from email.message import Message
 from pathlib import Path, PurePosixPath
+from types import FrameType
+from typing import IO, NotRequired, Protocol, TypedDict, cast
 
 REPOSITORY = "lprzybylskidev-prog/runa"
 TAG = r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
@@ -49,15 +53,94 @@ class BootstrapError(Exception):
     """Only fixed, credential-free messages cross the public error boundary."""
 
 
+class ReleaseIdentity(TypedDict):
+    release_id: int
+    tag_object: str
+    commit: str
+
+
+class Projection(TypedDict):
+    version: int
+    excluded: list[str]
+
+
+class CustomerAgentReceipt(TypedDict):
+    version: int
+    files: dict[str, str]
+
+
+class AcquisitionReceipt(ReleaseIdentity):
+    schema_version: int
+    repository: str
+    repository_id: int
+    tag: str
+    source_sha256: str
+    mode: str
+    state: str
+    installed_profile: str
+    reference_module: bool
+    projection: Projection
+    trust: str
+    customer_agent: NotRequired[CustomerAgentReceipt]
+
+
+class ReleaseClient(Protocol):
+    repository: str
+    token: str
+    url: str
+
+    def resolve(self, tag: str) -> ReleaseIdentity: ...
+
+    def verify_repository(self) -> int: ...
+
+
+TreeEntry = tuple[str, str, str, int]
+
+
+def metadata_object(value: object) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise BootstrapError("Invalid GitHub metadata object.")
+    fields = cast(dict[object, object], value)
+    if any(not isinstance(key, str) for key in fields):
+        raise BootstrapError("Invalid GitHub metadata object.")
+    return cast(dict[str, object], fields)
+
+
+def metadata_list(value: object) -> list[object]:
+    if not isinstance(value, list):
+        raise BootstrapError("Invalid GitHub release listing.")
+    return cast(list[object], value)
+
+
+def metadata_id(value: object) -> int:
+    if type(value) is not int or value <= 0:
+        raise BootstrapError("Invalid GitHub metadata identity.")
+    return value
+
+
+def stable_release(value: dict[str, object]) -> bool:
+    if any(type(value.get(key, False)) is not bool for key in ("draft", "prerelease")):
+        raise BootstrapError("Invalid GitHub release metadata.")
+    return not value.get("draft", False) and not value.get("prerelease", False)
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: Message,
+        newurl: str,
+    ) -> None:
         raise BootstrapError(
             "GitHub redirected the request. Verify the canonical repository; redirects are refused."
         )
 
 
 class GitHub:
-    def __init__(self, repository, token=""):
+    def __init__(self, repository: str, token: str = "") -> None:
         if (
             not re.fullmatch(
                 r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9_.-]{0,99}", repository
@@ -73,7 +156,7 @@ class GitHub:
         self.url = "https://github.com/" + repository + ".git"
         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
-    def get(self, suffix=""):
+    def get(self, suffix: str = "") -> object:
         headers = {
             "Accept": "application/vnd.github+json",
             "User-Agent": "Runa-bootstrap",
@@ -86,10 +169,11 @@ class GitHub:
         )
         try:
             with self.opener.open(request, timeout=30) as response:
-                raw = response.read(2 * 1024**2 + 1)
+                raw: bytes = response.read(2 * 1024**2 + 1)
             if len(raw) > 2 * 1024**2:
                 raise BootstrapError("GitHub metadata exceeds the supported size.")
-            return json.loads(raw)
+            value: object = json.loads(raw)
+            return value
         except urllib.error.HTTPError as error:
             messages = {
                 401: "GitHub rejected the credential.",
@@ -104,68 +188,74 @@ class GitHub:
                 "GitHub TLS/network/metadata failure. Check connectivity and retry."
             ) from None
 
-    def verify_repository(self):
-        data = self.get()
+    def verify_repository(self) -> int:
+        data = metadata_object(self.get())
+        name, url = data.get("full_name"), data.get("clone_url")
         if (
-            data.get("full_name", "").lower() != self.repository.lower()
-            or data.get("clone_url", "").lower() != self.url.lower()
-            or not isinstance(data.get("id"), int)
+            not isinstance(name, str)
+            or name.lower() != self.repository.lower()
+            or not isinstance(url, str)
+            or url.lower() != self.url.lower()
         ):
             raise BootstrapError(
                 "GitHub repository identity differs from the authorized owner/name."
             )
-        return data["id"]
+        return metadata_id(data.get("id"))
 
-    def releases(self):
+    def releases(self) -> list[str]:
         # Construct pagination locally; never follow credential-bearing Link URLs.
-        tags = []
+        tags: list[str] = []
         for page in range(1, 11):
-            releases = self.get("/releases?per_page=100&page=" + str(page))
-            if not isinstance(releases, list):
-                raise BootstrapError("Invalid GitHub release listing.")
-            tags.extend(
-                item["tag_name"]
-                for item in releases
-                if not item.get("draft")
-                and not item.get("prerelease")
-                and re.fullmatch(TAG, item.get("tag_name", ""))
-            )
+            releases = metadata_list(self.get("/releases?per_page=100&page=" + str(page)))
+            for value in releases:
+                item = metadata_object(value)
+                tag = item.get("tag_name", "")
+                if not isinstance(tag, str):
+                    raise BootstrapError("Invalid GitHub release metadata.")
+                if stable_release(item) and re.fullmatch(TAG, tag):
+                    tags.append(tag)
             if len(releases) < 100:
                 return tags
         raise BootstrapError("Release listing exceeds 1000 entries; supply an explicit tag.")
 
-    def resolve(self, tag):
+    def resolve(self, tag: str) -> ReleaseIdentity:
         if not re.fullmatch(TAG, tag):
             raise BootstrapError("Select an exact stable vX.Y.Z release tag.")
-        release = self.get("/releases/tags/" + tag)
+        release = metadata_object(self.get("/releases/tags/" + tag))
+        published = release.get("published_at")
         if (
             release.get("tag_name") != tag
-            or release.get("draft")
-            or release.get("prerelease")
-            or not release.get("published_at")
+            or not stable_release(release)
+            or not isinstance(published, str)
+            or not published
         ):
             raise BootstrapError("Selected tag is not a published stable GitHub release.")
-        ref = self.get("/git/ref/tags/" + tag)
-        obj = ref.get("object", {})
+        release_id = metadata_id(release.get("id"))
+        ref = metadata_object(self.get("/git/ref/tags/" + tag))
+        obj = metadata_object(ref.get("object", {}))
+        tag_object = obj.get("sha")
         if (
             ref.get("ref") != "refs/tags/" + tag
             or obj.get("type") != "tag"
-            or not re.fullmatch(SHA, obj.get("sha", ""))
+            or not isinstance(tag_object, str)
+            or not re.fullmatch(SHA, tag_object)
         ):
             raise BootstrapError("Release must point to an annotated Git tag.")
-        annotation = self.get("/git/tags/" + obj["sha"])
-        commit = annotation.get("object", {})
+        annotation = metadata_object(self.get("/git/tags/" + tag_object))
+        commit = metadata_object(annotation.get("object", {}))
+        commit_sha = commit.get("sha")
         if (
-            annotation.get("sha") != obj["sha"]
+            annotation.get("sha") != tag_object
             or annotation.get("tag") != tag
             or commit.get("type") != "commit"
-            or not re.fullmatch(SHA, commit.get("sha", ""))
+            or not isinstance(commit_sha, str)
+            or not re.fullmatch(SHA, commit_sha)
         ):
             raise BootstrapError("Annotated tag/commit identity is invalid.")
-        return {"release_id": release["id"], "tag_object": obj["sha"], "commit": commit["sha"]}
+        return {"release_id": release_id, "tag_object": tag_object, "commit": commit_sha}
 
 
-def token_from_file(path):
+def token_from_file(path: str | Path) -> str:
     try:
         descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
         with os.fdopen(descriptor, "rb") as stream:
@@ -184,13 +274,20 @@ def token_from_file(path):
         raise BootstrapError("Cannot read the private credential file.") from None
 
 
-def validate_token(token):
+def validate_token(token: str) -> str:
     if not token or len(token) > 4096 or not re.fullmatch(r"[A-Za-z0-9_]+", token):
         raise BootstrapError("Invalid GitHub token format.")
     return token
 
 
-def process(arguments, *, cwd=None, env=None, timeout=600, input_data=None):
+def process(
+    arguments: Sequence[str],
+    *,
+    cwd: Path | None = None,
+    env: Mapping[str, str] | None = None,
+    timeout: float = 600,
+    input_data: str | None = None,
+) -> bytes:
     try:
         child = subprocess.Popen(
             arguments,
@@ -224,7 +321,7 @@ def process(arguments, *, cwd=None, env=None, timeout=600, input_data=None):
     return output
 
 
-def host_checks():
+def host_checks() -> None:
     if sys.platform != "linux" or sys.version_info < (3, 11):
         raise BootstrapError("Require Linux and Python >=3.11.")
     for command, minimum in (
@@ -240,7 +337,7 @@ def host_checks():
             )
 
 
-def destination_path(value):
+def destination_path(value: str) -> Path:
     path = Path(os.path.abspath(os.path.expanduser(value)))
     if (
         path.parent.resolve() != path.parent
@@ -261,7 +358,7 @@ def destination_path(value):
     return path
 
 
-def git_environment(home, token=""):
+def git_environment(home: Path, token: str = "") -> dict[str, str]:
     # Do not inherit Git config, tracing, helpers, proxies or TLS overrides.
     env = {
         "PATH": os.defpath,
@@ -283,7 +380,13 @@ def git_environment(home, token=""):
     return env
 
 
-def git(source, home, *arguments, token="", input_data=None):
+def git(
+    source: Path,
+    home: Path,
+    *arguments: str,
+    token: str = "",
+    input_data: str | None = None,
+) -> bytes:
     return process(
         [
             "git",
@@ -310,10 +413,14 @@ def git(source, home, *arguments, token="", input_data=None):
     )
 
 
-def inspect_tree(source, home, commit):
-    entries = []
+def inspect_tree(source: Path, home: Path, commit: str) -> list[TreeEntry]:
+    return parse_tree(git(source, home, "ls-tree", "-r", "-z", "-l", commit))
+
+
+def parse_tree(payload: bytes) -> list[TreeEntry]:
+    entries: list[TreeEntry] = []
     total = 0
-    for record in git(source, home, "ls-tree", "-r", "-z", "-l", commit).split(b"\0"):
+    for record in payload.split(b"\0"):
         if not record:
             continue
         metadata, raw_path = record.split(b"\t", 1)
@@ -340,7 +447,7 @@ def inspect_tree(source, home, commit):
     return entries
 
 
-def verify_files(source, entries):
+def verify_files(source: Path, entries: Sequence[TreeEntry]) -> str:
     digest = hashlib.sha256()
     names = {path for path, _, _, _ in entries}
     for path, mode, oid, size in entries:
@@ -376,7 +483,7 @@ def verify_files(source, entries):
     return digest.hexdigest()
 
 
-def publish(source, destination):
+def publish(source: Path, destination: Path) -> None:
     # Linux no-replace rename: never replace even a concurrently created empty directory.
     libc = ctypes.CDLL(None, use_errno=True)
     try:
@@ -395,7 +502,7 @@ def publish(source, destination):
         raise BootstrapError("Atomic source publication failed; destination was not replaced.")
 
 
-def customer_agent(source):
+def customer_agent(source: Path) -> dict[str, bytes]:
     """Capture release-authored customer instructions before sparse exclusion.
 
     Historical releases without this product retain their original projection.
@@ -406,7 +513,7 @@ def customer_agent(source):
         return {}
     if base.is_symlink() or not base.is_dir():
         raise BootstrapError("Customer instruction product must be a regular source tree.")
-    result = {}
+    result: dict[str, bytes] = {}
     for path in sorted(base.rglob("*")):
         if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
             raise BootstrapError("Customer instruction product cannot contain symlinks.")
@@ -442,7 +549,7 @@ def customer_agent(source):
     return result
 
 
-def materialize_customer_agent(source, home, product):
+def materialize_customer_agent(source: Path, home: Path, product: Mapping[str, bytes]) -> None:
     """Stage substitutions so customer commits/clones/reopen retain their defaults."""
     if not product:
         return
@@ -462,14 +569,14 @@ def materialize_customer_agent(source, home, product):
 
 
 def acquire(
-    client,
-    tag,
-    destination,
-    mode,
-    expected_commit=None,
-    expected_digest=None,
-    reference_module=False,
-):
+    client: ReleaseClient,
+    tag: str,
+    destination: Path,
+    mode: str,
+    expected_commit: str | None = None,
+    expected_digest: str | None = None,
+    reference_module: bool = False,
+) -> AcquisitionReceipt:
     if mode != "dev":
         raise BootstrapError(
             "Runa release acquisition is development-only; initialize production from the customer repository."
@@ -516,20 +623,22 @@ def acquire(
             raise BootstrapError(
                 "GitHub release/tag/repository changed during acquisition; no source published."
             )
-        receipt = dict(
-            schema_version=1,
-            repository=client.repository,
-            repository_id=repository_id,
-            tag=tag,
-            **identity,
-            source_sha256=digest,
-            mode=mode,
-            state="downloaded",
-            installed_profile="source",
-            reference_module=reference_module,
-            projection={"version": 1, "excluded": list(OWNER_PATHS)},
-            trust="GitHub HTTPS + annotated tag and Git object hashes; no independent signature",
-        )
+        receipt: AcquisitionReceipt = {
+            "schema_version": 1,
+            "repository": client.repository,
+            "repository_id": repository_id,
+            "tag": tag,
+            "release_id": identity["release_id"],
+            "tag_object": identity["tag_object"],
+            "commit": identity["commit"],
+            "source_sha256": digest,
+            "mode": mode,
+            "state": "downloaded",
+            "installed_profile": "source",
+            "reference_module": reference_module,
+            "projection": {"version": 1, "excluded": list(OWNER_PATHS)},
+            "trust": "GitHub HTTPS + annotated tag and Git object hashes; no independent signature",
+        }
         patterns = [
             "/*",
             *[
@@ -569,7 +678,7 @@ def acquire(
     return receipt
 
 
-def install_command(destination, mode, commit):
+def install_command(destination: Path, mode: str, commit: str) -> list[str]:
     marker = destination / "tools/application/gateway.json"
     if marker.is_symlink() or not marker.is_file() or marker.stat().st_size > 4096:
         raise BootstrapError(
@@ -588,7 +697,21 @@ def install_command(destination, mode, commit):
     ]
 
 
-def main(argv=None):
+class BootstrapArguments(argparse.Namespace):
+    repository: str | None
+    tag: str | None
+    destination: str | None
+    install: str | None
+    non_interactive: bool
+    reference_module: str | None
+    profile: str | None
+    token_file: str | None
+    ask_token: bool
+    expected_commit: str | None
+    expected_digest: str | None
+
+
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Acquire a verified Runa release for first development; production initializes from the customer repository."
     )
@@ -623,7 +746,7 @@ def main(argv=None):
         "--expected-commit", help="Independently delivered full lowercase commit SHA"
     )
     parser.add_argument("--expected-digest", help="Independently delivered SHA-256 source digest")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv, namespace=BootstrapArguments())
     interactive = not args.non_interactive and sys.stdin.isatty() and sys.stderr.isatty()
     if not interactive and (
         args.ask_token or not all((args.repository, args.tag, args.destination, args.install))
@@ -706,7 +829,7 @@ def main(argv=None):
 
 if __name__ == "__main__":
 
-    def interrupted(signum, frame):
+    def interrupted(signum: int, frame: FrameType | None) -> None:
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupted)

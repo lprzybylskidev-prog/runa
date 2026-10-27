@@ -454,3 +454,20 @@ volume metadata through the real runtime decoder and durable writer without Dock
 Existing package projection includes the authored module; no resource exclusion,
 dependency or customer extension API changes. Full strict analysis and broad/live
 acceptance remain in point 10.
+
+Bootstrap acquisition now declares its release-client/identity, tree, projection,
+receipt, HTTP callback, process and CLI contracts in the independently delivered
+single file. Consumed GitHub values are validated before typed use; malformed
+shapes, boolean IDs and nonboolean release flags fail with fixed diagnostics.
+Its credential-isolated process/publication code remains an intentional standalone
+boundary because no adjacent core package exists at first acquisition. External
+customer initialization instead composes `CustomerSource` with a copied environment
+and injected core runner for every Git/tree read and installer handoff. Pure tree
+parsing and file verification remain shared, without importing installed Python.
+Private bootstrap/customer-clone cases declare fixture inputs/results and target
+the fixed protocol-1 gateway instead of the removed installer file. Focused cases
+cover malformed/valid metadata, injected process failure/environment isolation,
+native installer exit, real temporary Git cloning and standalone help. Existing
+external source projection already includes these modules; no resource exception
+or dependency is added. Knowledge/private test typing and complete caller/resource/
+inline reconciliation remain open; full analysis/build/acceptance stays in point 10.

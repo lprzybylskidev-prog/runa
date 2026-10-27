@@ -69,6 +69,10 @@ ID/name/clone URL, resolves the tag object and commit, fetches only that exact t
 using Git HTTPS, and compares the fetched identities with the API. Git object
 checking is enabled. The repository/release/tag identities are read again before
 publication to detect changes during the download. Root VERSION must match the tag.
+Consumed metadata is validated before selecting identities: repository/release IDs
+must be positive integers (never booleans), release flags must be booleans, and
+nested tag/commit records must carry the expected object and string fields.
+Malformed responses fail with fixed diagnostics; unrelated API fields are ignored.
 
 Before checkout, reject unsafe paths, submodules, unsupported file types and source
 larger than 512 MiB or 50000 files. After checkout, verify every tracked file's Git
@@ -124,8 +128,8 @@ boundary against an operator deliberately rewriting the installation.
 
 `--install later` prints a shell-quoted fixed module invocation of the selected
 application's installation gateway (protocol 1), with the destination as its
-working directory. `--install now` invokes that exact process and propagates its
-native exit. The copied single-file bootstrap needs no sibling installer for a
+working directory. `--install now` invokes that exact process and reports a failed installer
+without reacquiring or overwriting the published source. The copied single-file bootstrap needs no sibling installer for a
 protocol-1 release. The internal gateway is not a public Artisan command or a
 Python extension API. Historical releases without the protocol use their matching
 historical installer; the current updater can upgrade an existing 0.5.0 development
