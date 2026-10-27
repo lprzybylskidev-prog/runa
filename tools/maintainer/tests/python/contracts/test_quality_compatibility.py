@@ -13,9 +13,10 @@ from types import SimpleNamespace
 from tools.application import quality_planning as quality
 from tools.application.configuration_reader import ConfigurationReader
 from tools.application.quality_evidence import check_evidence, closure_link_update
+from tools.application.quality_models import QualityDefinition, quality_definition
 from tools.application.quality_reporting import save
 from tools.maintainer.release_checks import closure_policy
-from tools.maintainer.tests.python.contracts.test_quality_services import node
+from tools.maintainer.tests.python.support.quality import node
 
 ROOT = Path(__file__).resolve().parents[5]
 reader = ConfigurationReader.for_workspace(ROOT)
@@ -74,7 +75,7 @@ class QualityCompatibility(unittest.TestCase):
                 )
             )
 
-    def grouped_definition(self):
+    def grouped_definition(self) -> QualityDefinition:
         return {
             "base": [node("baseline", "true"), node("runtime", "true", ["baseline"])],
             "impact_areas": {"tooling": [node("cheap", "true"), node("expensive", "false")]},
@@ -87,7 +88,7 @@ class QualityCompatibility(unittest.TestCase):
         definition = self.grouped_definition()
         nodes, scope = quality.resolve(definition, [], all_groups=True)
         self.assertIn("expensive", nodes)
-        self.assertEqual(scope["mode"], "all")
+        assert scope["mode"] == "all"
         self.assertEqual(scope["excluded_groups"], [])
         legacy, scope = quality.resolve(definition, ["tooling"])
         self.assertEqual(legacy, quality.select(definition, ["tooling"]))
@@ -117,13 +118,15 @@ class QualityCompatibility(unittest.TestCase):
         definition["base"][0]["depends_on"] = ["runtime"]
         with self.assertRaisesRegex(ValueError, "cycle"):
             quality.resolve(definition, [], groups=["backend"])
-        definition["groups"]["broken"] = ["missing"]
+        groups = definition.get("groups")
+        assert groups is not None
+        groups["broken"] = ["missing"]
         with self.assertRaisesRegex(ValueError, "Missing"):
             quality.resolve(definition, [], groups=["broken"])
 
     def test_real_catalogues_cover_existing_steps_without_owner_customer_leaks(self):
-        owner = reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
-        customer = reader.yaml(ROOT / "tools/application/quality.yml")
+        owner = quality_definition(reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml"))
+        customer = quality_definition(reader.yaml(ROOT / "tools/application/quality.yml"))
         owner_nodes, _ = quality.resolve(owner, [], all_groups=True)
         legacy = quality.select(owner, list(owner["impact_areas"]), True)
         self.assertTrue(set(legacy) <= set(owner_nodes))
@@ -308,7 +311,9 @@ class QualityCompatibility(unittest.TestCase):
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
     def test_actual_host_production_gates_share_the_operation_group(self):
-        definition = reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        definition = quality_definition(
+            reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        )
         nodes = quality.select(definition, ["production", "security"])
         for key in ("production-acceptance", "repository-container-scan"):
             self.assertEqual(nodes[key]["exclusive_group"], "production-simulation", key)

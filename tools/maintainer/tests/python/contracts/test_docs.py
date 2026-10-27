@@ -12,6 +12,7 @@ from pathlib import Path
 import tools.maintainer.docs_checks as docs_checks
 from tools.application import quality_planning as quality
 from tools.application.configuration_reader import ConfigurationReader
+from tools.application.quality_models import quality_definition
 from tools.maintainer.testing.documentation_fixture import copy_public
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -138,7 +139,9 @@ class DocumentationContracts(unittest.TestCase):
             self.validate()
 
     def test_final_gate_includes_docs_without_documentation_impact(self):
-        definition = reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        definition = quality_definition(
+            reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        )
         selected = quality.select(definition, [], True)
         self.assertEqual(
             selected["version-changelog-roadmap"]["command"],

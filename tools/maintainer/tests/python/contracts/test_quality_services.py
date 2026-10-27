@@ -7,7 +7,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -15,29 +14,15 @@ from tools.application.quality_cli import service
 from tools.application.quality_execution import QualityExecutor
 from tools.application.quality_planning import arguments, resolve, select, validate_declared
 from tools.application.quality_reporting import status
-from tools.application.quality_service import QualityService
+from tools.application.quality_service import QualityPlanner, QualityService
 from tools.core.context import ExecutionLocation, WorkspaceContext
-
-
-def node(key, command="true", deps=None, group=None):
-    return dict(
-        id=key, command=command, depends_on=deps or [], severity="hard_fail", exclusive_group=group
-    )
-
-
-def definition():
-    return dict(
-        base=[node("base"), node("runtime", deps=["base"])],
-        impact_areas={},
-        final=[node("closure")],
-        mandatory=["base", "closure"],
-        groups={"docs": ["base"], "backend": ["runtime"]},
-    )
+from tools.maintainer.tests.python.support.quality import FixturePlanner, definition, node
 
 
 def test_selection_prerequisites_hash_and_declared_scope():
     nodes, scope = resolve(definition(), [], groups=["docs"])
     assert set(nodes) == {"base", "closure"}
+    assert scope["mode"] == "groups"
     assert scope["excluded_groups"] == ["backend"]
     validate_declared(dict(quality_groups="docs", quality_rationale="Selected docs"), scope)
     with pytest.raises(ValueError, match="differs"):
@@ -61,6 +46,8 @@ def test_owner_and_customer_composition_do_not_mutate_each_other(tmp_path):
         directory=tmp_path / ".runtime/quality",
     )
     customer = service(tmp_path)
+    assert isinstance(owner.planner, QualityPlanner)
+    assert isinstance(customer.planner, QualityPlanner)
     assert owner.planner.roadmaps != customer.planner.roadmaps
     assert customer.directory == tmp_path / ".runtime/application-quality"
     assert not customer.planner.definition.name == "owner.yml"
@@ -158,13 +145,14 @@ def test_background_lock_signal_and_reaping(tmp_path):
     root = Path(__file__).resolve().parents[5]
     harness = tmp_path / "harness.py"
     harness.write_text(
-        "from pathlib import Path\nimport sys\nfrom types import SimpleNamespace\nfrom tools.application.quality_cli import main\nfrom tools.application.quality_service import QualityService\nfrom tools.application.quality_execution import QualityExecutor\nfrom tools.core.context import WorkspaceContext, ExecutionLocation\n"
+        "from pathlib import Path\nimport sys\nfrom tools.maintainer.tests.python.support.quality import FixturePlanner\nfrom tools.application.quality_cli import main\nfrom tools.application.quality_service import QualityService\nfrom tools.application.quality_execution import QualityExecutor\nfrom tools.core.context import WorkspaceContext, ExecutionLocation\n"
         + f"root=Path({str(tmp_path)!r})\n"
-        + "planner=SimpleNamespace(plan=lambda *args, **kwargs: "
+        + "planner=FixturePlanner("
         + repr(
-            (
-                dict(id="fixture", impact_areas=[]),
-                dict(wait=node("wait", "python3 -c 'import time; time.sleep(30)'")),
+            dict(
+                base=[node("wait", "python3 -c 'import time; time.sleep(30)'")],
+                impact_areas={},
+                final=[],
             )
         )
         + ")\n"
@@ -212,12 +200,8 @@ def test_invalid_selection_and_preview_never_replace_prior_evidence(tmp_path, ca
     sentinel = directory / "state.json"
     sentinel.write_text('{"sentinel": true}')
 
-    def plan(final=False, **selection):
-        nodes, scope = resolve(definition(), [], final, **selection)
-        return dict(id="fixture", impact_areas=[], quality_selection=scope), nodes
-
     quality = QualityService(
-        SimpleNamespace(plan=plan),
+        FixturePlanner(definition()),
         QualityExecutor(WorkspaceContext(tmp_path), ExecutionLocation.CONTAINER, tuple),
         directory,
         "fixture ",

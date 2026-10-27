@@ -5,6 +5,7 @@ import subprocess
 from dataclasses import dataclass
 
 from tools.application.configuration_reader import ConfigurationReader
+from tools.application.quality_models import quality_definition
 from tools.application.quality_planning import graph_hash, resolve, validate_declared
 from tools.application.quality_reporting import read_state
 
@@ -53,7 +54,9 @@ def check_evidence(root, data, definition_path, directory, *, policy=None, reade
         or state.get("rationale") != data.get("quality_rationale")
     ):
         raise ValueError("Final quality evidence does not match the closed roadmap.")
-    definition = (reader or ConfigurationReader.for_workspace(root)).yaml(definition_path)
+    definition = quality_definition(
+        (reader or ConfigurationReader.for_workspace(root)).yaml(definition_path)
+    )
     nodes, resolved = resolve(
         definition,
         [],

@@ -4,14 +4,33 @@ import fcntl
 import os
 import shutil
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
 from tools.application.configuration_reader import ConfigurationReader
 from tools.application.quality_execution import QualityExecutor
+from tools.application.quality_models import (
+    QualityGraph,
+    QualityRoadmap,
+    QualityScope,
+    quality_definition,
+    quality_roadmap,
+)
 from tools.application.quality_planning import arguments, resolve, show_scope, validate_declared
 from tools.application.quality_reporting import read_state, save, status
 from tools.core.context import ExecutionLocation
+
+
+class QualityPlanSource(Protocol):
+    def plan(
+        self,
+        final: bool = False,
+        *,
+        groups: Sequence[str] | None = None,
+        all_groups: bool = False,
+    ) -> tuple[QualityRoadmap, QualityGraph]: ...
 
 
 @dataclass(frozen=True)
@@ -21,16 +40,26 @@ class QualityPlanner:
     definition: Path
     allow_application_default: bool = False
 
-    def plan(self, final=False, *, groups=None, all_groups=False):
+    def plan(
+        self,
+        final: bool = False,
+        *,
+        groups: Sequence[str] | None = None,
+        all_groups: bool = False,
+    ) -> tuple[QualityRoadmap, QualityGraph]:
         active = sorted(self.roadmaps.glob("*.md"))
         if not active and self.allow_application_default:
-            roadmap = {"id": "application", "impact_areas": []}
+            roadmap: QualityRoadmap = {"id": "application", "impact_areas": []}
         elif len(active) == 1:
-            roadmap = self.reader.roadmap(active[0])
+            roadmap = quality_roadmap(self.reader.roadmap(active[0]))
         else:
             raise ValueError("Exactly one active roadmap is required.")
         nodes, scope = resolve(
-            self.reader.yaml(self.definition), roadmap["impact_areas"], final, groups, all_groups
+            quality_definition(self.reader.yaml(self.definition)),
+            roadmap["impact_areas"],
+            final,
+            groups,
+            all_groups,
         )
         roadmap["quality_selection"] = scope
         return roadmap, nodes
@@ -38,12 +67,12 @@ class QualityPlanner:
 
 @dataclass(frozen=True)
 class QualityService:
-    planner: QualityPlanner
+    planner: QualityPlanSource
     executor: QualityExecutor
     directory: Path
     command_prefix: str
 
-    def run(self, argv):
+    def run(self, argv: Sequence[str]) -> int:
         if list(argv) == ["--help"]:
             print(
                 "Usage: "
@@ -52,11 +81,14 @@ class QualityService:
             )
             return 0
         groups, all_groups, background = arguments(argv)
+        roadmap: QualityRoadmap | None = None
+        nodes: QualityGraph = {}
+        selection: QualityScope = {"mode": "legacy"}
         if argv[0] != "status":
             roadmap, nodes = self.planner.plan(
                 argv[0] == "final", groups=groups, all_groups=all_groups
             )
-            selection = roadmap.get("quality_selection", {"mode": "legacy"})
+            selection = roadmap.get("quality_selection", selection)
             if argv[0] == "final":
                 validate_declared(roadmap, selection)
             if argv[0] == "show":
@@ -90,6 +122,7 @@ class QualityService:
                 # A live coordinator owns writes; status only observes it.
                 status(directory, active, anchor=self.executor.workspace.root)
                 return 0
+            assert roadmap is not None
             if self.executor.location is ExecutionLocation.CONTAINER and any(
                 node.get("execution_context") == "host" for node in nodes.values()
             ):
@@ -122,7 +155,7 @@ class QualityService:
             directory.mkdir(mode=0o700)
             root = self.executor.workspace.root
 
-            def git(*args):
+            def git(*args: str) -> str:
                 return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
 
             state = {

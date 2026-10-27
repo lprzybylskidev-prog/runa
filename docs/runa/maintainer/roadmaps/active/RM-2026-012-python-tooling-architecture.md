@@ -1399,6 +1399,37 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   the final complete alias/resource/non-Python/inline ledger reconciliation.
   Point 10 has not started; VERSION remains 0.5.0 and proposed_version is 0.6.0.
 
+#### Point 9 continuation — typed quality planning (2026-10-27)
+
+- Added typed definition/node/graph, roadmap and legacy/named selection contracts.
+  Source decoders validate consumed fields and retain node/roadmap evidence used
+  by existing hashes. Pure planning and the planner/service boundary now declare
+  inputs/results; the `QualityPlanSource` protocol allows explicit test composition.
+  Evidence resolution uses the same definition decoder as operational planning.
+  Selection order, prerequisites, conditional dependencies, graph hashing and
+  declared-scope refusal retain their behavior; no quality command was executed.
+- Moved shared node/definition factories out of a test module into private support.
+  Added a typed `FixturePlanner` and replaced dynamic namespace planners in preview
+  and subprocess fixtures. The background/signal harness remains for final quality;
+  it was not run as an early concurrency/acceptance check. Existing docs/catalogue
+  consumers now explicitly decode configuration before typed graph selection.
+- Five focused decoder/planner cases passed; three selected existing cases passed
+  for dependency/scope handling, legacy interrupted status and nonmutating preview.
+  The exact candidate/scope/command-binding closure regression also passed. The
+  preview case passed again after replacing its dynamic planner fixture. No full
+  suite, strict analysis, real graph preview, image build/scanner or live acceptance
+  was run. Mandatory staged hooks apply; frozen pins and strict scope are unchanged.
+- Updated the public Python guide and migration ledger. Owner/customer instruction
+  products already cover explicit composition, typed boundaries and private/public
+  test ownership; these internal planning types add no customer extension API or
+  authority rule. Backend/security skill products require no new procedure.
+- Point 9 remains open. Remaining annotation work includes quality scheduling,
+  status/evidence records and private cases; host transport; installation/external
+  tooling; knowledge; then complete alias/resource/non-Python/inline reconciliation.
+  No module version, dependency, migration, production setting or disposable Docker
+  resource changed. Development/test data, caches, backups and reports are preserved.
+  Point 10 has not started; VERSION stays 0.5.0, proposed feature release 0.6.0.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

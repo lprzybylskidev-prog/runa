@@ -343,6 +343,15 @@ semantics. Installation, external update, quality, host, knowledge and remaining
 private fixture annotations still require their own completion; this entry does
 not attest full-scope strict-analysis or acceptance success.
 
+Quality definitions, roadmap inputs, graphs, legacy/named selections and planner
+outputs now have typed contracts and explicit decoders. Planner/evidence composition
+uses the same source decoder. Private quality factories live in the support package
+instead of importing another test module; `FixturePlanner` implements the injected
+plan source without a dynamic namespace or service-global replacement. Command
+order, dependency expansion, graph hashing, scope refusal and candidate binding
+retain focused regression coverage. Scheduler/state/evidence annotations and the
+remaining private cases are still open; no early full analysis/acceptance was run.
+
 ## Retired implementation-era resources
 
 `tools/maintainer/testing/php-alpine-host.sh` was an unused PHP-only acceptance

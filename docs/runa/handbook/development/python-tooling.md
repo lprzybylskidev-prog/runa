@@ -165,6 +165,11 @@ scope through excluded maintainer configuration and its private test selector.
 The owner composes these same services with private paths, without replacing
 module globals or loading command files as implementation. Configuration parsing,
 graph selection, execution, status and closure evidence have separate modules.
+Definition/frontmatter decoders validate source-owned planning fields; typed graph
+and scope contracts preserve definition order, conditional dependencies and command
+hashes. `QualityPlanSource` permits an explicitly injected planner without mutating
+the scheduler. Status rendering accepts legacy scope metadata and validates named
+group selections. Parsing a definition does not execute its commands.
 The private release validator supplies allowed closure metadata; customer closure
 uses application manifest/changelog defaults. Serialized scope, graph hashes,
 commands, timing and candidate checks retain their existing contracts.

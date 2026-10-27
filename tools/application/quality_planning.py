@@ -3,26 +3,36 @@
 import hashlib
 import json
 import re
+from collections.abc import Mapping, Sequence
 
-from tools.application.quality_models import QualityStep
+from tools.application.quality_models import (
+    QualityDefinition,
+    QualityGraph,
+    QualityScope,
+    QualityStep,
+    SelectedScope,
+    quality_scope,
+)
 
 
-def select(definition, areas, final=False):
-    nodes = {}
+def select(
+    definition: QualityDefinition, areas: Sequence[str], final: bool = False
+) -> QualityGraph:
+    nodes: QualityGraph = {}
     for node in definition["base"] + [
         n for area in areas for n in definition["impact_areas"][area]
     ]:
         if node["id"] in nodes and nodes[node["id"]] != node:
             raise ValueError("Conflicting step: " + node["id"])
-        nodes[node["id"]] = dict(node)
+        nodes[node["id"]] = node.copy()
     preceding = list(nodes)
     if final:
         for node in definition["final"]:
             if node["id"] in nodes:
                 raise ValueError("Duplicate final step: " + node["id"])
-            nodes[node["id"]] = dict(
-                node, depends_on=list(dict.fromkeys(preceding + node["depends_on"]))
-            )
+            selected = node.copy()
+            selected["depends_on"] = list(dict.fromkeys(preceding + node["depends_on"]))
+            nodes[node["id"]] = selected
     for key, node in nodes.items():
         if not re.fullmatch(r"[a-z0-9-]+", key) or node["severity"] not in ("hard_fail", "warning"):
             raise ValueError("Invalid step: " + key)
@@ -35,7 +45,7 @@ def select(definition, areas, final=False):
         if any(d not in nodes for d in node["depends_on"]):
             raise ValueError("Missing dependency: " + key)
         QualityStep.parse(node)
-    done = set()
+    done: set[str] = set()
     while len(done) < len(nodes):
         ready = {k for k, n in nodes.items() if k not in done and set(n["depends_on"]) <= done}
         if not ready:
@@ -44,11 +54,11 @@ def select(definition, areas, final=False):
     return nodes
 
 
-def arguments(args):
+def arguments(args: Sequence[str]) -> tuple[list[str] | None, bool, bool]:
     """Validate transport arguments before touching locks, logs or run evidence."""
     if not args or args[0] not in ("show", "roadmap", "final", "status"):
         raise ValueError("Invalid quality action.")
-    groups = []
+    groups: list[str] = []
     all_groups = background = False
     for arg in args[1:]:
         if arg == "--all" and not all_groups:
@@ -64,20 +74,29 @@ def arguments(args):
     return sorted(set(groups)) or None, all_groups, background
 
 
-def resolve(definition, areas, final=False, groups=None, all_groups=False):
+def resolve(
+    definition: QualityDefinition,
+    areas: Sequence[str],
+    final: bool = False,
+    groups: Sequence[str] | None = None,
+    all_groups: bool = False,
+) -> tuple[QualityGraph, QualityScope]:
     if groups is None and not all_groups:
         return select(definition, areas, final), {
             "mode": "legacy",
-            "impact_areas": areas,
+            "impact_areas": list(areas),
             "final": final,
         }
-    catalogue = definition["groups"]
+    catalogue = definition.get("groups")
+    mandatory = definition.get("mandatory")
+    if catalogue is None or mandatory is None:
+        raise ValueError("Named quality selection requires groups and a mandatory baseline.")
     if (all_groups and groups) or (groups is not None and not groups):
         raise ValueError("Provide named groups or --all.")
-    requested = sorted(catalogue if all_groups else set(groups))
+    requested = sorted(catalogue if all_groups else set(groups or ()))
     if any(group not in catalogue for group in requested):
         raise ValueError("Unknown or unavailable quality group. Available: " + ", ".join(catalogue))
-    inventory = {}
+    inventory: QualityGraph = {}
     for node in (
         definition["base"]
         + [n for values in definition["impact_areas"].values() for n in values]
@@ -88,9 +107,9 @@ def resolve(definition, areas, final=False, groups=None, all_groups=False):
         if key in inventory and inventory[key] != node:
             raise ValueError("Conflicting step: " + key)
         inventory[key] = node
-    reasons = {}
+    reasons: dict[str, list[str]] = {}
 
-    def include(key, reason):
+    def include(key: str, reason: str) -> None:
         if key not in inventory:
             raise ValueError("Missing dependency or group step: " + key)
         if key in reasons:
@@ -101,13 +120,13 @@ def resolve(definition, areas, final=False, groups=None, all_groups=False):
         for dependency in inventory[key]["depends_on"]:
             include(dependency, "prerequisite of " + key)
 
-    for key in definition["mandatory"]:
+    for key in mandatory:
         include(key, "mandatory baseline")
     for group in requested:
         for key in catalogue[group]:
             include(key, "group " + group)
     # Preserve definition order and validate the expanded graph through the same scheduler contract.
-    chosen = [dict(node) for key, node in inventory.items() if key in reasons]
+    chosen = [node.copy() for key, node in inventory.items() if key in reasons]
     final_ids = {node["id"] for node in definition["final"]}
     nodes = select(
         {
@@ -118,25 +137,26 @@ def resolve(definition, areas, final=False, groups=None, all_groups=False):
         [],
         True,
     )
-    scope = {
+    scope: SelectedScope = {
         "mode": "all" if all_groups else "groups",
         "requested_groups": requested,
         "excluded_groups": sorted(set(catalogue) - set(requested)),
-        "mandatory": definition["mandatory"],
+        "mandatory": mandatory,
         "reasons": reasons,
         "graph_hash": graph_hash(nodes),
     }
     return nodes, scope
 
 
-def graph_hash(nodes):
+def graph_hash(nodes: Mapping[str, object]) -> str:
     return hashlib.sha256(
         json.dumps(nodes, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
 
 
-def show_scope(scope):
-    if scope.get("mode", "legacy") == "legacy":
+def show_scope(value: Mapping[str, object]) -> None:
+    scope = quality_scope(value)
+    if scope["mode"] == "legacy":
         print("Scope: legacy impact-area selection (no explicit groups).")
         return
     print("Scope: " + scope["mode"] + "; requested groups: " + ", ".join(scope["requested_groups"]))
@@ -146,15 +166,12 @@ def show_scope(scope):
         print("Included " + key + ": " + "; ".join(reasons))
 
 
-def validate_declared(roadmap, scope):
+def validate_declared(roadmap: Mapping[str, object], scope: Mapping[str, object]) -> None:
     declared = roadmap.get("quality_groups")
     if declared is None:
         return
-    if (
-        not isinstance(declared, str)
-        or not isinstance(roadmap.get("quality_rationale"), str)
-        or not roadmap["quality_rationale"].strip()
-    ):
+    rationale = roadmap.get("quality_rationale")
+    if not isinstance(declared, str) or not isinstance(rationale, str) or not rationale.strip():
         raise ValueError("Final selection requires quality_groups and quality_rationale strings.")
     if declared == "all":
         matches = scope.get("mode") == "all"
