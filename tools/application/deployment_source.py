@@ -54,9 +54,7 @@ class SourceAcquisition:
         ).hexdigest()
 
     def checkout(self, sha, source=None):
-        from tools.application.repository_boundary import receipt, write_staging_receipt
-
-        data = receipt(self.context.workspace.root)
+        data = self.context.policy.receipt(self.context.workspace.root)
         if not re.fullmatch("[a-f0-9]{40}", sha):
             raise ValueError("Staging requires an exact commit identity.")
         path = self.context.state / "releases" / sha
@@ -76,7 +74,7 @@ class SourceAcquisition:
                 raise ValueError(
                     "Existing release checkout is modified; inspect it before retrying."
                 )
-            if receipt(path).get("staging") != staging:
+            if self.context.policy.receipt(path).get("staging") != staging:
                 raise ValueError(
                     "Existing release staging ownership differs; no source is adopted or repaired."
                 )
@@ -104,10 +102,8 @@ class SourceAcquisition:
         staged = {**data, "staging": staging, "commit": sha, "mode": "prod"}
         # Acquisition digests identify the original download, not a different staged commit.
         staged.pop("source_sha256", None)
-        write_staging_receipt(path, staged)
-        from tools.application.repository_boundary import application_remote
-
-        _, url = application_remote(self.context.workspace.root, data)
+        self.context.policy.write_staging_receipt(path, staged)
+        _, url = self.context.policy.application_remote(self.context.workspace.root, data)
         self.context.run(["git", "-C", str(path), "remote", "set-url", "origin", url])
         self.context.run(
             ["git", "-C", str(path), "config", "--local", "runa.applicationRemote", "origin"]

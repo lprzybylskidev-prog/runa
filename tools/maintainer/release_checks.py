@@ -39,7 +39,11 @@ def metadata(path):
     front = text.split("\n---\n", 1)[0][4:]
     result = dict(re.findall(r"^([a-z_]+): ([^\n]+)$", front, re.M))
     if "quality_groups" in result:
-        from tools.application.quality import roadmap_metadata
+        from tools.application.configuration_reader import ConfigurationReader
+
+        roadmap_metadata = ConfigurationReader.for_workspace(
+            Path(__file__).resolve().parents[2]
+        ).roadmap
 
         parsed = roadmap_metadata(path)
         result.update({key: parsed.get(key) for key in ("quality_groups", "quality_rationale")})
@@ -54,12 +58,15 @@ def check_application(root, target):
     # Minimal release fixtures have no Laravel composition; real applications must have a manifest.
     if not (root / "src/composer.json").is_file():
         return
-    from tools.application.runtime import ROOT, app_command
+    from tools.application.development_runtime import DevelopmentRuntime
+    from tools.maintainer.context import ROOT
+
+    runtime = DevelopmentRuntime.for_workspace(ROOT)
 
     loader = ROOT / "src/vendor/autoload.php"
     script = "require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); if (Runa\\Support\\PlatformManifest::load($argv[4])->version !== trim(file_get_contents($argv[5]))) { exit(1); }"
     result = subprocess.run(
-        app_command(
+        runtime.app_command(
             [
                 "php",
                 "-r",
@@ -93,7 +100,7 @@ def closure_policy():
 
 
 def check_quality_evidence(root, data):
-    from tools.application.quality import check_evidence
+    from tools.application.quality_evidence import check_evidence
 
     check_evidence(
         root,

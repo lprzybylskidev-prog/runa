@@ -4,15 +4,15 @@ from types import SimpleNamespace
 
 import pytest
 
+from tools.application.deployment_service import DeploymentService
 from tools.application.installation_service import (
     InstallationError,
     InstallationService,
     validate_settings,
 )
-from tools.application.operations import service
 from tools.application.processes import ApplicationProcesses
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def settings():
@@ -48,11 +48,13 @@ def test_settings_refuse_unsafe_smtp_or_tls_inputs(tmp_path, change):
 
 
 def test_existing_production_secrets_are_preserved_and_settings_use_raw_values(tmp_path):
-    from tools.maintainer.python_toolchain import ROOT
+    from tools.application.python_toolchain import ROOT
 
     (tmp_path / ".env.prod.example").write_bytes((ROOT / ".env.prod.example").read_bytes())
-    deployment = service(
-        tmp_path, ApplicationProcesses(RecordingRunner(), {}), ExecutionLocation.HOST
+    deployment = DeploymentService.for_workspace(
+        tmp_path,
+        processes=ApplicationProcesses(RecordingRunner(), {}),
+        location=ExecutionLocation.HOST,
     )
     installation = InstallationService(deployment, SimpleNamespace())
     value = validate_settings(settings(), False)

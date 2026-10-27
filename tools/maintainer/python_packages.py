@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
 import sys
+import tarfile
 import tempfile
 import tomllib
 from pathlib import Path
 
-from tools.maintainer.python_toolchain import PYTHON, ROOT, STATE, environment
+from tools.application.python_toolchain import PYTHON, ROOT, STATE, environment
+from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
 
 METADATA = {
     "application": "pyproject.toml",
@@ -34,14 +35,26 @@ def stage(kind: str, destination: Path, root: Path = ROOT) -> None:
         for path in sorted(source.glob("*.py")):
             if path.is_symlink():
                 raise ValueError("Package source must be a regular authored file.")
-            shutil.copyfile(path, target / path.name)
+            shutil.copy2(path, target / path.name)
         for resource in settings.get("package-data", {}).get(package, []):
             path = source / resource
             if not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError("Missing or escaping declared package resource.")
             output = target / resource
             output.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(path, output)
+            shutil.copy2(path, output)
+
+
+def external_bundle(source: Path, output: Path) -> Path:
+    """Package canonical external/core source without installing anything on the host."""
+    version = (source / "VERSION").read_text().strip()
+    target = output / ("runa-external-" + version + ".tar.gz")
+    with tarfile.open(target, "w:gz") as archive:
+        for path in sorted(source.rglob("*")):
+            if path.is_file():
+                archive.add(path, arcname=path.relative_to(source), recursive=False)
+    shutil.copy2(source / "distribution/bootstrap.py", output / "bootstrap.py")
+    return target
 
 
 def build(kind: str, output: Path | None = None) -> Path:
@@ -52,18 +65,22 @@ def build(kind: str, output: Path | None = None) -> Path:
     with tempfile.TemporaryDirectory(prefix=kind + "-", dir=directory) as temporary:
         source = Path(temporary)
         stage(kind, source)
-        subprocess.run(
-            [
-                str(PYTHON),
-                "-c",
-                "from setuptools.build_meta import build_wheel; "
-                "import sys; build_wheel(sys.argv[1])",
-                str(output),
-            ],
-            cwd=source,
-            check=True,
-            env=environment(),
-        )
+        SubprocessRunner().run(
+            ProcessSpec(
+                (
+                    str(PYTHON),
+                    "-c",
+                    "from setuptools.build_meta import build_wheel; "
+                    "import sys; build_wheel(sys.argv[1])",
+                    str(output),
+                ),
+                source,
+                environment(),
+                stdin=InputMode.CLOSED,
+            )
+        ).checked()
+        if kind == "external":
+            external_bundle(source, output)
     return output
 
 

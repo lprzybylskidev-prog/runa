@@ -22,6 +22,18 @@ class SecurityService:
     location: ExecutionLocation
     audit_root: Path | None = None
 
+    @classmethod
+    def for_workspace(cls, root: Path, *, audit_root: Path | None = None) -> "SecurityService":
+        from tools.application.development_runtime import execution_location
+        from tools.core.process import SubprocessRunner
+
+        return cls(
+            WorkspaceContext(root),
+            ApplicationProcesses(SubprocessRunner(), dict(os.environ)),
+            execution_location(),
+            audit_root,
+        )
+
     def app_command(self, args):
         return DevelopmentRuntime(
             ExecutionContext(self.workspace, self.workspace, self.location)
@@ -85,16 +97,20 @@ class SecurityService:
 
     def production_images(self, root):
         """Resolve images inside the selected customer's own prepared production context."""
-        from tools.application.repository_boundary import assert_production_installation
+        from functools import partial
 
-        assert_production_installation(root)
+        from tools.application.repository_boundary_service import RepositoryPolicy
+
+        RepositoryPolicy(
+            partial(self.processes.run, cwd=root), self.processes.environment
+        ).assert_production_installation(root)
         code = (
-            "import json,hashlib; from pathlib import Path; from tools.application import operations; "
-            "from tools.application.repository_boundary import assert_production_installation; "
-            "assert_production_installation(operations.ROOT); "
-            "release=operations.active_release(); "
-            'print(json.dumps({"images":operations.dc(["config","--images"],release,capture_output=True,text=True).stdout.splitlines(),'
-            '"locks":{name:hashlib.sha256((Path(release or operations.ROOT)/name).read_bytes()).hexdigest() '
+            "import json,hashlib; from pathlib import Path; from tools.application.deployment_service import DeploymentService; "
+            "from tools.application.repository_boundary_service import RepositoryPolicy; "
+            "root=Path.cwd(); RepositoryPolicy.for_workspace(root).assert_production_installation(root); deployment=DeploymentService.for_workspace(root); "
+            "release=deployment.active_release(); "
+            'print(json.dumps({"images":deployment.runtime.dc(["config","--images"],release,capture_output=True,text=True).stdout.splitlines(),'
+            '"locks":{name:hashlib.sha256((Path(release or root)/name).read_bytes()).hexdigest() '
             'for name in ("src/composer.lock","src/pnpm-lock.yaml")}}))'
         )
         selected = json.loads(

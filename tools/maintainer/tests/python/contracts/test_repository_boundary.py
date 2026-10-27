@@ -10,9 +10,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import tools.application.installation_service as installation
-import tools.application.operations as operations
-import tools.application.repository_boundary as boundary
+import tools.application.repository_boundary_service as boundary
+from tools.application.deployment_service import DeploymentService
+from tools.application.installation_service import InstallationService
+from tools.application.management_service import ManagementService
+from tools.application.repository_boundary_service import RepositoryPolicy
 
 ROOT = Path(__file__).resolve().parents[5]
 
@@ -29,7 +31,7 @@ class RepositoryBoundary(unittest.TestCase):
         self.git(root, "init", "--quiet")
         self.git(root, "remote", "add", "origin", "https://github.com/fixture/runa.git")
         self.git(root, "config", "remote.origin.pushurl", "disabled://runa-read-only-upstream")
-        boundary.write_staging_receipt(
+        RepositoryPolicy.for_workspace(root).write_staging_receipt(
             root,
             {
                 "schema_version": 1,
@@ -47,13 +49,15 @@ class RepositoryBoundary(unittest.TestCase):
             )
             original = (root / ".git/config").read_bytes()
             with self.assertRaises(ValueError):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)
             with self.assertRaises(ValueError):
-                installation.main(["dev", "a" * 40], root=root)
+                InstallationService(
+                    DeploymentService.for_workspace(root), ManagementService.for_workspace(root)
+                ).install("dev", "a" * 40)
             with self.assertRaises(ValueError):
-                operations.service(root).deploy("a" * 40, False)
+                DeploymentService.for_workspace(root).deploy("a" * 40, False)
             with self.assertRaises(ValueError):
-                operations.service(root).main("deploy", ["a" * 40])
+                DeploymentService.for_workspace(root).main("deploy", ["a" * 40])
             self.assertEqual((root / ".git/config").read_bytes(), original)
             self.assertEqual(self.git(root, "status", "--porcelain"), "")
 
@@ -65,53 +69,61 @@ class RepositoryBoundary(unittest.TestCase):
             data = json.loads(path.read_text())
             for mode in ("dev", None, "unknown", "prod"):
                 data["mode"] = mode
-                boundary.write_staging_receipt(root, data)
+                RepositoryPolicy.for_workspace(root).write_staging_receipt(root, data)
                 before = path.read_bytes()
                 if mode == "prod":
-                    self.assertEqual(boundary.assert_production_installation(root)["mode"], "prod")
+                    self.assertEqual(
+                        RepositoryPolicy.for_workspace(root).assert_production_installation(root)[
+                            "mode"
+                        ],
+                        "prod",
+                    )
                 else:
                     with self.assertRaisesRegex(ValueError, "require a production installation"):
-                        boundary.assert_production_installation(root)
+                        RepositoryPolicy.for_workspace(root).assert_production_installation(root)
                 self.assertEqual(path.read_bytes(), before)
 
     def test_development_context_preserves_cold_and_owner_bootstrap_but_denies_production(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             with patch.dict(os.environ, {"APP_ENV": "local"}):
-                boundary.assert_development_context(root)
+                RepositoryPolicy.for_workspace(root).assert_development_context(root)
                 for text in ("APP_ENV=production\n", 'export APP_ENV="production" # target\n'):
                     (root / ".env").write_text(text)
                     with self.assertRaisesRegex(ValueError, "production environment"):
-                        boundary.assert_development_context(root)
+                        RepositoryPolicy.for_workspace(root).assert_development_context(root)
                 (root / ".env").write_text("APP_ENV=local\n")
-                boundary.assert_development_context(root)
+                RepositoryPolicy.for_workspace(root).assert_development_context(root)
                 self.fixture(root)
                 data = json.loads((root / ".git/runa-bootstrap.json").read_text())
                 data["mode"] = "dev"
-                boundary.write_staging_receipt(root, data)
-                boundary.assert_development_context(root)
+                RepositoryPolicy.for_workspace(root).write_staging_receipt(root, data)
+                RepositoryPolicy.for_workspace(root).assert_development_context(root)
                 data["mode"] = "prod"
-                boundary.write_staging_receipt(root, data)
+                RepositoryPolicy.for_workspace(root).write_staging_receipt(root, data)
                 with self.assertRaisesRegex(ValueError, "blocked in production"):
-                    boundary.assert_development_context(root)
+                    RepositoryPolicy.for_workspace(root).assert_development_context(root)
             self.assertFalse((root / ".runtime").exists())
 
     def test_customer_read_only_role_and_existing_customer_remote_preservation(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             self.fixture(root)
-            self.assertEqual(boundary.assert_installation(root)["repository"], "fixture/runa")
+            self.assertEqual(
+                RepositoryPolicy.for_workspace(root).assert_installation(root)["repository"],
+                "fixture/runa",
+            )
             with (
                 patch.dict(os.environ, {"GIT_DIR": str(ROOT / ".git")}),
                 self.assertRaises(ValueError),
             ):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)
             self.git(
                 root, "remote", "set-url", "origin", "https://github.com/customer/application.git"
             )
             config = (root / ".git/config").read_bytes()
             with self.assertRaises(ValueError):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)
             self.assertEqual((root / ".git/config").read_bytes(), config)
 
     def test_ambient_push_origin_alias_escape_and_restored_owner_source_are_denied(self):
@@ -122,7 +134,7 @@ class RepositoryBoundary(unittest.TestCase):
             alias = Path(folder) / "alias"
             alias.symlink_to(root)
             with self.assertRaises(ValueError):
-                boundary.assert_installation(alias)
+                RepositoryPolicy.for_workspace(alias).assert_installation(alias)
             self.git(
                 root,
                 "config",
@@ -131,7 +143,7 @@ class RepositoryBoundary(unittest.TestCase):
                 "https://github.com/lprzybylskidev-prog/runa.git",
             )
             with self.assertRaises(ValueError):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)
             self.git(
                 root,
                 "config",
@@ -141,7 +153,7 @@ class RepositoryBoundary(unittest.TestCase):
             )
             (root / "distribution").mkdir()
             with self.assertRaises(ValueError):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)
 
     def test_customer_command_registry_excludes_maintenance_even_if_restored(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -193,4 +205,4 @@ class RepositoryBoundary(unittest.TestCase):
             data["projection"]["excluded"].append("src/app")
             path.write_text(json.dumps(data))
             with self.assertRaises(ValueError):
-                boundary.assert_installation(root)
+                RepositoryPolicy.for_workspace(root).assert_installation(root)

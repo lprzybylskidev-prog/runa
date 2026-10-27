@@ -4,13 +4,15 @@ import ast
 import os
 import subprocess
 import sys
+import tarfile
+import tomllib
 import zipfile
 from pathlib import Path
 
 import pytest
 
-from tools.maintainer.python_packages import build, stage
-from tools.maintainer.python_toolchain import ROOT
+from tools.application.python_toolchain import ROOT
+from tools.maintainer.python_packages import build, external_bundle, stage
 
 
 @pytest.mark.parametrize("kind", ["application", "maintainer", "external"])
@@ -79,7 +81,7 @@ def test_wheels_layer_without_file_collisions_and_import_outside_checkout(tmp_pa
         (
             "owner-site",
             "tools.core.context, tools.core.state, tools.core.process, "
-            "tools.application.development_runtime, tools.maintainer.python_execution",
+            "tools.application.development_runtime, tools.application.python_execution",
         ),
         ("external-site", "tools.core.context, tools.core.state, tools.core.process, distribution"),
     ):
@@ -114,7 +116,7 @@ def test_delivered_quality_security_and_hooks_import_without_private_packages(
             "-c",
             "import sys; import tools.application.quality_cli, tools.application.security_cli, "
             "tools.application.hooks, tools.application.python_cli, tools.application.diagnostics; "
-            "import tools.application.executors.doctor, tools.application.executors.quality_check; "
+            "import tools.application.doctor_cli, tools.application.source_checks; "
             'assert not any(name.startswith("tools.maintainer") for name in sys.modules)',
         ],
         cwd=tmp_path,
@@ -139,3 +141,62 @@ def test_delivered_deployment_and_installer_import_without_external_or_owner(tmp
         check=True,
         env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
     )
+
+
+def test_application_metadata_declares_every_authored_package() -> None:
+    configuration = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    declared = set(configuration["tool"]["setuptools"]["packages"])
+    authored = {"tools"}
+    for base in ("core", "application"):
+        authored.update(
+            ".".join(path.parent.relative_to(ROOT).parts)
+            for path in (ROOT / "tools" / base).rglob("__init__.py")
+        )
+    assert declared == authored
+
+
+def test_projected_application_modules_are_inert_and_physically_independent(tmp_path: Path) -> None:
+    stage("application", tmp_path)
+    subprocess.run(
+        [
+            sys.executable,
+            "-E",
+            "-s",
+            "-c",
+            "import importlib,pkgutil,sys,tools.application,tools.core; "
+            "[importlib.import_module(item.name) for package in (tools.core,tools.application) "
+            "for item in pkgutil.walk_packages(package.__path__,package.__name__+'.')]; "
+            "assert not any(name.startswith(('distribution','tools.maintainer')) for name in sys.modules)",
+        ],
+        cwd=tmp_path,
+        check=True,
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )
+
+
+@pytest.mark.packaging
+def test_external_source_bundle_needs_no_install_or_application_tree(tmp_path: Path) -> None:
+    source, output, acquired = [tmp_path / name for name in ("source", "output", "acquired")]
+    stage("external", source)
+    output.mkdir()
+    target = external_bundle(source, output)
+    with tarfile.open(target) as archive:
+        for member in archive.getmembers():
+            assert member.isfile()
+            assert not Path(member.name).is_absolute() and ".." not in Path(member.name).parts
+            content = archive.extractfile(member)
+            assert content is not None
+            destination = acquired / member.name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(content.read())
+    assert not (acquired / "tools/application").exists()
+    assert not (acquired / "tools/maintainer").exists()
+    for launcher in (acquired / "distribution/update.py", output / "bootstrap.py"):
+        result = subprocess.run(
+            [sys.executable, "-E", "-s", str(launcher), "--help"],
+            cwd=tmp_path,
+            capture_output=True,
+            env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+        )
+        assert result.returncode == 0, result.stderr
+        assert b"usage:" in result.stdout.lower()

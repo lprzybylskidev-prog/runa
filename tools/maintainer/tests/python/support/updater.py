@@ -78,7 +78,7 @@ class UpdaterWorkspace:
             "compose.yaml": '{"services": {"app": {"image": "fixture"}}}',
             "src/runa/database/migrations/2026_01_01_000001_initial.php": "<?php // initial",
             "src/runa/database/seeders/DatabaseSeeder.php": "<?php // default",
-            "tools/application/operations.py": 'SPARSE = ["/VERSION", "/src/", "/tools/application/"]\n',
+            "tools/application/deployment_cli.py": '"""Fixture operation adapter."""\n',
             "docs/app/README.md": "customer",
         }
         for name, content in files.items():

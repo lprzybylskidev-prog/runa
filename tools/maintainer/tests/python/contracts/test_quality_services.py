@@ -170,11 +170,10 @@ def test_background_lock_signal_and_reaping(tmp_path):
         + ")\n"
         + 'quality=QualityService(planner, QualityExecutor(WorkspaceContext(root),ExecutionLocation.CONTAINER,tuple),root/".runtime/quality","fixture ")\nraise SystemExit(main(sys.argv[1:],quality=quality))\n'
     )
-    # Explicit installed-package path for the isolated subprocess, never mutate module globals.
-    env = dict(os.environ, PYTHONPATH=str(root))
-    command = [sys.executable, str(harness)]
+    env = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
+    command = [sys.executable, "-c", harness.read_text()]
     started = subprocess.run(
-        command + ["roadmap", "--background"], env=env, capture_output=True, text=True
+        command + ["roadmap", "--background"], cwd=root, env=env, capture_output=True, text=True
     )
     assert started.returncode == 0, started.stderr
     statefile = tmp_path / ".runtime/quality/state.json"
@@ -187,7 +186,9 @@ def test_background_lock_signal_and_reaping(tmp_path):
             time.sleep(0.02)
         pid = state["steps"]["wait"]["pid"]
         coordinator = int(Path(f"/proc/{pid}/stat").read_text().split()[3])
-        refused = subprocess.run(command + ["roadmap"], env=env, capture_output=True, text=True)
+        refused = subprocess.run(
+            command + ["roadmap"], cwd=root, env=env, capture_output=True, text=True
+        )
         assert refused.returncode == 1 and "Another quality run" in refused.stderr
         os.kill(coordinator, signal.SIGTERM)
         for _ in range(150):

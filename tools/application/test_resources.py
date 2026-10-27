@@ -75,9 +75,11 @@ class EndpointService:
     @contextlib.contextmanager
     def endpoint(self):
         """Preserve manual endpoints; label/journal only containers this run creates."""
-        from tools.application.repository_boundary import assert_development_context
+        from tools.application.repository_boundary_service import RepositoryPolicy
 
-        assert_development_context(self.workspace.root)
+        RepositoryPolicy.for_workspace(self.workspace.root).assert_development_context(
+            self.workspace.root
+        )
         directory = self.workspace.runtime("tests")
         directory.mkdir(parents=True, exist_ok=True)
         journal = directory / "endpoint.json"

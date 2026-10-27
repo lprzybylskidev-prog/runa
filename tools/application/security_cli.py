@@ -3,13 +3,14 @@
 import argparse
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
-from tools.application.security import service
+from tools.application.security_service import SecurityService
 from tools.core.reporting import SafeFailure
 
 
-def main(argv=None):
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "action", choices=["trivy", "review-changed-surface", "dependencies", "secrets"]
@@ -20,14 +21,17 @@ def main(argv=None):
         help="Prepared development checkout with matching dependency locks",
     )
     options = parser.parse_args(argv)
-    security = service(
-        audit_root=options.dependencies_root.resolve() if options.dependencies_root else None
+    security = SecurityService.for_workspace(
+        Path(__file__).resolve().parents[2],
+        audit_root=options.dependencies_root.resolve() if options.dependencies_root else None,
     )
     try:
         if options.action == "trivy":
-            from tools.application import operations
+            from tools.application.deployment_service import DeploymentService
 
-            with operations.lock():
+            with DeploymentService.for_workspace(
+                Path(__file__).resolve().parents[2]
+            ).context.lock():
                 security.trivy()
         else:
             {

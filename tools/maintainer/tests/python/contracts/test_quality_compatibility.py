@@ -10,11 +10,15 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-from tools.application import quality
+from tools.application import quality_planning as quality
+from tools.application.configuration_reader import ConfigurationReader
+from tools.application.quality_evidence import check_evidence, closure_link_update
+from tools.application.quality_reporting import save
 from tools.maintainer.release_checks import closure_policy
 from tools.maintainer.tests.python.contracts.test_quality_services import node
 
 ROOT = Path(__file__).resolve().parents[5]
+reader = ConfigurationReader.for_workspace(ROOT)
 
 
 class QualityCompatibility(unittest.TestCase):
@@ -46,30 +50,22 @@ class QualityCompatibility(unittest.TestCase):
             after = before.replace("../active/", "../closed/")
             path.write_text(after)
             self.assertTrue(
-                quality.closure_link_update(
-                    root, name, "HEAD", "RM-2026-010", "docs/runa/maintainer"
-                )
+                closure_link_update(root, name, "HEAD", "RM-2026-010", "docs/runa/maintainer")
             )
             for content in (before, after + "unrelated change\n", after.replace("010", "009")):
                 path.write_text(content)
                 self.assertFalse(
-                    quality.closure_link_update(
-                        root, name, "HEAD", "RM-2026-010", "docs/runa/maintainer"
-                    )
+                    closure_link_update(root, name, "HEAD", "RM-2026-010", "docs/runa/maintainer")
                 )
             path.write_text(after)
             self.assertFalse(
-                quality.closure_link_update(
-                    root, name, "HEAD", "RM-2026-009", "docs/runa/maintainer"
-                )
+                closure_link_update(root, name, "HEAD", "RM-2026-009", "docs/runa/maintainer")
             )
-            self.assertFalse(
-                quality.closure_link_update(root, name, "HEAD", "RM-2026-010", "docs/app")
-            )
+            self.assertFalse(closure_link_update(root, name, "HEAD", "RM-2026-010", "docs/app"))
             new = path.with_name("RM-2026-012-new.md")
             new.write_text(after)
             self.assertFalse(
-                quality.closure_link_update(
+                closure_link_update(
                     root,
                     new.relative_to(root).as_posix(),
                     "HEAD",
@@ -126,8 +122,8 @@ class QualityCompatibility(unittest.TestCase):
             quality.resolve(definition, [], groups=["broken"])
 
     def test_real_catalogues_cover_existing_steps_without_owner_customer_leaks(self):
-        owner = quality.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
-        customer = quality.yaml(ROOT / "tools/application/quality.yml")
+        owner = reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        customer = reader.yaml(ROOT / "tools/application/quality.yml")
         owner_nodes, _ = quality.resolve(owner, [], all_groups=True)
         legacy = quality.select(owner, list(owner["impact_areas"]), True)
         self.assertTrue(set(legacy) <= set(owner_nodes))
@@ -198,8 +194,8 @@ class QualityCompatibility(unittest.TestCase):
                 "steps": {key: dict(n, status="passed", exit_code=0) for key, n in nodes.items()},
             }
             with contextlib.nullcontext():
-                quality.save(directory, state)
-                quality.check_evidence(
+                save(directory, state)
+                check_evidence(
                     root,
                     data,
                     root / "definition",
@@ -213,9 +209,9 @@ class QualityCompatibility(unittest.TestCase):
                     {"mode": "show"},
                     {"rationale": "other"},
                 ):
-                    quality.save(directory, state | change)
+                    save(directory, state | change)
                     with self.assertRaises(ValueError):
-                        quality.check_evidence(
+                        check_evidence(
                             root,
                             data,
                             root / "definition",
@@ -223,9 +219,9 @@ class QualityCompatibility(unittest.TestCase):
                             policy=closure_policy(),
                             reader=SimpleNamespace(yaml=lambda path: definition),
                         )
-                quality.save(directory, state)
+                save(directory, state)
                 with self.assertRaises(ValueError):
-                    quality.check_evidence(
+                    check_evidence(
                         root,
                         data | {"quality_groups": "all"},
                         root / "definition",
@@ -234,9 +230,9 @@ class QualityCompatibility(unittest.TestCase):
                         reader=SimpleNamespace(yaml=lambda path: definition),
                     )
                 state["steps"]["cheap"]["status"] = "failed"
-                quality.save(directory, state)
+                save(directory, state)
                 with self.assertRaisesRegex(ValueError, "Incomplete"):
-                    quality.check_evidence(
+                    check_evidence(
                         root,
                         data,
                         root / "definition",
@@ -246,9 +242,9 @@ class QualityCompatibility(unittest.TestCase):
                     )
                 state["steps"]["cheap"]["status"] = "passed"
                 state["steps"]["cheap"]["command"] = "false"
-                quality.save(directory, state)
+                save(directory, state)
                 with self.assertRaisesRegex(ValueError, "commands"):
-                    quality.check_evidence(
+                    check_evidence(
                         root,
                         data,
                         root / "definition",
@@ -257,11 +253,11 @@ class QualityCompatibility(unittest.TestCase):
                         reader=SimpleNamespace(yaml=lambda path: definition),
                     )
                 state["steps"]["cheap"]["command"] = "true"
-                quality.save(directory, state)
+                save(directory, state)
                 (root / "runtime.py").write_text("changed")
                 subprocess.run(["git", "-C", str(root), "add", "runtime.py"], check=True)
                 with self.assertRaisesRegex(ValueError, "Substantive"):
-                    quality.check_evidence(
+                    check_evidence(
                         root,
                         data,
                         root / "definition",
@@ -274,10 +270,10 @@ class QualityCompatibility(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / "bin").mkdir()
-            (root / "tools/application/executors").mkdir(parents=True)
+            (root / "tools/application").mkdir(parents=True)
             shutil.copy(
-                ROOT / "tools/application/executors/quality_check.py",
-                root / "tools/application/executors/quality_check.py",
+                ROOT / "tools/application/source_checks.py",
+                root / "tools/application/source_checks.py",
             )
             subprocess.run(["git", "init", "-q", str(root)], check=True)
             sources = {
@@ -290,7 +286,7 @@ class QualityCompatibility(unittest.TestCase):
                 target.write_text("<?php\n" + statement + "\n")
             command = [
                 sys.executable,
-                str(root / "tools/application/executors/quality_check.py"),
+                str(root / "tools/application/source_checks.py"),
                 "debug-residue",
             ]
             self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
@@ -312,7 +308,7 @@ class QualityCompatibility(unittest.TestCase):
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
     def test_actual_host_production_gates_share_the_operation_group(self):
-        definition = quality.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        definition = reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
         nodes = quality.select(definition, ["production", "security"])
         for key in ("production-acceptance", "repository-container-scan"):
             self.assertEqual(nodes[key]["exclusive_group"], "production-simulation", key)

@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 from tools.application.configuration_reader import ConfigurationReader
@@ -37,7 +38,7 @@ def service(
     )
 
 
-def main(argv=None, *, quality=None):
+def main(argv: Sequence[str] | None = None, *, quality: QualityService | None = None) -> int:
     try:
         return (quality or service(Path(__file__).resolve().parents[2])).run(
             sys.argv[1:] if argv is None else argv

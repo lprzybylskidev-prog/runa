@@ -6,6 +6,7 @@ from collections import deque
 
 import pytest
 
+from tools.application.python_toolchain import PYTHON
 from tools.application.testing.runner import APPLICATION, Selection, application_layout
 from tools.application.testing.runner import TestService as SuiteService
 from tools.application.testing.support.process import RecordingRunner
@@ -13,7 +14,6 @@ from tools.application.testing.support.workspaces import workspace
 from tools.core.context import WorkspaceContext
 from tools.core.process import ProcessResult, SubprocessRunner
 from tools.maintainer.python_packages import stage
-from tools.maintainer.python_toolchain import PYTHON
 
 
 def test_application_owned_roots_can_extend_tooling_without_private_discovery(tmp_path):

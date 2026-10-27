@@ -4,10 +4,19 @@
 import os
 import subprocess
 import sys
+from collections.abc import Sequence
+from functools import partial
 from pathlib import Path
 
-from tools.application import checks
-from tools.application.runtime import app_command, host_stack_health, inside, run
+from tools.application.development_runtime import (
+    DevelopmentRuntime,
+    execution_location,
+)
+from tools.application.diagnostics import Diagnostics
+from tools.application.management_service import ManagementService
+from tools.application.processes import ApplicationProcesses
+from tools.core.context import ExecutionLocation
+from tools.core.process import SubprocessRunner
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -28,7 +37,11 @@ AREAS = (
 )
 
 
-def main(argv=None):
+def main(argv: Sequence[str] | None = None) -> int:
+    checks = Diagnostics.for_workspace(ROOT)
+    runtime = DevelopmentRuntime.for_workspace(ROOT)
+    processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+    run = partial(processes.run, cwd=ROOT, check=True)
     try:
         args = list(sys.argv[1:] if argv is None else argv)
         if args == ["--help"]:
@@ -39,12 +52,12 @@ def main(argv=None):
             )
         elif len(args) != 1 or args[0] not in AREAS:
             raise ValueError("A fixed diagnostic area is required.")
-        elif not inside():
+        elif execution_location() is not ExecutionLocation.CONTAINER:
             if args == ["development"]:
-                host_stack_health()
+                ManagementService.for_workspace(ROOT).host_stack_health()
             raise SystemExit(
-                subprocess.run(
-                    app_command(["php", "artisan", "runa:doctor:" + args[0]]), cwd=ROOT
+                processes.run(
+                    runtime.app_command(["php", "artisan", "runa:doctor:" + args[0]]), cwd=ROOT
                 ).returncode
             )
         else:
@@ -55,7 +68,7 @@ def main(argv=None):
                 commands = {
                     "config": ["php", "artisan", "runa:config:validate"],
                     "templates": ["php", "artisan", "runa:config:templates"],
-                    "hooks": ["python3", "tools/application/testing/hooks.py"],
+                    "hooks": ["python3", "-m", "tools.application.testing.hooks"],
                     "frontend": ["php", "artisan", "runa:typecheck"],
                     "database-migrations": [
                         "php",
@@ -63,8 +76,20 @@ def main(argv=None):
                         "runa:test-db:guard",
                         "--env=testing",
                     ],
-                    "database": ["php", "artisan", "runa:test", "--filter=Database"],
-                    "seeding": ["php", "artisan", "runa:test", "--filter=Seeding"],
+                    "database": [
+                        "php",
+                        "artisan",
+                        "runa:test",
+                        "--scope=backend",
+                        "--filter=Database",
+                    ],
+                    "seeding": [
+                        "php",
+                        "artisan",
+                        "runa:test",
+                        "--scope=backend",
+                        "--filter=Seeding",
+                    ],
                 }
                 run(
                     commands[area],

@@ -7,11 +7,11 @@ from types import SimpleNamespace
 import pytest
 
 from tools.application.deployment_service import DeploymentService
-from tools.application.operations import service
 from tools.application.processes import ApplicationProcesses
+from tools.application.repository_boundary_service import RepositoryPolicy
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation
 from tools.core.process import ProcessResult
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def workspace(root, sha="a" * 40):
@@ -30,7 +30,10 @@ def test_interleaved_workspaces_and_releases_keep_operator_secrets_and_tls(tmp_p
     first, second = [workspace(tmp_path / name) for name in ("first", "second")]
     runner = RecordingRunner()
     processes = ApplicationProcesses(runner, {})
-    one, two = [service(root, processes, ExecutionLocation.HOST) for root in (first, second)]
+    one, two = [
+        DeploymentService.for_workspace(root, processes=processes, location=ExecutionLocation.HOST)
+        for root in (first, second)
+    ]
     a = first / ".runtime/production/releases" / ("b" * 40)
     b = second / ".runtime/production/releases" / ("c" * 40)
     for path in (a, b):
@@ -99,7 +102,9 @@ class Runtime:
 def deployment(tmp_path, fail=None):
     root = workspace(tmp_path)
     runner = RecordingRunner(deque([ProcessResult(0)]))
-    instance = service(root, ApplicationProcesses(runner, {}), ExecutionLocation.HOST)
+    instance = DeploymentService.for_workspace(
+        root, processes=ApplicationProcesses(runner, {}), location=ExecutionLocation.HOST
+    )
     instance.context.state.mkdir(parents=True, mode=0o700)
     runtime = Runtime(fail)
     sha = "b" * 40
@@ -149,9 +154,8 @@ def test_unsafe_data_rollback_refuses_before_runtime_work(tmp_path, monkeypatch)
     )
     state["previous"] = previous
     deploy.context.atomic(deploy.context.state / "deployment.json", state)
-    from tools.application import repository_boundary
 
-    monkeypatch.setattr(repository_boundary, "assert_production_installation", lambda root: None)
+    monkeypatch.setattr(RepositoryPolicy, "assert_production_installation", lambda self, root: None)
     before = list(runtime.events)
     with pytest.raises(ValueError, match="unproven"):
         deploy.rollback()

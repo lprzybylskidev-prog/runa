@@ -11,13 +11,18 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 
-from tools.application.development_runtime import DevelopmentRuntime, development_compose
+from tools.application.development_runtime import (
+    DevelopmentRuntime,
+    development_compose,
+    execution_location,
+)
 from tools.application.host_plan import OPERATIONS, HostPlan
 from tools.application.processes import ApplicationProcesses
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
-from tools.core.process import InputMode, OutputMode, ProcessSpec
+from tools.core.process import InputMode, OutputMode, ProcessSpec, SubprocessRunner
 from tools.core.state import FileLock, StateDirectory
 
 MAX_OUTPUT = 65536
@@ -30,6 +35,17 @@ class ManagementService:
     processes: ApplicationProcesses
     location: ExecutionLocation
     browser_endpoint: Callable[[], AbstractContextManager] | None = None
+
+    @classmethod
+    def for_workspace(cls, root: Path) -> "ManagementService":
+        from tools.application.test_resources import endpoint
+
+        return cls(
+            WorkspaceContext(root),
+            ApplicationProcesses(SubprocessRunner(), dict(os.environ)),
+            execution_location(),
+            endpoint,
+        )
 
     @property
     def policy(self):
@@ -296,13 +312,15 @@ class ManagementService:
         if tool in ("production", "quality", "security"):
             return [
                 "python3",
-                str(self.workspace.root / ("tools/application/executors/" + tool + ".py")),
+                "-m",
+                "tools.application." + tool + "_cli",
                 *arguments,
             ]
         if tool == "deploy":
             return [
                 "python3",
-                str(self.workspace.root / "tools/application/executors/operations.py"),
+                "-m",
+                "tools.application.deployment_cli",
                 tool,
                 *arguments,
             ]
@@ -314,14 +332,16 @@ class ManagementService:
         if tool == "check":
             return [
                 "python3",
-                str(self.workspace.root / "tools/application/executors/quality_check.py"),
+                "-m",
+                "tools.application.source_checks",
                 *arguments,
             ]
         if tool == "doctor":
             if arguments == ["production"]:
                 return [
                     "python3",
-                    str(self.workspace.root / "tools/application/executors/production.py"),
+                    "-m",
+                    "tools.application.production_cli",
                     "self-test",
                 ]
             if not arguments or arguments == ["development"]:

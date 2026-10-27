@@ -10,7 +10,7 @@ import time
 import uuid
 from pathlib import Path
 
-import tools.application.management as management
+from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
 from tools.maintainer.testing.acceptance import AcceptanceContext
 
@@ -27,7 +27,7 @@ def main():
         raise SystemExit("Run native host acceptance outside containers.")
     project = "runa-host-acceptance-" + uuid.uuid4().hex[:10]
     report = {"result": "RUNNING", "project": project, "checks": []}
-    image = management.ensure_image()
+    image = ManagementService.for_workspace(ROOT).ensure_image()
     report["image"] = image
     active = output(
         ["docker", "ps", "-q", "--filter", "label=com.docker.compose.project=runa-dev"]
@@ -84,7 +84,8 @@ def main():
             "DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n"
         )
         common = {
-            "image": "runa-management:" + management.image_identity()[:24],
+            "image": "runa-management:"
+            + ManagementService.for_workspace(ROOT).image_identity()[:24],
             "pull_policy": "never",
             "entrypoint": ["php", "-r"],
             "command": ["sleep(1200);"],
@@ -254,7 +255,7 @@ def main():
                     "disabled://runa-read-only-upstream",
                 ]
             )
-            from tools.application.repository_boundary import OWNER_PATHS, write_staging_receipt
+            from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
 
             acquisition = {
                 "schema_version": 1,
@@ -262,7 +263,7 @@ def main():
                 "mode": "dev",
                 "projection": {"version": 1, "excluded": list(OWNER_PATHS)},
             }
-            write_staging_receipt(root, acquisition)
+            RepositoryPolicy.for_workspace(root).write_staging_receipt(root, acquisition)
             (root / ".env.prod.compose").write_text(
                 "RUNA_IMAGE_TAG="
                 + "a" * 40
@@ -273,7 +274,8 @@ def main():
                     {
                         "services": {
                             "probe": {
-                                "image": "runa-management:" + management.image_identity()[:24]
+                                "image": "runa-management:"
+                                + ManagementService.for_workspace(ROOT).image_identity()[:24]
                             }
                         }
                     }
@@ -326,7 +328,7 @@ def main():
                 "rejected production commands preserve target containers and operational state",
             )
             acquisition["mode"] = "prod"
-            write_staging_receipt(root, acquisition)
+            RepositoryPolicy.for_workspace(root).write_staging_receipt(root, acquisition)
             check(
                 "PASS: production validate." in output(php + ["runa:production:validate"]),
                 "production-mode simulation still executes actual quiet Compose validation",

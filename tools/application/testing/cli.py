@@ -10,7 +10,7 @@ from typing import cast
 
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
 from tools.application.python_toolchain import environment
-from tools.application.repository_boundary import assert_development_context
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.application.testing.runner import (
     APPLICATION,
     DEFAULT_SCOPES,
@@ -72,7 +72,7 @@ def main(
     arguments = list(sys.argv[1:] if argv is None else argv)
     selection = parse(arguments)
     root = Path(__file__).resolve().parents[3]
-    assert_development_context(root)
+    RepositoryPolicy.for_workspace(root).assert_development_context(root)
     workspace = WorkspaceContext(root)
     location = execution_location()
     runner = SubprocessRunner()

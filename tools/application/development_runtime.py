@@ -1,5 +1,6 @@
 """Development Compose policy composed over the core command builder."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,9 +20,14 @@ def development_compose(workspace: WorkspaceContext) -> ComposeContext:
 class DevelopmentRuntime:
     context: ExecutionContext
 
-    def app_command(self, arguments: tuple[str, ...]) -> tuple[str, ...]:
+    @classmethod
+    def for_workspace(cls, root: Path) -> "DevelopmentRuntime":
+        workspace = WorkspaceContext(root)
+        return cls(ExecutionContext(workspace, workspace, execution_location()))
+
+    def app_command(self, arguments: Sequence[str]) -> tuple[str, ...]:
         if self.context.location is ExecutionLocation.CONTAINER:
-            return arguments
+            return tuple(arguments)
         return development_compose(self.context.tools).command("exec", "-T", "app", *arguments)
 
 

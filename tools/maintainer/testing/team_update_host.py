@@ -8,8 +8,8 @@ from pathlib import Path
 
 
 def production_source_matches(active, peer, names):
-    from tools.application.operations import DEVELOPMENT_MODULES
-    from tools.application.repository_boundary import OWNER_PATHS
+    from tools.application.repository_boundary_service import OWNER_PATHS
+    from tools.core.delivery import DEVELOPMENT_MODULES
 
     excluded = (*OWNER_PATHS, *DEVELOPMENT_MODULES)
     if any((active / name).exists() or (active / name).is_symlink() for name in excluded):
@@ -54,24 +54,24 @@ class Team:
         shutil.copyfile(migration, dev / migration.relative_to(source))
         shutil.copyfile(seed, dev / seed.relative_to(source))
         call(["git", "-C", str(dev), "remote", "add", "origin", str(self.remote)])
-        from tools.application.repository_boundary import prepare_customer_context
+        from tools.application.repository_boundary_service import RepositoryPolicy
 
-        prepare_customer_context(dev, "dev")
+        RepositoryPolicy.for_workspace(dev).prepare_customer_context(dev, "dev")
         call(["git", "clone", "--quiet", str(self.remote), str(self.peer)])
-        prepare_customer_context(self.peer, "dev")
+        RepositoryPolicy.for_workspace(self.peer).prepare_customer_context(self.peer, "dev")
         self.peer_environment = dict(os.environ, COMPOSE_PROJECT_NAME=project, RUNA_HOST_WORKER="1")
         call(
-            [sys.executable, "tools/application/executors/dev.py", "embeddings", "cpu"],
+            [sys.executable, "-m", "tools.application.development", "embeddings", "cpu"],
             cwd=self.peer,
             env=self.peer_environment,
         )
         call(
-            [sys.executable, "tools/application/executors/dev.py", "profile", "low"],
+            [sys.executable, "-m", "tools.application.development", "profile", "low"],
             cwd=self.peer,
             env=self.peer_environment,
         )
         call(
-            [sys.executable, "tools/application/executors/dev.py", "prepare"],
+            [sys.executable, "-m", "tools.application.development", "prepare"],
             cwd=self.peer,
             env=self.peer_environment,
         )
@@ -195,7 +195,7 @@ class Team:
         self.peer_secrets[".env"] = (self.peer / ".env").read_bytes()
         self.call([*self.peer_compose, "up", "-d", "--wait", "redis"], cwd=self.peer)
         self.call(
-            [sys.executable, "tools/application/executors/dev.py", "initialize"],
+            [sys.executable, "-m", "tools.application.development", "initialize"],
             cwd=self.peer,
             env=self.peer_environment,
         )
@@ -266,7 +266,8 @@ class Team:
             self.call(
                 [
                     sys.executable,
-                    "tools/application/executors/operations.py",
+                    "-m",
+                    "tools.application.deployment_cli",
                     "deploy",
                     "--simulation",
                 ],

@@ -5,10 +5,31 @@ import json
 import re
 from pathlib import Path
 
-from tools.application.deployment_context import read_env, stamp
+from tools.application.deployment_context import OperationContext, read_env, stamp
+from tools.application.processes import ApplicationProcesses
+from tools.core.context import ExecutionLocation, WorkspaceContext
 
 
 class DeploymentService:
+    @classmethod
+    def for_workspace(
+        cls,
+        root: Path,
+        *,
+        processes: ApplicationProcesses | None = None,
+        location: ExecutionLocation | None = None,
+    ) -> "DeploymentService":
+        from tools.application.deployment_runtime import DeploymentRuntime
+        from tools.application.deployment_source import SourceAcquisition
+        from tools.application.production_runtime import ProductionRuntime
+
+        context = OperationContext.create(
+            WorkspaceContext(root), processes=processes, location=location
+        )
+        source = SourceAcquisition(context)
+        runtime = DeploymentRuntime(context, source=source, production=ProductionRuntime(context))
+        return cls(context, source, runtime)
+
     def __init__(self, context, source, runtime):
         self.context = context
         self.source = source
@@ -35,9 +56,7 @@ class DeploymentService:
         verification=None,
         database_setup=None,
     ):
-        from tools.application.repository_boundary import assert_production_installation
-
-        assert_production_installation(self.context.workspace.root)
+        self.context.policy.assert_production_installation(self.context.workspace.root)
         if database_setup is not None:
             # Private external installer callback; never selected by customer commands.
             return self.deploy_revision(
@@ -52,9 +71,7 @@ class DeploymentService:
             raise ValueError(
                 "Customer deployment requires a completed platform installation; use the external owner installer first."
             )
-        from tools.application.customer_source import fetch
-
-        with fetch(
+        with self.context.customer_source.fetch(
             self.context.workspace.root,
             self.context.state,
             target,
@@ -206,9 +223,7 @@ class DeploymentService:
             raise
 
     def rollback(self):
-        from tools.application.repository_boundary import assert_production_installation
-
-        assert_production_installation(self.context.workspace.root)
+        self.context.policy.assert_production_installation(self.context.workspace.root)
         state = self.context.read_state()
         current, previous = state["current"], state["previous"]
         if not current or not previous or (self.context.state / "in-progress.json").exists():
@@ -278,9 +293,7 @@ class DeploymentService:
             raise ValueError(
                 "Run production operations in a host terminal outside the devcontainer."
             )
-        from tools.application.repository_boundary import assert_production_installation
-
-        assert_production_installation(self.context.workspace.root)
+        self.context.policy.assert_production_installation(self.context.workspace.root)
         with self.context.lock():
             if options.target == "rollback":
                 self.rollback()

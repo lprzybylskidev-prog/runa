@@ -8,8 +8,9 @@ from pathlib import Path
 
 import customer_source as source
 
-import tools.application.operations as operations
-import tools.application.repository_boundary as boundary
+import tools.application.repository_boundary_service as boundary
+from tools.application.deployment_service import DeploymentService
+from tools.application.repository_boundary_service import RepositoryPolicy
 
 ROOT = Path(__file__).resolve().parents[5]
 
@@ -65,7 +66,7 @@ class CustomerDeployment(unittest.TestCase):
         self.git(self.root, "config", "remote.origin.pushurl", "disabled://runa-read-only-upstream")
         self.git(self.root, "remote", "add", "customer", str(self.remote))
         self.git(self.root, "config", "runa.applicationRemote", "customer")
-        boundary.write_staging_receipt(
+        RepositoryPolicy.for_workspace(self.root).write_staging_receipt(
             self.root,
             {
                 "schema_version": 1,
@@ -104,7 +105,12 @@ class CustomerDeployment(unittest.TestCase):
         self.git(self.root, "remote", "set-url", "origin", str(self.remote))
         self.git(self.root, "config", "runa.applicationRemote", "origin")
         before = (self.root / ".git/config").read_bytes()
-        self.assertEqual(boundary.assert_production_installation(self.root)["mode"], "prod")
+        self.assertEqual(
+            RepositoryPolicy.for_workspace(self.root).assert_production_installation(self.root)[
+                "mode"
+            ],
+            "prod",
+        )
         with source.fetch(self.root, self.state) as (_, sha):
             self.assertEqual(sha, self.target)
         self.assertEqual(before, (self.root / ".git/config").read_bytes())
@@ -125,7 +131,9 @@ class CustomerDeployment(unittest.TestCase):
     def test_modified_successful_release_is_rejected_before_compose_can_use_it(self):
         installed = Path(self.directory.name) / "previous-release"
         self.git(self.root, "clone", "-q", str(self.root), str(installed))
-        boundary.write_staging_receipt(installed, boundary.receipt(self.root))
+        RepositoryPolicy.for_workspace(installed).write_staging_receipt(
+            installed, RepositoryPolicy.for_workspace(self.root).receipt(self.root)
+        )
         (installed / "compose.production.yaml").write_text("unsafe drift")
         with self.assertRaisesRegex(ValueError, "Successful release checkout is modified"):
             with source.fetch(self.root, self.state, installed=installed):
@@ -137,7 +145,7 @@ class CustomerDeployment(unittest.TestCase):
 
     def test_staging_uses_customer_source_and_retains_original_acquisition_identity(self):
         with source.fetch(self.root, self.state) as (download, sha):
-            service = operations.service(self.root)
+            service = DeploymentService.for_workspace(self.root)
             release = service.source.checkout(sha, download)
             self.assertEqual(
                 (release / "src/app/new.php").read_text(), "<?php // customer transition"
@@ -147,7 +155,10 @@ class CustomerDeployment(unittest.TestCase):
                 (self.root / "src/runa/platform.json").read_bytes(),
             )
             self.assertEqual(
-                boundary.assert_production_installation(release)["repository"], "fixture/runa"
+                RepositoryPolicy.for_workspace(release).assert_production_installation(release)[
+                    "repository"
+                ],
+                "fixture/runa",
             )
             self.assertEqual(service.source.checkout(sha, download), release)
         self.assertTrue(release.exists())
@@ -225,8 +236,8 @@ class CustomerDeployment(unittest.TestCase):
         ):
             self.git(self.root, "config", "remote.customer.url", url)
             with self.subTest(url=url), self.assertRaises(ValueError):
-                boundary.application_remote(self.root)
+                RepositoryPolicy.for_workspace(self.root).application_remote(self.root)
         self.git(self.root, "remote", "set-url", "customer", str(self.remote))
         self.git(self.root, "config", "--add", "runa.applicationRemote", "origin")
         with self.assertRaises(ValueError):
-            boundary.application_remote(self.root)
+            RepositoryPolicy.for_workspace(self.root).application_remote(self.root)

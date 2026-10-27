@@ -5,6 +5,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal, TextIO, overload
 
 from tools.core.process import InputMode, OutputMode, ProcessRunner, ProcessSpec, ProcessTimeout
 
@@ -13,6 +14,40 @@ from tools.core.process import InputMode, OutputMode, ProcessRunner, ProcessSpec
 class ApplicationProcesses:
     runner: ProcessRunner
     environment: Mapping[str, str] = field(repr=False)
+
+    @overload
+    def run(
+        self,
+        argv: Sequence[str],
+        *,
+        cwd: Path,
+        input: bytes | str | None = None,
+        capture_output: bool = False,
+        text: Literal[True],
+        check: bool = False,
+        timeout: float | None = None,
+        env: Mapping[str, str] | None = None,
+        stdin: int | None = None,
+        stdout: int | TextIO | None = None,
+        stderr: int | TextIO | None = None,
+    ) -> subprocess.CompletedProcess[str]: ...
+
+    @overload
+    def run(
+        self,
+        argv: Sequence[str],
+        *,
+        cwd: Path,
+        input: bytes | str | None = None,
+        capture_output: bool = False,
+        text: Literal[False] = False,
+        check: bool = False,
+        timeout: float | None = None,
+        env: Mapping[str, str] | None = None,
+        stdin: int | None = None,
+        stdout: int | TextIO | None = None,
+        stderr: int | TextIO | None = None,
+    ) -> subprocess.CompletedProcess[bytes]: ...
 
     def run(
         self,
@@ -26,9 +61,9 @@ class ApplicationProcesses:
         timeout: float | None = None,
         env: Mapping[str, str] | None = None,
         stdin: int | None = None,
-        stdout: int | None = None,
-        stderr: int | None = None,
-    ):
+        stdout: int | TextIO | None = None,
+        stderr: int | TextIO | None = None,
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
         redirected = stdout is not None or stderr is not None
         if redirected and not (
             stdout is sys.stderr
@@ -59,11 +94,13 @@ class ApplicationProcesses:
             )
         except ProcessTimeout:
             raise subprocess.TimeoutExpired(["application command"], timeout) from None
-        out = result.stdout.decode() if text else result.stdout
-        err = result.stderr.decode() if text else result.stderr
         if check and result.returncode:
             raise subprocess.CalledProcessError(result.returncode, ["application command"])
-        return subprocess.CompletedProcess(argv, result.returncode, out, err)
+        if text:
+            return subprocess.CompletedProcess(
+                argv, result.returncode, result.stdout.decode(), result.stderr.decode()
+            )
+        return subprocess.CompletedProcess(argv, result.returncode, result.stdout, result.stderr)
 
-    def check_output(self, argv: Sequence[str], *, cwd: Path):
+    def check_output(self, argv: Sequence[str], *, cwd: Path) -> bytes:
         return self.run(argv, cwd=cwd, capture_output=True, check=True).stdout

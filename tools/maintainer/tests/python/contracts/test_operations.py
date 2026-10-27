@@ -10,8 +10,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.application import repository_boundary
+from tools.application import repository_boundary_service as repository_boundary
+from tools.application.customer_source_service import CustomerSource
 from tools.application.deployment_context import read_env
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.maintainer.tests.python.support.deployment import bind_deployment, deployment
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -23,7 +25,7 @@ class OperationContracts(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.deployment = deployment(Path(self.temporary.name))
         boundary = patch.object(
-            repository_boundary, "assert_installation", return_value={"mode": "prod"}
+            RepositoryPolicy, "assert_installation", return_value={"mode": "prod"}
         )
         boundary.start()
         self.addCleanup(boundary.stop)
@@ -70,7 +72,7 @@ class OperationContracts(unittest.TestCase):
                 with (
                     self.subTest(mode=mode, simulation=simulation),
                     patch.object(
-                        repository_boundary, "assert_installation", return_value={"mode": mode}
+                        RepositoryPolicy, "assert_installation", return_value={"mode": mode}
                     ),
                     patch.object(self.deployment.context, "inside", return_value=False),
                     patch.object(self.deployment.source, "resolve") as resolve,
@@ -170,8 +172,8 @@ class OperationContracts(unittest.TestCase):
                 "src/runa/management/commands.php": "operational registry",
                 "src/runa/management/development.json": "excluded",
                 "src/runa/management/development.php": "excluded",
-                "tools/application/executors/operations.py": "operational helper",
-                "tools/application/executors/knowledge.py": "excluded",
+                "tools/application/deployment_cli.py": "operational helper",
+                "tools/application/knowledge/cli.py": "excluded",
                 "src/runa/tools/example.py": "excluded",
                 "src/runa/tests/example.php": "excluded",
                 "docker/php/Dockerfile": "FROM example",
@@ -221,7 +223,7 @@ class OperationContracts(unittest.TestCase):
                 text=True,
                 check=True,
             )
-            repository_boundary.write_staging_receipt(
+            RepositoryPolicy.for_workspace(root).write_staging_receipt(
                 root,
                 {
                     "schema_version": 1,
@@ -258,10 +260,10 @@ class OperationContracts(unittest.TestCase):
                 self.assertTrue((release / "src/runa/lang/pl/validation.php").is_file())
                 self.assertTrue((release / "src/runa/platform.json").is_file())
                 self.assertTrue((release / "src/runa/management/commands.php").is_file())
-                self.assertTrue((release / "tools/application/executors/operations.py").is_file())
+                self.assertTrue((release / "tools/application/deployment_cli.py").is_file())
                 self.assertTrue((release / "src/runa/management/development.json").exists())
                 self.assertTrue((release / "src/runa/management/development.php").exists())
-                self.assertTrue((release / "tools/application/executors/knowledge.py").exists())
+                self.assertTrue((release / "tools/application/knowledge/cli.py").exists())
                 for excluded in ("tools", "tests"):
                     self.assertFalse((release / "src/runa" / excluded).exists())
                 self.assertTrue((release / "bin/operations").is_file())
@@ -372,10 +374,9 @@ class OperationContracts(unittest.TestCase):
             tag.assert_not_called()
 
     def test_default_customer_target_is_main_and_not_a_local_platform_ref(self):
-        from tools.application import customer_source
 
         with (
-            patch.object(customer_source, "fetch") as fetch,
+            patch.object(CustomerSource, "fetch") as fetch,
             patch.object(
                 self.deployment.context,
                 "read_state",
@@ -396,11 +397,10 @@ class OperationContracts(unittest.TestCase):
             resolve.assert_not_called()
 
     def test_acquired_but_uninstalled_source_cannot_replace_platform_installation(self):
-        from tools.application import customer_source
 
         with (
             patch.object(self.deployment.context, "read_state", return_value={"current": None}),
-            patch.object(customer_source, "fetch") as fetch,
+            patch.object(CustomerSource, "fetch") as fetch,
         ):
             with self.assertRaisesRegex(ValueError, "completed platform installation"):
                 self.deployment.deploy()

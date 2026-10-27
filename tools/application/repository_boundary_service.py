@@ -6,6 +6,7 @@ import posixpath
 import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -24,6 +25,15 @@ class DevelopmentContextError(RepositoryBoundaryError):
 class RepositoryPolicy:
     run: Callable
     environment: Mapping[str, str] = field(repr=False)
+
+    @classmethod
+    def for_workspace(cls, root: Path) -> "RepositoryPolicy":
+        from tools.application.processes import ApplicationProcesses
+        from tools.core.process import SubprocessRunner
+
+        environment = dict(os.environ)
+        processes = ApplicationProcesses(SubprocessRunner(), environment)
+        return cls(partial(processes.run, cwd=root), environment)
 
     def receipt(self, root):
         root = Path(root)

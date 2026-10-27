@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.setuptools]
-packages = ["tools", "tools.core", "tools.application", "tools.application.executors", "tools.application.knowledge", "tools.application.testing", "tools.application.testing.support"]
+packages = ["tools", "tools.core", "tools.application", "tools.application.knowledge", "tools.application.testing", "tools.application.testing.support"]
 include-package-data = false
 
 [tool.setuptools.dynamic]
@@ -22,20 +22,9 @@ version = {file = "VERSION"}
 "tools.application.testing" = ["production-runtime.php"]
 
 [tool.ruff]
-target-version = "py311"
-line-length = 100
+extend = "tools/application/python/ruff.toml"
 cache-dir = ".runtime/python/cache/ruff"
-include = ["**/*.py", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/application/bin/git-hook", "tools/maintainer/entrypoint", "tools/maintainer/hook", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/maintainer/test-python", "tools/maintainer/python-tool"]
-extend-exclude = [".runtime", "src/vendor", "src/node_modules"]
-
-[tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+include = ["**/*.py", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/application/bin/git-hook"]
 
 [tool.pyright]
-include = ["tools", "distribution", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/maintainer/test-python", "tools/maintainer/python-tool", "tools/maintainer/entrypoint", "tools/maintainer/hook", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/application/bin/git-hook"]
-exclude = [".runtime", "src/vendor", "src/node_modules"]
-pythonVersion = "3.11"
-pythonPlatform = "Linux"
-typeCheckingMode = "strict"
-venvPath = ".runtime/python"
-venv = "venv"
+extends = "tools/application/python/pyrightconfig.json"

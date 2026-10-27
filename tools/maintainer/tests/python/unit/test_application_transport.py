@@ -17,12 +17,12 @@ from tools.application.host_transport import HostExecutor, read_json, validate_r
 from tools.application.management_service import ManagementService
 from tools.application.module_versions import assess
 from tools.application.processes import ApplicationProcesses
+from tools.application.python_toolchain import ROOT
 from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.process import ProcessResult, SubprocessRunner
 from tools.core.reporting import SafeFailure
-from tools.maintainer.python_toolchain import ROOT
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 REQUEST = "a" * 32
 

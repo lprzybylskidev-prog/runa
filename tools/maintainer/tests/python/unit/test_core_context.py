@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 
 from tools.application.development_runtime import DevelopmentRuntime, development_compose
+from tools.application.python_execution import PythonToolExecutor
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import (
     ExecutionContext,
     ExecutionLocation,
@@ -11,8 +13,6 @@ from tools.core.context import (
     WorkspaceContext,
 )
 from tools.core.process import ProcessResult
-from tools.maintainer.python_execution import PythonToolExecutor
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def test_two_workspace_and_release_identities_do_not_interfere(tmp_path: Path) -> None:

@@ -7,11 +7,12 @@ from collections import deque
 import pytest
 
 from tools.application.processes import ApplicationProcesses
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.application.secret_scanner import SecretScanner
 from tools.application.security_service import SecurityService
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.process import ProcessResult
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def security(root, runner, *, location=ExecutionLocation.CONTAINER, audit_root=None):
@@ -134,8 +135,6 @@ def test_production_images_refuse_owner_context_before_processes(tmp_path):
 def test_production_fixture_image_identity_and_locks_are_bound_to_scanned_source(tmp_path):
     from unittest.mock import patch
 
-    from tools.application import repository_boundary
-
     fixture = tmp_path / "customer"
     fixture.mkdir()
     locks = {}
@@ -146,12 +145,12 @@ def test_production_fixture_image_identity_and_locks_are_bound_to_scanned_source
         locks[name] = hashlib.sha256(path.read_bytes()).hexdigest()
     selected = dict(images=["production:exact"], locks=locks)
     runner = RecordingRunner(deque([ProcessResult(0, json.dumps(selected).encode())]))
-    with patch.object(repository_boundary, "assert_production_installation") as guard:
+    with patch.object(RepositoryPolicy, "assert_production_installation") as guard:
         assert security(tmp_path, runner).production_images(fixture) == ["production:exact"]
         guard.assert_called_once_with(fixture)
     assert runner.calls[0].cwd == fixture
     assert "sys.path" not in runner.calls[0].argv[-1]
-    assert "operations.ROOT" in runner.calls[0].argv[-1]
+    assert "DeploymentService.for_workspace(root)" in runner.calls[0].argv[-1]
 
 
 def test_custom_service_fixture_pulls_exact_digest_and_rejects_wrong_identity():
@@ -188,8 +187,6 @@ def test_custom_service_fixture_pulls_exact_digest_and_rejects_wrong_identity():
 def test_production_image_mismatch_or_empty_selection_fails(tmp_path, invalid):
     from unittest.mock import patch
 
-    from tools.application import repository_boundary
-
     selected = dict(images=["production:exact"], locks={})
     for name in ["src/composer.lock", "src/pnpm-lock.yaml"]:
         path = tmp_path / name
@@ -201,6 +198,6 @@ def test_production_image_mismatch_or_empty_selection_fails(tmp_path, invalid):
     else:
         selected["images"] = []
     runner = RecordingRunner(deque([ProcessResult(0, json.dumps(selected).encode())]))
-    with patch.object(repository_boundary, "assert_production_installation"):
+    with patch.object(RepositoryPolicy, "assert_production_installation"):
         with pytest.raises(ValueError, match="dependency locks differ|no runtime images"):
             security(tmp_path, runner).production_images(tmp_path)

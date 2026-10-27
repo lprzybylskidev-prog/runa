@@ -9,7 +9,7 @@ import tempfile
 import uuid
 from pathlib import Path
 
-import tools.application.management as management
+from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
 from tools.maintainer.testing.acceptance import AcceptanceContext
 
@@ -35,9 +35,11 @@ def main():
         "scope": "Transport recovery using fixed development operations and isolated PHP process fixtures; not full Laravel installation acceptance.",
     }
     report_path.write_text(json.dumps(report, indent=2) + "\n")
-    image = management.ensure_image()
+    image = ManagementService.for_workspace(ROOT).ensure_image()
     report["management_image"] = image
-    report["management_tag"] = "runa-management:" + management.image_identity()[:24]
+    report["management_tag"] = (
+        "runa-management:" + ManagementService.for_workspace(ROOT).image_identity()[:24]
+    )
     project = "runa-rm005-management-" + uuid.uuid4().hex[:10]
     report["project"] = project
     protected = output(
@@ -68,13 +70,13 @@ def main():
             "artisan",
             "src/artisan",
             "bin/artisan",
-            "tools/application/runtime.py",
-            "tools/application/repository_boundary.py",
-            "tools/application/management.py",
+            "tools/application/development_runtime.py",
+            "tools/application/repository_boundary_service.py",
+            "tools/application/management_service.py",
             "tools/application/test_resources.py",
-            "tools/application/host_executor.py",
-            "tools/application/operations.py",
-            "tools/application/production.py",
+            "tools/application/host_transport.py",
+            "tools/application/deployment_service.py",
+            "tools/application/production_runtime.py",
             "src/composer.json",
             "src/composer.lock",
             "docker/php/Dockerfile",

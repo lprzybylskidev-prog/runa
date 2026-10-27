@@ -20,8 +20,14 @@ class KnowledgeStartup:
         default_factory=lambda: urllib.request.build_opener(urllib.request.ProxyHandler({}))
     )
     sleep: Callable[[float], None] = time.sleep
+    initialize_command: tuple[str, ...] = (
+        sys.executable,
+        "-m",
+        "tools.application.knowledge.cli",
+        "initialize",
+    )
 
-    def guard(self):
+    def guard(self) -> None:
         root = self.context.workspace.root
         self.context.assert_development()
         if self.context.environment.get("APP_ENV") == "production":
@@ -30,14 +36,14 @@ class KnowledgeStartup:
         if not environment.exists() or "APP_ENV=local" not in environment.read_text().splitlines():
             raise ValueError("Knowledge startup requires the local development environment.")
 
-    def reachable(self, endpoint):
+    def reachable(self, endpoint: str) -> bool:
         try:
             with self.opener.open(endpoint, timeout=1) as response:
                 return response.status == 200
         except (urllib.error.URLError, TimeoutError, ConnectionError):
             return False
 
-    def probe(self):
+    def probe(self) -> int:
         self.guard()
         root = self.context.workspace.root
         config = load(root)
@@ -71,7 +77,7 @@ class KnowledgeStartup:
         )
         return 0
 
-    def initialize(self):
+    def initialize(self) -> int:
         self.guard()
         root = self.context.workspace.root
         try:
@@ -89,11 +95,7 @@ class KnowledgeStartup:
             if ready:
                 result = self.context.runner.run(
                     ProcessSpec(
-                        (
-                            sys.executable,
-                            str(root / "tools/application/executors/knowledge.py"),
-                            "initialize",
-                        ),
+                        self.initialize_command,
                         root,
                         self.context.environment,
                     )

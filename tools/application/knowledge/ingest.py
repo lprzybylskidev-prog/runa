@@ -16,7 +16,6 @@ from tools.application.knowledge.contracts import (
 )
 from tools.application.knowledge.corpus import chunks, digest, metadata, read_source, sources
 from tools.application.knowledge.provider import Embeddings
-from tools.application.knowledge.store import Store
 
 
 def space(config: KnowledgeConfig) -> dict[str, object]:
@@ -235,33 +234,3 @@ class KnowledgeIndexer:
             if error.status != 404:
                 raise
         return self.index()
-
-
-def service(
-    root: Path,
-    config: KnowledgeConfig,
-    device: str = "auto",
-    *,
-    store: KnowledgeStore | None = None,
-    provider_factory: ProviderFactory = Embeddings,
-    context: KnowledgeContext | None = None,
-) -> KnowledgeIndexer:
-    return KnowledgeIndexer(
-        context or KnowledgeContext.for_workspace(root),
-        config,
-        store if store is not None else Store(config),
-        provider_factory=provider_factory,
-        device=device,
-    )
-
-
-def status(root: Path, config: KnowledgeConfig, store: KnowledgeStore | None = None) -> Health:
-    return service(root, config, store=store).status()
-
-
-def index(root: Path, config: KnowledgeConfig, device: str = "auto") -> int:
-    return service(root, config, device).index()
-
-
-def rebuild(root: Path, config: KnowledgeConfig, device: str = "cpu") -> int:
-    return service(root, config, device).rebuild()

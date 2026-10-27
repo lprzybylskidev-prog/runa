@@ -63,12 +63,12 @@ evidence; frontend request interception does not provide that evidence.
   preferences, enabled avatar/history and private factor controls. Never record
   private credentials/proofs in screenshots/reports. Appearance acceptance is the
   owner's explicit decision; automated rendering does not replace it.
-- `tools/maintainer/testing/bootstrap.py` prepares actual authored customer
+- `tools/maintainer/tests/python/contracts/test_bootstrap.py` prepares actual authored customer
   AGENTS/skills acquisition with and without reference module, sparse reapply and
   teammate clone. Backend/Laravel/PostgreSQL/security retain manual Audit guidance;
   those products plus frontend must carry Auth/profile/preferences/operator,
   Permissions/authority and corpus guide references. Owner instructions never ship.
-- `tools/maintainer/testing/update.py` prepares reviewed instruction changes while
+- `tools/maintainer/tests/python/contracts/test_update.py` prepares reviewed instruction changes while
   preserving customer root/domain extensions, including frontend. The execution
   case `test_reviewed_non_platform_add_replace_remove_and_instruction_preservation`
   in `update-execution.py` protects actual publication/reconciliation behavior.

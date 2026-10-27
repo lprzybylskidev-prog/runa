@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
+from tools.application.python_toolchain import artifact_path
+from tools.application.testing.support.process import RecordingRunner
 from tools.core.process import InputMode, ProcessResult, ProcessSpec
 from tools.maintainer.python_cli import parser
 from tools.maintainer.python_cli import test_command as build_test_command
-from tools.maintainer.python_toolchain import artifact_path
-from tools.maintainer.tests.python.support.process import RecordingRunner
 
 
 def test_literal_process_inputs_and_scripted_failure(tmp_path: Path) -> None:

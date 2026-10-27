@@ -49,7 +49,8 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
         else:
             command = [
                 sys.executable,
-                str(prod / "tools/application/executors/operations.py"),
+                "-m",
+                "tools.application.deployment_cli",
                 "deploy",
                 *args,
                 "--simulation",
@@ -97,7 +98,7 @@ def exercise(prod, fixture, project, check, report, call, output, commit):
     def recover_fixture():
         # Fixture-only reviewed recovery: migrations failed before changes or seed
         # effects were inspected. Restore known previous code; never undo data.
-        code = 'from tools.application.operations import service; o=service(); old=o.context.read_state()["current"]; o.set_tag(old["sha"]); o.runtime.resume_http(old["path"],recreate=True); o.runtime.health(old["path"],verify_source=True); (o.context.state/"in-progress.json").unlink()'
+        code = 'from pathlib import Path; from tools.application.deployment_service import DeploymentService; service = DeploymentService.for_workspace; o=service(Path.cwd()); old=o.context.read_state()["current"]; o.set_tag(old["sha"]); o.runtime.resume_http(old["path"],recreate=True); o.runtime.health(old["path"],verify_source=True); (o.context.state/"in-progress.json").unlink()'
         call([sys.executable, "-c", code], cwd=prod)
 
     sql(

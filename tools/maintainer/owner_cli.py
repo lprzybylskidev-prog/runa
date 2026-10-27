@@ -7,8 +7,8 @@ from tools.maintainer.context import ROOT, container, inside
 
 
 def main():
-    name = sys.argv.pop(1)
-    arguments = sys.argv[1:]
+    name = sys.argv[1]
+    arguments = sys.argv[2:]
     CHECKS = {
         "check-repository": "repository",
         "check-maintenance": "maintenance",
@@ -61,12 +61,24 @@ def main():
 
         area = CHECKS[name]
         if area in ("frontend", "database-migrations"):
-            from tools.application.runtime import run
+            import os
 
-            run(
+            from tools.application.processes import ApplicationProcesses
+            from tools.core.process import SubprocessRunner
+
+            processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+
+            processes.run(
                 ["node", "src/runa/tools/testing/frontend.mjs"]
                 if area == "frontend"
-                else ["python3", "tools/maintainer/testing/database-guards.py"]
+                else [
+                    "python3",
+                    "tools/maintainer/test-python",
+                    "--scope=contracts",
+                    "--path=contracts/test_database_guards.py",
+                ],
+                cwd=ROOT,
+                check=True,
             )
         else:
             getattr(checks, area)()

@@ -10,7 +10,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.application import production, repository_boundary
+from tools.application import production_runtime as production
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.maintainer.checks import yaml
 from tools.maintainer.tests.python.support.deployment import bind_deployment, deployment
 
@@ -23,7 +24,7 @@ class ProductionContracts(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.deployment = deployment(Path(self.temporary.name))
         boundary = patch.object(
-            repository_boundary, "assert_installation", return_value={"mode": "prod"}
+            RepositoryPolicy, "assert_installation", return_value={"mode": "prod"}
         )
         boundary.start()
         self.addCleanup(boundary.stop)
@@ -189,7 +190,9 @@ class ProductionContracts(unittest.TestCase):
         with (
             tempfile.TemporaryDirectory() as folder,
             bind_deployment(self, Path(folder)),
-            patch("tools.application.repository_boundary.assert_production_installation"),
+            patch(
+                "tools.application.repository_boundary_service.RepositoryPolicy.assert_production_installation"
+            ),
             contextlib.redirect_stdout(io.StringIO()),
         ):
             config = Path(folder) / ".env.prod.compose"

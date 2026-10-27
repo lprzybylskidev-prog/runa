@@ -12,13 +12,12 @@ The repository-local `tools` package separates reusable infrastructure in
 `tools/core` from delivered application tooling in `tools/application`. Core may
 import only the standard library and core; application may additionally import
 application modules. Neither may require owner tools or external installer code.
-Package initializers perform no operations. New internal integrations use qualified
-imports and explicit arguments; preserve existing source transports while the
-owning migration replaces their old imports. The public command registry remains
+Package initializers perform no operations. Internal integrations use qualified
+imports and explicit workspace/process arguments. The public command registry remains
 Laravel Artisan; Python package names are not a customer extension API.
 
-Root `pyproject.toml` defines the core/application distribution and private owner
-analysis scope. Delivered configuration and frozen development locks live under
+Root `pyproject.toml` defines the core/application distribution and shared analysis
+rules. Private owner analysis additions live outside customer delivery. Delivered configuration and frozen development locks live under
 `tools/application/python`; both ownership contexts use the same reviewed versions.
 It declares no runtime or developer dependencies. Package versions follow root
 `VERSION`; Python packages do not receive independent releases. Private wheel
@@ -105,10 +104,11 @@ continues accepted work and persists completion, while request IDs prevent repla
 Host state uses the core durable private JSON writer, independently of deployment.
 Socket binding uses a directory descriptor without changing the process cwd.
 
-Compatibility function modules and direct-file launchers remain for existing
-callers during the migration. They delegate to the package services; knowledge domain redesign retains its owning point. Deployment now uses explicit operator/release services. New
-consumers use these explicit services and qualified imports. Do not copy legacy
-process/Compose/state mechanics or introduce new path injection.
+Command adapters compose the explicit development, management, diagnostics,
+quality, security and deployment services. Internal PHP/Compose callers start fixed
+package modules using `python3 -m` from the selected tool checkout. Bin, Git-hook
+and standalone external launchers retain their documented file interfaces.
+Do not reintroduce legacy process/Compose/state mechanics or import-path injection.
 
 All generated private Python state belongs under the workspace-root
 `.runtime/python`: `venv`, `cache`, `build`, `pycache`, `node` and `reports`.
@@ -146,7 +146,7 @@ file directly under `src/app`; Pyright can extend the adjacent
 module/tooling paths explicitly. Preserve strict typing/markers and workspace-root
 `.runtime/python` caches/reports. Keep custom configuration in `src/app` and leave
 protected tooling unchanged. The owner adds its private source/test and packaging
-scope through the root analysis configuration and private test selector.
+scope through excluded maintainer configuration and its private test selector.
 
 ## Quality, diagnostics and staged checks
 

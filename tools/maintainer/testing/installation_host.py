@@ -19,7 +19,7 @@ import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
-from tools.application.repository_boundary import OWNER_PATHS, write_staging_receipt
+from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
 from tools.core.context import WorkspaceContext
 from tools.maintainer.testing import customer_deployment_host as acceptance_customer_deployment_host
 from tools.maintainer.testing import customer_knowledge as acceptance_customer_knowledge
@@ -136,7 +136,7 @@ def project_customer(root, sha):
             "disabled://runa-read-only-upstream",
         ]
     )
-    write_staging_receipt(
+    RepositoryPolicy.for_workspace(root).write_staging_receipt(
         root,
         {
             "mode": "dev",
@@ -740,12 +740,12 @@ def main():
             )
             teammate_env = {**env, "RUNA_HOST_WORKER": "1"}
             call(
-                [sys.executable, "tools/application/executors/dev.py", "embeddings", "cpu"],
+                [sys.executable, "-m", "tools.application.development", "embeddings", "cpu"],
                 cwd=teammate,
                 env=teammate_env,
             )
             call(
-                [sys.executable, "tools/application/executors/dev.py", "initialize"],
+                [sys.executable, "-m", "tools.application.development", "initialize"],
                 cwd=teammate,
                 env=teammate_env,
             )
@@ -758,7 +758,7 @@ def main():
                 for name in (".env", ".env.testing", ".env.dev.database")
             }
             call(
-                [sys.executable, "tools/application/executors/dev.py", "initialize"],
+                [sys.executable, "-m", "tools.application.development", "initialize"],
                 cwd=teammate,
                 env=teammate_env,
             )
@@ -947,7 +947,7 @@ def main():
                     [
                         sys.executable,
                         "-c",
-                        "from tools.application.management import image_identity; print(image_identity())",
+                        "from pathlib import Path; from tools.application.management_service import ManagementService; print(ManagementService.for_workspace(Path.cwd()).image_identity())",
                     ],
                     cwd=source,
                     capture=True,

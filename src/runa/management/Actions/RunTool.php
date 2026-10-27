@@ -24,7 +24,7 @@ final class RunTool
         $doctor = [
             'config' => [PHP_BINARY, 'artisan', 'runa:config:validate'],
             'templates' => [PHP_BINARY, 'artisan', 'runa:config:templates'],
-            'hooks' => ['python3', 'tools/application/testing/hooks.py'],
+            'hooks' => ['python3', '-m', 'tools.application.testing.hooks'],
             'frontend' => [PHP_BINARY, 'artisan', 'runa:typecheck'],
             'database-migrations' => [PHP_BINARY, 'artisan', 'runa:test-db:guard', '--env=testing'],
             'database' => [PHP_BINARY, 'artisan', 'runa:test', '--scope=backend', '--filter=Database'],
@@ -39,8 +39,14 @@ final class RunTool
         if ($tool === 'dev') {
             return $this->process(['python3', '-m', 'tools.application.development', ...$arguments], $root, $output);
         }
-        $helpers = ['dev' => 'dev', 'doctor' => 'doctor', 'quality' => 'quality', 'knowledge' => 'knowledge',
-            'security' => 'security', 'check' => 'quality_check', 'hook' => 'git_hook'];
+        $helpers = ['doctor' => 'tools.application.doctor_cli', 'quality' => 'tools.application.quality_cli',
+            'knowledge' => 'tools.application.knowledge.cli', 'security' => 'tools.application.security_cli',
+            'check' => 'tools.application.source_checks', 'hook' => 'tools.application.git_hook'];
+        if ($tool === 'knowledge' && ! file_exists($root.'/.git/runa-bootstrap.json')
+            && ! is_link($root.'/.git/runa-bootstrap.json') && is_dir($root.'/tools/maintainer')
+            && is_file($root.'/docs/runa/maintainer/agent-contract.md')) {
+            $helpers['knowledge'] = 'tools.maintainer.knowledge_cli';
+        }
         if (! isset($helpers[$tool])) {
             throw new InvalidArgumentException('Unsupported internal tool executor.');
         }
@@ -66,7 +72,7 @@ final class RunTool
             return $this->process(['python3', '-m', 'tools.application.git_hook', $cwd, ...$arguments], $root, $output);
         }
 
-        return $this->process(['python3', $root.'/tools/application/executors/'.$helpers[$tool].'.py', ...$arguments], $cwd, $output);
+        return $this->process(['python3', '-m', $helpers[$tool], ...$arguments], $cwd, $output);
     }
 
     /** @param list<string> $command

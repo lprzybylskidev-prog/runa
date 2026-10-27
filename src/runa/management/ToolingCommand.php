@@ -67,7 +67,7 @@ abstract class ToolingCommand extends Command
             if (! in_array($this->tool, ['production', 'deploy', 'host'], true) && ! $this->input->hasParameterOption('--plan') && $request === null) {
                 DevelopmentContext::assertAllowed($root);
             }
-            if (! $this->input->hasParameterOption('--plan') && $request === null && ! $host && is_file('/.dockerenv') && is_file($root.'/tools/application/executors/dev.py')) {
+            if (! $this->input->hasParameterOption('--plan') && $request === null && ! $host && is_file('/.dockerenv') && is_file($root.'/tools/application/development.py')) {
                 if (getenv('APP_ENV') === 'production') {
                     throw new InvalidArgumentException('Development tooling is unavailable in production.');
                 }

@@ -1,19 +1,18 @@
 """Fetch customer Git into disposable staging; never alter installation Git history."""
 
+import os
 import posixpath
 import re
 import subprocess
 import tempfile
+from collections.abc import Callable, Mapping
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from tools.application.repository_boundary import OWNER_PATHS
+from tools.core.delivery import OWNER_PATHS
 
 COMPOSED = {"src/composer.json", "src/composer.lock", "src/package.json", "src/pnpm-lock.yaml"}
-
-
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -21,16 +20,29 @@ class CustomerSource:
     run: Callable
     environment: Mapping[str, str] = field(repr=False)
 
+    @classmethod
+    def for_workspace(cls, root: Path) -> "CustomerSource":
+        from functools import partial
+
+        from tools.application.processes import ApplicationProcesses
+        from tools.core.process import SubprocessRunner
+
+        environment = dict(os.environ)
+        processes = ApplicationProcesses(SubprocessRunner(), environment)
+        return cls(partial(processes.run, cwd=root), environment)
+
     @property
     def policy(self):
         from tools.application.repository_boundary_service import RepositoryPolicy
 
         return RepositoryPolicy(self.run, self.environment)
 
-    def application_path(self, path):
+    @staticmethod
+    def application_path(path):
         return path.startswith(("src/app/", "docs/app/")) or path in COMPOSED
 
-    def excluded(self, path):
+    @staticmethod
+    def excluded(path):
         return any(path == item or path.startswith(item + "/") for item in OWNER_PATHS)
 
     def git(self, root, *arguments):
@@ -62,7 +74,8 @@ class CustomerSource:
                 "Customer Git operation failed. Check the selected remote, target and operator credentials; no running release was changed."
             ) from None
 
-    def validate_target(self, target):
+    @staticmethod
+    def validate_target(target):
         if (
             not isinstance(target, str)
             or len(target) > 255

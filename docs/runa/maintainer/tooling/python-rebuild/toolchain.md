@@ -21,8 +21,8 @@ python3 tools/maintainer/python-tool typecheck
 Implementation points use only necessary focused diagnostics; the commands above
 are a catalogue, not instructions to run broad checks after each point. Full
 format/lint/strict typing, suites, wheels and live acceptance run in final quality.
-Unmigrated sources will acquire the new rules in their owning points; point 2
-does not claim a clean full-tree analysis or functional packaged legacy services.
+Caller retirement and annotation completion are tracked separately in roadmap
+point 9. A clean full-scope analysis is established only by final verification.
 
 The two stable launchers select fixed module adapters with their own checkout as
 cwd; they work from unrelated directories and preserve literal arguments. Help
@@ -45,9 +45,10 @@ The owner selector passes explicit private unit/contracts/integration/e2e paths
 to `tools/application/python/pytest.ini`, with an explicit workspace root, importlib
 mode and strict markers/config. The configuration and frozen locks are shared;
 private suites and owner analysis remain excluded from delivery.
-There is no import-path injection. Existing legacy unittest scripts remain called
-by their current gates until their family migrates; they are not silently dropped
-or collected twice. The original ledger retains their baseline identities.
+There is no import-path injection. Private suites use explicit pytest paths and
+ordinary qualified imports. Native acceptance runs through fixed package modules.
+Obsolete filename adapters have been removed; the original ledger and scenario
+map retain their baseline identities.
 
 Default scopes are unit and contracts. Repeat `--scope`, use a `--filter` pytest
 keyword expression, or provide one `--path` relative to `tests/python` (including
@@ -101,11 +102,39 @@ without dependency resolution or build isolation downloads. Build/egg metadata
 stays in that staging tree. Contract scenarios physically inspect projected files,
 layer the two owner/customer wheels without collisions and import package roots
 from unrelated cwd with no repository import path; external gets its own directory.
-Legacy service import/transport functionality is covered by subsequent family
-migrations and final acceptance, not inferred from inert root imports.
+Application projection contracts import every authored module without private
+packages. Full wheel, standalone bundle and native transport acceptance run in
+final verification; inert imports alone do not establish runtime acceptance.
 
 The tooling quality group and legacy tooling impact selection include toolchain
 setup, Python formatting/lint/strict typing, default unit/contracts and separate
 packaging contracts. Real prerequisites are graph edges and shared suite ownership
 is serialized by `testing-state`. Customer tooling quality includes delivered Python setup/format/lint/type checks;
-it never selects private owner tests. Aggregate suite routing is owned by point 8.
+it never selects private owner tests. Aggregate suite routing uses the shared lifecycle with explicit owner roots.
+
+## Source bundles and private analysis
+
+The external package build additionally writes `runa-external-X.Y.Z.tar.gz` and
+`bootstrap.py` alongside its wheel under `.runtime/python/build/wheels/external`.
+The archive contains only the declared external/core source and resources from
+canonical authored packages. Extract it and invoke its fixed `distribution/*.py`
+launchers from any cwd; no pip or project installation is required. The separate
+single-file bootstrap remains the reviewed first-acquisition interface. Acquisition
+retains its independently enforced projection/credential rules; it never imports
+unverified customer code. Bundle generation and wheel builds belong to final
+packaging verification, not implementation-point checks.
+
+Private owner Ruff and Pyright additions live under `tools/maintainer/python`.
+`python-tool format|lint|typecheck` selects those explicit configurations; root
+`pyproject.toml` retains only delivered metadata and shared analysis rules. Owner
+Pyright includes all first-party tooling, external distribution, private cases and
+fixtures, with the same strict CPython 3.11 rules and frozen tools. No scope is
+excluded to conceal annotation work. Public commands still select application
+ownership and application-owned extension configuration.
+
+The host executor recognizes exact previous-release daemon command paths only
+while stopping an existing owned daemon. This is recovery of persisted process
+identity, not a retained source adapter or a second executor implementation.
+Serialized deployment journals, receipts and quality evidence retain their
+compatibility/read policies. Native PHP/JS runners and source-owned command
+registries remain unchanged.

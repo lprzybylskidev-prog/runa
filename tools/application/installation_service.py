@@ -24,10 +24,10 @@ import uuid
 from pathlib import Path
 
 from tools.application.deployment_context import read_env, stamp
+from tools.application.deployment_service import DeploymentService
 from tools.application.development_runtime import development_compose
 from tools.application.management_service import ManagementService
-from tools.application.operations import service as deployment_service
-from tools.application.repository_boundary import RepositoryBoundaryError
+from tools.application.repository_boundary_service import RepositoryBoundaryError
 from tools.core.reporting import SafeFailure
 
 
@@ -689,9 +689,7 @@ class InstallationService:
         resume=False,
         non_interactive=False,
     ):
-        from tools.application.repository_boundary import assert_installation
-
-        assert_installation(self.context.workspace.root)
+        self.context.policy.assert_installation(self.context.workspace.root)
         sha = self.deployment.source.resolve(target)
         head = self.context.run(
             ["git", "rev-parse", "HEAD"], capture_output=True, text=True
@@ -788,10 +786,10 @@ class InstallationService:
             self.scaffold(sha, mode)
             if mode == "dev":
                 self.development_context()
-                helper = self.context.workspace.root / "tools/application/executors/dev.py"
+                helper = ["python3", "-m", "tools.application.development"]
                 if profile:
-                    self.context.run(["python3", str(helper), "profile", profile])
-                self.context.run(["python3", str(helper), "prepare"])
+                    self.context.run([*helper, "profile", profile])
+                self.context.run([*helper, "prepare"])
                 self.context.run(
                     self.dev_compose() + ["up", "-d", "--wait", "postgres", "app", "setup"]
                 )
@@ -803,7 +801,7 @@ class InstallationService:
                         self.dev_compose()
                         + ["exec", "-T", "app", "php", "artisan", *arguments, "--no-interaction"]
                     )
-                self.context.run(["python3", str(helper), "up"])
+                self.context.run([*helper, "up"])
             else:
                 settings = self.resume_settings(settings_file if resume else None, simulation)
                 if settings["tls"]["mode"] == "builtin":
@@ -912,7 +910,7 @@ class InstallationService:
 
 
 def main(arguments, root=None):
-    deployment = deployment_service(root)
+    deployment = DeploymentService.for_workspace(root or Path(__file__).resolve().parents[2])
     return InstallationService(
         deployment,
         ManagementService(

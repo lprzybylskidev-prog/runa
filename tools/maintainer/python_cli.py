@@ -10,12 +10,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from tools.application.development_runtime import DevelopmentRuntime
-from tools.application.repository_boundary import assert_development_context
+from tools.application.python_execution import PythonToolExecutor
+from tools.application.python_toolchain import PYTHON, ROOT, STATE, environment
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
 from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
 from tools.core.reporting import SafeFailure
-from tools.maintainer.python_execution import PythonToolExecutor
-from tools.maintainer.python_toolchain import PYTHON, ROOT, STATE, environment
 
 
 def parser() -> argparse.ArgumentParser:
@@ -89,7 +89,7 @@ def execute(command: list[str]) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parser().parse_args(argv)
-    assert_development_context(ROOT)
+    RepositoryPolicy.for_workspace(ROOT).assert_development_context(ROOT)
     if (ROOT / ".git/runa-bootstrap.json").exists():
         raise ValueError("Owner Python tools require a receipt-free maintenance checkout.")
     if args.action == "test":
@@ -122,7 +122,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             .returncode
         )
     if args.action == "setup":
-        return execute([sys.executable, "-m", "tools.maintainer.python_toolchain"])
+        return execute([sys.executable, "-m", "tools.application.python_toolchain"])
     if args.action == "test":
         from tools.application.testing.runner import Selection, TestService
         from tools.maintainer.test_cli import OWNER
@@ -149,15 +149,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.action == "packages":
         return execute([sys.executable, "-m", "tools.maintainer.python_packages", args.kind])
     if args.action == "format":
-        command = [str(PYTHON), "-m", "ruff", "format", *(["--check"] if args.check else []), "."]
+        command = [
+            str(PYTHON),
+            "-m",
+            "ruff",
+            "format",
+            "--config",
+            "tools/maintainer/python/ruff.toml",
+            *(["--check"] if args.check else []),
+            ".",
+        ]
     elif args.action == "lint":
-        command = [str(PYTHON), "-m", "ruff", "check", "."]
+        command = [
+            str(PYTHON),
+            "-m",
+            "ruff",
+            "check",
+            "--config",
+            "tools/maintainer/python/ruff.toml",
+            ".",
+        ]
     elif args.action == "typecheck":
         command = [
             "node",
             str(STATE / "node/pyright/dist/pyright.js"),
             "--project",
-            "pyproject.toml",
+            "tools/maintainer/python/pyrightconfig.json",
         ]
     return execute(command)
 

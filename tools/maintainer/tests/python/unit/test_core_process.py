@@ -9,6 +9,7 @@ from threading import Timer
 
 import pytest
 
+from tools.application.python_execution import PythonToolExecutor
 from tools.core.context import WorkspaceContext
 from tools.core.lifecycle import Cancellation
 from tools.core.process import (
@@ -20,7 +21,6 @@ from tools.core.process import (
 )
 from tools.core.reporting import CommandResult, SafeFailure, TextReporter, command_boundary
 from tools.core.state import FileLock, StateDirectory
-from tools.maintainer.python_execution import PythonToolExecutor
 
 
 def test_literal_argv_bytes_and_native_status_do_not_use_shell(tmp_path: Path) -> None:

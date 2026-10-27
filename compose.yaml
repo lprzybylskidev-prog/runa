@@ -50,7 +50,7 @@ services:
     mem_limit: 4G
   knowledge-init:
     <<: *development
-    command: [python3, tools/application/knowledge/startup.py, initialize]
+    command: [python3, -m, tools.application.knowledge.startup_cli, initialize]
     healthcheck: { disable: true }
     restart: on-failure
     cpus: 1

@@ -3,9 +3,9 @@
 This is the owner-only contract and migration ledger for
 [RM-2026-012](../../roadmaps/README.md).
 It describes the existing 0.5.0 implementation and its intended replacement;
-the snapshot remains historical. Point 2 now supplies package metadata, frozen
-development tooling and private pytest infrastructure; service migrations remain
-open. See the [current workflow](toolchain.md) and [dependency review](dependency-review.md).
+the snapshot remains historical. Package metadata, frozen shared tools, services
+and private pytest discovery are implemented. Caller retirement is recorded in
+the ledger; final annotation/reconciliation work remains in roadmap point 9. See the [current workflow](toolchain.md) and [dependency review](dependency-review.md).
 The baseline source commit is `32d55d2f` (roadmap activation; runtime source is
 unchanged from the released 0.5.0 tree).
 

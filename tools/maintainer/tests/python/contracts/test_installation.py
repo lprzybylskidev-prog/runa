@@ -11,9 +11,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from tools.application import deployment_context as ops
 from tools.application import installation_service as installer
-from tools.application import management, repository_boundary
-from tools.application import operations as ops
+from tools.application.management_service import ManagementService
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.maintainer.tests.python.support.deployment import deployment
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -41,7 +42,7 @@ class InstallationContracts(unittest.TestCase):
 
     def setUp(self):
         boundary = patch.object(
-            repository_boundary, "assert_installation", return_value={"mode": "prod"}
+            RepositoryPolicy, "assert_installation", return_value={"mode": "prod"}
         )
         boundary.start()
         self.addCleanup(boundary.stop)
@@ -451,4 +452,4 @@ class InstallationContracts(unittest.TestCase):
             "parameters": {"arguments": ["dev", self.sha]},
         }
         with self.assertRaises(ValueError):
-            management.validate_plan(json.dumps(plan), "a" * 32)
+            ManagementService.for_workspace(ROOT).validate_plan(json.dumps(plan), "a" * 32)

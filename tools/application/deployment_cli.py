@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-"""Fixed compatibility transport for the production package entrypoint."""
+"""Import-safe deployment and rollback process boundary."""
 
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 
-def main(arguments=None):
+def main(arguments: Sequence[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if arguments is None else arguments)
-    if not __package__:
-        return subprocess.call(
-            [sys.executable, "-m", "tools.application.executors.production", *arguments],
-            cwd=Path(__file__).resolve().parents[3],
-        )
-    from tools.application.production import main as execute
+    from tools.application.deployment_service import DeploymentService
+
+    deployment = DeploymentService.for_workspace(Path(__file__).resolve().parents[2])
     from tools.core.lifecycle import interrupt_signals
     from tools.core.reporting import SafeFailure
 
     try:
         with interrupt_signals():
-            execute(arguments)
+            if not arguments:
+                raise ValueError("An operation name is required.")
+            deployment.main(arguments[0], arguments[1:])
         return 0
     except KeyboardInterrupt:
         return 130
@@ -40,7 +40,11 @@ def main(arguments=None):
             ),
             file=sys.stderr,
         )
-        return getattr(error, "returncode", 1)
+        return (
+            error.returncode
+            if isinstance(error, subprocess.CalledProcessError)
+            else (error.exit_code if isinstance(error, SafeFailure) else 1)
+        )
 
 
 if __name__ == "__main__":

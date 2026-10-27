@@ -73,4 +73,6 @@ Environment creators/readers, template names and safe credential reconciliation 
 Python operational/source and development-tool boundaries follow
 [Python tooling](../../../../docs/runa/handbook/development/python-tooling.md).
 Keep the host stdlib-only and generated development state under `.runtime/python`;
-package preparation must not add Python tooling to production images.
+package preparation must not add Python tooling to production images. Follow the
+public editor guide for the frozen container interpreter/formatter configuration;
+editor settings do not establish observed GUI acceptance.

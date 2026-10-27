@@ -1,14 +1,24 @@
 """Focused deterministic project diagnostics. Checks never repair runtime state."""
 
 import json
-import re
-from datetime import UTC, date, datetime, timedelta
 
 # Public development diagnostics are the same service in both ownership contexts.
-from tools.application.checks import boost as boost
-from tools.application.checks import development as development
-from tools.application.checks import tooling as tooling
-from tools.application.runtime import ROOT, run
+import os
+import re
+from datetime import UTC, date, datetime, timedelta
+from functools import partial
+
+from tools.application.diagnostics import Diagnostics
+from tools.application.processes import ApplicationProcesses
+from tools.core.process import SubprocessRunner
+from tools.maintainer.context import ROOT
+
+processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+run = partial(processes.run, cwd=ROOT, check=True)
+diagnostics = Diagnostics.for_workspace(ROOT)
+boost = diagnostics.boost
+development = diagnostics.development
+tooling = diagnostics.tooling
 
 
 def yaml(path):

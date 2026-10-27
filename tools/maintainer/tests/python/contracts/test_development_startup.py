@@ -12,8 +12,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from tools.application import runtime
 from tools.application.development import DevelopmentService
+from tools.application.management_service import ManagementService
 from tools.application.processes import ApplicationProcesses
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.process import SubprocessRunner
@@ -51,7 +51,7 @@ class DevelopmentFixture(unittest.TestCase):
 class StartupContracts(DevelopmentFixture):
     def test_pre_autoload_setup_uses_the_private_executor(self):
         self.assertIn(
-            "command: [python3, tools/application/executors/dev.py, setup, --if-needed]",
+            "command: [python3, -m, tools.application.development, setup, --if-needed]",
             (ROOT / "compose.yaml").read_text(),
         )
         self.assertFalse((ROOT / "bin/dev").exists())
@@ -59,7 +59,7 @@ class StartupContracts(DevelopmentFixture):
         self.assertEqual(editor["initializeCommand"], ["./bin/artisan", "runa:dev:prepare"])
         self.assertEqual(
             editor["postCreateCommand"],
-            ["python3", "tools/application/executors/dev.py", "setup", "--if-needed"],
+            ["python3", "-m", "tools.application.development", "setup", "--if-needed"],
         )
 
     def host_context(self):
@@ -297,10 +297,14 @@ class StartupContracts(DevelopmentFixture):
         ]
         rows.append({"Service": "setup", "State": "exited", "ExitCode": 0})
         with (
-            patch.object(runtime, "run", return_value=SimpleNamespace(stdout=json.dumps(rows))),
+            patch.object(
+                self.processes, "run", return_value=SimpleNamespace(stdout=json.dumps(rows))
+            ),
             contextlib.redirect_stdout(io.StringIO()),
         ):
-            runtime.host_stack_health()
+            ManagementService(
+                WorkspaceContext(ROOT), self.processes, ExecutionLocation.HOST
+            ).host_stack_health()
 
 
 class CustomerHookSetup(DevelopmentFixture):

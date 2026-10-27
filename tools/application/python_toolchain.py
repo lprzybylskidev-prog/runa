@@ -97,9 +97,11 @@ class PythonToolchain:
 
     def setup(self) -> int:
         """Install locked wheels and the official Pyright tarball without npm scripts."""
-        from tools.application.repository_boundary import assert_development_context
+        from tools.application.repository_boundary_service import RepositoryPolicy
 
-        assert_development_context(self.workspace.root)
+        RepositoryPolicy.for_workspace(self.workspace.root).assert_development_context(
+            self.workspace.root
+        )
         if self.location is not ExecutionLocation.CONTAINER:
             raise ValueError("Python development tools must be installed in the app container.")
         if any(

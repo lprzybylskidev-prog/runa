@@ -762,6 +762,10 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     10 only. Document exact commands, prerequisites and changed default semantics.
 
 - [ ] 9. Complete caller migration and retire the old architecture.
+  - Progress: caller/facade retirement, explicit service composition, private
+    analysis separation, source-bundle preparation and editor/docs updates are
+    implemented. Full-scope annotation completion and final alias/resource/inline
+    reconciliation remain open; this point is not complete.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1242,6 +1246,65 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Active development/test data, Qdrant/model caches, backups and reports remain
   preserved. No new
   dependency, database migration or production deployment occurred.
+
+### Point 9 — internal caller retirement (in progress, 2026-10-27)
+
+- Removed application runtime/diagnostic/management/security/quality/production/
+  deployment/receipt/customer-source facades and the obsolete executor package.
+  CLI adapters, PHP management Actions, Compose, owner commands and native
+  acceptance now select fixed package modules or explicit service APIs. Operation
+  contexts supply receipt/customer-source policies using their injected process
+  dependencies. Owner database/entrypoint adapters no longer rewrite `sys.argv`.
+- Removed private filename suite transports, redundant toolchain/process support
+  reexports and the ingest function facade. Gates use explicit pytest paths or
+  qualified native scenario modules. Documentation live acceptance and quality
+  subprocess fixtures no longer inject sys.path/PYTHONPATH. The baseline inventory
+  and scenario identities remain historical; the per-file ledger names current
+  replacements. Final alias/resource/non-Python/inline reconciliation remains open.
+- Optional knowledge initialization still starts without PHP/vendor/application
+  readiness. Its transport composition selects a fixed receipt-scoped initializer;
+  customer source never imports owner packages. Previous-release daemon command
+  paths remain only for exact owned-daemon recovery; the Boost executable retains
+  its process-level cwd/exec operation to preserve stdio. These are deliberate
+  transport/recovery boundaries, not service-global mutations or retained shims.
+- Root package metadata contains only delivered packages/shared rules. Private
+  Ruff/Pyright additions moved to excluded `tools/maintainer/python`, preserving
+  full strict owner service/adapter/test/fixture scope. Frozen pins are unchanged.
+  External packaging prepares canonical external/core source tarballs and the
+  standalone bootstrap alongside wheels. Added physical all-module import,
+  metadata-completeness and no-install external source-bundle contracts. Artifact
+  builds and standalone/wheel acceptance remain for point 10.
+- Devcontainer configuration selects the frozen Python interpreter/Ruff binary,
+  strict Pylance and Python format/import actions. Public command/Python/editor/
+  environment/production docs, owner packaging/quality docs and owner/customer
+  backend/Docker references are synchronized. Root owner/customer AGENTS already
+  require qualified imports, shared tooling and container ownership; they need no
+  new authority rule. Laravel/security guidance retains the same public registry,
+  receipt and security boundaries. No frontend/presentation guidance changed.
+- Necessary focused diagnostics passed: two startup/health cases; two delivered
+  quality/security/deployment import cases; interleaved release contexts;
+  development receipt refusal; unknown/maintenance installation refusal;
+  reviewed debug-output refusal; production image/lock binding; literal host-plan
+  arguments; physical import of every delivered module; and four unrelated-cwd
+  public alias help cases (15 selected tests). A stale test expected the installation
+  CLI to raise a service exception despite its container refusal exit; it now tests
+  the injected installation service's refusal before mutation and passed. Two
+  initial keyword selections collected no matching tests; explicit selected nodes
+  above supplied the intended evidence. This is not a full-suite/typing/packaging
+  or live acceptance PASS. Changed-file Ruff formatting/import/lint preparation
+  uses the pinned container binary, matching mandatory staged-hook rules.
+- Remaining point 9 work: finish full-scope typed JSON/protocol/service and private
+  fixture/test contracts, and finish the complete inventory/caller/resource audit.
+  Keep point 9 open until these changes and their documentation/checklist are
+  committed. Do not start full verification or release finalization yet.
+- No business module behavior/contracts or independent module version changed.
+  VERSION remains 0.5.0; proposed feature release remains 0.6.0. No new dependency,
+  migration, production deployment or test-created Docker resource was introduced.
+  No containers/networks/images/volumes were deleted. Incremental knowledge
+  refresh rebuilt the operational management registry image
+  `runa-management:836b79eb8f4145489eef9e10` after its PHP catalogue inputs changed;
+  it is retained for current tooling, not disposable acceptance. Development/test
+  data, knowledge/model caches, backups and reports are preserved.
 
 ### Draft preparation validation (historical)
 

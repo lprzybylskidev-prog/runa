@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Private owner database transports, with fixed per-file purpose."""
 
-import subprocess
+import os
 import sys
 
+from tools.application.processes import ApplicationProcesses
+from tools.core.process import SubprocessRunner
 from tools.maintainer.context import ROOT, container
 
 
-def main():
-    name = sys.argv.pop(1)
+def main() -> None:
+    name = sys.argv[1]
+    arguments = sys.argv[2:]
     commands = {
         "migrate": "migrate",
         "migrate-status": "migrate:status",
@@ -21,7 +24,7 @@ def main():
     }
     if name not in commands:
         raise SystemExit("Invoke a named owner database entrypoint.")
-    args = sys.argv[1:]
+    args = list(arguments)
     if args == ["--help"]:
         print(
             "Usage: python3 tools/maintainer/"
@@ -34,9 +37,9 @@ def main():
             + "\nPlatform scope only; resets retain the isolated test-database guard."
         )
         raise SystemExit(0)
-    from tools.application.repository_boundary import assert_development_context
+    from tools.application.repository_boundary_service import RepositoryPolicy
 
-    assert_development_context(ROOT)
+    RepositoryPolicy.for_workspace(ROOT).assert_development_context(ROOT)
     if any(
         a.startswith(("--path", "--database", "--realpath", "--env", "--schema-path")) for a in args
     ):
@@ -45,12 +48,14 @@ def main():
         if len(args) != 1 or not args[0].startswith("Runa\\Database\\Seeders\\"):
             raise SystemExit("Provide one explicit Runa\\Database\\Seeders\\ClassName.")
         args = ["--class=" + args[0]]
-    container(ROOT / "tools/maintainer" / name, sys.argv[1:])
+    container(ROOT / "tools/maintainer" / name, arguments)
     raise SystemExit(
-        subprocess.run(
+        ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+        .run(
             ["php", str(ROOT / "distribution/platform-database.php"), commands[name], *args],
             cwd=ROOT / "src",
-        ).returncode
+        )
+        .returncode
     )
 
 

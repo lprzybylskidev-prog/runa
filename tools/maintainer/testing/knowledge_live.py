@@ -11,8 +11,9 @@ import tempfile
 import uuid
 from pathlib import Path
 
+from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.corpus import identity
-from tools.application.knowledge.ingest import index, status
+from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
 
@@ -56,7 +57,12 @@ def main():
 
         def run_index(device="auto"):
             with contextlib.redirect_stdout(io.StringIO()) as output:
-                assert index(root, config, device) == 0
+                assert (
+                    KnowledgeIndexer(
+                        KnowledgeContext.for_workspace(root), config, store, device=device
+                    ).index()
+                    == 0
+                )
             return json.loads(output.getvalue())
 
         git("init", "-q", "-b", "knowledge-acceptance")
@@ -79,7 +85,9 @@ def main():
             document = root / "docs/app/architecture.md"
             document.write_text("# Runtime\n\nNever deploy knowledge services into production.\n")
             git("add", "docs/app/architecture.md")
-            assert status(root, config)["stale"]
+            assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
+                "stale"
+            ]
             assert run_index()["embedded_chunks"] == 1
             document.write_text(
                 "# Runtime\n\nKeep Qdrant and embedding services development-only.\n"
@@ -95,18 +103,29 @@ def main():
                     }
                 ]
             )
-            assert status(root, config)["orphan_chunks"] == 1
+            assert (
+                KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
+                    "orphan_chunks"
+                ]
+                == 1
+            )
             assert run_index()["removed_chunks"] == 1
             manifest = store.manifest()
             store.write_manifest({**manifest, "pending": True})
-            assert status(root, config)["interrupted"]
+            assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
+                "interrupted"
+            ]
             assert run_index()["embedded_chunks"] == 0
             document.unlink()
             assert run_index()["removed_chunks"] == 1
             git("checkout", "-qb", "changed-branch")
-            assert status(root, config)["branch_changed"]
+            assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
+                "branch_changed"
+            ]
             assert run_index()["embedded_chunks"] == 0
-            assert not status(root, config)["stale"]
+            assert not KnowledgeIndexer(
+                KnowledgeContext.for_workspace(root), config, store
+            ).status()["stale"]
         finally:
             # Only this random test collection is removed; never the developer corpus.
             if store.exists():

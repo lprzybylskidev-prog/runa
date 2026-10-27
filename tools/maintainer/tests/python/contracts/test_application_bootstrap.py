@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.maintainer.python_toolchain import ROOT
+from tools.application.python_toolchain import ROOT
 
 
 @pytest.mark.parametrize("alias", ["artisan", "pnpm", "composer", "boost-mcp"])

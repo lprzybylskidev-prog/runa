@@ -151,7 +151,7 @@ container does not update its runtime. Development uses
 `./bin/artisan runa:dev:build app postgres` followed by selective recreation of
 app/queue/scheduler and PostgreSQL, preserving data volumes. Recreate active testing
 profile endpoints through their explicit Compose context as well. Run idempotent
-setup inside the replaced app (`python3 tools/application/executors/dev.py setup
+setup inside the replaced app (`python3 -m tools.application.development setup
 --if-needed`) to restore container-local Boost MCP registration. Production uses
 normal tested customer deployment and exact-SHA PHP/Nginx/PostgreSQL images;
 preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).

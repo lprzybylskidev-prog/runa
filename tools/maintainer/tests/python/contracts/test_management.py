@@ -9,7 +9,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from tools.application import management, test_resources
+from tools.application import test_resources
+from tools.application.host_plan import OPERATIONS
+from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -29,7 +31,7 @@ class ManagementContracts(unittest.TestCase):
 
     def test_published_schema_and_executor_allowlist_agree(self):
         schema = json.loads((ROOT / "src/runa/management/host-plan.v1.schema.json").read_text())
-        self.assertEqual(set(schema["properties"]["operation"]["enum"]), set(management.OPERATIONS))
+        self.assertEqual(set(schema["properties"]["operation"]["enum"]), set(OPERATIONS))
         self.assertFalse(schema["additionalProperties"])
         self.assertFalse(schema["properties"]["parameters"]["additionalProperties"])
         self.assertEqual(set(schema["required"]), set(self.plan()))
@@ -53,9 +55,9 @@ class ManagementContracts(unittest.TestCase):
         ]
         for value in variants:
             with self.subTest(value=value), self.assertRaises(ValueError):
-                management.validate_plan(json.dumps(value), self.request)
+                ManagementService.for_workspace(ROOT).validate_plan(json.dumps(value), self.request)
         with self.assertRaisesRegex(ValueError, "Duplicate"):
-            management.validate_plan(
+            ManagementService.for_workspace(ROOT).validate_plan(
                 json.dumps(self.plan()).replace(
                     '"schema_version": 1', '"schema_version": 1, "schema_version": 1'
                 ),
@@ -65,9 +67,11 @@ class ManagementContracts(unittest.TestCase):
     def test_tool_arguments_remain_literal_and_private_plan_fields_are_rejected(self):
         arguments = ["--filter=literal $(false); value", "line\nbreak"]
         plan = self.plan() | {"operation": "tooling.test", "parameters": {"arguments": arguments}}
-        validated = management.validate_plan(json.dumps(plan), self.request)
-        command = management.execution_command(validated)
-        self.assertEqual(command[-5:], ["php", "artisan", "runa:test", *arguments])
+        validated = ManagementService.for_workspace(ROOT).validate_plan(
+            json.dumps(plan), self.request
+        )
+        command = ManagementService.for_workspace(ROOT).execution_command(validated)
+        self.assertEqual(list(command[-5:]), ["php", "artisan", "runa:test", *arguments])
         self.assertNotIn("sh", command)
         for parameters in (
             {"arguments": "false"},
@@ -76,7 +80,7 @@ class ManagementContracts(unittest.TestCase):
             {"arguments": [], "executable": "sh"},
         ):
             with self.subTest(parameters=parameters), self.assertRaises(ValueError):
-                management.validate_plan(
+                ManagementService.for_workspace(ROOT).validate_plan(
                     json.dumps(plan | {"parameters": parameters}), self.request
                 )
 
@@ -103,9 +107,11 @@ class ManagementContracts(unittest.TestCase):
         ]
         for tool, arguments, expected in cases:
             with self.subTest(tool=tool, arguments=arguments):
-                self.assertEqual(management.public_command(tool, arguments), expected)
+                self.assertEqual(
+                    ManagementService.for_workspace(ROOT).public_command(tool, arguments), expected
+                )
         with self.assertRaises(ValueError):
-            management.public_command("unregistered", ["false"])
+            ManagementService.for_workspace(ROOT).public_command("unregistered", ["false"])
 
 
 class TestResourceContracts(unittest.TestCase):
@@ -184,7 +190,9 @@ class TestResourceContracts(unittest.TestCase):
             patch.object(
                 self.endpoints, "read", side_effect=self.endpoint(("app-test", "nginx-test"))
             ),
-            patch("tools.application.repository_boundary.assert_development_context"),
+            patch(
+                "tools.application.repository_boundary_service.RepositoryPolicy.assert_development_context"
+            ),
             patch.object(self.endpoints, "cleanup") as cleanup,
             patch.object(self.processes, "run") as start,
         ):
@@ -209,7 +217,9 @@ class TestResourceContracts(unittest.TestCase):
         with (
             contextlib.nullcontext(),
             patch.object(self.endpoints, "read", side_effect=self.endpoint()),
-            patch("tools.application.repository_boundary.assert_development_context"),
+            patch(
+                "tools.application.repository_boundary_service.RepositoryPolicy.assert_development_context"
+            ),
             patch.object(self.endpoints, "cleanup") as cleanup,
             patch.object(self.processes, "run", side_effect=fail),
         ):
@@ -222,7 +232,9 @@ class TestResourceContracts(unittest.TestCase):
         with (
             contextlib.nullcontext(),
             patch.object(self.endpoints, "read", side_effect=self.endpoint()),
-            patch("tools.application.repository_boundary.assert_development_context"),
+            patch(
+                "tools.application.repository_boundary_service.RepositoryPolicy.assert_development_context"
+            ),
             patch.object(self.endpoints, "cleanup") as cleanup,
             patch.object(self.processes, "run", side_effect=KeyboardInterrupt),
         ):
@@ -234,7 +246,9 @@ class TestResourceContracts(unittest.TestCase):
         with (
             contextlib.nullcontext(),
             patch.object(self.endpoints, "read", side_effect=self.endpoint()),
-            patch("tools.application.repository_boundary.assert_development_context"),
+            patch(
+                "tools.application.repository_boundary_service.RepositoryPolicy.assert_development_context"
+            ),
             patch.object(self.endpoints, "cleanup") as cleanup,
             patch.object(self.processes, "run"),
         ):
@@ -252,7 +266,9 @@ class TestResourceContracts(unittest.TestCase):
             fcntl.flock(suite, fcntl.LOCK_EX)
             with (
                 contextlib.nullcontext(),
-                patch("tools.application.repository_boundary.assert_development_context"),
+                patch(
+                    "tools.application.repository_boundary_service.RepositoryPolicy.assert_development_context"
+                ),
                 patch.object(self.endpoints, "read") as read,
                 patch.object(self.endpoints, "cleanup") as cleanup,
             ):

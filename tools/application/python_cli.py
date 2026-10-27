@@ -7,7 +7,7 @@ from pathlib import Path
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
 from tools.application.python_execution import PythonToolExecutor
 from tools.application.python_toolchain import environment
-from tools.application.repository_boundary import assert_development_context
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.context import ExecutionContext, ExecutionLocation, WorkspaceContext
 from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
 from tools.core.reporting import SafeFailure
@@ -22,7 +22,7 @@ def main(argv=None):
     )
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[2]
-    assert_development_context(root)
+    RepositoryPolicy.for_workspace(root).assert_development_context(root)
     if args.check and args.action != "format" or args.config and args.action == "setup":
         raise ValueError("Unsupported Python tool options.")
     if args.config and (

@@ -9,8 +9,8 @@ from pathlib import Path
 
 import distribution.bootstrap as bootstrap
 import distribution.initialize as initialize
-import tools.application.operations as operations
-import tools.application.repository_boundary as boundary
+from tools.application.deployment_service import DeploymentService
+from tools.application.repository_boundary_service import RepositoryPolicy
 
 ROOT = Path(__file__).resolve().parents[5]
 
@@ -69,9 +69,14 @@ class CustomerClones(unittest.TestCase):
                 (destination / path).read_bytes(), (self.repository / path).read_bytes()
             )
         self.assertEqual(self.git(destination, "remote", "get-url", "origin"), str(self.repository))
-        self.assertEqual(boundary.assert_production_installation(destination)["mode"], "prod")
+        self.assertEqual(
+            RepositoryPolicy.for_workspace(destination).assert_production_installation(destination)[
+                "mode"
+            ],
+            "prod",
+        )
         with self.assertRaises(ValueError):
-            boundary.assert_development_context(destination)
+            RepositoryPolicy.for_workspace(destination).assert_development_context(destination)
         with self.assertRaises(bootstrap.BootstrapError):
             initialize.acquire(str(self.repository), "main", destination)
         self.assertEqual(self.git(destination, "rev-parse", "HEAD"), sha)
@@ -81,23 +86,30 @@ class CustomerClones(unittest.TestCase):
         self.git(self.base, "clone", "--quiet", str(self.repository), str(destination))
         self.assertFalse((destination / ".git/runa-bootstrap.json").exists())
         before = self.git(destination, "remote", "-v")
-        boundary.prepare_customer_context(destination, "dev")
-        self.assertEqual(boundary.assert_installation(destination)["mode"], "dev")
+        RepositoryPolicy.for_workspace(destination).prepare_customer_context(destination, "dev")
+        self.assertEqual(
+            RepositoryPolicy.for_workspace(destination).assert_installation(destination)["mode"],
+            "dev",
+        )
         marker = (destination / ".git/runa-bootstrap.json").read_bytes()
-        boundary.prepare_customer_context(destination, "dev")
+        RepositoryPolicy.for_workspace(destination).prepare_customer_context(destination, "dev")
         self.assertEqual((destination / ".git/runa-bootstrap.json").read_bytes(), marker)
         self.assertEqual(self.git(destination, "remote", "-v"), before)
         self.assertFalse((destination / ".runtime").exists())
         with self.assertRaises(ValueError):
-            boundary.prepare_customer_context(destination, "prod")
+            RepositoryPolicy.for_workspace(destination).prepare_customer_context(
+                destination, "prod"
+            )
 
     def test_ordinary_production_clone_prepares_its_own_role_without_acquisition_fields(self):
         destination = self.base / "operator"
         self.git(self.base, "clone", "--quiet", str(self.repository), str(destination))
         before = self.git(destination, "remote", "-v")
         self.assertFalse((destination / ".git/runa-bootstrap.json").exists())
-        boundary.prepare_customer_context(destination, "prod")
-        role = boundary.assert_production_installation(destination)
+        RepositoryPolicy.for_workspace(destination).prepare_customer_context(destination, "prod")
+        role = RepositoryPolicy.for_workspace(destination).assert_production_installation(
+            destination
+        )
         self.assertEqual(role["source"], "customer-repository")
         self.assertEqual(role["commit"], self.git(destination, "rev-parse", "HEAD"))
         self.assertNotIn("tag_object", role)
@@ -127,7 +139,7 @@ class CustomerClones(unittest.TestCase):
     def test_production_staging_keeps_full_versioned_development_configuration(self):
         destination = self.base / "production"
         sha = initialize.acquire(str(self.repository), "main", destination)
-        with contextlib.nullcontext(operations.service(destination)) as service:
+        with contextlib.nullcontext(DeploymentService.for_workspace(destination)) as service:
             staged = service.source.checkout(sha)
             service.source.assert_delivery(staged)
             self.assertEqual(

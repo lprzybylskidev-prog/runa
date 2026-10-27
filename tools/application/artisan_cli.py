@@ -1,30 +1,37 @@
 import os
 import subprocess
 import sys
+from functools import partial
+from pathlib import Path
 
-from tools.application import management
-from tools.application.runtime import ROOT, app_command, inside, run
+from tools.application.development_runtime import DevelopmentRuntime, execution_location
+from tools.application.host_transport import default_service as host_service
+from tools.application.management_service import ManagementService
+from tools.application.processes import ApplicationProcesses
+from tools.core.context import ExecutionLocation
 from tools.core.lifecycle import interrupt_signals
+from tools.core.process import SubprocessRunner
 from tools.core.reporting import SafeFailure
 
+ROOT = Path(__file__).resolve().parents[2]
 
-def main():
+
+def main() -> None:
+    management = ManagementService.for_workspace(ROOT)
+    host_executor = host_service()
+    runtime = DevelopmentRuntime.for_workspace(ROOT)
+    processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+    run = partial(processes.run, cwd=ROOT, check=True)
     try:
         args = sys.argv[1:]
         if args == ["--recover-host"]:
-            from tools.application import host_executor
-
             if (host_executor.directory() / "client.json").exists():
                 host_executor.stop()
             host_executor.ensure()
             print("Host executor ready. Use php artisan for normal operation.")
         elif args == ["--stop-host"]:
-            from tools.application import host_executor
-
             host_executor.stop()
         elif args == ["--operator"]:
-            from tools.application import host_executor
-
             host_executor.ensure()
             image = management.ensure_image()
             command = [
@@ -49,7 +56,7 @@ def main():
             if sys.stdin.isatty():
                 command.append("-t")
             command += [image]
-            raise SystemExit(subprocess.run(command, cwd=ROOT).returncode)
+            raise SystemExit(processes.run(command, cwd=ROOT).returncode)
         elif not args or args == ["--help"]:
             print(
                 "Usage: ./bin/artisan [--management] <Artisan arguments>\n"
@@ -58,17 +65,21 @@ def main():
                 "Use php artisan for normal configured-environment operation; --plan is nonexecuting."
             )
         elif args[0] == "--management" or (
-            args[0].startswith("runa:") and (inside() or management.is_management_command(args[0]))
+            args[0].startswith("runa:")
+            and (
+                execution_location() is ExecutionLocation.CONTAINER
+                or management.is_management_command(args[0])
+            )
         ):
             explicit_management = args[0] == "--management"
             if explicit_management:
                 args = args[1:]
-            if inside():
+            if execution_location() is ExecutionLocation.CONTAINER:
                 run(["php", "artisan", *(["--management"] if explicit_management else []), *args])
             else:
                 raise SystemExit(management.launch(args))
         else:
-            run(app_command(["php", "artisan", *args]))
+            run(runtime.app_command(["php", "artisan", *args]))
     except (ValueError, OSError, subprocess.SubprocessError, SafeFailure) as error:
         message = (
             f"Child command failed (exit {error.returncode})."
@@ -84,4 +95,4 @@ if __name__ == "__main__":
         with interrupt_signals():
             main()
     except KeyboardInterrupt:
-        raise SystemExit(130)
+        raise SystemExit(130) from None

@@ -9,12 +9,12 @@ from tools.application.documentation import maintainer_checkout
 from tools.application.knowledge.cli import main as application_main
 from tools.application.knowledge.configuration import golden, golden_file, load
 from tools.application.knowledge.context import KnowledgeContext
-from tools.application.repository_boundary import assert_development_context
+from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.reporting import SafeFailure
 
 
 def configuration(root: Path):
-    assert_development_context(root)
+    RepositoryPolicy.for_workspace(root).assert_development_context(root)
     if not maintainer_checkout(root):
         return load(root), golden(root)
     extra = root / "tools/maintainer/knowledge.json"

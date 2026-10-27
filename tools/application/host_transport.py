@@ -24,7 +24,7 @@ from pathlib import Path
 from tools.application.development_runtime import execution_location
 from tools.application.management_service import ManagementService
 from tools.application.processes import ApplicationProcesses
-from tools.application.repository_boundary import DevelopmentContextError
+from tools.application.repository_boundary_service import DevelopmentContextError
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import SubprocessRunner

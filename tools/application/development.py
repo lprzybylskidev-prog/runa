@@ -50,7 +50,8 @@ class DevelopmentService:
             result = self.processes.run(
                 [
                     sys.executable,
-                    str(self.workspace.root / "tools/application/knowledge/startup.py"),
+                    "-m",
+                    "tools.application.knowledge.startup_cli",
                     "probe",
                 ],
                 cwd=self.workspace.root,
@@ -180,7 +181,7 @@ class DevelopmentService:
                 if profile != "custom":
                     if args:
                         raise ValueError("Overrides require the custom profile.")
-                    values.update(zip(KEYS, PRESETS[profile]))
+                    values.update(zip(KEYS, PRESETS[profile], strict=True))
                 for setting in args:
                     key, sep, value = setting.partition("=")
                     if not sep or key not in KEYS:
@@ -200,7 +201,8 @@ class DevelopmentService:
             return self.processes.run(
                 [
                     sys.executable,
-                    str(self.workspace.root / "tools/application/knowledge/startup.py"),
+                    "-m",
+                    "tools.application.knowledge.startup_cli",
                     "initialize",
                 ],
                 cwd=self.workspace.root,

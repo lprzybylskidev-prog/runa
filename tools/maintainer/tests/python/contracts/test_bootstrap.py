@@ -15,8 +15,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from distribution import bootstrap
+from tools.application.deployment_service import DeploymentService
 from tools.application.deployment_source import DELIVERY
-from tools.application.operations import service
 
 ROOT = Path(__file__).resolve().parents[5]
 
@@ -380,7 +380,7 @@ class BootstrapContracts(unittest.TestCase):
                     check=True,
                     capture_output=True,
                 )
-                service(production).source.assert_delivery(production)
+                DeploymentService.for_workspace(production).source.assert_delivery(production)
                 self.assertFalse((production / "src/app/modules/reference").exists())
                 self.assertFalse((production / "src/app/modules/module_probe").exists())
 

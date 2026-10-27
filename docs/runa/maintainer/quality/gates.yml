@@ -113,7 +113,7 @@ impact_areas:
       exclusive_group: testing-state
       depends_on: [configuration]
       description: Check owned module source boundaries, independent module versions/changelogs and generator policy regressions.
-      command: python3 tools/maintainer/testing/module-development.py
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_module_development.py
       severity: hard_fail
   frontend:
     - id: frontend-build
@@ -184,7 +184,7 @@ impact_areas:
       depends_on: [configuration]
       exclusive_group: production-simulation
       description: Build and verify dedicated customer-repository production with real deployment/data/failure acceptance.
-      command: python3 tools/maintainer/testing/installation-host.py --production-only --customer-deployment
+      command: python3 -m tools.maintainer.testing.installation_host --production-only --customer-deployment
       severity: hard_fail
 
   development:
@@ -217,7 +217,7 @@ impact_areas:
     - id: documentation-ownership-live
       depends_on: [configuration]
       exclusive_group: testing-state
-      command: python3 tools/maintainer/testing/documentation-live.py
+      command: python3 -m tools.maintainer.testing.documentation_live
       severity: hard_fail
     - id: knowledge-doctor
       exclusive_group: knowledge-state
@@ -250,7 +250,7 @@ impact_areas:
       depends_on: [configuration]
       depends_on_if_selected:
         [production-acceptance, frontend-build, frontend-render-diagnostics]
-      command: python3 tools/maintainer/testing/installation-host.py --production-only --security-scan
+      command: python3 -m tools.maintainer.testing.installation_host --production-only --security-scan
       severity: hard_fail
 
     - id: expanded-security-review
@@ -305,7 +305,7 @@ impact_areas:
       execution_context: host
       depends_on: [host-executor-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/host-executor-host.py
+      command: python3 -m tools.maintainer.testing.host_executor_host
       severity: hard_fail
 
     - id: installation-contracts
@@ -318,7 +318,7 @@ impact_areas:
       execution_context: host
       depends_on: [installation-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation --customer-knowledge
+      command: python3 -m tools.maintainer.testing.installation_host --updater-preflight --team-propagation --customer-knowledge
       severity: hard_fail
 
     - id: update-preflight-contracts
@@ -360,7 +360,7 @@ impact_areas:
     - id: management-host-acceptance
       execution_context: host
       depends_on: [management-transport-contracts]
-      command: python3 tools/maintainer/testing/management-host.py
+      command: python3 -m tools.maintainer.testing.management_host
       severity: hard_fail
 
     - id: tooling-help
@@ -378,7 +378,7 @@ final:
   - id: release-metadata-contract
     depends_on: []
     description: Verify isolated release, documentation and knowledge metadata rejection contracts.
-    command: python3 tools/maintainer/testing/release.py --with-docs-and-knowledge
+    command: python3 tools/maintainer/test-python --scope=contracts --filter="test_release or test_docs or test_knowledge_ingestion"
     severity: hard_fail
 
   - id: version-changelog-roadmap

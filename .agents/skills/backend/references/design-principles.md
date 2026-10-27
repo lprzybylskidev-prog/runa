@@ -120,4 +120,6 @@ distributed defaults.
 For Python tooling changes, follow the [public Python tooling guide](../../../../docs/runa/handbook/development/python-tooling.md) for shared
 frozen tools, qualified packages, injected execution contexts and application-owned
 configuration. Keep private owner suites/release rules outside delivered services;
-verify staged Python through Ruff without running full suites in hooks.
+verify staged Python through Ruff without running full suites in hooks. Internal integrations call explicit service APIs; process adapters execute fixed
+package modules with `python3 -m` from the selected tool checkout. Do not recreate
+removed executor paths or compatibility facades.

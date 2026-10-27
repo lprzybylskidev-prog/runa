@@ -4,7 +4,9 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "runa",
-  "remoteEnv": { "PYTHONPYCACHEPREFIX": "/workspace/.runtime/python/pycache" },
+  "remoteEnv": {
+    "PYTHONPYCACHEPREFIX": "/workspace/.runtime/python/pycache"
+  },
   "updateRemoteUserUID": false,
   "overrideCommand": false,
   "shutdownAction": "none",
@@ -32,7 +34,8 @@
         "cweijan.vscode-database-client2",
         "xdebug.php-debug",
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -53,7 +56,18 @@
         },
         "php.validate.executablePath": "/usr/local/bin/php",
         "eslint.workingDirectories": ["./src"],
-        "eslint.validate": ["javascript", "typescript", "vue"]
+        "eslint.validate": ["javascript", "typescript", "vue"],
+        "python.defaultInterpreterPath": "/workspace/.runtime/python/venv/bin/python",
+        "python.analysis.typeCheckingMode": "strict",
+        "ruff.path": ["/workspace/.runtime/python/venv/bin/ruff"],
+        "ruff.importStrategy": "fromEnvironment",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.organizeImports.ruff": "explicit",
+            "source.fixAll.ruff": "explicit"
+          }
+        }
       }
     }
   }
