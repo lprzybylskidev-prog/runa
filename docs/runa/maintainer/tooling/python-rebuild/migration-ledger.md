@@ -362,8 +362,14 @@ injected process policy owns lock validation and worker cleanup. Focused cases u
 the delivered recording runner and preserve closed stdin, credential/environment
 isolation, old-release metadata and exact cleanup identities. External packaging
 already projects every authored `.py` in the declared distribution package, so the
-new model module needs no resource exception. Bootstrap/initialization, update
-planning/files/customization/module results/execution and remaining private fixture
+new model modules need no resource exception. Delivered-file inventory, review,
+consent, staging and action-transition functions now declare typed boundaries through
+`distribution/update_file_models.py`; journal loading validates consumed action
+fields while preserving extra evidence and absent legacy lists. Infrastructure
+comparison validates Compose service records without interpolation/environment
+resolution. Isolated module results validate PHP's associative-map serialization;
+one selected process policy owns execution and exact named-worker cleanup.
+Bootstrap/initialization, update planning/execution and remaining private fixture
 annotations stay open; there is no full strict-analysis or artifact acceptance claim.
 
 ## Retired implementation-era resources

@@ -4,14 +4,24 @@ import json
 import os
 import re
 import subprocess
+import sys
 import uuid
 from pathlib import Path
 
 from distribution.processes import ExternalProcesses
 from distribution.update_contracts import Blocker
+from distribution.update_models import PlannedModuleResult, RuntimeSnapshot, planned_modules
 
 
-def plan(root, target, runtime, image, *, processes=None):
+def plan(
+    root: Path,
+    target: Path,
+    runtime: RuntimeSnapshot,
+    image: str,
+    *,
+    processes: ExternalProcesses | None = None,
+) -> list[PlannedModuleResult]:
+    processes = processes or ExternalProcesses()
     directory = target / "src/runa/modules"
     modules = (
         [path for path in directory.iterdir() if path.name not in (".gitkeep", ".gitignore")]
@@ -68,7 +78,7 @@ def plan(root, target, runtime, image, *, processes=None):
         "module_steps": runtime.get("module_steps", []),
     }
     try:
-        result = (processes or ExternalProcesses()).run(
+        result = processes.run(
             args, input=json.dumps(payload), text=True, capture_output=True, timeout=60
         )
         if result.returncode:
@@ -76,7 +86,7 @@ def plan(root, target, runtime, image, *, processes=None):
                 "module-preflight",
                 "Target module preflight failed; inspect dependency compatibility, migration history, declared upgrade paths and pure module checks.",
             )
-        return json.loads(result.stdout)
+        return planned_modules(result.stdout)
     except (OSError, subprocess.SubprocessError, ValueError):
         raise Blocker(
             "module-preflight",
@@ -84,7 +94,5 @@ def plan(root, target, runtime, image, *, processes=None):
         ) from None
     finally:
         # Only the uniquely named task-created disposable planner, including timeout cleanup.
-        print("Scoped module planner cleanup: " + name, file=__import__("sys").stderr)
-        (processes or ExternalProcesses()).run(
-            ["docker", "rm", "--force", name], capture_output=True, timeout=30
-        )
+        print("Scoped module planner cleanup: " + name, file=sys.stderr)
+        processes.run(["docker", "rm", "--force", name], capture_output=True, timeout=30)

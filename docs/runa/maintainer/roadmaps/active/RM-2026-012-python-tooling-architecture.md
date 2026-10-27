@@ -1469,6 +1469,43 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   were created or removed; active development/test data, knowledge/model caches,
   backups and reports are preserved.
 
+#### Point 9 continuation — delivered-file review and module plan records (2026-10-27)
+
+- Typed delivered-file identities, ownership/differences, review/consent records,
+  journaled actions and staging/rename callbacks. Resume now validates consumed
+  file-action fields before staging use, preserving extra evidence and legacy
+  journals without action lists. Inventory, serialization and consent fingerprint
+  inputs are unchanged; no additional overwrite or recovery authority is added.
+- Typed infrastructure comparison and validated Compose service objects without
+  environment interpolation/resolution. The isolated module planner validates
+  response fields and preserves PHP empty associative maps serialized as lists.
+  Its selected injected process policy now owns both execution and scoped cleanup;
+  the dynamic sys import is removed. External packaging already includes authored
+  Python package sources, including the new file-record module.
+- Four new focused cases passed through supported test-python: journal evidence/
+  malformed fields, raw Compose review input, module response compatibility and
+  exact planner cleanup on invalid response. The first cleanup fixture failed
+  before its intended boundary because it omitted the platform manifest identity;
+  the fixture was corrected and all four passed. Four existing focused cases also
+  passed: read-only module-plan mounts, complete file/instruction review, reviewed
+  add/replace/remove and interrupted file-renames/resume. These use temporary Git/
+  file fixtures or scripted processes; no live Docker worker/data operation ran.
+- Synchronized the public Python guide, owner updater guide and migration ledger.
+  Owner/customer AGENTS and backend/security skills already require explicit typed
+  boundaries, safe refusal/recovery and private/public ownership. These internal
+  records introduce no public extension API, new customer action, security exception
+  or authority rule; those instruction products need no changes.
+- Point 9 remains open for quality scheduling/status/evidence, host transport,
+  installation services, external bootstrap/planning/execution, knowledge and private
+  fixture/test annotation completion, then full caller/resource/inline reconciliation.
+  Point 10 has not started: no full suite, strict analysis, package build, scanner
+  or live acceptance was run. Changed-file pinned Ruff preparation and mandatory
+  commit hooks apply; dependency pins and strict analysis scope remain unchanged.
+- No independently versioned module, dependency, migration or production setting
+  changed. VERSION remains 0.5.0 and proposed_version remains 0.6.0. No disposable
+  Docker resources were created or removed; active development/test data, knowledge/
+  model caches, backups and verification reports are preserved.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,

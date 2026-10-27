@@ -4,10 +4,22 @@ import hashlib
 import json
 import os
 import stat
-from pathlib import PurePosixPath
+from collections.abc import Callable, Iterable, Mapping
+from pathlib import Path, PurePosixPath
+from typing import cast
 
 from distribution.processes import ExternalProcesses
 from distribution.update_contracts import OWNER_PATHS, Blocker
+from distribution.update_file_models import (
+    Action,
+    DeliveredReview,
+    Difference,
+    FileAction,
+    FileIdentity,
+    FileJournal,
+    FileReview,
+    Ownership,
+)
 
 PRESERVED_FILES = {
     "src/composer.json",
@@ -30,7 +42,7 @@ PRIVATE_PARTS = {
 }
 
 
-def safe_name(name):
+def safe_name(name: str) -> str:
     path = PurePosixPath(name)
     if (
         not name
@@ -44,7 +56,7 @@ def safe_name(name):
     return name
 
 
-def ownership(name):
+def ownership(name: str) -> Ownership:
     safe_name(name)
     parts = PurePosixPath(name).parts
     if any(name == p or name.startswith(p + "/") for p in OWNER_PATHS):
@@ -64,7 +76,7 @@ def ownership(name):
     return "delivered"
 
 
-def tracked(root):
+def tracked(root: Path) -> set[str]:
     result = ExternalProcesses().run(
         ["git", "-C", str(root), "ls-files", "-z"],
         check=True,
@@ -77,7 +89,7 @@ def tracked(root):
     return names
 
 
-def identity(root, name):
+def identity(root: Path, name: str) -> FileIdentity | None:
     safe_name(name)
     path = root / name
     if any(parent.is_symlink() for parent in path.parents):
@@ -109,7 +121,7 @@ def identity(root, name):
     return {"mode": mode, "sha256": hashlib.sha256(data).hexdigest()}
 
 
-def difference(before, after):
+def difference(before: FileIdentity | None, after: FileIdentity | None) -> Difference:
     return (
         "unchanged"
         if before == after
@@ -121,9 +133,16 @@ def difference(before, after):
     )
 
 
-def review(root, original, target, releases=None, local_overrides=None, infrastructure_inputs=()):
+def review(
+    root: Path,
+    original: Path,
+    target: Path,
+    releases: Mapping[str, object] | None = None,
+    local_overrides: Mapping[str, FileIdentity | None] | None = None,
+    infrastructure_inputs: Iterable[str] = (),
+) -> DeliveredReview:
     original_names, target_names, local_names = tracked(original), tracked(target), tracked(root)
-    rows = []
+    rows: list[FileReview] = []
     infrastructure_inputs = set(infrastructure_inputs)
     for name in sorted(original_names | target_names | local_names | infrastructure_inputs):
         owner = ownership(name)
@@ -167,7 +186,8 @@ def review(root, original, target, releases=None, local_overrides=None, infrastr
         local_change, upstream = difference(before, local), difference(before, after)
         if local_change == upstream == "unchanged":
             continue
-        action, conflict = "preserve", None
+        action: Action = "preserve"
+        conflict: str | None = None
         if local != after:
             action = "remove" if after is None else "add" if local is None else "update"
             if local_change != "unchanged":
@@ -212,20 +232,20 @@ def review(root, original, target, releases=None, local_overrides=None, infrastr
     }
 
 
-def actions(reviewed):
+def actions(reviewed: DeliveredReview) -> list[FileAction]:
     import uuid
 
     return [
-        {**row, "id": uuid.uuid4().hex, "state": "planned"}
+        cast(FileAction, {**row, "id": uuid.uuid4().hex, "state": "planned"})
         for row in reviewed["files"]
         if row["action"] in ("add", "update", "remove")
     ]
 
 
-def renew_actions(reviewed, journal):
+def renew_actions(reviewed: DeliveredReview, journal: FileJournal) -> None:
     """Keep normalized completed actions; renew only actual new local differences."""
     prior = {row["path"]: row for row in journal.get("file_actions", [])}
-    current = []
+    current: list[FileAction] = []
     for row in actions(reviewed):
         old = prior.get(row["path"])
         if old and all(old[key] == row[key] for key in ("action", "original", "current", "target")):
@@ -237,12 +257,18 @@ def renew_actions(reviewed, journal):
     journal["file_actions"] = current
 
 
-def validate_staging(root, operation, original, target, journal):
+def validate_staging(
+    root: Path,
+    operation: Path,
+    original: Path,
+    target: Path,
+    journal: FileJournal,
+) -> dict[str, FileIdentity | None]:
     """Verify retained bytes before normalizing known interrupted file transitions."""
     base = operation / "project-files"
     all_actions = [*journal.get("file_action_history", []), *journal.get("file_actions", [])]
-    ids = set()
-    overrides = {}
+    ids: set[str] = set()
+    overrides: dict[str, FileIdentity | None] = {}
     for row in all_actions:
         name = safe_name(row["path"])
         token = row.get("id", "")
@@ -304,7 +330,14 @@ def validate_staging(root, operation, original, target, journal):
     return overrides
 
 
-def apply_actions(root, operation, target, journal, save, move):
+def apply_actions(
+    root: Path,
+    operation: Path,
+    target: Path,
+    journal: FileJournal,
+    save: Callable[[], None],
+    move: Callable[[Path, Path], None],
+) -> None:
     """Fenced per-file forward replacement with before/after durable identities."""
     import shutil
 

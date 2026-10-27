@@ -224,8 +224,14 @@ does not require the old installation gateway: the separately supplied updater
 never imports customer application Python. It retains explicit source identities,
 file review consent, journal phases, forward data completion and fencing/resume.
 Its process and read-only runtime probes have typed injected boundaries, including
-validated Compose/Docker and database metadata. These contracts remain internal
-to the separately supplied external bundle and canonical core.
+validated Compose/Docker and database metadata. Delivered-file inventories, exact
+review decisions, action transitions and infrastructure comparisons also have
+explicit typed records. Resume validates consumed file-action fields before using
+retained staging, preserving additional journal evidence and legacy absent action
+lists. The isolated module planner validates its returned records, including PHP's
+empty associative maps, and shares one injected process policy with its cleanup.
+These contracts remain internal to the separately supplied external bundle and
+canonical core.
 Customer Python configuration/tests/frozen inputs under `src/app` remain customer
 owned; delivered defaults change only through the existing reviewed file plan.
 

@@ -3,16 +3,25 @@
 import hashlib
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
+from typing import cast
 
 from distribution import update_runtime
 from distribution.update_contracts import Blocker, document, local_path, regular
+from distribution.update_file_models import (
+    CustomizationReview,
+    FileIdentity,
+    InfrastructureReview,
+)
+from distribution.update_models import response_json
+from tools.core.state import JsonValue
 
 GENERATED = ".devcontainer/compose.resources.yaml"
 
 
-def files(root):
-    names = set()
+def files(root: Path) -> set[str]:
+    names: set[str] = set()
     for pattern in (
         "compose*.yaml",
         "compose*.yml",
@@ -32,15 +41,25 @@ def files(root):
         refs = value.get("dockerComposeFile", [])
         if isinstance(refs, str):
             refs = [refs]
-        if not isinstance(refs, list) or any(not isinstance(item, str) for item in refs):
+        if not isinstance(refs, list):
             raise Blocker(
                 "customization-review-unavailable", "Invalid devcontainer Compose references."
             )
-        names.update(local_path(root, item, workspace.parent) for item in refs)
+        for item in refs:
+            if not isinstance(item, str):
+                raise Blocker(
+                    "customization-review-unavailable", "Invalid devcontainer Compose references."
+                )
+            names.add(local_path(root, item, workspace.parent))
     return names - {GENERATED}
 
 
-def configuration(root, name):
+def configuration(
+    root: Path,
+    name: str,
+    *,
+    command: update_runtime.RuntimeCommand = update_runtime.command,
+) -> dict[str, dict[str, JsonValue]]:
     regular(root, name)
     args = [
         "docker",
@@ -60,13 +79,17 @@ def configuration(root, name):
         "json",
     ]
     try:
-        value = json.loads(update_runtime.command(args, root))
+        value = response_json(command(args, root))
+        if not isinstance(value, dict):
+            raise ValueError()
         services = value["services"]
         if not isinstance(services, dict) or any(
-            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", name) for name in services
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", service)
+            or not isinstance(definition, dict)
+            for service, definition in services.items()
         ):
             raise ValueError()
-        return services
+        return cast(dict[str, dict[str, JsonValue]], services)
     except (KeyError, TypeError, ValueError, Blocker):
         raise Blocker(
             "customization-review-unavailable",
@@ -74,11 +97,11 @@ def configuration(root, name):
         ) from None
 
 
-def infrastructure_review(root, original):
+def infrastructure_review(root: Path, original: Path) -> InfrastructureReview:
     roots = (original, root)
     names = files(original) | files(root)
-    descriptors = [{}, {}]
-    identities = [{}, {}]
+    descriptors: list[dict[tuple[str, str], str]] = [{}, {}]
+    identities: list[dict[str, str]] = [{}, {}]
     for index, source in enumerate(roots):
         for name in sorted(names):
             if not (source / name).exists() and not (source / name).is_symlink():
@@ -95,10 +118,12 @@ def infrastructure_review(root, original):
                     build = {"context": build}
                 if isinstance(build, dict) and "dockerfile_inline" not in build:
                     context = build.get("context", str(source))
+                    dockerfile_name = build.get("dockerfile", "Dockerfile")
                     if (
                         not isinstance(context, str)
                         or "$" in context
-                        or "$" in str(build.get("dockerfile", "Dockerfile"))
+                        or not isinstance(dockerfile_name, str)
+                        or "$" in dockerfile_name
                     ):
                         raise Blocker(
                             "customization-review-unavailable",
@@ -106,7 +131,7 @@ def infrastructure_review(root, original):
                         )
                     dockerfile = local_path(
                         source,
-                        build.get("dockerfile", "Dockerfile"),
+                        dockerfile_name,
                         Path(context) if Path(context).is_absolute() else source / context,
                     )
                     if (source / dockerfile).exists():
@@ -157,7 +182,13 @@ def infrastructure_review(root, original):
     }
 
 
-def review(root, original, target=None, releases=None, local_overrides=None):
+def review(
+    root: Path,
+    original: Path,
+    target: Path | None = None,
+    releases: Mapping[str, object] | None = None,
+    local_overrides: Mapping[str, FileIdentity | None] | None = None,
+) -> CustomizationReview:
     """Bind reviewed actions to exact releases and three-way customer file state."""
     from distribution import update_files
 
@@ -165,20 +196,23 @@ def review(root, original, target=None, releases=None, local_overrides=None):
     result = update_files.review(
         root, original, target or original, releases, local_overrides, infrastructure["inputs"]
     )
-    upstream = (
-        infrastructure_review(target, original)
-        if target is not None
-        else {"services": [], "devcontainer": False}
-    )
+    upstream = infrastructure_review(target, original) if target is not None else None
     return {
         **result,
         "required": result["required"] or infrastructure["required"],
-        "services": sorted(set(infrastructure["services"]) | set(upstream["services"])),
-        "devcontainer": infrastructure["devcontainer"] or upstream["devcontainer"],
+        "services": sorted(
+            set(infrastructure["services"]) | set(upstream["services"] if upstream else [])
+        ),
+        "devcontainer": infrastructure["devcontainer"]
+        or bool(upstream and upstream["devcontainer"]),
     }
 
 
-def decision(reviewed, choice, previous=None):
+def decision(
+    reviewed: CustomizationReview,
+    choice: str | None,
+    previous: str | None = None,
+) -> str | None:
     """Explicit consent applies only to these exact differences; never to platform source."""
     if not reviewed["required"]:
         return None

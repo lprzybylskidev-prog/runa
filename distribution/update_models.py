@@ -263,3 +263,41 @@ def module_steps(payload: str) -> list[ModuleStep]:
     ):
         raise Blocker("invalid-runtime-response", "Invalid updater module step metadata.")
     return cast(list[ModuleStep], value)
+
+
+# PHP's installed-version key is a Python keyword.
+_InstalledModule = TypedDict("_InstalledModule", {"from": str | None})
+
+
+class PlannedModuleResult(_InstalledModule):
+    module: str
+    to: str
+    migrations: dict[str, str] | list[str]
+    upgrades: list[dict[str, JsonValue]]
+    fingerprint: str
+    completed_steps: list[str]
+    pending_migrations: dict[str, str] | list[str]
+    pending_upgrades: list[str]
+
+
+def planned_modules(payload: str) -> list[PlannedModuleResult]:
+    value = response_json(payload)
+    if not isinstance(value, list):
+        raise Blocker("module-preflight", "Invalid isolated module plan response.")
+    for row in value:
+        if (
+            not isinstance(row, dict)
+            or any(not isinstance(row.get(key), str) for key in ("module", "to", "fingerprint"))
+            or "from" not in row
+            or (row["from"] is not None and not isinstance(row["from"], str))
+            or any(not string_list(row.get(key)) for key in ("completed_steps", "pending_upgrades"))
+            or any(
+                row.get(key) != [] and not string_mapping(row.get(key))
+                for key in ("migrations", "pending_migrations")
+            )
+            or not isinstance(row.get("upgrades"), list)
+            or any(not isinstance(step, dict) for step in cast(list[JsonValue], row["upgrades"]))
+        ):
+            raise Blocker("module-preflight", "Invalid isolated module plan response.")
+    # PHP serializes an empty associative migration map as [], not {}.
+    return cast(list[PlannedModuleResult], value)

@@ -23,6 +23,7 @@ from distribution.update_contracts import (
     supports,
 )
 from distribution.update_docker import DockerRuntime
+from distribution.update_file_models import file_journal
 from tools.core.reporting import SafeFailure
 
 SEEDER = "Runa\\Database\\Seeders\\DatabaseSeeder"
@@ -114,6 +115,7 @@ def read_journal(root, client, tag):
             or not re.fullmatch(bootstrap.SHA, identity.get("tag_object", ""))
         ):
             raise Blocker("journal-identity", "Update release identities are invalid.")
+    file_journal(value)
     return value
 
 
