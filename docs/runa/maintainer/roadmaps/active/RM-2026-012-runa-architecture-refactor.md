@@ -1,16 +1,18 @@
 ---
 id: RM-2026-012
-title: Python Tooling Architecture & Unified Test Infrastructure
+title: Runa Architecture, Public APIs & Tooling Refactor
 status: active
-branch: roadmap/RM-2026-012-python-tooling-architecture
+branch: roadmap/RM-2026-012-runa-architecture-refactor
 created_at: 2026-10-26
 activated_at: 2026-10-26
 closed_at: null
 release_type: feature
 proposed_version: 0.6.0
 quality_groups: all
-quality_rationale: The rebuild crosses customer operations, acquisition/update, host transport, hooks, quality coordination, security, knowledge, containers and every existing test integration; all groups and their real prerequisites are needed for compatibility and isolation evidence.
+quality_rationale: The rebuild crosses customer operations, acquisition/update, host transport, hooks, quality coordination, security, knowledge, containers, public PHP/frontend contracts, module internals, generators and every existing test integration; all groups and their real prerequisites are needed for compatibility and isolation evidence.
 impact_areas:
+  - backend
+  - frontend
   - tooling
   - development
   - production
@@ -19,17 +21,18 @@ impact_areas:
   - documentation
 ---
 
-# RM-2026-012 — Python Tooling Architecture & Unified Test Infrastructure
+# RM-2026-012 — Runa Architecture, Public APIs & Tooling Refactor
 
 ## Overview
 
 ### What and why
 
-Rebuild the Python tooling as a cohesive internal engineering platform with
-explicit package APIs, injected infrastructure, typed contracts and unified tests.
-This is a redesign of responsibility and dependency boundaries, not a directory
-move or a mechanical conversion of functions into classes. Preserve existing
-customer and owner behavior while removing duplicate implementation mechanisms.
+Refactor Runa architecture around explicit public customer APIs, internal platform
+and module responsibilities, extensible frontend presentation and cohesive tooling.
+The completed Python rebuild and unified test infrastructure form the foundation;
+remaining work covers the full src/runa tree and its supported application seams.
+Preserve existing customer/owner behavior and ordinary Laravel or optional module
+development while removing unclear dependencies and duplicate mechanisms.
 
 The predecessor is [RM-2026-011](../closed/RM-2026-011-audit-auth-permissions-core.md),
 released as 0.5.0. The owner explicitly requested **0.6.0 after this roadmap**.
@@ -50,10 +53,18 @@ quality integration; documentation and both agent instruction products. Include
 a delivered, extensible customer development environment for backend, frontend
 and tooling, with shared test infrastructure and separate owner/customer suites.
 
+The owner expanded planning on 2026-10-27 to cover all `src/runa`: public
+customer extension/consumption APIs, platform/module internals, PHP composition,
+frontend replacement, generators/templates, build/development support and their
+source/delivery boundaries. Findings and proposed implementation points below are
+planning only. No newly planned runtime refactor has started. Public/internal API
+guardrails are documented now; final layout-specific instruction updates remain
+part of implementation.
+
 ### Out of scope
 
-No application feature, schema redesign, business-data migration, new UI, module
-framework rewrite, production Python service, remote tooling platform, CI,
+No new business feature, schema redesign, business-data migration, visual redesign,
+module protocol/behavior rewrite, production Python service, remote tooling platform, CI,
 general plugin/DI framework, new host PHP/Node requirement, Docker socket inside
 the devcontainer, or replacement of Laravel Artisan as the customer registry.
 Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
@@ -121,6 +132,37 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
   or overwritten implicitly by an update; document explicit local reconciliation.
   This is compatible development-tooling scope within confirmed feature 0.6.0;
   no dependency or module business-API change/MAJOR release is authorized.
+
+- 2026-10-27 — The owner requested a complete `src/runa` review and explicitly
+  clarified that the desired boundary separates interfaces/types/components
+  customers may use to extend their application from implementation and trusted
+  integration that customers must not depend on. Physical delivery is a separate
+  question; all Runa files remain protected against customer edits. The owner
+  authorized recording findings and additional implementation points in this
+  active roadmap, including frontend extensibility and future instruction updates.
+- 2026-10-27 — The owner clarified that this task is review/planning and durable
+  guidance, with no further test execution or runtime refactor. Skills, AGENTS and
+  handbook boundary rules are authorized now; final layout-specific updates remain
+  point 19 work. The focused frontend collection failure is a finding, not acceptance.
+- 2026-10-27 — Insert proposed implementation points 11–19 below; final verification
+  moves from 11 to 20. Completed execution evidence retains its original point
+  references as history. Keep the confirmed compatible feature 0.6.0 projection;
+  this expansion does not approve breaking public namespaces, module MAJOR changes,
+  new dependencies, CI or data migration. Stop for an explicit compatibility/version
+  decision if the design cannot preserve existing supported customer contracts.
+
+- 2026-10-27 — The owner rejected a platform-wide full-DDD conversion. Customer
+  applications retain ordinary Laravel development or optional application-owned
+  modules, without mandatory domain layers, repositories, mappers or a separate
+  domain model. Use domain boundaries/value objects only where they solve a
+  concrete problem; this refactor focuses on public APIs, internal responsibilities
+  and compatible extension, not imposing an architecture on customer code.
+
+- 2026-10-27 — Renamed this active roadmap to "Runa Architecture, Public APIs &
+  Tooling Refactor" and its file/local branch to RM-2026-012-runa-architecture-refactor
+  to reflect the expanded scope. Retain ID, release metadata and all completed
+  evidence. Original Python inventory paths remain historical identities; the
+  reconciliation map records the current roadmap target.
 
 ### Audit basis and limits
 
@@ -637,6 +679,377 @@ Closure requires all of the following:
 - Documentation and instruction products match delivery. Final evidence records
   the actual selected graph/candidate, semantic docs review and resource disposition.
 
+### Runa source and customer API review — planning baseline (2026-10-27)
+
+Baseline: `dc11c9d5`. This is a proposed refactor scope, not delivered architecture.
+The implementation point numbers referenced here are the newly proposed numbers.
+
+#### Purpose and evidence limits
+
+The owner requested a review of all `src/runa`, including code responsibilities,
+customer extension APIs, platform internals, frontend replacement, generators and
+`stubs/modules`. The owner subsequently authorized implementation planning in the
+active RM-2026-012; instruction updates are future implementation work. This review records findings
+and planned outcomes; it does not claim that their implementation is complete.
+
+The inventory covers all 859 tracked files, including the module-root `.gitkeep`.
+Default `rg --files` reported 858 because it omitted that placeholder. Source
+review traced declarations, public signatures, imports, consumer examples,
+providers, module manifests, generator templates, public frontend facades,
+replacement fixtures and delivery/build inputs. It is an architecture and code
+responsibility review, not a claim that every algorithm, query, security property
+or rendered state passed exhaustive validation. Local knowledge was current.
+
+##### Complete source coverage
+
+| Source area                                | Files | Reviewed responsibility and disposition                                                                                                                          |
+| ------------------------------------------ | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Console                                    |    28 | Application/platform commands, database guards, generators and developer diagnostics need explicit execution/ownership classification.                           |
+| Contracts                                  |    78 | Framework contracts mix extension declarations, values, guarded-operation context and trusted integration seams. Classify per symbol.                            |
+| Database                                   |     3 | Guarded migration scope, repository and required seeds are platform infrastructure. Keep distinct from migration resources.                                      |
+| Foundation                                 |     1 | Laravel application adaptation is internal bootstrap infrastructure.                                                                                             |
+| Http                                       |    16 | Runtime controllers, middleware, resources and Auth bridge; distinguish supported integration from internal transport.                                           |
+| Providers                                  |     2 | Composition currently combines platform mechanics, Core-module integrations and development adapters.                                                            |
+| Support                                    |    97 | Includes 76 module-framework PHP files, public extension helpers, internal engines, seeding and test protection. Requires a real boundary.                       |
+| Testing                                    |     9 | Shared PHP test support, native worker entrypoint, browser diagnostics and TS package bridges; development support, not authored private cases.                  |
+| config                                     |    14 | Delivered defaults and supported application overrides; preserve their loading contract.                                                                         |
+| database                                   |    12 | Platform migrations, required seeding and a forward-preparation CLI primitive. Preserve migration/data identities.                                               |
+| frontend                                   |     3 | One reusable build plugin and two private suite configurations; split responsibilities and delivery.                                                             |
+| lang                                       |     3 | Imported validation catalogue, provenance and license. Preserve audited source bytes.                                                                            |
+| management                                 |    14 | Isolated Artisan bootstrap, public operation catalogues, schemas and PHP tool adapters. Distinct from module management.                                         |
+| modules                                    |   367 | Auth, Audit and Permissions implementations, contracts, declarations, upgrades, migrations and Auth frontend; retain feature ownership.                          |
+| resources                                  |   190 | Public facade, UI implementations, assets, translations, mail/error templates and executable error builders; separate API from implementation and build scripts. |
+| routes                                     |     2 | Platform API and Auth presentation routes; preserve named routes and supported ownership.                                                                        |
+| stubs                                      |    15 | Customer module-generation inputs; must follow the same public boundary as handwritten customer code.                                                            |
+| tools                                      |     2 | Owner branding renderers; not platform runtime or customer extension APIs.                                                                                       |
+| composer.json, package.json, platform.json |     3 | Source-owned dependency/composition/version metadata; not redundant installed packages.                                                                          |
+
+#### Access model
+
+Customer extensibility and physical delivery are independent dimensions. All Runa
+source remains protected against customer edits. Customer implementations live in
+`src/app`, customer tests in `tests/*/app` and application documentation in
+`docs/app`.
+
+Proposed classification for each symbol/resource:
+
+1. Public extension: interfaces, values, base classes and composables customers may
+   implement, extend or compose through the documented entrypoint.
+2. Public consumption: guarded services, module API contracts, Vue components and
+   HTTP contracts customers may call; a public interface does not authorize
+   replacing a platform security binding.
+3. Trusted Runa integration: transaction participants, private identity/grant
+   resolvers and reserved preparation capabilities used only by named platform
+   composition boundaries.
+4. Internal implementation: registries, locks, persistence, resolvers, transport
+   adapters and implementation views behind the supported API.
+5. Development/build or owner maintenance: classify its supported consumer and
+   packaging independently. Public development support still ships to customers;
+   private suites and owner branding scripts do not.
+
+Public API classification must include the complete signature: argument/result
+values, exceptions, base classes, callbacks, props, slots and controller return
+members. Namespace spelling, `public` visibility and a `Contracts` directory alone
+cannot establish a supported customer API. Physical target directories and exact
+namespaces will be frozen in point 12 before code moves; this review does not
+pretend that a proposed layout already exists.
+
+#### Findings and planned corrections
+
+##### F01 — Central Contracts does not communicate audience
+
+`src/runa/Contracts/Modules` contains 45 classes, 32 interfaces and one enum in a
+single flat area. `SettingsProvider` and `LifecyclePolicy` are extension seams;
+`ManagementPermission` is declaration data; `SettingsParticipant`,
+`PreparationParticipant`, `AuthorityGuard` and related contexts also participate in
+trusted platform integration. Distinguish customer-authorable declarations,
+public operations and restricted composition capabilities. Group by real
+responsibility after preserving supported signature identities.
+
+##### F02 — Module Contracts mixes public APIs and restricted integration
+
+Auth has 29 contract files, Audit 17 and Permissions 14. Examples of ordinary
+public consumption are `AuthProfiles`, `AuditRecords` and `Permissions`. Auth's
+`AuthorizationIdentity`, `OperatorAuthority`, `SecurityMailDelivery` and
+`DevelopmentAccounts`, and Audit's `AuditWriter`, carry different audience and
+execution restrictions. `Auditable` is a public extension trait, while
+`AuditSuppression` is a documented local helper with its own limits; neither
+should be classified mechanically as a remote module API. Keep contracts with
+their owning module and make each supported use explicit.
+
+##### F03 — Public extensions currently depend on Support types
+
+`Contracts/Modules/WorkHandler.php` imports
+`Support/Modules/Work/WorkContext.php` in its required method signature.
+`ModuleModel`, `ModuleSchema`, `PublicReferenceRule`, `GuardedApi`, `ModuleApis`,
+`ModuleStorage`, `ModuleEvents`, seeding and logging helpers also have documented
+customer consumers. A blanket ban on `Support` imports would break valid code.
+Inventory the complete public signature closure, then separate customer-facing
+entrypoints from the engines and private collaborators they call.
+
+##### F04 — Support contains the module framework itself
+
+76 of its 97 PHP files implement module registry, lifecycle, availability, jobs,
+events, settings, APIs, updates, frontend projection and management. This is a
+major subsystem, not miscellaneous support. Give it an explicit internal home and
+separate its documented consumer adapters from registry/locking/persistence.
+Keep existing availability, transaction and recovery semantics.
+
+##### F05 — Current literal checks cannot enforce the intended boundary
+
+`ModuleContractSuite::lint()` accepts foreign-module PHP imports when the name
+contains `Contracts`. It cannot distinguish a public contract from a private
+identity resolver. Its source scan also deliberately skips non-listed extensions
+and has documented dynamic-name limitations. Add audience-aware PHP and TS/Vue
+import/signature checks to existing local quality ownership, including aliases,
+fully qualified references and generated/customer examples. Keep explicit trusted
+integration exceptions with named callers, purpose and test coverage. Do not
+claim these checks sandbox trusted code.
+
+##### F06 — Bootstrap/provider composition crosses several responsibilities
+
+The 299-line `RunaServiceProvider` registers module engines, Core Auth/Audit/
+Permissions bridges, test adapters, database command overrides, view/translation
+loading, queue logging/guards and runtime heartbeats. `AuthTransportServiceProvider`
+adds Fortify and account/gate composition. Split registrations by real
+responsibility and runtime/development context while preserving cold startup,
+provider order and route/config caches. Shared composition may intentionally know
+Core modules; an isolated integration layer is clearer than scattered bridges.
+
+##### F07 — Physical PHP paths and autoload namespaces need one coherent model
+
+The broad `Runa\\` Composer mapping, custom manifest/registry-aware module loader,
+separate lowercase `management` loader, and mixed `Tests`/`Runa\\Testing`
+classes have different rules. Do not replace the guarded module loader with an
+unconditional Composer bypass. Plan exact physical roots, namespaces, classmap
+exclusions and dev loading together; remove avoidable PSR-4 noise without hiding
+misplaced classes. Preserve documented customer names unless a breaking release
+is explicitly approved.
+
+##### F08 — Module backend roots have accumulated upgrade history
+
+Auth has 38 `Upgrade*.php` handlers, Audit four and Permissions 14; respectively
+30, four and 11 have empty `run` bodies. These are retained version-graph edges,
+not automatically dead code. Group initialization/upgrades/proxies/handlers so
+current capabilities are discoverable. Assess shared no-data handlers only where
+step IDs, version edges, fingerprints, retry/resume and installed upgrade history
+remain compatible. Do not delete or squash migration history as directory cleanup.
+
+##### F09 — Definitions mixes declarative metadata and executable work
+
+Auth's `Definitions` holds `IdentityApi`/`ProfileHttp` declarations alongside
+`ProfileMailHandler`, `ScheduledLifecycleHandler`, cleanup/reminder handlers and
+work policies. Separate pure definitions from execution handlers/policies. The
+module's `Http` directory likewise has controllers and resources side by side
+while requests have their own subtree. Use the same understandable convention in
+all built-in modules and the generator; do not add empty layers for symmetry.
+
+##### F10 — Private suite configuration is mixed with reusable frontend build code
+
+`frontend/module-components.mjs` is a reusable module build plugin. Neighboring
+`vitest.config.mjs` and `playwright.config.mjs` point at private `tests/*/runa`
+suites, yet `frontend` is not an owner-only source projection and is copied into
+the frontend build stage. Keep the reusable plugin available to customer builds;
+move private configuration to owner-owned tooling/test configuration and update
+its transport/dependency resolution. Build-stage presence is not proof of a
+production runtime data leak.
+
+##### F11 — Testing mixes languages and several namespaces
+
+`Testing/TestCase.php` belongs to namespace `Tests`; neighboring commands and
+`TestRun` use `Runa\\Testing`; TS Vue/Vitest/Playwright bridges and
+`browserProblems.ts` sit beside a worker-database PHP entrypoint. Classify shared
+customer testing APIs, runner internals and browser support explicitly and place
+them by responsibility/language. `Support/TestDatabaseGuard` and
+`Support/Modules/Development/ModuleContractSuite` also need coordinated treatment.
+The latter has supported runtime diagnostics; do not remove it from production
+merely because its directory is named Development.
+
+##### F12 — Management is operational tooling, not module business management
+
+`management/bootstrap.php` intentionally creates an isolated Artisan container
+without the application kernel, environment, DB or key. Its commands/catalogues
+serve delivered operations; this architecture is useful. Group it with delivered
+PHP tooling, distinct from `Support/Modules/Management` and its read descriptors.
+Preserve source-owned catalogues, JSON plan/schema validation, host/container
+transport and cold recovery; do not create a second command registry.
+
+##### F13 — Generator templates must be ordinary public API consumers
+
+`stubs/modules/proxy.php.stub`, `model.php.stub`, `migration.php.stub` and
+`test.php.stub` directly reference the currently supported Support helpers.
+Organize the generator and its 15 templates as one developer capability. Every
+newly generated file must use the final public contract surface, retain preview
+and exact hash overwrite checks, and write only to the owning application/test/
+doc roots. Customers must never need a private platform dependency to implement a
+recommended skeleton.
+
+##### F14 — Generated frontend anatomy disagrees with current module discovery
+
+The generator's component target is `resources/js/<Name>.vue`; the module Vite
+plugin discovers `frontend/components/<snake_case>.vue`, while Auth also owns
+feature presentation directly under `frontend`. This does not prove a generated
+component is promised automatic registration: its current contract explicitly
+omits that step. It does reveal divergent authoring conventions. Define canonical
+private/public component locations and opt-in registration, then synchronize the
+generator, build plugin, module example, docs and error messages.
+
+##### F15 — Frontend public facades exist, but their boundary is porous
+
+`resources/js/runa/{ui,auth,http,modules}` is an existing supported facade.
+`@runa/*` also exposes the implementation tree. The application Reference panel
+currently imports `@runa/lib/http` although `@/runa/http` exists. Existing bundle
+boundary tests check tree shaking/production content, not every customer import.
+Keep public facade imports stable, correct examples and restrict customer-source
+imports to supported entrypoints. Internal platform implementations can still
+compose one another through explicit internal dependencies.
+
+##### F16 — Auth replacement is implemented but its typing can be clearer
+
+`AuthPresentationProvider` merges subtree overrides and supplied defaults.
+`AuthEntry`, `AuthAccount` and `AuthWelcome` select customer components;
+`useAuthEntry`, `useAuthAccount`, `useAuthWelcome` and `useApplicationSession` are
+publicly exported. `AuthPresentation` currently types every replacement as the
+broad Vue `Component`; controller results are inferred from large implementation
+functions. Publish consumer-facing props/slot/controller types where needed and
+validate them through application-owned fixtures without private imports.
+Preserve fallback defaults, keyed account/page remounts, CSRF handling and session
+disposal; typed metadata is no substitute for real replacement behavior.
+
+##### F17 — Auth account orchestration is too concentrated
+
+`useAuthAccount.ts` has 1,512 lines, `useAuthEntry.ts` 593, and the default account
+view 659. The account controller combines profile editing, avatars, sessions,
+trusted devices, proof, delivery preferences, history, draft/conflict handling and
+read reconciliation. Extract feature collaborators behind the existing public
+controller, sharing account revision, request epoch, cancellation and mutation
+ordering. Avoid independent caches/controllers that duplicate reads, restore a
+previous account, reset drafts or replay writes.
+
+##### F18 — Generic frontend infrastructure includes Auth-specific behavior
+
+`lib/accountPreferences.ts` sends directly to Auth preferences, while
+`lib/preferenceStore.ts` binds guest/account preferences; `lib/welcomeModules.ts`
+contains Runa module catalogue presentation. Distinguish generic store/UI
+contracts from Auth/session integration and the supplied welcome presentation.
+Keep public preference behavior and late-response/logout fencing intact. Internal
+motion/layer helpers should not accidentally become customer APIs simply because
+they have a TypeScript export.
+
+##### F19 — Supplied routing is minimal, but should stay separate from extensibility
+
+`DefaultApplication.vue` selects paths directly from `window.location.pathname`;
+Auth application navigation and presentation routes also declare `/app` and
+`/account`. Full replacement through `src/app` and public session controllers is
+supported; the small default is not a general application router. Document that
+boundary, centralize repeated route/entry data where useful and ensure customers
+can add pages/navigation without editing this dispatcher. No router dependency is
+approved by this review.
+
+##### F20 — Executable builders live among runtime resources
+
+`resources/errors/build.php` and `render.mjs` build static errors;
+`resources/views/errors/page.php`, messages and templates serve runtime rendering.
+Move executable build responsibilities to delivered build tooling, leaving
+resources and runtime adapters with their owners. Preserve generated artifact
+locations, standalone/cold error handling and custom error-layout adoption.
+Mail bridge views such as `views/mail/html/layout.blade.php` intentionally include
+`runa-mail`; do not delete them as apparent duplication without preserving native
+Laravel Markdown integration and application overrides.
+
+##### F21 — Owner branding scripts have an obsolete source home
+
+`tools/assets/render-favicon.mjs` and `render-mail-logo.mjs` depend on Playwright,
+a particular local endpoint and Runa branding. Move them to private owner asset
+tooling with an explicit documented execution context and output ownership.
+Static logos/fonts/icons/licenses remain ordinary resources. Do not turn these
+scripts into a generic customer plugin mechanism.
+
+##### F22 — Database casing and normal Laravel resources are not defects
+
+`Database` contains PHP infrastructure; `database` contains migrations, seeders
+and a forward-only deploy primitive. Preserve that distinction in the target map.
+Likewise keep clear ownership for config, routes, Foundation, Http, validated
+language snapshots, resources and manifests. `runa/composer.json` and
+`runa/package.json` feed application manifest composition; deleting them as
+redundant would remove a source of truth. Directory count alone is not a defect.
+
+##### F23 — Development/runtime exposure needs explicit classification
+
+Production copies complete Console, Support and module trees; those contain
+source diagnostics, generation support, development contributors and module
+frontend sources as well as runtime code. Some operator diagnostics are required
+in production and must remain available. Classify execution mode separately from
+API audience and express the required source/image projection explicitly. Reject
+private suite/test dependencies in runtime while preserving cold commands,
+forward updates, module discovery and trusted operator recovery.
+
+##### F24 — Documentation and instruction products must describe the same boundary
+
+The module guide still describes a skeleton contract test inside module source
+and cites Reference version 0.1.0 after central test relocation and 0.1.1. It also
+uses module-local tests wording. Correct current-state guidance in its owning
+implementation point. Plan one public boundary guide and route owner/customer
+AGENTS, backend/Laravel/frontend skills, generators and examples through it.
+Historical roadmaps/evidence and imported provenance remain unchanged.
+
+##### F25 — Focused frontend replacement probe currently fails before execution
+
+The supported command was:
+
+```bash
+python3 tools/maintainer/test-frontend ../tests/frontend/runa/unit/auth-entry.test.ts ../tests/frontend/runa/unit/auth-account.test.ts --filter=customization:
+```
+
+It selected only replacement behavior in two files. Both files failed during
+collection: dependency scanning could not resolve `@vue/test-utils`, and Vitest
+reported that it could not find the current suite when Vue Test Utils registered
+`afterEach`. No selected customization case executed. This is an observed test
+infrastructure failure, not evidence that a rendered customer view itself failed.
+The earlier simple application welcome case is not sufficient acceptance for
+these richer imports. Fix canonical package resolution/single Vitest identity
+first; do not disable dependency scanning/assertions, swallow warnings or move
+authored tests back into `src` to manufacture PASS.
+
+#### Frontend extensibility assessment
+
+The capability exists in source: public UI/layouts/forms, HTTP and module-page/
+slot APIs; subtree presentation overrides; public headless Auth controllers; a
+minimal application root that customers own; and public error-layout composition.
+Existing replacement fixtures import only public facades. They cover layout-only
+replacement, custom login retaining CSRF/restriction behavior, custom account
+presentation, application content under the supplied session boundary and a full
+customer shell that removes content after 401.
+
+The focused attempt above did not execute those cases, so this review does not
+report a fresh runtime PASS. Repair and rerun that exact focused selection in
+point 11. Later public-only consumer fixtures must additionally cover authored
+application pages/forms/navigation, module pages/slots, custom error layouts,
+controller disposal/account switch, draft preservation and compatibility with
+existing defaults. Implement scenarios during the relevant points; broad browser,
+type, production and projected-customer acceptance runs only in final point 20.
+
+#### Planned compatibility and validation
+
+The active roadmap retains the already approved compatible feature 0.6.0 target.
+The first boundary-design point must record a public API/namespace/alias and
+module-manifest compatibility map before implementation. Public means supported
+use, including documented helpers currently under Support. Internal moves do not
+authorize breaking those uses. An incompatible API or module contract change
+requires explicit owner approval and the appropriate MAJOR decision first.
+
+Preserve data schemas/migration history, module version/step identities, guarded
+operations, current command names and native exits, hook/runner lifecycle,
+customer source/configuration ownership and delivery receipt compatibility.
+Assess module patches/minors and dependent constraints for actual implementation
+changes. No new dependency, CI, general plugin system or runtime authority layer
+is authorized.
+
+No full suite, static analysis, image build, scanner pipeline or broad acceptance
+ran for this review. No container/network/image/volume was created or removed;
+the focused browser runner used existing development infrastructure. Source
+classification and import checks are prevention aids, not security isolation.
+
 ## Implementation plan
 
 Each implementation point produces code, test code,
@@ -775,13 +1188,13 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Keep focused backend/frontend/e2e/Python transports and route their scopes
     through the existing quality scheduler. Add aggregate ownership/failure and
     projected customer extension scenarios now; execute broad acceptance in point
-    11 only. Document exact commands, prerequisites and changed default semantics.
+    20 only. Document exact commands, prerequisites and changed default semantics.
 
 - [x] 9. Complete caller migration and retire the old architecture.
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 11.
+    Full strict analysis, artifact and runtime PASS belong to point 20.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -817,11 +1230,173 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     update current target mappings rather than rewriting their baseline identities.
   - Synchronize public testing/module/command guides and both instruction products.
     Include focused ownership/discovery/generator/projection regressions; full
-    suites, analysis, builds and live acceptance remain exclusively in point 11.
+    suites, analysis, builds and live acceptance remain exclusively in point 20.
   - Commit completed implementation, documentation and checklist together.
 
-- [ ] 11. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–10 complete and committed, migration/coverage ledgers
+- [ ] 11. Repair central frontend test package resolution.
+  - Prerequisites: completed point 10; observed F25 collection failure.
+  - Repair Vue Test Utils/Vitest dependency resolution and shared module identity
+    for suites outside src using the existing installed packages. Preserve central
+    test placement, frozen pins, supported transports and native failure reporting.
+  - Do not suppress failed collection, required assertions or diagnostics, weaken
+    configuration, introduce a second dependency installation or claim PASS from
+    the simpler welcome case.
+  - Add meaningful regression coverage for richer shared test imports. After the
+    repair, the exact two-file customization selection in F25 is a justified
+    focused diagnostic; no broad frontend suite or acceptance runs here.
+  - Synchronize affected test support guidance and commit the completed fix.
+
+- [ ] 12. Define the complete public/internal API and placement map.
+  - Prerequisites: point 11 complete; review F01–F25 and existing public guides.
+  - Record each source area's owner, public extension/consumption entrypoints,
+    trusted integration and internal implementation, separately from dev/runtime
+    mode and customer/production projection. Cover every source directory, module,
+    frontend facade, generator and test-support resource; no unclassified residue.
+  - Inventory supported PHP symbols and TS/Vue imports, signature value/exception/
+    base/callback types, props/slots/controller members and existing customer and
+    generated consumers. In particular retain WorkHandler/WorkContext and the
+    documented public Support helpers; Contracts is not a blanket audience rule.
+  - Freeze an explicit current-to-target file/namespace/alias map and dependency
+    direction before source moves. Keep exact public identities and observable
+    behavior compatible with approved feature 0.6.0; stop for owner decision before
+    any incompatible public/module contract or proposed MAJOR change.
+  - Record narrow named callers for reserved integration and required production
+    diagnostics. Define understandable public/internal homes by responsibility;
+    preserve module ownership and avoid a generic Support/Utils replacement.
+    Keep ordinary Laravel and optional app modules equally supported; no full-DDD
+    conversion or mandatory customer domain/repository/mapper layers.
+  - Document the agreed map and migration dependencies; no broad checks here.
+
+- [ ] 13. Reorganize platform PHP internals and composition.
+  - Prerequisites: point 12's compatible target map; findings F03–F07 and F22–F23.
+  - Give the module framework an explicit internal home and separate supported
+    adapters/base classes from registries, locks, persistence and resolvers.
+    Reconcile the public signature closure without customer private imports.
+  - Split provider composition by platform mechanics, Core-module integration and
+    development context. Keep integration bridges explicit; preserve cold startup,
+    queue/logging/heartbeat behavior and configuration/route cache ordering.
+  - Reconcile Database infrastructure versus migration resources, Foundation,
+    Http transports and command ownership. Preserve PostgreSQL/Audit/authorization,
+    transaction ordering, availability fences, recovery and operator boundaries.
+  - Update Composer/development autoloading and guarded module loading together;
+    eliminate avoidable classmap/PSR-4 ambiguity without bypassing source checks.
+  - Deliver regression scenarios and current docs in the same point. Only
+    necessary focused uncertainty checks run; full analysis/suites remain final.
+
+- [ ] 14. Separate built-in module contracts from private execution.
+  - Prerequisites: point 13; findings F02, F08–F09 and the point-12 contract map.
+  - Organize Auth/Audit/Permissions public DTOs/interfaces/traits and documented
+    local helpers separately from trusted participants/resolvers, private queries,
+    models, handlers and policies. Public API use never authorizes replacement of
+    trusted security bindings or direct foreign persistence.
+  - Separate pure Definitions from executable work handlers/policies where their
+    responsibilities differ; align controller/request/resource and proxy locations
+    across built-in modules and the planned generator convention.
+  - Group initialization/upgrades coherently. Retain migration bytes, version edges,
+    step IDs/fingerprints, retry/resume and installed-history compatibility; no
+    deletion/squash of historical upgrades disguised as cleanup. Consolidate empty
+    handler implementations only when those contracts are demonstrably preserved.
+  - Assess each changed module's independent compatible version/changelog and
+    dependent constraints. Add representative public/guarded integration scenarios
+    and synchronize module guides; broad runtime/version acceptance remains final.
+
+- [ ] 15. Make frontend extension contracts complete and explicit.
+  - Prerequisites: point 14; findings F15–F16, F18–F19 and frontend assessment.
+  - Preserve supported ui/auth/http/modules facade imports and publish the complete
+    customer-facing type/props/slot/controller surface needed for own screens.
+    Distinguish public module exports from private components/composables and
+    prevent examples such as Reference from teaching implementation imports.
+  - Keep defaults usable; support subtree presentation/layout overrides, custom
+    forms/pages/navigation, full frontend replacement, module pages/slots and
+    application error-layout composition without protected source edits.
+  - Keep the minimal default dispatcher separate from application routing choices;
+    remove unnecessary duplicated route/entry declarations through owned existing
+    contracts. Do not introduce an unapproved router or global state dependency.
+  - Add customer-owned consumer fixtures using only public entrypoints: supplied
+    and custom layout, headless entry with CSRF/refusal, custom account, full shell
+    with 401 cleanup, module page/slot and static error composition. Cover keyed
+    page/account lifetimes, reactive props and retained fallback/default behavior.
+  - Update supported frontend adoption/type contracts in the same point; execute
+    only focused diagnostics for concrete uncertainties, not broad browser builds.
+
+- [ ] 16. Refactor frontend orchestration behind the public contracts.
+  - Prerequisites: point 15; findings F17–F18.
+  - Split the 1,512-line account controller by profile/avatar, sessions/trust,
+    proof/security, preferences/delivery and history responsibilities where useful.
+    Refactor entry/default presentation similarly when it improves actual cohesion;
+    do not create layers or components solely to meet a line-count threshold.
+  - Keep the public controller contract stable. Share account revision, mutation
+    ordering, request epoch, cancellation and session lifetime across collaborators;
+    avoid duplicate reads, independent conflicting stores or copied security logic.
+  - Separate generic UI/preference contracts from Auth-specific transport/session
+    integration and welcome presentation while retaining public default behavior.
+  - Preserve dirty drafts, local conflict decisions, automatic read reconciliation,
+    account-switch isolation, teardown and no-write-replay semantics. Implement
+    concurrency/disposal/replacement regressions now; broad execution stays final.
+  - Synchronize frontend/component references and public examples in this point.
+
+- [ ] 17. Organize developer support, generators and executable build tooling.
+  - Prerequisites: points 13–16; findings F10–F14 and F20–F21.
+  - Place isolated management PHP tooling/catalogues/schemas with their delivered
+    tooling responsibility, separate from module management. Keep one source-owned
+    Artisan registry and preserve cold recovery and host/container plan validation.
+  - Separate public PHP/browser test support from private suite configurations and
+    runner internals. Reconcile namespaces, dependency resolution and production
+    requirements; do not classify runtime contract diagnostics by folder name.
+  - Keep the reusable module Vite plugin delivered, place private Vitest/Playwright
+    configurations with owner tooling, and retain source/dependency resolution
+    without another package installation or symlink directory facades.
+  - Organize ModuleGenerator and all stubs/modules templates as one developer
+    capability. Generated PHP/Vue/tests consume only public APIs and follow the
+    canonical module frontend anatomy/registration and central test/doc roots.
+    Preserve preview, exact hash overwrite guards and ownership restrictions.
+  - Move executable static-error builders to delivered build tooling and owner
+    branding renderers to private maintenance tooling. Preserve runtime resources,
+    generated artifact locations, native mail bridges, licenses and overrides.
+  - Update source/config references, resource manifests and affected guides; add
+    scoped generator/build/support scenarios without running broad builds here.
+
+- [ ] 18. Enforce API boundaries and reconcile delivery/upgrade ownership.
+  - Prerequisites: points 12–17; findings F05, F07, F10, F15 and F23.
+  - Extend existing local checks for declared public/internal boundaries across PHP
+    and TS/Vue, including aliases/FQCNs, signature closure and customer/generated
+    examples. Replace blanket Contracts acceptance with explicit audience mapping;
+    allow reserved imports only for named trusted platform integration callers.
+  - Keep ordinary Laravel customer applications supported without requiring app
+    modules. These checks prevent accidental coupling, not malicious trusted code.
+    Do not add CI, a generic authority layer, a new registry or a dependency.
+  - Reconcile source acquisition/update preservation, exact receipt compatibility,
+    module source/runtime metadata, Composer/pnpm composition, Docker copy inputs,
+    development/production catalogs and quality/test/editor paths with the map.
+  - Preserve customer-authored code/config/tests, public development support,
+    required runtime diagnostics and trusted operator recovery. Exclude private
+    suites/owner configs and development-only packages from inappropriate outputs.
+  - Implement projected-customer extension/update and production-isolation
+    scenarios for final execution. Keep existing scoped quality ownership; broad
+    package/image/install/upgrade/scanner acceptance belongs only to point 20.
+
+- [ ] 19. Synchronize architecture guidance and retire obsolete placement.
+  - Prerequisites: points 12–18 implemented; finding F24 and final source map.
+  - Write one authoritative public API/internal boundary and source-placement guide,
+    with exact supported entrypoints and customer examples for PHP and frontend.
+    Update root AGENTS, owner backend/Laravel/frontend and affected Docker/security
+    references, plus separately authored customer AGENTS/skills and source metadata.
+  - Skills route to public procedures rather than duplicating them. Require future
+    capabilities to declare owner, audience, public signature and implementation
+    home; generated examples must follow the same rule as customer handwritten code.
+  - Reconcile current module/frontend/test/command/build docs and metadata with the
+    implemented layout, including the stale generated-test and Reference-version
+    wording. Never edit closed roadmaps, dated evidence or imported snapshots.
+  - Remove old empty directories, duplicate configurations, obsolete current-state
+    references and temporary shims when their replacements are complete. Preserve
+    public identities, private runtime artifacts, backups, reports and resource/data
+    histories; record deliberate retained paths instead of claiming total cleanup.
+  - Prepare the public-only backend/frontend/module/generator consumer matrix and
+    final quality graph definitions. Commit completed implementation/docs/products;
+    no full verification or acceptance runs in this point.
+
+- [ ] 20. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–19 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -834,6 +1409,10 @@ implementation. Build their harnesses/scenarios first and execute them at the en
 --background`; end the turn after launch and provide `python3
 tools/maintainer/quality-status`. Do not poll, substitute internal runners or
     interpret missing/excluded evidence as PASS. Selected security/AI gates are strict.
+  - Verify the point-12 boundary map, public signature/import contracts, generated
+    consumers, customer-owned backend/module/frontend extensions, default and fully
+    replaced UI, session/account teardown, build projections and retained upgrade
+    histories. No open regression or unclassified public dependency may be waived.
   - Include actual host/container/standalone/package/customer upgrade and production
     acceptance, scanners, hooks, knowledge golden/freshness and supported PHP/JS/
     database/browser suites. Verify both aggregate command defaults, targeted
@@ -1891,6 +2470,26 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   remain preserved. Removed the now-empty old application/platform/module test
   directories and former private Python/native/browser acceptance directories; no
   obsolete directory facade remains.
+
+### Source review planning extension (2026-10-27)
+
+- Reviewed all 859 tracked src/runa files by area and traced representative public
+  signatures, imports, integration composition, generator output and frontend
+  replacement fixtures. Findings F01–F25 above record source evidence, intended
+  outcomes, compatibility limits and the focused frontend collection failure.
+- Proposed points 11–19 are all open; final verification is now point 20. No new
+  refactor, application/runtime configuration, dependency or data change was made.
+  Added one public API boundary guide and routing rules in owner/customer AGENTS
+  and backend/Laravel/frontend skills, with source metadata. Final path-specific
+  guidance remains point 19 work; no proposed layout is claimed as implemented.
+- The early two-file customization diagnostic failed before any selected case ran.
+  It is not acceptance; point 11 owns the repair and exact focused recheck. No more
+  test/build/analysis operation is authorized by this planning task. No Docker
+  resource was created or removed; development data, caches and reports remain.
+- Changes are limited to the roadmap and authorized handbook/AGENTS/skill guidance.
+  No additional tests were run for these guidance edits. VERSION stays 0.5.0;
+  confirmed compatible feature projection remains 0.6.0. Breaking public/module
+  changes still require a separate explicit owner/version decision.
 
 ### Draft preparation validation (historical)
 

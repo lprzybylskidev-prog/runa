@@ -7,6 +7,12 @@ description: 'Framework-agnostic Runa frontend guidance for accessibility, respo
 
 Use this skill for user-interface behavior and quality that is broader than Vue or Tailwind syntax.
 
+For public API, internal dependency, generator or source-layout changes, follow
+[the public API boundary](../../../docs/runa/handbook/architecture/public-api.md).
+Classify supported consumers and complete signatures before moving files; update
+public consumers and owner/customer guidance together. Frontend replacement uses
+supported facades/controllers without copied security logic.
+
 Load only relevant references:
 
 - `references/accessibility-responsive.md`

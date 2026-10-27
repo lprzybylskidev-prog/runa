@@ -14,6 +14,12 @@ Before acting:
 3. Load only the reference file(s) needed.
 4. Apply Runa project rules before generic upstream advice.
 
+For public API, internal dependency, generator or source-layout changes, follow
+[the public API boundary](../../../docs/runa/handbook/architecture/public-api.md).
+Classify supported consumers and complete signatures before moving files; update
+public consumers and owner/customer guidance together. Frontend replacement uses
+supported facades/controllers without copied security logic.
+
 ## References
 
 - `references/design-principles.md` — responsibilities, abstractions, dependencies, naming, hidden behavior

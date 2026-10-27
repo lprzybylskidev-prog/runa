@@ -64,6 +64,12 @@ Use stable names. Avoid interchangeable synonyms for the same business or techni
 
 Do not replace straightforward application behavior with dense SQL, metaprogramming, or abstractions solely because they are technically possible.
 
+### Public APIs and internal implementation
+
+Follow [the public API boundary](public-api.md) for customer extension and
+consumption, trusted integration and internal implementation. Classify supported
+consumers separately from physical delivery and runtime/development mode.
+
 ### Dependency approval boundary
 
 Use the dependency assessment and approval policy in `AGENTS.md`. Requirements for a tool family do not approve unrelated convenience packages. The initial roadmap explicitly identifies mandated families; unresolved provider/package choices remain unresolved until user approval. Every installed external component joins the maintenance registry. Normal installs use committed Composer/pnpm lockfiles; updates are deliberate roadmap work.

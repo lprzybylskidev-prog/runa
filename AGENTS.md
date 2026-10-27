@@ -320,6 +320,15 @@ Do not persist:
 
 Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
 
+## Public APIs and platform internals
+
+Follow [the public API boundary](docs/runa/handbook/architecture/public-api.md).
+Classify capabilities by owner, supported consumer and entrypoint separately from
+delivery/runtime mode. Keep customer extension/consumption APIs distinct from
+internal engines and trusted integration; Contracts/Support names alone do not
+establish public use. Preserve documented signatures, generator/example consumers
+and frontend replacement contracts during refactors.
+
 ## Module development
 
 For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly owner-approved MAJOR before implementation, regardless of how much code is rewritten. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.

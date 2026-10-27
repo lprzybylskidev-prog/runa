@@ -2,6 +2,9 @@
 
 Use the [module framework contracts](../architecture/module-framework.md) for runtime interfaces and ownership. Ordinary application code remains supported; modules are optional. Module source is trusted PHP/Vue in the existing Laravel application, not an untrusted plugin sandbox.
 
+Use [the public API boundary](../architecture/public-api.md) to distinguish
+customer extension contracts from trusted integration and internal implementation.
+
 ## Generate and review
 
 Run in local/testing development, from the repository root:

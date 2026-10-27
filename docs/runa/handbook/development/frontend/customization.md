@@ -6,6 +6,9 @@ and controls, or own their complete frontend. New Runa views follow this same
 rule: usable defaults and a documented presentation replacement contract.
 Application changes live in `src/app`; `src/runa` remains protected.
 
+Public entrypoints and implementation imports follow the
+[public API boundary](../../architecture/public-api.md).
+
 ## Ownership and startup
 
 The supplied `src/app/resources/js/App.vue` renders `DefaultApplication` from

@@ -7,6 +7,11 @@ description: Runa customer guidance for accessible responsive UI, public compone
 
 Load for accessible responsive UI, public components, forms, tables and page patterns. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
+Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported
+extension/consumption APIs from platform internals. Consume documented backend
+adapters and frontend facades from application-owned code; neither a Contracts
+namespace nor a resolvable import permits private integration access.
+
 Maintain application patterns and current docs in the same point. Use docs/app for domain records, the delivered handbook for Runa contracts, and supported command entrypoints. Only necessary small, fast diagnostics belong before final verification; receive their results and continue. Full suites and broad acceptance belong to final quality, whose background status interface is runa:quality:status. Never replace supported tests with internal or detached log-only runners.
 
 Use docs/runa/handbook/development/frontend/customization.md for every Runa/module
