@@ -44,6 +44,10 @@ unapproved dependency or destructive data reset is authorized.
 
 - 2026-10-28 — Owner selects release_type fix and proposed_version 0.6.2, after
   RM-013, and defers backend segfault diagnosis until then.
+- 2026-10-28 — Owner supplies a ChatGPT research lead about php-src#24488 and
+  requests planning only. Record it as an unverified hypothesis for point 1;
+  RM-013 knowledge/Qdrant work remains first. No investigation, reproducer,
+  runtime change or RM-014 activation is authorized by this planning update.
 - 2026-10-28 — Until this roadmap resolves the fault, the owner permits acceptance
   of backend test segfaults as a disclosed exception, using the recorded complete
   backend PASS as supporting evidence. This is owner release policy only, not a
@@ -76,6 +80,46 @@ PHP/extension faults, test-order/global state and resource/concurrency effects.
 Keep application toolchains in containers and preserve data, caches and reports.
 Changes to dependency pins require the existing deliberate review/approval policy.
 
+### Prioritized research lead: PHP garbage collection and SimpleXML
+
+Owner-supplied external analysis points to
+[php-src#24488](https://github.com/php/php-src/issues/24488), described as
+"GC double-frees the SimpleXMLElement properties table", and suggests a PHP
+8.4.27 regression. The issue, affected versions, necessary conditions, links to
+Laravel/Pest/ParaTest and fix availability have **not been independently verified**
+for this draft. Treat this as a concrete research lead, not an established cause
+or an approved PHP update/rollback.
+
+After activation, use this bounded diagnostic sequence:
+
+1. Read the official issue, linked patch and release records. Establish the exact
+   mechanism, affected/fixed versions and required object/GC conditions. Check
+   other officially documented 8.4.27 regressions only where symptoms justify it.
+2. Trace whether those conditions are reachable in Runa or installed dependencies:
+   direct/indirect SimpleXML use, cyclic references, object introspection or
+   serialization, and GC interaction with Mockery/Laravel/Pest. SimpleXML's mere
+   presence does not establish reachability of the faulty path.
+3. If an official minimal reproducer exists, inspect it before executing it as a
+   focused diagnostic in the existing container. It must require no database,
+   source/test edits, configuration changes, service restart/rebuild or data
+   deletion. Record the exact upstream revision, command, actual runtime and exit
+   result under .runtime; do not invent a substitute when the official case is
+   available. An unsafe reproducer requires a separately agreed safe approach.
+4. Compare with retained RM-012 failure logs and inspect any existing core dumps
+   or native backtraces. A worker's reported test file need not identify where
+   memory corruption began; SIGSEGV alone cannot identify this PHP defect.
+5. Report facts, inferences and gaps separately. Classify this specific hypothesis
+   as likely, possible but unproven, unlikely or excluded with supporting evidence,
+   and identify the smallest next discriminating diagnostic. A single reproducer
+   PASS does not exclude an intermittent defect; reproducing an upstream defect
+   in the same runtime does not alone prove it caused the historical suite crashes.
+
+This sequence does not authorize full suites/quality runs, automatic retries,
+changes to PHP/dependency locks, Xdebug/OPcache/GC settings, container lifecycle or
+destructive operations during investigation. Preserve reports, databases, volumes
+and caches. Any supported correction belongs to point 2 after evidence review;
+broad repetition and workload acceptance remain in the final point.
+
 ## Implementation plan
 
 Ordinary implementation permits only necessary small focused diagnostics.
@@ -84,6 +128,8 @@ point. Mandatory hooks and final-verification repair rules remain in force.
 
 - [ ] 1. Reconcile evidence and establish a diagnostic hypothesis.
   - Prerequisite: RM-013 closed, merged and released; explicit owner activation.
+  - Verify the prioritized php-src#24488 lead using the bounded sequence above;
+    do not presume that the external diagnosis or reported fix applies to Runa.
   - Inspect actual runtime/source versions, crash evidence and test resource
     ownership. Capture an actionable stack/core diagnostic where supported.
   - Identify likely mechanisms with focused checks, without claiming a cause from
