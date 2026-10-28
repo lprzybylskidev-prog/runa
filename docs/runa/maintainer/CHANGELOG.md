@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.6.0] - 2026-10-28
+
+Feature release — RM-2026-012.
+
+- Refactor Python packages and owner/customer/distribution tooling into typed, explicit composition with supported guarded commands and central test ownership.
+- Clarify and enforce public PHP/frontend extension contracts, separate platform/module internals and preserve replaceable presentation, generators, source projection and runtime isolation.
+- Synchronize handbook, maintainer guidance and both instruction products; deliberately patch existing test dependencies and Symfony Mime 8.1.10 security fixes.
+- Preserve independent Auth 1.1.4, Audit 1.0.4 and Permissions 1.0.4 upgrades and migration history; keep the example application version 0.0.0 compatible with 0.6.x.
+
+Owner-authorized closure exception: intermittent backend SIGSEGV remains deferred to RM-014 (fix 0.6.2 after RM-013). Raw final graph: 53 passed, one SIGSEGV, six blocked; separate supported checks completed the blocked scopes and full backend passed 588 tests/6117 assertions. This is accepted verification with a disclosed exception, not a fabricated complete graph PASS. Strict security and browser checks passed. No real production deployment occurred; disposable resources were scoped-cleaned and persistent data/caches/reports preserved.
+
 ## [0.5.0] - 2026-10-26
 
 Feature release — RM-2026-011.

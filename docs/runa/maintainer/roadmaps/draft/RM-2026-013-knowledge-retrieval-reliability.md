@@ -45,7 +45,7 @@ prepare this draft; no implementation source was inspected for those analyses.
 The owner explicitly requested version **0.6.1** and confirmed
 `release_type: maintenance` on 2026-10-28. This is a PATCH increment after the
 planned compatible feature **0.6.0**, not after today's VERSION 0.5.0. The required
-predecessor is [RM-2026-012](../active/RM-2026-012-runa-architecture-refactor.md).
+predecessor is [RM-2026-012](../closed/RM-2026-012-runa-architecture-refactor.md).
 Refresh that link, actual baseline and projected arithmetic after its release.
 This draft does not activate work, change VERSION or extend RM-012 implementation.
 
