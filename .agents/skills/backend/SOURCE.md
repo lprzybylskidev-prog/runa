@@ -31,3 +31,7 @@ dependency was involved.
 RM-2026-012 point 13 synchronized internal namespace guidance on 2026-10-28
 against the delivered public API boundary. This is local Runa guidance; no
 upstream source or dependency changed.
+
+API enforcement routing was synchronized from local RM-2026-012 point 18 on
+2026-10-28. The public boundary guide owns diagnostics and delivery detail;
+no upstream refresh, dependency addition or new runtime authority was involved.

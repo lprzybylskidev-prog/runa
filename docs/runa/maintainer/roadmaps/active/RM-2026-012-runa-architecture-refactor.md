@@ -58,7 +58,7 @@ customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
-the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; points 18–19 remain pending;
+the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 remains pending;
 final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
@@ -1369,7 +1369,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Update source/config references, resource manifests and affected guides; add
     scoped generator/build/support scenarios without running broad builds here.
 
-- [ ] 18. Enforce API boundaries and reconcile delivery/upgrade ownership.
+- [x] 18. Enforce API boundaries and reconcile delivery/upgrade ownership.
   - Prerequisites: points 12–17; findings F05, F07, F10, F15 and F23.
   - Extend existing local checks for declared public/internal boundaries across PHP
     and TS/Vue, including aliases/FQCNs, signature closure and customer/generated
@@ -2896,6 +2896,69 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   data, active services, Qdrant/model/builder caches, backups and reports are
   preserved. VERSION remains 0.5.0; confirmed feature projection remains 0.6.0.
   Points 18–20 remain open; delivery enforcement and final acceptance are not claimed.
+
+### Point 18 completion — API enforcement and delivery ownership (2026-10-28)
+
+- Replaced blanket Runa Contracts acceptance with delivered source-owned public
+  symbols, named reserved callers and ten internal Core-integration collaborator
+  maps. Kept application-owned contract conventions and ordinary Laravel code.
+  Runtime module diagnostics use PHP tokens; developer analysis uses the existing
+  installed PHP parser for aliases/grouped imports/FQCNs, public/protected native
+  types and qualified/aliased PHPDoc callbacks/generics/exceptions. Container-owned
+  constructors are limited to the four documented adapters; public DTO constructors
+  and operation signatures remain checked. No new dependency or runtime registry.
+- Existing runa:analyse runs the nonbooting checker before PHPStan; runa:lint owns
+  TS/Vue imports, reexports, literal dynamic/type imports and relative/alias
+  resolution. Existing TypeScript consumer checks remain. Reconciled source paths
+  for modules/build/test support and central frontend suites, and PHPStan paths
+  for relocated engines/integration/runtime/module implementation. ESLint patterns
+  anchor to the workspace root even when its nearest configuration is src-owned.
+- Production dependency preparation prunes developer commands/contributors and raw
+  module frontend trees, then optimizes the retained source. Final runtime copies
+  that pruned Console/Support/module projection. Preserved historical upgrade
+  handlers/migrations, queue identity, diagnostics and SMTP verification. Module
+  source/runtime CLI diagnostics now work for trusted production operators without
+  developer packages. Development seeding/provider registration refuses before
+  resolving omitted support. Corrected the map's stale TestMail development/exclude
+  classification to required operator/source; its existing SMTP behavior is unchanged.
+- Auth advances to 1.1.2, Audit and Permissions to 1.0.3, with explicit 0.6.x platform
+  compatibility and new source-only platform_delivery edges. Prior step identities
+  and bytes remain; dependent ^1.0.0 constraints stay compatible. Scoped module
+  version checks against this point's HEAD baseline returned no errors. VERSION
+  remains 0.5.0; confirmed feature projection remains 0.6.0.
+- Prepared real projected-customer PHP/Vue/Python extension cases and checker use,
+  all-technology customer file preservation through interrupted 0.5.0→0.6.0 updates,
+  and production absence/retained-identity/operator diagnostics for final acceptance.
+  Exact receipt projections 1/2, ownership policies and customer update consent are
+  unchanged. No implicit relocation or overwrite of customer-authored files.
+- Seven distinct necessary focused contracts passed through supported test-python:
+  alias/public/reserved policy, native/PHPDoc/value signature closure and ordinary
+  application scan, TS/Vue AST/path/type imports, map/caller consistency, production
+  seeding refusal before support loading, generated public consumers/production
+  source metadata, and interrupted upgrade preservation without data replay.
+  Initial PHP fixture escaping and nearest-config ESLint failures were corrected;
+  their exact cases passed. The generated-source case passed again with production
+  diagnostic mode. No full suite, broad static analysis, image/package build,
+  scanner or live installation/production acceptance was run.
+- Knowledge was current (189 documents/3167 chunks); queried the boundary/projection
+  contracts and opened original public sources. Applied backend/security/Laravel/
+  Docker/frontend guidance and version-aware Boost provider documentation. Updated
+  public boundary/module/production/command guidance, owner placement evidence and
+  owner/customer backend references/provenance. Root AGENTS and the other products
+  already route to the same public authority and preserve ownership; no new
+  authority or duplicate procedure is needed. Final layout reconciliation is point 19.
+- The initial supported knowledge transport prepared operational management image
+  runa-management:dfa04f2a92618dc0c414fccc; after the changed management transport
+  prepared runa-management:6d7fc87cde0a9bfc5c04c123, inspected both exact identities
+  and confirmed no containers referenced the older tag, then removed only that
+  superseded task-created tag. Preserved the current operational image. Incremental
+  indexing reached 189 documents/3180 chunks, no stale/missing/orphan chunks.
+  A hook rejection exposed Ruff import ordering prepared from src cwd; repeated
+  source preparation from the workspace root corrected it before repeating hooks.
+  No disposable test container/network/volume was created or removed; existing development/
+  test data, Qdrant/model/builder caches, backups and reports remain. Incremental
+  indexing and mandatory staged hooks accompany the implementation commit.
+  Points 19–20 remain open; final runtime/analysis acceptance is not claimed.
 
 ### Draft preparation validation (historical)
 

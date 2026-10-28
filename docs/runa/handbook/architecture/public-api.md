@@ -157,3 +157,39 @@ not sandbox trusted PHP or replace runtime authorization.
 Preserve supported namespace/import identities and observable behavior during
 internal reorganization. A breaking public/module change requires the project's
 explicit versioning decision; a directory move does not approve a MAJOR release.
+
+## Local enforcement and delivery
+
+`runa:analyse` first inspects application PHP (including ordinary Laravel code and
+application tests), platform references and public native/PHPDoc signatures without
+booting customer classes. It resolves PHP namespaces, aliases, grouped imports,
+FQCNs and native union/intersection types through the installed analysis parser.
+Module source diagnostics use a dependency-free lexical companion and the same
+source-owned symbol policy. Runa module Contracts are classified individually;
+reserved contracts and internal Core collaborators admit only named source callers.
+Application-owned module Contracts retain their own declaration convention; this
+policy does not classify customer APIs or require ordinary applications to adopt modules.
+
+`runa:lint` checks application TS/Vue static imports, reexports, literal dynamic
+imports and type imports against the documented frontend/test entrypoints. Relative
+paths and broad aliases resolve to the same boundary. The existing TypeScript check
+validates exported consumer types and application-owned replacements. Dynamic class
+names, computed imports, runtime object members and semantic compatibility still
+need review and behavioral tests. Checks prevent accidental coupling, not trusted
+code execution; a diagnostic path never confers runtime authority.
+
+Keep public value/extension signatures free of internal types. The four adapters
+ModuleApis, ModuleFrontend, ModuleSettings and ModuleWork retain container-owned
+constructor collaborators; this does not make those engines customer extension APIs.
+Their supported operation signatures remain checked. PHPDoc alias/FQCN checks cover
+callback/generic/exception references; they are not a complete PHPDoc type theorem.
+
+Customer development receives these checks, generators and public test support.
+The production PHP image uses a pruned runtime projection: no generator/test
+adapters, development contributor implementations/contracts or raw module frontend
+sources. Compiled assets, module manifests, historical upgrades, runtime diagnostics
+and persisted ModuleJob identity remain. `runa:modules:check <owner> [--runtime]`
+also works in production for trusted operator diagnostics, using production source
+rules without development packages. SMTP verification remains an operator command.
+Acquisition receipts and customer source/configuration/test ownership are unchanged;
+updates do not move or overwrite customer-authored extensions implicitly.

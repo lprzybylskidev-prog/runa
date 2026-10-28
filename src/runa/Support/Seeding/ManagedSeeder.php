@@ -18,6 +18,9 @@ abstract class ManagedSeeder extends Seeder
     final public function run(): void
     {
         if (static::category() === SeedCategory::Development) {
+            if (! app()->environment(['local', 'testing'])) {
+                throw new RuntimeException('Development seeders require local or testing environment.');
+            }
             DevelopmentFixtures::assertAllowed();
         }
         $options = static::category() === SeedCategory::Development

@@ -105,7 +105,19 @@ def upgrade(tmp_path: Path) -> tuple[Path, Runtime, UpdateExecutor]:
     write(installed, ".git/runa-bootstrap.json", '{"mode":"dev"}').chmod(0o600)
     write(installed, "src/app/python/requirements.lock", "customer-frozen")
     write(installed, "src/app/python/ruff.toml", "customer-config")
-    write(installed, "tests/backend/app/tooling/test_extension.py", "# customer")
+    write(
+        installed, "tests/backend/app/tooling/test_extension.py", "# legacy customer path preserved"
+    )
+    for name in (
+        "src/app/Services/CustomerService.php",
+        "src/app/resources/js/CustomerPage.vue",
+        "src/app/config/customer.php",
+        "tests/backend/app/Feature/CustomerTest.php",
+        "tests/frontend/app/unit/customer.test.ts",
+        "tests/tools/app/test_customer.py",
+        "docs/app/customer.md",
+    ):
+        write(installed, name, "customer-owned:" + name)
     runtime = Runtime()
 
     def download(
@@ -143,6 +155,16 @@ def test_upgrade_050_to_060_preserves_customer_tooling_and_does_not_replay_commi
     assert (installed / "src/app/python/requirements.lock").read_text() == "customer-frozen"
     assert (installed / "tools/application/python/requirements.lock").read_text() == "frozen-0.6.0"
     assert (installed / "tests/backend/app/tooling/test_extension.py").is_file()
+    for name in (
+        "src/app/Services/CustomerService.php",
+        "src/app/resources/js/CustomerPage.vue",
+        "src/app/config/customer.php",
+        "tests/backend/app/Feature/CustomerTest.php",
+        "tests/frontend/app/unit/customer.test.ts",
+        "tests/tools/app/test_customer.py",
+        "docs/app/customer.md",
+    ):
+        assert (installed / name).read_text() == "customer-owned:" + name
     assert not (installed / ".runtime/production/in-progress.json").exists()
 
 

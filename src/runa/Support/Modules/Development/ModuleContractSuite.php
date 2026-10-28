@@ -15,6 +15,7 @@ use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Console\ModuleConsole;
 use Runa\ModuleFramework\Data\ModuleDataPaths;
+use Runa\ModuleFramework\Development\ApiBoundary;
 use Runa\ModuleFramework\Events\EventDefinitions;
 use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\LifecyclePolicies;
@@ -63,7 +64,7 @@ final readonly class ModuleContractSuite
                     continue;
                 }
                 $text = (string) file_get_contents($file->getPathname());
-                foreach ($this->lint($text, $manifest->prefix, $manifest->owner.'_'.$manifest->code, $file->getExtension()) as $code) {
+                foreach ($this->lint($text, $manifest->prefix, $manifest->owner.'_'.$manifest->code, $file->getExtension(), 'src/'.$source->path.'/'.$relative) as $code) {
                     $errors[] = $relative.':'.$code;
                 }
             }
@@ -82,21 +83,16 @@ final readonly class ModuleContractSuite
         return array_values(array_unique($errors));
     }
 
-    /** Pragmatic literal checks. Dynamic names/aliases/SQL assembly require human review.
+    /** Pragmatic literal checks. Dynamic names and SQL assembly require human review; static aliases are resolved.
      * @return list<string>
      */
-    public function lint(string $text, string $prefix, string $schema, string $extension = 'php'): array
+    public function lint(string $text, string $prefix, string $schema, string $extension = 'php', string $sourcePath = ''): array
     {
         $errors = [];
         // Tokenize PHP to ignore comments while retaining names, strings and executable calls.
         if ($extension === 'php') {
             $text = implode('', array_map(static fn ($token) => is_array($token) ? (in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true) ? '' : $token[1]) : $token, token_get_all($text)));
-            preg_match_all('/(?:App|Runa)\\\\Modules\\\\[A-Za-z][A-Za-z0-9]*(?:\\\\[A-Za-z][A-Za-z0-9]*)*/', $text, $matches);
-            foreach ($matches[0] as $name) {
-                if (! str_starts_with($name.'\\', $prefix) && ! str_contains($name, '\\Contracts\\')) {
-                    $errors[] = 'foreign_module_import';
-                }
-            }
+            $errors = [...$errors, ...(new ApiBoundary)->php($text, $prefix, $sourcePath)];
             if (preg_match('/\b(?:Route|Schedule|Queue|Event)\s*::|\bimplements\s+[^;{]*\bShouldQueue\b|\bextends\s+(?:\\\\?Illuminate\\\\Console\\\\)?Command\b/', $text) === 1) {
                 $errors[] = 'unclassified_entrypoint';
             }

@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 1.0.3 — 2026-10-28
+
+- Support platform 0.6.x explicitly while retaining public APIs and historical upgrade identities.
+- Record the source-only platform_delivery edge; production excludes developer implementations and raw module frontend sources. No schema or data transformation.
+
 ## 1.0.2 — 2026-10-28
 
 - Reconcile internal platform collaborators with the module framework and Core integration homes; public contracts and runtime behavior remain compatible.

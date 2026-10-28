@@ -12,7 +12,7 @@ final class RunSourceChecks
     {
         $runner = new RunTool;
         $cwd = $root.'/src';
-        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'runa/Testing', '../tests/frontend/app/unit', '../tests/frontend/app/e2e', '../tests/frontend/runa/unit', '../tests/frontend/runa/e2e'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
+        $sourcePaths = array_values(array_filter(['app/resources', 'runa/resources', 'runa/Testing', 'app/modules', 'runa/modules', 'runa/frontend', 'runa/build', '../tests/frontend/app', '../tests/frontend/runa'], static fn (string $path): bool => is_dir($cwd.'/'.$path)));
         if ($tool === 'format') {
             if (! in_array($arguments, [[], ['--check']], true)) {
                 throw new InvalidArgumentException('Format supports only --check.');
@@ -30,6 +30,12 @@ final class RunSourceChecks
         }
         $commands = [
             'typecheck' => ['pnpm', 'run', 'typecheck'], 'analyse' => ['vendor/bin/phpstan', 'analyse', '--memory-limit=1G']];
+        if ($tool === 'analyse') {
+            $status = $runner->process([PHP_BINARY, 'runa/Development/check-api.php'], $cwd, $output);
+            if ($status !== 0) {
+                return $status;
+            }
+        }
         if (isset($commands[$tool])) {
             return $runner->process([...$commands[$tool], ...$arguments], $cwd, $output);
         }

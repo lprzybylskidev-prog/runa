@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 1.1.2 — 2026-10-28
+
+- Support platform 0.6.x explicitly while retaining public APIs and all historical upgrade identities.
+- Record the source-only platform_delivery edge; production images exclude developer implementations and raw module frontend sources. No schema or data transformation.
+
 ## 1.1.1 — 2026-10-28
 
 - Separate internal account profile/conflict, list/history/trust, validation and delivery collaborators behind the unchanged public controller; retain shared cancellation, revisions, draft reconciliation and explicit writes.

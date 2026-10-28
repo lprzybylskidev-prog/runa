@@ -454,6 +454,35 @@ def main() -> None:
             tooling_test.write_text(
                 "from src.app.tooling.customer_extension import total\nfrom tools.application.testing.support.process import RecordingRunner\ndef test_customer_extension():\n    assert total([2, 3]) == 5\n    assert RecordingRunner().calls == []\n"
             )
+            # Real customer-authored PHP/Vue cases consume only delivered facades/support.
+            backend_extension = dev / "tests/backend/app/Feature/PublicApiTest.php"
+            backend_extension.write_text(
+                "<?php\nnamespace ApplicationTests\\Feature;\n"
+                "final class PublicApiTest extends \\Tests\\TestCase {\n"
+                " public function test_public_identity_value(): void { "
+                "$identity = new \\Runa\\Support\\Modules\\ModuleIdentity('app.customer'); "
+                "$this->assertSame('app_customer', $identity->schema()); }\n}\n"
+            )
+            frontend_extension = dev / "tests/frontend/app/unit/public-api.test.ts"
+            frontend_extension.write_text(
+                "import { it, expect } from '@runa/testing/vitest';\n"
+                "import { mount } from '@runa/testing/vue';\n"
+                "import { Button } from '@/runa/ui';\n"
+                "it('customer public component', () => { "
+                "const page = mount(Button, { slots: { default: 'Customer action' } }); "
+                "expect(page.get('button').text()).toBe('Customer action'); page.unmount(); });\n"
+            )
+            call(
+                [
+                    "docker",
+                    "exec",
+                    "-w",
+                    "/workspace",
+                    dev_project + "-app-1",
+                    "php",
+                    "src/runa/Development/check-api.php",
+                ]
+            )
             for test_command in ("test", "runa:test", "runa:test:frontend"):
                 call(
                     [
@@ -942,6 +971,20 @@ def main() -> None:
             acceptance_update_host.exercise(
                 prod, fixture_directory, prod_project, check, report, call, output, commit
             )
+        call(
+            [
+                "docker",
+                "exec",
+                "-w",
+                "/workspace",
+                prod_project + "-app-1",
+                "php",
+                "artisan",
+                "runa:modules:check",
+                "runa",
+                "--runtime",
+            ]
+        )
         for action in ("validate", "self-test", "verify-ai-isolation"):
             call([str(prod / "bin/artisan"), "runa:production:" + action], cwd=prod)
         check(

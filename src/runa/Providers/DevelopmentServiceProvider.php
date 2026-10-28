@@ -18,6 +18,9 @@ final class DevelopmentServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        if (! $this->app->environment(['local', 'testing'])) {
+            return;
+        }
         $this->app->extend(ConfigMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationConfigMakeCommand::class));
         $this->app->extend(TestMakeCommand::class,

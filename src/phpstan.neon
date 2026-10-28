@@ -7,6 +7,14 @@ parameters:
         - app
         - runa/Console
         - runa/Contracts
+        - runa/Configuration
+        - runa/Identity
+        - runa/Integration
+        - runa/Logging
+        - runa/Mail
+        - runa/ModuleFramework
+        - runa/modules
+        - runa/Runtime
         - runa/Database
         - runa/Development
         - runa/Foundation

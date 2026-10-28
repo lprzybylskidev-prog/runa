@@ -17,9 +17,6 @@ final class CheckModules extends Command
     public function handle(ModuleRegistry $registry): int
     {
         try {
-            if (! app()->environment(['local', 'testing'])) {
-                throw new \RuntimeException('Module development contracts require local/testing context.');
-            }
             $development = app()->environment(['local', 'testing']);
             $sources = (new ModuleDiscovery(base_path(), $development))->discover($this->argument('owner'));
             $suite = new ModuleContractSuite(base_path(), $development);

@@ -31,6 +31,7 @@ use Runa\Modules\Auth\UpgradeMailLayout;
 use Runa\Modules\Auth\UpgradeNavigationCancellation;
 use Runa\Modules\Auth\UpgradePermissionDeclarations;
 use Runa\Modules\Auth\UpgradePlatformComposition;
+use Runa\Modules\Auth\UpgradePlatformDelivery;
 use Runa\Modules\Auth\UpgradePolicy;
 use Runa\Modules\Auth\UpgradePreferences;
 use Runa\Modules\Auth\UpgradePreferencesPresentation;
@@ -111,7 +112,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('platform_composition', '1.0.1', '1.0.2', UpgradePlatformComposition::class),
             new UpgradeDefinition('execution_layout', '1.0.2', '1.0.3', UpgradeExecutionLayout::class),
             new UpgradeDefinition('frontend_contracts', '1.0.3', '1.1.0', UpgradeFrontendContracts::class),
-            new UpgradeDefinition('account_orchestration', '1.1.0', '1.1.1', UpgradeAccountOrchestration::class)];
+            new UpgradeDefinition('account_orchestration', '1.1.0', '1.1.1', UpgradeAccountOrchestration::class),
+            new UpgradeDefinition('platform_delivery', '1.1.1', '1.1.2', UpgradePlatformDelivery::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

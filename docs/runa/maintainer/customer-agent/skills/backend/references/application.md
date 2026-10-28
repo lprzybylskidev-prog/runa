@@ -88,3 +88,7 @@ package modules with `python3 -m` from the selected tool checkout. Do not recrea
 removed executor paths or compatibility facades.
 
 Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.
+
+For source-boundary diagnostics, use the [API enforcement guide](../../../../docs/runa/handbook/architecture/public-api.md#local-enforcement-and-delivery).
+Keep application consumers on public entrypoints and review new platform integration
+callers explicitly; passing static checks never replaces runtime authorization.

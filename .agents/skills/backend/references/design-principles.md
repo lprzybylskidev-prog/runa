@@ -129,3 +129,7 @@ configuration. Keep private owner suites/release rules outside delivered service
 verify staged Python through Ruff without running full suites in hooks. Internal integrations call explicit service APIs; process adapters execute fixed
 package modules with `python3 -m` from the selected tool checkout. Do not recreate
 removed executor paths or compatibility facades.
+
+For source-boundary diagnostics, use the [API enforcement guide](../../../../docs/runa/handbook/architecture/public-api.md#local-enforcement-and-delivery).
+Keep application consumers on public entrypoints and review new platform integration
+callers explicitly; passing static checks never replaces runtime authorization.

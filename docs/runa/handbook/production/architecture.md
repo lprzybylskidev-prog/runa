@@ -200,3 +200,16 @@ one-time handoff command in the configured application PHP environment. Both gra
 the actual Permissions system role under the same singleton/transaction protocol.
 Reopen, ordinary deployment and customer-clone initialization never grant new
 administrators. Host/CLI access protection remains the customer's responsibility.
+
+## Runtime source projection
+
+The PHP dependency stage prunes developer commands/adapters, supplied module
+fixture implementations/contracts and raw module frontend trees before producing
+its optimized autoloader. The final image copies that pruned Console, Support and
+module source, retaining migrations, manifests, all historical upgrade handlers,
+ModuleJob and source/runtime operator diagnostics. Frontend build inputs remain
+available in their separate build stage. Generators, developer analysis, shared
+PHP/browser test support and private suites/configuration are absent at runtime.
+Development seeding refuses before resolving omitted fixture support. Required
+SMTP verification and module contract diagnostics remain delivered operator tools;
+see [the API/delivery boundary](../architecture/public-api.md#local-enforcement-and-delivery).

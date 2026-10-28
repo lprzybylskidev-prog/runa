@@ -9,7 +9,7 @@ Point 16 delivers the internal account collaborators and Auth-owned preference/
 welcome composition while retaining the public controller and facade identities.
 Point 17 delivers isolated management tooling, grouped developer support, canonical
 generator anatomy, private browser configurations/branding tools and delivered
-static-error builders. Remaining targets are planned until their
+static-error builders. Point 18 delivers symbol/import enforcement and runtime projection; remaining targets are planned until their
 owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and
@@ -251,3 +251,38 @@ owner/customer backend/Laravel/frontend skills already route to the public bound
 this point adds owner migration evidence only. Their existing rules remain valid.
 Exact delivered-layout guidance changes with the owning implementation points,
 then receives the final point-19 reconciliation.
+
+## Point 18 enforcement and projection
+
+The delivered `ModuleFramework/Development/api-boundary.json` owns static symbol
+classification and named reserved/internal callers; it is not a runtime registry.
+It materializes the public symbol list from this map and the reserved integration
+list from signatures.json, correcting provider callers for point 13. Ten internal
+platform collaborators have exact existing Core-module caller paths (principal/
+operation scopes, authority lock, registry/declarations/availability, settings
+schema, immutable boundary values and queue log context). New callers require
+source review; customer code never gains an exception by copying their names.
+
+Development ApiSourceCheck uses the already installed PHP analysis parser; the
+runtime module source diagnostic needs no developer dependency. ESLint owns the
+TS/Vue import rule and TypeScript retains signature/consumer verification. Existing
+analyse/lint commands and quality nodes own these checks. PHPStan paths now include
+all relocated engine/integration/runtime areas and built-in module source.
+
+The production dependency stage prunes development commands, contributor source
+and raw frontend trees; the final image reuses that projection. Diagnostic code,
+queue envelopes, module manifests/upgrade history and SMTP verification stay.
+TestMail was incorrectly marked development/exclude in the point-12 map despite
+being required by installation SMTP verification. Its row now records operator/
+source, matching existing code and the roadmap's recovery boundary. No command
+removal, receipt/schema change, migration-history rewrite or public alias break
+is introduced. Auth 1.1.2, Audit/Permissions 1.0.3 explicitly support platform
+0.6.x and add source-only platform_delivery edges. Dependent ^1.0.0 constraints
+remain compatible. Their manifests still support the current platform 0.5.0.
+
+Projected-customer acceptance now authors public PHP/Vue/Python cases and invokes
+the delivered checker without owner source; updater fixtures preserve application
+code/config/docs and all three test roots. Production acceptance checks the
+pruned material and retained runtime/operator identities, then invokes the actual
+module runtime diagnostic. Full analysis/projection/image/upgrade evidence belongs
+to final point 20; focused unit/source probes are not that acceptance.
