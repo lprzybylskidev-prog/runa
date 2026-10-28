@@ -1,21 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { createPageResolver } from '../lib/pageResolver';
-import {
-  modulePages,
-  type ModuleFrontendView,
-  type ModuleComponents,
-} from '../lib/moduleFrontend';
-const props = withDefaults(
-  defineProps<{
-    view: ModuleFrontendView | null;
-    components: ModuleComponents;
-    href: string;
-    locale?: 'pl' | 'en';
-    unavailableText?: string;
-  }>(),
-  { locale: 'pl', unavailableText: 'Moduł jest niedostępny.' },
-);
+import { modulePages } from '../lib/moduleFrontend';
+import type {
+  ModulePageProps,
+  ModulePageSlots,
+} from '../runa/modules/presentation';
+defineSlots<ModulePageSlots>();
+const props = withDefaults(defineProps<ModulePageProps>(), {
+  locale: 'pl',
+  unavailableText: 'Moduł jest niedostępny.',
+});
 const page = computed(() => {
   if (!props.view) return undefined;
   const match = createPageResolver(

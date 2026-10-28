@@ -10,6 +10,7 @@ import {
 import AuthEntry from '../../../../src/runa/modules/auth/frontend/AuthEntry.vue';
 import CustomerHost from './fixtures/customization/CustomerHost.vue';
 import CustomerEntry from './fixtures/customization/CustomerEntry.vue';
+import CustomerNestedEntry from './fixtures/customization/CustomerNestedEntry.vue';
 import CustomerMinimalLayout from './fixtures/customization/CustomerMinimalLayout.vue';
 import {
   decodeOptions,
@@ -485,4 +486,41 @@ it('customization: public headless entry preserves CSRF refusal, explicit retry 
   await w.get('form').trigger('submit');
   await vi.waitFor(() => expect(w.get('[data-screen]').text()).toBe('verify'));
   expect(accepted).not.toHaveBeenCalled();
+});
+
+it('customization: nested reactive replacements inherit defaults and remount headless entry on page changes', async () => {
+  const warn = vi.spyOn(console, 'warn');
+  const w = mount(CustomerNestedEntry, {
+    props: {
+      page: 'login',
+      parent: { minimalLayout: CustomerMinimalLayout },
+      components: {},
+    },
+  });
+  await settled(w);
+  expect(w.find('[data-customer-brand]').exists()).toBe(true);
+  await w.setProps({ components: { entry: CustomerEntry } });
+  await vi.waitFor(() =>
+    expect(w.find('[data-customer-entry]').exists()).toBe(true),
+  );
+  await vi.waitFor(() =>
+    expect(w.find('input[name="password"]').exists()).toBe(true),
+  );
+  await w.get('input[name="password"]').setValue('private departing draft');
+  await w.setProps({ page: 'forgot-password' });
+  await vi.waitFor(() => expect(w.get('h1').text()).toBe('Odzyskaj dostęp'));
+  expect(w.find('input[name="password"]').exists()).toBe(false);
+  await w.setProps({ page: 'login' });
+  await vi.waitFor(() =>
+    expect(w.find('input[name="password"]').exists()).toBe(true),
+  );
+  expect(
+    (w.get('input[name="password"]').element as HTMLInputElement).value,
+  ).toBe('');
+  expect(calls).toEqual([]);
+  await w.setProps({ components: {} });
+  await settled(w);
+  expect(w.find('[data-customer-brand]').exists()).toBe(true);
+  expect(w.find('[data-customer-entry]').exists()).toBe(false);
+  expect(warn).not.toHaveBeenCalled();
 });

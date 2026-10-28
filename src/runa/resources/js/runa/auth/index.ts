@@ -60,3 +60,7 @@ export type {
   AccountHistoryDetail,
   HistoryValue,
 } from '../../../../modules/auth/frontend/historyDetails';
+
+export type * from '../../../../modules/auth/frontend/contracts/controllers';
+export type * from '../../../../modules/auth/frontend/contracts/presentation';
+export type { Restriction } from '../../../../modules/auth/frontend/entry';

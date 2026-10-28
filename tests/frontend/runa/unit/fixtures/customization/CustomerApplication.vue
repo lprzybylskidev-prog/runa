@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { AuthEntry, useApplicationSession } from '@/runa/auth';
+import type { ApplicationSessionController } from '@/runa/auth';
 import { request } from '@/runa/http';
 const checkAccess = () => request('/runa/auth/session').catch(() => undefined);
-const { session, paused, authenticated, warning, logout } =
-  useApplicationSession();
+const {
+  session,
+  paused,
+  authenticated,
+  warning,
+  logout,
+}: ApplicationSessionController = useApplicationSession();
 </script>
 <template>
   <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />

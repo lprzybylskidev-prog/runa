@@ -57,7 +57,8 @@ The owner expanded planning on 2026-10-27 to cover all `src/runa`: public
 customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
-API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; points 15–19 remain pending;
+API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
+the named frontend extension contracts; points 16–19 remain pending;
 final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
@@ -1308,7 +1309,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     dependent constraints. Add representative public/guarded integration scenarios
     and synchronize module guides; broad runtime/version acceptance remains final.
 
-- [ ] 15. Make frontend extension contracts complete and explicit.
+- [x] 15. Make frontend extension contracts complete and explicit.
   - Prerequisites: point 14; findings F15–F16, F18–F19 and frontend assessment.
   - Preserve supported ui/auth/http/modules facade imports and publish the complete
     customer-facing type/props/slot/controller surface needed for own screens.
@@ -2709,6 +2710,69 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   and reports are preserved. No task-created Docker containers, networks, image
   tags or volumes required deletion. No production operation or business-data
   migration ran. Point 15 is next; points 15–20 remain open.
+
+### Point 15 completion — explicit frontend consumer contracts (2026-10-28)
+
+- Published complete AuthEntryController/AuthAccountController/AuthWelcomeController/
+  ApplicationSessionController aliases through the retained Auth facade, with the
+  navigation callback, entry/account/application/history/security component props,
+  slots/events and cropper handle. Aliases preserve every inferred return member;
+  customers can name nested result/argument types without private imports. Existing
+  Vue Component presentation definitions remain compatible with wrappers that
+  forward attributes or consume only part of a contract.
+- Supplied wrappers/security components use the same named declarations. Public UI
+  layouts expose macro-compatible props/slot interfaces and translator keys; module
+  pages/slots expose reactive prop/fallback contracts plus metadata types. Static
+  errors retain HttpErrorLayoutProps and expose HttpErrorContentData. No facade or
+  documented subpath was renamed. The existing entryPage resolver already owns
+  Auth path matching; the minimal document dispatcher remains separate from
+  customer routing. No additional router, navigation registry or state dependency
+  was introduced.
+- Corrected CustomerEntry's untyped template-ref callbacks with explicitly typed
+  public consumer bindings. Typed application-owned examples cover controller
+  composition, forms, layouts, full shells, module pages/slots and static errors.
+  New regressions cover nested/reactive provider inheritance and defaults, keyed
+  page/account replacement, private-draft isolation without write replay, and
+  reactive module page/slot fallback. Provider composition unwraps component proxies
+  while retaining map reactivity; the nested consumer asserts no Vue warning.
+- Auth advances from 1.0.3 to compatible MINOR 1.1.0 for the additional public
+  contracts. Reference advances from 0.1.1 to PATCH 0.1.2 for its corrected public
+  HTTP facade import. Each has a new source-only forward edge and central changelog;
+  retained handlers/migrations/fingerprints are unchanged. Audit/Permissions remain
+  1.0.2; Permissions' required Auth ^1.0.0 accepts 1.1.0, and Auth's required
+  Audit ^1.0.0 remains satisfied. Platform VERSION stays
+  0.5.0; confirmed feature projection remains 0.6.0.
+- Necessary focused diagnostics: nine customization cases passed in Chromium through
+  test-frontend across auth-entry/auth-account/modules/error-customization. Other
+  tests were excluded by the explicit name filter, not accepted as passing. A
+  focused strict vue-tsc consumer project under .runtime/frontend/point15 compiled
+  all customization fixtures and their public type dependencies through bin/pnpm;
+  no scoped typecheck command exists, so this was the documented one-off diagnostic
+  through the tool transport, not a full static-analysis gate. The final rerun
+  passed after supplying Vite ambient types and preserving optional-prop defaults
+  in the typed layout wrapper. Two existing history/target-planner cases passed
+  through test-backend (32 assertions); scoped module version checks against the
+  point baseline returned no errors for both owners.
+- The initial account-switch fixture bound a new field to the proof-only section
+  map; corrected it to the controller's actual editable fields and waited for
+  readiness before asserting draft isolation. Selected browser runs initially
+  exposed reactive-component warnings; provider unwrapping resolved them. Vite
+  still reports its upstream generated Vitest module-runner dynamic-import analysis
+  warning; no source suppression or dependency change was added. Broad suites,
+  browser acceptance, builds, scanners and full analysis remain final point 20.
+- Local knowledge was current (189 documents, 3143 chunks); queried frontend
+  contracts and opened the original adoption/architecture sources. Loaded frontend/
+  Vue and backend/Laravel guidance for module-version edges. Synchronized the public
+  adoption, components/layout and API guides, owner placement map, Auth and Reference
+  changelogs, and owner/customer frontend references with local provenance. Root
+  AGENTS and Vue/Laravel/backend/security products already route to these public
+  contracts and preserve ownership/lifetimes; no authority or duplicate procedure
+  change is needed. Incremental indexing and mandatory hooks accompany the commit.
+- No disposable Docker container/network/image/volume was created or removed.
+  Supported backend cleanup reported an empty worker list; base runa_test,
+  development data/services, Qdrant/model/builder caches, backups and reports are
+  preserved. No production operation, database migration or business-data mutation
+  ran. Point 16 is next; points 16–20 remain open.
 
 ### Draft preparation validation (historical)
 

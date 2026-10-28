@@ -127,7 +127,9 @@ Customers may retain supplied defaults, compose application-owned screens from
 public components/layouts, or replace presentation through supported headless
 contracts. Follow [frontend customization](../development/frontend/customization.md)
 for presentation providers, props/slots, Auth controllers, keyed account/page
-lifetimes and static error layouts. Preserve session/CSRF orchestration,
+lifetimes and static error layouts. Named controller/props/slots/events are
+exported through those same facades; the adoption guide records their complete
+consumer surface. Preserve session/CSRF orchestration,
 cancellation, dirty drafts and account isolation; do not copy the private logic.
 
 The minimal supplied dispatcher is not a general application router. Customers

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { Button, Card } from '@/runa/ui';
-import { request } from '@runa/lib/http';
+import { request } from '@/runa/http';
 
 defineOptions({ name: 'ReferencePanel' });
 

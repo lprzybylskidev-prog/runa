@@ -1,5 +1,6 @@
 /* eslint-disable vue/one-component-per-file -- Independent mounted harnesses exercise module entry boundaries. */
 import loaders from 'virtual:runa-module-components';
+import CustomerModules from './fixtures/customization/CustomerModules.vue';
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { mount, enableAutoUnmount, flushPromises } from '@runa/testing/vue';
 import { defineComponent, h, effectScope } from 'vue';
@@ -326,4 +327,59 @@ it('shows English retry feedback after a reference request fails', async () => {
   expect(panel.get('[role="status"]').text()).toContain('Try again');
   expect(panel.get('button').attributes('disabled')).toBeUndefined();
   panel.unmount();
+});
+
+it('customization: public module page and slot composition react to props and unavailable metadata', async () => {
+  const data = view();
+  const components = createModuleComponents(
+    Object.fromEntries(
+      ['index', 'a', 'b'].map((key) => [
+        `app.probe.${key}`,
+        {
+          manifestHash: 'a'.repeat(64),
+          load: async () => ({
+            default: defineComponent({
+              props: { label: { type: String, default: '' } },
+              setup: (props) => () =>
+                h(
+                  'p',
+                  { 'data-module-content': key },
+                  key + (props.label ?? ''),
+                ),
+            }),
+          }),
+        },
+      ]),
+    ),
+  );
+  const w = mount(CustomerModules, {
+    props: {
+      page: { view: data, components, href: '/modules/app/probe/index' },
+      contribution: {
+        view: data,
+        components,
+        name: 'app.probe.panel',
+        values: { label: 'First' },
+      },
+    },
+  });
+  await vi.waitFor(() => expect(w.text()).toContain('bFirst'));
+  expect(w.text()).toContain('index');
+  await w.setProps({
+    contribution: {
+      view: data,
+      components,
+      name: 'app.probe.panel',
+      values: { label: 'Next' },
+    },
+  });
+  await vi.waitFor(() => expect(w.text()).toContain('bNext'));
+  expect(w.text()).not.toContain('First');
+  await w.setProps({
+    page: { view: null, components, href: '/modules/app/probe/index' },
+    contribution: { view: null, components, name: 'app.probe.panel' },
+  });
+  expect(w.get('[data-page-unavailable]').text()).toBe('page_unavailable');
+  expect(w.get('[data-slot-empty]').text()).toBe('No contributions');
+  expect(w.find('[data-module-content]').exists()).toBe(false);
 });

@@ -166,3 +166,7 @@ export { default as HttpErrorContent } from '../../layouts/MinimalErrorContent.v
 export type { HttpErrorLayoutProps } from './errors';
 
 export { default as TextLink } from '../../components/AppTextLink.vue';
+
+export type * from './layouts';
+export type { HttpErrorContent as HttpErrorContentData } from './errors';
+export type { MessageKey } from '../../locales/messages';

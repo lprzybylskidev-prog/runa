@@ -17,7 +17,12 @@ import AuthAccount from './AuthAccount.vue';
 import AuthAccountLoading from './AuthAccountLoading.vue';
 import { useApplicationSession } from './useApplicationSession';
 const presentation = useAuthPresentation();
-const props = withDefaults(defineProps<{ account?: boolean }>(), {
+import type {
+  AuthApplicationProps,
+  AuthApplicationSlots,
+} from './contracts/presentation';
+defineSlots<AuthApplicationSlots>();
+const props = withDefaults(defineProps<AuthApplicationProps>(), {
   account: false,
 });
 const { locale } = useLocale();

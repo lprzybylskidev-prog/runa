@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { enrollmentQrCode } from './totpEnrollment';
-const props = withDefaults(
-  defineProps<{ secret: string; qrCode?: string; locale?: 'pl' | 'en' }>(),
-  { qrCode: '', locale: 'pl' },
-);
+import type { AuthTotpSetupProps } from './contracts/presentation';
+const props = withDefaults(defineProps<AuthTotpSetupProps>(), {
+  qrCode: '',
+  locale: 'pl',
+});
 const image = computed(() =>
   props.qrCode ? enrollmentQrCode(props.qrCode) : '',
 );

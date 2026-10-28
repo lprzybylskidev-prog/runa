@@ -68,7 +68,9 @@ components remain internal. See [page layouts](page-layouts.md) and
 `AuthPresentationProvider` from `@/runa/auth` accepts a `components` object. It
 applies only to descendants; nested providers inherit unspecified entries.
 Omitted entries use supplied defaults. Pass imported component definitions, not
-names, URLs or backend metadata. Keep the map stable during an active form.
+names, URLs or backend metadata. Keep the map stable during an active form. The provider unwraps reactive component
+definitions while observing map changes; callers do not need to mutate imported
+components or copy provider logic.
 
 | Entry               | Customer component contract                                                                                                                                                                                                                                                                                          |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -100,6 +102,58 @@ loading/error and restricted states. It does not rewrite independent application
 uses of the public layouts. Avoid selecting the public Auth wrapper itself as
 its own override; compose a customer component instead.
 
+## Public presentation types
+
+Import types from the same public facade as their component/controller. No
+application type declaration needs an implementation path.
+
+| Facade           | Named contract                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@/runa/auth`    | `AuthEntryProps` and `AuthAuthenticated`; `AuthAccountProps`; `AuthApplicationProps` and `AuthApplicationSlots`                                                         |
+| `@/runa/auth`    | `AuthHistoryDetailProps` / `AuthHistoryDetailEmits` (`close`, `retry`); `AuthRecoveryCodesDialogProps` / `AuthRecoveryCodesDialogEmits` (`acknowledge`)                 |
+| `@/runa/auth`    | `AuthTotpSetupProps`; `AuthAvatarCropperProps` / `AuthAvatarCropperEmits` (`ready(boolean)`) / `AuthAvatarCropperHandle` (`crop()`)                                     |
+| `@/runa/auth`    | `AuthMinimalLayoutProps` / `AuthMinimalLayoutSlots` and `AuthApplicationLayoutProps` / `AuthApplicationLayoutSlots`, matching the public UI layouts                     |
+| `@/runa/ui`      | `MinimalLayoutProps` / `MinimalLayoutSlots`; `ApplicationLayoutProps` / `ApplicationLayoutSlots`; `LayoutSlotContext` and `MessageKey` for the supplied slot translator |
+| `@/runa/ui`      | `HttpErrorLayoutProps` and `HttpErrorContentData` for synchronous static error composition                                                                              |
+| `@/runa/modules` | `ModulePageProps` / `ModulePageSlots`; `ModuleSlotProps` / `ModuleSlotSlots`; `ModulePageDefinition` and `SlotContract` for frontend metadata                           |
+
+`AuthPresentation` remains a map of Vue component definitions, allowing existing
+wrappers that forward attributes or intentionally use only part of a contract.
+Use the named props/slots/emits inside each replacement to check its actual
+consumer boundary. `welcome` and `accountLoading` receive no required props;
+loading presentation must not start protected reads. `historyDetail` receives
+open/loading/failed/detail/locale and emits close/retry. Entry/account keys,
+reactive provider inheritance and omitted-entry defaults remain platform-owned.
+
+```vue
+<script setup lang="ts">
+import { useAuthEntry } from '@/runa/auth';
+import type { AuthEntryProps, AuthEntryController } from '@/runa/auth';
+const props = defineProps<AuthEntryProps>();
+const controller: AuthEntryController = useAuthEntry(
+  props.page,
+  props.authenticated,
+);
+</script>
+<template>
+  <h1>{{ controller.title.value }}</h1>
+</template>
+```
+
+This fragment shows type ownership; a complete sign-in replacement must render
+all applicable fields, errors and security steps described below. Layout props
+and slots are also usable with `defineProps` / `defineSlots` in application
+wrappers. Forward received props and slots rather than copying layout internals. When
+forwarding optional booleans, use `withDefaults` with the documented layout
+defaults so Vue does not cast an absent wrapper prop to false.
+
+`AuthApplicationSlots.default` receives the current unrestricted `ActivitySession`;
+its loading slot receives `{ account: boolean }`. `ModulePageSlots.unavailable`
+receives `{ reason: string }`; `ModuleSlotSlots.default` is the empty-contribution
+fallback. Module props stay reactive: page/component identity and exact slot
+value contracts are rechecked on change, before mounting consumer components.
+See [module development](../modules.md) for discovery and guards.
+
 ## Own the complete frontend
 
 Customers can replace the HTML/Vue root and all screens while keeping the backend.
@@ -107,7 +161,13 @@ The public `@/runa/auth` facade exports the same controllers the supplied views
 use; private module/resource imports and copied orchestration are unnecessary.
 Controllers must run inside Vue setup and be disposed with their view. Their
 returned refs/computeds remain reactive: retain refs when destructuring. A changed
-entry page or account ID requires a keyed remount. Returned types are inferred;
+entry page or account ID requires a keyed remount. The complete reactive return shapes have public names: `AuthEntryController`,
+`AuthAccountController`, `AuthWelcomeController` and `ApplicationSessionController`.
+They retain every existing member, including refs, computed values, callbacks,
+form/focus handles, account conflict/history/delivery/trusted-device operations
+and session presentation/activity. They are type-only aliases of the actual
+controller results; importing a type adds no controller runtime to a bundle.
+`ApplicationNavigate` names the optional document/router navigation callback.
 EntryPage/EntrySession/EntryOptions/SecurityOptions/FactorMethod, ActivitySession,
 AccountTab/AccountTask/AccountSection and Profile/AccountRow are public types.
 

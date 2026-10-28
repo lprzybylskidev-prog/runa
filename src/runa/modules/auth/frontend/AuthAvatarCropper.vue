@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { nextTick, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { FormNotifications, Spinner } from '@/runa/ui';
-const props = defineProps<{
-  file: File;
-  locale: 'pl' | 'en';
-  maxBytes: number;
-}>();
-const emit = defineEmits<{ ready: [value: boolean] }>();
+import type {
+  AuthAvatarCropperProps,
+  AuthAvatarCropperEmits,
+} from './contracts/presentation';
+const props = defineProps<AuthAvatarCropperProps>();
+const emit = defineEmits<AuthAvatarCropperEmits>();
 const text = (pl: string, en: string) => (props.locale === 'pl' ? pl : en);
 const canvas = ref<HTMLCanvasElement>();
 const image = shallowRef<HTMLImageElement>();

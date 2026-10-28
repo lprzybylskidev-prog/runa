@@ -29,3 +29,7 @@ Public/internal API boundary routing was added from the owner-approved
 RM-2026-012 source review on 2026-10-27. Its authoritative rule is
 `docs/runa/handbook/architecture/public-api.md`; no upstream refresh or new
 dependency was involved.
+
+Named frontend consumer-type routing was synchronized with RM-2026-012 point 15
+on 2026-10-28 from local public facade contracts. No upstream refresh or dependency
+change was involved; the public adoption guide owns the procedure.

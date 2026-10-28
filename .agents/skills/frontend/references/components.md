@@ -32,3 +32,8 @@ for baseline merging, shared revision queues and explicit subsequent saves.
 
 Public AuthAccountLoading and the accountLoading presentation entry supply the
 initial account structure; see the public account UI and customization guides.
+
+Use the named public controller, props, slots, events and component-handle types
+listed in docs/runa/handbook/development/frontend/customization.md#public-presentation-types.
+Import types from the same facade as the capability; application wrappers should
+not derive their contracts from private implementation imports.

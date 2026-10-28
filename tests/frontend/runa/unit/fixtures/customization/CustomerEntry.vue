@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useAuthEntry } from '@/runa/auth';
-import type { EntryPage, EntrySession } from '@/runa/auth';
+import type { AuthEntryProps, AuthEntryController } from '@/runa/auth';
+import type { ComponentPublicInstance } from 'vue';
 import { Button, Form, TextInput } from '@/runa/ui';
-const props = defineProps<{
-  page: EntryPage;
-  authenticated?: ((session: EntrySession) => void) | undefined;
-}>();
+const props = defineProps<AuthEntryProps>();
 // An isolated consumer of the public headless API, with customer-owned markup.
 // This fixture covers login/error/restriction transitions, not a complete product UI.
 const {
@@ -22,29 +20,25 @@ const {
   form,
   heading,
   refreshCsrf,
-} = useAuthEntry(props.page, props.authenticated);
+}: AuthEntryController = useAuthEntry(props.page, props.authenticated);
+function bindHeading(
+  value: globalThis.Element | ComponentPublicInstance | null,
+) {
+  heading.value =
+    value instanceof globalThis.HTMLHeadingElement ? value : undefined;
+}
+function bindForm(value: globalThis.Element | ComponentPublicInstance | null) {
+  form.value = (value as InstanceType<typeof Form> | null) ?? undefined;
+}
 </script>
 <template>
   <main data-customer-entry :aria-busy="busy">
-    <h1
-      :ref="
-        (value) => (heading = (value as HTMLHeadingElement | null) ?? undefined)
-      "
-      tabindex="-1"
-    >
+    <h1 :ref="bindHeading" tabindex="-1">
       {{ title }}
     </h1>
     <p data-screen>{{ screen }}</p>
     <p v-if="failure" role="alert">{{ failure }}</p>
-    <Form
-      v-if="ready"
-      :ref="
-        (value) =>
-          (form = (value as InstanceType<typeof Form> | null) ?? undefined)
-      "
-      :label="title"
-      @submit="submit"
-    >
+    <Form v-if="ready" :ref="bindForm" :label="title" @submit="submit">
       <TextInput
         v-for="name in fieldNames"
         :key="name"

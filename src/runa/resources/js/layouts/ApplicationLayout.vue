@@ -26,43 +26,26 @@ import { useDisplayPreferences } from '../composables/useDisplayPreferences';
 import { usePreference } from '../composables/usePreference';
 import { useIdentity } from '../runa/ui/identity';
 import type { Locale } from '../locales/messages';
-import type { FooterOptions } from '../runa/ui/identity';
-import type { NavigationEntry, RouteContext } from '../runa/ui/navigation';
-import type { PreferenceStore } from '../lib/preferenceStore';
-const props = withDefaults(
-  defineProps<{
-    navigation: readonly NavigationEntry[];
-    topNavigation?: readonly NavigationEntry[];
-    current?: RouteContext | undefined;
-    title: string;
-    description?: string;
-    sidebar?: boolean;
-    topbar?: boolean;
-    width?: 'contained' | 'fluid';
-    footer?: FooterOptions | undefined;
-    homeHref?: string;
-    preferenceStore?: PreferenceStore | undefined;
-    userName?: string;
-    userInitials?: string;
-    userAvatar?: string;
-    userLoading?: boolean;
-  }>(),
-  {
-    current: undefined,
-    topNavigation: () => [],
-    description: '',
-    sidebar: true,
-    topbar: true,
-    width: 'contained',
-    footer: undefined,
-    homeHref: '/',
-    preferenceStore: undefined,
-    userName: 'Runa',
-    userInitials: 'RU',
-    userAvatar: '',
-    userLoading: false,
-  },
-);
+import type {
+  ApplicationLayoutProps,
+  ApplicationLayoutSlots,
+} from '../runa/ui/layouts';
+defineSlots<ApplicationLayoutSlots>();
+const props = withDefaults(defineProps<ApplicationLayoutProps>(), {
+  current: undefined,
+  topNavigation: () => [],
+  description: '',
+  sidebar: true,
+  topbar: true,
+  width: 'contained',
+  footer: undefined,
+  homeHref: '/',
+  preferenceStore: undefined,
+  userName: 'Runa',
+  userInitials: 'RU',
+  userAvatar: '',
+  userLoading: false,
+});
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
   localeChange: [locale: Locale];

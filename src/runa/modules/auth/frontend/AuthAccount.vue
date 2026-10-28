@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AuthAccountDefault from './AuthAccountDefault.vue';
 import { useAuthPresentation } from './presentation';
-defineProps<{ accountId: string }>();
+import type { AuthAccountProps } from './contracts/presentation';
+defineProps<AuthAccountProps>();
 const presentation = useAuthPresentation();
 </script>
 <template>

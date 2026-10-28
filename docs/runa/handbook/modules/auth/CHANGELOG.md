@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 1.1.0 — 2026-10-28
+
+- Publish complete named frontend controller, replacement props/slots/events and cropper handle types through the existing public facade; preserve all existing members and Vue component replacements.
+- Type supplied wrappers and security components from those contracts; retain keyed lifetimes and subtree fallback behavior.
+- Add the source-only frontend_contracts forward edge without schema or data changes.
+
 ## 1.0.3 — 2026-10-28
 
 - Separate private work handlers/policy and HTTP controllers/resources from declarations; retain public contract identities and guarded behavior.

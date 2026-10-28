@@ -167,3 +167,8 @@ Account-history details can be replaced through the Auth `historyDetail` present
 entry. Reuse the public controller/types and accessible Dialog contract documented
 in docs/runa/handbook/modules/auth/history.md; never fetch general Audit payloads
 or reconstruct missing historical values from current account state.
+
+Use the named public controller, props, slots, events and component-handle types
+listed in docs/runa/handbook/development/frontend/customization.md#public-presentation-types.
+Import types from the same facade as the capability; application wrappers should
+not derive their contracts from private implementation imports.

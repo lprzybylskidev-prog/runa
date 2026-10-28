@@ -1,5 +1,11 @@
 # Page Patterns
 
+Public layout props and scoped slots are exported as `MinimalLayoutProps`,
+`MinimalLayoutSlots`, `ApplicationLayoutProps` and `ApplicationLayoutSlots` from
+`@/runa/ui`. Use them with `defineProps` / `defineSlots` in application wrappers;
+forward received props and relevant slots. `LayoutSlotContext.t` accepts public
+`MessageKey` values. These are presentation contracts, not routing/session APIs.
+
 Bundled MinimalLayout and ApplicationLayout pages share `/favicon.ico`, declared once in the application and isolated test HTML entry heads. Native/static errors declare the same icon in their PHP document wrapper. Keep document metadata at the HTML entry level rather than duplicating head mutations in layout components. External consumers supply their own document head and icon asset; importing a layout does not mutate their favicon.
 
 ## Minimal layout

@@ -3,7 +3,9 @@
 This is the point-12 migration specification. It freezes compatible targets for
 points 13–19. Point 13 delivers the platform PHP relocations and provider split.
 Point 14 delivers the built-in module execution layout while retaining contract
-and historical upgrade identities. Remaining targets are planned until their
+and historical upgrade identities. Point 15 publishes named frontend consumer
+contracts through the retained facades and normalizes reactive presentation maps.
+Remaining targets are planned until their
 owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and
@@ -165,9 +167,14 @@ ModulePage/ModuleSlot and HttpErrorLayoutProps retain their complete baseline
 contracts. UI implementation imports recorded as evidence never become customer
 entrypoints.
 
-New explicit types live in `modules/auth/frontend/contracts/{presentation,controllers}.ts`
+The point-15 explicit types live in `modules/auth/frontend/contracts/{presentation,controllers}.ts`
 and are reexported through the existing Auth facade. Existing exported types keep
-their names. Private account collaborators live in `modules/auth/frontend/account/`
+their names. The UI facade additionally owns macro-compatible layout props/slots and static-error
+content types; the modules facade owns page/slot props and fallback slots. Existing
+wrapper components consume those declarations directly. Controller aliases include
+all returned members; type-only imports add no runtime dependency.
+
+Private account collaborators live in `modules/auth/frontend/account/`
 (profile, sessions, security, delivery, history and shared lifetime modules as
 needed); do not force an empty layer for each name. Generic preference storage
 stays in UI infrastructure; Auth transport moves from `resources/js/lib/accountPreferences.ts`

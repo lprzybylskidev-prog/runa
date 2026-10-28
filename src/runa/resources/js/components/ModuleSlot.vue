@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type {
-  ModuleFrontendView,
-  ModuleComponents,
-} from '../lib/moduleFrontend';
-const props = withDefaults(
-  defineProps<{
-    view: ModuleFrontendView | null;
-    components: ModuleComponents;
-    name: string;
-    values?: Readonly<Record<string, string | number | boolean>>;
-  }>(),
-  { values: () => ({}) },
-);
+  ModuleSlotProps,
+  ModuleSlotSlots,
+} from '../runa/modules/presentation';
+defineSlots<ModuleSlotSlots>();
+const props = withDefaults(defineProps<ModuleSlotProps>(), {
+  values: () => ({}),
+});
 const entries = computed(() => {
   const host = props.view?.slots[props.name];
   if (

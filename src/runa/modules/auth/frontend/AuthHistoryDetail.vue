@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { Dialog, Button, Spinner, Alert } from '@/runa/ui';
-import type { AccountHistoryDetail, HistoryValue } from './historyDetails';
+import type { HistoryValue } from './historyDetails';
+import type {
+  AuthHistoryDetailProps,
+  AuthHistoryDetailEmits,
+} from './contracts/presentation';
 import { historyEventNames } from './historyDetails';
-const props = defineProps<{
-  open: boolean;
-  loading: boolean;
-  failed: boolean;
-  detail: AccountHistoryDetail | undefined;
-  locale: 'pl' | 'en';
-}>();
-defineEmits<{ close: []; retry: [] }>();
+const props = defineProps<AuthHistoryDetailProps>();
+defineEmits<AuthHistoryDetailEmits>();
 const text = (pl: string, en: string) => (props.locale === 'pl' ? pl : en);
 const fields: Record<string, readonly [string, string]> = {
   name: ['Nazwa', 'Name'],

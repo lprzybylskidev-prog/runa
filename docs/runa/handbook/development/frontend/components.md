@@ -373,3 +373,9 @@ The controller fences overlapping/closed reads and supports retry. Public presen
 replacement and exported types are documented in the
 [history contract](../../modules/auth/history.md); custom application presentation
 lives in src/app. Existing Dialog owns motion/focus; no new transition is added.
+
+Public replacement and controller types are listed in
+[frontend adoption](customization.md#public-presentation-types). Import the named
+Auth, layout, module page/slot and static-error contracts through their respective
+facades. Supplied components consume the same prop/slot/event declarations;
+customer wrappers need no private source imports.

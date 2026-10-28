@@ -2544,3 +2544,36 @@ it('history detail controller discards closed and stale responses and clears on 
   expect(state.historyDetail.value).toBeUndefined();
   wrapper.unmount();
 });
+
+it('customization: keyed account replacements discard the previous account draft without writes', async () => {
+  const w = mount(CustomerHost, {
+    props: {
+      mode: 'account',
+      accountId: id,
+      components: { account: CustomerAccount },
+    },
+  });
+  await vi.waitFor(() =>
+    expect(w.find('input[name="customer-name"]').exists()).toBe(true),
+  );
+  await w.get('input[name="customer-name"]').setValue('Previous private draft');
+  currentProfile = {
+    ...profile,
+    public_id: other,
+    display_name: 'Other User',
+    name: 'Other User',
+  };
+  sessionAccount = other;
+  await w.setProps({ accountId: other });
+  await vi.waitFor(() =>
+    expect(w.find('input[name="customer-name"]').exists()).toBe(true),
+  );
+  await vi.waitFor(() => expect(w.text()).toContain('Other User'));
+  expect(w.get('[data-customer-account]').attributes('data-account')).toBe(
+    other,
+  );
+  expect(
+    (w.get('input[name="customer-name"]').element as HTMLInputElement).value,
+  ).toBe('Other User');
+  expect(writes).toEqual([]);
+});
