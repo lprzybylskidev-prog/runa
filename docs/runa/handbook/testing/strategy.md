@@ -101,6 +101,34 @@ The shared TestCase selects a worker before provider boot and disables Laravel's
 
 Automatic host browser startup serializes endpoint ownership with `.runtime/tests/endpoint.lock`. Before startup it records a unique `runa.testing.run` label in `.runtime/tests/endpoint.json` and a local Compose override, applying the label only to missing app-test/nginx-test services. Existing containers are not recreated or adopted. Teardown and next-run recovery inspect exact container IDs, project, checkout directory, service and run label before stopping/removing only owned containers. Failed/interrupted cleanup retains its journal; a still-running suite prevents recovery. Shared development networks, every volume, model/Qdrant caches, backups and browser evidence remain untouched. Manually provisioned endpoints are outside automatic ownership.
 
+## Backend segfault recovery
+
+When a backend worker exits with SIGSEGV/139, preserve the failed run's logs and
+execution settings before retrying. First perform one nondestructive recovery:
+
+1. Inspect the actual checkout and Compose project/container ownership. Ensure no
+   other test or operation is running before interrupting development services.
+   Restart all containers belonging to this checkout's Runa development stack with
+   host `./bin/artisan runa:dev:restart` (no service argument). Do not restart other
+   projects, rebuild images, reset databases or remove volumes. From an attached
+   devcontainer, use the documented host transition before restarting its app.
+2. Wait for setup to exit successfully and run host
+   `./bin/artisan runa:doctor:development` until startup readiness is established;
+   investigate a real startup failure rather than bypassing its guard.
+3. Rerun the complete backend suite with the original parallel mode/worker count
+   through its supported entrypoint: owner `python3 tools/maintainer/test-backend
+--parallel`, or customer `./bin/artisan runa:test:backend --parallel`, with any
+   originally explicit worker options. Receive the complete result and cleanup
+   status. Filtered tests do not replace this rerun.
+4. If the segfault recurs, retain both runs and diagnose the crash; do not loop
+   restarts to hide it. If the suite passes, record recovery and that the root cause
+   remains unproven. This retry does not turn the failed final quality run into
+   PASS; restart the full final verification afterward.
+
+Preserve development/base test data, Qdrant/model caches, backups and all reports.
+Only supported runner-owned disposable resources follow normal scoped cleanup.
+This recovery does not authorize routine broad testing during implementation.
+
 ## Concurrency and acceptance
 
 The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Native sequential/PHPUnit testing composes Collision and restores its scoped raw-argv

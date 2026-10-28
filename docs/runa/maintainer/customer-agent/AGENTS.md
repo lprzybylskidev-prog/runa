@@ -81,6 +81,8 @@ If verification finds work:
 
 During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
 
+For a backend segfault (exit 139/SIGSEGV), follow the nondestructive development-container restart and complete backend rerun procedure in [the testing guide](docs/runa/handbook/testing/strategy.md#backend-segfault-recovery) before changing code. A recurrence requires diagnosis; a successful retry does not establish a root cause.
+
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
 Do not merge with failed hard gates, open roadmap points, an unsafe dirty worktree, or unresolved synchronization problems.

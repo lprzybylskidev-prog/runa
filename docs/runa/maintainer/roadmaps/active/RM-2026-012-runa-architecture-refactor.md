@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 24.
+Full candidate verification and release finalization remain point 25.
 
 ### Out of scope
 
@@ -1462,8 +1462,16 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     failure/resume, native parallel and generated-consumer results, synchronize
     current guidance and instruction assessments, then commit the fix point.
 
-- [ ] 24. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–23 complete and committed, migration/coverage ledgers
+- [x] 24. Recover the backend segfault and document the agreed retry procedure.
+  - Preserve failed bc741df4 evidence and restart only this checkout's development
+    containers without rebuilding or deleting data. Confirm environment readiness.
+  - Receive the complete parallel backend rerun and cleanup result; retain the
+    distinction between a recovered run and an established crash root cause.
+  - Synchronize the public procedure and both instruction products; commit before
+    a fresh all-group final verification.
+
+- [ ] 25. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–24 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3311,3 +3319,26 @@ quality PASS or implementation completion was claimed by that planning validatio
   remains 0.5.0 with agreed feature projection 0.6.0. Mandatory hooks, incremental
   knowledge freshness and the repair commit complete this point; full verification
   restarts from the beginning in point 24 with all groups and strict prerequisites.
+
+### Point 24 — backend segfault recovery (2026-10-28)
+
+- The owner requested nondestructive restart before code changes because the
+  backend segfault occurs intermittently. Candidate bc741df4 failed backend-tests
+  with worker exit 139 at PermissionsTest.php; 53 nodes passed and six were blocked.
+  Preserve that failure; a standalone rerun does not replace the final graph.
+- Inspected actual Docker project ownership, restarted all 11 runa-dev containers
+  through runa:dev:restart and waited for setup. Development doctor then passed
+  configuration, database/migrations, queue/scheduler, Nginx, Mailpit, resources
+  and host health; optional knowledge was current (189 documents, 3227 chunks).
+- Complete supported test-backend --parallel passed with four workers: 588 tests,
+  6117 assertions, 219.10 seconds, native exit 0 and cleanup 0. No segfault recurred;
+  no runtime code changed and the crash root cause remains unproven.
+- The owner requested this recovery as a reusable rule. The public testing guide
+  owns the procedure; root/customer AGENTS link it. Existing Docker/testing skills
+  already delegate lifecycle and test procedures to the handbook, so no duplicated
+  skill procedure is needed. Future recurrences require diagnosis after one retry.
+- The runner removed only inactive runa_test_test_1 through runa_test_test_4 under
+  its suite lock. No container/network/volume was deleted; development/base test
+  data, Qdrant/model caches, backups, other projects and evidence were preserved.
+  Full all-group verification starts fresh at point 25 after this documentation
+  commit and mandatory hooks. VERSION remains 0.5.0, proposed feature 0.6.0.
