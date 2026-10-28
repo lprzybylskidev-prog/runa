@@ -89,3 +89,27 @@ candidate scanner/runtime verification is still required. No audit exception is 
 Sources: [upstream advisory](https://github.com/sebastianbergmann/phpunit/security/advisories/GHSA-9vw2-f4vp-x7gf),
 [Pest metadata](https://repo.packagist.org/p2/pestphp/pest.json),
 [PHPUnit metadata](https://repo.packagist.org/p2/phpunit/phpunit.json).
+
+### RM-2026-012 MIME security correction (2026-10-28)
+
+The later candidate audit reported CVE-2026-45070 / PKSA-wtxr-p26d-nn42 against
+locked symfony/mime 8.1.7. The owner approved updating this existing transitive
+runtime dependency to 8.1.10. Composer resolves exactly one changed package, with
+no additions/removals; Laravel remains 13.37.0 and Symfony Mailer remains 8.1.7.
+Both accept Mime ^8.0. Existing PHP >=8.4.1, polyfill requirements, autoload and
+MIT license are unchanged. The lock pins the official symfony/mime revision
+8d1232052c9cdef170ed9608b3147bca4f61ff69; no substitute mail implementation or
+additional dependency is introduced.
+
+Installed ParameterizedHeader validates every parameter name against the RFC token
+character class before storing the parameter map and raises RfcComplianceException
+for invalid names. This retains legitimate parameters while closing the reported
+header-injection path. Composer's actual updated-lock audit reports no advisories;
+complete backend and real repository/runtime image checks supply compatibility and
+security acceptance. No finding is suppressed and no temporary workaround is added.
+
+Sources: [upstream advisory](https://github.com/symfony/symfony/security/advisories/GHSA-vqc8-7275-q272),
+[official component source](https://github.com/symfony/mime/tree/v8.1.10),
+[package metadata](https://repo.packagist.org/p2/symfony/mime.json).
+The live Composer advisory ranges determine the selected corrected patch; older
+published summaries can describe earlier deliveries of the fix.

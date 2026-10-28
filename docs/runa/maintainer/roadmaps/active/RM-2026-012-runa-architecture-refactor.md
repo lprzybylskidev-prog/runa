@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 26.
+Full candidate verification and release finalization remain point 27.
 
 ### Out of scope
 
@@ -1486,8 +1486,16 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     failures in that area; synchronize testing guidance and instruction assessment.
   - Commit this repair before restarting the complete final graph.
 
-- [ ] 26. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–25 complete and committed, migration/coverage ledgers
+- [x] 26. Correct the newly reported Symfony Mime security advisory.
+  - Preserve failed candidate 61304949 and review the minimal compatible Mime patch.
+  - Update only the affected locked package with the owner-approved scope; retain
+    Laravel and all unrelated dependencies, strict auditing and native test exits.
+  - Receive full affected security checks and backend compatibility results;
+    synchronize dependency review/current guidance and instruction assessment.
+  - Commit the completed repair before restarting the complete final graph.
+
+- [ ] 27. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–26 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3389,3 +3397,48 @@ quality PASS or implementation completion was claimed by that planning validatio
   and records the owner-approved fix 0.6.2 after RM-013 plus exception retirement.
 - After mandatory hooks and this repair commit, point 26 restarts the complete
   all-group graph. The previous FAILED state is preserved, not rewritten as PASS.
+
+### Point 26 — Symfony Mime advisory repair (2026-10-28)
+
+- Candidate 61304949 completed with 54 passed, two failed and four blocked nodes.
+  Complete backend, browser, database/migration/constraint and seeding gates passed.
+  Both failures were the locked Composer advisory for symfony/mime 8.1.7:
+  CVE-2026-45070 / PKSA-wtxr-p26d-nn42, email-header injection through invalid MIME
+  parameter names. Logs are preserved under
+  .runtime/artifacts/RM-2026-012-failed-61304949.
+- The owner explicitly authorized the narrow compatible patch after a dry-run
+  resolved only symfony/mime 8.1.7 to 8.1.10, with no install/removal or Laravel
+  update. Implement and receive the complete affected security area plus backend
+  compatibility before completing this fix point and restarting all groups.
+
+- Updated only symfony/mime to 8.1.10 at official revision
+  8d1232052c9cdef170ed9608b3147bca4f61ff69. Requirements, license and autoload
+  are unchanged; no package was added/removed and Laravel remains 13.37.0.
+  Current toolchain guidance records the provenance, compatibility and advisory.
+- Complete four-worker backend passed 588 tests/6117 assertions in 228.30 seconds,
+  exit 0/cleanup 0, without SIGSEGV. All ten security-service contract tests passed.
+  Composer/pnpm dependency audits, history/current-source Gitleaks and actual
+  changed-surface agent review passed; no finding was suppressed.
+- Full documented installation_host --production-only --security-scan passed,
+  including real production preparation, SMTP rejection/resume, runtime health,
+  AI isolation, repository and exact production/fixture-image scans plus matching
+  locked dependency audits. Report: .runtime/ownership/installation-host-8bfccfa16a.json;
+  raw scanner reports remain under .runtime/security. Supplemental source review:
+  .runtime/security/reviews/RM-2026-012-mime-security-repair.md. It covers all three
+  changed source identities since the prior review and preserves earlier reports.
+- Composer validation confirms manifest/lock consistency. An extra strict
+  diagnostic returned existing root license/exact-pin recommendations, not a
+  lock/schema error; ordinary validation passed. Exact Laravel/Fortify pins and
+  existing manifest policy were preserved; no mandatory check was disabled.
+- The simulation inspected and removed its five production containers, the two
+  disposable volumes under runa-prod-simulation-8bfccfa16a, its synthetic SMTP
+  container/network and three unused simulation image tags for a763fecf13662e4d43b3354c71c5eac2ac55b535.
+  The backend runner removed inactive runa_test_test_1–4 under its suite lock.
+  Active development identities, base test/development data, model/Qdrant/builder
+  caches, backups and all reports are preserved. The current management image
+  runa-management:6fb25a91a2f5fbb712896235 remains operational tooling.
+- Owner/customer instructions and security skills already cover deliberate
+  dependency review, locks and strict audits; no new permission, API or reusable
+  policy needs duplication. No independently versioned module source changed.
+  Following mandatory hooks and the repair commit, point 27 restarts the complete
+  all-group graph; VERSION remains 0.5.0 and proposed feature release 0.6.0.
