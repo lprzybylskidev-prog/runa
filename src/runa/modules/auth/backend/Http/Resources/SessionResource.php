@@ -15,6 +15,9 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 /** Own-session projection only; credentials and internal IDs never serialize. */
 final class SessionResource extends JsonResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(Request $request): array
     {
         $user = $this->resource;

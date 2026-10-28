@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Protocol
@@ -44,7 +44,7 @@ def deployment(root: Path, runner: ProcessRunner | None = None) -> DeploymentSer
 @contextmanager
 def bind_deployment(
     case: DeploymentFixture, root: Path, runner: ProcessRunner | None = None
-) -> Iterator[None]:
+) -> Generator[None, None, None]:
     previous = case.deployment
     case.deployment = deployment(root, runner)
     try:

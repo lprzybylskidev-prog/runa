@@ -36,6 +36,15 @@ for (const standalone of [false, true]) {
   );
 }
 const execute = promisify(execFile);
+const { stdout: commit } = await execute('git', ['rev-parse', 'HEAD']);
+await execute(
+  'php',
+  ['../tests/backend/runa/Fixtures/browser-database.php', commit.trim()],
+  {
+    env: { ...process.env, APP_ENV: 'testing' },
+    maxBuffer: 1024 * 1024,
+  },
+);
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css',

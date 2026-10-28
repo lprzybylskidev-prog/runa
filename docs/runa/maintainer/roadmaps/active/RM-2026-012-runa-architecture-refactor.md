@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 22.
+Full candidate verification and release finalization remain point 23.
 
 ### Out of scope
 
@@ -1034,7 +1034,7 @@ point 11. Later public-only consumer fixtures must additionally cover authored
 application pages/forms/navigation, module pages/slots, custom error layouts,
 controller disposal/account switch, draft preservation and compatibility with
 existing defaults. Implement scenarios during the relevant points; broad browser,
-type, production and projected-customer acceptance runs only in final point 22.
+type, production and projected-customer acceptance runs only in final point 23.
 
 #### Planned compatibility and validation
 
@@ -1201,7 +1201,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 22.
+    Full strict analysis, artifact and runtime PASS belong to point 23.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1237,7 +1237,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     update current target mappings rather than rewriting their baseline identities.
   - Synchronize public testing/module/command guides and both instruction products.
     Include focused ownership/discovery/generator/projection regressions; full
-    suites, analysis, builds and live acceptance remain exclusively in point 22.
+    suites, analysis, builds and live acceptance remain exclusively in point 23.
   - Commit completed implementation, documentation and checklist together.
 
 - [x] 11. Repair central frontend test package resolution.
@@ -1386,7 +1386,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     suites/owner configs and development-only packages from inappropriate outputs.
   - Implement projected-customer extension/update and production-isolation
     scenarios for final execution. Keep existing scoped quality ownership; broad
-    package/image/install/upgrade/scanner acceptance belongs only to point 22.
+    package/image/install/upgrade/scanner acceptance belongs only to point 23.
 
 - [x] 19. Synchronize architecture guidance and retire obsolete placement.
   - Prerequisites: points 12–18 implemented; finding F24 and final source map.
@@ -1417,7 +1417,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     a new latest run. Narrow only the directory to 0755 and state.json to 0644.
   - Receive successful supported status access, document recovery and commit it;
     no runtime source/configuration, dependency or data change is needed.
-  - Full verification moves to point 22 and starts from the beginning.
+  - Full verification moves to point 23 and starts from the beginning.
 
 - [x] 21. Repair failures from the first complete candidate verification.
   - Preserve the failed candidate evidence; diagnose runtime, source-check, test
@@ -1430,8 +1430,18 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     and instruction assessments. Commit fixes before restarting full verification.
   - Keep this point open until every reported failure has a recorded disposition.
 
-- [ ] 22. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–21 complete and committed, migration/coverage ledgers
+- [x] 22. Repair the second candidate's seven failing areas.
+  - Preserve failed candidate evidence; repair backend fixtures/version assertions,
+    analysis composition, browser fixture imports, external bundle execution and
+    physically complete cold host/management fixture projections.
+  - The owner explicitly requested on 2026-10-28 that affected tests/checks run
+    again after repair, before another complete verification. Receive and repair
+    their results without lowering strictness or accepting blocked prerequisites.
+  - Synchronize current documentation and instruction assessments; commit repairs.
+  - Start full verification again from the beginning after affected checks pass.
+
+- [ ] 23. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–22 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3160,3 +3170,73 @@ quality PASS or implementation completion was claimed by that planning validatio
   Qdrant/model caches, backups and all reports remain preserved. Operational
   management image 5b560366bf7dbaf4ff736e0a is retained for current tooling.
   VERSION stays 0.5.0; full verification restarts from the beginning in point 22.
+
+### Point 22 — second candidate repairs (2026-10-28)
+
+- Preserved failed candidate 20f6c01d under
+  `.runtime/artifacts/RM-2026-012-failed-20f6c01d`: seven failed, 44 passed and
+  nine blocked nodes. Its failures remain evidence; no blocked node is accepted.
+- Completed strict Python boundary, source, adapter and fixture typing. The shared
+  configuration resolves repository packages through analysis-only extraPaths;
+  operational imports stay qualified without runtime path injection. Pyright now
+  reports zero errors/warnings across the unchanged strict first-party scope.
+  Affected offline Python selection passed 358 cases; process cleanup passed nine
+  cases, including descendant grace after its leader exits. Changed-file pinned
+  Ruff preparation passed without ignores, weaker rules or new dependencies.
+- Fixed cold bytecode/state initialization and complete fixture projection.
+  Management uses canonical descriptor-based private state preparation; launchers
+  prevent Python creating unsafe ancestors under a group-writable umask. Real
+  isolated host-executor and management-host acceptance passed and removed their
+  exact journal-owned containers/networks, with no volumes created or removed.
+  Physical standalone external source-bundle acceptance also passed.
+- Corrected the module loader's nonexistent-symbol reflection probe before manifest
+  parsing; actual classes retain exact source and symlink guards. Completed PHP
+  model/cast, query, DTO, request, callback, settings and public proxy contracts.
+  Owner PHPStan includes every previous platform root at maximum level plus the
+  actual Auditable consumer; delivered application analysis references no private
+  fixture. PHPStan passed all 652 selected files without exclusions or baselines.
+- Native Artisan testing composes Collision's command and restores its raw-argument
+  adaptation. Cleanup children clear development environment keys from the actual
+  workspace-root .env before loading guarded testing configuration; parse errors
+  use fixed diagnostics. Registration retains its nullable, non-enumerating Auth
+  action instead of claiming Fortify's incompatible non-null user interface.
+- Auth 1.1.4, Audit 1.0.4 and Permissions 1.0.4 append source-only
+  verification_contracts edges through retained no-data handlers. Module version
+  checks against main passed for all three; migration bytes and historical edges
+  remain unchanged. Role permission groups serialize as JSON lists, with a real
+  multi-role regression. Public signatures, guarded writes and Audit remain intact.
+- Affected backend execution passed 587 cases with 6,108 assertions before one
+  production-refusal fixture failure. That fixture now selects Laravel's actual
+  environment as well as config; its complete DatabaseTest group then passed
+  nine cases/50 assertions. The runtime guard was preserved. Browser collection
+  imports and forward-only guarded Core preparation are repaired. The critical
+  browser command passed: 386 cases, 139 pre-existing project-specific matrix
+  exclusions, zero failures (13.6 minutes). No exclusion was added for this repair.
+  Native Artisan discovery and the application welcome execution passed; the
+  latter completed both guarded cleanup phases with three assertions.
+- Synchronized public tooling/testing/module guidance and owner analysis scope.
+  Root/customer AGENTS and relevant skills already require explicit typed
+  composition, public boundaries, guarded effects, safe recovery and separate
+  test ownership; these compatible corrections add no permission or authority
+  rule needing duplication. Current guides own the execution details.
+- Real-service retrieval acceptance passed three isolated knowledge cases; its
+  disposable collections were cleaned without touching the development collection.
+  Incremental indexing reused unchanged vectors and restored freshness; the
+  successful grounded query returned the authoritative testing guide. No rebuild
+  or model/collection reset ran. Applied the RAG guidance to this affected check.
+- Mandatory staged hooks passed secrets, formatting, quick lint, repository sanity
+  and knowledge freshness. The repair commit records this completed point; final
+  verification starts again at point 23. Its all-group preview includes all 60
+  nodes, full owner PHP scope, strict Python checks/packages and real acceptance,
+  scanners and knowledge gates, with no excluded group or weakened prerequisite.
+- The browser runner inspected and removed only its two labeled endpoint containers
+  3b2ecd8d1a24dfab17d80bc3af25de735b8586eb4b3e59e036723168e4c09ba8 and
+  01370d8f9f6af53c9c3335cad6a599582689c2295aba47d0c677a79d44896f7e.
+  Each native host acceptance removed ten journal-owned containers and its one
+  network; exact lists remain in the host-cold-bootstrap and management-cold-bootstrap
+  reports under .runtime/artifacts/RM-2026-012-*. No volume was created or removed.
+  Inactive runa_test_test_1 was removed under the suite lock; base runa_test and
+  development data remain. Operational management images, shared builder/model/
+  Qdrant caches, backups and all verification evidence are preserved.
+- VERSION stays 0.5.0 with confirmed feature projection 0.6.0. This point records
+  affected-check PASS only; the complete new candidate still requires point 23.

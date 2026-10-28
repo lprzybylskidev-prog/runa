@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 1.1.4 — 2026-10-28
+
+- Preserve registration privacy and session behavior while completing typed request, model, settings and mail contracts; handle nullable profile names safely.
+- Add the source-only verification_contracts forward edge without schema or data changes.
+
 ## 1.1.3 — 2026-10-28
 
 - Resolve writable controller refs explicitly in supplied account views; preserve controller signatures, reactive lifetimes and writes.

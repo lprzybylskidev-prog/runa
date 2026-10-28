@@ -11,21 +11,33 @@ final class PreferencesProxy extends GuardedApi implements AuthPreferences
 {
     public function read(PreferenceScope $scope): array
     {
-        return $this->invoke(__FUNCTION__, [$scope]);
+        /** @var array{account: string, revision: int, scope: string, version: int, value: mixed, stored: bool, legacy_claimed: bool} $result */
+        $result = $this->invoke(__FUNCTION__, [$scope]);
+
+        return $result;
     }
 
     public function write(PreferenceScope $scope, PreferenceValue $value, int $revision): array
     {
-        return $this->invoke(__FUNCTION__, [$scope, $value, $revision]);
+        /** @var array{account: string, revision: int, scope: string, version: int, value: mixed, stored: bool, legacy_claimed: bool} $result */
+        $result = $this->invoke(__FUNCTION__, [$scope, $value, $revision]);
+
+        return $result;
     }
 
     public function reset(?string $module, ?PreferenceScope $scope, int $revision): array
     {
-        return $this->invoke(__FUNCTION__, [$module, $scope, $revision]);
+        /** @var array{account: string, revision: int} $result */
+        $result = $this->invoke(__FUNCTION__, [$module, $scope, $revision]);
+
+        return $result;
     }
 
     public function resetAccount(string $publicId, int $revision): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $revision]);
+        /** @var array{account: string, revision: int} $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $revision]);
+
+        return $result;
     }
 }

@@ -1,7 +1,7 @@
 """Scoped cancellation and signal ownership; no import-time handlers."""
 
 import signal
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from threading import Event
 
@@ -23,7 +23,7 @@ def interrupted(_signum: int, _frame: object) -> None:
 
 
 @contextmanager
-def interrupt_signals() -> Iterator[None]:
+def interrupt_signals() -> Generator[None, None, None]:
     """The command's main thread owns SIGTERM only for this scope."""
     previous = signal.signal(signal.SIGTERM, interrupted)
     try:

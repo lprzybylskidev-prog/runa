@@ -4,6 +4,7 @@ namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Collection;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\RoleDeletionPreview;
@@ -27,7 +28,9 @@ final readonly class DeleteRoles
         }
         $c = $this->database->connection();
         $id = $c->table('runa_permissions.roles')->where('public_id', $publicId)->value('id');
+        /** @var Collection<int, \stdClass&object{id: int, user_public_id: string}> $members */
         $members = $c->table('runa_permissions.user_roles')->where('role_id', $id)->orderBy('user_public_id')->limit(101)->get(['id', 'user_public_id']);
+        /** @var Collection<int, \stdClass&object{membership_id: int, public_id: string, version: int}> $references */
         $references = $c->table('runa_permissions.preset_roles as pr')->join('runa_permissions.presets as p', 'p.id', '=', 'pr.preset_id')
             ->where('role_id', $id)->orderBy('p.public_id')->limit(101)->get(['pr.id as membership_id', 'p.public_id', 'p.version']);
         if ($members->count() > 100 || $references->count() > 100) {
@@ -48,11 +51,13 @@ final readonly class DeleteRoles
             $super = $roleRows->contains('system', true);
             $old = $eligibility?->mayOperate() ? $this->state->effective($set, $super) : [];
             $new = $eligibility?->mayOperate() ? $this->state->effective($after, $super) : [];
-            $revision = (int) ($c->table('runa_permissions.user_access')->where('user_public_id', $user)->value('version') ?? 0);
+            /** @var int|null $storedRevision */
+            $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $user)->value('version');
+            $revision = $storedRevision ?? 0;
             $users[] = ['user_public_id' => $user, 'revision' => $revision, 'before' => $set->toArray(), 'after' => $after->toArray(), 'permission_removed' => array_values(array_diff($old, $new))];
             $binding[] = [$member->id, $eligibility, $this->state->references($set), $old, $new];
         }
-        $presets = $references->map(fn ($row) => ['public_id' => $row->public_id, 'version' => (int) $row->version])->all();
+        $presets = array_values($references->map(fn ($row) => ['public_id' => $row->public_id, 'version' => $row->version])->all());
         $fingerprint = $this->state->fingerprint([$before, $users, $binding, $references->all()]);
 
         return new RoleDeletionPreview($publicId, $version, $fingerprint, $users, $presets);

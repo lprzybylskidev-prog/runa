@@ -8,16 +8,19 @@ import signal
 import subprocess
 import sys
 import time
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
 from tests.tools.runa.support.quality import FixturePlanner, definition, node
+from tests.tools.runa.support.quality import decoded_definition as quality_definition
 from tools.application.quality_cli import service
 from tools.application.quality_execution import QualityExecutor
 from tools.application.quality_planning import arguments, resolve, select, validate_declared
 from tools.application.quality_reporting import status
 from tools.application.quality_service import QualityPlanner, QualityService
+from tools.application.quality_state import run_record
 from tools.core.context import ExecutionLocation, WorkspaceContext
 
 
@@ -31,10 +34,16 @@ def test_selection_prerequisites_hash_and_declared_scope() -> None:
         validate_declared(dict(quality_groups="all", quality_rationale="all"), scope)
     with pytest.raises(ValueError, match="cycle"):
         select(
-            dict(base=[node("a", deps=["b"]), node("b", deps=["a"])], impact_areas={}, final=[]), []
+            quality_definition(
+                dict(base=[node("a", deps=["b"]), node("b", deps=["a"])], impact_areas={}, final=[])
+            ),
+            [],
         )
     with pytest.raises(ValueError, match="Missing"):
-        select(dict(base=[node("a", deps=["missing"])], impact_areas={}, final=[]), [])
+        select(
+            quality_definition(dict(base=[node("a", deps=["missing"])], impact_areas={}, final=[])),
+            [],
+        )
     for argv in [["status", "--all"], ["show", "--all", "--group=docs"], ["show", "--background"]]:
         with pytest.raises(ValueError):
             arguments(argv)
@@ -57,26 +66,31 @@ def test_owner_and_customer_composition_do_not_mutate_each_other(tmp_path: Path)
 
 
 def test_failure_blocks_dependents_preserves_native_exit_and_host_transport(tmp_path: Path) -> None:
-    calls = []
+    calls: list[list[str]] = []
 
-    def delegate(argv: list[str]) -> list[str]:
-        calls.append(argv)
+    def delegate(argv: Sequence[str]) -> list[str]:
+        calls.append(list(argv))
         return ["true"]
 
     executor = QualityExecutor(WorkspaceContext(tmp_path), ExecutionLocation.HOST, delegate)
-    state = dict(
-        status="running",
-        steps={
-            n["id"]: dict(n, status="pending")
-            for n in [
-                dict(node("bad", "python3 -c 'import sys; sys.exit(7)'"), execution_context="host"),
-                node("blocked", deps=["bad"]),
-                node("app", "application-command"),
-            ]
-        },
+    state = run_record(
+        dict(
+            status="running",
+            steps={
+                n["id"]: dict(n, status="pending")
+                for n in [
+                    dict(
+                        node("bad", "python3 -c 'import sys; sys.exit(7)'"),
+                        execution_context="host",
+                    ),
+                    node("blocked", deps=["bad"]),
+                    node("app", "application-command"),
+                ]
+            },
+        )
     )
     assert executor.execute(tmp_path, state) == 1
-    assert state["steps"]["bad"]["exit_code"] == 7
+    assert state["steps"]["bad"].get("exit_code") == 7
     assert state["steps"]["blocked"]["status"] == "blocked"
     assert state["steps"]["app"]["status"] == "passed"
     assert calls == [["application-command"]]
@@ -89,16 +103,18 @@ def test_exclusive_groups_serialize_independent_steps_overlap(tmp_path: Path) ->
         "import time\nprint(time.time(), flush=True)\ntime.sleep(.15)\nprint(time.time())\n"
     )
     command = f"{sys.executable} {script}"
-    state = dict(
-        status="running",
-        steps={
-            n["id"]: dict(n, status="pending")
-            for n in [
-                node("a", command, group="db"),
-                node("b", command, group="db"),
-                node("c", command),
-            ]
-        },
+    state = run_record(
+        dict(
+            status="running",
+            steps={
+                n["id"]: dict(n, status="pending")
+                for n in [
+                    node("a", command, group="db"),
+                    node("b", command, group="db"),
+                    node("c", command),
+                ]
+            },
+        )
     )
     assert (
         QualityExecutor(WorkspaceContext(tmp_path), ExecutionLocation.CONTAINER, tuple).execute(
@@ -170,13 +186,15 @@ def test_background_lock_signal_and_reaping(tmp_path: Path) -> None:
     assert started.returncode == 0, started.stderr
     statefile = tmp_path / ".runtime/quality/state.json"
     coordinator = None
+    state = run_record({"status": "running", "steps": {}})
     try:
         for _ in range(100):
-            state = json.loads(statefile.read_text())
+            state = run_record(json.loads(statefile.read_text()))
             if state["steps"]["wait"].get("pid"):
                 break
             time.sleep(0.02)
-        pid = state["steps"]["wait"]["pid"]
+        pid = state["steps"]["wait"].get("pid")
+        assert isinstance(pid, int)
         coordinator = int(Path(f"/proc/{pid}/stat").read_text().split()[3])
         refused = subprocess.run(
             command + ["roadmap"], cwd=root, env=env, capture_output=True, text=True
@@ -184,7 +202,7 @@ def test_background_lock_signal_and_reaping(tmp_path: Path) -> None:
         assert refused.returncode == 1 and "Another quality run" in refused.stderr
         os.kill(coordinator, signal.SIGTERM)
         for _ in range(150):
-            state = json.loads(statefile.read_text())
+            state = run_record(json.loads(statefile.read_text()))
             if state["status"] == "interrupted":
                 break
             time.sleep(0.02)
@@ -224,4 +242,4 @@ def test_invalid_selection_and_preview_never_replace_prior_evidence(
 def test_empty_command_and_unknown_execution_context_refused() -> None:
     for item in [node("a", ""), dict(node("a"), execution_context="arbitrary")]:
         with pytest.raises(ValueError):
-            select(dict(base=[item], impact_areas={}, final=[]), [])
+            select(quality_definition(dict(base=[item], impact_areas={}, final=[])), [])

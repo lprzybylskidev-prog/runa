@@ -19,12 +19,14 @@ use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 
-/** All factor writes/one-time consumption occur under the owning user lock. */
+/** All factor writes/one-time consumption occur under the owning user lock.
+ * @phpstan-import-type SessionRow from SessionStore */
 final readonly class CredentialFactors
 {
     public function __construct(private SecurityContext $context, private CredentialPolicy $policy,
         private EntryTransaction $transactions, private EntryTokens $tokens, private TwoFactorAuthenticationProvider $totp, private Google2FA $engine) {}
 
+    /** @param SessionRow $session */
     public function verify(Connection $connection, User $user, object $session, string $method, #[\SensitiveParameter] string $code): bool
     {
         if (! $this->policy->accepts($method)) {
@@ -42,7 +44,7 @@ final readonly class CredentialFactors
         }
         if ($method === 'recovery' && $this->policy->value('recovery_codes_enabled') && $user->totp_secret !== null) {
             $hash = hash('sha256', $code);
-            $hashes = $user->recovery_hashes;
+            $hashes = $user->recovery_hashes ?? [];
             foreach ($hashes as $index => $stored) {
                 if (hash_equals($stored, $hash)) {
                     $before = AccountHistoryState::factors($user);
@@ -56,11 +58,12 @@ final readonly class CredentialFactors
             }
         }
         if ($method === 'email' && $user->email_factor && $user->email_verified_at !== null && preg_match('/\A[0-9]{6}\z/D', $code)) {
+            /** @var (\stdClass&object{security_version: int, recipient: string, expires_at: string, token_hash: string, public_id: string, id: int})|null $token */
             $token = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'email_otp')
                 ->where('session_hash', $session->session_hash)->whereNull('consumed_at')->whereNull('invalidated_at')->lockForUpdate()->first();
             if ($token !== null && $token->security_version === $user->security_version && $token->recipient === $user->email
                 && CarbonImmutable::parse($token->expires_at)->isFuture()
-                && hash_equals($token->token_hash, hash_hmac('sha256', $token->public_id.':'.$code, config('app.key')))) {
+                && hash_equals($token->token_hash, hash_hmac('sha256', $token->public_id.':'.$code, config()->string('app.key')))) {
                 $connection->table('runa_auth.entry_tokens')->where('id', $token->id)->update(['consumed_at' => now(), 'delivery_secret' => null]);
 
                 return true;
@@ -78,9 +81,12 @@ final readonly class CredentialFactors
         return is_int($counter) ? $counter : false;
     }
 
+    /**
+     * @return array{confirmed?: bool, accepted?: bool, secret?: string, uri?: string, qr_code?: string, updated?: bool, recovery_codes?: list<string>}
+     */
     public function handle(Request $request, string $operation): array
     {
-        return $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request, $operation): ?array {
+        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request, $operation): ?array {
             $method = $request->string('method')->toString();
             $code = $request->string('code')->toString();
             if ($operation === 'challenge') {
@@ -113,13 +119,13 @@ final readonly class CredentialFactors
                 if (! $this->policy->permitted('totp') || $user->totp_secret !== null) {
                     return null;
                 }
-                $secret = $this->totp->generateSecretKey(32);
+                $secret = $this->engine->generateSecretKey(32);
                 $user->totp_pending = Crypt::encryptString($secret);
                 $user->totp_pending_until = CarbonImmutable::now('UTC')->addMinutes(10);
                 $user->save();
                 $this->transactions->record('two_factor.enrollment_started', $user, AccountHistoryState::pairs($before, AccountHistoryState::factors($user)));
 
-                $uri = $this->totp->qrCodeUrl(config('app.name'), $user->email, $secret);
+                $uri = $this->totp->qrCodeUrl(config()->string('app.name'), $user->email, $secret);
                 $svg = (new Writer(new ImageRenderer(new RendererStyle(256, 4), new SvgImageBackEnd)))->writeString($uri);
 
                 return ['secret' => $secret, 'uri' => $uri, 'qr_code' => 'data:image/svg+xml;base64,'.base64_encode($svg)];
@@ -184,6 +190,9 @@ final readonly class CredentialFactors
         });
     }
 
+    /**
+     * @return list<string>
+     */
     private function newRecovery(User $user): array
     {
         $codes = $this->policy->value('recovery_codes_enabled') ? array_map(static fn () => bin2hex(random_bytes(16)), range(1, 8)) : [];

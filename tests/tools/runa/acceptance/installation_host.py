@@ -46,7 +46,7 @@ REPORTS = ROOT / ".runtime/ownership"
 
 def call(
     arguments: Sequence[str],
-    cwd: Path = ROOT,
+    cwd: Path | None = None,
     env: Mapping[str, str] | None = None,
     capture: bool = False,
     check: bool = True,
@@ -256,7 +256,7 @@ def main() -> None:
     before_images = set(
         output(["docker", "image", "ls", "--format", "{{.Repository}}:{{.Tag}}"]).splitlines()
     )
-    task_images = set()
+    task_images: set[str] = set()
     try:
         dev, prod = fixture_directory / "dev", fixture_directory / "prod"
         dev_sha = None
@@ -741,8 +741,11 @@ def main() -> None:
             }
         data["networks"] = {"default": {"external": True, "name": network}}
         for service in ("app", "queue", "scheduler"):
-            data["services"][service]["environment"]["SSL_CERT_FILE"] = "/run/fixture-ca.pem"
-            data["services"][service]["volumes"].append(
+            environment = data["services"][service]["environment"]
+            mounts = data["services"][service]["volumes"]
+            assert isinstance(environment, dict) and isinstance(mounts, list)
+            environment["SSL_CERT_FILE"] = "/run/fixture-ca.pem"
+            mounts.append(
                 {
                     "type": "bind",
                     "source": str(certificates / "certificate.pem"),
@@ -796,7 +799,10 @@ def main() -> None:
                 not (teammate / ".git/runa-bootstrap.json").exists(),
                 "teammate starts from an ordinary complete customer clone without inherited receipt/journals",
             )
-            teammate_env = {**env, "RUNA_HOST_WORKER": "1"}
+            teammate_env = {
+                **dict(os.environ, COMPOSE_PROJECT_NAME=dev_project),
+                "RUNA_HOST_WORKER": "1",
+            }
             call(
                 [sys.executable, "-m", "tools.application.development", "embeddings", "cpu"],
                 cwd=teammate,
@@ -1069,7 +1075,7 @@ def main() -> None:
             print("Scoped fixture network cleanup: " + network, flush=True)
             call(["docker", "network", "rm", network])
         try:
-            rollovers = []
+            rollovers: list[str] = []
             for item, original in before.items():
                 actual = json.loads(output(["docker", "inspect", item]))[0]
                 if actual["State"]["StartedAt"] == original["State"]["StartedAt"]:

@@ -67,8 +67,8 @@ def main() -> None:
         raise SystemExit("Disposable image tag already exists; refusing to overwrite it.")
     network = name + "-network"
     frontend, backend = name + "-nginx", name + "-fastcgi"
-    checks = []
-    created = []
+    checks: list[str] = []
+    created: list[tuple[str, str]] = []
     build_started = False
     verification_passed = False
 
@@ -181,7 +181,10 @@ def main() -> None:
                 except urllib.error.HTTPError as error:
                     response = error
                 with response:
-                    return response.status, response.headers, response.read()
+                    status = response.status
+                    if not isinstance(status, int):
+                        raise ValueError("HTTP fixture returned no numeric status.")
+                    return status, response.headers, response.read()
 
             for _attempt in range(40):
                 try:
@@ -342,8 +345,8 @@ def main() -> None:
             raise
         finally:
             # Only exact identities created by this invocation; no volumes, prune or builder-cache removal.
-            scoped = []
-            cleanup_errors = []
+            scoped: list[tuple[str, str, str]] = []
+            cleanup_errors: list[str] = []
             for kind, identity in ([("image", image)] if build_started else []) + created:
                 inspected = subprocess.run(
                     ["docker", kind, "inspect", identity], capture_output=True, text=True
@@ -364,7 +367,7 @@ def main() -> None:
                 "Scoped cleanup after identity/ownership inspection: " + json.dumps(scoped),
                 flush=True,
             )
-            removed = []
+            removed: list[str] = []
             for kind, identity, resource_id in reversed(scoped):
                 args = (
                     ["docker", "rm", "-f", resource_id]

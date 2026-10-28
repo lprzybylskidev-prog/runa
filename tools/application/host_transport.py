@@ -18,7 +18,7 @@ import subprocess
 import sys
 import threading
 import time
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Generator, Mapping, Sequence
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
@@ -101,10 +101,13 @@ class Server(socketserver.ThreadingUnixStreamServer):
 
 
 class Handler(socketserver.StreamRequestHandler):
-    server: Server
+    @property
+    def host_server(self) -> Server:
+        assert isinstance(self.server, Server)
+        return self.server
 
     def handle(self) -> None:
-        if not self.server.max_children.acquire(blocking=False):
+        if not self.host_server.max_children.acquire(blocking=False):
             return
         try:
             self.execute()
@@ -121,7 +124,7 @@ class Handler(socketserver.StreamRequestHandler):
             except OSError:
                 pass
         finally:
-            self.server.max_children.release()
+            self.host_server.max_children.release()
 
     def execute(self) -> None:
         self.connection.settimeout(15)
@@ -132,14 +135,14 @@ class Handler(socketserver.StreamRequestHandler):
             raise ValueError("Foreign operating-system user.")
         challenge = secrets.token_hex(32)
         self.wfile.write(encode({"type": "challenge", "value": challenge}))
-        value = validate_request(read_json(self.rfile), self.server.credentials, challenge)
-        if self.server.service.management.image_identity() != self.server.identity:
+        value = validate_request(read_json(self.rfile), self.host_server.credentials, challenge)
+        if self.host_server.service.management.image_identity() != self.host_server.identity:
             raise ValueError(
                 "Management source changed. Recover the host executor before execution."
             )
         self.connection.settimeout(None)
         request = value["id"]
-        receipt = self.server.service.directory() / "operations" / (request + ".json")
+        receipt = self.host_server.service.directory() / "operations" / (request + ".json")
         descriptor = os.open(receipt, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
         state: OperationRecord = {
             "id": request,
@@ -151,11 +154,11 @@ class Handler(socketserver.StreamRequestHandler):
         with os.fdopen(descriptor, "w") as stream:
             json.dump(state, stream)
         try:
-            plan = self.server.service.validated_plan(value, self.server.image)
+            plan = self.host_server.service.validated_plan(value, self.host_server.image)
             if value["command"] in ("runa:host:status", "runa:host:stop"):
                 args = [value["command"].rsplit(":", 1)[1], *value["arguments"]]
                 if args[:1] == ["status"]:
-                    result = self.server.public_status(args[1] if len(args) == 2 else None)
+                    result = self.host_server.public_status(args[1] if len(args) == 2 else None)
                     self.wfile.write(
                         encode(
                             {
@@ -167,14 +170,14 @@ class Handler(socketserver.StreamRequestHandler):
                         )
                     )
                 elif args == ["stop"]:
-                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+                    threading.Thread(target=self.host_server.shutdown, daemon=True).start()
                 else:
                     raise ValueError("Invalid executor control.")
                 self.wfile.write(encode({"type": "exit", "code": 0}))
                 state.update(state="completed", exit_code=0)
             else:
                 state.update(state="running")
-                self.server.service.atomic(receipt, state)
+                self.host_server.service.atomic(receipt, state)
                 self.wfile.write(encode({"type": "accepted", "id": request}))
                 self.run_operation(plan, value["interactive"], state, receipt)
         except BaseException:
@@ -183,7 +186,7 @@ class Handler(socketserver.StreamRequestHandler):
             raise
         finally:
             state["finished_at"] = time.time()
-            self.server.service.atomic(receipt, state)
+            self.host_server.service.atomic(receipt, state)
 
     def run_operation(
         self, plan: HostPlanPayload, interactive: bool, state: OperationRecord, receipt: Path
@@ -191,14 +194,14 @@ class Handler(socketserver.StreamRequestHandler):
         # Fresh process owns existing locking/executors. Its stdin contains one
         # trusted plan frame followed by explicit operator input, never shell code.
         command = [sys.executable, "-m", "tools.application.host_transport", "--worker"]
-        child = self.server.service.spawn(
+        child = self.host_server.service.spawn(
             command,
-            cwd=self.server.service.workspace.root,
+            cwd=self.host_server.service.workspace.root,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             start_new_session=True,
-            env=self.server.environment,
+            env=self.host_server.environment,
         )
         assert child.stdin is not None and child.stdout is not None and child.stderr is not None
         child.stdin.write(encode(plan))
@@ -207,7 +210,7 @@ class Handler(socketserver.StreamRequestHandler):
             child.stdin.close()
         connected = True
         total = 0
-        log = self.server.service.directory() / "operations" / (plan["request_id"] + ".log")
+        log = self.host_server.service.directory() / "operations" / (plan["request_id"] + ".log")
         with (
             open(log, "xb", opener=lambda p, flags: os.open(p, flags, 0o600)) as journal,
             selectors.DefaultSelector() as selector,
@@ -225,7 +228,7 @@ class Handler(socketserver.StreamRequestHandler):
                                 selector.unregister(self.connection)
                                 connected = False
                                 state["connected"] = False
-                                self.server.service.atomic(receipt, state)
+                                self.host_server.service.atomic(receipt, state)
                                 if not child.stdin.closed:
                                     child.stdin.close()
                                 continue
@@ -235,7 +238,7 @@ class Handler(socketserver.StreamRequestHandler):
                             while b"\n" in client_buffer:
                                 line, _, rest = client_buffer.partition(b"\n")
                                 client_buffer = bytearray(rest)
-                                message = input_frame(line, interactive)
+                                message = input_frame(bytes(line), interactive)
                                 if message["type"] == "cancel":
                                     os.killpg(child.pid, signal.SIGINT)
                                     state["cancel_requested"] = True
@@ -314,7 +317,7 @@ class HostExecutor:
         return EndpointService(self.workspace, self.processes).endpoint()
 
     @contextlib.contextmanager
-    def socket_path(self) -> Iterator[str]:
+    def socket_path(self) -> Generator[str, None, None]:
         descriptor = os.open(self.directory(), os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         try:
             yield "/proc/self/fd/" + str(descriptor) + "/executor.sock"

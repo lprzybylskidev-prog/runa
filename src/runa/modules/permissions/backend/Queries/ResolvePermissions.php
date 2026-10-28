@@ -3,6 +3,7 @@
 namespace Runa\Modules\Permissions\Queries;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\PrincipalScope;
@@ -12,6 +13,7 @@ use Runa\Modules\Permissions\Contracts\PermissionPage;
 use Runa\Modules\Permissions\Contracts\Permissions;
 
 /** Deliberately uncached: all workers and reused scopes read committed current assignments. */
+/** @phpstan-type PermissionRow \stdClass&object{id: int, code: string, module_id: string|null} */
 final readonly class ResolvePermissions implements Permissions
 {
     public function __construct(private DatabaseManager $database, private PrincipalScope $principals, private AuthorizationIdentity $identities, private ModuleAvailability $availability) {}
@@ -26,6 +28,7 @@ final readonly class ResolvePermissions implements Permissions
         if (! ($this->identities->eligibility($principal->publicId)?->mayOperate() ?? false)) {
             return false;
         }
+        /** @var PermissionRow|null $row */
         $row = $this->database->connection()->table('runa_permissions.permissions')->where('code', $permission)->whereNull('deleted_at')->first();
         if ($row === null || ! $this->moduleAvailable($row->module_id)) {
             return false;
@@ -45,6 +48,7 @@ final readonly class ResolvePermissions implements Permissions
         }
         $eligible = $this->identities->eligibility($userPublicId)?->mayOperate() ?? false;
         $superAdmin = $this->superAdmin($userPublicId);
+        /** @var Collection<int, PermissionRow> $rows */
         $rows = $this->database->connection()->table('runa_permissions.permissions')->whereNull('deleted_at')
             ->when($after !== null, fn ($query) => $query->where('code', '>', $after))->orderBy('code')->limit(101)->get();
         $more = $rows->count() > 100;
@@ -59,18 +63,20 @@ final readonly class ResolvePermissions implements Permissions
             ->where('ur.user_public_id', $userPublicId)->whereIn('rp.permission_id', $ids)->whereNull('r.deleted_at')
             ->select(['rp.permission_id', 'r.public_id'])->selectRaw('row_number() over (partition by rp.permission_id order by r.public_id) as position');
         $roleRows = $connection->query()->fromSub($ranked, 'grants')->where('position', '<=', 33)->orderBy('position')->get()->groupBy('permission_id');
+        /** @var list<string> $modules */
         $modules = $page->pluck('module_id')->filter()->unique()->values()->all();
         $statuses = $this->availability->statuses($modules, 'permissions.resolve');
         $items = [];
         foreach ($page as $row) {
             $direct = in_array($row->id, $directIds, true);
+            /** @var list<string> $roles */
             $roles = ($roleRows->get($row->id) ?? collect())->pluck('public_id')->all();
             $available = $row->module_id === null || $statuses[$row->module_id]->available;
             $items[] = ['code' => $row->code, 'direct' => $direct, 'roles' => array_slice($roles, 0, 32), 'roles_truncated' => count($roles) > 32,
                 'available' => $available, 'effective' => $eligible && $available && ($superAdmin || $direct || $roles !== [])];
         }
 
-        return new PermissionPage($userPublicId, $eligible, $superAdmin, $items, $more ? $items[array_key_last($items)]['code'] : null);
+        return new PermissionPage($userPublicId, $eligible, $superAdmin, $items, $more && $items !== [] ? $items[array_key_last($items)]['code'] : null);
     }
 
     private function ready(): bool
@@ -99,10 +105,13 @@ final readonly class ResolvePermissions implements Permissions
     /** @return list<string> */
     private function roles(string $user, int $permission): array
     {
-        return $this->database->connection()->table('runa_permissions.user_roles as ur')
+        /** @var list<string> $roles */
+        $roles = $this->database->connection()->table('runa_permissions.user_roles as ur')
             ->join('runa_permissions.roles as r', 'r.id', '=', 'ur.role_id')
             ->join('runa_permissions.role_permissions as rp', 'rp.role_id', '=', 'r.id')
             ->where('ur.user_public_id', $user)->where('rp.permission_id', $permission)->whereNull('r.deleted_at')
             ->orderBy('r.public_id')->limit(33)->pluck('r.public_id')->all();
+
+        return $roles;
     }
 }

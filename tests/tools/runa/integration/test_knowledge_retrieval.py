@@ -31,7 +31,7 @@ class RetrievalContracts(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.config = {**self.config, "collection": "runa_retrieval_test_" + uuid.uuid4().hex}
+        self.config["collection"] = "runa_retrieval_test_" + uuid.uuid4().hex
         self.store = Store(self.config)
         self.context = replace(KnowledgeContext.for_workspace(self.root), owner_corpus=True)
         self.indexer = KnowledgeIndexer(self.context, self.config, self.store, device="cpu")
@@ -91,6 +91,7 @@ class RetrievalContracts(unittest.TestCase):
 
     def test_stale_branch_missing_orphan_and_mixed_model_are_rejected(self) -> None:
         original = self.store.manifest()
+        assert original is not None
         manifest = copy.deepcopy(original)
         manifest["pending"] = True
         self.store.write_manifest(manifest)
@@ -107,7 +108,7 @@ class RetrievalContracts(unittest.TestCase):
         )
         self.index()
         self.store.delete([key])
-        self.assertEqual(self.indexer.status()["missing_chunks"], 1)
+        self.assertEqual(self.indexer.status().get("missing_chunks"), 1)
         with self.assertRaises(ValueError):
             Retriever(self.root, self.config, context=self.context, store=self.store)
         self.index()

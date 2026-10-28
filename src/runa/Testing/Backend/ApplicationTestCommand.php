@@ -2,31 +2,44 @@
 
 namespace Runa\Testing\Backend;
 
+use Illuminate\Console\Command;
 use NunoMaduro\Collision\Adapters\Laravel\Commands\TestCommand;
+use RuntimeException;
 
-final class ApplicationTestCommand extends TestCommand
+/** Preserve the native CLI through composition; Collision's command is final by contract. */
+final class ApplicationTestCommand extends Command
 {
-    public function handle(): int
+    public function __construct(private readonly TestCommand $native)
     {
-        if ($this->input->hasParameterOption(['--list-tests', '--list-tests-xml', '--list-suites', '--list-groups'])) {
-            return (int) parent::handle();
-        }
-
-        // Match Collision's native environment handoff before the cleanup child
-        // loads .env.testing; do not inherit the booted development credentials.
-        $this->clearEnv();
-
-        return TestRun::execute(dirname(base_path()), $this->output, fn (): int => (int) parent::handle());
+        parent::__construct();
+        $this->setName('test');
+        $this->setDescription($native->getDescription());
+        $this->setDefinition(clone $native->getDefinition());
+        $this->ignoreValidationErrors();
     }
 
-    /** @return list<string> */
-    protected function commonArguments(): array
+    public function handle(): int
     {
-        $arguments = parent::commonArguments();
-        if ($this->usingPest()) {
-            $arguments[] = '--test-directory=../tests/backend/app';
+        $this->native->setLaravel($this->laravel);
+        $this->native->setApplication($this->getApplication());
+        $arguments = $_SERVER['argv'] ?? null;
+        if (! is_array($arguments) || ! array_is_list($arguments) || ! array_all($arguments, static fn (mixed $value): bool => is_string($value))) {
+            throw new RuntimeException('Native testing requires literal CLI arguments.');
         }
+        // Collision reads raw CLI arguments. Scope this transport adaptation to its call.
+        // Keep the native runner, flags, terminal streams and original argv after every exit.
+        try {
+            if (function_exists('Pest\\version')) {
+                $_SERVER['argv'] = [...$arguments, '--test-directory=../tests/backend/app'];
+            }
+            $run = fn (): int => $this->native->run($this->input, $this->output);
+            if ($this->input->hasParameterOption(['--list-tests', '--list-tests-xml', '--list-suites', '--list-groups'])) {
+                return $run();
+            }
 
-        return $arguments;
+            return TestRun::execute(dirname(base_path()), $this->output, $run);
+        } finally {
+            $_SERVER['argv'] = $arguments;
+        }
     }
 }

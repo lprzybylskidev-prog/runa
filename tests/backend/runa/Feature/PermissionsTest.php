@@ -57,6 +57,7 @@ use Runa\Modules\Permissions\Contracts\Permissions;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 use Runa\Modules\Permissions\Development\Access;
+use Runa\Modules\Permissions\Support\AccessState;
 use Runa\Modules\Permissions\Support\DeclarationCatalog;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -1064,3 +1065,24 @@ it('integrates real Core HTTP session CSRF profile and logout without authority 
     expect(app(PrincipalScope::class)->current())->toBeNull();
     expect(DB::table('runa_audit.events')->get()->toJson())->not->toContain($password);
 })->group('core-integration');
+
+it('serializes permission members of multiple roles as JSON lists', function (): void {
+    $codes = permissionAccessManager($this);
+    $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    ($this->asPermissionUser)(function () use ($codes, $read): void {
+        $roles = [];
+        foreach (['first_reader', 'second_reader'] as $index => $code) {
+            $preview = $this->permissionAccess->previewDefinition(permissionDefinition('role', $code, [$read]));
+            permissionAccessProof($this, $codes[$index]);
+            $roles[] = $this->permissionAccess->saveDefinition($preview)['public_id'];
+        }
+        $references = app(AccessState::class)->references(new AssignmentSet($roles));
+        expect($references['roles'])->toHaveCount(2);
+        $decoded = json_decode(json_encode($references, JSON_THROW_ON_ERROR), flags: JSON_THROW_ON_ERROR);
+        foreach ($references['roles'] as $index => $role) {
+            expect(array_is_list($role['permissions']))->toBeTrue()
+                ->and($role['permissions'][0]['public_id'])->toBe($read)
+                ->and($decoded->roles[$index]->permissions)->toBeArray();
+        }
+    });
+})->group('permissions-access');

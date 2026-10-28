@@ -13,6 +13,7 @@ from unittest.mock import patch
 import distribution.bootstrap as bootstrap
 import distribution.update_customization as update_customization
 import distribution.update_planning as update
+from distribution.update_file_models import CustomizationReview
 from distribution.update_models import RuntimeSnapshot, response_json
 from distribution.update_plan_models import PreflightOptions, PreflightReport, ReleaseIdentity
 from tools.core.state import JsonValue
@@ -174,6 +175,11 @@ class UpdaterWorkspace:
             "commit": self.before if tag == "v0.2.1" else self.after,
             "tag_object": "f" * 40,
         }
+
+    def review(self) -> CustomizationReview:
+        report = self.run_plan()
+        assert "customization_review" in report
+        return report["customization_review"]
 
     def run_plan(self, **kwargs: Unpack[PreflightOptions]) -> PreflightReport:
         planner = update.UpdatePlanner(

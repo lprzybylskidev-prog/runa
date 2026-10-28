@@ -9,6 +9,9 @@ final class OwnHistoryDetailsProxy extends GuardedApi implements OwnHistoryDetai
 {
     public function detail(string $module, string $entityType, string $publicId, array $fieldsByAction): ?array
     {
-        return $this->invoke(__FUNCTION__, [$module, $entityType, $publicId, $fieldsByAction]);
+        /** @var array{public_id: string, occurred_at: string, action: string, outcome: string, changes: list<array{field: string, before: mixed, after: mixed}>}|null $result */
+        $result = $this->invoke(__FUNCTION__, [$module, $entityType, $publicId, $fieldsByAction]);
+
+        return $result;
     }
 }

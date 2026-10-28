@@ -9,6 +9,7 @@ import json
 import subprocess
 import tempfile
 import unittest
+from collections.abc import Sequence
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,7 +19,7 @@ from tools.application.customer_source_service import CustomerSource
 from tools.application.deployment_context import read_env
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.process import SubprocessRunner
-from tools.core.state import StateFailure
+from tools.core.state import JsonValue, StateFailure
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -47,7 +48,7 @@ class OperationContracts(unittest.TestCase):
             ) -> subprocess.CompletedProcess[str]:
                 return subprocess.CompletedProcess(arguments, 0, stdout="\n".join(images))
 
-            results = [subprocess.CompletedProcess([], code) for code in codes]
+            results = [subprocess.CompletedProcess[bytes]([], code) for code in codes]
             with (
                 self.subTest(codes=codes),
                 patch("tools.application.dependencies.materialize"),
@@ -109,17 +110,24 @@ class OperationContracts(unittest.TestCase):
                     run.assert_not_called()
 
     def test_pause_keeps_nginx_serving_and_marks_maintenance_before_stopping_writers(self) -> None:
-        events = []
+        events: list[tuple[str, bool | list[str]]] = []
+
+        def record_marker(enabled: bool, release: Path | str | None) -> None:
+            events.append(("marker", enabled))
+
+        def record_compose(args: list[str], release: Path | str | None) -> None:
+            events.append(("compose", args))
+
         with (
             patch.object(
                 self.deployment.runtime,
                 "http_maintenance",
-                side_effect=lambda enabled, release: events.append(("marker", enabled)),
+                side_effect=record_marker,
             ),
             patch.object(
                 self.deployment.runtime,
                 "dc",
-                side_effect=lambda args, release: events.append(("compose", args)),
+                side_effect=record_compose,
             ),
         ):
             self.deployment.runtime.pause_http("/release")
@@ -130,7 +138,10 @@ class OperationContracts(unittest.TestCase):
     def test_resume_waits_for_writers_and_restores_maintenance_on_nginx_health_failure(
         self,
     ) -> None:
-        events = []
+        events: list[tuple[str, bool | list[str]]] = []
+
+        def record_marker(enabled: bool, release: Path | str | None) -> None:
+            events.append(("marker", enabled))
 
         def dc(args: list[str], release: Path | None) -> None:
             events.append(("compose", args))
@@ -150,12 +161,13 @@ class OperationContracts(unittest.TestCase):
             patch.object(
                 self.deployment.runtime,
                 "http_maintenance",
-                side_effect=lambda enabled, release: events.append(("marker", enabled)),
+                side_effect=record_marker,
             ),
             patch.object(self.deployment.runtime, "dc", side_effect=dc),
         ):
             with self.assertRaisesRegex(ValueError, "nginx health failed"):
                 self.deployment.runtime.resume_http("/release", recreate=True)
+        assert isinstance(events[0][1], list)
         self.assertIn("--wait", events[0][1])
         self.assertNotIn("nginx", events[0][1])
         self.assertIn("redis", events[0][1])
@@ -311,7 +323,7 @@ class OperationContracts(unittest.TestCase):
             root = Path(folder)
             state = root / "state"
             sha = "a" * 40
-            previous = {
+            previous: dict[str, JsonValue] = {
                 "sha": "b" * 40,
                 "path": "/previous",
                 "database_tree": "same" if compatible else "different",
@@ -322,9 +334,9 @@ class OperationContracts(unittest.TestCase):
             }
             config = root / ".env.prod.compose"
             config.write_text(
-                "RUNA_IMAGE_TAG=" + previous["sha"] + "\nRUNA_PRODUCTION_MODE=simulation\n"
+                "RUNA_IMAGE_TAG=" + str(previous["sha"]) + "\nRUNA_PRODUCTION_MODE=simulation\n"
             )
-            calls = []
+            calls: list[tuple[list[str], Path | None]] = []
 
             def dc(
                 args: list[str], release: Path | None = None, **kwargs: object
@@ -366,7 +378,7 @@ class OperationContracts(unittest.TestCase):
                 )
 
     def test_manual_maintenance_blocks_before_checkout_build_or_configuration_changes(self) -> None:
-        previous = {
+        previous: dict[str, JsonValue] = {
             "simulation": True,
             "path": "/previous",
             "images": {
@@ -441,7 +453,7 @@ class OperationContracts(unittest.TestCase):
 
     def test_build_seeding_and_health_failures_have_distinct_recovery_boundaries(self) -> None:
         sha = "a" * 40
-        previous = {
+        previous: dict[str, JsonValue] = {
             "sha": "b" * 40,
             "path": "/previous",
             "database_tree": "same",
@@ -466,13 +478,22 @@ class OperationContracts(unittest.TestCase):
                 root = Path(folder)
                 state = root / "state"
                 original = (
-                    "RUNA_IMAGE_TAG=" + previous["sha"] + "\nRUNA_PRODUCTION_MODE=simulation\n"
+                    "RUNA_IMAGE_TAG=" + str(previous["sha"]) + "\nRUNA_PRODUCTION_MODE=simulation\n"
                 )
                 (root / ".env.prod.compose").write_text(original)
                 modules = root / sha / "src/runa/ModuleFramework/Updates/ModuleUpdates.php"
                 modules.parent.mkdir(parents=True)
                 modules.write_text("<?php // module update capability fixture")
-                calls = []
+                calls: list[list[str]] = []
+
+                def record_command(
+                    args: Sequence[str],
+                    *rest: object,
+                    calls: list[list[str]] = calls,
+                    **options: object,
+                ) -> None:
+                    calls.append(list(args))
+
                 stack.enter_context(bind_deployment(self, root))
                 stack.enter_context(patch.object(self.deployment.context, "state", state))
                 stack.enter_context(
@@ -490,7 +511,7 @@ class OperationContracts(unittest.TestCase):
                     patch.object(
                         self.deployment.runtime,
                         "dc",
-                        side_effect=lambda args, *a, calls=calls, **kw: calls.append(args),
+                        side_effect=record_command,
                     )
                 )
                 stack.enter_context(
@@ -566,7 +587,7 @@ class OperationContracts(unittest.TestCase):
                     )
 
     def test_same_commit_verifies_health_without_replaying_data_steps(self) -> None:
-        previous = {
+        previous: dict[str, JsonValue] = {
             "sha": "a" * 40,
             "path": "/previous",
             "simulation": True,
@@ -612,7 +633,7 @@ class OperationContracts(unittest.TestCase):
 
     def test_rollback_blocks_migration_or_seeder_change_before_any_mutation(self) -> None:
         current = {"database_tree": "new"}
-        previous = {"database_tree": "old"}
+        previous: dict[str, JsonValue] = {"database_tree": "old"}
         with (
             tempfile.TemporaryDirectory() as folder,
             patch.object(self.deployment.context, "state", Path(folder)),

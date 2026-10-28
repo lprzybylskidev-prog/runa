@@ -39,7 +39,7 @@ beforeEach(function (): void {
     $manifest['declarations']->settings = [$namespace.'\\Definitions\\Settings'];
     $this->sources->write('app', $this->code, $manifest);
     foreach (['Management/Descriptor', 'Settings/Settings'] as $fixture) {
-        file_put_contents($this->sources->root.'/app/modules/'.$this->code.'/backend/Definitions/'.basename($fixture).'.php', str_replace(['MODULE_NAMESPACE', 'MODULE_ID'], [$namespace, $this->id], file_get_contents(__DIR__.'/../Fixtures'.$fixture.'.php.stub')));
+        file_put_contents($this->sources->root.'/app/modules/'.$this->code.'/backend/Definitions/'.basename($fixture).'.php', str_replace(['MODULE_NAMESPACE', 'MODULE_ID'], [$namespace, $this->id], file_get_contents(__DIR__.'/../Fixtures/'.$fixture.'.php.stub')));
     }
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);

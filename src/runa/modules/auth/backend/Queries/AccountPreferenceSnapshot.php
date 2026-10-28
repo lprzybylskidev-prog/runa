@@ -12,11 +12,13 @@ use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\PreferenceDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
 
+/** @phpstan-type PreferenceRead array{account: string, revision: int, scope: string, version: int, value: mixed, stored: bool, legacy_claimed: bool} */
 final readonly class AccountPreferenceSnapshot
 {
     public function __construct(private PreferenceDeclarations $declarations, private ModuleRegistry $registry,
         private ModuleDeclarations $sources, private ModuleAvailability $availability) {}
 
+    /** @return array{account: string, revision: int, legacy_claimed: bool, values: list<PreferenceRead>} */
     public function all(Connection $connection, User $user, string $application): array
     {
         $values = [];
@@ -48,9 +50,11 @@ final readonly class AccountPreferenceSnapshot
             'legacy_claimed' => $user->preference_legacy_claimed, 'values' => $values];
     }
 
+    /** @return PreferenceRead */
     public function one(Connection $connection, User $user, PreferenceScope $scope): array
     {
         [$provider, $definition] = $this->declarations->resolve($scope);
+        /** @var (object{value: string, definition_version: int}&\stdClass)|null $row */
         $row = $connection->table('runa_auth.preferences')->where('user_id', $user->id)->where('scope', $scope->id())->first();
         $value = $definition->default;
         if ($row !== null) {

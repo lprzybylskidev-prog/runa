@@ -145,7 +145,7 @@ class SecurityService:
 
         with StateDirectory(reports, anchor=self.workspace.root).open():
             pass
-        failures = []
+        failures: list[str] = []
 
         def scan_command(arguments: Sequence[str], label: str) -> None:
             print("Scanning: " + label, flush=True)
@@ -168,7 +168,7 @@ class SecurityService:
         scanner = self.workspace.root / ".runtime/tools/trivy"
         if scanner.is_file():
             prefix = [str(scanner)]
-        elif self.location is not ExecutionLocation.CONTAINER and shutil.which("docker"):
+        elif shutil.which("docker"):
             prefix = [
                 "docker",
                 "run",
@@ -302,7 +302,7 @@ class SecurityService:
                 return runtime.app_command(tuple(args))
         else:
             command = self.app_command
-        failures = []
+        failures: list[str] = []
         for label, arguments in (
             ("Composer", ["composer", "--working-dir=src", "audit"]),
             ("pnpm", ["pnpm", "--dir", "src", "audit", "--audit-level=high"]),

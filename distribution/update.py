@@ -14,8 +14,6 @@ from collections.abc import Sequence
 from pathlib import Path
 from types import FrameType
 
-from distribution.update_file_models import CustomizationReview
-
 if __name__ == "__main__" and not __package__:
     raise SystemExit(
         subprocess.call(
@@ -25,6 +23,9 @@ if __name__ == "__main__" and not __package__:
     )
 
 from distribution import bootstrap
+from distribution.update_execution_models import ExecutionReport
+from distribution.update_file_models import CustomizationReview
+from distribution.update_plan_models import PreflightReport
 
 
 def main(arguments: Sequence[str] | None = None) -> int:
@@ -60,6 +61,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
         parser.error(
             "Customization decisions apply only to --apply/--resume; read-only modes never request consent."
         )
+    result: PreflightReport | ExecutionReport
     token = ""
     try:
         if args.ask_token and not sys.stdin.isatty():
@@ -134,6 +136,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
     except bootstrap.BootstrapError as error:
         result = {
             "schema_version": 1,
+            "mode": "preflight",
             "dry_run": not (args.apply or args.resume),
             "status": "blocked",
             "execution_available": True,
@@ -142,15 +145,15 @@ def main(arguments: Sequence[str] | None = None) -> int:
             "temporary_downloads_cleaned": True,
             "checks": [{"id": "host-or-credentials", "status": "blocked", "message": str(error)}],
         }
-    result["mode"] = (
+    mode = (
         "resume" if args.resume else "apply" if args.apply else "plan" if args.plan else "preflight"
     )
     if args.json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps({**result, "mode": mode}, indent=2))
     else:
         print(
             "Runa update "
-            + result["mode"]
+            + mode
             + ": "
             + result["status"].upper()
             + (" (read-only)." if result.get("dry_run") else ".")

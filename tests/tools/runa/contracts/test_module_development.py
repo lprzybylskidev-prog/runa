@@ -39,7 +39,7 @@ class ModuleVersionContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="runa-module-versions-") as directory:
             root = Path(directory)
 
-            def git(*args: str) -> bytes:
+            def git(*args: str) -> subprocess.CompletedProcess[bytes]:
                 return subprocess.run(
                     ["git", "-C", directory, *args], check=True, capture_output=True
                 )

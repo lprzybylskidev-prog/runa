@@ -9,7 +9,7 @@ import os
 import re
 import signal
 import uuid
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
@@ -79,7 +79,7 @@ class EndpointService:
             self.processes.run(["docker", "rm", *ids], cwd=self.workspace.root, check=True)
 
     @contextlib.contextmanager
-    def endpoint(self) -> Iterator[None]:
+    def endpoint(self) -> Generator[None, None, None]:
         """Preserve manual endpoints; label/journal only containers this run creates."""
         from tools.application.repository_boundary_service import RepositoryPolicy
 
@@ -121,7 +121,7 @@ class EndpointService:
                     list(development_compose(self.workspace).command())
                     + ["ps", "--all", "--quiet", *SERVICES]
                 ).splitlines()
-                existing = set()
+                existing: set[str] = set()
                 for identity in ids:
                     labels = json.loads(
                         self.read(

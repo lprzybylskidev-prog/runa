@@ -10,12 +10,14 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import cast
 from unittest.mock import Mock, patch
 
+from tests.tools.runa.support.compose_source import compose_source as yaml
 from tests.tools.runa.support.deployment import bind_deployment, deployment
 from tools.application import production_runtime as production
 from tools.application.repository_boundary_service import RepositoryPolicy
-from tools.maintainer.checks import yaml
+from tools.core.state import JsonValue
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -57,18 +59,20 @@ class ProductionContracts(unittest.TestCase):
     def test_customer_redis_is_supported_while_actual_ai_services_and_privileges_remain_forbidden(
         self,
     ) -> None:
-        config = {
+        config: dict[str, JsonValue] = {
             "services": {
                 name: {"image": "fixture", "environment": {"KNOWLEDGE_ENABLED": "false"}}
                 for name in (*production.SERVICES, "redis")
             }
         }
 
-        def dc(arguments: list[str], *args: object, **kwargs: object) -> Mock:
+        def dc(
+            arguments: list[str], *args: object, **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
             return subprocess.CompletedProcess(arguments, 0, arguments[-1])
 
-        def run(arguments: list[str], **kwargs: object) -> Mock:
-            actual = {
+        def run(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            actual: dict[str, JsonValue] = {
                 "Image": "exact",
                 "HostConfig": {},
                 "Config": {"Env": ["KNOWLEDGE_ENABLED=false"]},
@@ -87,11 +91,15 @@ class ProductionContracts(unittest.TestCase):
             contextlib.redirect_stdout(io.StringIO()),
         ):
             self.deployment.runtime.isolation()
-            config["services"]["redis"]["privileged"] = True
+            services = config["services"]
+            assert isinstance(services, dict)
+            redis = services["redis"]
+            assert isinstance(redis, dict)
+            redis["privileged"] = True
             with self.assertRaisesRegex(ValueError, "privileges"):
                 self.deployment.runtime.isolation()
-            config["services"]["redis"].pop("privileged")
-            config["services"]["qdrant"] = {"image": "qdrant/qdrant:fixture"}
+            redis.pop("privileged")
+            services["qdrant"] = {"image": "qdrant/qdrant:fixture"}
             with self.assertRaisesRegex(ValueError, "AI/development"):
                 self.deployment.runtime.isolation()
 
@@ -203,10 +211,12 @@ class ProductionContracts(unittest.TestCase):
         ):
             config = Path(folder) / ".env.prod.compose"
             config.write_text("RUNA_IMAGE_TAG=v0.1.0\nRUNA_HTTP_PORT=8081\n")
-            self.deployment.context.run.return_value = subprocess.CompletedProcess([], 0)
-            self.deployment.context.run.side_effect = None
+            cast(Mock, self.deployment.context.run).return_value = subprocess.CompletedProcess(
+                [], 0
+            )
+            cast(Mock, self.deployment.context.run).side_effect = None
             main(["down"], self.deployment)
-            command = self.deployment.context.run.call_args.args[0]
+            command = cast(Mock, self.deployment.context.run).call_args.args[0]
             self.assertEqual(command[-1], "down")
             self.assertNotIn("-v", command)
             self.assertEqual(command[command.index("--project-name") + 1], "runa-prod")
@@ -217,6 +227,6 @@ class ProductionContracts(unittest.TestCase):
                 config.write_text("RUNA_IMAGE_TAG=" + tag + "\n")
                 with self.assertRaises(ValueError):
                     self.deployment.runtime.production.compose()
-            self.deployment.context.inside.return_value = True
+            cast(Mock, self.deployment.context.inside).return_value = True
             with self.assertRaisesRegex(ValueError, "host terminal"):
                 main(["build"], self.deployment)

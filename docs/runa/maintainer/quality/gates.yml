@@ -59,7 +59,7 @@ base:
   - id: php-static-analysis
     depends_on: [configuration]
     description: Run Larastan/PHPStan at the configured strict level.
-    command: php artisan runa:analyse
+    command: php artisan runa:analyse --configuration=../tools/maintainer/phpstan.neon
     severity: hard_fail
 
   - id: dependency-audit

@@ -68,14 +68,14 @@ final readonly class ManageProfiles implements AuthProfiles
 
     public function addSecondary(string $publicId, int $expectedVersion, string $email): string
     {
-        return $this->target($publicId, $expectedVersion, fn (Connection $connection, User $user): string => $this->addresses->secondaryLocked($connection, $user, 'add', $email, null));
+        return $this->target($publicId, $expectedVersion, fn (Connection $connection, User $user): string => $this->addresses->secondaryLocked($connection, $user, 'add', $email, null) ?? throw new \LogicException('Secondary address identity unavailable.'));
     }
 
     public function changeSecondary(string $publicId, int $expectedVersion, string $addressId, string $email): string
     {
         new TrustedPrincipal($addressId);
 
-        return $this->target($publicId, $expectedVersion, fn (Connection $connection, User $user): string => $this->addresses->secondaryLocked($connection, $user, 'change', $email, $addressId));
+        return $this->target($publicId, $expectedVersion, fn (Connection $connection, User $user): string => $this->addresses->secondaryLocked($connection, $user, 'change', $email, $addressId) ?? throw new \LogicException('Secondary address identity unavailable.'));
     }
 
     public function removeSecondary(string $publicId, int $expectedVersion, string $addressId): bool
@@ -100,10 +100,17 @@ final readonly class ManageProfiles implements AuthProfiles
                 return [];
             }
 
-            return $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereNull('deleted_at')->whereNotNull('verified_at')->orderBy('id')->pluck('email')->all();
+            /** @var list<string> $emails */
+            $emails = $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereNull('deleted_at')->whereNotNull('verified_at')->orderBy('id')->pluck('email')->all();
+
+            return $emails;
         });
     }
 
+    /** @template T
+     * @param  Closure(Connection, User): T  $work
+     * @return T
+     */
     private function target(string $publicId, int $version, Closure $work, ?string $proofAction = null): mixed
     {
         new TrustedPrincipal($publicId);

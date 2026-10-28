@@ -5,7 +5,7 @@ from typing import NotRequired, Protocol, TypedDict
 from tools.application.knowledge.configuration import KnowledgeConfig
 
 
-class ChunkPayload(TypedDict):
+class SourceMetadata(TypedDict):
     document_id: str
     source_path: str
     document_type: str
@@ -18,9 +18,6 @@ class ChunkPayload(TypedDict):
     chunk_id: NotRequired[str]
     chunk_schema_version: NotRequired[int]
     heading_path: NotRequired[list[str]]
-    section: NotRequired[str]
-    content: NotRequired[str]
-    content_hash: NotRequired[str]
     git_branch: NotRequired[str]
     git_commit: NotRequired[str]
     embedding_provider: NotRequired[str]
@@ -28,6 +25,12 @@ class ChunkPayload(TypedDict):
     embedding_revision: NotRequired[str]
     embedding_dimension: NotRequired[int]
     indexed_at: NotRequired[str]
+
+
+class ChunkPayload(SourceMetadata):
+    section: str
+    content: str
+    content_hash: str
 
 
 class Point(TypedDict):

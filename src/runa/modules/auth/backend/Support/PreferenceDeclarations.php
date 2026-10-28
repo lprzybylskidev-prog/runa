@@ -17,6 +17,7 @@ final readonly class PreferenceDeclarations
     public function __construct(private ModuleRegistry $registry, private ModuleAvailability $availability,
         private ModuleDeclarations $declarations, private Factory $validator) {}
 
+    /** @return array{PreferenceProvider, PreferenceDefinition} */
     public function resolve(PreferenceScope $scope): array
     {
         if (! in_array($scope->application, ['runa', config('branding.application_id')], true)) {
@@ -33,7 +34,9 @@ final readonly class PreferenceDeclarations
             }
             $found = null;
             $seen = [];
-            foreach ($provider->preferences() as $definition) {
+            /** @var array<array-key, mixed> $preferences Native provider arrays are validated before use. */
+            $preferences = $provider->preferences();
+            foreach ($preferences as $definition) {
                 if (! $definition instanceof PreferenceDefinition || count($seen) >= 256 || isset($seen[$definition->view.':'.$definition->key])) {
                     throw new \RuntimeException('Invalid preference declarations.');
                 }
@@ -57,6 +60,7 @@ final readonly class PreferenceDeclarations
             'boolean' => is_bool($value), 'integer' => is_int($value), 'string' => is_string($value),
             'array' => is_array($value) && array_is_list($value),
             'object' => is_array($value) && ($value === [] || ! array_is_list($value)),
+            default => throw new \RuntimeException('Invalid preference declaration type.'),
         };
         if (! $validType || strlen(json_encode($value, JSON_THROW_ON_ERROR)) > 32768
             || $this->validator->make(['value' => $value], ['value' => $definition->rules])->fails()

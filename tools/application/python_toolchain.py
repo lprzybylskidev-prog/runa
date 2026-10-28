@@ -13,6 +13,7 @@ import tarfile
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import cast
 from urllib.request import urlopen
 
 from tools.application.development_runtime import execution_location
@@ -89,8 +90,9 @@ class PythonToolchain:
         )
         if not isinstance(value, dict):
             raise ValueError("Invalid tool artifact lock.")
-        url: object = value.get("url")
-        integrity: object = value.get("integrity")
+        record = cast(dict[str, object], value)
+        url = record.get("url")
+        integrity = record.get("integrity")
         if not isinstance(url, str) or not isinstance(integrity, str):
             raise ValueError("Invalid tool artifact lock fields.")
         return url, integrity

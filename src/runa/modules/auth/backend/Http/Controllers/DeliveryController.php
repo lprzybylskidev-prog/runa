@@ -16,8 +16,10 @@ final readonly class DeliveryController
 
     public function __invoke(DeliveryRequest $request): JsonResponse
     {
+        /** @var array{module: string, category: string, revision: int, enabled: bool, recipients: list<string>} $input */
+        $input = $request->validated();
         $data = $this->context->run($request, fn (Connection $connection, User $user): array => $request->input('operation') === 'read'
-            ? $this->routing->own($connection, $user) : $this->routing->configure($connection, $user, $request->validated()), count: false, unrestricted: true);
+            ? $this->routing->own($connection, $user) : $this->routing->configure($connection, $user, $input), count: false, unrestricted: true);
 
         return (new ProfileResource($data))->response()->header('Cache-Control', 'no-store');
     }

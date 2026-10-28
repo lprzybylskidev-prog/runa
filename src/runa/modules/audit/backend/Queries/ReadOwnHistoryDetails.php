@@ -3,6 +3,7 @@
 namespace Runa\Modules\Audit\Queries;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\PrincipalScope;
@@ -15,6 +16,7 @@ final readonly class ReadOwnHistoryDetails implements OwnHistoryDetails
 {
     public function __construct(private DatabaseManager $database, private PrincipalScope $principals) {}
 
+    /** @param array<string, array<array-key, mixed>> $fieldsByAction */
     public function detail(string $module, string $entityType, string $publicId, array $fieldsByAction): ?array
     {
         $principal = $this->principals->current();
@@ -26,7 +28,9 @@ final readonly class ReadOwnHistoryDetails implements OwnHistoryDetails
         if (count($fieldsByAction) < 1 || count($fieldsByAction) > 64) {
             throw new \InvalidArgumentException('Bounded action fields are required.');
         }
+        $allowed = [];
         foreach ($fieldsByAction as $action => $fields) {
+            $approved = [];
             new ApiOperation($action);
             if (! array_is_list($fields) || count($fields) > 32) {
                 throw new \InvalidArgumentException('Bounded history fields are required.');
@@ -35,19 +39,26 @@ final readonly class ReadOwnHistoryDetails implements OwnHistoryDetails
                 if (! is_string($field) || preg_match('/\A[a-z][a-z0-9_]{0,63}\z/D', $field) !== 1 || SafePayload::secretName($field)) {
                     throw new \InvalidArgumentException('Unsafe history field.');
                 }
+                $approved[] = $field;
             }
+            $allowed[$action] = $approved;
         }
+        /** @var (\stdClass&object{public_id: string, occurred_at: string, action: string, outcome: string, changes: string})|null $row */
         $row = $this->database->connection()->table('runa_audit.events')->where('public_id', $publicId)
             ->where('module', $module)->whereIn('action', array_keys($fieldsByAction))
-            ->whereExists(fn ($q) => $q->selectRaw('1')->from('runa_audit.entities')->whereColumn('event_id', 'runa_audit.events.id')
+            ->whereExists(fn (Builder $q) => $q->selectRaw('1')->from('runa_audit.entities')->whereColumn('event_id', 'runa_audit.events.id')
                 ->where('module', $module)->where('entity_type', $entityType)->where('entity_public_id', $principal->publicId))
             ->first(['public_id', 'occurred_at', 'action', 'outcome', 'changes']);
         if ($row === null) {
             return null;
         }
-        $stored = SafePayload::clean(json_decode($row->changes, true, flags: JSON_THROW_ON_ERROR));
+        $payload = json_decode($row->changes, true, flags: JSON_THROW_ON_ERROR);
+        if (! is_array($payload)) {
+            throw new \RuntimeException('Invalid stored Audit changes.');
+        }
+        $stored = SafePayload::clean($payload);
         $changes = [];
-        foreach ($fieldsByAction[$row->action] as $field) {
+        foreach ($allowed[$row->action] as $field) {
             $pair = $stored[$field] ?? null;
             if (is_array($pair) && array_key_exists('old', $pair) && array_key_exists('new', $pair)
                 && $this->safeValue($pair['old']) && $this->safeValue($pair['new'])) {

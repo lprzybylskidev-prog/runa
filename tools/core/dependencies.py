@@ -7,9 +7,7 @@ from tools.core.state import JsonValue
 SECTIONS = {"composer": ("require", "require-dev"), "package": ("dependencies", "devDependencies")}
 
 
-def compose(
-    platform: dict[str, JsonValue], application: dict[str, JsonValue], kind: str
-) -> dict[str, JsonValue]:
+def compose(platform: JsonValue, application: JsonValue, kind: str) -> dict[str, JsonValue]:
     if not isinstance(platform, dict) or not isinstance(application, dict):
         raise ValueError("Dependency manifests must be JSON objects.")
     if set(application) - set(SECTIONS[kind]):

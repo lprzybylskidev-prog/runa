@@ -16,6 +16,8 @@ from typing import Unpack
 from tests.tools.runa.acceptance.acceptance import AcceptanceContext, OutputOptions
 from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
+from tools.core.state import JsonValue, json_value
+from tools.maintainer.python_packages import stage
 
 ROOT = Path(__file__).resolve().parents[4]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
@@ -32,10 +34,10 @@ def main() -> None:
         )
     report_path = ROOT / ".runtime/ownership/RM-2026-005-management-host-latest.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    checks = []
-    report = {
+    checks: list[str] = []
+    report: dict[str, JsonValue] = {
         "result": "RUNNING",
-        "checks": checks,
+        "checks": list(checks),
         "scope": "Transport recovery using fixed development operations and isolated PHP process fixtures; not full Laravel installation acceptance.",
     }
     report_path.write_text(json.dumps(report, indent=2) + "\n")
@@ -80,13 +82,13 @@ def main() -> None:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
         shutil.copytree(ROOT / "src/runa/Tooling/Management", root / "src/runa/Tooling/Management")
-        shutil.copytree(ROOT / "tools/application/executors", root / "tools/application/executors")
+        stage("application", root)
         (root / ".devcontainer").mkdir()
         (root / ".devcontainer/compose.resources.yaml").write_text('{"services":{}}\n')
         (root / ".env.dev.local").write_text(
             "DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n"
         )
-        common = {
+        common: dict[str, JsonValue] = {
             "image": report["management_tag"],
             "pull_policy": "never",
             "entrypoint": ["php", "-r"],
@@ -144,7 +146,12 @@ def main() -> None:
                 ),
                 "fixture starts without application kernel, vendor, DB credentials or key",
             )
-            listing = output([launcher, "--management", "list", "--raw"], cwd=root)
+            discovery = ACCEPTANCE.call(
+                [launcher, "--management", "list", "--raw"], cwd=root, capture=True, check=False
+            )
+            if discovery.returncode:
+                raise RuntimeError("Cold fixture discovery failed: " + discovery.stderr)
+            listing = discovery.stdout.strip()
             check(
                 "runa:dev" in listing and "migrate" not in listing,
                 "cold discovery uses the packaged production dependencies and explicit management registry",
@@ -289,18 +296,20 @@ def main() -> None:
                     "label=com.docker.compose.project=" + project,
                 ]
             ).splitlines()
-            report["cleanup"] = {
-                "containers": containers,
-                "networks": networks,
-                "volumes": volumes,
-                "preserved": [
-                    "development/test data",
-                    "knowledge/model caches",
-                    "backups",
-                    "verification reports",
-                    "image/build caches",
-                ],
-            }
+            report["cleanup"] = json_value(
+                {
+                    "containers": containers,
+                    "networks": networks,
+                    "volumes": volumes,
+                    "preserved": [
+                        "development/test data",
+                        "knowledge/model caches",
+                        "backups",
+                        "verification reports",
+                        "image/build caches",
+                    ],
+                }
+            )
             print("Scoped disposable cleanup: " + json.dumps(report["cleanup"]), flush=True)
             output(compose + ["down", "--remove-orphans"])
             check(

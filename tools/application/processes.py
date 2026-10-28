@@ -145,6 +145,7 @@ class ApplicationProcesses:
                 )
             )
         except ProcessTimeout:
+            assert timeout is not None
             raise subprocess.TimeoutExpired(["application command"], timeout) from None
         if check and result.returncode:
             raise subprocess.CalledProcessError(result.returncode, ["application command"])

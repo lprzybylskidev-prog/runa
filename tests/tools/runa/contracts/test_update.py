@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from collections import deque
 from pathlib import Path
-from typing import Unpack
+from typing import Never, Unpack
 from unittest.mock import patch
 
 import pytest
@@ -92,7 +92,9 @@ class Updater(unittest.TestCase):
         before = self.fixture.snapshot()
         result = self.fixture.run_plan()
         self.assertEqual(result["status"], "ready", result)
+        assert "plan" in result
         self.assertEqual(result["plan"]["platform_migrations"], ["2026_01_02_000001_upgrade"])
+        assert "plan" in result
         self.assertEqual(
             result["plan"]["platform_seeder"]["class"], "Runa\\Database\\Seeders\\DatabaseSeeder"
         )
@@ -159,7 +161,7 @@ class Updater(unittest.TestCase):
             self.assertEqual(self.fixture.run_plan()["status"], "blocked")
 
     def test_unknown_versions_or_failed_reference_resolution_never_adopt_local_source(self) -> None:
-        def fail(*args: object, **kwargs: object) -> None:
+        def fail(*args: object, **kwargs: object) -> Never:
             raise bootstrap.BootstrapError("Release unavailable.")
 
         result = update.preflight(
@@ -195,6 +197,7 @@ class Updater(unittest.TestCase):
         )
         result = self.fixture.run_plan()
         self.assertEqual(result["status"], "ready", result)
+        assert "customization_review" in result
         self.assertTrue(result["customization_review"]["required"])
 
     def test_operation_lock_pending_journal_symlink_and_owner_target_fail_closed(self) -> None:
@@ -251,8 +254,8 @@ class Updater(unittest.TestCase):
                 self.fixture.installed,
                 self.fixture.client,
                 "v0.3.0",
-                runtime_probe=lambda *a: self.fixture.runtime,
-                lock_probe=lambda *a: "fixture",
+                runtime_probe=lambda _root, _mode, _operator: self.fixture.runtime,
+                lock_probe=lambda candidate, image: "fixture",
             )
         self.assertEqual(result["status"], "ready", result)
         self.assertTrue(result["temporary_downloads_cleaned"])
@@ -262,7 +265,7 @@ class Updater(unittest.TestCase):
     ) -> None:
         before = self.fixture.snapshot()
 
-        def fail(*a: object) -> None:
+        def fail(*a: object) -> Never:
             raise contracts.Blocker("runtime-unavailable", "Required runtime is unavailable.")
 
         result = update.preflight(
@@ -270,7 +273,7 @@ class Updater(unittest.TestCase):
             self.fixture.client,
             "v0.3.0",
             download=self.fixture.download,
-            lock_probe=lambda *a: "fixture",
+            lock_probe=lambda candidate, image: "fixture",
             runtime_probe=fail,
         )
         self.assertEqual(result["checks"][-1]["id"], "runtime-unavailable")
@@ -281,10 +284,16 @@ class Updater(unittest.TestCase):
         self.assertEqual(before, self.fixture.snapshot())
 
     def test_interrupted_download_cleans_external_staging_and_preserves_installation(self) -> None:
-        seen = []
+        seen: list[Path] = []
         before = self.fixture.snapshot()
 
-        def interrupted(client: bootstrap.GitHub, tag: str, destination: Path, mode: str) -> None:
+        def interrupted(
+            client: bootstrap.GitHub,
+            tag: str,
+            destination: Path,
+            mode: str,
+            expected_commit: str | None = None,
+        ) -> Never:
             destination.mkdir()
             (destination / "partial").write_text("partial")
             seen.append(destination.parent)
@@ -325,6 +334,7 @@ class Updater(unittest.TestCase):
                 self.fixture.git(root, "add", name)
         result = self.fixture.run_plan()
         self.assertEqual(result["status"], "ready", result)
+        assert "customization_review" in result
         rows = {row["path"]: row for row in result["customization_review"]["files"]}
         for name in names:
             self.assertEqual(rows[name]["ownership"], "application")
@@ -428,7 +438,7 @@ class Updater(unittest.TestCase):
                 ]
             )
         )
-        actual = []
+        actual: list[bool | str] = []
         for c, v in queries:
             try:
                 actual.append(contracts.supports(c, v))
@@ -458,11 +468,13 @@ class Updater(unittest.TestCase):
             self.fixture.client,
             "v0.2.1",
             download=self.fixture.download,
-            runtime_probe=lambda *a: self.fixture.runtime,
-            lock_probe=lambda *a: "fixture",
+            runtime_probe=lambda _root, _mode, _operator: self.fixture.runtime,
+            lock_probe=lambda candidate, image: "fixture",
         )
         self.assertEqual(result["status"], "ready", result)
+        assert "plan" in result
         self.assertTrue(result["plan"]["no_op"])
+        assert "plan" in result
         self.assertEqual(result["plan"]["platform_migrations"], [])
 
     def test_invalid_application_version_or_boolean_schema_is_not_compatibility_approval(
@@ -514,6 +526,7 @@ class Updater(unittest.TestCase):
         (self.fixture.installed / ".env.private").write_text("PRIVATE_VALUE=never report")
         result = self.fixture.run_plan()
         self.assertEqual(result["status"], "ready", result)
+        assert "customization_review" in result
         rows = {r["path"]: r for r in result["customization_review"]["files"]}
         self.assertEqual(rows["README.md"]["action"], "update")
         self.assertEqual(rows["README.md"]["local"], "modified")
@@ -580,8 +593,9 @@ class Updater(unittest.TestCase):
             path.write_text("task")
             self.fixture.git(root, "add", "scripts/task")
         (self.fixture.target / "scripts/task").chmod(0o755)
-        review = self.fixture.run_plan()["customization_review"]
+        review = self.fixture.review()
         row = next(r for r in review["files"] if r["path"] == "scripts/task")
+        assert "target" in row and row["target"] is not None
         self.assertEqual(row["target"]["mode"], "100755")
         (self.fixture.installed / "scripts/task").unlink()
         (self.fixture.installed / "scripts").rmdir()
@@ -595,6 +609,7 @@ class Updater(unittest.TestCase):
         before = self.fixture.snapshot()
         result = self.fixture.run_plan()
         self.assertEqual(result["status"], "ready", result)
+        assert "customization_review" in result
         review = result["customization_review"]
         self.assertTrue(review["required"])
         self.assertEqual(review["services"], ["app", "redis"])
@@ -613,10 +628,10 @@ class Updater(unittest.TestCase):
     def test_untracked_infrastructure_changes_are_bound_to_exact_review(self) -> None:
         extra = self.fixture.installed / "compose.override.yaml"
         extra.write_text('{"services":{"redis":{"image":"redis"}}}')
-        before = self.fixture.run_plan()["customization_review"]
+        before = self.fixture.review()
         self.assertIn("compose.override.yaml", [r["path"] for r in before["files"]])
         extra.write_text('{"services":{"redis":{"image":"redis","command":["changed"]}}}')
-        after = self.fixture.run_plan()["customization_review"]
+        after = self.fixture.review()
         self.assertNotEqual(before["fingerprint"], after["fingerprint"])
 
     def test_multiple_devcontainer_compose_files_and_override_services_are_reviewed(self) -> None:
@@ -631,7 +646,7 @@ class Updater(unittest.TestCase):
         (self.fixture.installed / "compose.override.yaml").write_text(
             '{"services":{"worker":{"image":"worker"}}}'
         )
-        review = self.fixture.run_plan()["customization_review"]
+        review = self.fixture.review()
         self.assertEqual(review["services"], ["redis", "worker"])
         self.assertTrue(review["devcontainer"])
 
@@ -660,13 +675,13 @@ class Updater(unittest.TestCase):
                 )
             )
         (self.fixture.installed / "docker/Dockerfile").write_text("FROM scratch\nLABEL changed=yes")
-        review = self.fixture.run_plan()["customization_review"]
+        review = self.fixture.review()
         self.assertEqual(review["services"], ["app", "queue"])
         (self.fixture.installed / "docker/Dockerfile").write_text("FROM scratch")
         (self.fixture.installed / ".devcontainer").mkdir()
         (self.fixture.installed / ".devcontainer/devcontainer.json").write_text(
             '{"workspaceFolder":"/custom"}'
         )
-        review = self.fixture.run_plan()["customization_review"]
+        review = self.fixture.review()
         self.assertTrue(review["devcontainer"])
         self.assertEqual(review["services"], [])

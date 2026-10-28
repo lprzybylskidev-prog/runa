@@ -89,20 +89,21 @@ def test_owner_empty_scope_is_a_failure(tmp_path: Path) -> None:
 
 
 def test_interruption_stops_scheduling_and_records_pending_scopes(tmp_path: Path) -> None:
-    service, runner = fixture(tmp_path)
+    service, _ = fixture(tmp_path)
 
     # A native runner reaps its process group before raising this interruption.
     class Interrupted:
-        calls = []
+        calls: list[ProcessSpec] = []
 
         def run(self, spec: ProcessSpec) -> Never:
             self.calls.append(spec)
             raise KeyboardInterrupt
 
-    service = SuiteService(service.workspace, APPLICATION, Interrupted(), {}, lambda _: None)
+    interrupted = Interrupted()
+    service = SuiteService(service.workspace, APPLICATION, interrupted, {}, lambda _: None)
     assert service.execute(Selection(("frontend", "tooling"))) == 130
     assert [row["status"] for row in results(tmp_path)] == ["interrupted", "blocked"]
-    assert len(service.runner.calls) == 1
+    assert len(interrupted.calls) == 1
 
 
 def test_filters_are_native_and_raw_arguments_require_an_explicit_scope(tmp_path: Path) -> None:

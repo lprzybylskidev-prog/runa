@@ -12,7 +12,7 @@ final readonly class AcceptInvitationController
 
     public function __invoke(InvitationRequest $request): JsonResponse
     {
-        $this->tokens->consume($request->validated('token'), 'invitation', $request->validated('password'));
+        $this->tokens->consume($request->string('token')->toString(), 'invitation', $request->string('password')->toString());
 
         return response()->json(['data' => ['accepted' => true]])->header('Cache-Control', 'no-store');
     }

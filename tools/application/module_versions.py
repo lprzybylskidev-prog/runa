@@ -18,7 +18,7 @@ VERSION = re.compile(r"(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0
 
 class BinaryProcess(Protocol):
     def __call__(
-        self, arguments: Sequence[str], *, check: bool = False, capture_output: bool = False
+        self, arguments: Sequence[str], /, *, check: bool = False, capture_output: bool = False
     ) -> subprocess.CompletedProcess[bytes]: ...
 
 
@@ -39,7 +39,7 @@ def version(value: object) -> tuple[int, int, int]:
 def assess(previous: str | None, current: str, changed: bool, changelog: str) -> list[str]:
     """Require a monotonic bump and a current changelog entry for implementation changes."""
     current_version = version(current)
-    errors = []
+    errors: list[str] = []
     if previous is not None:
         previous_version = version(previous)
         if current_version < previous_version:

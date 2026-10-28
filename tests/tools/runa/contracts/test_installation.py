@@ -10,13 +10,14 @@ import shutil
 import subprocess
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 from tests.tools.runa.support.deployment import deployment
 from tools.application import deployment_context as ops
 from tools.application import installation_service as installer
+from tools.application.installation_models import InstallationSettings
 from tools.application.management_service import ManagementService
 from tools.application.repository_boundary_service import RepositoryPolicy
 
@@ -59,7 +60,7 @@ class InstallationContracts(unittest.TestCase):
             '{"version":"2.4.1","name":"Customer"}\n'
         )
         shutil.copyfile(ROOT / ".env.prod.example", self.root / ".env.prod.example")
-        self.settings = {
+        self.settings: InstallationSettings = {
             "app_url": "https://customer.example",
             "http_port": 18081,
             "tls": {"mode": "external"},
@@ -85,7 +86,7 @@ class InstallationContracts(unittest.TestCase):
         return path
 
     @contextlib.contextmanager
-    def tools(self, failure: Exception | None = None) -> Iterator[Mock]:
+    def tools(self, failure: Exception | None = None) -> Generator[Mock, None, None]:
         def run(arguments: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
             if arguments[:3] == ["git", "rev-parse", "HEAD"]:
                 return subprocess.CompletedProcess(arguments, 0, self.sha + "\n")
@@ -106,7 +107,7 @@ class InstallationContracts(unittest.TestCase):
     def test_schema_rejects_credentials_in_url_unknown_fields_newlines_bad_tls_ports_and_settings_permissions(
         self,
     ) -> None:
-        variants = [
+        variants: list[dict[str, object]] = [
             {"app_url": "https://user:password@customer.example"},
             {"extra": True},
             {"smtp": self.settings["smtp"] | {"password": "one\nDB_PASSWORD=two"}},
@@ -279,19 +280,19 @@ class InstallationContracts(unittest.TestCase):
             "name": "Initial administrator",
             "login": "a",
         }
-        self.assertEqual(
-            installer.validate_settings(self.settings | {"administrator": administrator}, True)[
-                "administrator"
-            ],
-            administrator,
+        validated = installer.validate_settings(
+            self.settings | {"administrator": administrator}, True
         )
-        for value in (
+        assert "administrator" in validated
+        self.assertEqual(validated["administrator"], administrator)
+        invalid_values: list[object] = [
             [],
             {},
             administrator | {"password": "must-not-be-accepted"},
             administrator | {"token": "must-not-be-accepted"},
             administrator | {"login": "a b"},
-        ):
+        ]
+        for value in invalid_values:
             with self.subTest(value=value), self.assertRaises(ValueError):
                 installer.validate_settings(self.settings | {"administrator": value}, True)
 
@@ -361,6 +362,7 @@ class InstallationContracts(unittest.TestCase):
         self.settings["smtp"]["password"] = "synthetic_corrected_password"
         corrected = self.installer.resume_settings(self.settings_file(), True)
         effective = ops.read_env(self.root / ".env.prod")
+        assert "password" in corrected["smtp"]
         self.assertEqual(corrected["smtp"]["password"], "synthetic_corrected_password")
         self.assertEqual(effective["MAIL_PASSWORD"], "synthetic_corrected_password")
         self.assertEqual(effective["APP_KEY"], original["APP_KEY"])

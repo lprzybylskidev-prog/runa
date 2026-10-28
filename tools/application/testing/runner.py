@@ -12,7 +12,7 @@ from tools.core.context import WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import InputMode, ProcessRunner, ProcessSpec
 from tools.core.reporting import SafeFailure
-from tools.core.state import FileLock, JsonStore, StateDirectory
+from tools.core.state import FileLock, JsonStore, StateDirectory, json_value
 
 Scope = Literal["backend", "frontend", "tooling", "e2e"]
 SCOPES: tuple[Scope, ...] = ("backend", "frontend", "tooling", "e2e")
@@ -48,7 +48,7 @@ def application_layout(root: Path) -> TestLayout:
         return APPLICATION
     if config.is_symlink() or not config.resolve().is_relative_to(root / "src/app"):
         raise ValueError("Application test configuration must be an owned regular file.")
-    data = json.loads(config.read_text())
+    data = json_value(json.loads(config.read_text()))
     if (
         not isinstance(data, dict)
         or set(data) != {"schema_version", "python_roots"}
@@ -69,7 +69,11 @@ def application_layout(root: Path) -> TestLayout:
             "Python roots must be explicit paths relative to the configured application test root."
         )
     prefix = "src/app/" if data["schema_version"] == 1 else "tests/tools/app/"
-    roots = tuple(str(Path(prefix) / path) for path in paths)
+    roots_list: list[str] = []
+    for path in paths:
+        assert isinstance(path, str)
+        roots_list.append(str(Path(prefix) / path))
+    roots = tuple(roots_list)
     if len(set(roots)) != len(roots):
         raise ValueError("Python roots must be unique.")
     return replace(APPLICATION, python_roots=roots)

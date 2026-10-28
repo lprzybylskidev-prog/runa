@@ -54,11 +54,28 @@ def metadata(path: Path) -> tuple[dict[str, JsonValue], str]:
 
         parsed = roadmap_metadata(path)
         result.update({key: parsed.get(key) for key in ("quality_groups", "quality_rationale")})
-    if not re.fullmatch(r"RM-\d{4}-\d{3}", result.get("id", "")) or not path.name.startswith(
-        result["id"] + "-"
+    identifier = result.get("id")
+    if (
+        not isinstance(identifier, str)
+        or not re.fullmatch(r"RM-\d{4}-\d{3}", identifier)
+        or not path.name.startswith(identifier + "-")
     ):
         raise ValueError("Invalid roadmap ID/path.")
     return result, text
+
+
+def release_kind(data: Mapping[str, JsonValue]) -> str:
+    value = data.get("release_type")
+    if not isinstance(value, str):
+        raise ValueError("Invalid release_type.")
+    return value
+
+
+def release_target(data: Mapping[str, JsonValue]) -> str | None:
+    value = data.get("target_version")
+    if value is not None and not isinstance(value, str):
+        raise ValueError("Invalid target_version.")
+    return value
 
 
 def check_application(root: Path, target: str) -> None:
@@ -139,7 +156,7 @@ def validate(root: Path) -> str:
         if data.get("status") != "active" or data.get("branch") != branch:
             raise ValueError("Active roadmap status/branch mismatch.")
         base = git(root, "show", "main:VERSION")
-        target = expected(base, data.get("release_type"), data.get("target_version"))
+        target = expected(base, release_kind(data), release_target(data))
         if current != base:
             raise ValueError("Active roadmap VERSION must match main until release finalization.")
         if entries and entries[0] != current:
@@ -166,6 +183,7 @@ def validate(root: Path) -> str:
     if not entries or entries[0] != current:
         raise ValueError("Final VERSION and changelog head differ.")
     heading = re.search(r"^## \[?" + re.escape(current) + r"\]?[^\n]*$", changelog, re.M)
+    assert heading is not None
     entry = changelog[heading.end() :].split("\n## ", 1)[0]
     ids = set(re.findall(r"RM-\d{4}-\d{3}", entry))
     if len(ids) != 1:
@@ -175,8 +193,11 @@ def validate(root: Path) -> str:
     if len(paths) != 1:
         raise ValueError("Matching closed roadmap is missing/ambiguous.")
     data, text = metadata(paths[0])
-    if data.get("status") != "closed" or not re.fullmatch(
-        r"\d{4}-\d{2}-\d{2}", data.get("closed_at", "")
+    closed_at = data.get("closed_at")
+    if (
+        data.get("status") != "closed"
+        or not isinstance(closed_at, str)
+        or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", closed_at)
     ):
         raise ValueError("Invalid roadmap closure metadata.")
     if branch not in ("main", data.get("branch")):
@@ -190,7 +211,7 @@ def validate(root: Path) -> str:
         raise ValueError("Invalid closed release_type.")
     if branch != "main":
         base = git(root, "show", "main:VERSION")
-        if current != expected(base, data["release_type"], data.get("target_version")):
+        if current != expected(base, release_kind(data), release_target(data)):
             raise ValueError("Final version does not match roadmap release_type.")
     # Check before publication on the roadmap branch; main retains the same local
     # evidence for its immediate post-merge sanity. Later clones use immutable tags.

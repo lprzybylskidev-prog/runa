@@ -12,7 +12,7 @@ in that transaction. Matching installed versions remain no-ops.
 ## Native primitives and browser transport
 
 Fortify **1.36.2** is pinned in the platform Composer declaration and composed lock.
-It supplies the authentication callback, CreatesNewUsers extension binding and
+It supplies the authentication callback and
 PrepareAuthenticatedSession regeneration primitive. Native Laravel web/session guard
 uses Auth's private Authenticatable/MustVerifyEmail model, with public_id as its
 identifier. No starter UI, Sanctum, JWT, passkeys or package-provided routes exist.
@@ -94,7 +94,7 @@ Explicitly supplied activation/approval/verification flags are prohibited; unkno
 fields are never mass assigned. Known frontend validation and entry UI use the [screen contract](entry-ui.md). No management HTTP endpoints or placeholder pages are added.
 
 Registration passes the validated password and password_confirmation together to
-the Fortify creation adapter; the shared credential check requires both. Neither
+the Auth-owned registration Action; the shared credential check requires both. Neither
 value enters Audit or response projections.
 
 ## Registration, verification and invitations

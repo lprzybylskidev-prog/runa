@@ -6,7 +6,6 @@ import json
 import shutil
 import subprocess
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -43,7 +42,7 @@ class Runtime:
         assert project == "fixture"
 
     def probe(self, *args: object) -> RuntimeSnapshot:
-        return dict(self.data_state, project="fixture", services=["app", "postgres"])
+        return {**self.data_state, "project": "fixture", "services": ["app", "postgres"]}
 
     def metadata(self) -> DatabaseMetadata:
         return json.loads(json.dumps(self.data_state))
@@ -129,13 +128,13 @@ def upgrade(tmp_path: Path) -> tuple[Path, Runtime, UpdateExecutor]:
     ) -> ReleaseIdentity:
         shutil.copytree(original if tag == "v0.5.0" else target, destination)
         commit = "a" * 40 if tag == "v0.5.0" else "b" * 40
-        return dict(tag=tag, commit=commit, tag_object="c" * 40)
+        return {"tag": tag, "commit": commit, "tag_object": "c" * 40}
 
     planner = UpdatePlanner(
         download=download,
         runtime_probe=runtime.probe,
-        lock_probe=lambda *args: "fixture",
-        module_plan=lambda *args: [],
+        lock_probe=lambda candidate, image: "fixture",
+        module_plan=lambda root, target, runtime, image: [],
     )
     return installed, runtime, UpdateExecutor(planner, runtime_factory=lambda root: runtime)
 
@@ -145,7 +144,7 @@ def test_upgrade_050_to_060_preserves_customer_tooling_and_does_not_replay_commi
 ) -> None:
     installed, runtime, executor = upgrade(tmp_path)
     runtime.failure = "committed-seed"
-    client = SimpleNamespace(repository="fixture/runa")
+    client = bootstrap.GitHub("fixture/runa")
     failed = executor.execute(installed, client, "v0.6.0", choose=lambda review: "continue")
     assert failed["status"] == "blocked", failed
     assert runtime.seed_effects == 1
@@ -173,9 +172,9 @@ def test_rename_interruption_reconciles_both_release_identities(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, boundary: int
 ) -> None:
     installed, runtime, executor = upgrade(tmp_path)
-    client = SimpleNamespace(repository="fixture/runa")
+    client = bootstrap.GitHub("fixture/runa")
     rename = update_execution.os.rename
-    calls = []
+    calls: list[Path] = []
 
     def interrupted(source: Path, destination: Path) -> None:
         rename(source, destination)

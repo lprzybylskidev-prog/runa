@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from collections import deque
+from collections.abc import Sequence
 from pathlib import Path
-from types import SimpleNamespace
+from typing import Literal, Unpack, overload
 
 import pytest
 
+from tools.application.deployment_runtime import DeploymentRuntime
 from tools.application.deployment_service import DeploymentService
-from tools.application.processes import ApplicationProcesses
+from tools.application.deployment_source import SourceAcquisition
+from tools.application.processes import ApplicationProcesses, ProcessOptions
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation
@@ -57,7 +61,7 @@ def test_interleaved_workspaces_and_releases_keep_operator_secrets_and_tls(tmp_p
         two.runtime.command(b)
 
 
-class Runtime:
+class Runtime(DeploymentRuntime):
     def __init__(self, fail: str | None = None) -> None:
         self.events: list[str] = []
         self.fail = fail
@@ -67,38 +71,93 @@ class Runtime:
         if self.fail == name:
             raise ValueError("Injected failure")
 
-    def dc(self, args: list[str], release: Path | None = None, **kwargs: object) -> SimpleNamespace:
+    @overload
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[True],
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str]: ...
+    @overload
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[False] = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[bytes]: ...
+    def dc(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: bool = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
         self.event(args[0])
-        return SimpleNamespace(stdout="")
+        if text:
+            return subprocess.CompletedProcess(args, 0, stdout="")
+        return subprocess.CompletedProcess(args, 0, stdout=b"")
 
-    def build_images(self, release: Path) -> None:
+    def build_images(self, release: Path | str | None = None) -> None:
         self.event("build")
 
-    def validate(self, release: Path) -> None:
+    def validate(self, release: Path | str | None = None) -> None:
         self.event("validate")
 
-    def pause_http(self, release: Path) -> None:
+    def pause_http(self, release: Path | str | None = None) -> None:
         self.event("fence")
 
-    def resume_http(self, release: Path, **kwargs: object) -> None:
+    def resume_http(self, release: Path | str | None = None, recreate: bool = False) -> None:
         self.event("activate")
 
-    def platform_data(self, sha: str, phase: str, release: Path) -> None:
+    def platform_data(self, sha: str, phase: str, release: Path | str | None = None) -> None:
         self.event(phase)
 
-    def artisan(self, args: list[str], release: Path) -> None:
+    @overload
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[True],
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str]: ...
+    @overload
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: Literal[False] = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[bytes]: ...
+    def artisan(
+        self,
+        args: Sequence[str],
+        release: Path | str | None = None,
+        *,
+        text: bool = False,
+        **kwargs: Unpack[ProcessOptions],
+    ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
         self.event(args[0])
+        if text:
+            return subprocess.CompletedProcess(args, 0, stdout="")
+        return subprocess.CompletedProcess(args, 0, stdout=b"")
 
-    def health(self, release: Path | None, **kwargs: object) -> None:
+    def health(self, release: Path | str | None = None, verify_source: bool = False) -> None:
         self.event("health")
 
-    def maintenance_active(self, release: Path | None) -> bool:
+    def maintenance_active(self, release: Path | str | None) -> bool:
         return False
 
-    def images(self, release: Path) -> dict[str, str]:
+    def images(self, release: Path | str | None = None) -> dict[str, str]:
         return {"runtime": "sha256:fixed"}
 
-    def command(self) -> list[str]:
+    def command(self, release: Path | str | None = None) -> list[str]:
         return ["--project-name", "runa-prod-simulation-fixture"]
 
 
@@ -118,8 +177,15 @@ def deployment(tmp_path: Path, fail: str | None = None) -> tuple[DeploymentServi
         (path / ("platform.json" if owner == "runa" else "application.json")).write_text(
             '{"version":"0.6.0"}'
         )
-    source = SimpleNamespace(checkout=lambda *args: release, tree_hash=lambda *args: "fixed")
-    return DeploymentService(instance.context, source, runtime), runtime, sha
+
+    class Source(SourceAcquisition):
+        def checkout(self, sha: str, source: Path | None = None) -> Path:
+            return release
+
+        def tree_hash(self, sha: str, repository: Path | None = None) -> str:
+            return "fixed"
+
+    return DeploymentService(instance.context, Source(instance.context), runtime), runtime, sha
 
 
 @pytest.mark.parametrize("failure", ["build", "migrations", "required-seeds", "health"])
@@ -147,7 +213,9 @@ def test_successful_repeat_verifies_health_without_replaying_data(tmp_path: Path
     deploy.deploy_revision(sha, True)
     assert runtime.events == before + ["health"]
     assert not (deploy.context.state / "in-progress.json").exists()
-    assert deploy.context.read_state()["current"]["rollback_safe"] is False
+    current = deploy.context.read_state()["current"]
+    assert current is not None and "rollback_safe" in current
+    assert current["rollback_safe"] is False
 
 
 def test_unsafe_data_rollback_refuses_before_runtime_work(
@@ -156,13 +224,17 @@ def test_unsafe_data_rollback_refuses_before_runtime_work(
     deploy, runtime, sha = deployment(tmp_path)
     deploy.deploy_revision(sha, True)
     state = deploy.context.read_state()
-    previous = dict(
-        state["current"], sha="a" * 40, path=str(deploy.context.state / "releases" / ("a" * 40))
-    )
+    assert state["current"] is not None
+    previous = state["current"].copy()
+    previous["sha"] = "a" * 40
+    previous["path"] = str(deploy.context.state / "releases" / ("a" * 40))
     state["previous"] = previous
     deploy.context.atomic(deploy.context.state / "deployment.json", state)
 
-    monkeypatch.setattr(RepositoryPolicy, "assert_production_installation", lambda self, root: None)
+    def admit(self: RepositoryPolicy, root: Path) -> None:
+        return None
+
+    monkeypatch.setattr(RepositoryPolicy, "assert_production_installation", admit)
     before = list(runtime.events)
     with pytest.raises(ValueError, match="unproven"):
         deploy.rollback()

@@ -24,15 +24,21 @@ final readonly class SynchronizeDeclarations
         $changes = [];
         $affected = [];
         foreach (['permissions', 'roles'] as $table) {
-            foreach ($declared[$table] as $code => $definition) {
-                $dictionary = $table === 'roles' ? $definition['dictionary'] : $definition;
+            $definitions = $table === 'roles' ? $declared['roles'] : array_map(
+                static fn (array $dictionary): array => ['dictionary' => $dictionary, 'permissions' => []],
+                $declared['permissions'],
+            );
+            foreach ($definitions as $code => $definition) {
+                $dictionary = $definition['dictionary'];
+                /** @var (\stdClass&object{id: int, module_id: string|null, system: bool, deleted_at: string|null, version: int, code: string, name_pl: string, name_en: string, description_pl: string, description_en: string})|null $row */
                 $row = $connection->table('runa_permissions.'.$table)->where('code', $code)->first();
                 if ($row !== null && ($row->module_id !== $module || $row->system || $row->deleted_at !== null)) {
                     throw new \RuntimeException('Declaration identity is protected or owned elsewhere.');
                 }
-                $old = $row === null ? null : array_intersect_key((array) $row, $dictionary);
+                $old = $row === null ? null : ['code' => $row->code, 'name_pl' => $row->name_pl, 'name_en' => $row->name_en, 'description_pl' => $row->description_pl, 'description_en' => $row->description_en];
                 $before = $after = [];
                 if ($table === 'roles') {
+                    /** @var list<string> $before */
                     $before = $row === null ? [] : $connection->table('runa_permissions.role_permissions as rp')
                         ->join('runa_permissions.permissions as p', 'p.id', '=', 'rp.permission_id')->where('rp.role_id', $row->id)
                         ->orderBy('p.code')->pluck('p.code')->all();
@@ -48,11 +54,12 @@ final readonly class SynchronizeDeclarations
             }
         }
         $record = $this->registry->snapshot()->modules[$module] ?? throw new \RuntimeException('Declaration owner missing.');
+        /** @var list<\stdClass&object{user_public_id: string}> $assignments */
         $assignments = $affected === [] ? [] : $connection->table('runa_permissions.user_roles')
             ->whereIn('role_id', $affected)->orderBy('user_public_id')->orderBy('role_id')->get(['role_id', 'user_public_id'])->all();
         $fingerprint = hash('sha256', json_encode([$record->manifestHash, $declared, $changes, $assignments], JSON_THROW_ON_ERROR));
 
-        return new DeclarationPreview($module, $fingerprint, $changes, count(array_unique(array_map(static fn (object $row): string => $row->user_public_id, $assignments))));
+        return new DeclarationPreview($module, $fingerprint, $changes, count(array_unique(array_map(static fn ($row): string => $row->user_public_id, $assignments))));
     }
 
     public function apply(Connection $connection, DeclarationPreview $reviewed, AuditWriter $audit): void
@@ -74,6 +81,7 @@ final readonly class SynchronizeDeclarations
             foreach ($current->changes as $table => $definitions) {
                 foreach ($definitions as $code => $change) {
                     $query = $connection->table('runa_permissions.'.$table)->where('code', $code);
+                    /** @var (\stdClass&object{id: int, version: int})|null $row */
                     $row = $query->lockForUpdate()->first();
                     $data = $change['after'] + ['module_id' => $reviewed->module, 'updated_at' => now('UTC')];
                     if ($row === null) {

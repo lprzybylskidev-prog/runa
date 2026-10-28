@@ -16,6 +16,7 @@ class AuditCaptureFixture extends ModuleModel
 
     public bool $snapshotCapture = false;
 
+    /** @var list<string> */
     public array $captureEvents = ['created', 'updated', 'deleted', 'restored', 'force_deleted'];
 
     public static function moduleId(): string

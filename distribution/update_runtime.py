@@ -88,7 +88,7 @@ def compose(root: Path, mode: str, operator: Path) -> list[str]:
         str(root / ".env.dev.local"),
     ]
     workspace = root / ".devcontainer/devcontainer.json"
-    files = ["compose.yaml", ".devcontainer/compose.resources.yaml"]
+    files: list[str] = ["compose.yaml", ".devcontainer/compose.resources.yaml"]
     configuration = document(root, ".devcontainer/devcontainer.json") if workspace.exists() else {}
     if "dockerComposeFile" in configuration:
         value = configuration["dockerComposeFile"]

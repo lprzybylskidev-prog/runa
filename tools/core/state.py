@@ -8,7 +8,7 @@ import math
 import os
 import secrets
 import stat
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -57,7 +57,7 @@ class StateDirectory:
             raise ValueError("State directory must belong to its explicit trusted anchor.")
 
     @contextmanager
-    def open(self) -> Iterator[int]:
+    def open(self) -> Generator[int, None, None]:
         """Walk from / using openat; never follow a replaced ancestor symlink."""
         descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
         try:
@@ -99,7 +99,7 @@ class StateDirectory:
         *,
         create: bool = False,
         private: bool = True,
-    ) -> Iterator[int]:
+    ) -> Generator[int, None, None]:
         descriptor = os.open(
             filename(name),
             (os.O_RDWR | os.O_CREAT if create else os.O_RDONLY)
@@ -219,7 +219,7 @@ class FileLock:
     blocking: bool = False
 
     @contextmanager
-    def acquire(self) -> Iterator[None]:
+    def acquire(self) -> Generator[None, None, None]:
         """Never truncate, replace or unlink the inode, including on failure."""
         with self.directory.open() as directory:
             with self.directory.file(

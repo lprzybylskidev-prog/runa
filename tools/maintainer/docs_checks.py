@@ -71,7 +71,7 @@ def validate(root: Path) -> None:
 
     public.validate(root)
     mapping = root / "docs/runa/maintainer/documentation-map.json"
-    historical = (
+    historical: set[str] = (
         set(json.loads(mapping.read_text())["immutable_sha256"]) if mapping.is_file() else set()
     )
     current = [

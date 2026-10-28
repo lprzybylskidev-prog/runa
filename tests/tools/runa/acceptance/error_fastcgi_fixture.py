@@ -18,10 +18,10 @@ def read(stream: socket.socket, length: int) -> bytes:
 
 
 def decode(data: bytes) -> dict[str, str]:
-    values = {}
+    values: dict[str, str] = {}
     position = 0
     while position < len(data):
-        sizes = []
+        sizes: list[int] = []
         for _ in range(2):
             size = data[position]
             if size & 128:
@@ -53,7 +53,7 @@ def main() -> None:
             parameters = b""
             try:
                 while True:
-                    version, kind, request_id, length, padding, _ = struct.unpack(
+                    _version, kind, request_id, length, padding, _ = struct.unpack(
                         "!BBHHBB", read(connection, 8)
                     )
                     payload = read(connection, length)

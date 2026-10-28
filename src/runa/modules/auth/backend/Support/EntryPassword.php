@@ -7,10 +7,13 @@ use Illuminate\Validation\Rules\Password;
 
 final class EntryPassword
 {
+    /**
+     * @return list<string|Password|Closure>
+     */
     public static function rules(): array
     {
         $policy = app(CredentialPolicy::class);
-        $rule = Password::min($policy->value('password_min_length'));
+        $rule = Password::min($policy->integer('password_min_length'));
         if ($policy->value('password_mixed_case')) {
             $rule->mixedCase();
         }

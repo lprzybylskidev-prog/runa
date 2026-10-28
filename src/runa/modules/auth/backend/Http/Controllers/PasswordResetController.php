@@ -12,7 +12,7 @@ final readonly class PasswordResetController
 
     public function __invoke(PasswordResetRequest $request): JsonResponse
     {
-        $this->action->reset($request->validated('token'), $request->validated('password'));
+        $this->action->reset($request->string('token')->toString(), $request->string('password')->toString());
         $data = ['accepted' => true];
 
         return response()->json(['data' => $data], 200, ['Cache-Control' => 'no-store']);

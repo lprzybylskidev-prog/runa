@@ -10,11 +10,17 @@ final class BulkSessionsProxy extends GuardedApi implements AuthBulkSessions
 {
     public function preview(SessionSelection $selection, bool $trust = false): array
     {
-        return $this->invoke(__FUNCTION__, [$selection, $trust]);
+        /** @var array{accounts: list<array{public_id: string, version: int, security_version: int, sessions: list<string>, trusted_devices: list<string>}>, sessions: int, trusted_devices: int, fingerprint: string} $result */
+        $result = $this->invoke(__FUNCTION__, [$selection, $trust]);
+
+        return $result;
     }
 
     public function revoke(SessionSelection $selection, bool $trust, string $fingerprint): array
     {
-        return $this->invoke(__FUNCTION__, [$selection, $trust, $fingerprint]);
+        /** @var array{accounts: int, sessions: int, trusted_devices: int} $result */
+        $result = $this->invoke(__FUNCTION__, [$selection, $trust, $fingerprint]);
+
+        return $result;
     }
 }

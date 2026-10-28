@@ -37,7 +37,7 @@ class HttpOpener(Protocol):
 
 
 class TransportFactory(Protocol):
-    def __call__(self, base: str) -> JsonTransport: ...
+    def __call__(self, base: str, /) -> JsonTransport: ...
 
 
 class Http:

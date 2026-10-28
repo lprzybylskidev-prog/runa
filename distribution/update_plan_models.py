@@ -28,7 +28,7 @@ class ReleaseDownload(Protocol):
 
 
 class RuntimeProbe(Protocol):
-    def __call__(self, root: Path, mode: str, operator: Path) -> RuntimeSnapshot: ...
+    def __call__(self, root: Path, mode: str, operator: Path, /) -> RuntimeSnapshot: ...
 
 
 class LockProbe(Protocol):

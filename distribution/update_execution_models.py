@@ -3,18 +3,21 @@
 import re
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Literal, NotRequired, Protocol, TypedDict, Unpack, cast
+from typing import Literal, NotRequired, Protocol, TypedDict, cast
 
 from distribution.bootstrap import SHA, TAG, GitHub
 from distribution.update_contracts import Blocker, SourceChange
 from distribution.update_file_models import CustomizationReview, FileJournal, file_journal
 from distribution.update_models import DatabaseMetadata, RuntimeSnapshot, SeedRun
 from distribution.update_plan_models import (
+    LockProbe,
+    ModulePlanner,
     PreflightCheck,
     PreflightDetails,
-    PreflightOptions,
     PreflightReport,
+    ReleaseDownload,
     ReleaseIdentity,
+    RuntimeProbe,
 )
 from tools.core.state import JsonValue, json_value
 
@@ -52,7 +55,19 @@ class RuntimeFactory(Protocol):
 
 class Preflight(Protocol):
     def __call__(
-        self, value: str | Path, client: GitHub, tag: str, /, **options: Unpack[PreflightOptions]
+        self,
+        value: str | Path,
+        client: GitHub,
+        tag: str,
+        /,
+        *,
+        toolchain: str = ...,
+        download: ReleaseDownload = ...,
+        runtime_probe: RuntimeProbe = ...,
+        lock_probe: LockProbe = ...,
+        expected_commit: str | None = ...,
+        lock_held: bool = ...,
+        module_plan: ModulePlanner = ...,
     ) -> PreflightReport: ...
 
 
@@ -149,7 +164,9 @@ def invalid_journal() -> Blocker:
 
 
 def string_rows(value: object) -> bool:
-    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+    return isinstance(value, list) and all(
+        isinstance(item, str) for item in cast(list[object], value)
+    )
 
 
 def completion_rows(value: JsonValue) -> bool:

@@ -86,15 +86,16 @@ class Store:
             or not isinstance(manifest.get("sources"), dict)
         ):
             raise ValueError("Invalid knowledge manifest; refusing collection writes.")
-        for name, source in manifest["sources"].items():
+        sources = manifest["sources"]
+        assert isinstance(sources, dict)
+        for source in sources.values():
             if (
-                not isinstance(name, str)
-                or not isinstance(source, dict)
+                not isinstance(source, dict)
                 or not all(
                     isinstance(source.get(key), str) for key in ("source_hash", "document_id")
                 )
                 or not isinstance(source.get("chunks"), list)
-                or not all(isinstance(key, str) for key in source["chunks"])
+                or not all(isinstance(key, str) for key in cast(list[object], source["chunks"]))
             ):
                 raise ValueError("Invalid knowledge source manifest; refusing collection writes.")
         return cast(Manifest, manifest)
@@ -150,6 +151,7 @@ class Store:
                     raise ValueError("Invalid Qdrant knowledge point.")
                 if point["id"] != MANIFEST:
                     payload = point["payload"]
+                    assert isinstance(payload, dict)
                     if not all(
                         isinstance(payload.get(key), str)
                         for key in (
@@ -164,7 +166,9 @@ class Store:
                         )
                     ):
                         raise ValueError("Invalid knowledge chunk payload.")
-                    result[point["id"]] = cast(ChunkPayload, payload)
+                    identity = point["id"]
+                    assert isinstance(identity, str)
+                    result[identity] = cast(ChunkPayload, payload)
             offset = response.get("next_page_offset")
             if offset is None:
                 return result

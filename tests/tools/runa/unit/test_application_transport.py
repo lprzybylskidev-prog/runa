@@ -125,7 +125,7 @@ def test_role_denial_precedes_state_processes_and_profile_files(
     tmp_path: Path, mode: str | None
 ) -> None:
     (tmp_path / ".git").mkdir()
-    policy = RepositoryPolicy(subprocess.run, {})
+    policy = RepositoryPolicy.for_workspace(tmp_path)
     policy.write_staging_receipt(
         tmp_path,
         {
@@ -386,7 +386,7 @@ def test_disconnect_completes_once_and_replay_is_refused(tmp_path: Path) -> None
 
 def test_setup_wait_lock_retains_inode_and_content(tmp_path: Path) -> None:
     class Setup(DevelopmentService):
-        def application_setup(self, arguments: list[str]) -> int:
+        def application_setup(self, arguments: Sequence[str]) -> int:
             return 7
 
     service, _ = management(tmp_path)
@@ -475,3 +475,16 @@ def test_failed_management_discovery_cleans_its_container_in_selected_workspace(
     assert cleanup.argv[3].startswith("runa-management-")
     assert len(cleanup.argv[3].removeprefix("runa-management-")) == 32
     assert cleanup.timeout == 30
+
+
+def test_management_state_creates_secure_ancestors_with_group_writable_umask(
+    tmp_path: Path,
+) -> None:
+    service = ManagementService.for_workspace(tmp_path)
+    previous = os.umask(0o002)
+    try:
+        service.private_directory(tmp_path / ".runtime/host")
+    finally:
+        os.umask(previous)
+    assert (tmp_path / ".runtime").stat().st_mode & 0o777 == 0o700
+    assert (tmp_path / ".runtime/host").stat().st_mode & 0o777 == 0o700

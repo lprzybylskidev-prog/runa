@@ -7,7 +7,7 @@ import shutil
 import stat
 import tempfile
 import uuid
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Generator, Sequence
 from contextlib import AbstractContextManager, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
@@ -69,7 +69,7 @@ def atomic(path: Path, value: object) -> None:
 
 
 @contextmanager
-def lock(root: Path) -> Iterator[Path]:
+def lock(root: Path) -> Generator[Path, None, None]:
     from tools.core.state import FileLock, StateDirectory
 
     state = root / ".runtime/production"
@@ -168,7 +168,7 @@ def references(
     directory: Path,
     download: ReleaseDownload,
 ) -> tuple[Path, Path]:
-    result = []
+    result: list[Path] = []
     for key in ("original", "target"):
         root = directory / key
         expected = journal[key]

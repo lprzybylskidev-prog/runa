@@ -5,6 +5,7 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\AuthSessions;
 use Runa\Modules\Auth\Models\User;
@@ -12,6 +13,7 @@ use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
+/** @phpstan-import-type SessionRow from SessionStore */
 final readonly class ManageSessions implements AuthSessions
 {
     public function __construct(private EntryTransaction $transactions, private SessionStore $sessions, private ModuleSettings $settings) {}
@@ -27,10 +29,12 @@ final readonly class ManageSessions implements AuthSessions
             return [];
         }
 
-        return $this->sessions->liveRows(app('db')->connection(), $user)
+        /** @var Collection<int, SessionRow> $rows */
+        $rows = $this->sessions->liveRows(app('db')->connection(), $user)
             ->when($before !== null, fn ($query) => $query->where('public_id', '<', $before))
-            ->orderByDesc('public_id')->limit(100)->get()
-            ->map(fn ($row) => $this->sessions->projection($row))->values()->all();
+            ->orderByDesc('public_id')->limit(100)->get();
+
+        return array_values($rows->map(fn ($row) => $this->sessions->projection($row))->all());
     }
 
     public function revoke(string $publicId, string $sessionId): bool
@@ -68,6 +72,9 @@ final readonly class ManageSessions implements AuthSessions
         });
     }
 
+    /**
+     * @return array{public_id: string, current: bool, remembered: bool, authenticated_at: string, activity_at: string, expires_at: string}
+     */
     public function activity(Request $request, User $subject): array
     {
         return $this->transactions->run(function (Connection $connection) use ($request, $subject): array {
@@ -79,7 +86,7 @@ final readonly class ManageSessions implements AuthSessions
             }
             $now = CarbonImmutable::now('UTC');
             if ($this->settings->value('runa.auth', 'session_extension')
-                && $now->gte(CarbonImmutable::parse($row->activity_at)->addSeconds($this->settings->value('runa.auth', 'session_heartbeat_seconds')))) {
+                && $now->gte(CarbonImmutable::parse($row->activity_at)->addSeconds($this->settings->integer('runa.auth', 'session_heartbeat_seconds')))) {
                 $connection->table('runa_auth.sessions')->where('id', $row->id)->update(['activity_at' => $now]);
                 $row->activity_at = $now->toIso8601String();
             }

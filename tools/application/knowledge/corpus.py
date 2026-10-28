@@ -8,7 +8,11 @@ from pathlib import Path
 
 from tools.application.knowledge.configuration import KnowledgeConfig
 from tools.application.knowledge.context import KnowledgeContext
-from tools.application.knowledge.contracts import ChunkPayload, EmbeddingProvider, Point
+from tools.application.knowledge.contracts import (
+    EmbeddingProvider,
+    Point,
+    SourceMetadata,
+)
 
 NAMESPACE = uuid.UUID("b8857f5f-4537-596f-a80b-dc263a9e83c4")
 
@@ -112,7 +116,7 @@ def sections(text: str, markdown: bool = True) -> Iterator[tuple[list[str], str]
         yield heading_path[:], "\n".join(lines).strip()
 
 
-def metadata(path: Path, root: Path, text: str) -> ChunkPayload:
+def metadata(path: Path, root: Path, text: str) -> SourceMetadata:
     name = path.relative_to(root).as_posix()
     location = re.fullmatch(
         r"docs/(app/roadmaps|runa/maintainer/roadmaps)/(draft|active|paused|closed)/([^/]+)\.md",
@@ -175,7 +179,7 @@ def metadata(path: Path, root: Path, text: str) -> ChunkPayload:
 
 def chunks(
     path: Path, root: Path, text: str, provider: EmbeddingProvider, config: KnowledgeConfig
-) -> tuple[ChunkPayload, list[Point]]:
+) -> tuple[SourceMetadata, list[Point]]:
     meta = metadata(path, root, text)
     # Strip roadmap frontmatter from semantic content, retaining metadata above.
     content = re.sub(r"\A---\n.*?\n---\n", "", text, count=1, flags=re.S)

@@ -178,7 +178,7 @@ class CustomerSource:
                     if target.startswith("refs/")
                     else ["refs/remotes/origin/" + target, "refs/tags/" + target]
                 )
-                present = []
+                present: list[str] = []
                 for value in refs:
                     try:
                         self.git(source, "show-ref", "--verify", value)

@@ -2,6 +2,7 @@
 
 namespace Runa\Modules\Auth\Http\Controllers;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Runa\Modules\Auth\Actions\TrustedDevices;
@@ -13,7 +14,7 @@ final readonly class TrustRevokeController
 
     public function __invoke(SessionRevokeRequest $request): JsonResponse
     {
-        $this->devices->revoke(Auth::guard('web')->id(), $request->validated('public_id'));
+        $this->devices->revoke((Auth::guard('web')->user() ?? throw new AuthenticationException)->public_id, $request->string('public_id')->toString());
 
         return response()->json(['data' => ['accepted' => true]], headers: ['Cache-Control' => 'no-store']);
     }

@@ -334,7 +334,16 @@ under `tools/application/testing/support`; PHP and browser helpers under
 and native acceptance harnesses stay private. Native Docker acceptance modules
 run on the host through their supported quality nodes; pytest live-service cases
 have explicit registered markers/prerequisites. No unit fixture starts services.
+The private browser harness prepares Core descriptors and forward-only updates in
+the guarded testing database before serving requests. It retains application data
+and uses the actual checkout commit; customer browser runners never load this fixture.
 The scenario map is [test migration](../tooling/python-rebuild/test-migration.json).
+
+The owner PHP analysis gate passes `--configuration=../tools/maintainer/phpstan.neon`.
+It includes the delivered maximum-level application rules, every platform source
+root and the private Auditable model consumer fixture. The delivered `src/phpstan.neon`
+selects application source; it never references an excluded private fixture. Trait
+analysis is exercised through the real fixture used by Audit runtime regressions.
 
 ## Public boundary and projection evidence
 

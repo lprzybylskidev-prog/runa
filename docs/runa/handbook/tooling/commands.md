@@ -383,7 +383,8 @@ see [Python tooling](../development/python-tooling.md). Inside the container use
 `php artisan`. No host pip/package installation is needed. Private owner tests
 continue through the maintainer test transport, outside the customer registry.
 
-`runa:analyse` includes public PHP import/signature boundary checks before PHPStan;
+`runa:analyse` checks application PHP at the configured maximum level and includes
+public PHP import/signature boundary checks before PHPStan;
 `runa:lint` includes application TS/Vue import boundaries. Their existing quality
 nodes retain ownership. See [API enforcement](../architecture/public-api.md#local-enforcement-and-delivery)
 for diagnostics, supported consumers and static-analysis limits. Module source/runtime

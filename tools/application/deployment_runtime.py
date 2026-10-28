@@ -85,14 +85,25 @@ class DeploymentRuntime:
         text: bool = False,
         **kwargs: Unpack[ProcessOptions],
     ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
-        # Noninteractive Compose clients must not consume the caller's shell script.
+        stdin = kwargs.get("stdin")
         if "stdin" not in kwargs and "input" not in kwargs:
-            kwargs["stdin"] = subprocess.DEVNULL
-        kwargs["env"] = self.context.environment()
+            stdin = subprocess.DEVNULL
+        options: ProcessOptions = {
+            "input": kwargs.get("input"),
+            "capture_output": kwargs.get("capture_output", False),
+            "check": kwargs.get("check", False),
+            "timeout": kwargs.get("timeout"),
+            "stdin": stdin,
+            "stdout": kwargs.get("stdout"),
+            "stderr": kwargs.get("stderr"),
+            "env": self.context.environment(),
+        }
+        if "cwd" in kwargs:
+            options["cwd"] = kwargs["cwd"]
         command = [*self.command(release), *args]
         if text:
-            return self.context.run(command, text=True, **kwargs)
-        return self.context.run(command, **kwargs)
+            return self.context.run(command, text=True, **options)
+        return self.context.run(command, **options)
 
     @overload
     def artisan(

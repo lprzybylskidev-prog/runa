@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
+use Runa\Contracts\Modules\SettingDefinition;
 use Runa\Contracts\Modules\SettingsAuthorization;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsParticipant;
@@ -34,7 +35,7 @@ final readonly class PolicyHistory implements SettingsAuthorization, SettingsPar
         app(AuthorityLock::class)->acquire($connection);
         $actor = $publication->context->actor;
         $state = app(ModuleSettings::class)->read('runa.auth');
-        $values = array_map(fn ($setting) => $setting['value'], $state['settings']);
+        $values = $this->values($state['settings']);
         $changes = array_filter($publication->changes, fn ($change) => ($change['old'] ?? null) !== ($change['new'] ?? null));
         $consequences = $this->consequences($changes, $values);
         if ($consequences['force_password_change']) {
@@ -62,11 +63,32 @@ final readonly class PolicyHistory implements SettingsAuthorization, SettingsPar
         }
         $connection->table('runa_auth.policy_versions')->insert([
             'public_id' => (string) Str::uuid7(), 'revision' => $state['revision'], 'operation' => 'installation', 'phase' => 'baseline',
-            'values' => json_encode(array_map(fn ($s) => $s['value'], $state['settings']), JSON_THROW_ON_ERROR),
+            'values' => json_encode($this->values($state['settings']), JSON_THROW_ON_ERROR),
             'changes' => '{}', 'consequences' => '{}', 'created_at' => now(),
         ]);
     }
 
+    /** @param array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}> $settings
+     * @return array<string, mixed>
+     */
+    public function values(array $settings): array
+    {
+        $values = [];
+        foreach ($settings as $key => $setting) {
+            if (! array_key_exists('value', $setting)) {
+                throw new \LogicException('Auth policy history requires non-sensitive declarations.');
+            }
+            $values[$key] = $setting['value'];
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $changes
+     * @param  array<string, mixed>  $values
+     * @return array{force_password_change: bool, password_accounts: int, exceptions_revalidated: bool, existing_revocations_reversed: bool, session_deadlines_rechecked: bool, factor_requirements_rechecked: bool}
+     */
     public function consequences(array $changes, array $values): array
     {
         $complexity = ['password_min_length', 'password_mixed_case', 'password_numbers', 'password_symbols'];

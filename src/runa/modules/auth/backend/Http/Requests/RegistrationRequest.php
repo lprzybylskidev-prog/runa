@@ -2,10 +2,13 @@
 
 namespace Runa\Modules\Auth\Http\Requests;
 
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Support\EntryPassword;
+use Runa\Modules\Auth\Support\Identifiers;
 
 final class RegistrationRequest extends FormRequest
 {
@@ -14,6 +17,9 @@ final class RegistrationRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, string|list<string|Rule|ValidationRule|\Closure|\Stringable>>
+     */
     public function rules(): array
     {
         return [
@@ -25,6 +31,9 @@ final class RegistrationRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return list<\Closure(Validator): void>
+     */
     public function after(): array
     {
         return [function (Validator $validator): void {
@@ -32,7 +41,7 @@ final class RegistrationRequest extends FormRequest
                 return;
             }
             try {
-                new NewIdentity($this->input('email'), $this->input('name'), $this->input('first_name'), $this->input('surname'), $this->input('login'));
+                new NewIdentity($this->string('email')->toString(), Identifiers::optionalText($this->input('name')), Identifiers::optionalText($this->input('first_name')), Identifiers::optionalText($this->input('surname')), Identifiers::optionalText($this->input('login')));
             } catch (\InvalidArgumentException) {
                 $validator->errors()->add('identity', 'Supply valid identifiers and either a name or both first name and surname.');
             }

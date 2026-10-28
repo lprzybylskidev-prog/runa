@@ -11,41 +11,65 @@ final class ProfilesProxy extends GuardedApi implements AuthProfiles
 {
     public function edit(string $publicId, int $expectedVersion, ProfileChange $change): Identity
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $change]);
+        /** @var Identity $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $change]);
+
+        return $result;
     }
 
     public function changeEmail(string $publicId, int $expectedVersion, string $email): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+
+        return $result;
     }
 
     public function replaceVerifiedEmail(string $publicId, int $expectedVersion, string $email): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+
+        return $result;
     }
 
     public function requireVerification(string $publicId, int $expectedVersion): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+
+        return $result;
     }
 
     public function addSecondary(string $publicId, int $expectedVersion, string $email): string
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+        /** @var string $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $email]);
+
+        return $result;
     }
 
     public function changeSecondary(string $publicId, int $expectedVersion, string $addressId, string $email): string
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $addressId, $email]);
+        /** @var string $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $addressId, $email]);
+
+        return $result;
     }
 
     public function removeSecondary(string $publicId, int $expectedVersion, string $addressId): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $addressId]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $addressId]);
+
+        return $result;
     }
 
     public function notificationEmails(string $publicId): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId]);
+        /** @var list<string> $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
     }
 }

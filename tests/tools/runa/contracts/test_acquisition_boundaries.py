@@ -78,7 +78,7 @@ class AcquisitionBoundaries(unittest.TestCase):
             "tag": "v1.0.0",
             "object": {"type": "commit", "sha": "b" * 40},
         }
-        invalid = [
+        invalid: list[object] = [
             [release | {"id": True}],
             [release | {"published_at": 7}],
             [release | {"draft": "false"}],

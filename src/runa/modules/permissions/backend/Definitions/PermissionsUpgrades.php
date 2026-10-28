@@ -45,7 +45,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('stable_release', '0.5.11', '1.0.0', UpgradeAuthRefresh::class),
             new UpgradeDefinition('central_test_layout', '1.0.0', '1.0.1', UpgradeTestLayout::class),
             new UpgradeDefinition('platform_composition', '1.0.1', '1.0.2', UpgradePlatformComposition::class),
-            new UpgradeDefinition('platform_delivery', '1.0.2', '1.0.3', UpgradePlatformDelivery::class)];
+            new UpgradeDefinition('platform_delivery', '1.0.2', '1.0.3', UpgradePlatformDelivery::class),
+            new UpgradeDefinition('verification_contracts', '1.0.3', '1.0.4', UpgradePlatformDelivery::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

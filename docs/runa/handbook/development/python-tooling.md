@@ -12,7 +12,9 @@ The repository-local `tools` package separates reusable infrastructure in
 `tools/core` from delivered application tooling in `tools/application`. Core may
 import only the standard library and core; application may additionally import
 application modules. Neither may require owner tools or external installer code.
-Package initializers perform no operations. Internal integrations use qualified
+Package initializers perform no operations. Cold launchers disable bytecode writes
+until canonical state preparation has established safe ancestors; Python must not
+create a group-writable `.runtime` tree implicitly under the host umask. Internal integrations use qualified
 imports and explicit workspace/process arguments. The public command registry remains
 Laravel Artisan; Python package names are not a customer extension API.
 
@@ -46,8 +48,8 @@ including argv, environment or captured output. Inherited streams preserve the
 caller's terminal; no shell or pseudo-terminal is added.
 
 The runner owns a new process group. Timeout, cooperative cancellation and raised
-exceptions terminate and reap the direct child, kill remaining group members and
-close pipes before returning control to an enclosing resource/lock scope. Children
+exceptions terminate the process group, allow its cleanup grace even when the
+direct child exits first, then kill remaining group members and close pipes before returning control to an enclosing resource/lock scope. Children
 that intentionally detach from that group require a domain ownership journal;
 this primitive does not replace Docker endpoint/worker recovery. Cleanup masks
 repeated interrupt signals until reaping finishes. `interrupt_signals()` temporarily

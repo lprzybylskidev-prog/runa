@@ -44,7 +44,7 @@ def test_settings_refuse_unsafe_smtp_or_tls_inputs(tmp_path: Path, change: str) 
     if change == "tls-symlink":
         path = tmp_path / "certificate"
         path.symlink_to(tmp_path / "missing")
-        value["tls"] = dict(mode="builtin", certificate=str(path), private_key=str(path))
+        value["tls"] = {"mode": "builtin", "certificate": str(path), "private_key": str(path)}
     with pytest.raises(InstallationError):
         validate_settings(value, False)
 

@@ -235,6 +235,7 @@ def test_runtime_probes_and_database_metadata_share_the_injected_transport(tmp_p
     assert snapshot["modules"] == {} and snapshot["module_steps"] == []
     metadata = runtime.metadata()
     assert metadata["migrations"] == ["initial"]
+    assert "database_mounts" in metadata
     assert metadata["database_mounts"] == [
         ["bind", "/host/config", "/config"],
         ["volume", "fixture-data", "/database"],

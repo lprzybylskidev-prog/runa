@@ -31,7 +31,7 @@ def catalog(path: Path) -> dict[str, JsonValue]:
 
 
 def flatten(data: dict[str, JsonValue], prefix: str = "") -> dict[str, str]:
-    result = {}
+    result: dict[str, str] = {}
     for key, value in data.items():
         name = prefix + key
         if isinstance(value, dict):

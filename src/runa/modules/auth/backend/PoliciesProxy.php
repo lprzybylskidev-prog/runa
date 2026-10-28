@@ -9,31 +9,49 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
 {
     public function history(?int $before = null): array
     {
-        return $this->invoke(__FUNCTION__, [$before]);
+        /** @var list<array{actor: mixed, operation: string, public_id: string, revision: int, phase: string, values: mixed, changes: mixed, consequences: mixed, created_at: string}> $result */
+        $result = $this->invoke(__FUNCTION__, [$before]);
+
+        return $result;
     }
 
     public function exceptions(string $publicId): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId]);
+        /** @var list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
     }
 
     public function preview(array $patch, int $revision, int $generation): array
     {
-        return $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+        /** @var array{revision: int, generation: int, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>} $result */
+        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+
+        return $result;
     }
 
     public function publish(array $patch, int $revision, int $generation): array
     {
-        return $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+        /** @var array{operation: string, status: string} $result */
+        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+
+        return $result;
     }
 
     public function restore(int $sourceRevision, int $revision, int $generation): array
     {
-        return $this->invoke(__FUNCTION__, [$sourceRevision, $revision, $generation]);
+        /** @var array{operation: string, status: string} $result */
+        $result = $this->invoke(__FUNCTION__, [$sourceRevision, $revision, $generation]);
+
+        return $result;
     }
 
     public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $key, $value, $reason, $expiresAt, $version, $policyRevision]);
+        /** @var array{public_id: string|null, version: int} $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $key, $value, $reason, $expiresAt, $version, $policyRevision]);
+
+        return $result;
     }
 }

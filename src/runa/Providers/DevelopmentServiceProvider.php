@@ -27,7 +27,7 @@ final class DevelopmentServiceProvider extends ServiceProvider
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
         if ($this->app->environment(['local', 'testing']) && class_exists(TestCommand::class)) {
             $this->app->extend(TestCommand::class,
-                fn ($command, Application $app) => $app->make(ApplicationTestCommand::class));
+                fn (TestCommand $command, Application $app) => new ApplicationTestCommand($command));
         }
         if ($this->app->environment(['local', 'testing'])) {
             $this->commands([MakeModule::class, CheckTestDatabase::class, DevelopmentAccounts::class]);

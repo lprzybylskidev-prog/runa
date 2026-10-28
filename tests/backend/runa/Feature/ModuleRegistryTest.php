@@ -123,6 +123,9 @@ it('loads only synchronized owned module classes without per-module Composer cha
     $this->sources->add('app', 'stale_fixture');
     $this->registry->synchronize('app');
     file_put_contents($this->sources->root.'/app/modules/stale_fixture/module.json', "\n", FILE_APPEND);
+    // Reflection probes namespace aliases without opening an unrelated manifest.
+    $loader->load('App\\Modules\\StaleFixture\\Definitions');
+    expect(class_exists('App\\Modules\\StaleFixture\\Definitions', false))->toBeFalse();
     expect(fn () => $loader->load('App\\Modules\\StaleFixture\\Definitions\\WorkPolicy'))->toThrow(RuntimeException::class);
 });
 

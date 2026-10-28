@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from tools.application.quality_models import (
     QualityDefinition,
@@ -10,6 +11,7 @@ from tools.application.quality_models import (
     QualityRoadmap,
 )
 from tools.application.quality_planning import resolve
+from tools.core.state import JsonValue, json_value
 
 
 def node(
@@ -56,3 +58,21 @@ class FixturePlanner:
             "impact_areas": list(self.impact_areas),
             "quality_selection": scope,
         }, nodes
+
+
+@dataclass(frozen=True)
+class FixtureReader:
+    definition: QualityDefinition
+
+    def yaml(self, path: Path) -> dict[str, JsonValue]:
+        value = json_value(self.definition)
+        assert isinstance(value, dict)
+        return value
+
+
+def decoded_definition(value: object) -> QualityDefinition:
+    from tools.application.quality_models import quality_definition
+
+    data = json_value(value)
+    assert isinstance(data, dict)
+    return quality_definition(data)

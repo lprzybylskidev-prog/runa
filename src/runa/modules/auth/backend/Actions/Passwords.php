@@ -16,6 +16,8 @@ use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
 
+/** @phpstan-import-type SessionRow from SessionStore
+ * @phpstan-import-type EntryTokenRow from EntryTokens */
 final readonly class Passwords
 {
     public function __construct(private SecurityContext $context, private CredentialFactors $factors,
@@ -34,9 +36,12 @@ final readonly class Passwords
         });
     }
 
+    /**
+     * @return array{updated: bool, reauthenticate: bool}
+     */
     public function change(Request $request): array
     {
-        $result = $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request): ?array {
+        $result = $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
             if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
                 return null;
             }
@@ -72,8 +77,9 @@ final readonly class Passwords
             throw new \LogicException('Password mutation requires the default transaction.');
         }
         Validator::make(['password' => $password, 'password_confirmation' => $password], ['password' => EntryPassword::rules()])->validate();
+        /** @var list<string> $history */
         $history = $connection->table('runa_auth.password_history')->where('user_id', $user->id)->orderByDesc('id')
-            ->limit($this->policy->value('password_history'))->pluck('password_hash')->all();
+            ->limit($this->policy->integer('password_history'))->pluck('password_hash')->all();
         if ($user->password !== null) {
             $history[] = $user->password;
         }
@@ -86,7 +92,7 @@ final readonly class Passwords
             $connection->table('runa_auth.password_history')->insert(['user_id' => $user->id, 'password_hash' => $user->password, 'created_at' => now()]);
         }
         $retained = $connection->table('runa_auth.password_history')->where('user_id', $user->id)->orderByDesc('id')
-            ->limit($this->policy->value('password_history'))->pluck('id');
+            ->limit($this->policy->integer('password_history'))->pluck('id');
         $connection->table('runa_auth.password_history')->where('user_id', $user->id)->whereNotIn('id', $retained)->delete();
         $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
         $connection->table('runa_auth.profile_mail')->where('user_id', $user->id)->where('purpose', '<>', 'notice')->whereNull('consumed_at')->update(['consumed_at' => now(), 'delivery_secret' => null]);
@@ -112,6 +118,7 @@ final readonly class Passwords
             $this->transactions->lockAuthority($connection);
             $candidate = $connection->table('runa_auth.entry_tokens')->where('token_hash', hash('sha256', $secret))->where('purpose', 'reset')->first();
             $user = $candidate === null ? null : User::where('id', $candidate->user_id)->lockForUpdate()->first();
+            /** @var EntryTokenRow|null $token */
             $token = $candidate === null ? null : $connection->table('runa_auth.entry_tokens')->where('id', $candidate->id)->lockForUpdate()->first();
             if ($user === null || $token === null || $token->consumed_at !== null || $token->invalidated_at !== null
                 || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC')) || $token->recipient !== $user->email

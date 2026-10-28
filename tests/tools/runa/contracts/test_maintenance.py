@@ -8,23 +8,39 @@ import copy
 import io
 import unittest
 from pathlib import Path
+from typing import TypedDict, cast
 from unittest.mock import patch
 
 import tools.maintainer.checks as checks
+from tools.core.state import JsonValue, json_value
 
 ROOT = Path(__file__).resolve().parents[4]
+
+
+class MaintenanceDocument(TypedDict):
+    version: int
+    entries: list[dict[str, JsonValue]]
+    items: list[dict[str, JsonValue]]
 
 
 class MaintenanceContracts(unittest.TestCase):
     def setUp(self) -> None:
         self.data = {
-            kind: checks.yaml(ROOT / f"docs/runa/maintainer/maintenance/{kind}.yml")
+            kind: cast(
+                MaintenanceDocument,
+                checks.yaml(ROOT / f"docs/runa/maintainer/maintenance/{kind}.yml"),
+            )
             for kind in ("registry", "backlog", "deprecations")
         }
 
+    def read_document(self, path: Path) -> dict[str, JsonValue]:
+        value = json_value(self.data[path.stem])
+        assert isinstance(value, dict)
+        return value
+
     def validate(self) -> None:
         with (
-            patch.object(checks, "yaml", side_effect=lambda path: self.data[path.stem]),
+            patch.object(checks, "yaml", side_effect=self.read_document),
             contextlib.redirect_stdout(io.StringIO()),
         ):
             checks.maintenance()

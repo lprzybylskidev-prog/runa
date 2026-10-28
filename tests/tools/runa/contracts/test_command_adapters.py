@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.application.testing.runner import Selection
+from tools.application.testing.runner import Scope, Selection
 from tools.application.testing.runner import TestService as SuiteService
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import WorkspaceContext
@@ -41,11 +41,12 @@ def test_owner_adapters_reject_scope_overrides_without_docker(
 
 def test_owner_native_test_configurations_are_explicit_and_separate(tmp_path: Path) -> None:
     service = SuiteService(WorkspaceContext(tmp_path), OWNER, RecordingRunner(), {})
-    for scope, config in (
+    configurations: tuple[tuple[Scope, str], ...] = (
         ("backend", "../tests/backend/runa/phpunit.xml"),
         ("frontend", "../tools/maintainer/frontend/vitest.config.mjs"),
         ("e2e", "../tools/maintainer/frontend/playwright.config.mjs"),
-    ):
+    )
+    for scope, config in configurations:
         assert any(
             argument.endswith("=" + config)
             for argument in service.command(scope, Selection((scope,)))

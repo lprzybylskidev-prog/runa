@@ -102,11 +102,13 @@ def test_explicit_workspace_anchor_allows_group_writable_checkout(tmp_path: Path
 
 def test_lock_contention_failure_and_reacquisition_preserve_inode(tmp_path: Path) -> None:
     lock = FileLock(StateDirectory(tmp_path / "private", anchor=tmp_path), "operation.lock")
+    identity: int | None = None
     with pytest.raises(RuntimeError, match="injected"), lock.acquire():
         identity = (lock.directory.path / lock.name).stat().st_ino
         with pytest.raises(StateFailure, match="Another operation"), lock.acquire():
             pytest.fail("Contended lock was acquired.")
         raise RuntimeError("injected")
+    assert identity is not None
     with lock.acquire():
         assert (lock.directory.path / lock.name).stat().st_ino == identity
 

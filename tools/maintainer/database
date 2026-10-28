@@ -18,6 +18,10 @@ if __name__ == "__main__":
                 *sys.argv[1:],
             ],
             cwd=root,
-            env=dict(os.environ, PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache")),
+            env=dict(
+                os.environ,
+                PYTHONDONTWRITEBYTECODE="1",
+                PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache"),
+            ),
         )
     )

@@ -277,8 +277,9 @@ TestMail was incorrectly marked development/exclude in the point-12 map despite
 being required by installation SMTP verification. Its row now records operator/
 source, matching existing code and the roadmap's recovery boundary. No command
 removal, receipt/schema change, migration-history rewrite or public alias break
-is introduced. Auth 1.1.2, Audit/Permissions 1.0.3 explicitly support platform
-0.6.x and add source-only platform_delivery edges. Dependent ^1.0.0 constraints
+is introduced. Auth 1.1.4, Audit/Permissions 1.0.4 explicitly support platform
+0.6.x and retain source-only platform_delivery edges. Their verification_contracts
+patch edges complete typed boundaries without data transformations. Dependent ^1.0.0 constraints
 remain compatible. Their manifests still support the current platform 0.5.0.
 
 Projected-customer acceptance now authors public PHP/Vue/Python cases and invokes

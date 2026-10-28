@@ -11,19 +11,18 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[4]
-if __package__:
-    from dataclasses import replace
+from tools.application import docs_checks
+from tools.application.documentation import maintainer_checkout, roadmap_root
+from tools.application.hooks import commit_message
+from tools.application.knowledge import corpus
+from tools.application.knowledge.configuration import golden, load
+from tools.application.knowledge.context import KnowledgeContext
+from tools.maintainer.knowledge_cli import configuration as owner_configuration
 
-    from tools.application import docs_checks
-    from tools.application.documentation import maintainer_checkout, roadmap_root
-    from tools.application.hooks import commit_message
-    from tools.application.knowledge import corpus
-    from tools.application.knowledge.configuration import golden, load
-    from tools.application.knowledge.context import KnowledgeContext
-    from tools.maintainer.knowledge_cli import configuration as owner_configuration
+ROOT = Path(__file__).resolve().parents[4]
 
 
 class DocumentationOwnership(unittest.TestCase):

@@ -211,7 +211,7 @@ def exercise(
         )
 
     def files() -> Snapshot:
-        result = {}
+        result: Snapshot = {}
         active = (
             prod
             if mode == "dev"
@@ -283,6 +283,7 @@ def exercise(
             result["status"] == "ready",
             "external updater verifies independently fetched original/target source and real runtime/dependency/database prerequisites",
         )
+        assert "plan" in result
         check(
             result["plan"]["platform_migrations"] == [migration.stem] and result["dry_run"] is True,
             "read-only plan identifies platform-only migration/seeder steps without executing target PHP",
@@ -297,6 +298,7 @@ def exercise(
             and all(not Path(p).exists() for p in result["temporary_downloads"]),
             "planning creates no installation journal/maintenance and removes all external source downloads",
         )
+        assert "customization_review" in result
         check(
             result["customization_review"]["required"]
             and "redis" in result["customization_review"]["services"]
@@ -346,6 +348,7 @@ def exercise(
                 super().health()
                 raise RuntimeError("Synthetic lost response after actual healthy switch")
 
+        assert "customization_review" in result
         review = result["customization_review"]
         failed = update_execution.execute(
             prod,
@@ -422,6 +425,7 @@ def exercise(
             and (prod / "new-release-guide.txt").read_text() == "new target guide\n",
             "real reviewed update applies non-infrastructure replacement, removal and addition",
         )
+        assert "manual_reconciliation" in resumed
         check(
             instructions.read_bytes() == instruction_before
             and "AGENTS.md" in resumed["manual_reconciliation"],
@@ -479,6 +483,7 @@ def exercise(
             ),
             "customer reconciles its additional service and both environment templates before team publication and production deployment",
         )
+    assert "target_release" in result
     report.setdefault("update_preflight", {})[mode] = {
         "result": result["status"],
         "target": result["target_release"]["commit"],

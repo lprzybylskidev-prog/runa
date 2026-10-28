@@ -98,7 +98,9 @@ def main() -> None:
                 assert indexer().index() == 0
             points = store.all_points()
             assert not any("/maintainer/" in p["source_path"] for p in points.values())
-            assert not any("/maintainer/" in name for name in store.manifest()["sources"])
+            manifest = store.manifest()
+            assert manifest is not None
+            assert not any("/maintainer/" in name for name in manifest["sources"])
             assert not indexer().status()["stale"]
             retrieval = Retriever(root, customer, "cpu", context=context, store=store)
             assert retrieval.search(
@@ -113,11 +115,9 @@ def main() -> None:
                 "private_739", filters={"source_path": "docs/runa/maintainer/private.md"}
             )
             assert doctor(retrieval)["passed"]
-            broad = {
-                **customer,
-                "markdown_roots": ["docs"],
-                "files": customer["files"] + ["docs/runa/maintainer/private.md"],
-            }
+            broad = customer.copy()
+            broad["markdown_roots"] = ["docs"]
+            broad["files"] = customer["files"] + ["docs/runa/maintainer/private.md"]
             assert not any(
                 "/maintainer/" in p.relative_to(root).as_posix()
                 for p in sources(root, broad, context=context)

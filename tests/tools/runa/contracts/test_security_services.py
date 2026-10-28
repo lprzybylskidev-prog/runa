@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections import deque
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 
@@ -16,6 +17,11 @@ from tools.application.security_service import SecurityService
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.process import ProcessResult, ProcessRunner, ProcessSpec
+
+
+class ImageSelection(TypedDict):
+    images: list[str]
+    locks: dict[str, str]
 
 
 def security(
@@ -59,7 +65,7 @@ def test_scan_collects_repository_all_images_and_both_audits(tmp_path: Path) -> 
     binary = tmp_path / ".runtime/tools/trivy"
     binary.parent.mkdir(parents=True)
     binary.touch()
-    calls = []
+    calls: list[ProcessSpec] = []
 
     class Runner:
         def run(self, spec: ProcessSpec) -> ProcessResult:
@@ -148,13 +154,13 @@ def test_production_fixture_image_identity_and_locks_are_bound_to_scanned_source
 
     fixture = tmp_path / "customer"
     fixture.mkdir()
-    locks = {}
+    locks: dict[str, str] = {}
     for name in ["src/composer.lock", "src/pnpm-lock.yaml"]:
         path = tmp_path / name
         path.parent.mkdir(exist_ok=True)
         path.write_text(name)
         locks[name] = hashlib.sha256(path.read_bytes()).hexdigest()
-    selected = dict(images=["production:exact"], locks=locks)
+    selected: ImageSelection = {"images": ["production:exact"], "locks": locks}
     runner = RecordingRunner(deque([ProcessResult(0, json.dumps(selected).encode())]))
     with patch.object(RepositoryPolicy, "assert_production_installation") as guard:
         assert security(tmp_path, runner).production_images(fixture) == ["production:exact"]
@@ -198,7 +204,7 @@ def test_custom_service_fixture_pulls_exact_digest_and_rejects_wrong_identity() 
 def test_production_image_mismatch_or_empty_selection_fails(tmp_path: Path, invalid: str) -> None:
     from unittest.mock import patch
 
-    selected = dict(images=["production:exact"], locks={})
+    selected: ImageSelection = {"images": ["production:exact"], "locks": {}}
     for name in ["src/composer.lock", "src/pnpm-lock.yaml"]:
         path = tmp_path / name
         path.parent.mkdir(exist_ok=True)

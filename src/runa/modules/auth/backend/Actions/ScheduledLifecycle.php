@@ -31,7 +31,7 @@ final readonly class ScheduledLifecycle
                     if (! $deactivate && ! $activate) {
                         return;
                     }
-                    $this->authority->assertMayRemove($connection, $deactivate ? [$id] : []);
+                    $this->authority->assertMayRemove($connection, $deactivate ? [$user->public_id] : []);
                     $wasActive = $user->active;
                     $user->active = ! $deactivate;
                     $user->activate_at = null;

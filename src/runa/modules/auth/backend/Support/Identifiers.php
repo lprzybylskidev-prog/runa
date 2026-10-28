@@ -4,6 +4,16 @@ namespace Runa\Modules\Auth\Support;
 
 final class Identifiers
 {
+    /** Retain null and exact request text after validation, without coercing payload types. */
+    public static function optionalText(mixed $value): ?string
+    {
+        if ($value !== null && ! is_string($value)) {
+            throw new \InvalidArgumentException('Expected text or null.');
+        }
+
+        return $value;
+    }
+
     public static function email(string $value): string
     {
         $value = strtolower(trim($value));

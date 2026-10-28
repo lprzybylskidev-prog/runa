@@ -9,7 +9,7 @@ import json
 import subprocess
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -38,7 +38,7 @@ class DevelopmentFixture(unittest.TestCase):
     @contextmanager
     def bind(
         self, root: Path, real: bool = False, location: ExecutionLocation = ExecutionLocation.HOST
-    ) -> Iterator[None]:
+    ) -> Generator[None, None, None]:
         previous = self.dev
         processes = ApplicationProcesses(SubprocessRunner(), {}) if real else self.processes
         self.dev = DevelopmentService(WorkspaceContext(root), processes, location)
@@ -48,7 +48,7 @@ class DevelopmentFixture(unittest.TestCase):
             self.dev = previous
 
     @contextmanager
-    def arguments_for(self, argv: list[str]) -> Iterator[None]:
+    def arguments_for(self, argv: list[str]) -> Generator[None, None, None]:
         self.arguments = argv[1:]
         yield
 
@@ -298,7 +298,7 @@ class StartupContracts(DevelopmentFixture):
         self.assertIn("DEGRADED", output.getvalue())
 
     def test_app_health_does_not_require_ai(self) -> None:
-        rows = [
+        rows: list[dict[str, str | int]] = [
             {"Service": name, "State": "running", "Health": "healthy"}
             for name in ("app", "nginx", "postgres", "queue", "scheduler", "mailpit")
         ]

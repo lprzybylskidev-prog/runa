@@ -5,7 +5,7 @@ import posixpath
 import re
 import subprocess
 import tempfile
-from collections.abc import Iterator, Mapping
+from collections.abc import Generator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -160,7 +160,7 @@ class CustomerSource:
     @contextmanager
     def fetch(
         self, root: Path, state: Path, target: str = "main", installed: Path | None = None
-    ) -> Iterator[tuple[Path, str]]:
+    ) -> Generator[tuple[Path, str], None, None]:
         target = self.validate_target(target)
         _, url = self.policy.application_remote(root)
         with tempfile.TemporaryDirectory(prefix="customer-source-", dir=state) as directory:

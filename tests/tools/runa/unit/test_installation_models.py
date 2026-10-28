@@ -61,14 +61,15 @@ def test_settings_types_fail_before_url_tls_or_secret_use() -> None:
         },
     }
     assert validate_settings(source, False)["smtp"]["port"] == 587
-    for change in (
+    invalid: list[dict[str, JsonValue]] = [
         {"app_url": []},
         {"http_port": True},
         {"simulation_project": []},
         {"tls": {"mode": "external", "ca_file": []}},
         {"smtp": {"host": "smtp.customer.example", "port": True}},
         {"administrator": {"email": [], "name": "Fixture"}},
-    ):
+    ]
+    for change in invalid:
         with pytest.raises(InstallationError):
             validate_settings(source | change, False)
 
@@ -76,7 +77,7 @@ def test_settings_types_fail_before_url_tls_or_secret_use() -> None:
 def test_installation_journal_preserves_extra_and_legacy_optional_fields() -> None:
     value = json_object('{"sha":"target","simulation":false,"state":"failed","extra":1}')
     assert installation_journal(value) == value
-    for change in (
+    invalid: list[dict[str, JsonValue]] = [
         {"sha": []},
         {"simulation": 0},
         {"state": None},
@@ -84,7 +85,8 @@ def test_installation_journal_preserves_extra_and_legacy_optional_fields() -> No
         {"administrator_invited": "false"},
         {"schema_version": True},
         {"started_at": []},
-    ):
+    ]
+    for change in invalid:
         with pytest.raises(InstallationError, match="journal"):
             installation_journal(json_object(json.dumps(value | change)))
 

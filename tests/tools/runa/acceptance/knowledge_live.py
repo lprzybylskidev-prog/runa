@@ -13,9 +13,10 @@ import tempfile
 import uuid
 from pathlib import Path
 
+from tools.application.knowledge.configuration import load
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import Health
-from tools.application.knowledge.corpus import identity
+from tools.application.knowledge.corpus import chunks, identity
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
@@ -26,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[4]
 def main() -> None:
     if os.environ.get("APP_ENV") == "production":
         raise ValueError("Knowledge acceptance is development-only.")
-    config = json.loads((ROOT / "tools/application/knowledge/config.json").read_text())
+    config = load(ROOT)
     cpu = Embeddings(config, "cpu")
     gpu = Embeddings(config)
     if gpu.client is not gpu.gpu:
@@ -39,7 +40,8 @@ def main() -> None:
         for u, v in zip(a, b, strict=True)
     ]
     assert min(similarities) > 0.999, similarities
-    fallback_config = {**config, "cuda_url": "http://127.0.0.1:1"}
+    fallback_config = config.copy()
+    fallback_config["cuda_url"] = "http://127.0.0.1:1"
     with contextlib.redirect_stderr(io.StringIO()) as diagnostic:
         fallback = Embeddings(fallback_config)
         assert len(fallback.embed([texts[0]])[0]) == config["dimension"]
@@ -50,7 +52,7 @@ def main() -> None:
         assert "token budget" in str(error)
     else:
         raise AssertionError("Over-budget input was accepted.")
-    config = {**config, "collection": "runa_knowledge_acceptance_" + uuid.uuid4().hex}
+    config["collection"] = "runa_knowledge_acceptance_" + uuid.uuid4().hex
     store = Store(config)
     with tempfile.TemporaryDirectory(prefix="runa-knowledge-") as directory:
         root = Path(directory)
@@ -81,9 +83,9 @@ def main() -> None:
             "fixture",
         )
         try:
-            assert run_index()["embedded_chunks"] == 1
-            assert run_index()["embedded_chunks"] == 0
-            assert run_index("cpu")["embedded_chunks"] == 0
+            assert run_index().get("embedded_chunks") == 1
+            assert run_index().get("embedded_chunks") == 0
+            assert run_index("cpu").get("embedded_chunks") == 0
             (root / "docs/app").mkdir(parents=True)
             document = root / "docs/app/architecture.md"
             document.write_text("# Runtime\n\nNever deploy knowledge services into production.\n")
@@ -91,41 +93,51 @@ def main() -> None:
             assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
                 "stale"
             ]
-            assert run_index()["embedded_chunks"] == 1
+            assert run_index().get("embedded_chunks") == 1
             document.write_text(
                 "# Runtime\n\nKeep Qdrant and embedding services development-only.\n"
             )
             changed = run_index()
+            assert "embedded_chunks" in changed
+            assert "removed_chunks" in changed
             assert changed["embedded_chunks"] == 1 and changed["removed_chunks"] == 1
             store.upsert(
                 [
                     {
                         "id": identity("acceptance-orphan"),
                         "vector": a[0],
-                        "payload": {"kind": "chunk"},
+                        "payload": chunks(
+                            root / "AGENTS.md", root, (root / "AGENTS.md").read_text(), cpu, config
+                        )[1][0]["payload"],
                     }
                 ]
             )
             assert (
-                KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
-                    "orphan_chunks"
-                ]
+                KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store)
+                .status()
+                .get("orphan_chunks")
                 == 1
             )
-            assert run_index()["removed_chunks"] == 1
+            assert run_index().get("removed_chunks") == 1
             manifest = store.manifest()
-            store.write_manifest({**manifest, "pending": True})
-            assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
-                "interrupted"
-            ]
-            assert run_index()["embedded_chunks"] == 0
+            assert manifest is not None
+            manifest["pending"] = True
+            store.write_manifest(manifest)
+            assert (
+                KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store)
+                .status()
+                .get("interrupted")
+            )
+            assert run_index().get("embedded_chunks") == 0
             document.unlink()
-            assert run_index()["removed_chunks"] == 1
+            assert run_index().get("removed_chunks") == 1
             git("checkout", "-qb", "changed-branch")
-            assert KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store).status()[
-                "branch_changed"
-            ]
-            assert run_index()["embedded_chunks"] == 0
+            assert (
+                KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store)
+                .status()
+                .get("branch_changed")
+            )
+            assert run_index().get("embedded_chunks") == 0
             assert not KnowledgeIndexer(
                 KnowledgeContext.for_workspace(root), config, store
             ).status()["stale"]

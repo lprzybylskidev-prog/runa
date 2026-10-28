@@ -187,3 +187,34 @@ def test_byte_input_survives_slow_consumer_and_bidirectional_backpressure(tmp_pa
     assert result.returncode == 0
     assert result.stdout == b"o" * 100_000 + b"300000\n"
     assert result.stderr == b"e" * 100_000
+
+
+def test_reaping_preserves_descendant_cleanup_grace_after_leader_exits(tmp_path: Path) -> None:
+    worker = tmp_path / "worker.py"
+    worker.write_text(
+        "import signal,subprocess,sys,time\n"
+        "from pathlib import Path\n"
+        "if len(sys.argv) == 2:\n"
+        "    def cleanup(signum, frame):\n"
+        "        time.sleep(.15)\n"
+        "        Path('cleaned').write_text('descendant cleanup completed')\n"
+        "        raise SystemExit(0)\n"
+        "    signal.signal(signal.SIGTERM, cleanup)\n"
+        "    Path('ready').write_text('ready')\n"
+        "else:\n"
+        "    subprocess.Popen([sys.executable, __file__, 'child'])\n"
+        "while True: time.sleep(.05)\n"
+    )
+    with pytest.raises(ProcessTimeout):
+        SubprocessRunner().run(
+            ProcessSpec(
+                (sys.executable, str(worker)),
+                tmp_path,
+                dict(os.environ),
+                output=OutputMode.CAPTURE,
+                timeout=1,
+                terminate_grace=2,
+            )
+        )
+    assert (tmp_path / "ready").is_file()
+    assert (tmp_path / "cleaned").read_text() == "descendant cleanup completed"

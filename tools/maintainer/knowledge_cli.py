@@ -18,6 +18,7 @@ from tools.application.knowledge.configuration import (
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.repository_boundary_service import RepositoryPolicy
 from tools.core.reporting import SafeFailure
+from tools.core.state import json_value
 
 
 def configuration(root: Path) -> tuple[KnowledgeConfig, list[GoldenCase]]:
@@ -27,10 +28,10 @@ def configuration(root: Path) -> tuple[KnowledgeConfig, list[GoldenCase]]:
     extra = root / "tools/maintainer/knowledge.json"
     if extra.is_symlink():
         raise ValueError("Owner knowledge configuration must not be a symlink.")
-    additions = json.loads(extra.read_text())
+    additions = json_value(json.loads(extra.read_text()))
     if not isinstance(additions, dict):
         raise ValueError("Owner knowledge configuration must be an object.")
-    return load(root, additions=additions), [
+    return load(root, additions={key: value for key, value in additions.items()}), [
         *golden(root),
         *golden_file(root / "tools/maintainer/knowledge-golden.json"),
     ]

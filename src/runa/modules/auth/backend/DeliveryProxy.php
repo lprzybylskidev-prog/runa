@@ -9,6 +9,9 @@ final class DeliveryProxy extends GuardedApi implements AuthDelivery
 {
     public function recipients(string $publicId, string $module, string $category): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $module, $category]);
+        /** @var list<string> $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $module, $category]);
+
+        return $result;
     }
 }

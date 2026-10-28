@@ -33,6 +33,7 @@ final readonly class PreserveAuthority implements AuthorityGuard
         if (! (clone $members)->whereIn('ur.user_public_id', $publicIds)->exists()) {
             return;
         }
+        /** @var \stdClass&object{user_public_id: string} $member */
         foreach ($members->whereNotIn('ur.user_public_id', $publicIds)->orderBy('ur.user_public_id')->select('ur.user_public_id')->lazy(100) as $member) {
             if ($this->identities->eligibility($member->user_public_id)?->mayOperate() === true) {
                 return;

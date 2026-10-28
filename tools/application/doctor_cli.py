@@ -91,14 +91,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "--filter=Seeding",
                     ],
                 }
-                run(
-                    commands[area],
-                    **(
-                        {"env": dict(os.environ, APP_ENV="testing")}
-                        if area == "database-migrations"
-                        else {}
-                    ),
-                )
+                if area == "database-migrations":
+                    run(commands[area], env=dict(os.environ, APP_ENV="testing"))
+                else:
+                    run(commands[area])
+        return 0
     except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         print(f"Doctor failed: {error}", file=sys.stderr)
         sys.exit(getattr(error, "returncode", 1))

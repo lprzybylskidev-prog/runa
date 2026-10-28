@@ -13,47 +13,74 @@ final class AccessProxy extends GuardedApi implements PermissionsAccess
 {
     public function assignments(string $userPublicId): array
     {
-        return $this->invoke(__FUNCTION__, [$userPublicId]);
+        /** @var array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} $result */
+        $result = $this->invoke(__FUNCTION__, [$userPublicId]);
+
+        return $result;
     }
 
     public function previewAssignments(string $userPublicId, AssignmentSet $requested, string $mode = 'add'): AssignmentPreview
     {
-        return $this->invoke(__FUNCTION__, [$userPublicId, $requested, $mode]);
+        /** @var AssignmentPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$userPublicId, $requested, $mode]);
+
+        return $result;
     }
 
     public function previewCopy(string $sourceUser, string $userPublicId, string $mode = 'add'): AssignmentPreview
     {
-        return $this->invoke(__FUNCTION__, [$sourceUser, $userPublicId, $mode]);
+        /** @var AssignmentPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$sourceUser, $userPublicId, $mode]);
+
+        return $result;
     }
 
     public function previewPreset(string $preset, string $userPublicId, string $mode = 'add'): AssignmentPreview
     {
-        return $this->invoke(__FUNCTION__, [$preset, $userPublicId, $mode]);
+        /** @var AssignmentPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$preset, $userPublicId, $mode]);
+
+        return $result;
     }
 
     public function applyAssignments(AssignmentPreview $reviewed): array
     {
-        return $this->invoke(__FUNCTION__, [$reviewed]);
+        /** @var array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} $result */
+        $result = $this->invoke(__FUNCTION__, [$reviewed]);
+
+        return $result;
     }
 
     public function definitions(string $kind, ?string $after = null): array
     {
-        return $this->invoke(__FUNCTION__, [$kind, $after]);
+        /** @var array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null} $result */
+        $result = $this->invoke(__FUNCTION__, [$kind, $after]);
+
+        return $result;
     }
 
     public function definition(string $kind, string $publicId): array
     {
-        return $this->invoke(__FUNCTION__, [$kind, $publicId]);
+        /** @var array{public_id: string, version: int, dictionary: array<string, string>, module: string|null, system: bool, assigned: array{roles: list<string>, permissions: list<string>}} $result */
+        $result = $this->invoke(__FUNCTION__, [$kind, $publicId]);
+
+        return $result;
     }
 
     public function previewDefinition(DefinitionInput $input): DefinitionPreview
     {
-        return $this->invoke(__FUNCTION__, [$input]);
+        /** @var DefinitionPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$input]);
+
+        return $result;
     }
 
     public function saveDefinition(DefinitionPreview $reviewed): array
     {
-        return $this->invoke(__FUNCTION__, [$reviewed]);
+        /** @var array{public_id: string, version: int, dictionary: array<string, string>, module: string|null, system: bool, assigned: array{roles: list<string>, permissions: list<string>}} $result */
+        $result = $this->invoke(__FUNCTION__, [$reviewed]);
+
+        return $result;
     }
 
     public function deleteDefinition(string $kind, string $publicId, int $version): void

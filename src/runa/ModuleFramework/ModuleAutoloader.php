@@ -41,14 +41,17 @@ final readonly class ModuleAutoloader
                 continue;
             }
             $root = ModuleDiscovery::ownedPath($this->root, $this->root.'/'.$owner.'/modules/'.$code);
+            $file = $root.'/backend/'.str_replace('\\', '/', substr($class, strlen($prefix))).'.php';
+            // Namespace aliases and absent symbols cannot load module code. Avoid
+            // reading manifests while reflection probes such nonexistent classes.
+            if (! file_exists($file) && ! is_link($file)) {
+                return;
+            }
             $manifest = ModuleManifest::load($root.'/module.json', $owner, $code, $this->development);
             if (hash_file('sha256', $root.'/module.json') !== $record->manifestHash || $manifest->kind !== $record->kind) {
                 throw new RuntimeException('Module source changed; synchronize before loading it.');
             }
-            $file = $root.'/backend/'.str_replace('\\', '/', substr($class, strlen($prefix))).'.php';
-            if (file_exists($file) || is_link($file)) {
-                require_once ModuleDiscovery::ownedPath($root, $file);
-            }
+            require_once ModuleDiscovery::ownedPath($root, $file);
 
             return;
         }

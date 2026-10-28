@@ -7,6 +7,7 @@ import os
 import selectors
 import signal
 import subprocess
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import Enum
@@ -93,9 +94,20 @@ def reap(child: subprocess.Popen[bytes], grace: float) -> None:
     """Terminate descendants even when their leader has already exited."""
     previous = signal.pthread_sigmask(signal.SIG_BLOCK, (signal.SIGTERM, signal.SIGINT))
     try:
+        clock = SystemClock()
+        deadline = clock.monotonic() + grace
         signal_group(child, signal.SIGTERM)
         try:
             child.wait(timeout=grace)
+            # A transport leader can exit before its children finish their own
+            # cleanup (for example Playwright stopping its separate web server).
+            # Honour the same bounded grace for surviving process-group members.
+            while clock.monotonic() < deadline:
+                try:
+                    os.killpg(child.pid, 0)
+                except ProcessLookupError:
+                    break
+                time.sleep(min(0.02, max(0, deadline - clock.monotonic())))
         except subprocess.TimeoutExpired:
             pass
         finally:
@@ -185,7 +197,7 @@ class SubprocessRunner:
                             total += len(chunk)
                             if spec.output_limit is not None and total > spec.output_limit:
                                 raise SafeFailure("Child output exceeded the transport limit.")
-                            buffers[key.data].extend(chunk)
+                            buffers[int(key.data)].extend(chunk)
                     return ProcessResult(child.wait(), bytes(buffers[0]), bytes(buffers[1]))
             while True:
                 if self.cancellation is not None:

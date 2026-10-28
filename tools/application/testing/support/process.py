@@ -8,8 +8,10 @@ from tools.core.process import ProcessResult, ProcessSpec
 
 @dataclass
 class RecordingRunner:
-    outcomes: deque[ProcessResult | Exception] = field(default_factory=deque)
-    calls: list[ProcessSpec] = field(default_factory=list)
+    outcomes: deque[ProcessResult | Exception] = field(
+        default_factory=lambda: deque[ProcessResult | Exception]()
+    )
+    calls: list[ProcessSpec] = field(default_factory=lambda: list[ProcessSpec]())
 
     def run(self, spec: ProcessSpec) -> ProcessResult:
         self.calls.append(spec)

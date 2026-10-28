@@ -5,6 +5,9 @@ namespace Runa\Modules\Auth\Support;
 /** Explicit safe fields; no caller-supplied projection or credential values. */
 final class AccountHistory
 {
+    /**
+     * @return array<string, list<string>>
+     */
     public static function fields(): array
     {
         $factors = ['authenticator_enabled', 'email_factor', 'setup_pending', 'spare_codes_remaining', 'spare_codes_replaced'];

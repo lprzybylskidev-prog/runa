@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingsActor;
 use Runa\Contracts\Modules\TrustedPrincipal;
@@ -25,7 +26,10 @@ final readonly class OperatorAccounts
     public function __construct(private EntryTransaction $transactions, private SessionStore $sessions,
         private LookupIdentity $identities, private ModuleRegistry $registry) {}
 
-    /** Secret result belongs only to the private operator handoff, never command output. */
+    /** Secret result belongs only to the private operator handoff, never command output.
+     *
+     * @return array{public_id: string, token: string, expires_in_seconds: int}
+     */
     public function initialize(NewIdentity $input): array
     {
         return $this->transactions->run(function (Connection $connection) use ($input): array {
@@ -76,7 +80,7 @@ final readonly class OperatorAccounts
                 if ($existing->password !== null || $connection->table('runa_auth.entry_tokens')->where('user_id', $existing->id)
                     ->where('purpose', 'invitation')->where('recipient', $existing->email)->where('security_version', $existing->security_version)
                     ->whereNull('consumed_at')->whereNull('invalidated_at')->where('expires_at', '>', now())
-                    ->where(function ($query): void {
+                    ->where(function (Builder $query): void {
                         $query->whereNull('claimed_at')->orWhereNotNull('sent_at');
                     })->exists()) {
                     return;
@@ -91,6 +95,9 @@ final readonly class OperatorAccounts
         });
     }
 
+    /**
+     * @return array{public_id: string, token: string, expires_in_seconds: int}
+     */
     public function recover(string $publicId): array
     {
         new TrustedPrincipal($publicId);
@@ -142,8 +149,9 @@ final readonly class OperatorAccounts
             }
             $this->ready($connection);
             $user = User::where('id', $candidate->user_id)->lockForUpdate()->first();
+            /** @var (\stdClass&object{consumed_at: string|null, expires_at: string, security_version: int, purpose: string})|null $token */
             $token = $connection->table('runa_auth.operator_tokens')->where('id', $candidate->id)->lockForUpdate()->first();
-            if ($user === null || $token->consumed_at !== null || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC'))
+            if ($user === null || $token === null || $token->consumed_at !== null || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC'))
                 || $token->security_version !== $user->security_version
                 || ! $this->authority()->isAdministrator($connection, $user->public_id)
                 || array_diff($this->identities->evaluate($user, CarbonImmutable::now('UTC'))->blockers, ['operator_recovery_required']) !== []) {
@@ -209,6 +217,9 @@ final readonly class OperatorAccounts
         return app(OperatorAuthority::class);
     }
 
+    /**
+     * @return array{public_id: string, token: string, expires_in_seconds: int}
+     */
     private function issueLocked(Connection $connection, User $user, string $purpose): array
     {
         $secret = bin2hex(random_bytes(32));

@@ -6,7 +6,7 @@ import re
 
 
 def raw_environment(content: str) -> dict[str, str]:
-    values = {}
+    values: dict[str, str] = {}
     for line in content.splitlines():
         if not line or line.startswith("#"):
             continue

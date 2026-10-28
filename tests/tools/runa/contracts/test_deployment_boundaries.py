@@ -74,7 +74,7 @@ def test_malformed_release_refusal_keeps_the_original_journal(tmp_path: Path) ->
 
 
 def test_compose_and_inspection_fields_are_validated_without_losing_extensions() -> None:
-    config = {
+    config: dict[str, object] = {
         "services": {
             "app": {
                 "image": "runa-production:fixture",
@@ -90,7 +90,8 @@ def test_compose_and_inspection_fields_are_validated_without_losing_extensions()
     assert optional["services"]["debug"].get("profiles") == ["debug"]
     with pytest.raises(ValueError, match="image identity"):
         service_image(optional["services"]["debug"])
-    for service in ({"image": []}, {"image": "runtime", "profiles": "debug"}):
+    invalid_services: list[object] = [{"image": []}, {"image": "runtime", "profiles": "debug"}]
+    for service in invalid_services:
         with pytest.raises(ValueError, match="Compose"):
             compose_configuration(json.dumps({"services": {"app": service}}))
     for payload in ("[]", "{}", '{"services":{"app":{"image":"runtime","privileged":1}}}'):

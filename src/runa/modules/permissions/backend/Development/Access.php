@@ -38,7 +38,7 @@ final class Access implements DevelopmentAccess, DevelopmentContributor
                     throw new \RuntimeException('Required development account unavailable.');
                 }
             }
-            $context = new SeedContext(config('seeding.development.'.PermissionsDevelopmentSeeder::class, []));
+            $context = new SeedContext(config()->array('seeding.development.'.PermissionsDevelopmentSeeder::class, []));
             $extra = $context->count('extra_roles', 2);
             if ($extra > 100) {
                 throw new \InvalidArgumentException('Permissions development extra_roles limit is 100.');
@@ -63,7 +63,9 @@ final class Access implements DevelopmentAccess, DevelopmentContributor
                 }
                 $subject = $users[$scenario]['public_id'];
                 $c->table('runa_permissions.user_'.$kind)->insert(['user_public_id' => $subject, $column => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
-                $revision = (int) ($c->table('runa_permissions.user_access')->where('user_public_id', $subject)->value('version') ?? 0);
+                /** @var int|null $storedRevision */
+                $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $subject)->value('version');
+                $revision = $storedRevision ?? 0;
                 $c->table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $subject], ['version' => $revision + 1, 'updated_at' => now('UTC')]);
                 $this->remember($c, $key, $subject);
                 $this->record('development.assignments_created', 'user', $subject, [$kind => [$reference], 'revision' => $revision + 1]);
@@ -78,11 +80,14 @@ final class Access implements DevelopmentAccess, DevelopmentContributor
         });
     }
 
+    /** @return array{id: int, subject: string, created: bool} */
     private function definition(Connection $c, string $kind, string $key, DictionaryEntry $dictionary): array
     {
+        /** @var string|null $subject */
         $subject = $c->table('runa_permissions.development_fixtures')->where('scenario', $kind.'.'.$key)->value('subject');
         $table = 'runa_permissions.'.$kind.'s';
         if ($subject !== null) {
+            /** @var \stdClass&object{id: int, deleted_at: string|null} $row */
             $row = $c->table($table)->where('public_id', $subject)->firstOrFail();
             if ($row->deleted_at !== null) {
                 throw new \RuntimeException('A retained fixture definition was deleted; it will not be recreated.');
@@ -102,6 +107,7 @@ final class Access implements DevelopmentAccess, DevelopmentContributor
         $c->table('runa_permissions.development_fixtures')->insert(['scenario' => $key, 'subject' => $subject, 'created_at' => now('UTC')]);
     }
 
+    /** @param array<string, mixed> $after */
     private function record(string $action, string $kind, string $subject, array $after): void
     {
         app(AccessTransaction::class)->record($action, $kind, $subject, null, $after);

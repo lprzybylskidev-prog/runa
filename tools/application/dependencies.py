@@ -14,13 +14,13 @@ SECTIONS = {"composer": ("require", "require-dev"), "package": ("dependencies", 
 
 
 def materialize(root: Path, check: bool = False) -> None:
-    prepared = {}
+    prepared: dict[Path, str] = {}
     for kind in SECTIONS:
         inputs = [root / "src" / owner / (kind + ".json") for owner in ("runa", "app")]
         for path in inputs:
             if not path.is_file() or path.is_symlink():
                 raise ValueError("Missing regular owner dependency manifest.")
-        result = compose(*(json.loads(path.read_text()) for path in inputs), kind)
+        result = compose(json.loads(inputs[0].read_text()), json.loads(inputs[1].read_text()), kind)
         target = root / "src" / (kind + ".json")
         if target.is_symlink():
             raise ValueError("Composed manifest must not be a symlink.")

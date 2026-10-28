@@ -10,14 +10,14 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
-from tests.tools.runa.support.quality import node
+from tests.tools.runa.support.quality import FixtureReader, node
 from tools.application import quality_planning as quality
 from tools.application.configuration_reader import ConfigurationReader
 from tools.application.quality_evidence import check_evidence, closure_link_update
 from tools.application.quality_models import QualityDefinition, quality_definition
 from tools.application.quality_reporting import save
+from tools.application.quality_state import run_record
 from tools.maintainer.release_checks import closure_policy
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -152,6 +152,7 @@ class QualityCompatibility(unittest.TestCase):
         catalogue = json.loads(
             (ROOT / "src/runa/Tooling/Management/quality-groups.json").read_text()
         )
+        assert "groups" in customer
         self.assertEqual(set(catalogue), set(customer["groups"]))
         for group in ("installation", "updates", "transport", "production"):
             with self.assertRaises(ValueError):
@@ -188,18 +189,22 @@ class QualityCompatibility(unittest.TestCase):
                 "quality_groups": "docs",
                 "quality_rationale": "docs scope",
             }
-            state = {
-                "status": "passed",
-                "mode": "final",
-                "roadmap": "fixture",
-                "branch": data["branch"],
-                "rationale": data["quality_rationale"],
-                "selection": scope,
-                "commit": subprocess.check_output(
-                    ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
-                ).strip(),
-                "steps": {key: dict(n, status="passed", exit_code=0) for key, n in nodes.items()},
-            }
+            state = run_record(
+                {
+                    "status": "passed",
+                    "mode": "final",
+                    "roadmap": "fixture",
+                    "branch": data["branch"],
+                    "rationale": data["quality_rationale"],
+                    "selection": scope,
+                    "commit": subprocess.check_output(
+                        ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+                    ).strip(),
+                    "steps": {
+                        key: dict(n, status="passed", exit_code=0) for key, n in nodes.items()
+                    },
+                }
+            )
             with contextlib.nullcontext():
                 save(directory, state)
                 check_evidence(
@@ -208,7 +213,7 @@ class QualityCompatibility(unittest.TestCase):
                     root / "definition",
                     directory,
                     policy=closure_policy(),
-                    reader=SimpleNamespace(yaml=lambda path: definition),
+                    reader=FixtureReader(definition),
                 )
                 for change in (
                     {"status": "interrupted"},
@@ -216,7 +221,7 @@ class QualityCompatibility(unittest.TestCase):
                     {"mode": "show"},
                     {"rationale": "other"},
                 ):
-                    save(directory, state | change)
+                    save(directory, run_record(state | change))
                     with self.assertRaises(ValueError):
                         check_evidence(
                             root,
@@ -224,7 +229,7 @@ class QualityCompatibility(unittest.TestCase):
                             root / "definition",
                             directory,
                             policy=closure_policy(),
-                            reader=SimpleNamespace(yaml=lambda path: definition),
+                            reader=FixtureReader(definition),
                         )
                 save(directory, state)
                 with self.assertRaises(ValueError):
@@ -234,7 +239,7 @@ class QualityCompatibility(unittest.TestCase):
                         root / "definition",
                         directory,
                         policy=closure_policy(),
-                        reader=SimpleNamespace(yaml=lambda path: definition),
+                        reader=FixtureReader(definition),
                     )
                 state["steps"]["cheap"]["status"] = "failed"
                 save(directory, state)
@@ -245,7 +250,7 @@ class QualityCompatibility(unittest.TestCase):
                         root / "definition",
                         directory,
                         policy=closure_policy(),
-                        reader=SimpleNamespace(yaml=lambda path: definition),
+                        reader=FixtureReader(definition),
                     )
                 state["steps"]["cheap"]["status"] = "passed"
                 state["steps"]["cheap"]["command"] = "false"
@@ -257,7 +262,7 @@ class QualityCompatibility(unittest.TestCase):
                         root / "definition",
                         directory,
                         policy=closure_policy(),
-                        reader=SimpleNamespace(yaml=lambda path: definition),
+                        reader=FixtureReader(definition),
                     )
                 state["steps"]["cheap"]["command"] = "true"
                 save(directory, state)
@@ -270,7 +275,7 @@ class QualityCompatibility(unittest.TestCase):
                         root / "definition",
                         directory,
                         policy=closure_policy(),
-                        reader=SimpleNamespace(yaml=lambda path: definition),
+                        reader=FixtureReader(definition),
                     )
 
     def test_debug_check_allows_only_reviewed_output_statements(self) -> None:
@@ -320,7 +325,8 @@ class QualityCompatibility(unittest.TestCase):
         )
         nodes = quality.select(definition, ["production", "security"])
         for key in ("production-acceptance", "repository-container-scan"):
-            self.assertEqual(nodes[key]["exclusive_group"], "production-simulation", key)
+            assert "exclusive_group" in nodes[key]
+            self.assertEqual(nodes[key].get("exclusive_group"), "production-simulation", key)
             self.assertIn(
                 "tests.tools.runa.acceptance.installation_host --production-only",
                 nodes[key]["command"],

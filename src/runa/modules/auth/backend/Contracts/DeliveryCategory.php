@@ -6,11 +6,19 @@ use Runa\Contracts\Modules\ApiOperation;
 
 final readonly class DeliveryCategory
 {
-    public function __construct(public string $key, public array $names, public bool $mandatory = false, public bool $sensitive = false)
+    /** @var array{pl: string, en: string} */
+    public array $names;
+
+    /**
+     * @param  array<array-key, mixed>  $names
+     */
+    public function __construct(public string $key, array $names, public bool $mandatory = false, public bool $sensitive = false)
     {
         new ApiOperation($key);
-        if (array_keys($names) !== ['pl', 'en'] || count(array_filter($names, fn ($name) => is_string($name) && trim($name) !== '' && strlen($name) <= 256)) !== 2) {
+        if (array_keys($names) !== ['pl', 'en'] || ! is_string($names['pl']) || ! is_string($names['en'])
+            || trim($names['pl']) === '' || trim($names['en']) === '' || strlen($names['pl']) > 256 || strlen($names['en']) > 256) {
             throw new \InvalidArgumentException('Invalid delivery category.');
         }
+        $this->names = ['pl' => $names['pl'], 'en' => $names['en']];
     }
 }

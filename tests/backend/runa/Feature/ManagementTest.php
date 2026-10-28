@@ -80,21 +80,27 @@ it('preserves literal runner arguments, nonzero exits and test suite exclusion i
     $root = sys_get_temp_dir().'/runa-checks-'.bin2hex(random_bytes(6));
     mkdir($root.'/src/vendor/bin', 0775, true);
     mkdir($root.'/src/runa/testing/backend', 0775, true);
+    File::copyDirectory(dirname(base_path()).'/tools/core', $root.'/tools/core');
+    File::copyDirectory(dirname(base_path()).'/tools/application', $root.'/tools/application');
+    File::copy(dirname(base_path()).'/tools/__init__.py', $root.'/tools/__init__.py');
+    File::ensureDirectoryExists($root.'/tests/backend/app');
+    file_put_contents($root.'/tests/backend/app/FixtureTest.php', '<?php // runner selection fixture');
     // This process fixture has no database; lifecycle behavior is covered separately.
     file_put_contents($root.'/src/runa/testing/backend/worker-databases.php', '<?php exit(0);');
     $runner = $root.'/src/vendor/bin/pest';
-    file_put_contents($runner, '#!/usr/bin/env php'."\n".'<?php fwrite(STDOUT, json_encode(array_slice($argv, 1))); exit(7);');
+    file_put_contents($runner, '#!/usr/bin/env php'."\n".'<?php fwrite(STDOUT, json_encode(array_slice($argv, 1)).PHP_EOL); exit(7);');
     chmod($runner, 0755);
     $output = new BufferedOutput;
     try {
         $arguments = ['--filter=literal $(false); value', '--compact'];
         $action = new RunSourceChecks;
-        expect($action->execute('test', $arguments, $root, $output))->toBe(7)
-            ->and(json_decode($output->fetch(), true, flags: JSON_THROW_ON_ERROR))->toBe(['--configuration=phpunit.xml', '--test-directory=../tests/backend/app', ...$arguments]);
+        expect($action->execute('test', ['--scope=backend', ...$arguments], $root, $output))->toBe(7)
+            ->and(json_decode(explode("\n", trim($output->fetch()))[0], true, flags: JSON_THROW_ON_ERROR))->toBe(['--configuration=phpunit.xml', '--test-directory=../tests/backend/app', '--compact', $arguments[0]]);
         $lock = fopen($root.'/.runtime/tests/suite.lock', 'c');
         flock($lock, LOCK_EX);
         try {
-            expect(fn () => $action->execute('test', [], $root, $output))->toThrow(RuntimeException::class, 'Another test suite');
+            expect($action->execute('test', ['--scope=backend'], $root, $output))->not->toBe(0);
+            expect($output->fetch())->toContain('Another test suite');
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);

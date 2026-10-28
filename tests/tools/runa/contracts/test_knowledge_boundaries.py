@@ -72,7 +72,7 @@ def test_provider_rejects_boolean_or_nonfinite_embedding_coordinates(bad_value: 
     config = load(ROOT)
     client = Client(
         config["cpu_url"],
-        [capabilities(config), [[1]], [[bad_value] + [0] * (config["dimension"] - 1)]],
+        [capabilities(config), [[1]], [[bad_value, *(0 for _ in range(config["dimension"] - 1))]]],
     )
     provider = Embeddings(config, "cpu", http_factory=lambda _: client)
     with pytest.raises(ValueError, match="dimension or non-finite"):
@@ -82,7 +82,7 @@ def test_provider_rejects_boolean_or_nonfinite_embedding_coordinates(bad_value: 
 
 def test_provider_normalizes_no_data_and_retains_numeric_vectors() -> None:
     config = load(ROOT)
-    vector: list[JsonValue] = [1] + [0.0] * (config["dimension"] - 1)
+    vector: list[JsonValue] = [1, *(0.0 for _ in range(config["dimension"] - 1))]
     client = Client(config["cpu_url"], [capabilities(config), [[1, 2]], [vector]])
     provider = Embeddings(config, "cpu", http_factory=lambda _: client)
     assert provider.embed([]) == []

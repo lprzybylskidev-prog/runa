@@ -14,5 +14,6 @@
   "pythonPlatform": "Linux",
   "typeCheckingMode": "strict",
   "venvPath": "../../../.runtime/python",
-  "venv": "venv"
+  "venv": "venv",
+  "extraPaths": ["../../.."]
 }

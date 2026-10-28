@@ -48,7 +48,7 @@ def parse(argv: Sequence[str]) -> Selection:
     options, native = parser.parse_known_args(args)
     if scope and options.scope:
         parser.error("Use a positional scope or --scope, not both.")
-    scopes = tuple(
+    scopes: tuple[Scope, ...] = tuple(
         cast(Scope, value) for value in (options.scope or ([scope] if scope else DEFAULT_SCOPES))
     )
     if native[:1] == ["--"]:

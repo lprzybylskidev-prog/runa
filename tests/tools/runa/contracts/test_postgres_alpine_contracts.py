@@ -11,17 +11,46 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Literal, TypedDict
 from unittest.mock import patch
 
 from tests.tools.runa.acceptance import postgres_alpine as probe
-from tools.core.state import JsonValue
+
+
+class MetadataRow(TypedDict):
+    kind: str
+    provider: str
+    locale: str
+    encoding: str
+    recorded_collation: str
+    actual_collation: str
+
+
+class OrderRow(TypedDict):
+    kind: str
+    values: list[str]
+
+
+class SemanticsRow(TypedDict):
+    kind: str
+    lower: str
+    accent_equal: bool
+    case_equal: bool
+    normalized_equal: bool
+
+
+class PlanRow(TypedDict):
+    Plan: dict[str, str]
+
+
+ProbeFixture = tuple[MetadataRow, OrderRow, OrderRow, OrderRow, list[PlanRow], SemanticsRow]
 
 ROOT = Path(__file__).resolve().parents[4]
 
 
-def fixture() -> list[JsonValue]:
+def fixture() -> ProbeFixture:
     order = ["a", "ą", "c", "ć", "e", "ę", "l", "ł", "n", "ń", "o", "ó", "s", "ś", "z", "ź", "ż"]
-    return [
+    return (
         {
             "kind": "metadata",
             "provider": "i",
@@ -41,15 +70,20 @@ def fixture() -> list[JsonValue]:
             "case_equal": False,
             "normalized_equal": False,
         },
-    ]
+    )
 
 
 class CandidateProbeContracts(unittest.TestCase):
     def test_rejects_libc_version_drift_and_changed_equality(self) -> None:
-        for update in ({"provider": "c"}, {"actual_collation": "upgraded"}, {"locale": "en-US"}):
+        changes: list[tuple[Literal["provider", "actual_collation", "locale"], str]] = [
+            ("provider", "c"),
+            ("actual_collation", "upgraded"),
+            ("locale", "en-US"),
+        ]
+        for key, value in changes:
             rows = fixture()
-            rows[0].update(update)
-            with self.subTest(update=update), self.assertRaises(ValueError):
+            rows[0][key] = value
+            with self.subTest(field=key), self.assertRaises(ValueError):
                 probe.verify(rows)
         rows = fixture()
         rows[-1]["normalized_equal"] = True

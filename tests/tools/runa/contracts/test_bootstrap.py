@@ -11,10 +11,10 @@ import sys
 import tempfile
 import unittest
 import urllib.error
-from collections.abc import Iterator
+from collections.abc import Generator
 from email.message import Message
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, cast
 from unittest.mock import Mock, patch
 
 from distribution import bootstrap
@@ -128,7 +128,11 @@ class BootstrapContracts(unittest.TestCase):
         client = bootstrap.GitHub("owner/repository", "synthetic_not_a_real_token")
         for status in (301, 401, 403, 404, 500):
             error = urllib.error.HTTPError(
-                "https://invalid/?secret=synthetic", status, "synthetic_not_a_real_token", {}, None
+                "https://invalid/?secret=synthetic",
+                status,
+                "synthetic_not_a_real_token",
+                Message(),
+                None,
             )
             with (
                 patch.object(client.opener, "open", side_effect=error),
@@ -312,7 +316,7 @@ class BootstrapContracts(unittest.TestCase):
         return client, identity
 
     @contextlib.contextmanager
-    def local_git(self) -> Iterator[None]:
+    def local_git(self) -> Generator[None, None, None]:
         environment = bootstrap.git_environment
 
         def local(home: Path, token: str = "") -> dict[str, str]:
@@ -512,7 +516,7 @@ class BootstrapContracts(unittest.TestCase):
                     capture_output=True,
                 )
                 identity: bootstrap.ReleaseIdentity = {
-                    **client.resolve.return_value,
+                    **client.resolve("v1.0.0"),
                     "commit": subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"])
                     .decode()
                     .strip(),
@@ -522,7 +526,7 @@ class BootstrapContracts(unittest.TestCase):
                     .decode()
                     .strip(),
                 }
-                client.resolve.return_value = identity
+                cast(Mock, client.resolve).return_value = identity
                 destination = Path(folder) / "customer"
                 receipt = bootstrap.acquire(
                     client, "v1.0.0", destination, "dev", reference_module=include
@@ -565,6 +569,7 @@ class BootstrapContracts(unittest.TestCase):
                         guidance.read_text(),
                     )
                 self.assertEqual(len(list((destination / ".agents/skills").glob("*/SKILL.md"))), 9)
+                assert "customer_agent" in receipt
                 self.assertIn("AGENTS.md", receipt["customer_agent"]["files"])
                 self.assertFalse((destination / "docs/runa/maintainer").exists())
                 custom_frontend = {
@@ -687,9 +692,12 @@ class BootstrapContracts(unittest.TestCase):
                 elif failure == "digest":
                     kwargs["expected_digest"] = "b" * 64
                 elif failure == "changed-ref":
-                    client.resolve.side_effect = [identity, identity | {"commit": "c" * 40}]
+                    cast(Mock, client.resolve).side_effect = [
+                        identity,
+                        identity | {"commit": "c" * 40},
+                    ]
                 else:
-                    client.resolve.return_value = identity | {"tag_object": "d" * 40}
+                    cast(Mock, client.resolve).return_value = identity | {"tag_object": "d" * 40}
                 destination = Path(folder) / "download"
                 with self.assertRaises(bootstrap.BootstrapError):
                     bootstrap.acquire(client, "v1.0.0", destination, "dev", **kwargs)

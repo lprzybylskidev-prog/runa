@@ -3,6 +3,7 @@
 namespace Runa\Modules\Audit\Queries;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\PrincipalScope;
@@ -14,6 +15,7 @@ final readonly class ReadOwnHistory implements OwnHistory
 {
     public function __construct(private DatabaseManager $database, private PrincipalScope $principals) {}
 
+    /** @param array<array-key, mixed> $actions */
     public function page(string $module, string $entityType, array $actions, ?string $before = null): array
     {
         $principal = $this->principals->current();
@@ -25,11 +27,14 @@ final readonly class ReadOwnHistory implements OwnHistory
             throw new \InvalidArgumentException('Bounded history actions are required.');
         }
         foreach ($actions as $action) {
+            if (! is_string($action)) {
+                throw new \InvalidArgumentException('Invalid history action.');
+            }
             new ApiOperation($action);
         }
         $db = $this->database->connection();
         $query = $db->table('runa_audit.events')->where('module', $module)->whereIn('action', $actions)
-            ->whereExists(fn ($q) => $q->selectRaw('1')->from('runa_audit.entities')->whereColumn('event_id', 'runa_audit.events.id')
+            ->whereExists(fn (Builder $q) => $q->selectRaw('1')->from('runa_audit.entities')->whereColumn('event_id', 'runa_audit.events.id')
                 ->where('module', $entity->module)->where('entity_type', $entity->type)->where('entity_public_id', $entity->publicId));
         if ($before !== null) {
             new TrustedPrincipal($before);
@@ -39,10 +44,11 @@ final readonly class ReadOwnHistory implements OwnHistory
             }
             $query->where('id', '<', $id);
         }
+        /** @var list<\stdClass&object{public_id: string, occurred_at: string, action: string, outcome: string}> $rows */
         $rows = $query->orderByDesc('id')->limit(51)->get(['public_id', 'occurred_at', 'action', 'outcome'])->all();
         $more = count($rows) > 50;
         $rows = array_slice($rows, 0, 50);
 
-        return ['entries' => array_map(static fn ($r) => (array) $r, $rows), 'next' => $more ? end($rows)->public_id : null];
+        return ['entries' => array_map(static fn ($r) => ['public_id' => $r->public_id, 'occurred_at' => $r->occurred_at, 'action' => $r->action, 'outcome' => $r->outcome], $rows), 'next' => $more && $rows !== [] ? $rows[array_key_last($rows)]->public_id : null];
     }
 }

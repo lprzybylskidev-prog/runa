@@ -90,6 +90,7 @@ class ExternalProcesses:
                 )
             )
         except ProcessTimeout:
+            assert timeout is not None
             raise subprocess.TimeoutExpired(["external command"], timeout) from None
         if check and result.returncode:
             raise subprocess.CalledProcessError(result.returncode, ["external command"])

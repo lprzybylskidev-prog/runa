@@ -13,12 +13,13 @@ import distribution.update_contracts as update_contracts
 import distribution.update_execution as execution
 from distribution import bootstrap
 from distribution.update_execution_models import ExecutionJournal, ExecutionOptions, ExecutionReport
-from distribution.update_models import DatabaseMetadata, RuntimeSnapshot
+from distribution.update_models import DatabaseMetadata, ModuleStep, RuntimeSnapshot
 from distribution.update_plan_models import ReleaseIdentity
 from tests.tools.runa.acceptance import update_host as acceptance_update_host
 from tests.tools.runa.support.deployment import deployment
 from tests.tools.runa.support.updater import UpdaterWorkspace
-from tools.core.state import json_value
+from tools.application.installation_models import InstallationSettings
+from tools.core.state import JsonValue, json_value
 
 #!/usr/bin/env python3
 """Interrupted source switches, durable recovery and no replay of completed data."""
@@ -100,7 +101,7 @@ class Execution(unittest.TestCase):
             "v0.3.0",
             download=self.fixture.download,
             runtime_factory=lambda root: self.engine,
-            lock_probe=lambda *a: "fixture",
+            lock_probe=lambda candidate, image: "fixture",
             **kwargs,
         )
 
@@ -115,7 +116,7 @@ class Execution(unittest.TestCase):
         pending = self.fixture.installed / ".runtime/production/in-progress.json"
         original = pending.read_bytes()
         before = list(self.engine.events)
-        invalid: tuple[tuple[tuple[str, ...], object], ...] = (
+        invalid: tuple[tuple[tuple[str, ...], JsonValue], ...] = (
             (("schema_version",), True),
             (("target",), []),
             (("id",), 42),
@@ -154,7 +155,11 @@ class Execution(unittest.TestCase):
         self.engine.fail = "build"
         self.assertEqual(self.apply()["status"], "blocked")
         pending = self.fixture.installed / ".runtime/production/in-progress.json"
-        journal = self.journal()
+        journal = json_value(self.journal())
+        assert isinstance(journal, dict)
+        assert isinstance(journal["baseline"], dict)
+        assert isinstance(journal["review"], dict)
+        assert isinstance(journal["id"], str)
         journal["future_evidence"] = {"diagnostic": ["retained", 17]}
         journal["baseline"]["future_baseline"] = {"retained": True}
         journal["review"]["future_review"] = {"retained": True}
@@ -175,6 +180,7 @@ class Execution(unittest.TestCase):
         )
         result = self.apply(resume=True)
         self.assertEqual(result["status"], "completed", result)
+        assert "manual_reconciliation" in result
         self.assertEqual(result["manual_reconciliation"], [])
         complete = (
             self.fixture.installed / ".runtime/production/updates" / (journal["id"] + ".json")
@@ -193,8 +199,10 @@ class Execution(unittest.TestCase):
         ]
         self.engine.fail = "build"
         self.assertEqual(self.apply()["status"], "blocked")
+        assert "database_mounts" in self.journal()["baseline"]
         self.assertEqual(
-            self.journal()["baseline"]["database_mounts"], self.fixture.runtime["database_mounts"]
+            self.journal()["baseline"].get("database_mounts"),
+            self.fixture.runtime["database_mounts"],
         )
         self.fixture.runtime["database_mounts"][0][1] = "another-database"
         before = list(self.engine.events)
@@ -232,6 +240,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(self.engine.seeds, 1)
         self.assertFalse(self.engine.fenced)
         self.assertFalse((self.fixture.installed / ".runtime/production/in-progress.json").exists())
+        assert "source_staging_removed" in result
         self.assertFalse(Path(result["source_staging_removed"]).exists())
         completed = list((self.fixture.installed / ".runtime/production/updates").glob("*.json"))
         self.assertEqual(len(completed), 1)
@@ -240,7 +249,8 @@ class Execution(unittest.TestCase):
         self.assertEqual(self.engine.seeds, 1)
 
     def test_execution_resume_refuses_lost_module_completion_history(self) -> None:
-        row = {
+        row: ModuleStep = {
+            "operation": "upgrade",
             "module": "runa.fixture",
             "step": "upgrade:initialize:install:0.1.0",
             "fingerprint": "a" * 64,
@@ -296,7 +306,7 @@ class Execution(unittest.TestCase):
                     result = case.apply()
                     self.assertEqual(result["status"], "blocked", result)
                     self.assertTrue(case.engine.fenced)
-                    self.assertEqual(case.journal()["state"], "failed")
+                    self.assertEqual(case.journal().get("state"), "failed")
                     resumed = case.apply(resume=True)
                     self.assertEqual(resumed["status"], "completed", resumed)
                     self.assertEqual(case.engine.seeds, 1)
@@ -312,7 +322,7 @@ class Execution(unittest.TestCase):
                 "test_execution_replaces_only_platform_and_records_completion_without_git_writes"
             )
             case.setUp()
-            calls = []
+            calls: list[Path] = []
 
             def interrupted(
                 source: Path, destination: Path, calls: list[Path] = calls, boundary: int = boundary
@@ -328,7 +338,7 @@ class Execution(unittest.TestCase):
                     self.assertRaises(KeyboardInterrupt),
                 ):
                     case.apply()
-                self.assertEqual(case.journal()["state"], "interrupted")
+                self.assertEqual(case.journal().get("state"), "interrupted")
                 self.assertTrue(case.engine.fenced)
                 result = case.apply(resume=True)
                 self.assertEqual(result["status"], "completed", result)
@@ -385,6 +395,7 @@ class Execution(unittest.TestCase):
         )
         blocked = self.apply(resume=True, choice="continue", choose=None)
         self.assertEqual(blocked["checks"][-1]["id"], "customization-changed", blocked)
+        assert "customization_review" in blocked
         fingerprint = blocked["customization_review"]["fingerprint"]
         self.assertEqual(
             self.apply(resume=True, choice="continue", fingerprint=fingerprint)["status"],
@@ -415,6 +426,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(
             (self.fixture.installed / "AGENTS.md").read_text(), "customer instruction extension"
         )
+        assert "manual_reconciliation" in result
         self.assertIn("AGENTS.md", result["manual_reconciliation"])
 
     def test_file_rename_interruptions_resume_from_saved_before_after_state(self) -> None:
@@ -457,7 +469,10 @@ class Execution(unittest.TestCase):
             with (self.fixture.installed / name).open("a") as stream:
                 stream.write("\nTEAM_RELEASE_MARKER=\n")
         private_before = (self.fixture.installed / ".env").read_bytes()
-        extra = {"image": "customer-redis", "command": ["redis-server", "--save", ""]}
+        extra: dict[str, JsonValue] = {
+            "image": "customer-redis",
+            "command": ["redis-server", "--save", ""],
+        }
         value = json.loads((self.fixture.installed / "compose.yaml").read_text())
         value["services"]["redis"] = extra
         (self.fixture.installed / "compose.yaml").write_text(json.dumps(value))
@@ -467,6 +482,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(json.loads((self.fixture.installed / "compose.yaml").read_text()), target)
         for name, content in defaults.items():
             self.assertEqual((self.fixture.installed / name).read_text(), content)
+        assert "infrastructure_follow_up" in result
         self.assertIn("redis", result["infrastructure_follow_up"]["services"])
         reconcile = acceptance_update_host.reconcile_fixture_configuration
         reconcile(self.fixture.installed, {"redis": extra})
@@ -497,7 +513,7 @@ class Execution(unittest.TestCase):
         for name in templates:
             self.assertEqual((production / name).read_text().count("TEAM_RELEASE_MARKER=\n"), 1)
         self.assertFalse((production / ".env.prod").exists())
-        settings = {
+        settings: InstallationSettings = {
             "app_url": "https://fixture.example.invalid",
             "tls": {"mode": "external"},
             "smtp": {
@@ -505,6 +521,7 @@ class Execution(unittest.TestCase):
                 "port": 587,
                 "scheme": "smtp",
                 "from": "fixture@example.invalid",
+                "recipient": "recipient@example.invalid",
             },
         }
         with contextlib.nullcontext(
@@ -593,7 +610,7 @@ class Execution(unittest.TestCase):
         runtime.root = self.fixture.installed
         runtime.project = "fixture"
         runtime.args = ["docker", "compose"]
-        commands = []
+        commands: list[list[str]] = []
 
         def command(arguments: list[str], *args: object, **kwargs: object) -> str:
             commands.append(arguments)
@@ -661,6 +678,7 @@ class Execution(unittest.TestCase):
         with patch.object(execution.shutil, "rmtree", side_effect=interrupted):
             result = self.apply()
         self.assertEqual(result["status"], "completed", result)
+        assert "source_staging_requires_inspection" in result
         self.assertTrue(result["source_staging_requires_inspection"])
         self.assertFalse((self.fixture.installed / ".runtime/production/in-progress.json").exists())
         self.assertFalse(self.engine.fenced)

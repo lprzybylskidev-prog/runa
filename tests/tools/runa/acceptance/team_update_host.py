@@ -329,4 +329,5 @@ class Team:
             == "1",
             "repeat deployment keeps one exact-customer-revision required platform seed completion",
         )
+        assert "team_update" in self.report
         self.report["team_update"]["deployed"] = expected

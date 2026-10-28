@@ -9,7 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from tests.tools.runa.acceptance.acceptance import AcceptanceCall, AcceptanceOutput, Check, Report
-from tools.application.deployment_models import DeploymentState
+from tools.application.deployment_models import DeploymentState, ReleaseRecord
 from tools.maintainer.service_fixtures import redis_image
 
 
@@ -34,7 +34,14 @@ def exercise(
     state = prod / ".runtime/production"
 
     def deployment() -> DeploymentState:
-        return json.loads((state / "deployment.json").read_text())
+        result: DeploymentState = json.loads((state / "deployment.json").read_text())
+        assert result["current"] is not None
+        return result
+
+    def current() -> ReleaseRecord:
+        result = deployment()["current"]
+        assert result is not None
+        return result
 
     def sql(statement: str) -> str:
         return output(
@@ -215,13 +222,12 @@ final class DatabaseSeeder extends Seeder {
     first = commit(customer)
     execute()
     check(
-        deployment()["current"]["sha"] == first
+        current()["sha"] == first
         and sql("SELECT string_agg(label,',' ORDER BY id) FROM deploy_probe.records") == "first",
         "default main builds customer code, runs application migration and only its explicit DatabaseSeeder",
     )
     check(
-        deployment()["current"]["application_version"] == "7.4.2"
-        and deployment()["current"]["version"] == target_version,
+        current()["application_version"] == "7.4.2" and current()["version"] == target_version,
         "deployment records independent customer and platform versions without rewriting either manifest",
     )
     check(
@@ -252,7 +258,7 @@ final class DatabaseSeeder extends Seeder {
     call(["git", "-C", str(customer), "tag", "customer-release-42"])
     execute("customer-release-42")
     check(
-        deployment()["current"]["sha"] == second
+        current()["sha"] == second
         and sql("SELECT string_agg(label,',' ORDER BY id) FROM deploy_probe.records")
         == "first,second",
         "arbitrary explicit customer tag preserves existing application data and migration history",
@@ -386,6 +392,6 @@ final class DatabaseSeeder extends Seeder {
     report["customer_deployment"] = {
         "first": first,
         "second": second,
-        "successful_images": deployment()["current"]["images"],
+        "successful_images": current()["images"],
         "pending_phase": json.loads((state / "in-progress.json").read_text())["phase"],
     }

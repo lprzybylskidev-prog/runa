@@ -8,7 +8,7 @@ import re
 import shutil
 import stat
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import BinaryIO, Unpack
@@ -42,7 +42,7 @@ from distribution.update_plan_models import (
 
 
 @contextmanager
-def operation_snapshot(root: Path) -> Iterator[None]:
+def operation_snapshot(root: Path) -> Generator[None, None, None]:
     """Observe existing locks without creating a lock/state directory in dry-run."""
     path = root / ".runtime/production/operation.lock"
     stream: BinaryIO | None = None

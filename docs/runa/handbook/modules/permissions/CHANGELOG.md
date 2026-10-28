@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 1.0.4 — 2026-10-28
+
+- Complete typed declaration and assignment contracts; serialize every role permission group as a JSON list.
+- Add the source-only verification_contracts forward edge without schema or data changes.
+
 ## 1.0.3 — 2026-10-28
 
 - Support platform 0.6.x explicitly while retaining public APIs and historical upgrade identities.

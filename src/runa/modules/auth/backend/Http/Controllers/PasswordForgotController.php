@@ -12,7 +12,7 @@ final readonly class PasswordForgotController
 
     public function __invoke(PasswordForgotRequest $request): JsonResponse
     {
-        $this->action->requestReset($request->validated('identifier'));
+        $this->action->requestReset($request->string('identifier')->toString());
         $data = ['accepted' => true];
 
         return response()->json(['data' => $data], 202, ['Cache-Control' => 'no-store']);

@@ -31,10 +31,12 @@ def test_command_records_validate_consumed_fields_and_preserve_metadata() -> Non
 
 
 def health_rows() -> list[dict[str, JsonValue]]:
-    return [
+    rows: list[dict[str, JsonValue]] = [
         {"Service": service, "State": "running", "Health": "healthy"}
         for service in ("app", "nginx", "postgres", "queue", "scheduler", "mailpit")
-    ] + [{"Service": "setup", "State": "exited", "ExitCode": 0}]
+    ]
+    rows.append({"Service": "setup", "State": "exited", "ExitCode": 0})
+    return rows
 
 
 @pytest.mark.parametrize("lines", [False, True])

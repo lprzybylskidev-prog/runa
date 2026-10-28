@@ -18,7 +18,7 @@ final readonly class AuthenticateCredentials
         $user = $this->identities->forIdentifier($request->string('identifier')->toString());
         // Equal expensive work for absent/passwordless and existing accounts.
         $dummy = Hash::make(bin2hex(random_bytes(32)));
-        $valid = Hash::check($request->string('password')->toString(), $user?->password ?? $dummy);
+        $valid = Hash::check($request->string('password')->toString(), $user->password ?? $dummy);
         if (! $valid || $user === null || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {
             return null;
         }

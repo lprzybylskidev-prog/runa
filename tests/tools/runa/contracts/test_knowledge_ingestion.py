@@ -16,7 +16,7 @@ from unittest.mock import patch
 from tests.tools.runa.support.knowledge import Client, Provider, Store, capabilities
 from tools.application.knowledge import corpus, ingest
 from tools.application.knowledge.context import KnowledgeContext
-from tools.application.knowledge.contracts import ChunkPayload
+from tools.application.knowledge.contracts import SourceMetadata
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.transport import RequestError
 from tools.maintainer.knowledge_cli import configuration
@@ -160,7 +160,7 @@ class KnowledgeContracts(unittest.TestCase):
         self.track()
         original = corpus.metadata
 
-        def legacy_metadata(path: Path, root: Path, text: str) -> ChunkPayload:
+        def legacy_metadata(path: Path, root: Path, text: str) -> SourceMetadata:
             meta = original(path, root, text)
             if meta["source_path"] == name:
                 meta.update(
@@ -180,7 +180,7 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertTrue(
             any(p.get("roadmap_id") == "RM-2026-003" for p in Store(CONFIG).all_points().values())
         )
-        self.assertTrue(self.indexer.status()["parser_changed"])
+        self.assertTrue(self.indexer.status().get("parser_changed"))
         self.index()
         points = Store(CONFIG).all_points()
         self.assertTrue(any(p["source_path"] == name for p in points.values()))
@@ -207,7 +207,7 @@ class KnowledgeContracts(unittest.TestCase):
         Store.points["orphan"] = {"kind": "chunk", "content": "obsolete"}
         self.assertEqual(self.index(), 0)
         self.assertNotIn("orphan", Store.points)
-        self.assertEqual(self.indexer.status()["documents"], 1)
+        self.assertEqual(self.indexer.status().get("documents"), 1)
 
     def test_failed_prepare_preserves_prior_document(self) -> None:
         self.index()
@@ -223,7 +223,7 @@ class KnowledgeContracts(unittest.TestCase):
         Store.fail_upsert = True
         with self.assertRaisesRegex(RuntimeError, "interrupted"):
             self.index()
-        self.assertTrue(self.indexer.status()["interrupted"])
+        self.assertTrue(self.indexer.status().get("interrupted"))
         Store.fail_upsert = False
         self.assertEqual(self.index(), 0)
         self.assertFalse(self.indexer.status()["stale"])
@@ -231,19 +231,19 @@ class KnowledgeContracts(unittest.TestCase):
     def test_branch_change_refreshes_metadata_without_reembedding(self) -> None:
         self.index()
         subprocess.run(["git", "checkout", "-qb", "other-branch"], cwd=self.root, check=True)
-        self.assertTrue(self.indexer.status()["branch_changed"])
+        self.assertTrue(self.indexer.status().get("branch_changed"))
         Provider.calls.clear()
         self.index()
         self.assertEqual(len(Provider.calls), 1)
         self.assertTrue(
-            all(p["git_branch"] == "other-branch" for p in Store(CONFIG).all_points().values())
+            all(p.get("git_branch") == "other-branch" for p in Store(CONFIG).all_points().values())
         )
 
     def test_parser_change_reparses_without_reembedding_unchanged_chunks(self) -> None:
         self.index()
         Provider.calls.clear()
         with patch.object(self.indexer, "parser_fingerprint", return_value="revised-parser"):
-            self.assertTrue(self.indexer.status()["parser_changed"])
+            self.assertTrue(self.indexer.status().get("parser_changed"))
             self.assertEqual(self.index(), 0)
             self.assertFalse(self.indexer.status()["stale"])
         self.assertEqual(len(Provider.calls), 1)

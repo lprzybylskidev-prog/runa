@@ -15,7 +15,9 @@ use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
 
-/** Private recipient-bound links; queue envelopes contain references only. */
+/** Private recipient-bound links; queue envelopes contain references only.
+ * @phpstan-type MailRow \stdClass&object{id: int, public_id: string, user_id: int, purpose: string, recipient: string, change_id: int|null, secondary_id: int|null, security_version: int, expires_at: string, consumed_at: string|null, delivery_secret: string|null, claimed_at: string|null, sent_at: string|null}
+ */
 final readonly class ProfileMail
 {
     public function __construct(private EntryTransaction $transactions, private LookupIdentity $identities,
@@ -33,11 +35,15 @@ final readonly class ProfileMail
             'public_id' => $id, 'user_id' => $user->id, 'purpose' => $purpose, 'recipient' => $recipient,
             'change_id' => $changeId, 'secondary_id' => $secondaryId, 'security_version' => $user->security_version,
             'token_hash' => $secret === null ? null : hash('sha256', $secret), 'delivery_secret' => $secret === null ? null : Crypt::encryptString($secret),
-            'expires_at' => now()->addMinutes($this->settings->value('runa.auth', 'email_change_minutes')), 'created_at' => now(), 'updated_at' => now(),
+            'expires_at' => now()->addMinutes($this->settings->integer('runa.auth', 'email_change_minutes')), 'created_at' => now(), 'updated_at' => now(),
         ]);
         $enqueue();
     }
 
+    /** @param MailRow|null $mail
+     * @phpstan-assert-if-true User $user
+     * @phpstan-assert-if-true MailRow $mail
+     */
     public function validLocked(Connection $connection, ?User $user, ?object $mail): bool
     {
         if ($user === null || $mail === null || $mail->consumed_at !== null || ! CarbonImmutable::parse($mail->expires_at)->isFuture()) {
@@ -57,6 +63,7 @@ final readonly class ProfileMail
             return $this->settings->value('runa.auth', 'secondary_emails_enabled') && $connection->table('runa_auth.secondary_emails')
                 ->where('id', $mail->secondary_id)->where('user_id', $user->id)->where('email', $mail->recipient)->whereNull('deleted_at')->whereNull('verified_at')->exists();
         }
+        /** @var (\stdClass&object{cancelled_at: string|null, completed_at: string|null, expires_at: string, old_email: string, new_email: string, security_version: int})|null $change */
         $change = $connection->table('runa_auth.email_changes')->where('id', $mail->change_id)->where('user_id', $user->id)->first();
 
         return $change !== null && $change->cancelled_at === null && $change->completed_at === null
@@ -96,7 +103,7 @@ final readonly class ProfileMail
             if (! $this->validLocked($connection, $user, $mail) || $mail->sent_at !== null) {
                 return;
             }
-            $origin = rtrim(config('app.url'), '/');
+            $origin = rtrim(config()->string('app.url'), '/');
             $parts = parse_url($origin);
             if (! is_array($parts) || ! isset($parts['host'], $parts['scheme']) || ! in_array($parts['scheme'], ['http', 'https'], true)
                 || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])
@@ -121,10 +128,12 @@ final readonly class ProfileMail
         });
     }
 
+    /** @return array{User|null, MailRow|null} */
     private function locked(Connection $connection, string $publicId): array
     {
         $mail = $connection->table('runa_auth.profile_mail')->where('public_id', $publicId)->first();
         $user = $mail === null ? null : User::withTrashed()->where('id', $mail->user_id)->lockForUpdate()->first();
+        /** @var MailRow|null $mail */
         $mail = $mail === null ? null : $connection->table('runa_auth.profile_mail')->where('id', $mail->id)->lockForUpdate()->first();
 
         return [$user, $mail];

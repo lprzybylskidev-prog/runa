@@ -11,7 +11,6 @@ use Runa\Contracts\Modules\HttpAccountPolicy;
 use Runa\Http\AuthAccountBridge;
 use Runa\Integration\Core\PermissionGate;
 use Runa\Modules\Auth\Actions\AuthenticateCredentials;
-use Runa\Modules\Auth\Actions\RegisterAccount;
 
 /** Package routes must be disabled before any provider boots, even on a cold install. */
 final class AuthTransportServiceProvider extends ServiceProvider
@@ -25,7 +24,6 @@ final class AuthTransportServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::before(fn (?Authenticatable $user, string $ability, array $arguments = []): ?bool => $this->app->make(PermissionGate::class)->before($user, $ability, $arguments));
-        Fortify::createUsersUsing(RegisterAccount::class);
         Fortify::authenticateUsing(fn (Request $request) => $this->app->make(AuthenticateCredentials::class)->user($request));
     }
 }

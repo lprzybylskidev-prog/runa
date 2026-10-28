@@ -21,7 +21,7 @@ trait GuardsTestDatabase
             }
         }
         // Production excludes developer test support; refuse before resolving it.
-        if ($this->laravel['config']->get('app.env') !== 'testing') {
+        if ($this->laravel->environment() !== 'testing') {
             throw new RuntimeException('Destructive database operations require the isolated PostgreSQL testing environment, host, role and database.');
         }
         $this->laravel->make(TestDatabaseGuard::class)->assertSafe();

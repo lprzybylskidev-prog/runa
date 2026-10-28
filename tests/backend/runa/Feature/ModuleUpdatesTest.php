@@ -208,7 +208,7 @@ it('runs the target planner in a fresh PHP process without application boot or r
     $id = ($this->add)('runa', '0.3.0', [[null, '0.3.0', true, false]]);
     $before = $this->registry->snapshot();
     // The standalone planner reads target framework code plus installed dependencies, not the running app.
-    foreach (['Contracts', 'Support'] as $directory) {
+    foreach (['Contracts', 'Support', 'ModuleFramework'] as $directory) {
         File::copyDirectory(base_path('runa/'.$directory), $this->sources->root.'/runa/'.$directory);
     }
     $process = new Process([PHP_BINARY, dirname(base_path()).'/distribution/module-plan.php', base_path(), $this->sources->root]);
@@ -236,7 +236,7 @@ it('rejects missing prerequisites and module-owned preflight refusal before regi
     [$owner, $code] = explode('.', $id);
     $path = $this->sources->root.'/'.$owner.'/modules/'.$code.'/backend/Definitions/Upgrades.php';
     // A fresh process is used so changed trusted PHP source cannot hide behind PHP's class cache.
-    foreach (['Contracts', 'Support'] as $directory) {
+    foreach (['Contracts', 'Support', 'ModuleFramework'] as $directory) {
         File::copyDirectory(base_path('runa/'.$directory), $this->sources->root.'/runa/'.$directory);
     }
     $original = file_get_contents($path);

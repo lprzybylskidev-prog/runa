@@ -12,7 +12,7 @@ final readonly class CompleteVerificationController
 
     public function __invoke(TokenRequest $request): JsonResponse
     {
-        $this->tokens->consume($request->validated('token'), 'verification');
+        $this->tokens->consume($request->string('token')->toString(), 'verification');
 
         return response()->json(['data' => ['accepted' => true]])->header('Cache-Control', 'no-store');
     }

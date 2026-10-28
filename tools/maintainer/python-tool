@@ -12,6 +12,10 @@ if __name__ == "__main__":
         subprocess.call(
             [sys.executable, "-m", "tools.maintainer.python_cli", *sys.argv[1:]],
             cwd=root,
-            env=dict(os.environ, PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache")),
+            env=dict(
+                os.environ,
+                PYTHONDONTWRITEBYTECODE="1",
+                PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache"),
+            ),
         )
     )

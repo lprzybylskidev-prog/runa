@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 from dataclasses import replace
 from datetime import UTC, datetime
+from email.message import Message
 from pathlib import Path
 from typing import Never
 
@@ -100,15 +101,19 @@ class FailingOpener:
         self.status = status
         self.calls = 0
 
-    def open(self, request: urllib.request.Request, timeout: float) -> Never:
+    def open(self, request: str | urllib.request.Request, /, *, timeout: float) -> Never:
         self.calls += 1
         raise urllib.error.HTTPError(
-            request.full_url, self.status, "private response", {}, io.BytesIO(b"secret")
+            request if isinstance(request, str) else request.full_url,
+            self.status,
+            "private response",
+            Message(),
+            io.BytesIO(b"secret"),
         )
 
 
 def test_injected_http_retries_transient_errors_and_never_echoes_service_body() -> None:
-    delays = []
+    delays: list[float] = []
     opener = FailingOpener(503)
     with pytest.raises(RequestError) as failure:
         Http("http://service", opener=opener, sleep=delays.append).request("GET", "/info")
@@ -148,7 +153,8 @@ def test_optional_startup_bounds_probe_and_retries_without_running_index_on_fail
 ) -> None:
     root = workspace(tmp_path)
     (root / ".env").write_text("APP_ENV=local\n")
-    calls, delays = [], []
+    calls: list[ProcessSpec] = []
+    delays: list[float] = []
 
     class Runner:
         def run(self, spec: ProcessSpec) -> ProcessResult:
@@ -206,11 +212,11 @@ def test_parser_relocation_changes_freshness_without_changing_collection_space(
     previous_space = Store.manifest_data()["space"].copy()
     Provider.calls.clear()
     indexer.parser_fingerprint = lambda: "after-package-migration"
-    assert indexer.status()["parser_changed"]
+    assert indexer.status().get("parser_changed")
     assert indexer.index() == 0
     assert len(Provider.calls) == 1 and set(Store.points) == before
     assert Store.manifest_data()["space"] == previous_space
-    assert Store.manifest_data()["indexed_at"] == "2026-10-27T00:00:00+00:00"
+    assert Store.manifest_data().get("indexed_at") == "2026-10-27T00:00:00+00:00"
 
 
 def test_physical_customer_projection_has_no_owner_import_dependency(tmp_path: Path) -> None:
@@ -239,7 +245,7 @@ def test_physical_customer_projection_has_no_owner_import_dependency(tmp_path: P
 def test_invalid_remote_manifest_refuses_before_any_write(tmp_path: Path) -> None:
     from tools.application.knowledge.store import Store as QdrantStore
 
-    calls = []
+    calls: list[str] = []
 
     class HttpClient:
         base = "http://qdrant"
@@ -262,7 +268,7 @@ def test_injected_provider_rejects_gpu_model_mismatch_without_cpu_fallback(tmp_p
     from tools.application.knowledge.provider import Embeddings
 
     config = load(workspace(tmp_path))
-    calls = []
+    calls: list[str] = []
 
     class Client:
         def __init__(self, base: str) -> None:

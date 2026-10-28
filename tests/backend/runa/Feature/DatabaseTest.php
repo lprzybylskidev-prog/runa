@@ -66,6 +66,8 @@ it('runs native destructive guard acceptance only inside its disposable worker',
 
 it('refuses production destructive commands before resolving excluded test support', function (): void {
     config()->set('app.env', 'production');
+    // Laravel's bootstrapped environment identity is separate from mutable config.
+    app()->instance('env', 'production');
     app()->bind(TestDatabaseGuard::class, static fn () => throw new LogicException('Test support must remain unloaded.'));
     foreach (['db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback'] as $command) {
         expect(fn () => Artisan::call($command, ['--force' => true]))

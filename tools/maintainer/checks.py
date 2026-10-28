@@ -54,35 +54,54 @@ def repository() -> None:
 
 def maintenance() -> None:
     registry = yaml(ROOT / "docs/runa/maintainer/maintenance/registry.yml")
-    ids = set()
-    for entry in registry["entries"]:
+    ids: set[str] = set()
+    entries = registry["entries"]
+    if not isinstance(entries, list):
+        raise ValueError("Invalid registry entries.")
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid registry entry.")
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str):
+            raise ValueError("Invalid registry ID.")
         required = ("id", "type", "name", "last_reviewed", "review_every_days")
         if any(not entry.get(key) for key in required) or not (
             entry.get("version") or entry.get("pinned_revision")
         ):
             raise ValueError("Incomplete external registry entry.")
-        if entry["id"] in ids:
-            raise ValueError("Duplicate registry ID: " + entry["id"])
-        ids.add(entry["id"])
-        if entry.get("source") and not (ROOT / entry["source"]).is_file():
-            raise ValueError("Missing registry source: " + entry["source"])
+        if entry_id in ids:
+            raise ValueError("Duplicate registry ID: " + entry_id)
+        ids.add(entry_id)
+        source = entry.get("source")
+        if source and (not isinstance(source, str) or not (ROOT / source).is_file()):
+            raise ValueError("Missing registry source: " + str(source))
         interval = entry["review_every_days"]
         if type(interval) is not int or interval <= 0:
             raise ValueError("Invalid registry review interval.")
+        reviewed = entry["last_reviewed"]
+        if not isinstance(reviewed, (int, str)):
+            raise ValueError("Invalid registry review date.")
         due = (
-            datetime.fromtimestamp(entry["last_reviewed"], UTC).date()
-            if isinstance(entry["last_reviewed"], int)
-            else date.fromisoformat(entry["last_reviewed"])
+            datetime.fromtimestamp(reviewed, UTC).date()
+            if isinstance(reviewed, int)
+            else date.fromisoformat(reviewed)
         ) + timedelta(days=interval)
         if due < date.today():
-            print("REVIEW DUE: " + entry["id"] + " " + due.isoformat())
+            print("REVIEW DUE: " + entry_id + " " + due.isoformat())
     roadmap_ids = {p.stem[:11] for p in (ROOT / "docs/runa/maintainer/roadmaps").rglob("RM-*.md")}
-    known = set()
+    known: set[str] = set()
     for kind in ("backlog", "deprecations"):
         data = yaml(ROOT / f"docs/runa/maintainer/maintenance/{kind}.yml")
         if data.get("version") != 1 or not isinstance(data.get("items"), list):
             raise ValueError("Invalid maintenance document: " + kind)
-        for item in data["items"]:
+        items = data["items"]
+        assert isinstance(items, list)
+        for item in items:
+            if not isinstance(item, dict):
+                raise ValueError("Invalid maintenance item.")
+            item_id = item.get("id")
+            if not isinstance(item_id, str):
+                raise ValueError("Invalid maintenance ID.")
             required = (
                 (
                     "id",
@@ -96,14 +115,14 @@ def maintenance() -> None:
                 if kind == "backlog"
                 else ("id", "deprecated", "replacement", "introduced_at", "removal_plan", "roadmap")
             )
-            if any(not item.get(key) for key in required) or item["id"] in known:
+            if any(not item.get(key) for key in required) or item_id in known:
                 raise ValueError("Incomplete/duplicate maintenance item.")
-            known.add(item["id"])
+            known.add(item_id)
             related = item.get("roadmap")
-            if related and related not in roadmap_ids:
+            if related and (not isinstance(related, str) or related not in roadmap_ids):
                 raise ValueError("Maintenance/deprecation references a missing roadmap.")
             if kind == "backlog":
-                if not re.fullmatch(r"MT-\d{4}-\d{3}", item["id"]) or item["status"] not in (
+                if not re.fullmatch(r"MT-\d{4}-\d{3}", item_id) or item["status"] not in (
                     "open",
                     "planned",
                     "resolved",
@@ -133,12 +152,18 @@ def maintenance() -> None:
     # Direct application dependencies must have a registered reviewed version.
     composer = json.loads((ROOT / "src/composer.json").read_text())
     package = json.loads((ROOT / "src/package.json").read_text())
-    versions = {
-        entry["package"]: str(entry.get("version"))
-        for entry in registry["entries"]
-        if entry.get("package")
-    }
-    if len(versions) != sum("package" in entry for entry in registry["entries"]):
+    versions: dict[str, str] = {}
+    package_count = 0
+    for entry in entries:
+        assert isinstance(entry, dict)
+        if "package" in entry:
+            package_count += 1
+        package_name = entry.get("package")
+        if package_name:
+            if not isinstance(package_name, str):
+                raise ValueError("Registry package name must be a string.")
+            versions[package_name] = str(entry.get("version"))
+    if len(versions) != package_count:
         raise ValueError("Duplicate registry package mapping.")
     for mapping in (
         composer["require"],

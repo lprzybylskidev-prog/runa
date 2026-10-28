@@ -2,6 +2,7 @@
 
 namespace Runa\Modules\Auth\Http\Controllers;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,7 @@ final readonly class ResendVerificationController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $this->tokens->resendVerification(Auth::guard('web')->id());
+        $this->tokens->resendVerification((Auth::guard('web')->user() ?? throw new AuthenticationException)->public_id);
 
         return response()->json(['data' => ['accepted' => true]], 202)->header('Cache-Control', 'no-store');
     }

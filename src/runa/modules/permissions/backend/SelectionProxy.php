@@ -10,6 +10,9 @@ final class SelectionProxy extends GuardedApi implements PermissionsSelections
 {
     public function users(UserSelection $selection): UserSelection
     {
-        return $this->invoke(__FUNCTION__, [$selection]);
+        /** @var UserSelection $result */
+        $result = $this->invoke(__FUNCTION__, [$selection]);
+
+        return $result;
     }
 }

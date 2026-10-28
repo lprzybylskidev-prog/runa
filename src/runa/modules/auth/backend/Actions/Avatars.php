@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Closure;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +26,9 @@ final readonly class Avatars
     public function __construct(private SecurityContext $context, private Profiles $profiles, private EntryTransaction $transactions,
         private ModuleStorage $storage, private AuthorityGuard $authority) {}
 
+    /**
+     * @return array{contents: string|null, type: string|null}
+     */
     public function read(Request $request): array
     {
         return $this->context->run($request, function (Connection $connection, User $user): array {
@@ -36,6 +40,9 @@ final readonly class Avatars
         }, count: false, unrestricted: true);
     }
 
+    /**
+     * @return array{updated: bool, version: int}
+     */
     public function upload(Request $request, bool $admin = false): array
     {
         if (app('db')->connection()->transactionLevel() !== 0) {
@@ -44,7 +51,7 @@ final readonly class Avatars
         $file = $request->file('avatar');
         // Validate decoded file headers, MIME content, dimensions and bounded bytes; never trust filename/extension.
         Validator::make(['avatar' => $file], ['avatar' => ['required', File::image()->types(['jpg', 'png', 'webp'])
-            ->max($this->profiles->value('avatar_max_kib'))->dimensions(Rule::dimensions()->minWidth(1)->minHeight(1)->maxWidth(4096)->maxHeight(4096))]])->validate();
+            ->max($this->profiles->integer('avatar_max_kib'))->dimensions(Rule::dimensions()->minWidth(1)->minHeight(1)->maxWidth(4096)->maxHeight(4096))]])->validate();
         if (! $file instanceof UploadedFile) {
             $this->refuse('avatar_invalid', 422);
         }
@@ -90,6 +97,9 @@ final readonly class Avatars
         return $result;
     }
 
+    /**
+     * @return array{updated: bool, version: int}
+     */
     public function remove(Request $request, bool $admin = false): array
     {
         if (app('db')->connection()->transactionLevel() !== 0) {
@@ -119,8 +129,9 @@ final readonly class Avatars
     {
         $this->transactions->run(function (Connection $connection): void {
             $this->transactions->lockAuthority($connection);
-            $rows = $connection->table('runa_auth.avatar_files')->where('available_at', '<=', now())->whereNotExists(fn ($q) => $q->selectRaw('1')->from('runa_auth.users')->whereColumn('avatar_path', 'runa_auth.avatar_files.path'))
+            $rows = $connection->table('runa_auth.avatar_files')->where('available_at', '<=', now())->whereNotExists(fn (Builder $q) => $q->selectRaw('1')->from('runa_auth.users')->whereColumn('avatar_path', 'runa_auth.avatar_files.path'))
                 ->orderBy('id')->limit(100)->get();
+            /** @var \stdClass&object{path: string} $row */
             foreach ($rows as $row) {
                 try {
                     $this->storage->disk('runa.auth')->delete($row->path);
@@ -132,6 +143,12 @@ final readonly class Avatars
         });
     }
 
+    /**
+     * @template T
+     *
+     * @param  Closure(Connection, User): T  $work
+     * @return T
+     */
     private function target(Request $request, bool $admin, Closure $work): mixed
     {
         return $this->context->run($request, function (Connection $connection, User $actor) use ($request, $admin, $work): mixed {

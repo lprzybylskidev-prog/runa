@@ -14,6 +14,7 @@ from pathlib import Path
 from tools.application.processes import ApplicationProcesses
 from tools.core.context import ExecutionLocation, WorkspaceContext
 from tools.core.reporting import SafeFailure
+from tools.core.state import JsonValue
 
 PRESETS = {
     "low": ("2", "2G", "2", "1"),
@@ -45,7 +46,7 @@ class DevelopmentConfig:
         return self.workspace.root / ".devcontainer/compose.resources.yaml"
 
     def load(self) -> dict[str, str]:
-        values = dict(zip(KEYS, PRESETS["standard"], strict=True))
+        values: dict[str, str] = dict(zip(KEYS, PRESETS["standard"], strict=True))
         values.update(
             DEV_PROFILE="standard",
             RUNA_UID=str(os.getuid()),
@@ -108,7 +109,7 @@ class DevelopmentConfig:
         tier = values["DEV_PROFILE"] if values["DEV_PROFILE"] in PRESETS else "standard"
         database_memory = {"low": "256M", "standard": "512M", "high": "1G"}[tier]
         worker_memory = "256M" if tier == "low" else "512M"
-        siblings = {
+        siblings: dict[str, dict[str, JsonValue]] = {
             "postgres": {
                 "cpus": {"low": 0.5, "standard": 1, "high": 2}[tier],
                 "mem_limit": database_memory,

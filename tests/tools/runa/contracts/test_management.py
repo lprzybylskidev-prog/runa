@@ -85,12 +85,13 @@ class ManagementContracts(unittest.TestCase):
         command = ManagementService.for_workspace(ROOT).execution_command(validated)
         self.assertEqual(list(command[-5:]), ["php", "artisan", "runa:test", *arguments])
         self.assertNotIn("sh", command)
-        for parameters in (
+        invalid: list[dict[str, object]] = [
             {"arguments": "false"},
             {"arguments": [False]},
             {"arguments": ["a" * 4097]},
             {"arguments": [], "executable": "sh"},
-        ):
+        ]
+        for parameters in invalid:
             with self.subTest(parameters=parameters), self.assertRaises(ValueError):
                 ManagementService.for_workspace(ROOT).validate_plan(
                     json.dumps(plan | {"parameters": parameters}), self.request
@@ -134,16 +135,16 @@ class TestResourceContracts(unittest.TestCase):
         self.processes = Mock()
         self.endpoints = test_resources.EndpointService(WorkspaceContext(self.root), self.processes)
         self.project = "isolated-test"
-        self.run = "b" * 32
+        self.run_identity = "b" * 32
         self.labels = {
             "com.docker.compose.project": self.project,
             "com.docker.compose.project.working_dir": str(self.root),
             "com.docker.compose.service": "app-test",
-            test_resources.LABEL: self.run,
+            test_resources.LABEL: self.run_identity,
         }
 
     def test_cleanup_targets_only_run_labels_and_preserves_volumes(self) -> None:
-        calls = []
+        calls: list[list[str]] = []
 
         def read(command: list[str]) -> str:
             calls.append(command)
@@ -154,8 +155,10 @@ class TestResourceContracts(unittest.TestCase):
             patch.object(self.endpoints, "read", side_effect=read),
             patch.object(self.processes, "run") as remove,
         ):
-            self.endpoints.cleanup({"project": self.project, "run": self.run}, self.project)
-        self.assertIn("label=runa.testing.run=" + self.run, calls[0])
+            self.endpoints.cleanup(
+                {"project": self.project, "run": self.run_identity}, self.project
+            )
+        self.assertIn("label=runa.testing.run=" + self.run_identity, calls[0])
         self.assertEqual(
             [call.args[0] for call in remove.call_args_list],
             [["docker", "stop", "-t", "10", "owned-id"], ["docker", "rm", "owned-id"]],
@@ -179,11 +182,15 @@ class TestResourceContracts(unittest.TestCase):
                 patch.object(self.processes, "run") as remove,
             ):
                 with self.assertRaisesRegex(ValueError, "ownership"):
-                    self.endpoints.cleanup({"project": self.project, "run": self.run}, self.project)
+                    self.endpoints.cleanup(
+                        {"project": self.project, "run": self.run_identity}, self.project
+                    )
                 remove.assert_not_called()
         with patch.object(self.endpoints, "read") as read:
             with self.assertRaisesRegex(ValueError, "ownership"):
-                self.endpoints.cleanup({"project": "foreign", "run": self.run}, self.project)
+                self.endpoints.cleanup(
+                    {"project": "foreign", "run": self.run_identity}, self.project
+                )
             read.assert_not_called()
 
     def endpoint(self, existing: Sequence[str] = ()) -> Callable[[list[str]], str]:

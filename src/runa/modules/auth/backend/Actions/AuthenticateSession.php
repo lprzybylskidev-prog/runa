@@ -39,7 +39,8 @@ final readonly class AuthenticateSession
                 if ($this->abuse->blocked($connection, $identifier)) {
                     return null;
                 }
-                $user = call_user_func(Fortify::$authenticateUsingCallback, $request);
+                $callback = Fortify::$authenticateUsingCallback ?? throw new \LogicException('Auth transport callback unavailable.');
+                $user = call_user_func($callback, $request);
                 if (! $user instanceof User) {
                     $this->abuse->failure($connection, $identifier, $candidate);
 

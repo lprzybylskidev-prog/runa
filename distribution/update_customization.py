@@ -158,7 +158,7 @@ def infrastructure_review(root: Path, original: Path) -> InfrastructureReview:
     affected = {
         service
         for key in descriptors[0].keys() | descriptors[1].keys()
-        for name, service in [key]
+        for _name, service in [key]
         if descriptors[0].get(key) != descriptors[1].get(key)
     }
     workspace = any(name.startswith(".devcontainer/") for name in changed)

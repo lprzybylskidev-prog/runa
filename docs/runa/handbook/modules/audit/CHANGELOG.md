@@ -1,5 +1,10 @@
 # Audit module changelog
 
+## 1.0.4 — 2026-10-28
+
+- Complete typed capture, event and payload contracts with the actual public trait consumer; retain atomic history and redaction rules.
+- Add the source-only verification_contracts forward edge without schema or data changes.
+
 ## 1.0.3 — 2026-10-28
 
 - Support platform 0.6.x explicitly while retaining public APIs and all historical upgrade identities.

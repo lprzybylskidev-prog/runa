@@ -4,8 +4,10 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import NotRequired, TypedDict, cast
+from typing import Literal, NotRequired, TypedDict, cast
 from urllib.parse import urlsplit
+
+from tools.core.state import json_value
 
 
 class RetrievalConfig(TypedDict):
@@ -56,7 +58,7 @@ def source_paths(value: object) -> list[str]:
         and all(part not in ("", ".", "..") for part in item.split("/"))
         and "\\" not in item
         and "\0" not in item
-        for item in value
+        for item in cast(list[object], value)
     ):
         raise ValueError("Knowledge source paths must be relative, literal paths.")
     return cast(list[str], value)
@@ -94,9 +96,15 @@ def validate(value: object) -> KnowledgeConfig:
     settings = data.get("retrieval")
     if not isinstance(settings, dict):
         raise ValueError("Missing retrieval configuration.")
+    settings = cast(dict[str, object], settings)
     for key in ("dense_weight", "lexical_weight", "rrf_k", "active_boost", "historical_weight"):
         number = settings.get(key)
-        if type(number) not in (int, float) or not math.isfinite(number) or number <= 0:
+        if (
+            isinstance(number, bool)
+            or not isinstance(number, (int, float))
+            or not math.isfinite(number)
+            or number <= 0
+        ):
             raise ValueError("Retrieval weights must be positive finite numbers.")
     for key in ("candidates", "per_source"):
         number = settings.get(key)
@@ -105,7 +113,7 @@ def validate(value: object) -> KnowledgeConfig:
     return cast(KnowledgeConfig, data)
 
 
-def load(root: Path, *, additions: dict[str, list[str]] | None = None) -> KnowledgeConfig:
+def load(root: Path, *, additions: dict[str, object] | None = None) -> KnowledgeConfig:
     config = validate(json.loads((root / "tools/application/knowledge/config.json").read_text()))
     if additions is not None:
         if set(additions) != {"files", "markdown_roots"}:
@@ -114,7 +122,16 @@ def load(root: Path, *, additions: dict[str, list[str]] | None = None) -> Knowle
             {
                 **config,
                 **{
-                    key: list(dict.fromkeys([*config[key], *source_paths(value)]))
+                    key: list(
+                        dict.fromkeys(
+                            [
+                                *source_paths(
+                                    config[cast(Literal["files", "markdown_roots"], key)]
+                                ),
+                                *source_paths(value),
+                            ]
+                        )
+                    )
                     for key, value in additions.items()
                 },
             }
@@ -129,18 +146,19 @@ def golden(root: Path) -> list[GoldenCase]:
 def golden_file(path: Path) -> list[GoldenCase]:
     if path.is_symlink():
         raise ValueError("Knowledge golden configuration must not be a symlink.")
-    data = json.loads(path.read_text())
+    data = json_value(json.loads(path.read_text()))
     if not isinstance(data, list):
         raise ValueError("Golden expectations must be a list.")
     for case in data:
         if (
             not isinstance(case, dict)
             or not isinstance(case.get("query"), str)
-            or not case["query"].strip()
+            or not str(case["query"]).strip()
         ):
             raise ValueError("Invalid golden query.")
         source_paths([case.get("source_path")])
-        if type(case.get("top_k", 5)) is not int or not 1 <= case.get("top_k", 5) <= 50:
+        top_k = case.get("top_k", 5)
+        if type(top_k) is not int or not 1 <= top_k <= 50:
             raise ValueError("Invalid golden top-k.")
         if not isinstance(case.get("section", ""), str):
             raise ValueError("Invalid golden section.")

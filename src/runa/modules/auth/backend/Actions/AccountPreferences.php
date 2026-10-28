@@ -18,6 +18,7 @@ use Runa\Modules\Auth\Support\PreferenceDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\ModuleIdentity;
 
+/** @phpstan-import-type PreferenceRead from AccountPreferenceSnapshot */
 final readonly class AccountPreferences implements AuthPreferences
 {
     public function __construct(private EntryTransaction $transactions, private PreferenceDeclarations $declarations,
@@ -65,6 +66,10 @@ final readonly class AccountPreferences implements AuthPreferences
         return $this->target($publicId, fn (Connection $connection, User $user): array => $this->resetLocked($connection, $user, null, null, $revision, true));
     }
 
+    /**
+     * @param  array{operation: string, revision: int, application: string, module?: string, view?: string, key?: string, value?: mixed, values?: list<array{module: string, view: string, key: string, value: mixed}>}  $input
+     * @return array<string, mixed>
+     */
     public function http(Connection $connection, User $user, array $input): array
     {
         if ($input['operation'] === 'reset_all') {
@@ -74,10 +79,20 @@ final readonly class AccountPreferences implements AuthPreferences
 
             return $this->target(null, fn (Connection $connection, User $user): array => $this->resetLocked($connection, $user, null, null, $input['revision'], false, true));
         }
-        $scope = isset($input['key']) ? new PreferenceScope($input['application'], $input['module'], $input['view'], $input['key']) : null;
+        $scope = null;
+        if (isset($input['key'])) {
+            if (! isset($input['module'], $input['view'])) {
+                throw new \InvalidArgumentException('Preference scope required.');
+            }
+            $scope = new PreferenceScope($input['application'], $input['module'], $input['view'], $input['key']);
+        }
         if ($input['operation'] === 'write') {
             if ($scope === null) {
                 throw new \InvalidArgumentException('Preference scope required.');
+            }
+
+            if (! array_key_exists('value', $input)) {
+                throw new \InvalidArgumentException('Preference value required.');
             }
 
             return $this->write($scope, new PreferenceValue($input['value']), $input['revision']);
@@ -90,6 +105,7 @@ final readonly class AccountPreferences implements AuthPreferences
             if ($user->preference_legacy_claimed) {
                 throw new IdentityConflict('preferences_already_adopted');
             }
+            assert(isset($input['values']));
             foreach ($input['values'] as $entry) {
                 $candidate = new PreferenceScope($input['application'], $entry['module'], $entry['view'], $entry['key']);
                 $current = $this->readLocked($connection, $user, $candidate);
@@ -105,11 +121,13 @@ final readonly class AccountPreferences implements AuthPreferences
         return $this->snapshots->all($connection, $user, $input['application']);
     }
 
+    /** @return PreferenceRead */
     public function readLocked(Connection $connection, User $user, PreferenceScope $scope): array
     {
         return $this->snapshots->one($connection, $user, $scope);
     }
 
+    /** @return array{account: string, revision: int} */
     private function resetLocked(Connection $connection, User $user, ?string $module, ?PreferenceScope $scope, int $revision, bool $admin, bool $includeDelivery = false): array
     {
         $this->revision($user, $revision);
@@ -125,6 +143,7 @@ final readonly class AccountPreferences implements AuthPreferences
         }
         // Resolve old effective values before deletion, preserving source defaults and migrations.
         $resets = [];
+        /** @var \stdClass&object{scope: string, value: string} $row */
         foreach ($query->get() as $row) {
             [$application, $owner, $view, $key] = explode(':', $row->scope);
             $candidate = new PreferenceScope($application, $owner, $view, $key);
@@ -182,6 +201,12 @@ final readonly class AccountPreferences implements AuthPreferences
         }
     }
 
+    /**
+     * @template T
+     *
+     * @param  \Closure(Connection, User): T  $work
+     * @return T
+     */
     private function target(?string $target, \Closure $work): mixed
     {
         return $this->transactions->run(function (Connection $connection) use ($target, $work): mixed {

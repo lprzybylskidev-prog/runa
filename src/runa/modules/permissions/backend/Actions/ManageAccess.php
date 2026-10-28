@@ -3,6 +3,7 @@
 namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Permissions\Contracts\AssignmentPreview;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -49,11 +50,12 @@ final readonly class ManageAccess implements PermissionsAccess
         if ($after !== null) {
             new TrustedPrincipal($after);
         }
+        /** @var Collection<int, \stdClass&object{public_id: string, code: string, name_pl: string, name_en: string, version: int}> $rows */
         $rows = $this->database->connection()->table('runa_permissions.'.$table)->whereNull('deleted_at')
             ->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id')->limit(101)->get(['public_id', 'code', 'name_pl', 'name_en', 'version']);
         $page = $rows->take(100);
 
-        return ['items' => $page->map(fn ($row) => (array) $row)->all(), 'next' => $rows->count() > 100 ? $page->last()->public_id : null];
+        return ['items' => array_values($page->map(fn ($row) => ['public_id' => $row->public_id, 'code' => $row->code, 'name_pl' => $row->name_pl, 'name_en' => $row->name_en, 'version' => $row->version])->all()), 'next' => $rows->count() > 100 ? $page->last()?->public_id : null];
     }
 
     public function definition(string $kind, string $publicId): array

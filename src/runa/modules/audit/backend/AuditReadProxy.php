@@ -12,16 +12,25 @@ final class AuditReadProxy extends GuardedApi implements AuditReads
 {
     public function page(AuditQuery $query): AuditPage
     {
-        return $this->invoke(__FUNCTION__, [$query]);
+        /** @var AuditPage $result */
+        $result = $this->invoke(__FUNCTION__, [$query]);
+
+        return $result;
     }
 
     public function detail(string $publicId): ?AuditEntry
     {
-        return $this->invoke(__FUNCTION__, [$publicId]);
+        /** @var ?AuditEntry $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
     }
 
     public function metadata(): array
     {
-        return $this->invoke(__FUNCTION__, []);
+        /** @var array{version: int, order: string, max_page_size: int, max_page_bytes: int, payloads: string, filters: list<string>} $result */
+        $result = $this->invoke(__FUNCTION__, []);
+
+        return $result;
     }
 }

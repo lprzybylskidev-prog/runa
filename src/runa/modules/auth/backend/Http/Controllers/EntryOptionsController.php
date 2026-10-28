@@ -16,9 +16,9 @@ final readonly class EntryOptionsController
             'public_welcome_enabled' => $this->policy->value('public_welcome_enabled'),
             'public_registration' => $this->policy->value('public_registration'),
             'identifier_mode' => $this->policy->value('identifier_mode'),
-            'remember_enabled' => $this->policy->value('session_remember_minutes') > 0,
+            'remember_enabled' => $this->policy->integer('session_remember_minutes') > 0,
             'password' => [
-                'min_length' => $this->policy->value('password_min_length'),
+                'min_length' => $this->policy->integer('password_min_length'),
                 'max_bytes' => 72,
                 'mixed_case' => $this->policy->value('password_mixed_case'),
                 'numbers' => $this->policy->value('password_numbers'),

@@ -109,8 +109,8 @@ final class PlatformCompositionTest extends TestCase
         self::assertCount(3, $plan);
         foreach ($plan as $module) {
             $auth = $module['module'] === 'runa.auth';
-            self::assertSame($auth ? '1.1.1' : '1.0.2', $module['to']);
-            self::assertSame($auth ? ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration'] : ['platform_composition'], $module['pending_upgrades']);
+            self::assertSame($auth ? '1.1.4' : '1.0.4', $module['to']);
+            self::assertSame($auth ? ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_composition', 'platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
             self::assertSame('1.0.1', $module['from']);
         }
     }

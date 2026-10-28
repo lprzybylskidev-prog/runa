@@ -18,6 +18,12 @@ final readonly class EntryTransaction
 {
     public function __construct(private DatabaseManager $database, private AuthorityLock $authority, private ModuleApis $apis) {}
 
+    /**
+     * @template T
+     *
+     * @param  Closure(Connection): T  $work
+     * @return T
+     */
     public function run(Closure $work): mixed
     {
         $root = $this->database->connection()->transactionLevel() === 0;
@@ -58,6 +64,9 @@ final readonly class EntryTransaction
             context: ['reason' => 'last_superadmin_required']));
     }
 
+    /**
+     * @param  array<string, mixed>  $changes
+     */
     public function record(string $action, User $user, array $changes = []): void
     {
         $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.auth', $action,

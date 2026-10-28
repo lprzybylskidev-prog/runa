@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 import re
-import stat
 import sys
 import uuid
 from collections.abc import Callable, Sequence
@@ -199,19 +198,8 @@ class ManagementService:
         return HostPlan.parse(raw, request).as_dict()
 
     def private_directory(self, path: Path) -> None:
-        for parent in reversed([path, *path.parents]):
-            if parent.is_symlink():
-                raise ValueError("Management state must not traverse symlinks.")
-        path.mkdir(mode=0o700, parents=True, exist_ok=True)
-        info = path.stat()
-        if (
-            not stat.S_ISDIR(info.st_mode)
-            or info.st_uid != os.getuid()
-            or stat.S_IMODE(info.st_mode) & 0o077
-        ):
-            raise ValueError(
-                "Management state directory must be private and owned by the current operator."
-            )
+        with StateDirectory(path, anchor=self.workspace.root).open():
+            pass
 
     def execute_plan(self, plan: object, request: str) -> int:
         # Revalidate at the execution boundary; no caller can supply shell/argv/env/path fields.

@@ -26,8 +26,10 @@ class ManualClock:
 
 @dataclass
 class RecordingHttp:
-    outcomes: deque[object] = field(default_factory=deque)
-    calls: list[tuple[str, str, object]] = field(default_factory=list)
+    outcomes: deque[object] = field(default_factory=lambda: deque[object]())
+    calls: list[tuple[str, str, object]] = field(
+        default_factory=lambda: list[tuple[str, str, object]]()
+    )
 
     def request(self, method: str, url: str, body: object = None) -> object:
         self.calls.append((method, url, body))

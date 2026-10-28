@@ -12,11 +12,17 @@ final class LifecycleProxy extends GuardedApi implements AuthLifecycle
 {
     public function create(NewIdentity $input): Identity
     {
-        return $this->invoke(__FUNCTION__, [$input]);
+        /** @var Identity $result */
+        $result = $this->invoke(__FUNCTION__, [$input]);
+
+        return $result;
     }
 
     public function change(string $publicId, int $expectedVersion, LifecycleChange $change): Identity
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $change]);
+        /** @var Identity $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $change]);
+
+        return $result;
     }
 }

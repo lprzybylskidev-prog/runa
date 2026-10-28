@@ -33,7 +33,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         "src/runa/resources/views/errors/page.php": "echo strtr($template, [",
         "tests/backend/runa/Fixtures/browser-document.php": "echo json_encode(['status' => $response->getStatusCode(), 'headers' => $response->headers->all(),",
     }
-    failures = []
+    failures: list[str] = []
     paths = (
         subprocess.check_output(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=ROOT)
         .decode()

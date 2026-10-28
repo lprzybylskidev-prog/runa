@@ -3,6 +3,7 @@
 namespace Runa\Modules\Auth\Development;
 
 use Illuminate\Database\Connection;
+use Illuminate\Support\Collection;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\OperatorAccounts;
 use Runa\Modules\Auth\Actions\Passwords;
@@ -32,7 +33,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
     public function populate(): void
     {
         app(DevelopmentFixtures::class)->run('runa.auth', function (Connection $c): void {
-            $context = new SeedContext(config('seeding.development.'.AuthDevelopmentSeeder::class, []));
+            $context = new SeedContext(config()->array('seeding.development.'.AuthDevelopmentSeeder::class, []));
             $count = $context->count('extra_users', 3);
             if ($count > 100) {
                 throw new \InvalidArgumentException('Auth development extra_users limit is 100.');
@@ -92,12 +93,14 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
     public function accounts(): array
     {
         return app(DevelopmentFixtures::class)->run('runa.auth', function (Connection $c): array {
-            return $c->table('runa_auth.development_fixtures as f')->join('runa_auth.users as u', 'u.public_id', '=', 'f.subject')
+            /** @var Collection<int, \stdClass&object{scenario: string, public_id: string, email: string, login: string|null, deleted_at: string|null, setup_required: bool}> $rows */
+            $rows = $c->table('runa_auth.development_fixtures as f')->join('runa_auth.users as u', 'u.public_id', '=', 'f.subject')
                 ->orderBy('f.scenario')->select(['f.scenario', 'u.public_id', 'u.email', 'u.login', 'u.deleted_at'])
-                ->selectRaw('u.password IS NULL AS setup_required')->get()
-                ->map(fn ($row): array => ['scenario' => $row->scenario, 'public_id' => $row->public_id,
-                    'email' => $row->email, 'login' => $row->login, 'setup_required' => (bool) $row->setup_required,
-                    'deleted' => $row->deleted_at !== null])->all();
+                ->selectRaw('u.password IS NULL AS setup_required')->get();
+
+            return array_values($rows->map(fn ($row): array => ['scenario' => $row->scenario, 'public_id' => $row->public_id,
+                'email' => $row->email, 'login' => $row->login, 'setup_required' => (bool) $row->setup_required,
+                'deleted' => $row->deleted_at !== null])->all());
         });
     }
 

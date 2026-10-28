@@ -6,7 +6,6 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
@@ -16,10 +15,11 @@ use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** No administrative authority or authenticated session is created by registration. */
-final readonly class RegisterAccount implements CreatesNewUsers
+final readonly class RegisterAccount
 {
     public function __construct(private EntryTransaction $transactions, private ModuleSettings $settings, private EntryTokens $tokens) {}
 
+    /** @param array{email: string, password: string, name?: string|null, first_name?: string|null, surname?: string|null, login?: string|null, password_confirmation?: string} $input */
     public function create(#[\SensitiveParameter] array $input): ?User
     {
         $identity = new NewIdentity($input['email'], $input['name'] ?? null, $input['first_name'] ?? null, $input['surname'] ?? null, $input['login'] ?? null);

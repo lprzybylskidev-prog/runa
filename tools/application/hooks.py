@@ -72,7 +72,7 @@ def pre_commit(
             history is not None and history(root, name, None)
         ):
             raise ValueError("Immutable historical source deleted: " + name)
-    transformed = []
+    transformed: list[tuple[str, bytes, str]] = []
     with tempfile.TemporaryDirectory(prefix="runa-staged-") as directory:
         snapshot = Path(directory) / "content"
         snapshot.mkdir()

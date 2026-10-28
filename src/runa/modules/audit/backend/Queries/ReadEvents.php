@@ -13,6 +13,7 @@ use Runa\Modules\Audit\Contracts\AuditQuery;
 use Runa\Modules\Audit\Contracts\AuditReads;
 use Runa\Modules\Audit\Contracts\AuditReference;
 
+/** @phpstan-type EventRow \stdClass&object{id: int, public_id: string, occurred_at: string, module: string, action: string, outcome: string, actor_kind: string, actor_public_id: string|null, actor_label: string|null, correlation_id: string|null} */
 final readonly class ReadEvents implements AuditReads
 {
     public function __construct(private DatabaseManager $database) {}
@@ -46,6 +47,7 @@ final readonly class ReadEvents implements AuditReads
                 ->where('entity_type', $entity->type)->where('entity_public_id', $entity->publicId));
         }
         // Summary selection never fetches potentially large change/context/execution trees.
+        /** @var list<EventRow> $rows */
         $rows = $builder->orderByDesc('id')->limit($query->limit + 1)->get([
             'id', 'public_id', 'occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id',
         ])->all();
@@ -65,12 +67,13 @@ final readonly class ReadEvents implements AuditReads
             $bytes += $size;
         }
 
-        return new AuditPage($entries, $more ? $entries[array_key_last($entries)]->reference->publicId : null);
+        return new AuditPage($entries, $more && $entries !== [] ? $entries[array_key_last($entries)]->reference->publicId : null);
     }
 
     public function detail(string $publicId): ?AuditEntry
     {
         new TrustedPrincipal($publicId);
+        /** @var EventRow|null $row */
         $row = $this->events()->where('public_id', $publicId)->first();
 
         return $row === null ? null : $this->entry($row, $this->entities([$row->id])[$row->id] ?? [], true);
@@ -87,9 +90,13 @@ final readonly class ReadEvents implements AuditReads
         return $this->database->connection()->table('runa_audit.events');
     }
 
+    /** @param list<int> $ids
+     * @return array<int, list<AuditEntity>>
+     */
     private function entities(array $ids): array
     {
         $result = [];
+        /** @var \stdClass&object{event_id: int, module: string, entity_type: string, entity_public_id: string} $entity */
         foreach ($this->database->connection()->table('runa_audit.entities')->whereIn('event_id', $ids)->orderBy('id')->get() as $entity) {
             $result[$entity->event_id][] = new AuditEntity($entity->module, $entity->entity_type, $entity->entity_public_id);
         }
@@ -97,13 +104,30 @@ final readonly class ReadEvents implements AuditReads
         return $result;
     }
 
+    /** @param EventRow $row
+     * @param  list<AuditEntity>  $entities
+     */
     private function entry(object $row, array $entities, bool $detail = false): AuditEntry
     {
         return new AuditEntry(new AuditReference($row->public_id, (new \DateTimeImmutable($row->occurred_at))->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.uP')),
             $row->module, $row->action, $row->outcome, new AuditActor($row->actor_kind, $row->actor_public_id, $row->actor_label),
             $row->correlation_id, $entities,
-            $detail ? json_decode($row->changes, true, flags: JSON_THROW_ON_ERROR) : null,
-            $detail ? json_decode($row->context, true, flags: JSON_THROW_ON_ERROR) : null,
-            $detail ? json_decode($row->execution, true, flags: JSON_THROW_ON_ERROR) : null);
+            $detail ? $this->payload($row->changes) : null,
+            $detail ? $this->payload($row->context) : null,
+            $detail ? $this->payload($row->execution) : null);
+    }
+
+    /** @return array<array-key, mixed> */
+    private function payload(mixed $json): array
+    {
+        if (! is_string($json)) {
+            throw new \RuntimeException('Invalid stored Audit payload.');
+        }
+        $value = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        if (! is_array($value)) {
+            throw new \RuntimeException('Invalid stored Audit payload.');
+        }
+
+        return $value;
     }
 }

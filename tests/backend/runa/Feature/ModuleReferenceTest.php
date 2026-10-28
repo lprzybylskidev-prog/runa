@@ -28,7 +28,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         $updates = app(ModuleUpdates::class);
         $updates->apply('app', str_repeat('e', 40), static function (): void {});
         $record = $registry->snapshot()->modules['app.reference'];
-        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.1.1')
+        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.1.2')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(DB::table('app_reference.samples')->value('public_id'))->toMatch('/^[a-f0-9-]{14}7[a-f0-9-]+$/')
             ->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
@@ -86,7 +86,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         expect($transitions->apply($transitions->preview('unregister', 'app.reference'))->status)->toBe('succeeded');
         $registry->registerAgain('app.reference');
         expect($registry->snapshot()->modules['app.reference']->enabled)->toBeFalse()
-            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.1.1')
+            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.1.2')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(app(ModuleStorage::class)->disk('app.reference')->get('last-observation.txt'))->toBe('Reference work completed.');
     } finally {

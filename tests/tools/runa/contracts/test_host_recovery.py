@@ -30,11 +30,15 @@ def test_recovery_checks_current_workspace_process_identity(
     with (directory / "daemon.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         argv = os.fsencode("/usr/bin/python3") + b"\0-m\0" + module.encode() + b"\0--serve\0"
+
+        def remove_credentials(pid: int, signum: int) -> None:
+            credentials.unlink()
+
         with (
             patch.object(Path, "read_bytes", return_value=argv),
             patch(
                 "tools.application.host_transport.os.kill",
-                side_effect=lambda *_: credentials.unlink(),
+                side_effect=remove_credentials,
             ) as kill,
         ):
             if allowed:

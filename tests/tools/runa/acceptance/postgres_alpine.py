@@ -12,9 +12,9 @@ import tempfile
 import time
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Literal, overload
+from typing import Literal, Never, overload
 
-from tools.core.state import JsonValue
+from tools.core.state import JsonValue, json_value
 from tools.maintainer.context import inside
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -80,7 +80,7 @@ def run(
 
 def decode(text: str) -> list[JsonValue]:
     decoder = json.JSONDecoder()
-    items = []
+    items: list[JsonValue] = []
     while text.strip():
         value, end = decoder.raw_decode(text.lstrip())
         items.append(value)
@@ -88,8 +88,16 @@ def decode(text: str) -> list[JsonValue]:
     return items
 
 
-def verify(items: list[JsonValue]) -> None:
-    rows = {item["kind"]: item for item in items if isinstance(item, dict)}
+def verify(evidence: Sequence[object]) -> None:
+    items = json_value(list(evidence))
+    assert isinstance(items, list)
+    rows: dict[str, dict[str, JsonValue]] = {}
+    for item in items:
+        if isinstance(item, dict):
+            kind = item.get("kind")
+            if not isinstance(kind, str):
+                raise ValueError("Invalid PostgreSQL evidence row kind.")
+            rows[kind] = item
     meta = rows["metadata"]
     if (
         meta["provider"] != "i"
@@ -215,7 +223,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGTERM, lambda *_: sys.exit(130))
+
+    def terminate(signum: int, frame: object) -> Never:
+        raise SystemExit(130)
+
+    signal.signal(signal.SIGTERM, terminate)
     try:
         main()
     except (ValueError, OSError, subprocess.CalledProcessError) as error:

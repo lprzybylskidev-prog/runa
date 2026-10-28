@@ -84,7 +84,7 @@ class KnowledgeIndexer:
         changed = sorted(
             name
             for name, (_, text) in current.items()
-            if indexed.get(name, {}).get("source_hash") != digest(text)
+            if name not in indexed or indexed[name]["source_hash"] != digest(text)
         )
         deleted = sorted(set(indexed) - set(current))
         points = store.all_points()
@@ -164,8 +164,14 @@ class KnowledgeIndexer:
             new_vectors += len(changed)
             for row in rows:
                 # Refresh Git/source metadata without re-embedding unchanged semantic chunks.
+                row["payload"] = {
+                    **row["payload"],
+                    **meta,
+                    "section": row["payload"]["section"],
+                    "content": row["payload"]["content"],
+                    "content_hash": row["payload"]["content_hash"],
+                }
                 row["payload"].update(
-                    meta,
                     git_branch=branch,
                     git_commit=commit,
                     embedding_provider="tei",

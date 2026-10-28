@@ -17,6 +17,8 @@ from typing import Unpack
 from tests.tools.runa.acceptance.acceptance import AcceptanceContext, OutputOptions
 from tools.application.management_service import ManagementService
 from tools.core.context import WorkspaceContext
+from tools.core.state import JsonValue, json_value
+from tools.maintainer.python_packages import stage
 
 ROOT = Path(__file__).resolve().parents[4]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
@@ -30,7 +32,8 @@ def main() -> None:
     if Path("/.dockerenv").exists():
         raise SystemExit("Run native host acceptance outside containers.")
     project = "runa-host-acceptance-" + uuid.uuid4().hex[:10]
-    report = {"result": "RUNNING", "project": project, "checks": []}
+    checks: list[str] = []
+    report: dict[str, JsonValue] = {"result": "RUNNING", "project": project, "checks": []}
     image = ManagementService.for_workspace(ROOT).ensure_image()
     report["image"] = image
     active = ACCEPTANCE.protected_containers()
@@ -42,7 +45,8 @@ def main() -> None:
     def check(ok: bool, text: str) -> None:
         if not ok:
             raise AssertionError(text)
-        report["checks"].append(text)
+        checks.append(text)
+        report["checks"] = list(checks)
         print("PASS: " + text, flush=True)
 
     with tempfile.TemporaryDirectory(prefix="runa-host-") as folder:
@@ -60,18 +64,14 @@ def main() -> None:
             destination = root / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, destination)
-        shutil.copytree(
-            ROOT / "tools/application",
-            root / "tools/application",
-            ignore=shutil.ignore_patterns("__pycache__"),
-        )
+        stage("application", root)
         shutil.copytree(ROOT / "src/runa/Tooling/Management", root / "src/runa/Tooling/Management")
         (root / ".devcontainer").mkdir()
         (root / ".devcontainer/compose.resources.yaml").write_text('{"services":{}}')
         (root / ".env.dev.local").write_text(
             "DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n"
         )
-        common = {
+        common: dict[str, JsonValue] = {
             "image": "runa-management:"
             + ManagementService.for_workspace(ROOT).image_identity()[:24],
             "pull_policy": "never",
@@ -123,7 +123,7 @@ def main() -> None:
             str(root / ".devcontainer/compose.resources.yaml"),
         ]
         try:
-            output([launcher, "--recover-host"], cwd=root)
+            ACCEPTANCE.call([launcher, "--recover-host"], cwd=root)
             services["app"]["volumes"] = [
                 {"type": "bind", "source": str(root / ".runtime/host"), "target": "/run/runa-host"}
             ]
@@ -173,6 +173,7 @@ def main() -> None:
                 if line.startswith("Host operation:")
             )
             receipt = root / ".runtime/host/operations" / (operation + ".json")
+            state: dict[str, object] = {}
             for _ in range(100):
                 state = json.loads(receipt.read_text())
                 if state.get("state") in ("completed", "failed"):
@@ -363,6 +364,7 @@ def main() -> None:
                 "rejected development commands preserve services and production state",
             )
             output(php + ["runa:host:stop"])
+            state: dict[str, object] = {}
             for _ in range(100):
                 if not (root / ".runtime/host/client.json").exists():
                     break
@@ -372,7 +374,7 @@ def main() -> None:
                 result.returncode != 0 and "--recover-host" in result.stdout + result.stderr,
                 "missing executor fails with recovery instructions instead of reporting success",
             )
-            output([launcher, "--recover-host"], cwd=root)
+            ACCEPTANCE.call([launcher, "--recover-host"], cwd=root)
             check(
                 json.loads(output(php + ["runa:host:status"]))["state"] == "ready",
                 "explicit host recovery prepares normal php artisan again",
@@ -382,6 +384,12 @@ def main() -> None:
             report["result"] = "FAIL"
             raise
         finally:
+            daemon_log = root / ".runtime/host/daemon.log"
+            if daemon_log.is_file():
+                evidence = ROOT / ".runtime/artifacts" / (project + "-daemon.log")
+                shutil.copyfile(daemon_log, evidence)
+                evidence.chmod(0o600)
+                print("Daemon evidence: " + str(evidence))
             if (root / ".runtime/host/client.json").exists():
                 output([launcher, "--stop-host"], cwd=root)
             resources = {
@@ -410,7 +418,7 @@ def main() -> None:
             check(not resources["volumes"], "transport acceptance created no data volumes")
             print("Scoped host transport cleanup: " + json.dumps(resources), flush=True)
             output(compose + ["down", "--remove-orphans"])
-            report["cleanup"] = resources
+            report["cleanup"] = json_value(resources)
             check(
                 all(
                     output(["docker", "inspect", "--format", "{{.State.StartedAt}}", item]) == start

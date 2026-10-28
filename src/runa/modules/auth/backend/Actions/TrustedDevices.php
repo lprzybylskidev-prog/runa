@@ -13,6 +13,7 @@ use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 
+/** @phpstan-import-type SessionRow from SessionStore */
 final readonly class TrustedDevices
 {
     public function __construct(private SecurityContext $context, private CredentialPolicy $policy,
@@ -27,25 +28,29 @@ final readonly class TrustedDevices
         if (! is_string($token) || ! preg_match('/\A[0-9a-f]{64}\z/D', $token)) {
             return;
         }
+        /** @var (\stdClass&object{factor_method: string|null, created_at: string|null})|null $row */
         $row = $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->where('token_hash', hash('sha256', $token))
             ->where('security_version', $user->security_version)->whereNull('revoked_at')->where('expires_at', '>', now())->first();
         if ($row === null || ! in_array($row->factor_method === 'recovery' ? 'totp' : $row->factor_method, $this->policy->enrolled($user), true) || $row->created_at === null || ! $this->policy->accepts($row->factor_method ?? '')
-            || CarbonImmutable::parse($row->created_at)->addDays($this->policy->value('trusted_device_days'))->lte(CarbonImmutable::now('UTC'))) {
+            || CarbonImmutable::parse($row->created_at)->addDays($this->policy->integer('trusted_device_days'))->lte(CarbonImmutable::now('UTC'))) {
             return;
         }
         $connection->table('runa_auth.sessions')->where('public_id', $sessionId)->update(['factor_method' => $row->factor_method, 'factor_verified_at' => now()]);
     }
 
+    /**
+     * @return array{created: bool}
+     */
     public function issue(Request $request): array
     {
-        $result = $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request): ?array {
+        $result = $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
             $method = $request->string('method')->toString();
             if (! $this->policy->value('trusted_devices_enabled')
                 || ! $this->factors->verify($connection, $user, $session, $method, $request->string('code')->toString())) {
                 return null;
             }
             $secret = bin2hex(random_bytes(32));
-            $days = $this->policy->value('trusted_device_days');
+            $days = $this->policy->integer('trusted_device_days');
             // Bound accumulation per account; oldest trust is revoked before issuance.
             $active = $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->orderByDesc('id')->pluck('id');
             $connection->table('runa_auth.trusted_devices')->whereIn('id', $active->slice(19))->update(['revoked_at' => now()]);
@@ -57,11 +62,14 @@ final readonly class TrustedDevices
             return ['secret' => $secret, 'minutes' => $days * 1440];
         });
         // Encrypted by native cookie middleware, never returned in JSON. Host-only/HttpOnly/SameSite.
-        Cookie::queue(Cookie::make('runa_trust', $result['secret'], $result['minutes'], '/', null, config('session.secure'), true, false, 'lax'));
+        Cookie::queue(Cookie::make('runa_trust', $result['secret'], $result['minutes'], '/', null, config()->boolean('session.secure'), true, false, 'lax'));
 
         return ['created' => true];
     }
 
+    /**
+     * @return list<array{public_id: string, created_at: string, expires_at: string}>
+     */
     public function listFor(string $publicId, ?string $before = null): array
     {
         new TrustedPrincipal($publicId);
@@ -73,10 +81,13 @@ final readonly class TrustedDevices
             return [];
         }
 
-        return app('db')->connection()->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')
+        /** @var list<array{public_id: string, created_at: string, expires_at: string}> $rows */
+        $rows = app('db')->connection()->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')
             ->where('expires_at', '>', now())->where('security_version', $user->security_version)
             ->when($before !== null, fn ($query) => $query->where('public_id', '<', $before))
-            ->orderByDesc('public_id')->limit(100)->get(['public_id', 'created_at', 'expires_at'])->map(fn ($row) => (array) $row)->all();
+            ->orderByDesc('public_id')->limit(100)->get(['public_id', 'created_at', 'expires_at'])->map(fn ($row) => (array) $row)->values()->all();
+
+        return $rows;
     }
 
     public function revoke(string $publicId, string $deviceId): bool
