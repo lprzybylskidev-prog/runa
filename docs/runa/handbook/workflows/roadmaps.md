@@ -229,6 +229,8 @@ If a failure requires code/config/docs work:
 3. implement and complete the fix point,
 4. rerun final verification from the beginning.
 
+During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
+
 Do not patch silently "inside" the verification point and pretend it stayed green.
 
 If the issue changes an architectural/behavioral assumption, return to discussion.
@@ -319,4 +321,4 @@ Application release metadata belongs to `src/app/application.json` and `docs/app
 
 Discover the supported entrypoint and ownership scope before running tests or acceptance. Preserve its documented transport, guards, locks, reporting and exit codes; internal runners or detached log-only processes must not replace it. A direct invocation is permitted only as the documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result in the point. Add a permanent command only for an approved reusable operational need.
 
-Implementation points run only necessary small, fast checks resolving a concrete uncertainty. Receive results, fix failures and continue; duration alone never authorizes handing monitoring to the user. Only final full verification uses background quality and the built-in status command. That status observes its coordinator, not arbitrary processes; raw tail is not a substitute.
+Ordinary implementation points run only necessary small, fast checks resolving a concrete uncertainty; repairs after failed final verification require the complete affected-area loop above. Receive results, fix failures and continue; duration alone never authorizes handing monitoring to the user. Only final full verification uses background quality and the built-in status command. That status observes its coordinator, not arbitrary processes; raw tail is not a substitute.

@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
-"""Start the development-only Boost stdio MCP server."""
-import os
-from pathlib import Path
-import sys
+"""Exec the fixed Boost stdio adapter from its tool checkout."""
 
-root = Path(__file__).resolve().parents[1]
-os.chdir(root)
-sys.path.insert(0, str(root / 'tools/application'))
-from runtime import app_command
-if sys.argv[1:] == ['--help']:
-    print('Usage: ./bin/boost-mcp\nStart development-only Laravel Boost stdio MCP server.')
-    sys.exit(0)
-if sys.argv[1:]:
-    sys.exit('Usage: ./bin/boost-mcp (no arguments)')
-if Path('/.dockerenv').exists():
-    if os.environ.get('APP_ENV') == 'production':
-        sys.exit('Boost is development-only.')
-    os.execvp('php', ['php', 'artisan', 'boost:mcp'])
-command = app_command(['php', 'artisan', 'boost:mcp'])
-os.execvp(command[0], command)
+import os
+import sys
+from pathlib import Path
+
+if __name__ == "__main__":
+    root = Path(__file__).resolve().parents[1]
+    os.chdir(root)
+    os.execvpe(
+        sys.executable,
+        [sys.executable, "-m", "tools.application.boost_cli", *sys.argv[1:]],
+        dict(os.environ, PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache")),
+    )

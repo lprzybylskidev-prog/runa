@@ -21,7 +21,7 @@
 
 ## Source and runtime ownership
 
-Laravel's base path is src/. Platform classes use Runa under src/runa; App under src/app is the customer extension root. Technical defaults/data/routes belong to Runa, with distinct customer configuration/migration/seeder contributions. Follow docs/runa/handbook/architecture/application-architecture.md for the source/runtime composition before using generators, package discovery or caches. The thin Runa Application subclass points resourcePath to app/resources; native namespace discovery uses src/composer.json. Native Artisan testing selects src/app/tests directly through the development-only Runa test adapter; there is no src/tests forwarding bootstrap. Keep platform/application filesystem and cache stores separate; do not put writable state inside either source tree.
+Laravel's base path is src/. Platform classes use Runa under src/runa; App under src/app is the customer extension root. Technical defaults/data/routes belong to Runa, with distinct customer configuration/migration/seeder contributions. Follow docs/runa/handbook/architecture/application-architecture.md for the source/runtime composition before using generators, package discovery or caches. The thin Runa Application subclass points resourcePath to app/resources; native namespace discovery uses src/composer.json. Native Artisan testing selects tests/backend/app directly through the development-only Runa test adapter; there is no src/tests forwarding bootstrap. Keep platform/application filesystem and cache stores separate; do not put writable state inside either source tree.
 
 ## Module public entrypoints
 
@@ -64,3 +64,5 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use the [public source-placement and entrypoint table](../../../../docs/runa/handbook/architecture/public-api.md#source-placement-and-supported-entrypoints) when adding PHP capabilities or generator consumers. Declare complete public signatures and keep named Core integration separate from customer extensions.

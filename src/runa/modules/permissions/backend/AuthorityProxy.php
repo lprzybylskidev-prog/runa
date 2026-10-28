@@ -11,17 +11,26 @@ final class AuthorityProxy extends GuardedApi implements PermissionsAuthority
 {
     public function previewAuthority(string $userPublicId, bool $grant): AuthorityPreview
     {
-        return $this->invoke(__FUNCTION__, [$userPublicId, $grant]);
+        /** @var AuthorityPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$userPublicId, $grant]);
+
+        return $result;
     }
 
     public function applyAuthority(AuthorityPreview $reviewed): array
     {
-        return $this->invoke(__FUNCTION__, [$reviewed]);
+        /** @var array{user_public_id: string, super_admin: bool, revision: int} $result */
+        $result = $this->invoke(__FUNCTION__, [$reviewed]);
+
+        return $result;
     }
 
     public function previewRoleDeletion(string $publicId, int $version): RoleDeletionPreview
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $version]);
+        /** @var RoleDeletionPreview $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $version]);
+
+        return $result;
     }
 
     public function forceDeleteRole(RoleDeletionPreview $reviewed, bool $confirmed): void

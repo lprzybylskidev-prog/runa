@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use League\Flysystem\FilesystemOperator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Runa\ModuleFramework\Storage\LocalStorageBoundary;
 use Runa\Support\Modules\ModuleIdentity;
 use RuntimeException;
 

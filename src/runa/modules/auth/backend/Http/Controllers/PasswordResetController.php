@@ -1,0 +1,20 @@
+<?php
+
+namespace Runa\Modules\Auth\Http\Controllers;
+
+use Illuminate\Http\JsonResponse;
+use Runa\Modules\Auth\Actions\Passwords;
+use Runa\Modules\Auth\Http\Requests\PasswordResetRequest;
+
+final readonly class PasswordResetController
+{
+    public function __construct(private Passwords $action) {}
+
+    public function __invoke(PasswordResetRequest $request): JsonResponse
+    {
+        $this->action->reset($request->string('token')->toString(), $request->string('password')->toString());
+        $data = ['accepted' => true];
+
+        return response()->json(['data' => $data], 200, ['Cache-Control' => 'no-store']);
+    }
+}

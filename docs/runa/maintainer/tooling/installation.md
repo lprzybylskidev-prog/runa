@@ -1,16 +1,16 @@
 # First installation
 
-First development acquisition uses the separately supplied distribution/bootstrap.py and a published Runa release. Production initialization uses distribution/initialize.py and a complete customer repository. Both launch the adjacent external installation.py helper; none of these files are delivered to customer source. Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ are required; application toolchains stay in containers.
+First development acquisition uses the separately supplied distribution/bootstrap.py and a published Runa release. Production initialization uses distribution/initialize.py and a complete customer repository. Both invoke the acquired application's protocol-1 installation gateway in a separate process; external launchers remain excluded from customer source. Internal host installation services ship with application tooling and remain absent from production images. Native Linux/Python 3.11+, Git 2.39+, Docker Engine 26+ and Compose 2.35+ are required; application toolchains stay in containers.
 
 ```sh
-python3 bootstrap.py --repository lprzybylskidev-prog/runa --tag v0.3.0 \
+python3 bootstrap.py --repository lprzybylskidev-prog/runa --tag <published-protocol-1-tag> \
   --destination /absolute/first-development --install later --non-interactive
 python3 initialize.py --repository https://github.com/customer/application.git \
   --destination /absolute/production --target main --install later \
   --settings-file /private/production-settings.json
 ```
 
-Use an actually published release; 0.3.0 remains planned until finalization. Production initialization accepts a customer branch/tag/full SHA, verifies safe source paths/files and rejects owner-only tracked material and the Runa release remote. Origin/history remain the customer's; the local role is prepared independently of first-dev acquisition evidence. Default target is main; ambiguous branch/tag names require explicit refs. New destination publication never overwrites existing files. Keep the printed exact-commit helper command for postponed install and explicit --resume. Teammates use [public local initialization](../../handbook/development/environment.md#customer-repository-and-local-initialization).
+Use an actually published protocol-1 release; historical releases require their matching historical installer. Production initialization accepts a customer branch/tag/full SHA, verifies safe source paths/files and rejects owner-only tracked material and the Runa release remote. Origin/history remain the customer's; the local role is prepared independently of first-dev acquisition evidence. Default target is main; ambiguous branch/tag names require explicit refs. New destination publication never overwrites existing files. Keep the printed exact-commit gateway command for postponed install and explicit --resume. Teammates use [public local initialization](../../handbook/development/environment.md#customer-repository-and-local-initialization).
 
 Development and production host checkouts contain the same complete versioned customer source. Common owner exclusions remain; there is no production-only sparse reduction. Production images/services still exclude development/AI tooling and never start Qdrant/embeddings/devcontainer. No customer runa:install alias or production platform updater exists.
 
@@ -122,7 +122,9 @@ check the recipient mailbox for downstream delivery/filtering.
 
 Success requires actual HTTPS root/readiness and SMTP acceptance after the
 existing exact-image/config/migration/seeding/health/isolation sequence. A failed
-verification cannot complete the installation journal. Production still uses
+verification cannot complete the installation journal. Compose and Artisan execution
+check child exits by default; only explicitly unchecked diagnostic probes may
+return a nonzero result without aborting the operation. Production still uses
 only PHP-FPM/Nginx/PostgreSQL/queue/scheduler and two durable storage/database
 volumes. Shared operational helpers remain host source, never application-image content; AI/RAG/development tooling remains excluded from runtime.
 
@@ -149,9 +151,9 @@ without touching application source, configuration, images, services or data.
 For normal later source changes use the application lifecycle or platform
 deployment/update procedure, rather than another first installation.
 
-Offline contracts: `python3 tools/maintainer/testing/installation.py`; PHP acceptance:
+Offline contracts: `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_installation.py`; PHP acceptance:
 `runa:test --filter=InstallationTest`. Native disposable acceptance:
-`python3 tools/maintainer/testing/installation-host.py` (requires the active development image
+`python3 -m tests.tools.runa.acceptance.installation_host` (requires the active development image
 and YAML reader). It uses isolated projects/ports/fresh volumes and synthetic
 TLS/SMTP, preserves active development and model caches, prints exact cleanup
 scope, and keeps verification reports. Simulation acceptance is not a real

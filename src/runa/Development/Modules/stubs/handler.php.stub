@@ -1,0 +1,13 @@
+<?php
+
+namespace {{namespace}}\Handlers;
+
+use {{namespace}}\Contracts\{{name}};
+
+final class {{name}}Handler implements {{name}}
+{
+    public function read(): string
+    {
+        throw new \LogicException('Implement the owned public API before use.');
+    }
+}

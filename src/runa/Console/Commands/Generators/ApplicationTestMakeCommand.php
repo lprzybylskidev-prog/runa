@@ -9,7 +9,7 @@ final class ApplicationTestMakeCommand extends TestMakeCommand
 {
     protected function getPath($name): string
     {
-        return app_path('tests').str_replace('\\', '/', Str::replaceFirst($this->rootNamespace(), '', $name)).'.php';
+        return dirname(base_path()).'/tests/backend/app'.str_replace('\\', '/', Str::replaceFirst($this->rootNamespace(), '', $name)).'.php';
     }
 
     protected function rootNamespace(): string

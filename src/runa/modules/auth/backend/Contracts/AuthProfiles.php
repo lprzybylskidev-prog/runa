@@ -18,6 +18,9 @@ interface AuthProfiles
 
     public function removeSecondary(string $publicId, int $expectedVersion, string $addressId): bool;
 
-    /** Verified, notification-only recipients; primary security routing is never taken from this list. */
+    /** Verified, notification-only recipients; primary security routing is never taken from this list.
+     *
+     * @return list<string>
+     */
     public function notificationEmails(string $publicId): array;
 }

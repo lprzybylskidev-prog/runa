@@ -13,7 +13,10 @@ use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 
-/** At most one SMTP attempt per token. Ambiguous delivery requires an explicit resend. */
+/** At most one SMTP attempt per token. Ambiguous delivery requires an explicit resend.
+ * @phpstan-import-type EntryTokenRow from EntryTokens
+ * @phpstan-import-type SessionRow from SessionStore
+ */
 final readonly class DeliverEntryMail
 {
     public function __construct(private EntryTransaction $transactions, private LookupIdentity $identities,
@@ -48,7 +51,7 @@ final readonly class DeliverEntryMail
                 return;
             }
             // Fixed configured origin; fragments are not sent to servers/proxies/access logs.
-            $origin = rtrim(config('app.url'), '/');
+            $origin = rtrim(config()->string('app.url'), '/');
             $parts = parse_url($origin);
             if (! is_array($parts) || ! isset($parts['host'], $parts['scheme'])
                 || ! in_array($parts['scheme'], ['http', 'https'], true)
@@ -87,23 +90,31 @@ final readonly class DeliverEntryMail
         });
     }
 
+    /** @return array{User|null, EntryTokenRow|null} */
     private function locked(Connection $connection, string $publicId): array
     {
         $candidate = $connection->table('runa_auth.entry_tokens')->where('public_id', $publicId)->first();
         $user = $candidate === null ? null : User::where('id', $candidate->user_id)->lockForUpdate()->first();
+        /** @var EntryTokenRow|null $token */
         $token = $candidate === null ? null : $connection->table('runa_auth.entry_tokens')->where('id', $candidate->id)->lockForUpdate()->first();
 
         return [$user, $token];
     }
 
+    /** @param EntryTokenRow $token */
     private function liveEmailSession(User $user, object $token): bool
     {
+        /** @var SessionRow|null $row */
         $row = app('db')->connection()->table('runa_auth.sessions')->where('user_id', $user->id)
             ->where('session_hash', $token->session_hash)->where('security_version', $user->security_version)->whereNull('revoked_at')->first();
 
         return $row !== null && $this->sessions->live($row);
     }
 
+    /** @param EntryTokenRow|null $token
+     * @phpstan-assert-if-true User $user
+     * @phpstan-assert-if-true EntryTokenRow $token
+     */
     private function valid(?User $user, ?object $token): bool
     {
         return $user !== null && $token !== null && $token->consumed_at === null && $token->invalidated_at === null

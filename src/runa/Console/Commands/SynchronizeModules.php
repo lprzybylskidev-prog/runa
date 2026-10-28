@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\ModuleRegistry;
 
 final class SynchronizeModules extends Command
 {

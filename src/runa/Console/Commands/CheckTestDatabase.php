@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 
 final class CheckTestDatabase extends Command
 {

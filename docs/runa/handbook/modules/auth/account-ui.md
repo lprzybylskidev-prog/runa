@@ -265,6 +265,14 @@ current-session sign-out and trusted-device Revoke behavior remain unchanged.
 
 ## Automatic account refresh
 
+One mounted `useAuthAccount(accountId)` owns the account lifetime, abort signal,
+confirmed profile version, refresh coalescing and write gate. Its internal profile,
+list/history/trust, validation and delivery collaborators share those dependencies;
+they do not create another account store or session controller. Section saves stay
+in one sequential pipeline so completed writes are not replayed and later writes
+use the refreshed version. Custom screens use the public controller from
+`@/runa/auth` once per keyed account, including its returned conflict and list state.
+
 The public account controller refreshes profile, security/options, active lists,
 loaded trusted devices and visible delivery settings on tab changes, visible return,
 window focus/pageshow and rejected conflicts. Reads coalesce and retain account/view

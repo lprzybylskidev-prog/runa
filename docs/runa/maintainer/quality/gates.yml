@@ -59,7 +59,7 @@ base:
   - id: php-static-analysis
     depends_on: [configuration]
     description: Run Larastan/PHPStan at the configured strict level.
-    command: php artisan runa:analyse
+    command: php artisan runa:analyse --configuration=../tools/maintainer/phpstan.neon
     severity: hard_fail
 
   - id: dependency-audit
@@ -80,10 +80,17 @@ base:
     command: php artisan runa:check:debug-residue
     severity: hard_fail
 
+  - id: python-toolchain
+    depends_on: [configuration]
+    exclusive_group: testing-state
+    command: python3 tools/maintainer/python-tool setup
+    severity: hard_fail
+
   - id: quality-runner-contract
-    depends_on: [repository-state]
+    depends_on: [repository-state, python-toolchain]
+    exclusive_group: testing-state
     description: Validate graph selection, failure propagation, parallel exclusion, background locking and interruption.
-    command: python3 tools/maintainer/testing/quality.py
+    command: python3 tools/maintainer/test-python --scope=contracts --filter=test_quality_
     severity: hard_fail
 
   - id: maintenance-consistency
@@ -103,9 +110,10 @@ base:
 impact_areas:
   backend:
     - id: module-development-contracts
+      exclusive_group: testing-state
       depends_on: [configuration]
       description: Check owned module source boundaries, independent module versions/changelogs and generator policy regressions.
-      command: python3 tools/maintainer/testing/module-development.py
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_module_development.py
       severity: hard_fail
   frontend:
     - id: frontend-build
@@ -161,12 +169,14 @@ impact_areas:
   production:
     - id: production-operation-contracts
       depends_on: [configuration]
-      command: python3 tools/maintainer/testing/operations.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_operations.py
       severity: hard_fail
 
     - id: customer-deployment-source-contracts
       depends_on: [configuration]
-      command: python3 tools/maintainer/testing/customer-deployment.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_customer_deployment.py
       severity: hard_fail
 
     - id: production-acceptance
@@ -174,19 +184,21 @@ impact_areas:
       depends_on: [configuration]
       exclusive_group: production-simulation
       description: Build and verify dedicated customer-repository production with real deployment/data/failure acceptance.
-      command: python3 tools/maintainer/testing/installation-host.py --production-only --customer-deployment
+      command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --customer-deployment
       severity: hard_fail
 
   development:
     - id: dependency-composition-contracts
       depends_on: [repository-state]
       description: Verify owner dependency composition, conflict rejection and lock preservation.
-      command: python3 tools/maintainer/testing/dependencies.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_dependencies.py
       severity: hard_fail
 
     - id: development-startup-contract
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/development-startup.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_development_startup.py
       severity: hard_fail
 
     - id: development-stack
@@ -199,12 +211,13 @@ impact_areas:
   ai_environment:
     - id: documentation-ownership-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/documentation.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_documentation.py
       severity: hard_fail
     - id: documentation-ownership-live
       depends_on: [configuration]
       exclusive_group: testing-state
-      command: python3 tools/maintainer/testing/documentation-live.py
+      command: python3 -m tests.tools.runa.acceptance.documentation_live
       severity: hard_fail
     - id: knowledge-doctor
       exclusive_group: knowledge-state
@@ -226,8 +239,9 @@ impact_areas:
 
   security:
     - id: security-review-contracts
-      depends_on: [configuration]
-      command: python3 tools/maintainer/testing/security.py
+      depends_on: [configuration, python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_security_services.py
       severity: hard_fail
 
     - id: repository-container-scan
@@ -236,7 +250,7 @@ impact_areas:
       depends_on: [configuration]
       depends_on_if_selected:
         [production-acceptance, frontend-build, frontend-render-diagnostics]
-      command: python3 tools/maintainer/testing/installation-host.py --production-only --security-scan
+      command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --security-scan
       severity: hard_fail
 
     - id: expanded-security-review
@@ -245,69 +259,108 @@ impact_areas:
       severity: hard_fail
 
   tooling:
+    - id: python-format
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool format --check
+      severity: hard_fail
+
+    - id: python-lint
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool lint
+      severity: hard_fail
+
+    - id: python-types
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/python-tool typecheck
+      severity: hard_fail
+
+    - id: python-tests
+      depends_on: [python-toolchain]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=unit --scope=contracts
+      severity: hard_fail
+
+    - id: python-packages
+      depends_on: [python-tests]
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --marker=packaging
+      severity: hard_fail
+
     - id: tool-ownership-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/tool-ownership.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_command_adapters.py
       severity: hard_fail
 
     - id: host-executor-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/host-executor.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=unit --path=unit/test_application_transport.py
       severity: hard_fail
 
     - id: host-executor-acceptance
       execution_context: host
       depends_on: [host-executor-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/host-executor-host.py
+      command: python3 -m tests.tools.runa.acceptance.host_executor_host
       severity: hard_fail
 
     - id: installation-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/installation.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_installation.py
       severity: hard_fail
 
     - id: installation-host-acceptance
       execution_context: host
       depends_on: [installation-contracts]
       exclusive_group: production-simulation
-      command: python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation --customer-knowledge
+      command: python3 -m tests.tools.runa.acceptance.installation_host --updater-preflight --team-propagation --customer-knowledge
       severity: hard_fail
 
     - id: update-preflight-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/update.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update.py
       severity: hard_fail
 
     - id: update-execution-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/update-execution.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update_execution.py
       severity: hard_fail
 
     - id: bootstrap-source-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/bootstrap.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py
       severity: hard_fail
 
     - id: customer-initialization-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/customer-initialization.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_customer_initialization.py
       severity: hard_fail
 
     - id: repository-boundary-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/repository-boundary.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_repository_boundary.py
       severity: hard_fail
 
     - id: management-transport-contracts
       depends_on: [repository-state]
-      command: python3 tools/maintainer/testing/management.py
+      exclusive_group: testing-state
+      command: python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_management.py
       severity: hard_fail
 
     - id: management-host-acceptance
       execution_context: host
       depends_on: [management-transport-contracts]
-      command: python3 tools/maintainer/testing/management-host.py
+      command: python3 -m tests.tools.runa.acceptance.management_host
       severity: hard_fail
 
     - id: tooling-help
@@ -325,7 +378,7 @@ final:
   - id: release-metadata-contract
     depends_on: []
     description: Verify isolated release, documentation and knowledge metadata rejection contracts.
-    command: python3 tools/maintainer/testing/release.py --with-docs-and-knowledge
+    command: python3 tools/maintainer/test-python --scope=contracts --filter="test_release or test_docs or test_knowledge_ingestion"
     severity: hard_fail
 
   - id: version-changelog-roadmap
@@ -366,7 +419,16 @@ mandatory:
   ]
 groups:
   docs: [documentation-ownership-contracts]
-  tooling: [quality-runner-contract, tooling-help]
+  tooling:
+    [
+      quality-runner-contract,
+      tooling-help,
+      python-format,
+      python-lint,
+      python-types,
+      python-tests,
+      python-packages,
+    ]
   backend:
     [
       backend-tests,

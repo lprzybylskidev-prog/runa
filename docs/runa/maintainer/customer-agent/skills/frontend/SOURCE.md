@@ -28,3 +28,20 @@ See `docs/runa/handbook/ai/skills-policy.md`.
 ## Customer adaptation
 
 Reviewed and rewritten on 2026-10-23 from the existing local Runa skill and its references. This records the inherited upstream research baseline, not a fresh upstream review. Customer procedures use delivered public contracts and application ownership; owner implementation commands and protected-source writes are excluded.
+
+Public/internal API boundary routing was added from the owner-approved
+RM-2026-012 source review on 2026-10-27. Its authoritative rule is
+`docs/runa/handbook/architecture/public-api.md`; no upstream refresh or new
+dependency was involved.
+
+Named frontend consumer-type routing was synchronized with RM-2026-012 point 15
+on 2026-10-28 from local public facade contracts. No upstream refresh or dependency
+change was involved; the public adoption guide owns the procedure.
+
+Account-controller lifetime routing was synchronized with RM-2026-012 point 16
+on 2026-10-28 from the local account UI guide. No upstream refresh or dependency
+change was involved; internal collaborator paths are not customer entrypoints.
+
+Source-placement and audience routing was reconciled on 2026-10-28 for local
+RM-2026-012 point 19. The delivered public boundary/projection guides own the
+procedures; no upstream refresh, dependency or protected-edit authority was added.

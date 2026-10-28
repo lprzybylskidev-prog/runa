@@ -1,0 +1,12 @@
+<?php
+
+namespace {{namespace}}\Http\Controllers;
+
+/** Registered only through the module HTTP descriptor and central operational guard. */
+final class {{name}}
+{
+    public function __invoke(): never
+    {
+        abort(501);
+    }
+}

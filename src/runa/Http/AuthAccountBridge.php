@@ -7,10 +7,10 @@ use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\HttpAccess;
 use Runa\Contracts\Modules\HttpAccountPolicy;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Auth\Support\AccountPolicy;
-use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\ModuleRegistry;
 
 /** Lazy boundary keeps cold setup and independent health endpoints bootable. */
 final readonly class AuthAccountBridge implements HttpAccountPolicy

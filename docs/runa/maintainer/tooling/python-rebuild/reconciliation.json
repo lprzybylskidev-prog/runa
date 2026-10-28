@@ -1,0 +1,1813 @@
+{
+  "schema_version": 1,
+  "roadmap": "RM-2026-012",
+  "baseline_commit": "32d55d2f6b7647a494a15d7793fcd9df705fff4d",
+  "evidence": "Baseline identities retain their historical paths; targets include central tests and points 13\u201317 placement. Source reconciliation is not final test/analysis/build acceptance.",
+  "components": [
+    {
+      "path": "bin/artisan",
+      "disposition": "migrated",
+      "targets": ["bin/artisan"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "bin/boost-mcp",
+      "disposition": "migrated",
+      "targets": ["bin/boost-mcp"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "bin/command",
+      "disposition": "migrated",
+      "targets": ["bin/command"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "bin/passthrough",
+      "disposition": "migrated",
+      "targets": ["bin/passthrough"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/bootstrap.py",
+      "disposition": "migrated",
+      "targets": ["distribution/bootstrap.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/initialize.py",
+      "disposition": "migrated",
+      "targets": ["distribution/initialize.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/installation.py",
+      "disposition": "migrated",
+      "targets": ["distribution/installation.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_contracts.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_contracts.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_customization.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_customization.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_execution.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_execution.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_files.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_files.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_modules.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_modules.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "distribution/update_runtime.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_runtime.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/bin/git-hook",
+      "disposition": "migrated",
+      "targets": ["tools/application/bin/git-hook"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/checks.py",
+      "disposition": "retired",
+      "targets": ["tools/application/diagnostics.py"],
+      "reason": "retired; tools/application/diagnostics.py"
+    },
+    {
+      "path": "tools/application/customer_source.py",
+      "disposition": "retired",
+      "targets": ["tools/application/customer_source_service.py"],
+      "reason": "retired; tools/application/customer_source_service.py"
+    },
+    {
+      "path": "tools/application/dependencies.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/dependencies.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/docs_checks.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/docs_checks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/documentation.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/documentation.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/executors/dev.py",
+      "disposition": "retired",
+      "targets": ["tools/application/development.py"],
+      "reason": "retired; tools/application/development.py"
+    },
+    {
+      "path": "tools/application/executors/doctor.py",
+      "disposition": "retired",
+      "targets": ["tools/application/doctor_cli.py"],
+      "reason": "retired; tools/application/doctor_cli.py"
+    },
+    {
+      "path": "tools/application/executors/knowledge.py",
+      "disposition": "retired",
+      "targets": ["tools/application/knowledge/cli.py"],
+      "reason": "retired; tools/application/knowledge/cli.py"
+    },
+    {
+      "path": "tools/application/executors/operations.py",
+      "disposition": "retired",
+      "targets": ["tools/application/deployment_cli.py"],
+      "reason": "retired; tools/application/deployment_cli.py"
+    },
+    {
+      "path": "tools/application/executors/production.py",
+      "disposition": "retired",
+      "targets": ["tools/application/production_cli.py"],
+      "reason": "retired; tools/application/production_cli.py"
+    },
+    {
+      "path": "tools/application/executors/quality.py",
+      "disposition": "retired",
+      "targets": ["tools/application/quality_cli.py"],
+      "reason": "retired; tools/application/quality_cli.py"
+    },
+    {
+      "path": "tools/application/executors/quality_check.py",
+      "disposition": "retired",
+      "targets": ["tools/application/source_checks.py"],
+      "reason": "retired; tools/application/source_checks.py"
+    },
+    {
+      "path": "tools/application/executors/security.py",
+      "disposition": "retired",
+      "targets": ["tools/application/security_cli.py"],
+      "reason": "retired; tools/application/security_cli.py"
+    },
+    {
+      "path": "tools/application/git_hook.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/git_hook.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/hooks.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/hooks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/host_executor.py",
+      "disposition": "retired",
+      "targets": ["tools/application/host_transport.py"],
+      "reason": "retired; tools/application/host_transport.py"
+    },
+    {
+      "path": "tools/application/install-scanners.py",
+      "disposition": "retired",
+      "targets": ["tools/application/scanner_installation.py"],
+      "reason": "retired; tools/application/scanner_installation.py; development setup selects its fixed package module"
+    },
+    {
+      "path": "tools/application/knowledge/configuration.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/configuration.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/corpus.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/corpus.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/ingest.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/ingest.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/provider.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/provider.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/retrieval.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/retrieval.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/startup.py",
+      "disposition": "retired",
+      "targets": ["tools/application/knowledge/startup_cli.py"],
+      "reason": "retired; tools/application/knowledge/startup_cli.py"
+    },
+    {
+      "path": "tools/application/knowledge/store.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/store.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/knowledge/transport.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/knowledge/transport.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/management.py",
+      "disposition": "retired",
+      "targets": ["tools/application/management_service.py"],
+      "reason": "retired; tools/application/management_service.py"
+    },
+    {
+      "path": "tools/application/module_versions.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/module_versions.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/operations.py",
+      "disposition": "retired",
+      "targets": ["tools/application/deployment_service.py"],
+      "reason": "retired; tools/application/deployment_service.py"
+    },
+    {
+      "path": "tools/application/production.py",
+      "disposition": "retired",
+      "targets": ["tools/application/production_runtime.py"],
+      "reason": "retired; tools/application/production_runtime.py"
+    },
+    {
+      "path": "tools/application/quality.py",
+      "disposition": "retired",
+      "targets": ["tools/application/quality_service.py"],
+      "reason": "retired; tools/application/quality_service.py"
+    },
+    {
+      "path": "tools/application/repository_boundary.py",
+      "disposition": "retired",
+      "targets": ["tools/application/repository_boundary_service.py"],
+      "reason": "retired; tools/application/repository_boundary_service.py"
+    },
+    {
+      "path": "tools/application/runtime.py",
+      "disposition": "retired",
+      "targets": ["tools/application/development_runtime.py"],
+      "reason": "retired; tools/application/development_runtime.py"
+    },
+    {
+      "path": "tools/application/security.py",
+      "disposition": "retired",
+      "targets": ["tools/application/security_service.py"],
+      "reason": "retired; tools/application/security_service.py"
+    },
+    {
+      "path": "tools/application/test_resources.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/test_resources.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/application/testing/hooks.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/testing/hooks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/checks.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/checks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/context.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/context.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/database",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/database"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/docs_checks.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/docs_checks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/entrypoint",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/entrypoint"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/localization/snapshot.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/localization/snapshot.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/make-migration",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/make-migration"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/owner_tests.py",
+      "disposition": "retired",
+      "targets": ["tools/maintainer/test_cli.py"],
+      "reason": "retired; tools/maintainer/test_cli.py"
+    },
+    {
+      "path": "tools/maintainer/release_checks.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/release_checks.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/service_fixtures.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/service_fixtures.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/testing/bootstrap.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_bootstrap.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_bootstrap.py"
+    },
+    {
+      "path": "tools/maintainer/testing/customer-deployment-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/customer_deployment_host.py"],
+      "reason": "retired; tools/maintainer/testing/customer_deployment_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/customer-deployment.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_customer_deployment.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_customer_deployment.py"
+    },
+    {
+      "path": "tools/maintainer/testing/customer-initialization.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_customer_initialization.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_customer_initialization.py"
+    },
+    {
+      "path": "tools/maintainer/testing/customer-knowledge.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/customer_knowledge.py"],
+      "reason": "retired; tools/maintainer/testing/customer_knowledge.py"
+    },
+    {
+      "path": "tools/maintainer/testing/database-guards.py",
+      "disposition": "retired",
+      "targets": ["tools/maintainer/test-backend"],
+      "reason": "retired; tools/maintainer/test-backend --parallel --processes=1 --filter=DatabaseTest"
+    },
+    {
+      "path": "tools/maintainer/testing/dependencies.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_dependencies.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_dependencies.py"
+    },
+    {
+      "path": "tools/maintainer/testing/development-startup.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_development_startup.py",
+        "tests/tools/runa/contracts/test_knowledge_services.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_development_startup.py, tools/maintainer/tests/python/contracts/test_knowledge_services.py"
+    },
+    {
+      "path": "tools/maintainer/testing/docker-test-inventory.py",
+      "disposition": "retired",
+      "targets": [],
+      "reason": "retired; unused one-off inventory, no runtime/suite consumer; scoped resource lifecycle remains in native acceptance"
+    },
+    {
+      "path": "tools/maintainer/testing/docs.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_docs.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_docs.py"
+    },
+    {
+      "path": "tools/maintainer/testing/documentation-live.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/documentation_live.py"],
+      "reason": "retired; tools/maintainer/testing/documentation_live.py"
+    },
+    {
+      "path": "tools/maintainer/testing/documentation.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_documentation.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_documentation.py"
+    },
+    {
+      "path": "tools/maintainer/testing/documentation_fixture.py",
+      "disposition": "relocated",
+      "targets": ["tests/tools/runa/acceptance/documentation_fixture.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/testing/error-fallback-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/error_fallback_host.py"],
+      "reason": "retired; tools/maintainer/testing/error_fallback_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/error-fastcgi-fixture.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/error_fastcgi_fixture.py"],
+      "reason": "retired; tools/maintainer/testing/error_fastcgi_fixture.py"
+    },
+    {
+      "path": "tools/maintainer/testing/fixtures/installation-smtp.py",
+      "disposition": "relocated",
+      "targets": ["tests/tools/runa/acceptance/fixtures/installation-smtp.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/testing/host-executor-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/host_executor_host.py"],
+      "reason": "retired; tools/maintainer/testing/host_executor_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/host-executor.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/unit/test_application_transport.py",
+        "tests/tools/runa/contracts/test_host_recovery.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/unit/test_application_transport.py, tools/maintainer/tests/python/contracts/test_host_recovery.py"
+    },
+    {
+      "path": "tools/maintainer/testing/installation-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/installation_host.py"],
+      "reason": "retired; tools/maintainer/testing/installation_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/installation.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_installation.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_installation.py"
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge-live.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/knowledge_live.py"],
+      "reason": "retired; tools/maintainer/testing/knowledge_live.py"
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge-retrieval.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/integration/test_knowledge_retrieval.py"],
+      "reason": "retired; tools/maintainer/tests/python/integration/test_knowledge_retrieval.py"
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_knowledge_ingestion.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_knowledge_ingestion.py"
+    },
+    {
+      "path": "tools/maintainer/testing/maintenance.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_maintenance.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_maintenance.py"
+    },
+    {
+      "path": "tools/maintainer/testing/management-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/management_host.py"],
+      "reason": "retired; tools/maintainer/testing/management_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/management.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_management.py",
+        "tests/tools/runa/unit/test_application_transport.py",
+        "tests/tools/runa/unit/test_test_runner.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_management.py, tools/maintainer/tests/python/unit/test_application_transport.py, tools/maintainer/tests/python/unit/test_test_runner.py"
+    },
+    {
+      "path": "tools/maintainer/testing/module-development.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_module_development.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_module_development.py"
+    },
+    {
+      "path": "tools/maintainer/testing/operations.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_operations.py",
+        "tests/tools/runa/unit/test_core_process.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_operations.py, tools/maintainer/tests/python/unit/test_core_process.py"
+    },
+    {
+      "path": "tools/maintainer/testing/postgres-alpine-contracts.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_postgres_alpine_contracts.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_postgres_alpine_contracts.py"
+    },
+    {
+      "path": "tools/maintainer/testing/postgres-alpine.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/postgres_alpine.py"],
+      "reason": "retired; tools/maintainer/testing/postgres_alpine.py"
+    },
+    {
+      "path": "tools/maintainer/testing/postgres-switch-contracts.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/acceptance/postgres_alpine.py",
+        "tests/tools/runa/contracts/test_postgres_alpine_contracts.py"
+      ],
+      "reason": "retired one-time transition in point 8; current collation contracts retained"
+    },
+    {
+      "path": "tools/maintainer/testing/production.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_production.py",
+        "tests/tools/runa/unit/test_application_transport.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_production.py, tools/maintainer/tests/python/unit/test_application_transport.py"
+    },
+    {
+      "path": "tools/maintainer/testing/quality.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_quality_compatibility.py",
+        "tests/tools/runa/contracts/test_quality_services.py"
+      ],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_quality_compatibility.py, tools/maintainer/tests/python/contracts/test_quality_services.py"
+    },
+    {
+      "path": "tools/maintainer/testing/release.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_release.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_release.py"
+    },
+    {
+      "path": "tools/maintainer/testing/repository-boundary.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_repository_boundary.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_repository_boundary.py"
+    },
+    {
+      "path": "tools/maintainer/testing/security.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_security_services.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_security_services.py"
+    },
+    {
+      "path": "tools/maintainer/testing/services.py",
+      "disposition": "relocated",
+      "targets": ["tests/tools/runa/acceptance/services.py"],
+      "reason": "Qualified package service or documented thin process adapter; signatures completed."
+    },
+    {
+      "path": "tools/maintainer/testing/switch-postgres-icu.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/acceptance/postgres_alpine.py",
+        "tests/tools/runa/contracts/test_postgres_alpine_contracts.py"
+      ],
+      "reason": "retired one-time transition in point 8; current collation contracts retained"
+    },
+    {
+      "path": "tools/maintainer/testing/team-update-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/team_update_host.py"],
+      "reason": "retired; tools/maintainer/testing/team_update_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/tool-ownership.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_command_adapters.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_command_adapters.py"
+    },
+    {
+      "path": "tools/maintainer/testing/update-execution.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_update_execution.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_update_execution.py"
+    },
+    {
+      "path": "tools/maintainer/testing/update-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/update_host.py"],
+      "reason": "retired; tools/maintainer/testing/update_host.py"
+    },
+    {
+      "path": "tools/maintainer/testing/update.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_update.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_update.py"
+    },
+    {
+      "path": "tools/maintainer/testing/wrappers.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_application_bootstrap.py"],
+      "reason": "retired; tools/maintainer/tests/python/contracts/test_application_bootstrap.py"
+    }
+  ],
+  "aliases": [
+    {
+      "path": "bin/analyse",
+      "disposition": "retained-transport",
+      "target": "check",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/check",
+      "disposition": "retained-transport",
+      "target": "command",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/composer",
+      "disposition": "retained-transport",
+      "target": "passthrough",
+      "resolved_target": "bin/passthrough"
+    },
+    {
+      "path": "bin/deploy",
+      "disposition": "retained-transport",
+      "target": "operations",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/format",
+      "disposition": "retained-transport",
+      "target": "check",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/lint",
+      "disposition": "retained-transport",
+      "target": "check",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/logs",
+      "disposition": "retained-transport",
+      "target": "passthrough",
+      "resolved_target": "bin/passthrough"
+    },
+    {
+      "path": "bin/operations",
+      "disposition": "retained-transport",
+      "target": "command",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/pnpm",
+      "disposition": "retained-transport",
+      "target": "passthrough",
+      "resolved_target": "bin/passthrough"
+    },
+    {
+      "path": "bin/test",
+      "disposition": "retained-transport",
+      "target": "check",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "bin/typecheck",
+      "disposition": "retained-transport",
+      "target": "check",
+      "resolved_target": "bin/command"
+    },
+    {
+      "path": "tools/application/bin/commit-msg",
+      "disposition": "retained-transport",
+      "target": "git-hook",
+      "resolved_target": "tools/application/bin/git-hook"
+    },
+    {
+      "path": "tools/application/bin/pre-commit",
+      "disposition": "retained-transport",
+      "target": "git-hook",
+      "resolved_target": "tools/application/bin/git-hook"
+    },
+    {
+      "path": "tools/maintainer/check-cleanliness",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-database-migrations",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-development",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-docs",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-frontend",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-maintenance",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-release",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-repository",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/check-tooling",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/migrate",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/migrate-fresh",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/migrate-refresh",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/migrate-reset",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/migrate-rollback",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/migrate-status",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/quality-final",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/quality-plan",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/quality-roadmap",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/quality-status",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/seed",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    },
+    {
+      "path": "tools/maintainer/test-backend",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/test-e2e",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/test-frontend",
+      "disposition": "retained-transport",
+      "target": "entrypoint",
+      "resolved_target": "tools/maintainer/entrypoint"
+    },
+    {
+      "path": "tools/maintainer/wipe",
+      "disposition": "retained-transport",
+      "target": "database",
+      "resolved_target": "tools/maintainer/database"
+    }
+  ],
+  "resources": [
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": ".dockerignore",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": ".githooks/commit-msg",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": ".githooks/pre-commit",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": ".gitignore",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": ".prettierrc.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "compose.production.yaml",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "compose.yaml",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "distribution/README.md",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "distribution/module-plan.php",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "distribution/platform-database.php",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "docker/php/Dockerfile",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "docs/runa/maintainer/quality/gates.yml",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "src/composer.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "src/package.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "src/runa/Support/Modules/Development/ModuleGenerator.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Development/Modules/ModuleGenerator.php"]
+    },
+    {
+      "path": "src/runa/composer.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "src/runa/management/Actions/RunSourceChecks.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunSourceChecks.php"]
+    },
+    {
+      "path": "src/runa/management/Actions/RunTool.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunTool.php"]
+    },
+    {
+      "path": "src/runa/management/HostBridge.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/HostBridge.php"]
+    },
+    {
+      "path": "src/runa/management/ToolingCommand.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/ToolingCommand.php"]
+    },
+    {
+      "path": "src/runa/management/development.json",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/development.json"]
+    },
+    {
+      "path": "src/runa/management/host-plan.v1.schema.json",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/host-plan.v1.schema.json"]
+    },
+    {
+      "path": "src/runa/management/operations.json",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/operations.json"]
+    },
+    {
+      "path": "src/runa/management/quality-groups.json",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/quality-groups.json"]
+    },
+    {
+      "path": "src/runa/package.json",
+      "disposition": "reconciled",
+      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+    },
+    {
+      "path": "tools/README.md",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/application/knowledge/config.json",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/application/knowledge/golden.json",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/application/quality.yml",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/application/read-yaml.php",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/application/testing/production-runtime.php",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/maintainer/knowledge-golden.json",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/maintainer/knowledge.json",
+      "disposition": "reconciled",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling."
+    },
+    {
+      "path": "tools/maintainer/testing/localization.php",
+      "disposition": "relocated",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling.",
+      "targets": ["tests/tools/runa/acceptance/localization.php"]
+    },
+    {
+      "path": "tools/maintainer/testing/php-alpine-host.sh",
+      "disposition": "retired",
+      "reason": "Unused historical simulation and inline Python removed; complete owned production acceptance replaces it."
+    },
+    {
+      "path": "tools/maintainer/testing/runtime.php",
+      "disposition": "relocated",
+      "reason": "Explicit package resources or source-owned interop contract retained; current callers select qualified APIs/fixed modules. Production inputs exclude tooling.",
+      "targets": ["tests/tools/runa/acceptance/runtime.php"]
+    }
+  ],
+  "non_python_references": [
+    {
+      "path": ".agents/skills/laravel/references/async-console-testing.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": ".dockerignore",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": ".githooks/commit-msg",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": ".githooks/pre-commit",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "AGENTS.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "compose.yaml",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "distribution/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docker/php/Dockerfile",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/ai/knowledge-system.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/architecture/project-principles.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/development/editor-and-agents.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/development/environment.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/development/knowledge.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/development/modules.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/production/architecture.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/quality/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/tooling/commands.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/handbook/workflows/git.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/architecture/application-architecture.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/customer-agent/AGENTS.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/development/localization.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/architecture/database.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/data/seeding.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/development/editor-and-agents.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/development/environment.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/development/knowledge.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/production/architecture.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/tooling/commands.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/evidence/tooling/host-executor.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/maintenance/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/maintenance/registry.yml",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/production/deployment.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/production/postgresql-alpine-assessment.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/quality/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/quality/core-module-acceptance.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/quality/gates.yml",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/active/RM-2026-012-python-tooling-architecture.md",
+      "disposition": "relocated",
+      "targets": [
+        "docs/runa/maintainer/roadmaps/active/RM-2026-012-runa-architecture-refactor.md"
+      ],
+      "reason": "Roadmap renamed for the expanded Runa architecture/public API scope; original inventory identity and completed evidence are preserved."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-004-ui-foundations.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-006-module-framework.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-009-customer-agent-delivery-and-update-review.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-010-manual-quality-group-selection.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/roadmaps/closed/RM-2026-011-audit-auth-permissions-core.md",
+      "disposition": "preserved-historical",
+      "reason": "Immutable dated source snapshot; old paths describe its own baseline."
+    },
+    {
+      "path": "docs/runa/maintainer/security/RM-2026-011-runtime-risk-acceptance.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/security/gosu-assessment.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/testing/strategy.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/tooling/bootstrap.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/tooling/command-migration.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/tooling/customer-delivery.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/tooling/installation.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/tooling/updates.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/workflows/git.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/workflows/releases.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "docs/runa/maintainer/workflows/roadmaps.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "src/runa/Support/Modules/Development/ModuleGenerator.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Development/Modules/ModuleGenerator.php"]
+    },
+    {
+      "path": "src/runa/management/Actions/RunTool.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunTool.php"]
+    },
+    {
+      "path": "src/runa/management/ToolingCommand.php",
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/ToolingCommand.php"]
+    },
+    {
+      "path": "src/runa/tests/Feature/ModuleDevelopmentTest.php",
+      "disposition": "relocated",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer.",
+      "targets": ["tests/backend/runa/Feature/ModuleDevelopmentTest.php"]
+    },
+    {
+      "path": "src/runa/tests/Feature/ModuleUpdatesTest.php",
+      "disposition": "relocated",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer.",
+      "targets": ["tests/backend/runa/Feature/ModuleUpdatesTest.php"]
+    },
+    {
+      "path": "src/runa/tests/Fixtures/DatabaseOwnership.php",
+      "disposition": "relocated",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer.",
+      "targets": ["tests/backend/runa/Fixtures/DatabaseOwnership.php"]
+    },
+    {
+      "path": "src/runa/tests/PlatformTestCase.php",
+      "disposition": "relocated",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer.",
+      "targets": ["tests/backend/runa/PlatformTestCase.php"]
+    },
+    {
+      "path": "tools/README.md",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "tools/application/knowledge/config.json",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "tools/application/quality.yml",
+      "disposition": "reconciled",
+      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+    },
+    {
+      "path": "tools/maintainer/testing/php-alpine-host.sh",
+      "disposition": "retired",
+      "reason": "Removed unused historical simulation."
+    }
+  ],
+  "inline_integrations": [
+    {
+      "path": "tools/maintainer/testing/php-alpine-host.sh",
+      "disposition": "retired",
+      "targets": [],
+      "reason": "Unused historical simulation removed; no remaining caller."
+    },
+    {
+      "path": "bin/artisan",
+      "disposition": "migrated",
+      "targets": ["bin/artisan"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "bin/boost-mcp",
+      "disposition": "migrated",
+      "targets": ["bin/boost-mcp"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "bin/passthrough",
+      "disposition": "migrated",
+      "targets": ["bin/passthrough"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "distribution/bootstrap.py",
+      "disposition": "migrated",
+      "targets": ["distribution/bootstrap.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "distribution/initialize.py",
+      "disposition": "migrated",
+      "targets": ["distribution/initialize.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "distribution/installation.py",
+      "disposition": "migrated",
+      "targets": ["distribution/installation.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "distribution/update_runtime.py",
+      "disposition": "migrated",
+      "targets": ["distribution/update_runtime.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/bin/git-hook",
+      "disposition": "migrated",
+      "targets": ["tools/application/bin/git-hook"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/customer_source.py",
+      "disposition": "retired",
+      "targets": ["tools/application/customer_source_service.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/dev.py",
+      "disposition": "retired",
+      "targets": ["tools/application/development.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/doctor.py",
+      "disposition": "retired",
+      "targets": ["tools/application/doctor_cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/knowledge.py",
+      "disposition": "retired",
+      "targets": ["tools/application/knowledge/cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/operations.py",
+      "disposition": "retired",
+      "targets": ["tools/application/deployment_cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/production.py",
+      "disposition": "retired",
+      "targets": ["tools/application/production_cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/quality.py",
+      "disposition": "retired",
+      "targets": ["tools/application/quality_cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/executors/security.py",
+      "disposition": "retired",
+      "targets": ["tools/application/security_cli.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/git_hook.py",
+      "disposition": "migrated",
+      "targets": ["tools/application/git_hook.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/operations.py",
+      "disposition": "retired",
+      "targets": ["tools/application/deployment_service.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/production.py",
+      "disposition": "retired",
+      "targets": ["tools/application/production_runtime.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/application/security.py",
+      "disposition": "retired",
+      "targets": ["tools/application/security_service.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/context.py",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/context.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/entrypoint",
+      "disposition": "migrated",
+      "targets": ["tools/maintainer/entrypoint"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/bootstrap.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_bootstrap.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/customer-deployment-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/customer_deployment_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/customer-deployment.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_customer_deployment.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/customer-initialization.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_customer_initialization.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/customer-knowledge.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/customer_knowledge.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/dependencies.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_dependencies.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/development-startup.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_development_startup.py",
+        "tests/tools/runa/contracts/test_knowledge_services.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/docs.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_docs.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/documentation-live.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/documentation_live.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/documentation.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_documentation.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/host-executor-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/host_executor_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/host-executor.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/unit/test_application_transport.py",
+        "tests/tools/runa/contracts/test_host_recovery.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/installation-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/installation_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/installation.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_installation.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge-live.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/knowledge_live.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge-retrieval.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/integration/test_knowledge_retrieval.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/knowledge.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_knowledge_ingestion.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/maintenance.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_maintenance.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/management-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/management_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/management.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_management.py",
+        "tests/tools/runa/unit/test_application_transport.py",
+        "tests/tools/runa/unit/test_test_runner.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/module-development.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_module_development.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/operations.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_operations.py",
+        "tests/tools/runa/unit/test_core_process.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/postgres-alpine.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/postgres_alpine.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/production.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_production.py",
+        "tests/tools/runa/unit/test_application_transport.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/quality.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/contracts/test_quality_compatibility.py",
+        "tests/tools/runa/contracts/test_quality_services.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/release.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_release.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/repository-boundary.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_repository_boundary.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/security.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_security_services.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/switch-postgres-icu.py",
+      "disposition": "retired",
+      "targets": [
+        "tests/tools/runa/acceptance/postgres_alpine.py",
+        "tests/tools/runa/contracts/test_postgres_alpine_contracts.py"
+      ],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/team-update-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/team_update_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/tool-ownership.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_command_adapters.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/update-execution.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_update_execution.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/update-host.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/acceptance/update_host.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/update.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_update.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    },
+    {
+      "path": "tools/maintainer/testing/wrappers.py",
+      "disposition": "retired",
+      "targets": ["tests/tools/runa/contracts/test_application_bootstrap.py"],
+      "reason": "Internal orchestration uses qualified APIs; retained inline code crosses an actual process/runtime boundary or defines an isolated refusal fixture. No source-path injection or script-as-library loading."
+    }
+  ],
+  "retained_boundaries": {
+    "standalone_acquisition": "distribution/bootstrap.py independently isolates credentials and verifies Git/source before any adjacent package exists.",
+    "process_transports": "bin, hooks and owner/external launchers execute fixed modules; Boost preserves process cwd/exec and inherited stdio.",
+    "version_separation": "External tooling invokes the acquired protocol-1 application gateway in a separate process; inline probes inspect selected release/runtime state.",
+    "daemon_recovery": "Only exact persisted previous-release owned-daemon command identities are recognized; no removed source implementation is retained.",
+    "native_runners": "PHP/JS/shell/Docker and fixture subprocesses retain their real process boundaries; operational runner/context/state mechanisms are shared.",
+    "historical_data": "Immutable baseline inventories, dated evidence and old receipts/journals preserve source identities without authorizing obsolete implementations. Central suite relocation changes targets only; original identities remain immutable."
+  }
+}

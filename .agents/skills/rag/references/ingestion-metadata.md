@@ -46,3 +46,10 @@
 44. Maintenance/deprecation registries should carry precise metadata for focused lookup.
 
 Owner retrieval excludes docs/runa/maintainer/customer-agent regardless of broad allowlists. Customer indexes consume installed guidance only. Verify fresh project-scoped Qdrant storage by actual mounts and empty collections before initialization; preserve existing caches/collections and use incremental removal after source changes.
+
+Parser/package changes may mark the index stale without changing its embedding
+space. Follow the public knowledge guide's package/ownership composition procedure:
+refresh incrementally and reuse unchanged semantic vectors; relocation alone never
+authorizes collection deletion. Keep private corpus/golden composition out of the
+delivered configuration loader. Test storage/HTTP/time boundaries through injected
+knowledge dependencies rather than replacing module globals.

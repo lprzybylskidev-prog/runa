@@ -26,7 +26,7 @@ Application UI defaults to Polish with English support and light/dark themes; ad
 
 Use one active application roadmap under `docs/app/roadmaps`, a roadmap branch, Conventional Commits and local verification. See [roadmap workflow](docs/runa/handbook/workflows/roadmaps.md), [Git](docs/runa/handbook/workflows/git.md) and [quality](docs/runa/handbook/quality/README.md). This project has no CI pipeline.
 
-[Application tests](docs/runa/handbook/testing/strategy.md) use `php artisan test`, `runa:test`, `runa:test:frontend` and `runa:test:e2e`. [Commands](docs/runa/handbook/tooling/commands.md) documents the public interface. [Production guidance](docs/runa/handbook/production/architecture.md) covers runtime isolation and operations.
+[Application tests](docs/runa/handbook/testing/strategy.md) default to backend, frontend and tooling through `runa:test`. Native `php artisan test` remains PHP-only; focused Runa commands and opt-in browser tests are documented there. [Commands](docs/runa/handbook/tooling/commands.md) documents the public interface. [Production guidance](docs/runa/handbook/production/architecture.md) covers runtime isolation and operations.
 
 Application identity/version in `src/app/application.json` is independent of the protected platform identity in `src/runa/platform.json`. Platform installation and updates are owner-operated external delivery procedures; customer repositories contain no owner installer/updater, platform test suites, maintenance reports or platform release history.
 

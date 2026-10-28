@@ -9,6 +9,9 @@ final class StepUpProxy extends GuardedApi implements AuthStepUp
 {
     public function assertVerified(string $action, string $requirement, int $ttlSeconds = 300, bool $everyAction = false): bool
     {
-        return $this->invoke(__FUNCTION__, [$action, $requirement, $ttlSeconds, $everyAction]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$action, $requirement, $ttlSeconds, $everyAction]);
+
+        return $result;
     }
 }

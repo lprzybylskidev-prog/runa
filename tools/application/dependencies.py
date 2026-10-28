@@ -1,62 +1,53 @@
 """Compose declared owner inputs without resolving dependencies or replacing locks."""
+
+from __future__ import annotations
+
 import argparse
-import copy
 import json
+from collections.abc import Sequence
 from pathlib import Path
 
+from tools.core.dependencies import compose
+
 ROOT = Path(__file__).resolve().parents[2]
-SECTIONS = {'composer': ('require', 'require-dev'), 'package': ('dependencies', 'devDependencies')}
+SECTIONS = {"composer": ("require", "require-dev"), "package": ("dependencies", "devDependencies")}
 
 
-def compose(platform, application, kind):
-    if not isinstance(platform, dict) or not isinstance(application, dict):
-        raise ValueError('Dependency manifests must be JSON objects.')
-    if set(application) - set(SECTIONS[kind]):
-        raise ValueError('Unsupported application dependency declaration field.')
-    result = copy.deepcopy(platform)
-    owned = {}
-    for section in SECTIONS[kind]:
-        for source in (platform, application):
-            values = source.get(section, {})
-            if not isinstance(values, dict):
-                raise ValueError('Dependency declarations must be objects.')
-            for name, constraint in values.items():
-                if not isinstance(constraint, str) or not constraint.strip():
-                    raise ValueError('Dependency constraints must be non-empty strings.')
-                if name in owned and owned[name] != (section, constraint):
-                    raise ValueError('Conflicting dependency declaration: ' + name)
-                owned[name] = (section, constraint)
-                result.setdefault(section, {})[name] = constraint
-    return result
-
-
-def materialize(root, check=False):
-    prepared = {}
+def materialize(root: Path, check: bool = False) -> None:
+    prepared: dict[Path, str] = {}
     for kind in SECTIONS:
-        inputs = [root / 'src' / owner / (kind + '.json') for owner in ('runa', 'app')]
+        inputs = [root / "src" / owner / (kind + ".json") for owner in ("runa", "app")]
         for path in inputs:
             if not path.is_file() or path.is_symlink():
-                raise ValueError('Missing regular owner dependency manifest.')
-        result = compose(*(json.loads(path.read_text()) for path in inputs), kind)
-        target = root / 'src' / (kind + '.json')
+                raise ValueError("Missing regular owner dependency manifest.")
+        result = compose(json.loads(inputs[0].read_text()), json.loads(inputs[1].read_text()), kind)
+        target = root / "src" / (kind + ".json")
         if target.is_symlink():
-            raise ValueError('Composed manifest must not be a symlink.')
+            raise ValueError("Composed manifest must not be a symlink.")
         if check:
             if not target.is_file() or json.loads(target.read_text()) != result:
-                raise ValueError('Composed manifest is stale: ' + str(target.relative_to(root)))
+                raise ValueError("Composed manifest is stale: " + str(target.relative_to(root)))
         else:
-            prepared[target] = json.dumps(result, indent=2) + '\n'
+            prepared[target] = json.dumps(result, indent=2) + "\n"
     # Validate both owners/graphs before writing either output. Never touch locks.
     for target, content in prepared.items():
         target.write_text(content)
 
 
-if __name__ == '__main__':
+def main(arguments: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--check', action='store_true')
-    args = parser.parse_args()
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args(arguments)
     try:
         materialize(ROOT, args.check)
     except (ValueError, OSError) as error:
-        parser.exit(1, str(error) + '\n')
-    print('PASS: dependency manifests match owner inputs; locks preserved.' if args.check else 'Composed dependency manifests; locks preserved. Validate/install with frozen locks before use.')
+        parser.exit(1, str(error) + "\n")
+    print(
+        "PASS: dependency manifests match owner inputs; locks preserved."
+        if args.check
+        else "Composed dependency manifests; locks preserved. Validate/install with frozen locks before use."
+    )
+
+
+if __name__ == "__main__":
+    main()

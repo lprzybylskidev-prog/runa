@@ -3,8 +3,8 @@
 namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\Connection;
-use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Modules\Permissions\Contracts\AuthorityPreview;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
@@ -12,11 +12,10 @@ use Runa\Modules\Permissions\Contracts\RoleDeletionPreview;
 use Runa\Modules\Permissions\Support\AccessState;
 use Runa\Modules\Permissions\Support\AccessTransaction;
 use Runa\Modules\Permissions\Support\PreserveAuthority;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class ManageAuthority implements PermissionsAuthority
 {
-    public function __construct(private DatabaseManager $database, private AccessState $state,
+    public function __construct(private AccessState $state,
         private AccessTransaction $transactions, private PreserveAuthority $authority,
         private AuthorizationIdentity $identities, private PrincipalScope $principals, private DeleteRoles $roles) {}
 
@@ -38,7 +37,9 @@ final readonly class ManageAuthority implements PermissionsAuthority
         if ($grant && ! $current && $this->principals->current()?->publicId === $userPublicId) {
             $this->state->reject('authority_self_escalation', 403);
         }
-        $revision = (int) ($c->table('runa_permissions.user_access')->where('user_public_id', $userPublicId)->value('version') ?? 0);
+        /** @var int|null $storedRevision */
+        $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $userPublicId)->value('version');
+        $revision = $storedRevision ?? 0;
         $fingerprint = $this->state->fingerprint([$userPublicId, $grant, $eligibility, $role->public_id, $role->version, $membership?->id, $revision]);
 
         return new AuthorityPreview($userPublicId, $grant, $fingerprint, $current, $revision, $eligibility->mayOperate());
@@ -83,9 +84,13 @@ final readonly class ManageAuthority implements PermissionsAuthority
         $this->roles->delete($reviewed, $confirmed);
     }
 
+    /** @return \stdClass&object{id: int, public_id: string, version: int} */
     private function role(Connection $c): object
     {
-        return $c->table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->where('system', true)->whereNull('deleted_at')->first()
+        /** @var \stdClass&object{id: int, public_id: string, version: int} $role */
+        $role = $c->table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->where('system', true)->whereNull('deleted_at')->first()
             ?? throw new \RuntimeException('Protected system role unavailable.');
+
+        return $role;
     }
 }

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Dialog, Button } from '@/runa/ui';
 import { ref, watch, nextTick } from 'vue';
-const props = withDefaults(
-  defineProps<{
-    codes: readonly string[];
-    locale?: 'pl' | 'en';
-    busy?: boolean;
-  }>(),
-  { locale: 'pl', busy: false },
-);
-defineEmits<{ acknowledge: [] }>();
+import type {
+  AuthRecoveryCodesDialogProps,
+  AuthRecoveryCodesDialogEmits,
+} from './contracts/presentation';
+const props = withDefaults(defineProps<AuthRecoveryCodesDialogProps>(), {
+  locale: 'pl',
+  busy: false,
+});
+defineEmits<AuthRecoveryCodesDialogEmits>();
 const dialog = ref<{ focus: () => void }>();
 watch(
   () => props.busy,

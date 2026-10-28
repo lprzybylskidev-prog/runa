@@ -1,5 +1,24 @@
 # Permissions module changelog
 
+## 1.0.4 — 2026-10-28
+
+- Complete typed declaration and assignment contracts; serialize every role permission group as a JSON list.
+- Add the source-only verification_contracts forward edge without schema or data changes.
+
+## 1.0.3 — 2026-10-28
+
+- Support platform 0.6.x explicitly while retaining public APIs and historical upgrade identities.
+- Record the source-only platform_delivery edge; production excludes developer implementations and raw module frontend sources. No schema or data transformation.
+
+## 1.0.2 — 2026-10-28
+
+- Reconcile internal platform collaborators with the module framework and Core integration homes; public contracts and runtime behavior remain compatible.
+- Add a source-only forward edge with no schema or data transformation.
+
+## 1.0.1 — 2026-10-27
+
+- Relocate module test metadata and cases to the central owner test tree; runtime APIs and data remain unchanged.
+
 ## 1.0.0
 
 Prepare the first stable Permissions release for verified closure of RM-2026-011.

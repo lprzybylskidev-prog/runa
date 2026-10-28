@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\ParallelTesting;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -22,12 +22,12 @@ abstract class TestCase extends FrameworkTestCase
 
     protected function tearDown(): void
     {
-        $database = $this->app?->make(DatabaseManager::class);
+        $database = $this->app->make(DatabaseManager::class);
         try {
             // Let transaction/other framework teardown callbacks finish first.
             parent::tearDown();
         } finally {
-            foreach ($database?->getConnections() ?? [] as $connection) {
+            foreach ($database->getConnections() as $connection) {
                 $connection->disconnect();
             }
         }
@@ -40,6 +40,9 @@ abstract class TestCase extends FrameworkTestCase
             throw new RuntimeException('Test worker token must be a canonical integer from 0 to 99999.');
         }
         $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
+        if (! $app instanceof Application) {
+            throw new RuntimeException('Test bootstrap must return the application.');
+        }
         $storage = dirname(__DIR__, 3).'/.runtime/tests/worker-'.$token;
         foreach (['framework/cache/data', 'framework/sessions', 'framework/views', 'logs', 'app/private'] as $directory) {
             if (! is_dir($storage.'/'.$directory)) {

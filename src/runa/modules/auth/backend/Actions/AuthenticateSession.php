@@ -10,12 +10,12 @@ use Illuminate\Support\Facades\Cookie;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Fortify;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class AuthenticateSession
 {
@@ -39,7 +39,8 @@ final readonly class AuthenticateSession
                 if ($this->abuse->blocked($connection, $identifier)) {
                     return null;
                 }
-                $user = call_user_func(Fortify::$authenticateUsingCallback, $request);
+                $callback = Fortify::$authenticateUsingCallback ?? throw new \LogicException('Auth transport callback unavailable.');
+                $user = call_user_func($callback, $request);
                 if (! $user instanceof User) {
                     $this->abuse->failure($connection, $identifier, $candidate);
 

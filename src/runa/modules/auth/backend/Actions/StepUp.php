@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -13,8 +14,8 @@ use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 
+/** @phpstan-import-type SessionRow from SessionStore */
 final readonly class StepUp implements AuthStepUp
 {
     public function __construct(private SecurityContext $context, private CredentialPolicy $policy,
@@ -28,13 +29,16 @@ final readonly class StepUp implements AuthStepUp
         }
     }
 
+    /**
+     * @return array{confirmed: bool}
+     */
     public function confirm(Request $request): array
     {
         $action = $request->string('action')->toString();
         $requirement = $request->string('requirement')->toString();
         $this->validate($action, $requirement);
 
-        return $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request, $action, $requirement): ?array {
+        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request, $action, $requirement): ?array {
             // Restricted sessions must first finish login factors and password/verification flows.
             if ($this->policy->restrictions($user, $session) !== [] || $user->password_change_required || $this->policy->passwordExpired($user)
                 || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate()) {
@@ -51,7 +55,7 @@ final readonly class StepUp implements AuthStepUp
             $connection->table('runa_auth.step_up_proofs')->insert(['user_id' => $user->id, 'session_hash' => $session->session_hash,
                 'security_version' => $user->security_version, 'action' => $action, 'requirement' => $requirement,
                 'factor_method' => $requirement === 'password' ? null : $request->string('method')->toString(),
-                'verified_at' => now(), 'expires_at' => now()->addSeconds($this->policy->value('step_up_seconds'))]);
+                'verified_at' => now(), 'expires_at' => now()->addSeconds($this->policy->integer('step_up_seconds'))]);
             $this->transactions->record('step_up.confirmed', $user);
 
             return ['confirmed' => true];
@@ -65,15 +69,16 @@ final readonly class StepUp implements AuthStepUp
             throw new \LogicException('Step-up requires a bounded TTL and the owning business transaction.');
         }
 
-        return $this->context->run(app('request'), function (Connection $connection, User $user, object $session) use ($action, $requirement, $ttlSeconds, $everyAction): bool {
+        return $this->context->run(app('request'), /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($action, $requirement, $ttlSeconds, $everyAction): bool {
             if ($this->principals->current()?->publicId !== $user->public_id || $this->policy->restrictions($user, $session) !== []
                 || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate() || $user->password_change_required || $this->policy->passwordExpired($user)) {
                 throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);
             }
+            /** @var (\stdClass&object{requirement: string, factor_method: string|null})|null $proof */
             $proof = $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->where('session_hash', $session->session_hash)
                 ->where('security_version', $user->security_version)->where('action', $action)->whereNull('consumed_at')
                 ->whereIn('requirement', $requirement === 'both' ? ['both'] : [$requirement, 'both'])
-                ->where('expires_at', '>', now())->where('verified_at', '>', CarbonImmutable::now('UTC')->subSeconds(min($ttlSeconds, $this->policy->value('step_up_seconds'))))
+                ->where('expires_at', '>', now())->where('verified_at', '>', CarbonImmutable::now('UTC')->subSeconds(min($ttlSeconds, $this->policy->integer('step_up_seconds'))))
                 ->lockForUpdate()->first();
             if ($proof === null || ($proof->requirement !== 'password' && ! $this->policy->accepts($proof->factor_method ?? ''))) {
                 throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);

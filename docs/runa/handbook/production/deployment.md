@@ -59,3 +59,10 @@ Inspect the recorded phase, images, database and application state under the app
 `php artisan runa:deploy:rollback` retains the previous-image recovery boundary, checks source fingerprints and requires explicit recorded proof of schema/data compatibility. Current deployments perform arbitrary application data steps and record compatibility as unproven, so automatic rollback is blocked. Use a reviewed operator recovery procedure; code/image rollback cannot reverse schema/data changes.
 
 Production self-test verifies services, root/readiness and AI/dev isolation. See [production architecture](architecture.md), [host executor](../tooling/host-executor.md), [database safety](../architecture/database.md) and [public commands](../tooling/commands.md).
+
+The host tooling binds operator and release contexts explicitly; concurrent service
+objects cannot replace each other's source root, Compose project or TLS overlay.
+The operation lock is still shared with installation/update and acquired before
+mutation. Production journals use bounded private durable atomic writes; safe
+legacy operator-owned coordination files remain usable. Production runtime images
+contain no host installation/deployment Python services.

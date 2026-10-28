@@ -25,7 +25,7 @@ The public module ID is `<owner>.<code>`, where owner is exactly `runa` or `app`
 | Disk-relative prefix      | `modules/runa/<code>/`       | `modules/app/<code>/`       |
 | PHP prefix                | `Runa\Modules\<PascalCode>\` | `App\Modules\<PascalCode>\` |
 
-Each root contains `module.json`, `backend/`, `resources/`, `routes/`, `database/`, `config/`, `lang/` and `tests/` as needed. Module documentation lives centrally under `docs/app/modules/<code>/` for application modules and `docs/runa/handbook/modules/<code>/` for delivered Runa module guidance; never create a module-local `docs/` directory. Public PHP interfaces/DTOs/events live in `backend/Contracts/`; Actions, models, jobs, providers and other implementation classes live under `backend/`. Frontend code lives in `resources/js/`; migrations and seeders in `database/`. Writable files never live in module source.
+Each root contains `module.json`, `backend/`, `resources/`, `routes/`, `database/`, `config/`, `lang/` as needed. Authored tests live under the central tests/backend, tests/frontend and tests/tools owner/module roots. Module documentation lives centrally under `docs/app/modules/<code>/` for application modules and `docs/runa/handbook/modules/<code>/` for delivered Runa module guidance; never create a module-local `docs/` directory. Public PHP interfaces/DTOs/events live in `backend/Contracts/`; Actions, models, jobs, providers and other implementation classes live under `backend/`. Frontend code lives in `resources/js/`; migrations and seeders in `database/`. Writable files never live in module source.
 
 Derive PascalCode by capitalizing and joining code segments. Reject case-insensitive PHP prefix collisions, including collisions with ordinary application/platform classes, rather than silently renaming a prefix. The local autoloader derives an explicit prefix-to-`backend/` mapping from the synchronized registry snapshot: broad `App\`/`Runa\` Composer mappings alone do not handle lowercase module roots. No per-module dependency or Composer autoload edit is required. It checks the source manifest hash and canonical owned class path before loading; loading a class does not instantiate descriptors or activate a module.
 
@@ -35,21 +35,21 @@ Source roots, manifest files and referenced files must remain inside the owning 
 
 `module.json` is a bounded UTF-8 JSON object, at most 64 KiB and depth 16. Reject duplicate JSON keys, unknown fields, unknown schema versions and invalid values before operational providers load. Empty collections are explicit. There are no database-controlled PHP class names, file paths or executable expressions.
 
-| Required field   | Type and meaning                                                                                           |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `schema_version` | Integer literal `1`                                                                                        |
-| `id`             | Validated owner/code ID matching the source root                                                           |
-| `kind`           | `core` or `optional`; source-owned, never editable in DB                                                   |
-| `version`        | Bounded stable `X.Y.Z` module version                                                                      |
-| `platform`       | Supported platform version constraint                                                                      |
-| `framework_api`  | Supported module-framework public contract version constraint                                              |
-| `name`           | Object containing exactly nonempty `pl` and `en` strings                                                   |
-| `description`    | Object containing exactly nonempty `pl` and `en` strings                                                   |
-| `dependencies`   | Object containing exactly `required` and `optional` maps from full module IDs to version constraints       |
-| `providers`      | List of unique owner-local provider class names                                                            |
-| `declarations`   | Map of declaration categories to lists of unique owner-local descriptor class names, as specified below    |
-| `docs`           | List of unique repository-root-relative Markdown paths in the central owner module documentation directory |
-| `tests`          | List of unique module-relative directories within `tests/`                                                 |
+| Required field   | Type and meaning                                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema_version` | Integer literal `1`                                                                                                                                 |
+| `id`             | Validated owner/code ID matching the source root                                                                                                    |
+| `kind`           | `core` or `optional`; source-owned, never editable in DB                                                                                            |
+| `version`        | Bounded stable `X.Y.Z` module version                                                                                                               |
+| `platform`       | Supported platform version constraint                                                                                                               |
+| `framework_api`  | Supported module-framework public contract version constraint                                                                                       |
+| `name`           | Object containing exactly nonempty `pl` and `en` strings                                                                                            |
+| `description`    | Object containing exactly nonempty `pl` and `en` strings                                                                                            |
+| `dependencies`   | Object containing exactly `required` and `optional` maps from full module IDs to version constraints                                                |
+| `providers`      | List of unique owner-local provider class names                                                                                                     |
+| `declarations`   | Map of declaration categories to lists of unique owner-local descriptor class names, as specified below                                             |
+| `docs`           | List of unique repository-root-relative Markdown paths in the central owner module documentation directory                                          |
+| `tests`          | Central repository-root tests/{backend,frontend,tools}/<owner>/modules/<code> metadata; legacy module-relative tests/ declarations remain supported |
 
 Localized names are at most 160 characters, descriptions at most 2000. Collections are bounded to 256 items per category; class names and relative paths to 256 characters. Required/optional dependency maps must be disjoint, cannot reference self, and Runa modules cannot depend on application modules through either map. A required cycle is invalid; optional integration references never become enablement edges.
 
@@ -107,7 +107,7 @@ Example identity manifest for a future application module, not a shipped module:
     "upgrades": []
   },
   "docs": ["docs/app/modules/documents/README.md"],
-  "tests": ["tests"]
+  "tests": ["tests/backend/app/modules/documents"]
 }
 ```
 
@@ -121,7 +121,7 @@ New Optional registrations are disabled; Core registrations are mandatory. No fu
 
 ### Delivered discovery and registry operations
 
-After forward platform migrations, installation/deployment code can call `Runa\Support\Modules\ModuleRegistry::synchronize('runa')` or `synchronize('app')`, or invoke the trusted CLI equivalent:
+After forward platform migrations, installation/deployment code can call `Runa\ModuleFramework\ModuleRegistry::synchronize('runa')` or `synchronize('app')`, or invoke the trusted CLI equivalent:
 
 ```sh
 php artisan runa:modules:sync runa
@@ -142,7 +142,7 @@ Required dependencies form the activation/availability graph. Optional dependenc
 
 ### Delivered dependency graph and lifecycle previews
 
-`Runa\Support\Modules\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
+`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
 
 ```php
 $graph = new ModuleGraph($registry->snapshot(), $platformVersion);
@@ -419,7 +419,7 @@ Declare one owned `SettingsProvider` under `declarations.settings` when a module
 
 Built-in types are strict `string`, `integer`, `decimal`, `boolean`, `enum` and `array`; no coercion occurs. Exact decimal values are canonical decimal strings, never binary floats. Enum `options.choices` is a nonempty list with strict value comparison. Laravel rules enforce additional constraints; integer/decimal min/max use numeric semantics. Defaults and every complete candidate/stored value pass the same type, rule and cross-field checks. JSON values are bounded to 32 KiB with no objects/resources or nonfinite numbers. Register additional trusted `SettingType` implementations through `Settings\SettingTypes::register(key, implementation)` at application bootstrap; built-ins cannot be replaced. This extends backend acceptance; future Admin supplies renderers separately. Infrastructure connections and the encryption key remain Laravel environment/config inputs.
 
-Sensitive definitions require a nullable null default. Supply real secrets through trusted writes, never manifests/defaults/options, source or command arguments. `Settings\ModuleSettings::read(module)` returns registry generation, settings revision and localized definitions with non-sensitive values or sensitive `set` booleans only. It never returns plaintext or ciphertext for sensitive values. `value(module, key)` is an explicit private backend read for trusted owning-module code, including initialization/compensation. Never expose or log its result; operational consumers still require the normal availability gateway. These helpers are not a PHP sandbox against hostile trusted code.
+Sensitive definitions require a nullable null default. Supply real secrets through trusted writes, never manifests/defaults/options, source or command arguments. `Settings\ModuleSettings::read(module)` returns registry generation, settings revision and localized definitions with non-sensitive values or sensitive `set` booleans only. It never returns plaintext or ciphertext for sensitive values. `value(module, key)` is an explicit private backend read for trusted owning-module code, including initialization/compensation. The typed `integer(module, key)`, `boolean(module, key)` and nullable `text(module, key)` helpers retain that same owning-module guard and reject a mismatched declared value without coercion. Never expose or log its result; operational consumers still require the normal availability gateway. These helpers are not a PHP sandbox against hostile trusted code.
 
 `ModuleSettings::upgradeDefaults(UpgradeContext)` deliberately adds missing immediate
 source defaults to a stored complete value set during a reserved transactional
@@ -442,11 +442,11 @@ Bind `SettingsObserver::changed(SettingChange)` only for independent best-effort
 
 Trusted CLI: `php artisan runa:modules:settings app.example` prints the redacted read. For a write, pass `--write --revision=<read-revision> --generation=<read-generation>` and pipe a bounded JSON object through standard input: `{"values":{"label":"example"},"actor":{"kind":"system","id":"maintenance"}}`. Omit actor or use null for unknown context. Use a trusted secret source for sensitive values; do not embed them in shell history, arguments or retained files. The CLI never prints its input or private validation/handler errors. `php artisan runa:modules:settings --recover=<operation-uuid>` performs conservative recovery. Reads and confirmed success/recovery exit 0; rejected writes and unresolved recovery exit 1. CLI access is trusted management authorization pending real Auth/Permissions/Admin.
 
-Manifest `docs` references are documentation metadata, not executable paths. Application module paths must stay under `docs/app/modules/<code>/`; Runa module paths stay under `docs/runa/handbook/modules/<code>/`. Discovery validates canonical relative identifiers and owner/code boundaries without opening documents or requiring documentation in runtime/production source. Module tests remain module-relative source paths. Central documentation participates in the normal docs doctor and knowledge corpus.
+Manifest `docs` references are documentation metadata, not executable paths. Application module paths must stay under `docs/app/modules/<code>/`; Runa module paths stay under `docs/runa/handbook/modules/<code>/`. Discovery validates canonical relative identifiers and owner/code boundaries without opening documents or requiring documentation in runtime/production source. Central module test references are owner/code-constrained metadata without a production directory requirement; legacy module-relative declarations retain their existing source checks. Central documentation participates in the normal docs doctor and knowledge corpus.
 
 ## Delivered management descriptors
 
-`Runa\Support\Modules\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, integration toggle/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
+`Runa\ModuleFramework\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, integration toggle/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
 
 Declare pure owned `ManagementProvider` classes under `declarations.management`. They return lists of schema-version-1 `ManagementPermission(key, names, descriptions)`, `ManagementAction(key, permission, names, descriptions, renderer: 'action', rendererVersion: 1)` and `ManagementComponent(key, component, permission, renderer: 'panel', rendererVersion: 1)`. Permission/action metadata requires bounded PL/EN text; future Admin selects English. Keys follow the public operation dot/snake_case grammar. Keys must be unique within each collection; each collection is limited to 128 entries. Action/component permission references must resolve to the same module's permission declarations. Permission identity is scoped by the owning module ID. An action and component may share a local key without hiding either permission reference.
 
@@ -531,7 +531,7 @@ Each definition supplies a stable key, exact nullable `from` (null means first i
 The caller owns its existing exclusive installation/deployment lock, maintenance marker, writer shutdown, operation journal, infrastructure preflight and operator recovery. After platform migrations, application deployment code may explicitly invoke:
 
 ```php
-$updates = app(\Runa\Support\Modules\Updates\ModuleUpdates::class);
+$updates = app(\Runa\ModuleFramework\Updates\ModuleUpdates::class);
 $plan = $updates->plan('app');
 // Review/record the plan and enter the deployment's maintenance/writer fence first.
 $updates->apply('app', $exactCustomerCommit, function (string $module, string $step) use ($journal): void {

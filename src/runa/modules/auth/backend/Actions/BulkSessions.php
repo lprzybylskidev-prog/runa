@@ -47,6 +47,9 @@ final readonly class BulkSessions implements AuthBulkSessions
         });
     }
 
+    /**
+     * @return array{accounts: list<array{public_id: string, version: int, security_version: int, sessions: list<string>, trusted_devices: list<string>}>, sessions: int, trusted_devices: int, fingerprint: string}
+     */
     private function snapshot(Connection $connection, SessionSelection $selection, bool $trust): array
     {
         $users = User::withTrashed()->when(! $selection->all, fn ($q) => $q->whereIn('public_id', $selection->publicIds))
@@ -57,7 +60,9 @@ final readonly class BulkSessions implements AuthBulkSessions
         $accounts = [];
         $sessions = $devices = 0;
         foreach ($users as $user) {
+            /** @var list<string> $ids */
             $ids = $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->limit(10001)->pluck('public_id')->all();
+            /** @var list<string> $trusted */
             $trusted = $trust ? $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->limit(10001)->pluck('public_id')->all() : [];
             if ($sessions + $devices + count($ids) + count($trusted) > 10000) {
                 throw new OperationRejected('session_selection_limit', 'runa.auth', 'sessions.bulk_preview', 422);

@@ -14,6 +14,12 @@ Before acting:
 3. Load only the reference file(s) needed.
 4. Apply Runa project rules before generic upstream advice.
 
+For public API, internal dependency, generator or source-layout changes, follow
+[the public API boundary](../../../docs/runa/handbook/architecture/public-api.md).
+Classify supported consumers and complete signatures before moving files; update
+public consumers and owner/customer guidance together. Frontend replacement uses
+supported facades/controllers without copied security logic.
+
 ## References
 
 - `references/design-principles.md` — responsibilities, abstractions, dependencies, naming, hidden behavior
@@ -38,3 +44,5 @@ Choose quality groups proportionately, record the final selection/rationale in t
 roadmap and preview it through supported commands. Mandatory checks/hooks and real
 prerequisites remain required; selected security/AI gates remain strict. Excluded
 groups are not PASS. See docs/runa/maintainer/quality/README.md for the catalogue and evidence contract.
+
+Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.

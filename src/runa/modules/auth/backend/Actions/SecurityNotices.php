@@ -16,7 +16,8 @@ use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
 
-/** Reference-only outbox and single-attempt SMTP claims; no generic Notifications runtime. */
+/** Reference-only outbox and single-attempt SMTP claims; no generic Notifications runtime.
+ * @phpstan-type NoticeRow \stdClass&object{id: int, user_id: int, category: string, primary_email: string, deadline: string|null, expires_at: string, claimed_at: string|null, sent_at: string|null} */
 final readonly class SecurityNotices
 {
     public function __construct(private EntryTransaction $transactions, private ModuleWork $work, private ModuleSettings $settings,
@@ -35,6 +36,7 @@ final readonly class SecurityNotices
         if ($connection->table('runa_auth.security_notices')->where('user_id', $user->id)->where('category', $category)->where('event', $fingerprint)->exists()) {
             return;
         }
+        /** @var (\stdClass&object{available_at: string})|null $frequency */
         $frequency = $connection->table('runa_auth.notice_frequencies')->where('user_id', $user->id)->where('category', $category)->first();
         $now = CarbonImmutable::now('UTC');
         if ($frequency !== null && $now->lt(CarbonImmutable::parse($frequency->available_at))) {
@@ -46,7 +48,7 @@ final readonly class SecurityNotices
             'event' => $fingerprint, 'primary_email' => $user->email, 'deadline' => $deadline, 'created_at' => $now,
             'expires_at' => $deadline ?? $now->addDay()]);
         $connection->table('runa_auth.notice_frequencies')->updateOrInsert(['user_id' => $user->id, 'category' => $category],
-            ['available_at' => $now->addMinutes($this->settings->value('runa.auth', 'notice_interval_minutes'))]);
+            ['available_at' => $now->addMinutes($this->settings->integer('runa.auth', 'notice_interval_minutes'))]);
         $enqueue();
     }
 
@@ -55,7 +57,7 @@ final readonly class SecurityNotices
         if ($browser === null || ! preg_match('/\A[0-9a-f]{64}\z/D', $browser)) {
             return;
         }
-        $hash = hash_hmac('sha256', $browser, config('app.key'));
+        $hash = hash_hmac('sha256', $browser, config()->string('app.key'));
         $query = $connection->table('runa_auth.known_browsers')->where('user_id', $user->id)->where('fingerprint', $hash);
         if (! $query->exists()) {
             // A non-credential cookie is only a notice deduplication hint, never trusted-device authority.
@@ -78,20 +80,21 @@ final readonly class SecurityNotices
                 }
                 foreach (['account_expiry', 'password_expiry'] as $category) {
                     $deadline = $this->deadline($user, $category);
-                    if ($deadline === null || ! $deadline->isFuture() || $deadline->gt(CarbonImmutable::now('UTC')->addDays($this->settings->value('runa.auth', 'expiry_start_days')))) {
+                    if ($deadline === null || ! $deadline->isFuture() || $deadline->gt(CarbonImmutable::now('UTC')->addDays($this->settings->integer('runa.auth', 'expiry_start_days')))) {
                         continue;
                     }
                     $rows = $connection->table('runa_auth.security_notices')->where('user_id', $user->id)->where('category', $category)->where('deadline', $deadline);
                     $count = $rows->count();
+                    /** @var string|null $latest */
                     $latest = $rows->max('created_at');
-                    if ($count >= $this->settings->value('runa.auth', 'expiry_max_count')
-                        || ($latest !== null && CarbonImmutable::parse($latest)->addHours($this->settings->value('runa.auth', 'expiry_interval_hours'))->isFuture())) {
+                    if ($count >= $this->settings->integer('runa.auth', 'expiry_max_count')
+                        || ($latest !== null && CarbonImmutable::parse($latest)->addHours($this->settings->integer('runa.auth', 'expiry_interval_hours'))->isFuture())) {
                         continue;
                     }
                     $this->issueLocked($connection, $user, $category, $deadline->toIso8601String().':'.$count, $deadline);
                 }
             }
-            $connection->table('runa_auth.notice_scan')->where('id', 1)->update(['last_user_id' => $users->count() < 100 ? 0 : $users->last()->id]);
+            $connection->table('runa_auth.notice_scan')->where('id', 1)->update(['last_user_id' => $users->count() < 100 ? 0 : ($users->last()->id ?? 0)]);
         });
     }
 
@@ -105,6 +108,7 @@ final readonly class SecurityNotices
         return $days > 0 && $user->password !== null && $user->password_changed_at !== null ? $user->password_changed_at->addDays($days) : null;
     }
 
+    /** @param NoticeRow $notice */
     private function valid(User $user, object $notice): bool
     {
         if ($user->trashed() || $notice->primary_email !== $user->email || ! CarbonImmutable::parse($notice->expires_at)->isFuture()
@@ -180,10 +184,12 @@ final readonly class SecurityNotices
         });
     }
 
+    /** @return array{User|null, NoticeRow|null} */
     private function locked(Connection $connection, string $publicId): array
     {
         $candidate = $connection->table('runa_auth.security_notices')->where('public_id', $publicId)->first();
         $user = $candidate === null ? null : User::withTrashed()->where('id', $candidate->user_id)->lockForUpdate()->first();
+        /** @var NoticeRow|null $notice */
         $notice = $candidate === null ? null : $connection->table('runa_auth.security_notices')->where('id', $candidate->id)->lockForUpdate()->first();
 
         return [$user, $notice];

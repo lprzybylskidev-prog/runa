@@ -1,140 +1,260 @@
 """Fast staged-content checks; no full test/static-analysis suite."""
+
+from __future__ import annotations
+
 import os
-import json
-import hashlib
-from pathlib import Path
 import re
 import subprocess
 import tempfile
+from collections.abc import Callable
+from pathlib import Path
+
+from tools.application.processes import ApplicationProcesses
+from tools.core.process import SubprocessRunner
 
 
-def git(root, *args, data=None):
-    return subprocess.run(['git', *args], cwd=root, input=data, check=True, capture_output=True).stdout
+def git_command(
+    root: Path, *args: str, data: bytes | None = None, processes: ApplicationProcesses
+) -> bytes:
+    return processes.run(
+        ["git", *args], cwd=root, input=data, check=True, capture_output=True
+    ).stdout
 
 
-def approved_version_backfill(root, name, before, after):
-    """Exact owner-approved 2026-10-22 metadata migration; no general history override."""
-    from documentation import maintainer_checkout
-    if not maintainer_checkout(root) or not re.fullmatch(r'docs/runa/maintainer/roadmaps/closed/RM-2026-\d{3}-[^/]+\.md', name):
-        return False
-    mapping = root / 'docs/runa/maintainer/documentation-map.json'
-    if mapping.is_symlink() or not mapping.is_file():
-        return False
-    record = json.loads(mapping.read_text()).get('proposed_version_backfill_2026_10_22', {}).get(name)
-    if not record or hashlib.sha256(before).hexdigest() != record['before_sha256'] or hashlib.sha256(after).hexdigest() != record['after_sha256']:
-        return False
-    value = record['proposed_version']
-    if not re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)', value):
-        return False
-    front, boundary, body = after.partition(b'\n---\n')
-    field = b'\nproposed_version: ' + value.encode()
-    return (before.startswith(b'---\n') and boundary == b'\n---\n'
-            and b'\nproposed_version:' not in before.partition(b'\n---\n')[0]
-            and front.count(field) == 1 and front.replace(field, b'', 1) + boundary + body == before)
-
-
-def commit_message(root, path):
-    first = Path(path).read_text().splitlines()[0]
-    match = re.fullmatch(r'(feat|fix|docs|style|refactor|perf|test|build|chore|revert|merge)(?:\(([A-Za-z0-9_.-]+)\))?!?: [^\s].*', first)
+def commit_message(root: Path, path: Path) -> None:
+    lines = Path(path).read_text().splitlines()
+    first = lines[0] if lines else ""
+    match = re.fullmatch(
+        r"(feat|fix|docs|style|refactor|perf|test|build|chore|revert|merge)(?:\(([A-Za-z0-9_.-]+)\))?!?: [^\s].*",
+        first,
+    )
     if not match:
-        raise ValueError('Use Conventional Commits: type(RM-YYYY-NNN): description')
-    from documentation import roadmap_root
+        raise ValueError("Use Conventional Commits: type(RM-YYYY-NNN): description")
+    from tools.application.documentation import roadmap_root
+
     roadmaps = roadmap_root(root)
-    active = list((roadmaps / 'active').glob('*.md'))
+    active = list((roadmaps / "active").glob("*.md"))
     if len(active) > 1:
-        raise ValueError('At most one active roadmap is allowed.')
+        raise ValueError("At most one active roadmap is allowed.")
     if active:
-        roadmap = re.search(r'^id: (RM-\d{4}-\d{3})$', active[0].read_text(), re.M)
+        roadmap = re.search(r"^id: (RM-\d{4}-\d{3})$", active[0].read_text(), re.M)
         if not roadmap or match[2] != roadmap[1]:
-            raise ValueError('Commit scope must match the active roadmap ID.')
+            raise ValueError("Commit scope must match the active roadmap ID.")
 
 
-def pre_commit(root, tools_root=None, check_knowledge=True):
+def pre_commit(
+    root: Path,
+    tools_root: Path | None = None,
+    check_knowledge: bool = True,
+    *,
+    history: Callable[[Path, str, bytes | None], bool] | None = None,
+    processes: ApplicationProcesses | None = None,
+) -> None:
+    from functools import partial
+
+    processes = processes or ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+    command = processes.run
+    git = partial(git_command, processes=processes)
     tools_root = tools_root or root
-    entries = git(root, 'diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z').decode().split('\0')
+    entries = (
+        git(root, "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z")
+        .decode()
+        .split("\0")
+    )
     entries = [name for name in entries if name]
-    transformed = []
-    with tempfile.TemporaryDirectory(prefix='runa-staged-') as directory:
-        snapshot = Path(directory) / 'content'
+    deleted = (
+        git(root, "diff", "--cached", "--no-renames", "--name-only", "--diff-filter=D", "-z")
+        .decode()
+        .split("\0")
+    )
+    for name in filter(None, deleted):
+        if re.fullmatch(r"docs/app/roadmaps/closed/[^/]+\.md", name) or (
+            history is not None and history(root, name, None)
+        ):
+            raise ValueError("Immutable historical source deleted: " + name)
+    transformed: list[tuple[str, bytes, str]] = []
+    with tempfile.TemporaryDirectory(prefix="runa-staged-") as directory:
+        snapshot = Path(directory) / "content"
         snapshot.mkdir()
         for name in entries:
             parts = Path(name).parts
-            if any(part == '.env' or (part.startswith('.env.') and not part.endswith('.example')) for part in parts):
-                raise ValueError(f'Environment files cannot be committed: {name}')
-            row = git(root, 'ls-files', '-s', '--', name).decode().split()[0]
-            if row not in ('100644', '100755', '120000'):
-                raise ValueError(f'Unsupported staged file mode: {name}')
-            data = git(root, 'show', ':' + name)
-            if len(data) > 10 * 1024 * 1024 or (b'\0' in data and len(data) > 1024 * 1024):
-                raise ValueError(f'Unwanted large file: {name}')
-            if re.search(rb'-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----', data):
-                raise ValueError(f'Private key material is forbidden: {name}')
+            if any(
+                part == ".env" or (part.startswith(".env.") and not part.endswith(".example"))
+                for part in parts
+            ):
+                raise ValueError(f"Environment files cannot be committed: {name}")
+            row = git(root, "ls-files", "-s", "--", name).decode().split()[0]
+            if row not in ("100644", "100755", "120000"):
+                raise ValueError(f"Unsupported staged file mode: {name}")
+            data = git(root, "show", ":" + name)
+            if len(data) > 10 * 1024 * 1024 or (b"\0" in data and len(data) > 1024 * 1024):
+                raise ValueError(f"Unwanted large file: {name}")
+            if re.search(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----", data):
+                raise ValueError(f"Private key material is forbidden: {name}")
             target = snapshot / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-            if row == '120000':
+            if row == "120000":
                 continue
-            historical = bool(re.fullmatch(r'docs/(?:app|runa/maintainer)/roadmaps/closed/[^/]+\.md', name))
-            from documentation import maintainer_checkout
-            if maintainer_checkout(root):
-                mapping = root / 'docs/runa/maintainer/documentation-map.json'
-                if mapping.is_file() and not mapping.is_symlink():
-                    expected = json.loads(mapping.read_text())['immutable_sha256'].get(name)
-                    if expected:
-                        if hashlib.sha256(data).hexdigest() != expected:
-                            raise ValueError('Immutable historical source changed: ' + name)
-                        historical = True
+            historical = bool(re.fullmatch(r"docs/app/roadmaps/closed/[^/]+\.md", name))
+            if history is not None:
+                historical = history(root, name, data) or historical
             if historical:
-                previous = subprocess.run(['git', 'show', 'HEAD:' + name], cwd=root, capture_output=True)
-                if previous.returncode == 0 and previous.stdout != data and not approved_version_backfill(root, name, previous.stdout, data):
-                    raise ValueError('Immutable historical source changed: ' + name)
+                previous = command(["git", "show", "HEAD:" + name], cwd=root, capture_output=True)
+                if previous.returncode == 0 and previous.stdout != data:
+                    raise ValueError("Immutable historical source changed: " + name)
                 # Preserve archived source bytes while still scanning staged content for secrets.
                 continue
             formatted = data
             suffix = Path(name).suffix
-            if suffix == '.php' and name == 'src/runa/lang/pl/validation.php':
+            if suffix == ".php" and name == "src/runa/lang/pl/validation.php":
                 # Imported snapshot bytes are audited by the localization contract.
-                subprocess.run(['php', '-l', str(target)], check=True, capture_output=True)
-            elif suffix == '.php':
-                subprocess.run([str(tools_root / 'src/vendor/bin/pint'), '--config', str(tools_root / 'src/pint.json'), str(target)],
-                               cwd=tools_root, check=True, capture_output=True)
+                command(["php", "-l", str(target)], cwd=tools_root, check=True, capture_output=True)
+            elif suffix == ".php":
+                command(
+                    [
+                        str(tools_root / "src/vendor/bin/pint"),
+                        "--config",
+                        str(tools_root / "src/pint.json"),
+                        str(target),
+                    ],
+                    cwd=tools_root,
+                    check=True,
+                    capture_output=True,
+                )
                 formatted = target.read_bytes()
-            elif suffix in ('.md', '.json', '.yaml', '.yml', '.vue', '.ts', '.js', '.mjs', '.css') and name != 'src/pnpm-lock.yaml':
-                formatted = subprocess.run(['pnpm', '--dir', str(tools_root / 'src'), 'exec', 'prettier', '--stdin-filepath', str(root / name)], cwd=tools_root,
-                                           input=data, capture_output=True, check=True).stdout
+            elif (
+                suffix in (".md", ".json", ".yaml", ".yml", ".vue", ".ts", ".js", ".mjs", ".css")
+                and name != "src/pnpm-lock.yaml"
+            ):
+                formatted = command(
+                    [
+                        "pnpm",
+                        "--dir",
+                        str(tools_root / "src"),
+                        "exec",
+                        "prettier",
+                        "--stdin-filepath",
+                        str(root / name),
+                    ],
+                    cwd=tools_root,
+                    input=data,
+                    capture_output=True,
+                    check=True,
+                ).stdout
+            if suffix in (".vue", ".ts", ".js", ".mjs") and (
+                name.startswith(
+                    (
+                        "src/app/resources/",
+                        "src/runa/resources/",
+                        "tests/frontend/app/unit/",
+                        "tests/frontend/app/e2e/",
+                        "tests/frontend/runa/unit/",
+                        "tests/frontend/runa/e2e/",
+                        "src/runa/Testing/",
+                    )
+                )
+                or (name.startswith("src/") and name.count("/") == 1)
+            ):
+                command(
+                    [
+                        "node",
+                        str(tools_root / "src/node_modules/eslint/bin/eslint.js"),
+                        "--config",
+                        str(tools_root / "eslint.config.mjs"),
+                        "--stdin",
+                        "--stdin-filename",
+                        str(root / name),
+                        "--max-warnings=0",
+                    ],
+                    cwd=tools_root,
+                    input=formatted,
+                    check=True,
+                )
+            elif suffix == ".py" or data.startswith(b"#!/usr/bin/env python3"):
+                python = tools_root / ".runtime/python/venv/bin/python"
+                if not python.is_file():
+                    raise ValueError("Pinned Ruff is missing. Run ./bin/artisan runa:python:setup.")
+                config = tools_root / "tools/application/python/ruff.toml"
+                formatted = command(
+                    [
+                        str(python),
+                        "-m",
+                        "ruff",
+                        "format",
+                        "--config",
+                        str(config),
+                        "--stdin-filename",
+                        name,
+                        "-",
+                    ],
+                    cwd=tools_root,
+                    input=data,
+                    capture_output=True,
+                    check=True,
+                ).stdout
+                command(
+                    [
+                        str(python),
+                        "-m",
+                        "ruff",
+                        "check",
+                        "--config",
+                        str(config),
+                        "--stdin-filename",
+                        name,
+                        "-",
+                    ],
+                    cwd=tools_root,
+                    input=formatted,
+                    capture_output=True,
+                    check=True,
+                )
+                compile(formatted, name, "exec")
+            elif data.startswith(b"#!/bin/sh"):
+                command(["sh", "-n"], cwd=tools_root, input=formatted, check=True)
             if formatted != data:
                 path = root / name
                 if path.is_symlink() or not path.exists() or path.read_bytes() != data:
-                    raise ValueError(f'Formatter would change partially staged file {name}. Format it and stage the intended hunks explicitly.')
+                    raise ValueError(
+                        f"Formatter would change partially staged file {name}. Format it and stage the intended hunks explicitly."
+                    )
                 transformed.append((name, formatted, row))
-            if suffix in ('.vue', '.ts', '.js', '.mjs') and (name.startswith(('src/app/resources/', 'src/runa/resources/', 'src/runa/tests/frontend/', 'src/runa/tests/e2e/')) or (name.startswith('src/') and name.count('/') == 1)):
-                subprocess.run(['pnpm', '--dir', str(tools_root / 'src'), 'exec', 'eslint', '--stdin', '--stdin-filename', str(root / name), '--max-warnings=0'],
-                               cwd=tools_root, input=formatted, check=True)
-            elif suffix == '.py' or (name.startswith('bin/') and data.startswith(b'#!/usr/bin/env python3')):
-                compile(formatted, name, 'exec')
-            elif data.startswith(b'#!/bin/sh'):
-                subprocess.run(['sh', '-n'], input=formatted, check=True)
-        scanner = tools_root / '.runtime/tools/gitleaks'
-        if not scanner.exists():
-            raise ValueError('Pinned Gitleaks is missing. Run ./bin/artisan runa:dev:setup inside the devcontainer.')
-        # Explicit built-in defaults prevent staged config/allow comments from disabling scanning.
-        scanner_config = Path(directory) / 'scanner.toml'
-        scanner_config.write_text('[extend]\nuseDefault = true\n')
-        env = {key: value for key, value in os.environ.items() if not key.startswith('GITLEAKS_')}
-        subprocess.run([str(scanner), 'dir', '--config', str(scanner_config), '--gitleaks-ignore-path', str(snapshot / '.no-ignore'),
-                        '--ignore-gitleaks-allow', '--redact', '--no-banner', str(snapshot)], cwd=snapshot, env=env, check=True)
+        from tools.application.secret_scanner import SecretScanner
+
+        SecretScanner(tools_root / ".runtime/tools/gitleaks", processes).scan(snapshot)
     if check_knowledge:
-        subprocess.run(['php', str(root / 'artisan'), 'runa:knowledge:stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
+        command(
+            ["php", str(root / "artisan"), "runa:knowledge:stale"],
+            cwd=root,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
     # Do not mutate index/worktree until all checks and partial-staging checks pass.
     for name, formatted, mode in transformed:
         path = root / name
         # Recheck in case an editor changed the worktree during the checks.
-        if path.is_symlink() or path.read_bytes() != git(root, 'show', ':' + name):
-            raise ValueError(f'File changed during checks: {name}; retry after staging intended content.')
+        if path.is_symlink() or path.read_bytes() != git(root, "show", ":" + name):
+            raise ValueError(
+                f"File changed during checks: {name}; retry after staging intended content."
+            )
         path.write_bytes(formatted)
-        blob = git(root, 'hash-object', '-w', '--stdin', data=formatted).decode().strip()
-        git(root, 'update-index', '--cacheinfo', f'{mode},{blob},{name}')
+        blob = git(root, "hash-object", "-w", "--stdin", data=formatted).decode().strip()
+        git(root, "update-index", "--cacheinfo", f"{mode},{blob},{name}")
     if transformed and check_knowledge:
         # Formatting indexed docs can make knowledge stale; instruct explicit indexing, never reindex in a hook.
-        subprocess.run(['php', str(root / 'artisan'), 'runa:knowledge:stale'], cwd=root, check=True, stdout=subprocess.DEVNULL)
-    print('PASS: staged secrets, formatting, quick lint, repository sanity and knowledge freshness.')
+        command(
+            ["php", str(root / "artisan"), "runa:knowledge:stale"],
+            cwd=root,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+    print(
+        "PASS: staged secrets, formatting, quick lint, repository sanity and knowledge freshness."
+    )
+
+
+def git(root: Path, *args: str, data: bytes | None = None) -> bytes:
+    return git_command(
+        root, *args, data=data, processes=ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+    )

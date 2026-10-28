@@ -17,7 +17,12 @@ import AuthAccount from './AuthAccount.vue';
 import AuthAccountLoading from './AuthAccountLoading.vue';
 import { useApplicationSession } from './useApplicationSession';
 const presentation = useAuthPresentation();
-const props = withDefaults(defineProps<{ account?: boolean }>(), {
+import type {
+  AuthApplicationProps,
+  AuthApplicationSlots,
+} from './contracts/presentation';
+defineSlots<AuthApplicationSlots>();
+const props = withDefaults(defineProps<AuthApplicationProps>(), {
   account: false,
 });
 const { locale } = useLocale();
@@ -137,8 +142,8 @@ const initials = computed(
     </template>
     <slot v-if="loading" name="loading" :account="account">
       <component
-        v-if="account"
         :is="presentation.accountLoading ?? AuthAccountLoading"
+        v-if="account"
       />
       <div v-else aria-busy="true" class="space-y-6">
         <p role="status" class="sr-only">

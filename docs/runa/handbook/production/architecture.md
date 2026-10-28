@@ -151,7 +151,7 @@ container does not update its runtime. Development uses
 `./bin/artisan runa:dev:build app postgres` followed by selective recreation of
 app/queue/scheduler and PostgreSQL, preserving data volumes. Recreate active testing
 profile endpoints through their explicit Compose context as well. Run idempotent
-setup inside the replaced app (`python3 tools/application/executors/dev.py setup
+setup inside the replaced app (`python3 -m tools.application.development setup
 --if-needed`) to restore container-local Boost MCP registration. Production uses
 normal tested customer deployment and exact-SHA PHP/Nginx/PostgreSQL images;
 preserve database/storage volumes and follow [platform reconciliation](../release/platform-reconciliation.md).
@@ -174,7 +174,7 @@ Production requires Docker Engine 26 or newer for volume subpath mounts, plus Do
 
 ## Nginx emergency response
 
-The production Nginx image includes generated `src/public/runa-error` HTML/CSS/fonts/logo and PL/EN 503/English JSON documents. It serves them independently of PHP, Laravel, the database, Vite and AI tooling. `src/runa/resources/errors/render.mjs` pre-renders the actual MinimalLayout Vue component and emits its CSS/assets during the Node build; `src/runa/resources/errors/build.php` then finalizes static documents through the thin PHP wrapper. Only HTML/CSS/assets ship, with no Vue/Node/SSR runtime. No runtime secret or environment file is embedded. Only the dedicated `framework/maintenance` volume subpath is added read-only for maintenance signaling.
+The production Nginx image includes generated `src/public/runa-error` HTML/CSS/fonts/logo and PL/EN 503/English JSON documents. It serves them independently of PHP, Laravel, the database, Vite and AI tooling. `src/runa/build/errors/render.mjs` pre-renders the actual MinimalLayout Vue component and emits its CSS/assets during the Node build; `src/runa/build/errors/build.php` then finalizes static documents through the thin PHP wrapper. Only HTML/CSS/assets ship, with no Vue/Node/SSR runtime. No runtime secret or environment file is embedded. Only the dedicated `framework/maintenance` volume subpath is added read-only for maintenance signaling.
 
 `docker/nginx/production.conf` maps Nginx-generated upstream 502/504 and its explicit maintenance 503 to an internal static document with final status 503, Retry-After 120 and no-store. API paths or JSON Accept headers receive a safe English JSON response; web requests receive Polish by default or English from `lang=en`/an English-leading Accept-Language. The static documents use system CSS or whitelisted `theme=light|dark` variants, with native MinimalLayout preference forms. Their internal paths cannot be requested directly, while their local assets remain publicly readable. Normal root/API/PHP responses keep their existing behavior and Laravel status/retry/body contracts; `fastcgi_intercept_errors off` avoids replacing application-originated 503/502/404/403 responses. Security headers are shared through `docker/nginx/security-headers.conf` and retained by the internal location, with same-origin styles/fonts/images and no inline-script/style exception. Docker's embedded DNS resolver is used at request time, so Nginx can start without PHP and discover recreated app containers.
 
@@ -200,3 +200,16 @@ one-time handoff command in the configured application PHP environment. Both gra
 the actual Permissions system role under the same singleton/transaction protocol.
 Reopen, ordinary deployment and customer-clone initialization never grant new
 administrators. Host/CLI access protection remains the customer's responsibility.
+
+## Runtime source projection
+
+The PHP dependency stage prunes developer commands/adapters, supplied module
+fixture implementations/contracts and raw module frontend trees before producing
+its optimized autoloader. The final image copies that pruned Console, Support and
+module source, retaining migrations, manifests, all historical upgrade handlers,
+ModuleJob and source/runtime operator diagnostics. Frontend build inputs remain
+available in their separate build stage. Generators, developer analysis, shared
+PHP/browser test support and private suites/configuration are absent at runtime.
+Development seeding refuses before resolving omitted fixture support. Required
+SMTP verification and module contract diagnostics remain delivered operator tools;
+see [the API/delivery boundary](../architecture/public-api.md#local-enforcement-and-delivery).

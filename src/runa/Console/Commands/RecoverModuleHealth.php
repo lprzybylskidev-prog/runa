@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\Modules\ModuleHealth;
+use Runa\ModuleFramework\ModuleHealth;
 
 /** Technical recovery is exempt from business maintenance/availability gates. */
 final class RecoverModuleHealth extends Command

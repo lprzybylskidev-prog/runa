@@ -13,7 +13,7 @@ final class SafePayload
     }
 
     /** @param array<array-key, mixed> $value
-     * @param  list<string>  $sensitiveFields
+     * @param  array<array-key, mixed>  $sensitiveFields
      * @return array<array-key, mixed>
      */
     public static function clean(array $value, array $sensitiveFields = []): array
@@ -21,20 +21,27 @@ final class SafePayload
         if (! array_is_list($sensitiveFields) || count($sensitiveFields) > 64) {
             throw new \InvalidArgumentException('Invalid Audit sensitive aliases.');
         }
+        $approved = [];
         foreach ($sensitiveFields as $field) {
             if (! is_string($field) || strlen($field) > 128 || preg_match('/\A[a-zA-Z0-9_.-]+\z/D', $field) !== 1) {
                 throw new \InvalidArgumentException('Invalid Audit sensitive alias.');
             }
+            $approved[] = $field;
         }
         $nodes = 0;
-        $result = self::walk($value, 0, $nodes, $sensitiveFields);
+        $result = self::walk($value, 0, $nodes, $approved);
         if (strlen(json_encode($result, JSON_THROW_ON_ERROR)) > 65536) {
             throw new \InvalidArgumentException('Audit payload exceeds 64 KiB.');
+        }
+
+        if (! is_array($result)) {
+            throw new \LogicException('Audit root must remain an array.');
         }
 
         return $result;
     }
 
+    /** @param list<string> $sensitiveFields */
     private static function walk(mixed $value, int $depth, int &$nodes, array $sensitiveFields): mixed
     {
         if (++$nodes > 1024 || $depth > 8) {

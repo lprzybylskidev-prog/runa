@@ -37,7 +37,7 @@ The opt-in frontend registry exposes `app.reference.panel`. Compose the existing
 
 ## Checks and troubleshooting
 
-Run `./bin/artisan runa:test app/modules/reference/tests` for the delivered source assertion. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. Owner acceptance in `src/runa/tests/Feature/ModuleReferenceTest.php` additionally exercises real PostgreSQL install/retry/settings/API/work/events/retained-data disable and production refusal. Existing framework regressions cover dependency/Core/failure/concurrency scenarios with isolated fixtures, without pretending Auth/Admin exist.
+Run `./bin/artisan runa:test app/modules/reference/tests` for the delivered source assertion. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. Owner acceptance in `tests/backend/runa/Feature/ModuleReferenceTest.php` additionally exercises real PostgreSQL install/retry/settings/API/work/events/retained-data disable and production refusal. Existing framework regressions cover dependency/Core/failure/concurrency scenarios with isolated fixtures, without pretending Auth/Admin exist.
 
 - Missing source: inspect the installation selection and sparse projection. Do not materialize declined examples on ordinary reopen/update.
 - Critical unknown health: explicitly diagnose before enable; scheduled recovery only handles due enabled modules. Health failure never changes enabled flags.
@@ -46,4 +46,4 @@ Run `./bin/artisan runa:test app/modules/reference/tests` for the delivered sour
 - Waiting disable: inspect active work; run/reconcile the module's own bounded policy. Do not edit flags or discard leases.
 - Production refusal: remove development reference source from the delivery projection; disabling it is insufficient.
 
-Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.1.0, independently of platform VERSION.
+Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.1.2, independently of platform VERSION.

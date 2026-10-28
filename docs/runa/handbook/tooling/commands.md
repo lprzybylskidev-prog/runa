@@ -33,7 +33,12 @@ helpers; application source-tool/test/Xdebug orchestration stays in PHP Actions.
 
 ### Host-plan v1 execution boundary
 
-`src/runa/management/host-plan.v1.schema.json` defines schema_version, request_id, operation and parameters. Parameters are empty for argument-free development actions, otherwise contain only a bounded list of literal arguments (at most 128, at most 4096 bytes each). Unknown/duplicate fields, executable/shell/env/path/mount fields, unsupported operations and mismatched request IDs are rejected again by the executor. Only fixed allowlisted helper/tool families execute; argument arrays never become shell text. A null request ID is an explicit nonexecuting preview; normal host work is request-bound by the executor. The transport supplies a fresh internal ID and consumes only the immediately returned JSON; there is no arbitrary plan-file executor. Operator-supplied --host-request is rejected. --plan never executes the operation.
+The isolated Artisan registry, PHP adapters and source-owned catalogues live in
+`src/runa/Tooling/Management`, separate from module business management. Both
+normal and cold entrypoints consume that one registry. Its retained
+`Runa\Management` namespace is loaded explicitly, outside application boot.
+
+`src/runa/Tooling/Management/host-plan.v1.schema.json` defines schema_version, request_id, operation and parameters. Parameters are empty for argument-free development actions, otherwise contain only a bounded list of literal arguments (at most 128, at most 4096 bytes each). Unknown/duplicate fields, executable/shell/env/path/mount fields, unsupported operations and mismatched request IDs are rejected again by the executor. Only fixed allowlisted helper/tool families execute; argument arrays never become shell text. A null request ID is an explicit nonexecuting preview; normal host work is request-bound by the executor. The transport supplies a fresh internal ID and consumes only the immediately returned JSON; there is no arbitrary plan-file executor. Operator-supplied --host-request is rejected. --plan never executes the operation.
 
 Development lifecycle plans retain the shared production operation lock and unresolved-operation fencing. Production/deploy helpers retain their existing locks/recovery rules. Quality owns its stable quality lock and each gate owns its resource locks; the coordinator does not hold the production lock across its child gates. Test Actions retain the suite lock. Private mode-600 request receipts are removed after use; state/lock symlinks are rejected. Meaningful child exit codes propagate unchanged.
 
@@ -41,9 +46,9 @@ Management discovery runs the inspected immutable image ID with no network, moun
 
 ### Explicit operation commands
 
-Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
+Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
 
-Internal Python process engines live under `tools/application/executors/` with no public bin registry. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
+Internal Python services live under `tools/application`; fixed package command modules do not form a public bin registry. Development setup starts `python3 -m tools.application.development` from the selected tool checkout. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
 ## Development
 
@@ -111,17 +116,25 @@ operator commands, with no public issuance endpoint or development-only dependen
 - `php artisan runa:typecheck`
 - `php artisan runa:analyse`
 
-### `php artisan runa:test --parallel`
+### `php artisan runa:test`
 
-Run only application PHP tests from `src/app/tests`, using `src/phpunit.xml` and parallel-safe isolation. Native `php artisan test` uses the same application configuration, suite lock and guarded worker cleanup. See [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle).
+Run application backend, frontend and tooling tests by default. Repeated
+`--scope=backend|frontend|tooling|e2e` selects scopes; e2e is opt-in.
+`--filter=TEXT` selects native test names in each scope. Use one explicit scope
+for native options, for example `runa:test --scope=backend --parallel`.
+`runa:test:backend` remains PHP-only; `runa:test:python` discovers application Python
+tests and accepts `--path=tests/tools/app/test_example.py`, `--marker=...`
+and `--collect-only`. Native `php artisan test` remains PHP-only. See
+[application testing](../testing/strategy.md) for authored roots, public support,
+empty/failure semantics, reports and guarded cleanup.
 
 ### `php artisan runa:test:frontend`
 
-Run only application Vitest/Vue component tests from `src/app/tests/frontend`, using `src/vitest.config.mjs`.
+Run only application Vitest/Vue component tests from `tests/frontend/app/unit`, using `src/vitest.config.mjs`.
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `src/app/tests/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `tests/frontend/app/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 
@@ -241,7 +254,7 @@ Gate-specific doctor areas include `repository`, `config`, `maintenance`, `hooks
 
 ## Versioned Git hooks and internal launchers
 
-`./tools/application/bin/pre-commit` and `./tools/application/bin/commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Owner maintenance setup explicitly configures `git config --local core.hooksPath .githooks`; customer development startup does not alter Git hook configuration. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint/Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
+`./tools/application/bin/pre-commit` and `./tools/application/bin/commit-msg <message-file>` is the entrypoint used by `.githooks/`; normal Git commits run it automatically. Owner maintenance setup explicitly configures `git config --local core.hooksPath .githooks`; customer development setup configures missing hooks and preserves an existing local selection. `pre-commit` scans a temporary snapshot of the staged blobs with pinned Gitleaks defaults and redacted output, blocks environment/private-key/large files, formats staged PHP/frontend/config/docs, runs quick ESLint, staged Ruff format/lint and Python/shell syntax checks, and checks knowledge freshness. It never runs the full test/static/security suite or auto-indexes knowledge.
 
 If formatting would alter a partially staged file, the hook rejects it without changing that file or its index entry. Format explicitly and stage the intended hunks. Fully staged files may be formatted and restaged after checks pass. Formatting knowledge sources can then block for explicit `php artisan runa:knowledge:index`; review the formatted diff before committing again. The hook uses actual staged content even when worktree content differs. `commit-msg` enforces Conventional Commits and the active roadmap scope.
 
@@ -271,16 +284,16 @@ An isolated installer checkout can run `php artisan runa:security:trivy --depend
 
 ## Source ownership and dependency inputs
 
-Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `python3 tools/application/dependencies.py` composes the reviewed src manifests and `--check` validates consistency without writing. It never changes locks or resolves packages. Unsupported customer fields or conflicting production/development constraints block composition. Dependency approval, Composer lock validation and frozen pnpm installation remain mandatory. Development setup and production build preparation verify composition before installation/build.
+Owner dependency declarations are `src/{runa,app}/{composer,package}.json`; `python3 -m tools.application.dependencies` composes the reviewed src manifests and `--check` validates consistency without writing. It never changes locks or resolves packages. Unsupported customer fields or conflicting production/development constraints block composition. Dependency approval, Composer lock validation and frozen pnpm installation remain mandatory. Development setup and production build preparation verify composition before installation/build.
 
 ## Owner tooling and delivery layout
 
 - bin: thin customer tool/setup/recovery transports.
 - tools/application: customer development, operations, security, hooks and knowledge implementations.
 - tools/maintainer: owner-only platform test harnesses, release metadata, diagnostics and quality entrypoints; excluded from customer projection.
-- distribution: external owner bootstrap/installation helpers and reserved updater; excluded from customer projection.
+- distribution: external acquisition/initialization, installation gateway adapters and development updater; excluded from customer projection.
 
-Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses src/app/tests. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
+Standard make:* commands generate application artifacts. make:controller, make:model, make:request and make:provider use the App namespace; migrations/seeders/factories use src/app/database; make:config uses src/app/config and make:test uses tests/backend/app. Provider registration is customer-owned src/app/providers.php. Platform assets use explicit paths so native generators never need to write into src/runa.
 
 ### `php artisan runa:modules:settings [module]`
 
@@ -359,3 +372,21 @@ replaces existing credentials. Production receipt/environment checks apply even
 with local APP_ENV or --force. Native db:seed/default/production seeding remain
 application-owned. See [seeding](../data/seeding.md#explicit-module-development-contributors)
 for prerequisites, independent tuning, contribution contracts and manual navigation.
+
+## Python development commands
+
+`./bin/artisan runa:python:setup` prepares the shared frozen Python tools in the
+app container. `runa:python:format [--check]`, `runa:python:lint` and
+`runa:python:typecheck` cover delivered tooling and application source. These three
+commands accept `--config=src/app/<file>` for application-owned composition;
+see [Python tooling](../development/python-tooling.md). Inside the container use
+`php artisan`. No host pip/package installation is needed. Private owner tests
+continue through the maintainer test transport, outside the customer registry.
+
+`runa:analyse` checks application PHP at the configured maximum level and includes
+public PHP import/signature boundary checks before PHPStan;
+`runa:lint` includes application TS/Vue import boundaries. Their existing quality
+nodes retain ownership. See [API enforcement](../architecture/public-api.md#local-enforcement-and-delivery)
+for diagnostics, supported consumers and static-analysis limits. Module source/runtime
+checks remain trusted operator diagnostics in production; developer analysis,
+generation and test commands remain development-only.

@@ -7,7 +7,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Runa\Database\DatabaseScope;
 use Runa\Database\RequiredSeeds;
-use Runa\Support\Modules\Updates\ModuleUpdates;
+use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 try {

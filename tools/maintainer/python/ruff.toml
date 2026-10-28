@@ -1,0 +1,3 @@
+extend = "../../../pyproject.toml"
+cache-dir = ".runtime/python/cache/ruff"
+extend-include = ["tools/maintainer/entrypoint", "tools/maintainer/hook", "tools/maintainer/database", "tools/maintainer/make-migration", "tools/maintainer/test-python", "tools/maintainer/python-tool"]

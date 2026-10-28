@@ -45,6 +45,7 @@ final readonly class ChangeAssignments
             array_values(array_diff($effectiveAfter, $effectiveBefore)), array_values(array_diff($effectiveBefore, $effectiveAfter)));
     }
 
+    /** @return array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} */
     public function apply(AssignmentPreview $reviewed): array
     {
         return $this->transactions->run(function (Connection $c) use ($reviewed): array {
@@ -65,7 +66,9 @@ final readonly class ChangeAssignments
                         $singular.'_id' => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
                 }
             }
-            $revision = (int) ($c->table('runa_permissions.user_access')->where('user_public_id', $current->userPublicId)->value('version') ?? 0);
+            /** @var int|null $storedRevision */
+            $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $current->userPublicId)->value('version');
+            $revision = $storedRevision ?? 0;
             $c->table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $current->userPublicId], ['version' => $revision + 1, 'updated_at' => now('UTC')]);
             // Explicit aggregate event: query-builder pivots emit no model events to suppress.
             $this->transactions->record('assignments.changed', 'user', $current->userPublicId, $current->before, $current->after,

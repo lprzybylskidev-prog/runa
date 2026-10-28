@@ -2,9 +2,15 @@
 
 Read docs/runa/handbook/architecture/application-architecture.md and relevant existing App code. Use thin controllers, Form Requests for non-trivial writes, Actions for substantial use cases, Services for shared integrations and Query classes for complex reads. Use JsonResources for non-trivial responses; avoid repositories over Eloquent and hidden observer workflows. Keep transactions short, validate state at writes, publish commit-dependent events after commit and require idempotency for unsafe retries. Measure queries before introducing caches/queues. Preserve safe English error contracts and static redacted logging.
 
+Use docs/runa/handbook/architecture/public-api.md for exact supported entrypoints.
+`Runa\ModuleFramework` engines and `Runa\Integration\Core` bridges are internal;
+consume documented Support adapters and values instead of their container
+collaborators. The retained ModuleJob identity is a persisted platform envelope,
+not a customer dispatch API; use ModuleWork.
+
 Ordinary App code may consume module public Contracts through ModuleApis without becoming a module. For optional app modules load docs/runa/handbook/development/modules.md and the exact public adapter sections in architecture/module-framework.md. Use guarded API proxies, classified HTTP/work/event/console descriptors and explicit installed-version/lifecycle operations. Never call foreign implementations/models/SQL/storage directly. Module source version and installed data version differ. Assess independent module versions, central changelogs and dependent contracts. No phantom Auth/Audit/Permissions implementations.
 
-Use SettingsParticipant for mandatory transactional history; SettingsObserver remains best effort. Shared identity/transaction/preparation/management adapters are documented in docs/runa/handbook/architecture/module-foundations.md; Audit and Auth identity/lifecycle behavior come from their owned Core modules; Permissions declarations/current action grants are delivered; ordinary assignment/preset/copy operations are delivered; protected authority and trusted operator/bootstrap integration are delivered. Use public guarded contracts and never turn trusted installation participation into a public bypass.
+Use approved public Audit operations for mandatory application history in the owning transaction; SettingsObserver remains best effort. SettingsParticipant is reserved to named Core integration and is not a customer extension or binding replacement. Shared identity/transaction/preparation/management adapters are documented in docs/runa/handbook/architecture/module-foundations.md; Audit and Auth identity/lifecycle behavior come from their owned Core modules; Permissions declarations/current action grants are delivered; ordinary assignment/preset/copy operations are delivered; protected authority and trusted operator/bootstrap integration are delivered. Use public guarded contracts and never turn trusted installation participation into a public bypass.
 
 Meaningful business/security mutations require Audit history. Use public Auditable Contracts with approved fields inside the default PostgreSQL transaction. Bulk SQL, relationship/pivot changes and aggregate operations require explicit manual Audit events in that same transaction; scoped automatic suppression never disables them. Follow docs/runa/handbook/modules/audit/README.md for guarded ModuleApis, redaction, rollback/refusal boundaries and permission-protected bounded reads. Never invoke the protected bootstrap/settings writer or assume arbitrary Eloquent writes are captured.
 
@@ -73,3 +79,16 @@ alternatives and configured branding. Reusing that layout does not authorize
 changing a module's delivery, recipient, secret-handling or retry contract. Auth
 private mail stays at its guarded synchronous delivery boundary; do not queue its
 Mailable or move recovery into general notification routing.
+
+For Python tooling changes, follow the [public Python tooling guide](../../../../docs/runa/handbook/development/python-tooling.md) for shared
+frozen tools, qualified packages, injected execution contexts and application-owned
+configuration. Keep private owner suites/release rules outside delivered services;
+verify staged Python through Ruff without running full suites in hooks. Internal integrations call explicit service APIs; process adapters execute fixed
+package modules with `python3 -m` from the selected tool checkout. Do not recreate
+removed executor paths or compatibility facades.
+
+Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.
+
+For source-boundary diagnostics, use the [API enforcement guide](../../../../docs/runa/handbook/architecture/public-api.md#local-enforcement-and-delivery).
+Keep application consumers on public entrypoints and review new platform integration
+callers explicitly; passing static checks never replaces runtime authorization.

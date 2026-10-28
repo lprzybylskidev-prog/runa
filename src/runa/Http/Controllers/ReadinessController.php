@@ -3,7 +3,7 @@
 namespace Runa\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Runa\Support\MaintenanceState;
+use Runa\Runtime\MaintenanceState;
 
 final class ReadinessController extends Controller
 {

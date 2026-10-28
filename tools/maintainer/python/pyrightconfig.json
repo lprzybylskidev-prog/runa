@@ -1,0 +1,20 @@
+{
+  "extends": "../../application/python/pyrightconfig.json",
+  "include": [
+    "../../../tools",
+    "../../../distribution",
+    "../../../src/app",
+    "../../../bin/artisan",
+    "../../../bin/command",
+    "../../../bin/passthrough",
+    "../../../bin/boost-mcp",
+    "../../../tools/application/bin/git-hook",
+    "../../../tools/maintainer/test-python",
+    "../../../tools/maintainer/python-tool",
+    "../../../tools/maintainer/entrypoint",
+    "../../../tools/maintainer/hook",
+    "../../../tools/maintainer/database",
+    "../../../tools/maintainer/make-migration",
+    "../../../tests/tools"
+  ]
+}

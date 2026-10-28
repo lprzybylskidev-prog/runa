@@ -32,3 +32,15 @@ for baseline merging, shared revision queues and explicit subsequent saves.
 
 Public AuthAccountLoading and the accountLoading presentation entry supply the
 initial account structure; see the public account UI and customization guides.
+
+Use the named public controller, props, slots, events and component-handle types
+listed in docs/runa/handbook/development/frontend/customization.md#public-presentation-types.
+Import types from the same facade as the capability; application wrappers should
+not derive their contracts from private implementation imports.
+
+Compose account cards from one public `useAuthAccount` instance per keyed account;
+reuse its conflict/list state and save methods rather than creating per-card
+controllers or preference adapters. The [account UI guide](../../../../docs/runa/handbook/modules/auth/account-ui.md#automatic-account-refresh)
+owns the lifetime and shared-write contract.
+
+Use the [public source-placement table](../../../../docs/runa/handbook/architecture/public-api.md#source-placement-and-supported-entrypoints) for facade, feature implementation and development support ownership. New consumer contracts and generated screens follow the same public entrypoints.

@@ -9,20 +9,24 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
-use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\Identifiers;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
 
+/** @phpstan-import-type MailRow from ProfileMail
+ * @phpstan-import-type SessionRow from SessionStore */
 final readonly class EmailAddresses
 {
     public function __construct(private EntryTransaction $transactions, private SecurityContext $context, private Profiles $profiles,
-        private ProfileMail $mail, private SessionStore $sessions, private LookupIdentity $identities) {}
+        private ProfileMail $mail, private SessionStore $sessions) {}
 
+    /**
+     * @return array{pending: bool}
+     */
     public function ownPrimary(Request $request): array
     {
-        return $this->context->run($request, function (Connection $connection, User $user, object $session) use ($request): ?array {
+        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
             if (! $this->profiles->value('own_email_editable')) {
                 $this->refuse('email_edit_disabled');
             }
@@ -30,7 +34,8 @@ final readonly class EmailAddresses
                 return null;
             }
             $this->profiles->version($user, $request->integer('version'));
-            $this->startLocked($connection, $user, $request->string('email')->toString(), false, $session->session_hash);
+            $sessionHash = $session->session_hash;
+            $this->startLocked($connection, $user, $request->string('email')->toString(), false, $sessionHash);
 
             return ['pending' => true];
         }, unrestricted: true);
@@ -49,7 +54,7 @@ final readonly class EmailAddresses
             'public_id' => (string) Str::uuid7(), 'user_id' => $user->id, 'old_email' => $user->email, 'new_email' => $email,
             'security_version' => $user->security_version, 'session_hash' => $sessionHash,
             'session_policy' => $admin ? 'revoke_all' : $this->profiles->value('email_change_session_policy'),
-            'administrative' => $admin, 'old_required' => $oldRequired, 'expires_at' => now()->addMinutes($this->profiles->value('email_change_minutes')),
+            'administrative' => $admin, 'old_required' => $oldRequired, 'expires_at' => now()->addMinutes($this->profiles->integer('email_change_minutes')),
             'created_at' => now(), 'updated_at' => now(),
         ]);
         $this->mail->issueLocked($connection, $user, 'primary_new', $email, $id);
@@ -67,13 +72,16 @@ final readonly class EmailAddresses
             $this->transactions->lockAuthority($connection);
             $candidate = $connection->table('runa_auth.profile_mail')->where('token_hash', hash('sha256', $secret))->first();
             $user = $candidate === null ? null : User::where('id', $candidate->user_id)->lockForUpdate()->first();
+            /** @var MailRow|null $token */
             $token = $candidate === null ? null : $connection->table('runa_auth.profile_mail')->where('id', $candidate->id)->lockForUpdate()->first();
             if (! $this->mail->validLocked($connection, $user, $token) || $token->purpose === 'notice') {
                 $this->refuse('email_token_invalid');
             }
             $connection->table('runa_auth.profile_mail')->where('id', $token->id)->update(['consumed_at' => now(), 'delivery_secret' => null]);
             if ($token->purpose === 'secondary') {
-                $row = $connection->table('runa_auth.secondary_emails')->where('id', $token->secondary_id)->first();
+                /** @var \stdClass&object{id: int, email: string} $row */
+                $row = $connection->table('runa_auth.secondary_emails')->where('id', $token->secondary_id)->first()
+                    ?? throw new \LogicException('Verified secondary address disappeared.');
                 $this->available($connection, $user, $row->email, false, $row->id);
                 $connection->table('runa_auth.secondary_emails')->where('id', $row->id)->update(['verified_at' => now(), 'updated_at' => now()]);
                 $user->version++;
@@ -82,7 +90,9 @@ final readonly class EmailAddresses
 
                 return;
             }
-            $change = $connection->table('runa_auth.email_changes')->where('id', $token->change_id)->first();
+            /** @var \stdClass&object{id: int, new_confirmed: bool, old_confirmed: bool, old_required: bool, administrative: bool, new_email: string, session_policy: string, session_hash: string|null} $change */
+            $change = $connection->table('runa_auth.email_changes')->where('id', $token->change_id)->first()
+                ?? throw new \LogicException('Verified email change disappeared.');
             $field = $token->purpose === 'primary_new' ? 'new_confirmed' : 'old_confirmed';
             $connection->table('runa_auth.email_changes')->where('id', $change->id)->update([$field => true, 'updated_at' => now()]);
             $change->$field = true;
@@ -129,6 +139,9 @@ final readonly class EmailAddresses
         $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user, ['email' => ['old' => $old, 'new' => $email], 'verified' => ['old' => $wasVerified, 'new' => true]]);
     }
 
+    /**
+     * @return array{updated: bool, public_id: string|null}
+     */
     public function ownSecondary(Request $request, string $operation): array
     {
         return $this->context->run($request, function (Connection $connection, User $user) use ($request, $operation): array {
@@ -136,7 +149,7 @@ final readonly class EmailAddresses
                 $this->refuse('secondary_edit_disabled');
             }
             $this->profiles->version($user, $request->integer('version'));
-            $id = $this->secondaryLocked($connection, $user, $operation, $request->input('email'), $request->input('address_id'));
+            $id = $this->secondaryLocked($connection, $user, $operation, Identifiers::optionalText($request->input('email')), Identifiers::optionalText($request->input('address_id')));
 
             return ['updated' => true, 'public_id' => $id];
         }, unrestricted: true);
@@ -148,6 +161,11 @@ final readonly class EmailAddresses
             $this->refuse('secondary_disabled');
         }
         $query = $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereNull('deleted_at');
+        if (! in_array($operation, ['add', 'change', 'remove'], true)) {
+            throw new \InvalidArgumentException('Invalid secondary address operation.');
+        }
+        $publicId = null;
+        /** @var (\stdClass&object{id: int, public_id: string, email: string, verified_at: string|null})|null $row */
         $row = $operation === 'add' ? null : (clone $query)->where('public_id', $addressId)->first();
         if ($operation !== 'add' && $row === null) {
             $this->refuse('secondary_missing');
@@ -160,10 +178,10 @@ final readonly class EmailAddresses
             if ($row !== null && $row->email === $email && $row->verified_at !== null) {
                 $this->refuse('email_unchanged');
             }
-            if ($row === null && $query->count() >= $this->profiles->value('secondary_email_limit')) {
+            if ($row === null && $query->count() >= $this->profiles->integer('secondary_email_limit')) {
                 $this->refuse('secondary_limit');
             }
-            $publicId = $row?->public_id ?? (string) Str::uuid7();
+            $publicId = $row->public_id ?? (string) Str::uuid7();
             $values = ['email' => $email, 'verified_at' => null, 'updated_at' => now()];
             if ($row === null) {
                 $id = $connection->table('runa_auth.secondary_emails')->insertGetId($values + ['user_id' => $user->id, 'public_id' => $publicId, 'created_at' => now()]);

@@ -13,25 +13,29 @@ use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\AccountHistory;
 use Runa\Modules\Auth\Support\EntryTransaction;
+use Runa\Modules\Auth\Support\Identifiers;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
+/** @phpstan-type ProfileSnapshot array{public_id: string, version: int, display_name: string, name: string|null, first_name: string|null, surname: string|null, login: string|null, email: string, email_verified: bool, secondary_emails: list<\stdClass>, initials: string, has_avatar: bool, capabilities: array<string, mixed>} */
 final readonly class Profiles
 {
     public function __construct(private SecurityContext $context, private EntryTransaction $transactions,
         private ModuleSettings $settings, private StepUp $stepUp, private ChangeIdentity $lifecycle, private ModuleApis $apis) {}
 
+    /** @return ProfileSnapshot */
     public function show(Request $request): array
     {
         return $this->context->run($request, fn (Connection $connection, User $user): array => $this->projection($user), count: false, unrestricted: true);
     }
 
+    /** @return ProfileSnapshot */
     public function edit(Request $request): array
     {
         return $this->context->run($request, function (Connection $connection, User $user) use ($request): array {
-            $change = new ProfileChange($request->input('name'), $request->input('first_name'), $request->input('surname'), $request->input('login'));
+            $change = new ProfileChange(Identifiers::optionalText($request->input('name')), Identifiers::optionalText($request->input('first_name')), Identifiers::optionalText($request->input('surname')), Identifiers::optionalText($request->input('login')));
             $this->editLocked($user, $request->integer('version'), $change, true);
 
             return $this->projection($user);
@@ -69,6 +73,7 @@ final readonly class Profiles
         return $user->identity();
     }
 
+    /** @return array{updated: bool, reauthenticate: bool} */
     public function selfLifecycle(Request $request): array
     {
         $root = app('db')->connection()->transactionLevel() === 0;
@@ -91,6 +96,7 @@ final readonly class Profiles
         }
     }
 
+    /** @return array{entries: list<array{public_id: string, occurred_at: string, action: string, outcome: string}>, next: string|null} */
     public function history(Request $request): array
     {
         return $this->context->run($request, function () use ($request): array {
@@ -100,10 +106,11 @@ final readonly class Profiles
             }
             $actions = $kind === 'login' ? ['login.succeeded', 'login.credentials_accepted', 'two_factor.confirmed', 'logout.completed', 'session.evicted', 'session.revoked', 'sessions.revoked'] : array_keys(AccountHistory::fields());
 
-            return $this->apis->resolve('runa.audit', OwnHistory::class, '1.0.0')->page('runa.auth', 'user', $actions, $request->input('before'));
+            return $this->apis->resolve('runa.audit', OwnHistory::class, '1.0.0')->page('runa.auth', 'user', $actions, Identifiers::optionalText($request->input('before')));
         }, count: false, unrestricted: true);
     }
 
+    /** @return array{public_id: string, occurred_at: string, action: string, outcome: string, changes: list<array{field: string, before: mixed, after: mixed}>} */
     public function historyDetail(Request $request): array
     {
         return $this->context->run($request, function () use ($request): array {
@@ -117,10 +124,13 @@ final readonly class Profiles
         }, count: false, unrestricted: true);
     }
 
+    /** @return ProfileSnapshot */
     public function projection(User $user): array
     {
         $initials = $user->name !== null ? preg_split('/\s+/u', $user->name) : [$user->first_name, $user->surname];
-        $initials = mb_strtoupper(mb_substr($initials[0], 0, 1).(count($initials) > 1 ? mb_substr(end($initials), 0, 1) : ''));
+        $initials = is_array($initials) ? array_values(array_filter($initials, 'is_string')) : [];
+        $initials = mb_strtoupper(mb_substr($initials[0] ?? '', 0, 1).(count($initials) > 1 ? mb_substr($initials[array_key_last($initials)], 0, 1) : ''));
+        /** @var list<\stdClass> $secondary */
         $secondary = $this->value('secondary_emails_enabled') ? app('db')->connection()->table('runa_auth.secondary_emails')
             ->where('user_id', $user->id)->whereNull('deleted_at')->orderBy('id')->get(['public_id', 'email', 'verified_at'])->toArray() : [];
         $capabilities = [];
@@ -144,6 +154,11 @@ final readonly class Profiles
     public function value(string $key): mixed
     {
         return $this->settings->value('runa.auth', $key);
+    }
+
+    public function integer(string $key): int
+    {
+        return $this->settings->integer('runa.auth', $key);
     }
 
     private function refuse(string $code): never

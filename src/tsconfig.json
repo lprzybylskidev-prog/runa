@@ -9,7 +9,13 @@
       "@/runa/*": ["./runa/resources/js/runa/*"],
       "@/runa/ui": ["./runa/resources/js/runa/ui/index.ts"],
       "@runa/*": ["./runa/resources/js/*"],
-      "@/*": ["./app/resources/js/*"]
+      "@/*": ["./app/resources/js/*"],
+      "@runa/testing/playwright": ["./runa/Testing/playwright.ts"],
+      "vitest": ["./node_modules/vitest"],
+      "@vue/test-utils": ["./node_modules/@vue/test-utils"],
+      "vue": ["./node_modules/vue"],
+      "@runa/testing/vue": ["./runa/Testing/vue.ts"],
+      "@runa/testing/vitest": ["./runa/Testing/vitest.ts"]
     },
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -31,9 +37,9 @@
     "app/resources/**/*.vue",
     "runa/resources/**/*.ts",
     "runa/resources/**/*.vue",
-    "runa/tests/frontend/**/*.ts",
-    "runa/tests/e2e/**/*.ts",
-    "app/tests/frontend/**/*.ts",
-    "app/tests/e2e/**/*.ts"
+    "../tests/frontend/runa/unit/**/*.ts",
+    "../tests/frontend/runa/e2e/**/*.ts",
+    "../tests/frontend/app/unit/**/*.ts",
+    "../tests/frontend/app/e2e/**/*.ts"
   ]
 }

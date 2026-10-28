@@ -12,12 +12,20 @@ use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Support\Modules\Api\OperationRejected;
 
-/** Recheck security-sensitive self service under registry -> authority -> user locks. */
+/** Recheck security-sensitive self service under registry -> authority -> user locks.
+ * @phpstan-import-type SessionRow from SessionStore
+ */
 final readonly class SecurityContext
 {
     public function __construct(private EntryTransaction $transactions, private SessionStore $sessions,
         private LookupIdentity $identities, private CredentialPolicy $policy) {}
 
+    /**
+     * @template T
+     *
+     * @param  Closure(Connection, User, SessionRow): (T|null)  $work
+     * @return T
+     */
     public function run(Request $request, Closure $work, bool $count = true, bool $unrestricted = false): mixed
     {
         $result = $this->transactions->run(function (Connection $connection) use ($request, $work, $count, $unrestricted): mixed {
@@ -48,11 +56,12 @@ final readonly class SecurityContext
 
     private function attempt(Connection $connection, User $user): bool
     {
-        $fingerprint = hash_hmac('sha256', 'security:'.$user->public_id, config('app.key'));
+        $fingerprint = hash_hmac('sha256', 'security:'.$user->public_id, config()->string('app.key'));
         $query = $connection->table('runa_auth.login_windows')->where('fingerprint', $fingerprint);
+        /** @var (\stdClass&object{expires_at: string, attempts: int})|null $row */
         $row = $query->first();
         if ($row !== null && CarbonImmutable::parse($row->expires_at)->isFuture()) {
-            if ($row->attempts >= $this->policy->value('security_attempt_limit')) {
+            if ($row->attempts >= $this->policy->integer('security_attempt_limit')) {
                 return false;
             }
             $query->increment('attempts');

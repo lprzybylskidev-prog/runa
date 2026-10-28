@@ -1,5 +1,47 @@
 # Auth module changelog
 
+## 1.1.4 — 2026-10-28
+
+- Preserve registration privacy and session behavior while completing typed request, model, settings and mail contracts; handle nullable profile names safely.
+- Add the source-only verification_contracts forward edge without schema or data changes.
+
+## 1.1.3 — 2026-10-28
+
+- Resolve writable controller refs explicitly in supplied account views; preserve controller signatures, reactive lifetimes and writes.
+- Correct supplied Vue attribute order and local names for the enforced source checks.
+- Add the source-only frontend_source_checks forward edge without schema or data changes.
+
+## 1.1.2 — 2026-10-28
+
+- Support platform 0.6.x explicitly while retaining public APIs and all historical upgrade identities.
+- Record the source-only platform_delivery edge; production images exclude developer implementations and raw module frontend sources. No schema or data transformation.
+
+## 1.1.1 — 2026-10-28
+
+- Separate internal account profile/conflict, list/history/trust, validation and delivery collaborators behind the unchanged public controller; retain shared cancellation, revisions, draft reconciliation and explicit writes.
+- Own account preference transport/session composition and the welcome catalogue in Auth; generic preference storage remains independent.
+- Add the source-only account_orchestration forward edge without schema or data changes.
+
+## 1.1.0 — 2026-10-28
+
+- Publish complete named frontend controller, replacement props/slots/events and cropper handle types through the existing public facade; preserve all existing members and Vue component replacements.
+- Type supplied wrappers and security components from those contracts; retain keyed lifetimes and subtree fallback behavior.
+- Add the source-only frontend_contracts forward edge without schema or data changes.
+
+## 1.0.3 — 2026-10-28
+
+- Separate private work handlers/policy and HTTP controllers/resources from declarations; retain public contract identities and guarded behavior.
+- Preserve historical upgrade handlers, edges and migration bytes; add the source-only execution_layout edge without schema or data changes.
+
+## 1.0.2 — 2026-10-28
+
+- Reconcile internal platform collaborators with the module framework and Core integration homes; public contracts and runtime behavior remain compatible.
+- Add a source-only forward edge with no schema or data transformation.
+
+## 1.0.1 — 2026-10-27
+
+- Relocate module test metadata and cases to the central owner test tree; runtime APIs and data remain unchanged.
+
 ## 1.0.0
 
 Prepare the first stable Auth release for verified closure of RM-2026-011.

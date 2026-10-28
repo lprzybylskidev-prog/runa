@@ -33,6 +33,10 @@ final class SeedProject extends Command
     public function handle(): int
     {
         $mode = $this->mode;
+        if (($mode === 'development' || (in_array($mode, ['development', 'graph'], true) && $this->input->getOption('modules')))
+            && ! app()->environment(['local', 'testing'])) {
+            throw new \RuntimeException('Development seeders require local or testing environment.');
+        }
         if ($mode === 'development') {
             DevelopmentFixtures::assertAllowed();
         }

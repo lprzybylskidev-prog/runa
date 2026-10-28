@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\ConfigurationValidator;
+use Runa\Configuration\ConfigurationValidator;
 
 final class ValidateConfiguration extends Command
 {

@@ -3,7 +3,7 @@
 namespace Runa\Contracts\Modules;
 
 use InvalidArgumentException;
-use Runa\Support\Modules\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\BoundaryValues;
 use Runa\Support\Modules\ModuleIdentity;
 
 final readonly class IntegrationDefinition

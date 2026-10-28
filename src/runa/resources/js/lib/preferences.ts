@@ -1,4 +1,7 @@
-import { accountPreferences, defaultPreferenceStore } from './preferenceStore';
+import {
+  accountPreferences,
+  defaultPreferenceStore,
+} from '../../../modules/auth/frontend/preferences/session';
 import type { PreferenceDefinition } from './preferenceStore';
 const scope = {
   applicationId: 'runa',

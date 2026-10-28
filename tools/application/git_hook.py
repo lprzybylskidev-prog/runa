@@ -1,36 +1,78 @@
 #!/usr/bin/env python3
 """Versioned Git hook entrypoint."""
-from pathlib import Path
-import subprocess
+
+from __future__ import annotations
+
 import os
+import subprocess
 import sys
+from collections.abc import Callable, Sequence
+from pathlib import Path
+
+from tools.application.development_runtime import development_compose, execution_location
+from tools.application.hooks import commit_message, pre_commit
+from tools.application.processes import ApplicationProcesses
+from tools.core.context import ExecutionLocation, WorkspaceContext
+from tools.core.lifecycle import interrupt_signals
+from tools.core.process import SubprocessRunner
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'tools/application'))
-from runtime import compose, inside
-from hooks import commit_message, pre_commit
 
-try:
-    args = sys.argv[1:]
-    if args == ['--help']:
-        print('Usage: ./tools/application/bin/git-hook pre-commit|commit-msg <message-file>\nFast staged-content and Conventional/RM-aware checks.')
-    elif not inside():
-        extra = []
-        if os.environ.get('GIT_INDEX_FILE'):
-            index = Path(os.environ['GIT_INDEX_FILE']).resolve()
-            relative = index.relative_to(ROOT)
-            extra = ['-e', 'GIT_INDEX_FILE=/workspace/' + relative.as_posix()]
-        if len(args) == 2 and Path(args[1]).is_absolute():
-            args[1] = '/workspace/' + Path(args[1]).relative_to(ROOT).as_posix()
-        raise SystemExit(subprocess.run(compose() + ['exec', '-T', *extra, 'app', './tools/application/bin/git-hook', *args], cwd=ROOT).returncode)
-    elif args == ['pre-commit']:
-        repository = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], check=True, capture_output=True, text=True).stdout.strip())
-        pre_commit(repository, ROOT)
-    elif len(args) == 2 and args[0] == 'commit-msg':
-        repository = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], check=True, capture_output=True, text=True).stdout.strip())
-        commit_message(repository, args[1])
-    else:
-        raise ValueError('See ./tools/application/bin/git-hook --help.')
-except (ValueError, OSError, subprocess.CalledProcessError, SyntaxError) as error:
-    print(f'Hook rejected: {error}', file=sys.stderr)
-    sys.exit(1)
+
+def main(
+    arguments: Sequence[str],
+    *,
+    history: Callable[[Path, str, bytes | None], bool] | None = None,
+    module: str = "tools.application.git_hook",
+) -> None:
+    processes = ApplicationProcesses(SubprocessRunner(), dict(os.environ))
+    try:
+        args = list(arguments)
+        repository = Path(args.pop(0))
+        if args == ["--help"]:
+            print(
+                "Usage: ./tools/application/bin/git-hook pre-commit|commit-msg <message-file>\nFast staged-content and Conventional/RM-aware checks."
+            )
+        elif execution_location() is not ExecutionLocation.CONTAINER:
+            extra = []
+            if os.environ.get("GIT_INDEX_FILE"):
+                index = Path(os.environ["GIT_INDEX_FILE"]).resolve()
+                relative = index.relative_to(ROOT)
+                extra = ["-e", "GIT_INDEX_FILE=/workspace/" + relative.as_posix()]
+            if len(args) == 2 and Path(args[1]).is_absolute():
+                args[1] = "/workspace/" + Path(args[1]).relative_to(ROOT).as_posix()
+            raise SystemExit(
+                processes.run(
+                    list(development_compose(WorkspaceContext(ROOT)).command())
+                    + [
+                        "exec",
+                        "-T",
+                        *extra,
+                        "app",
+                        "python3",
+                        "-m",
+                        module,
+                        "/workspace/" + repository.relative_to(ROOT).as_posix(),
+                        *args,
+                    ],
+                    cwd=ROOT,
+                ).returncode
+            )
+        elif args == ["pre-commit"]:
+            with interrupt_signals():
+                pre_commit(repository, ROOT, history=history)
+        elif len(args) == 2 and args[0] == "commit-msg":
+            message = Path(args[1])
+            commit_message(repository, message if message.is_absolute() else repository / message)
+        else:
+            raise ValueError("See ./tools/application/bin/git-hook --help.")
+    except KeyboardInterrupt:
+        print("Hook interrupted.", file=sys.stderr)
+        raise SystemExit(130) from None
+    except (ValueError, OSError, subprocess.CalledProcessError, SyntaxError) as error:
+        print(f"Hook rejected: {error}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
+/** @phpstan-import-type SessionRow from \Runa\Modules\Auth\Actions\SessionStore */
 final readonly class CredentialPolicy
 {
     public function __construct(private ModuleSettings $settings) {}
@@ -15,20 +16,27 @@ final readonly class CredentialPolicy
         return $this->settings->value('runa.auth', $key);
     }
 
+    public function integer(string $key): int
+    {
+        return $this->settings->integer('runa.auth', $key);
+    }
+
     public function permitted(string $method): bool
     {
         return match ($method) {
-            'totp', 'recovery' => $this->value('totp_enabled'),
-            'email' => $this->value('email_otp_enabled'),
+            'totp', 'recovery' => $this->settings->boolean('runa.auth', 'totp_enabled'),
+            'email' => $this->settings->boolean('runa.auth', 'email_otp_enabled'),
             default => false,
         };
     }
 
     public function requiredMethod(): string
     {
-        return $this->value('two_factor_required');
+        return $this->settings->text('runa.auth', 'two_factor_required')
+            ?? throw new \LogicException('Missing configured factor policy.');
     }
 
+    /** @return list<string> */
     public function enrolled(User $user): array
     {
         return array_values(array_filter(['totp', 'email'], fn ($method) => $this->permitted($method)
@@ -46,6 +54,9 @@ final readonly class CredentialPolicy
         return $this->requiredMethod() !== 'optional' || $this->enrolled($user) !== [];
     }
 
+    /** @param SessionRow|null $session
+     * @return list<string>
+     */
     public function restrictions(User $user, ?object $session): array
     {
         if (! $this->needsFactor($user)) {

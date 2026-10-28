@@ -77,6 +77,10 @@ If verification finds work:
 - implement and verify the fix point,
 - rerun final verification from the beginning.
 
+During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
+
+For a backend segfault (exit 139/SIGSEGV), follow the nondestructive development-container restart and complete backend rerun procedure in [the testing guide](docs/runa/handbook/testing/strategy.md#backend-segfault-recovery) before changing code. A recurrence requires diagnosis; a successful retry does not establish a root cause.
+
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
 Do not merge with failed hard gates, open roadmap points, an unsafe dirty worktree, or unresolved synchronization problems.
@@ -230,6 +234,16 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/maintainer/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
+## Python tooling
+
+Follow [Python tooling](docs/runa/handbook/development/python-tooling.md) for the
+stdlib runtime, package ownership, CPython floor and generated artifact contract.
+Host operation requires no pip/project install; development tools stay in containers.
+Use qualified package imports for new integrations and keep package initializers inert.
+Shared frozen Python development tools/configuration ship with application tooling;
+private Runa suites and release policy remain excluded. Use the public Python guide
+for application-owned configuration and staged Ruff checks.
+
 ## Generated tooling state
 
 Keep generated private build/tooling artifacts under the single workspace-root
@@ -310,6 +324,19 @@ Do not persist:
 
 Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
 
+## Public APIs and platform internals
+
+Follow [the public API boundary](docs/runa/handbook/architecture/public-api.md).
+Classify capabilities by owner, supported consumer and entrypoint separately from
+delivery/runtime mode. Keep customer extension/consumption APIs distinct from
+internal engines and trusted integration; Contracts/Support names alone do not
+establish public use. Preserve documented signatures, generator/example consumers
+and frontend replacement contracts during refactors. Before adding or relocating
+capabilities, declare owner, audience, supported entrypoint, complete public
+signature, implementation home and runtime/delivery mode in the owning guide.
+Use the public guide's source-placement table; generated and handwritten consumers
+follow the same boundary. Update both instruction products when a reusable rule changes.
+
 ## Module development
 
 For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly owner-approved MAJOR before implementation, regardless of how much code is rewritten. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
@@ -343,6 +370,15 @@ This root owner contract governs receipt-free Runa maintenance; customer applica
 
 For every reusable rule or delivered capability change, assess root AGENTS/.agents/skills and the customer bundle under docs/runa/maintainer/customer-agent. Update affected products and their references in the same implementation point; record why an unaffected product needs no change. Customer guidance supports ordinary Laravel plus optional app modules and never authorizes protected platform edits. Customer authors maintain their local application guidance independently. Authoring templates are excluded from owner retrieval. Do not duplicate handbook procedures in skills.
 
+## Central test ownership
+
+Author tests in repository-root tests/backend, tests/frontend and tests/tools,
+using the app subtree for customer application tests and runa for private platform
+suites. Module cases use modules/<code> within their owning area. Reusable test
+infrastructure remains in its source package; private Runa suites are excluded
+from customer delivery and all tests from production images. Follow the public
+[testing guide](docs/runa/handbook/testing/strategy.md) for discovery/configuration.
+
 ## Supported commands and check completion
 
 The agent manually selects proportionate quality groups with repeated `--group=NAME`
@@ -353,6 +389,6 @@ groups are not passing tests. Flag-free calls retain legacy behavior. No automat
 change classifier is authorized. See docs/runa/maintainer/quality/README.md for the catalogue and evidence
 contract; ordinary group choices do not require repeated owner approval.
 
-Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner tests use `python3 tools/maintainer/test-backend`, `test-frontend`, `test-e2e`; application tests use Artisan runa:test commands. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.
+Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner default `python3 tools/maintainer/test` and application default `runa:test` run backend, frontend and tooling. Focused owner `test-backend`, `test-frontend`, `test-e2e`, `test-python` and application Artisan scopes retain explicit ownership. Follow the testing guides for public support, filters and reports. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.
 
-Before final verification, run only necessary small, fast, focused checks resolving concrete uncertainty. Receive results, repair failures and continue; duration alone is no permission to hand monitoring to the user. Only final full verification uses the supported background handoff: `python3 tools/maintainer/quality-roadmap --background`, end the turn and provide `python3 tools/maintainer/quality-status`. Status tracks its coordinator only; raw tail is not a substitute.
+During ordinary implementation, run only necessary small, fast, focused checks resolving concrete uncertainty; final-verification repairs follow the complete affected-area loop above. Receive results, repair failures and continue; duration alone is no permission to hand monitoring to the user. Only final full verification uses the supported background handoff: `python3 tools/maintainer/quality-roadmap --background`, end the turn and provide `python3 tools/maintainer/quality-status`. Status tracks its coordinator only; raw tail is not a substitute.

@@ -9,5 +9,8 @@ interface AuditReads
 
     public function detail(string $publicId): ?AuditEntry;
 
+    /**
+     * @return array{version: int, order: string, max_page_size: int, max_page_bytes: int, payloads: string, filters: list<string>}
+     */
     public function metadata(): array;
 }

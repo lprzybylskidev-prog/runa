@@ -149,7 +149,8 @@ async function save(choice: Choice) {
     return;
   }
   delete recipientErrors[key];
-  props.account.form.value = forms.get(key);
+  const activeForm = props.account.form;
+  activeForm.value = forms.get(key);
   const submitted = copy(draft);
   await saveDelivery(submitted);
   if (!failure.value && notice.value) {

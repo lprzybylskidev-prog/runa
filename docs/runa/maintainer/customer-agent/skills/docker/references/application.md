@@ -22,3 +22,12 @@ release number. Build replacements from pinned, integrity-verified sources with
 patched toolchains when explicitly authorized; keep compilers out of runtime.
 Follow [PostgreSQL runtime security](../../../../docs/runa/handbook/security/postgres-gosu-policy.md)
 for the supplied image, preserving database data and the documented entrypoint.
+
+Python operational/source and development-tool boundaries follow
+[Python tooling](../../../../docs/runa/handbook/development/python-tooling.md).
+Keep the host stdlib-only and generated development state under `.runtime/python`;
+package preparation must not add Python tooling to production images. Follow the
+public editor guide for the frozen container interpreter/formatter configuration;
+editor settings do not establish observed GUI acceptance.
+
+Follow docs/runa/handbook/production/architecture.md#runtime-source-projection for supplied production inputs and docs/runa/handbook/architecture/public-api.md for source ownership. Keep customer source changes in application-owned locations; protected image inputs remain platform-owned.

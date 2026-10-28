@@ -7,6 +7,9 @@ use Runa\Modules\Auth\Contracts\PreferenceDefinition;
 /** Pure declarations shared by Auth's SettingsProvider; no writable second configuration. */
 final class AccountDefaults
 {
+    /**
+     * @return list<PreferenceDefinition>
+     */
     public static function preferences(): array
     {
         return [

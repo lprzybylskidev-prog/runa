@@ -1,21 +1,33 @@
+import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
+import boundary from './runa/frontend/api-boundary.mjs';
 import ts from 'typescript-eslint';
 import vue from 'eslint-plugin-vue';
 
 export default ts.config(
   {
     ignores: [
-      'vendor/**',
-      'node_modules/**',
-      'public/build/**',
-      '../.runtime/**',
+      '**/vendor/**',
+      '**/node_modules/**',
+      'src/public/build/**',
+      '.runtime/**',
       'artifacts/**',
     ],
+  },
+  {
+    basePath: fileURLToPath(new URL('../', import.meta.url)),
+    files: [
+      'src/app/**/*.{js,ts,vue,mjs}',
+      'tests/frontend/app/**/*.{js,ts,vue,mjs}',
+    ],
+    plugins: { runa: boundary },
+    rules: { 'runa/public-imports': 'error' },
   },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...vue.configs['flat/recommended'],
   {
+    basePath: fileURLToPath(new URL('../', import.meta.url)),
     files: ['**/*.vue'],
     // Core assignment analysis cannot see references from Vue templates.
     rules: { 'no-useless-assignment': 'off' },
@@ -24,15 +36,27 @@ export default ts.config(
     },
   },
   {
+    basePath: fileURLToPath(new URL('../', import.meta.url)),
     files: [
-      '{app,runa}/resources/**/*.{ts,vue}',
-      '{app,runa}/modules/**/*.{ts,vue}',
-      '{app,runa}/tests/frontend/**/*.{ts,vue}',
+      'src/{app,runa}/resources/**/*.{ts,vue}',
+      'src/{app,runa}/modules/**/*.{ts,vue}',
+      'tests/frontend/{app,runa}/unit/**/*.{ts,vue}',
+      'src/runa/Testing/**/*.ts',
     ],
     languageOptions: {
       globals: Object.fromEntries(
         [
           'Event',
+          'File',
+          'Blob',
+          'URL',
+          'Image',
+          'HTMLCanvasElement',
+          'HTMLImageElement',
+          'PointerEvent',
+          'WheelEvent',
+          'KeyboardEvent',
+          'TouchEvent',
           'window',
           'document',
           'fetch',
@@ -49,7 +73,8 @@ export default ts.config(
     },
   },
   {
-    files: ['**/*.mjs', '{app,runa}/tests/e2e/**/*.ts'],
+    basePath: fileURLToPath(new URL('../', import.meta.url)),
+    files: ['**/*.mjs', 'tests/frontend/{app,runa}/e2e/**/*.ts'],
     languageOptions: {
       globals: {
         process: 'readonly',

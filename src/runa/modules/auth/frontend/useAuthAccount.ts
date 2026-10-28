@@ -1,10 +1,9 @@
-import { historyDetailResponse } from './historyDetails';
-import type { AccountHistoryDetail } from './historyDetails';
+import { createAccountProfile } from './account/profile';
+import { createAccountLists } from './account/lists';
+import { createAccountDelivery } from './account/delivery';
+import { createAccountValidation } from './account/validation';
 import { enrollmentQrCode } from './totpEnrollment';
-import {
-  ApiError,
-  RequestCancelledError,
-} from '../../../resources/js/lib/http';
+import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
   computed,
   watch,
@@ -16,7 +15,7 @@ import {
   shallowRef,
 } from 'vue';
 import { useLocale } from '../../../resources/js/composables/useLocale';
-import { accountPreferences } from '../../../resources/js/lib/preferenceStore';
+import { accountPreferences } from './preferences/session';
 import {
   authFailure,
   authGet,
@@ -25,61 +24,21 @@ import {
   decodeOptions,
   decodeSecurity,
   factorMethods,
-  record,
 } from './entry';
 import type { EntryOptions, SecurityOptions } from './entry';
 import {
   accountRequest,
-  profileResponse,
-  pageResponse,
   rememberAccountDraft,
   takeAccountDraft,
   clearAccountDraft,
   accountDraftEpoch,
 } from './account';
-import type { AccountRow, Profile } from './account';
-export type AccountTab =
-  | 'details'
-  | 'security'
-  | 'addresses'
-  | 'avatar'
-  | 'sessions'
-  | 'trust'
-  | 'preferences'
-  | 'loginHistory'
-  | 'accountHistory';
-export type AccountTask =
-  | 'details'
-  | 'password'
-  | 'email'
-  | 'secondaryAdd'
-  | 'secondaryChange'
-  | 'secondaryRemove'
-  | 'avatar'
-  | 'avatarRemove'
-  | 'totpBegin'
-  | 'totpConfirm'
-  | 'emailEnable'
-  | 'disable'
-  | 'recoveryRotate'
-  | 'trustIssue'
-  | 'deactivate'
-  | 'delete';
-export type AccountSection = 'details' | 'avatar' | 'password' | 'security';
-interface DeliveryChoice {
-  module: string;
-  key: string;
-  names: { pl: string; en: string };
-  mandatory: boolean;
-  sensitive: boolean;
-  enabled: boolean;
-  recipients: string[];
-}
+import type { AccountTab, AccountTask, AccountSection } from './account/types';
+export type { AccountTab, AccountTask, AccountSection } from './account/types';
 export function useAuthAccount(accountId: string) {
   const { locale } = useLocale();
   const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
-  const profile = shallowRef<Profile>(),
-    security = shallowRef<SecurityOptions>(),
+  const security = shallowRef<SecurityOptions>(),
     options = shallowRef<EntryOptions>();
   const tab = ref<AccountTab>('details'),
     task = ref<AccountTask>('details');
@@ -111,7 +70,6 @@ export function useAuthAccount(accountId: string) {
     | 'trustIssue'
   >('none');
   const removeAvatar = ref(false);
-  const avatarConflict = ref(false);
   const sectionFields = reactive<
     Record<AccountSection, Record<string, string>>
   >({
@@ -135,29 +93,66 @@ export function useAuthAccount(accountId: string) {
         (Boolean(fields.password || fields.password_confirmation) &&
           security.value?.password_change_factor === true)),
   );
-  const pageLoading = ref(false),
-    trustedLoading = ref(false);
-  const rows = ref<AccountRow[]>([]),
-    cursor = ref<string | null>(null);
-  const trustedRows = ref<AccountRow[]>([]),
-    trustedCursor = ref<string | null>(null);
-  let trustedReadEpoch = 0;
   const canTrustDevice = computed(
     () =>
       security.value?.trusted_devices_enabled === true &&
       proofMethods.value.length > 0,
   );
-  const detailConflicts = reactive<Record<string, string>>({});
-  let deliveryReadEpoch = 0;
   let refreshPromise: Promise<void> | undefined;
   let refreshAgain = false;
   let refreshingPreferenceSnapshot = false;
-  const delivery = ref<DeliveryChoice[]>([]);
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
   const abort = new AbortController();
-  let alive = true,
-    readEpoch = 0;
+  let alive = true;
+  const lifetime = {
+    accountId,
+    signal: abort.signal,
+    get active() {
+      return alive;
+    },
+  };
+  const {
+    profile,
+    detailConflicts,
+    avatarConflict,
+    loadProfile,
+    resolveDetails,
+    resolveAvatar,
+  } = createAccountProfile(lifetime, {
+    fields,
+    naming,
+    files,
+    removeAvatar,
+    busy,
+    failure,
+  });
+  const {
+    pageLoading,
+    trustedLoading,
+    rows,
+    cursor,
+    trustedRows,
+    trustedCursor,
+    readPage,
+    readTrustedDevices,
+    loadTrustedDevices,
+    revokeTrustedDevice,
+    historyDetail,
+    historyDetailOpen,
+    historyDetailLoading,
+    historyDetailFailed,
+    openHistoryDetail,
+    closeHistoryDetail,
+    retryHistoryDetail,
+  } = createAccountLists(lifetime, { tab, security, notice }, perform, text);
+  const { delivery, readDelivery, saveDelivery, resetPreferences } =
+    createAccountDelivery(
+      lifetime,
+      { confirmed, failure, notice },
+      perform,
+      text,
+    );
   const caps = computed(() => profile.value?.capabilities ?? {});
   const has = (key: string) => caps.value[key] === true;
   const canAvatar = computed(
@@ -168,6 +163,20 @@ export function useAuthAccount(accountId: string) {
   const proofMethods = computed(() =>
     security.value ? factorMethods(security.value) : [],
   );
+  const { needsProof, fieldNames, validate, emailError } =
+    createAccountValidation({
+      task,
+      proofMethods,
+      security,
+      options,
+      naming,
+      method,
+      fields,
+      errors,
+      has,
+      cleanErrors,
+      text,
+    });
   const tabs = computed<AccountTab[]>(() => [
     'details',
     'security',
@@ -201,50 +210,6 @@ export function useAuthAccount(accountId: string) {
       fields[key] = profile.value[key] ?? '';
     naming.value = profile.value.name === null ? 'full' : 'single';
   }
-  const needsProof = computed(
-    () =>
-      proofMethods.value.length > 0 &&
-      ([
-        'totpBegin',
-        'totpConfirm',
-        'emailEnable',
-        'disable',
-        'recoveryRotate',
-        'trustIssue',
-      ].includes(task.value) ||
-        (task.value === 'password' && security.value?.password_change_factor)),
-  );
-  const fieldNames = computed(() => [
-    ...(task.value === 'details'
-      ? [
-          ...(has('own_name_editable')
-            ? naming.value === 'single'
-              ? ['name']
-              : ['first_name', 'surname']
-            : []),
-          ...(has('own_login_editable') ? ['login'] : []),
-        ]
-      : []),
-    ...(['email', 'secondaryAdd', 'secondaryChange'].includes(task.value)
-      ? ['email']
-      : []),
-    ...([
-      'password',
-      'email',
-      'totpBegin',
-      'totpConfirm',
-      'emailEnable',
-      'disable',
-      'recoveryRotate',
-      'deactivate',
-      'delete',
-    ].includes(task.value)
-      ? ['current_password']
-      : []),
-    ...(task.value === 'password' ? ['password', 'password_confirmation'] : []),
-    ...(needsProof.value ? ['code'] : []),
-    ...(task.value === 'totpConfirm' ? ['enrollment_code'] : []),
-  ]);
   function choose(
     next: AccountTask,
     address?: { public_id: string; email: string },
@@ -268,69 +233,6 @@ export function useAuthAccount(accountId: string) {
     method.value = proofMethods.value[0] ?? 'totp';
     target.value = security.value?.enrolled[0] ?? 'totp';
     if (next === 'details') fillDetails();
-  }
-  function emailError(value: string): string {
-    return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
-      value.length > 254 ||
-      /[^\x21-\x7e]/.test(value)
-      ? text('Podaj poprawny adres e-mail.', 'Enter a valid email address.')
-      : '';
-  }
-  function validate() {
-    cleanErrors();
-    for (const key of fieldNames.value) {
-      const value = fields[key] ?? '';
-      if (
-        !value.trim() &&
-        !(key === 'login' && options.value?.identifier_mode !== 'login')
-      )
-        errors[key] = text('Wypełnij to pole.', 'Complete this field.');
-      if (key === 'email' && emailError(value)) errors[key] = emailError(value);
-      if (
-        ['name', 'first_name', 'surname'].includes(key) &&
-        (value.trim() !== value ||
-          [...value].length > 160 ||
-          /\p{C}/u.test(value))
-      )
-        errors[key] = text('Popraw dane.', 'Correct this value.');
-      if (
-        key === 'login' &&
-        value &&
-        !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(value)
-      )
-        errors[key] = text('Niepoprawny login.', 'Invalid login.');
-      if (
-        key === 'code' &&
-        !(method.value === 'recovery' ? /^[0-9a-f]{32}$/ : /^[0-9]{6}$/).test(
-          value,
-        )
-      )
-        errors[key] = text('Niepoprawny kod.', 'Invalid code.');
-      if (key === 'enrollment_code' && !/^[0-9]{6}$/.test(value))
-        errors[key] = text('Wpisz 6 cyfr.', 'Enter 6 digits.');
-    }
-    if (task.value === 'password' && options.value) {
-      const p = options.value.password,
-        v = fields.password ?? '';
-      if (
-        [...v].length < p.min_length ||
-        new TextEncoder().encode(v).length > p.max_bytes ||
-        v.includes('\0') ||
-        (p.mixed_case && (!/\p{Ll}/u.test(v) || !/\p{Lu}/u.test(v))) ||
-        (p.numbers && !/\p{N}/u.test(v)) ||
-        (p.symbols && !/[\p{S}\p{P}]/u.test(v))
-      )
-        errors.password = text(
-          'Hasło nie spełnia podanych wymagań.',
-          'Password does not meet the listed requirements.',
-        );
-      if (v !== fields.password_confirmation)
-        errors.password_confirmation = text(
-          'Hasła muszą być takie same.',
-          'Passwords must match.',
-        );
-    }
-    return Object.keys(errors).length === 0;
   }
   async function perform(action: () => Promise<void>, clearSecrets = true) {
     return performTask(action, clearSecrets);
@@ -388,91 +290,6 @@ export function useAuthAccount(accountId: string) {
         }
       }
     }
-  }
-  async function loadProfile(ownWrite = false) {
-    const p = profileResponse(await authGet('profile', abort.signal));
-    if (p.public_id !== accountId) throw new TypeError('Account changed.');
-    if (alive && (!profile.value || p.version >= profile.value.version)) {
-      const before = profile.value;
-      if (before) {
-        if (
-          (!ownWrite || p.version > before.version + 1) &&
-          p.version > before.version &&
-          (files.value.length || removeAvatar.value)
-        )
-          avatarConflict.value = true;
-        const keys = [
-          'name',
-          'first_name',
-          'surname',
-          'login',
-          'email',
-        ] as const;
-        const oldNaming = before.name === null ? 'full' : 'single';
-        const nextNaming = p.name === null ? 'full' : 'single';
-        const nameKeys = ['name', 'first_name', 'surname'] as const;
-        const dirtyName =
-          naming.value !== oldNaming ||
-          nameKeys.some((key) => (fields[key] ?? '') !== (before[key] ?? ''));
-        const changedName = nameKeys.some((key) => p[key] !== before[key]);
-        if (!dirtyName) naming.value = nextNaming;
-        else if (
-          changedName &&
-          (naming.value !== nextNaming ||
-            nameKeys.some((key) => (fields[key] ?? '') !== (p[key] ?? '')))
-        ) {
-          detailConflicts.naming = nextNaming;
-          for (const key of nameKeys) detailConflicts[key] = p[key] ?? '';
-        }
-        for (const key of keys) {
-          const groupedName = (nameKeys as readonly string[]).includes(key);
-          if (
-            groupedName
-              ? !dirtyName
-              : (fields[key] ?? '') === (before[key] ?? '')
-          )
-            fields[key] = p[key] ?? '';
-          else if (
-            !groupedName &&
-            p[key] !== before[key] &&
-            (fields[key] ?? '') !== (p[key] ?? '')
-          )
-            detailConflicts[key] = p[key] ?? '';
-        }
-      }
-      if (
-        naming.value === (p.name === null ? 'full' : 'single') &&
-        ['name', 'first_name', 'surname'].every(
-          (key) => (fields[key] ?? '') === (p[key as 'name'] ?? ''),
-        )
-      )
-        for (const key of ['naming', 'name', 'first_name', 'surname'])
-          delete detailConflicts[key];
-      for (const key of ['login', 'email'] as const)
-        if ((fields[key] ?? '') === (p[key] ?? '')) delete detailConflicts[key];
-      profile.value = p;
-    }
-  }
-  function resolveDetails(keepLocal = false) {
-    if (busy.value || !profile.value) return;
-    if (!keepLocal) {
-      for (const key of Object.keys(detailConflicts)) {
-        if (key === 'naming')
-          naming.value = profile.value.name === null ? 'full' : 'single';
-        else fields[key] = detailConflicts[key] ?? '';
-      }
-    }
-    Object.keys(detailConflicts).forEach((key) => delete detailConflicts[key]);
-    if (failure.value === 'conflict') failure.value = '';
-  }
-  function resolveAvatar(keepLocal = false) {
-    if (busy.value) return;
-    if (!keepLocal) {
-      files.value = [];
-      removeAvatar.value = false;
-    }
-    avatarConflict.value = false;
-    if (failure.value === 'conflict') failure.value = '';
   }
   async function refreshAccount(duringOperation = false): Promise<void> {
     if (!alive || !ready.value || (busy.value && !duringOperation)) return;
@@ -549,173 +366,6 @@ export function useAuthAccount(accountId: string) {
         }
       }
     });
-  }
-  async function readPage(append = false) {
-    const own = ++readEpoch,
-      currentTab = tab.value;
-    pageLoading.value = true;
-    try {
-      const path =
-        currentTab === 'sessions'
-          ? 'sessions'
-          : currentTab === 'trust'
-            ? 'trusted-devices'
-            : 'profile/history';
-      const input: Record<string, string> = {};
-      if (currentTab.endsWith('History'))
-        input.kind = currentTab === 'loginHistory' ? 'login' : 'account';
-      if (append && cursor.value) input.before = cursor.value;
-      const response = await accountRequest(path, 'GET', input, abort.signal);
-      const page = currentTab.endsWith('History')
-        ? (() => {
-            const p = data(response);
-            return pageResponse({
-              data: p.entries,
-              meta: { next_cursor: p.next },
-            });
-          })()
-        : pageResponse(response);
-      if (alive && own === readEpoch && currentTab === tab.value) {
-        rows.value = append ? [...rows.value, ...page.rows] : page.rows;
-        cursor.value = page.cursor;
-      }
-    } finally {
-      if (own === readEpoch) pageLoading.value = false;
-    }
-  }
-  const historyDetail = shallowRef<AccountHistoryDetail>();
-  const historyDetailOpen = ref(false),
-    historyDetailLoading = ref(false),
-    historyDetailFailed = ref(false);
-  let historyDetailId = '',
-    historyDetailEpoch = 0;
-  let historyDetailAbort: AbortController | undefined;
-  function closeHistoryDetail() {
-    historyDetailEpoch++;
-    historyDetailAbort?.abort();
-    historyDetailOpen.value = false;
-    historyDetailLoading.value = false;
-    historyDetail.value = undefined;
-  }
-  async function openHistoryDetail(publicId: string) {
-    historyDetailAbort?.abort();
-    const own = ++historyDetailEpoch;
-    historyDetailId = publicId;
-    historyDetailAbort = new AbortController();
-    historyDetailOpen.value = true;
-    historyDetailLoading.value = true;
-    historyDetailFailed.value = false;
-    historyDetail.value = undefined;
-    try {
-      const response = await accountRequest(
-        'profile/history/detail',
-        'GET',
-        { event: publicId },
-        AbortSignal.any([abort.signal, historyDetailAbort.signal]),
-      );
-      if (alive && own === historyDetailEpoch)
-        historyDetail.value = historyDetailResponse(response, publicId);
-    } catch (error) {
-      if (
-        alive &&
-        own === historyDetailEpoch &&
-        !historyDetailAbort.signal.aborted &&
-        !(error instanceof RequestCancelledError)
-      )
-        historyDetailFailed.value = true;
-    } finally {
-      if (alive && own === historyDetailEpoch)
-        historyDetailLoading.value = false;
-    }
-  }
-  function retryHistoryDetail() {
-    return openHistoryDetail(historyDetailId);
-  }
-  async function readTrustedDevices(append = false) {
-    const own = ++trustedReadEpoch;
-    trustedLoading.value = true;
-    try {
-      const input =
-        append && trustedCursor.value ? { before: trustedCursor.value } : {};
-      const page = pageResponse(
-        await accountRequest('trusted-devices', 'GET', input, abort.signal),
-      );
-      if (alive && own === trustedReadEpoch) {
-        trustedRows.value = append
-          ? [...trustedRows.value, ...page.rows]
-          : page.rows;
-        trustedCursor.value = page.cursor;
-      }
-    } finally {
-      if (own === trustedReadEpoch) trustedLoading.value = false;
-    }
-  }
-  async function loadTrustedDevices(append = false) {
-    if (!security.value?.trusted_devices_enabled) return false;
-    return (await perform(() => readTrustedDevices(append), false)) === true;
-  }
-  async function revokeTrustedDevice(publicId: string) {
-    if (
-      !security.value?.trusted_devices_enabled ||
-      !trustedRows.value.some((row) => row.public_id === publicId)
-    )
-      return false;
-    return (
-      (await perform(async () => {
-        await authPost(
-          'trusted-devices/revoke',
-          { public_id: publicId },
-          abort.signal,
-        );
-        if (!alive) return;
-        trustedRows.value = trustedRows.value.filter(
-          (row) => row.public_id !== publicId,
-        );
-        notice.value = text(
-          'Zaufanie urządzeniu zostało unieważnione.',
-          'Device trust revoked.',
-        );
-      }, false)) === true
-    );
-  }
-  async function readDelivery() {
-    await fetchDelivery();
-  }
-  async function fetchDelivery(signal = abort.signal) {
-    const own = ++deliveryReadEpoch;
-    const p = data(
-      await authPost('delivery-preferences', { operation: 'read' }, signal),
-    );
-    if (
-      p.account !== accountId ||
-      !Number.isSafeInteger(p.revision) ||
-      !Array.isArray(p.categories)
-    )
-      throw new TypeError('Invalid delivery preferences.');
-    const list = p.categories.map((item) => {
-      const row = record(item),
-        names = record(row.names);
-      if (
-        typeof row.module !== 'string' ||
-        typeof row.key !== 'string' ||
-        typeof names.pl !== 'string' ||
-        typeof names.en !== 'string' ||
-        ![row.mandatory, row.sensitive, row.enabled].every(
-          (v) => typeof v === 'boolean',
-        ) ||
-        !Array.isArray(row.recipients) ||
-        !row.recipients.every((v) => typeof v === 'string')
-      )
-        throw new TypeError('Invalid delivery category.');
-      return row as unknown as DeliveryChoice;
-    });
-    if (
-      alive &&
-      own === deliveryReadEpoch &&
-      accountPreferences.currentAccount() === accountId
-    )
-      delivery.value = list;
-    return { revision: Number(p.revision), categories: list };
   }
   async function selectTab(value: AccountTab) {
     if (busy.value || !tabs.value.includes(value)) return;
@@ -795,7 +445,7 @@ export function useAuthAccount(accountId: string) {
     if (needsProof.value) input.method = method.value;
     let reauthenticating = false;
     const saved = await performTask(async () => {
-      let path = '',
+      let path: string,
         verb: 'POST' | 'PATCH' | 'DELETE' = 'POST';
       let body: Record<string, unknown> | FormData = input;
       if (op === 'details') {
@@ -1235,80 +885,6 @@ export function useAuthAccount(accountId: string) {
       } else if (alive) await readPage();
     });
   }
-  async function saveDelivery(choice: DeliveryChoice) {
-    const before = delivery.value.find(
-      (item) => item.module === choice.module && item.key === choice.key,
-    );
-    if (!before) return;
-    await perform(async () => {
-      await accountPreferences.mutate(async (_revision, signal) => {
-        // A shared snapshot can advance the revision before this row has reconciled.
-        // Re-read and compare this row inside the same queue before using its token.
-        const fresh = await fetchDelivery(
-          AbortSignal.any([signal, abort.signal]),
-        );
-        if (!alive || signal.aborted) throw new RequestCancelledError();
-        const current = fresh.categories.find(
-          (item) => item.module === choice.module && item.key === choice.key,
-        );
-        const recipients = (item: DeliveryChoice) =>
-          [...item.recipients].sort().join('\0');
-        if (
-          !current ||
-          current.mandatory ||
-          current.sensitive ||
-          (recipients(choice) !== recipients(before) &&
-            recipients(current) !== recipients(before) &&
-            recipients(choice) !== recipients(current))
-        )
-          throw new ApiError(409, {});
-        return accountRequest(
-          'delivery-preferences',
-          'POST',
-          {
-            operation: 'write',
-            module: choice.module,
-            category: choice.key,
-            revision: fresh.revision,
-            enabled:
-              choice.enabled === before.enabled
-                ? current.enabled
-                : choice.enabled,
-            recipients:
-              recipients(choice) === recipients(before)
-                ? current.recipients
-                : choice.recipients,
-          },
-          AbortSignal.any([signal, abort.signal]),
-        );
-      });
-      if (alive) {
-        await readDelivery();
-        notice.value = text(
-          'Zapisano ustawienia powiadomień.',
-          'Notification settings saved.',
-        );
-      }
-    });
-  }
-  async function resetPreferences(includeDelivery = false) {
-    if (!confirmed.value) {
-      failure.value = 'confirmation';
-      return;
-    }
-    await perform(async () => {
-      if (includeDelivery) await accountPreferences.resetAll();
-      else await accountPreferences.reset();
-      if (alive) {
-        confirmed.value = false;
-        await readDelivery();
-        notice.value = text(
-          'Przywrócono domyślne preferencje.',
-          'Default preferences restored.',
-        );
-      }
-    });
-  }
   function restoreDraft() {
     if (!draft.value) return;
     for (const key of ['name', 'first_name', 'surname'])
@@ -1382,7 +958,6 @@ export function useAuthAccount(accountId: string) {
     { flush: 'sync' },
   );
   onScopeDispose(() => {
-    closeHistoryDetail();
     if (
       task.value === 'details' &&
       profile.value &&
@@ -1396,11 +971,6 @@ export function useAuthAccount(accountId: string) {
     document.removeEventListener('visibilitychange', refreshVisible);
     window.removeEventListener('focus', refreshVisible);
     window.removeEventListener('pageshow', refreshVisible);
-    deliveryReadEpoch++;
-    readEpoch++;
-    trustedReadEpoch++;
-    trustedRows.value = [];
-    trustedCursor.value = null;
     abort.abort();
     cleanSecrets();
     for (const values of Object.values(sectionFields))

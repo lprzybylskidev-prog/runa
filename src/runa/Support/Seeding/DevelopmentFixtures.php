@@ -6,11 +6,11 @@ use Closure;
 use Illuminate\Database\Connection;
 use ReflectionClass;
 use Runa\Management\DevelopmentContext;
-use Runa\Support\Modules\Data\AuthorityLock;
-use Runa\Support\Modules\ModuleAvailability;
-use Runa\Support\Modules\ModuleDiscovery;
+use Runa\ModuleFramework\Data\AuthorityLock;
+use Runa\ModuleFramework\ModuleAvailability;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\Modules\ModuleIdentity;
-use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 
 /** Trusted local tooling only. No HTTP, queue or production fixture ingress. */

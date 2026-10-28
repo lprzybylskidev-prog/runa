@@ -94,3 +94,5 @@ changes/context or credential values. Follow docs/runa/handbook/modules/auth/his
 
 For every temporary compatibility/security exception, follow
 `docs/runa/handbook/security/baseline.md#temporary-compatibility-and-security-exceptions`: record a removal condition and retire the exception code, policy/flags, dedicated tests and obsolete guidance when a stable corrected replacement passes verification. Keep customer changes within the authorized application/tooling scope; protected Runa source still requires the platform update workflow.
+
+Use docs/runa/handbook/architecture/public-api.md for source boundaries and named integration limits. Static checks do not authorize reserved API use, security binding replacement or direct foreign persistence.

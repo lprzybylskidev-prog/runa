@@ -7,6 +7,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditModelPolicy;
@@ -14,12 +15,15 @@ use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditSuppression;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Api\OperationGuard;
 
 final readonly class AutomaticCapture
 {
     public function __construct(private DatabaseManager $database, private ModuleApis $apis, private AuditSuppression $suppression, private OperationGuard $guard) {}
 
+    /** @template T
+     * @param  Closure(): T  $write
+     * @return T
+     */
     public function mutate(Model $model, AuditModelPolicy $policy, string $operation, Closure $write): mixed
     {
         $connection = $model->getConnection();
@@ -36,8 +40,17 @@ final readonly class AutomaticCapture
         try {
             return $connection->transaction(function () use ($model, $policy, $operation, $write, $api): mixed {
                 $soft = in_array(SoftDeletes::class, class_uses_recursive($model), true);
-                $deletedColumn = $soft ? $model->getDeletedAtColumn() : null;
-                $columns = array_values(array_unique([...$policy->fields, 'public_id', ...($soft ? [$deletedColumn] : [])]));
+                $deletedColumn = null;
+                if ($soft) {
+                    if (! method_exists($model, 'getDeletedAtColumn')) {
+                        throw new AuditUnavailable('Soft-deleted model has no deletion column.');
+                    }
+                    $deletedColumn = $model->getDeletedAtColumn();
+                    if (! is_string($deletedColumn)) {
+                        throw new AuditUnavailable('Invalid deletion column.');
+                    }
+                }
+                $columns = array_values(array_unique([...$policy->fields, 'public_id', ...($deletedColumn !== null ? [$deletedColumn] : [])]));
                 $read = fn () => $model->getConnection()->table($model->getTable())
                     ->where($model->getKeyName(), $model->getRawOriginal($model->getKeyName()) ?? $model->getKey())
                     ->lockForUpdate()->first($columns);
@@ -72,8 +85,12 @@ final readonly class AutomaticCapture
                 if ($event === 'updated' && $changes === []) {
                     return $result;
                 }
+                $identity = $after ?? $before;
+                if ($identity === null || ! is_string($identity->public_id)) {
+                    throw new AuditUnavailable('Auditable public identity unavailable.');
+                }
                 $api->record(new AuditEvent($policy->module, $policy->type.'.'.$event,
-                    entities: [new AuditEntity($policy->module, $policy->type, ($after ?? $before)->public_id)],
+                    entities: [new AuditEntity($policy->module, $policy->type, $identity->public_id)],
                     changes: $policy->snapshot ? ['before' => $old, 'after' => $new] : $changes,
                     context: ['capture' => $policy->snapshot ? 'snapshot' : 'diff'], sensitiveFields: $policy->sensitiveFields));
 
@@ -89,6 +106,7 @@ final readonly class AutomaticCapture
         }
     }
 
+    /** @return array<array-key, mixed>|null */
     private function approved(?object $row, AuditModelPolicy $policy): ?array
     {
         if ($row === null) {

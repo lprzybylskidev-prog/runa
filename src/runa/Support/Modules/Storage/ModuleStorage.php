@@ -6,6 +6,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\FilesystemManager;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Runa\ModuleFramework\Storage\LocalStorageBoundary;
 use Runa\Support\Modules\ModuleIdentity;
 use RuntimeException;
 

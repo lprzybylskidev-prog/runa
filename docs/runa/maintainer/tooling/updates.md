@@ -2,7 +2,45 @@
 
 The separately supplied updater operates on customer **development checkouts only**. Production receives complete customer commits through deployment. The external tool provides read-only preflight/plan, explicit apply and journaled resume. There is no customer update/integrity command, local trusted-source baseline, repair/force option or automatic infrastructure reconciliation.
 
-Keep distribution/update.py, update_contracts.py, update_runtime.py, update_customization.py, update_execution.py, update_modules.py, update_files.py, module-plan.php and bootstrap.py together outside customer source. The standard-library tool package runs independently of the maintenance checkout, using native Linux/Python/Git/Docker/Compose and an existing trusted owner toolchain image for isolated Composer/pnpm validation.
+Keep the complete separately prepared bundle together outside the selected customer
+installation: `distribution`, canonical `tools/core`, inert package parents and
+declared PHP resources. It runs as source with no host pip/install or maintainer
+package. Direct `update.py`/`initialize.py` adapters select their own fixed package
+from any cwd; they pass the customer workspace explicitly. `UpdatePlanner` receives
+acquisition/runtime/lock/module probes, and `UpdateExecutor` receives that planner
+and a runtime factory. Planning, customization/files, Docker ownership and execution
+have separate modules; none imports the command adapter. Source/data journal phases
+remain compatible. The 0.5.0-to-0.6.0 updater reads verified source/metadata and uses
+PHP/database processes; it never imports either customer Python release.
+
+Execution has explicit runtime, planner, consent, journal and report contracts.
+Before resumed source/data work it validates consumed release identities, review
+fields, migration/seed baseline, database mounts and module-completion records.
+Malformed evidence produces a fixed blocking diagnostic and remains untouched.
+Unknown evidence is preserved, including nested baseline/review additions; optional
+legacy module/action lists and manual-reconciliation metadata may remain absent.
+Database mount identities are JSON lists when captured and stored, preserving
+comparison across restart; a changed database still refuses resume. No journal
+validation authorizes repair, source adoption or replay of committed data work.
+
+Preflight declares typed acquisition/runtime/lock/module probe inputs and results,
+release identities, plans and reports. Only the consumed tag/commit/tag-object fields
+from acquisition enter the report; additional receipt metadata is not published.
+Acquisition remains responsible for independently verified source identities.
+Per-request probe overrides do not mutate the composed planner. Blocked reports keep
+completed checks and any partial plan, including when the module probe refuses.
+Same-release plans still report pending module migrations/upgrades before concluding
+that there is no work. Downloads remain external and are cleaned on handled failure.
+
+External process adapters distinguish captured text from bytes and retain literal
+arguments, closed stdin, native exits and fixed failure diagnostics. `DockerRuntime`
+passes its injected command transport through runtime and read-only database probes;
+lock validation uses one process policy for its probes and scoped worker cleanup.
+Compose, container, service-status and migration/seed/module metadata decoders check
+consumed fields before comparison without discarding additional response fields.
+Missing old-release module tables remain absent metadata, not a reason to create
+tables or execute customer code. Null Docker environment/label collections are
+treated as absent; required image, ownership, mount and privilege checks still apply.
 
 ```sh
 python3 update.py --plan --installation /absolute/customer-development \
@@ -65,15 +103,15 @@ Publish concrete target release requirements for manual reconciliation of depend
 ## Verification
 
 ```sh
-python3 tools/maintainer/testing/update.py
-python3 tools/maintainer/testing/update-execution.py
-python3 tools/maintainer/testing/installation-host.py --updater-preflight --team-propagation --customer-knowledge --customer-deployment
+python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update.py
+python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update_execution.py
+python3 -m tests.tools.runa.acceptance.installation_host --updater-preflight --team-propagation --customer-knowledge --customer-deployment
 ```
 
 Pure contracts cover independently verified Git acquisition, source ownership, dependency/compatibility failures, read-only preservation and customization decision binding. Run them inside the application toolchain for PHP grammar parity. Native disposable acceptance exercises real Docker Compose/Composer/pnpm/PostgreSQL, checks read-only development plans, real platform migration/seed execution, failure fencing/resume and production rejection, and preserves active development resources. Synthetic future release fixtures are not evidence of publication.
 
 ## Journaled delivered-file actions
 
-The complete file review binds original/target release identities, local before-state, modes/types and proposed actions. Unattended continue requires both --customization-decision=continue and --review-fingerprint from the inspected plan. Under the operation lock the updater repeats preflight before creating a journal. It stages independent target bytes, retains previous bytes and records each file rename transition durably. Resume validates all retained identities, normalizes known completed changes, and requests a fresh exact review for new local differences. Unknown staging or ambiguous changed transitions block for inspection. Protected-source refusal remains absolute on every resume.
+The complete file review binds original/target release identities, local before-state, modes/types and proposed actions. Unattended continue requires both --customization-decision=continue and --review-fingerprint from the inspected plan. Under the operation lock the updater repeats preflight before creating a journal. It stages independent target bytes, retains previous bytes and records each file rename transition durably. Resume validates the consumed action record fields and all retained identities, normalizes known completed changes, and requests a fresh exact review for new local differences. Typed review/action records preserve serialization and the existing consent fingerprint; additional evidence fields remain intact, and legacy journals without action lists remain readable. Unknown staging or ambiguous changed transitions block for inspection. Protected-source refusal remains absolute on every resume.
 
 Completion reports manual instruction reconciliation and affected service/devcontainer follow-up. Review image rebuild/recreation, custom writers/services and editor reopen before committing the complete customer project and deploying it. Updater file recovery never claims database rollback.

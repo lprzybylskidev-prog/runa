@@ -15,9 +15,10 @@ final readonly class PolicyExceptions
 
     public function value(User $user, string $key): int
     {
-        $global = $this->settings->value('runa.auth', $key);
+        $global = $this->settings->integer('runa.auth', $key);
         $connection = app('db')->connection();
         $revision = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
+        /** @var (\stdClass&object{value: int})|null $row */
         $row = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->where('key', $key)
             ->where('policy_revision', $revision)->whereNull('revoked_at')->where('expires_at', '>', CarbonImmutable::now('UTC'))->first();
 

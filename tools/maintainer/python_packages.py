@@ -1,0 +1,90 @@
+"""Explicit package projection and private wheel preparation."""
+
+from __future__ import annotations
+
+import shutil
+import sys
+import tarfile
+import tempfile
+import tomllib
+from pathlib import Path
+
+from tools.application.python_toolchain import PYTHON, ROOT, STATE, environment
+from tools.core.process import InputMode, ProcessSpec, SubprocessRunner
+
+METADATA = {
+    "application": "pyproject.toml",
+    "maintainer": "tools/maintainer/packaging/pyproject.toml",
+    "external": "distribution/pyproject.toml",
+}
+
+
+def stage(kind: str, destination: Path, root: Path = ROOT) -> None:
+    """Copy only declared packages and resources; never discover across roots."""
+    metadata = root / METADATA[kind]
+    config = tomllib.loads(metadata.read_text())
+    settings = config["tool"]["setuptools"]
+    destination.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(metadata, destination / "pyproject.toml")
+    shutil.copyfile(root / "VERSION", destination / "VERSION")
+    for package in settings["packages"]:
+        relative = Path(*package.split("."))
+        source = root / relative
+        target = destination / relative
+        target.mkdir(parents=True, exist_ok=True)
+        for path in sorted(source.glob("*.py")):
+            if path.is_symlink():
+                raise ValueError("Package source must be a regular authored file.")
+            shutil.copy2(path, target / path.name)
+        for resource in settings.get("package-data", {}).get(package, []):
+            path = source / resource
+            if not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
+                raise ValueError("Missing or escaping declared package resource.")
+            output = target / resource
+            output.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, output)
+
+
+def external_bundle(source: Path, output: Path) -> Path:
+    """Package canonical external/core source without installing anything on the host."""
+    version = (source / "VERSION").read_text().strip()
+    target = output / ("runa-external-" + version + ".tar.gz")
+    with tarfile.open(target, "w:gz") as archive:
+        for path in sorted(source.rglob("*")):
+            if path.is_file():
+                archive.add(path, arcname=path.relative_to(source), recursive=False)
+    shutil.copy2(source / "distribution/bootstrap.py", output / "bootstrap.py")
+    return target
+
+
+def build(kind: str, output: Path | None = None) -> Path:
+    directory = STATE / "build"
+    directory.mkdir(parents=True, exist_ok=True)
+    output = (output or STATE / "build/wheels" / kind).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=kind + "-", dir=directory) as temporary:
+        source = Path(temporary)
+        stage(kind, source)
+        SubprocessRunner().run(
+            ProcessSpec(
+                (
+                    str(PYTHON),
+                    "-c",
+                    "from setuptools.build_meta import build_wheel; "
+                    "import sys; build_wheel(sys.argv[1])",
+                    str(output),
+                ),
+                source,
+                environment(),
+                stdin=InputMode.CLOSED,
+            )
+        ).checked()
+        if kind == "external":
+            external_bundle(source, output)
+    return output
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] not in METADATA:
+        raise SystemExit("Use python-tool packages --kind=application|maintainer|external.")
+    print(build(sys.argv[1]))

@@ -9,18 +9,23 @@ use Runa\Support\Modules\ModuleIdentity;
 /** Trusted callers declare approved business values; never pass requests/models wholesale. */
 final readonly class AuditEvent
 {
+    /** @var list<AuditEntity> */
+    public array $entities;
+
+    /** @var array<array-key, mixed> */
     public array $changes;
 
+    /** @var array<array-key, mixed> */
     public array $context;
 
-    /** @param list<AuditEntity> $entities
-     * @param  array<string, mixed>  $changes
+    /** @param array<array-key, mixed> $entities
+     * @param  array<array-key, mixed>  $changes
      * @param  list<string>  $sensitiveFields  Application-specific credential aliases.
-     * @param  array<string, mixed>  $context
+     * @param  array<array-key, mixed>  $context
      */
     public function __construct(
         public string $module, public string $action, public string $outcome = 'success',
-        public array $entities = [], array $changes = [], array $context = [], array $sensitiveFields = [],
+        array $entities = [], array $changes = [], array $context = [], array $sensitiveFields = [],
     ) {
         new ModuleIdentity($module);
         new ApiOperation($action);
@@ -28,11 +33,14 @@ final readonly class AuditEvent
             || ! array_is_list($entities) || count($entities) > 64) {
             throw new \InvalidArgumentException('Invalid Audit event.');
         }
+        $approved = [];
         foreach ($entities as $entity) {
             if (! $entity instanceof AuditEntity) {
                 throw new \InvalidArgumentException('Audit entities require immutable references.');
             }
+            $approved[] = $entity;
         }
+        $this->entities = $approved;
         $this->changes = SafePayload::clean($changes, $sensitiveFields);
         $this->context = SafePayload::clean($context, $sensitiveFields);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\SettingsObserver;
-use Runa\Support\Modules\Api\DenyProtectedOperations;
+use Runa\Integration\Core\DenyProtectedOperations;
 
 require '/workspace/src/vendor/autoload.php';
 
@@ -69,8 +69,14 @@ if ($pid === 0) {
 $expect(pcntl_waitpid($pid, $status) === $pid && pcntl_wifexited($status) && pcntl_wexitstatus($status) === 0, 'Process wait failed.');
 $process = proc_open([PHP_BINARY, '-r', 'exit(42);'], [], $pipes);
 $expect(is_resource($process) && proc_close($process) === 42, 'Application child-process execution failed.');
-foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'src/tests', 'src/runa/Testing', 'src/runa/tests', 'src/app/modules/reference', 'src/app/modules/module_probe', 'src/app/tests', 'src/runa/tools', 'src/runa/management', 'src/node_modules', 'src/vendor/laravel/boost', 'src/vendor/pestphp', 'src/vendor/phpstan'] as $path) {
+foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 'tests', 'node_modules', 'src/tests', 'src/runa/Testing', 'src/runa/Development', 'src/runa/frontend', 'src/runa/build', 'src/runa/Console/Commands/Generators', 'src/runa/Console/Commands/MakeModule.php', 'src/runa/Console/Commands/CheckTestDatabase.php', 'src/runa/Console/Commands/DevelopmentAccounts.php', 'src/runa/modules/auth/backend/Development', 'src/runa/modules/permissions/backend/Development', 'src/runa/modules/auth/frontend', 'src/runa/Support/Seeding/DevelopmentFixtures.php', 'src/runa/Support/Seeding/DevelopmentContributor.php', 'src/runa/modules/auth/backend/Contracts/DevelopmentAccounts.php', 'src/runa/modules/permissions/backend/Contracts/DevelopmentAccess.php', 'src/runa/testing', 'tests/backend/runa', 'src/app/modules/reference', 'src/app/modules/module_probe', 'tests/backend/app', 'src/runa/tools', 'src/runa/Tooling/Management', 'src/node_modules', 'src/vendor/laravel/boost', 'src/vendor/pestphp', 'src/vendor/phpstan'] as $path) {
     $expect(! file_exists('/workspace/'.$path), 'Development material in runtime: '.$path);
+}
+foreach (['src/runa/Support/Modules/Development/ModuleContractSuite.php', 'src/runa/ModuleFramework/Development/api-boundary.json', 'src/runa/Support/Modules/Work/ModuleJob.php', 'src/runa/Console/Commands/CheckModules.php', 'src/runa/Console/Commands/TestMail.php'] as $path) {
+    $expect(is_file('/workspace/'.$path), 'Missing runtime/operator contract: '.$path);
+}
+foreach ([...(glob('/workspace/src/runa/modules/*/frontend') ?: []), ...(glob('/workspace/src/app/modules/*/frontend') ?: [])] as $path) {
+    $expect(! is_dir($path), 'Raw module frontend in runtime.');
 }
 $installed = json_decode(file_get_contents('/workspace/src/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
 $expect($installed['dev'] === false, 'Development dependencies included.');

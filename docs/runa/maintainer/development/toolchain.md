@@ -38,7 +38,7 @@ do not authorize automatic dependency upgrades; Composer/pnpm locks remain uncha
 | vue-tsc                       | 3.3.13                                            | https://registry.npmjs.org/vue-tsc/3.3.13                                    |
 | Pint                          | 1.32.1                                            | https://repo.packagist.org/p2/laravel/pint.json                              |
 | Larastan / PHPStan            | 3.13.0 / 2.3.1                                    | https://repo.packagist.org/p2/larastan/larastan.json                         |
-| Pest / Laravel plugin         | 5.3.2 / 5.0.1                                     | https://repo.packagist.org/p2/pestphp/pest-plugin-laravel.json               |
+| Pest / Laravel plugin         | 5.3.4 / 5.0.1                                     | https://repo.packagist.org/p2/pestphp/pest-plugin-laravel.json               |
 | Vitest                        | 5.0.5                                             | https://registry.npmjs.org/vitest/5.0.5                                      |
 | Vue Test Utils                | 2.5.1                                             | https://registry.npmjs.org/@vue/test-utils/2.5.1                             |
 | Playwright                    | 1.64.1                                            | https://registry.npmjs.org/@playwright/test/1.64.1                           |
@@ -65,3 +65,51 @@ Point 7 installed the selected formatting/analysis/test packages. The matching V
 Point 8 adds Boost 2.10.3 (MIT) with five new locked development packages and no upgrades to existing packages. Composer audit reported no advisories. Codex CLI 0.163.0 (Apache-2.0) supports Node >=16; its launcher selects one native platform package rather than a JavaScript runtime dependency tree. Xdebug 3.5.3 uses the Xdebug license and supports PHP 8.4. Both are development-only. Review sources: https://github.com/openai/codex, https://registry.npmjs.org/@openai/codex/0.163.0, https://xdebug.org/docs/compat and https://pecl.php.net/package/xdebug. No scanner result is suppressed.
 
 The isolated Codex 0.163.0 npm lock audit (launcher plus selected platform package, 3 audited packages) reported zero vulnerabilities on 2026-10-17. This temporary lock is diagnostic evidence under ignored `.runtime`, not an application dependency.
+
+## Python engineering tools
+
+The reviewed Python pins, complete wheel graph and official Pyright Node artifact
+are recorded in the [Python dependency review](../tooling/python-rebuild/dependency-review.md).
+Use the [private setup/testing workflow](../tooling/python-rebuild/toolchain.md);
+these tools do not change the host stdlib-only operational contract or customer
+Composer/pnpm manifests. No image rebuild is required to initialize this private venv.
+
+### RM-2026-012 test dependency correction (2026-10-28)
+
+The first candidate audit found PHPUnit GHSA-9vw2-f4vp-x7gf. PHPUnit 13.4.2
+was affected; upstream fixes it from 13.4.4. Pest 5.3.2 and 5.3.3 explicitly
+reject that corrected PHPUnit range, so the compatible existing Pest pin advances
+to 5.3.4. The minimal resolved lock changes only Pest 5.3.4, PHPUnit 13.4.5,
+ParaTest 7.27.4 and sebastian/git-state 1.1.0. No package is added or removed.
+All remain development-only; PHP ^8.4 and existing Laravel integration are retained.
+Pest remains MIT, PHPUnit BSD-3-Clause; the lock records upstream source revisions.
+Composer's post-update advisory check reports no advisories for this lock; full
+candidate scanner/runtime verification is still required. No audit exception is used.
+
+Sources: [upstream advisory](https://github.com/sebastianbergmann/phpunit/security/advisories/GHSA-9vw2-f4vp-x7gf),
+[Pest metadata](https://repo.packagist.org/p2/pestphp/pest.json),
+[PHPUnit metadata](https://repo.packagist.org/p2/phpunit/phpunit.json).
+
+### RM-2026-012 MIME security correction (2026-10-28)
+
+The later candidate audit reported CVE-2026-45070 / PKSA-wtxr-p26d-nn42 against
+locked symfony/mime 8.1.7. The owner approved updating this existing transitive
+runtime dependency to 8.1.10. Composer resolves exactly one changed package, with
+no additions/removals; Laravel remains 13.37.0 and Symfony Mailer remains 8.1.7.
+Both accept Mime ^8.0. Existing PHP >=8.4.1, polyfill requirements, autoload and
+MIT license are unchanged. The lock pins the official symfony/mime revision
+8d1232052c9cdef170ed9608b3147bca4f61ff69; no substitute mail implementation or
+additional dependency is introduced.
+
+Installed ParameterizedHeader validates every parameter name against the RFC token
+character class before storing the parameter map and raises RfcComplianceException
+for invalid names. This retains legitimate parameters while closing the reported
+header-injection path. Composer's actual updated-lock audit reports no advisories;
+complete backend and real repository/runtime image checks supply compatibility and
+security acceptance. No finding is suppressed and no temporary workaround is added.
+
+Sources: [upstream advisory](https://github.com/symfony/symfony/security/advisories/GHSA-vqc8-7275-q272),
+[official component source](https://github.com/symfony/mime/tree/v8.1.10),
+[package metadata](https://repo.packagist.org/p2/symfony/mime.json).
+The live Composer advisory ranges determine the selected corrected patch; older
+published summaries can describe earlier deliveries of the fix.

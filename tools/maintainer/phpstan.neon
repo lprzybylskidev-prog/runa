@@ -1,0 +1,26 @@
+includes:
+    - ../../src/phpstan.neon
+parameters:
+    paths:
+        - ../../src/runa/Console
+        - ../../src/runa/Contracts
+        - ../../src/runa/Configuration
+        - ../../src/runa/Identity
+        - ../../src/runa/Integration
+        - ../../src/runa/Logging
+        - ../../src/runa/Mail
+        - ../../src/runa/ModuleFramework
+        - ../../src/runa/modules
+        - ../../src/runa/Runtime
+        - ../../src/runa/Database
+        - ../../src/runa/Development
+        - ../../src/runa/Foundation
+        - ../../src/runa/Http
+        - ../../src/runa/Providers
+        - ../../src/runa/Support
+        - ../../src/runa/Testing
+        - ../../src/runa/Tooling/Management
+        - ../../src/runa/config
+        - ../../src/runa/database
+        - ../../src/runa/routes
+        - ../../tests/backend/runa/Fixtures/AuditCaptureFixture.php

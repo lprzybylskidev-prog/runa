@@ -2,7 +2,7 @@
 
 The repository is currently public. The same bootstrap supports future private
 GitHub access; public acquisition does not need a token. It does not change
-repository visibility. Keep the reviewed owner tool directory containing `distribution/bootstrap.py` and `distribution/installation.py` outside the destination. Do not pipe an unreviewed network script into a shell.
+repository visibility. Keep the reviewed standalone `distribution/bootstrap.py` outside the destination; current releases supply their own versioned internal installation gateway. Do not pipe an unreviewed network script into a shell.
 The bootstrap uses only Python's standard library; PHP, Composer, Node and pnpm
 remain containerized.
 
@@ -69,6 +69,10 @@ ID/name/clone URL, resolves the tag object and commit, fetches only that exact t
 using Git HTTPS, and compares the fetched identities with the API. Git object
 checking is enabled. The repository/release/tag identities are read again before
 publication to detect changes during the download. Root VERSION must match the tag.
+Consumed metadata is validated before selecting identities: repository/release IDs
+must be positive integers (never booleans), release flags must be booleans, and
+nested tag/commit records must carry the expected object and string fields.
+Malformed responses fail with fixed diagnostics; unrelated API fields are ignored.
 
 Before checkout, reject unsafe paths, submodules, unsupported file types and source
 larger than 512 MiB or 50000 files. After checkout, verify every tracked file's Git
@@ -105,10 +109,10 @@ repository ID/name, tag object, commit, source digest, mode, trust and state
 `downloaded`. The checkout is detached. Releases with a customer instruction product stage its reviewed substitutions; these expected changes must be committed into the customer repository. Historical releases without the product retain a clean projection. This is acquisition evidence,
 not an installation-success marker or trusted file baseline. No local ownership inventory or customer integrity checker is generated. The external development updater independently obtains original/target release source for preflight, apply and verified journaled resume.
 
-The owner runs the external launcher personally; neither the launcher nor its adjacent installation helper is delivered as customer tooling. It is never installed into bin or customer source.
+The owner runs the external launcher personally; the external launcher is excluded from customer tooling; internal installation mechanics remain in the delivered application tooling. It is never installed into bin or customer source.
 After verifying the **complete** release, acquisition applies a fixed non-cone
 sparse projection before atomic publication. Both now/later exclude
-`distribution/`, `tools/maintainer/`, `src/runa/tests/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
+`distribution/`, `tools/maintainer/`, `tests/backend/runa/`, `src/runa/tools/`, install/project aliases and old owner entrypoints. Customer hooks remain available under tools/application.
 The credential-free receipt records the full source digest and projection version
 plus exact exclusions. Git remains detached at the verified commit with customer instruction substitutions staged where supplied;
 subsequent checkouts retain the sparse projection. Git objects/history may contain
@@ -122,18 +126,22 @@ A distinct customer-source remote lifecycle is not implemented by this acquisiti
 The local receipt records ownership context; it is not a signature or a security
 boundary against an operator deliberately rewriting the installation.
 
-`--install later` prints a shell-quoted fixed Python invocation of the
-external installation helper, with the destination as its working directory. `--install now` invokes exactly that
-helper and propagates failure. No installed standalone launcher or public
-`runa:install` command is required. Keep the separately supplied launcher outside
-the destination; retain its adjacent installation.py helper for postponed installation and resume.
+`--install later` prints a shell-quoted fixed module invocation of the selected
+application's installation gateway (protocol 1), with the destination as its
+working directory. `--install now` invokes that exact process and reports a failed installer
+without reacquiring or overwriting the published source. The copied single-file bootstrap needs no sibling installer for a
+protocol-1 release. The internal gateway is not a public Artisan command or a
+Python extension API. Historical releases without the protocol use their matching
+historical installer; the current updater can upgrade an existing 0.5.0 development
+installation without importing that release's Python modules. No source version is
+loaded into another version's interpreter namespace.
 Optional profile/settings/noninteractive options are forwarded. After a failed
 install preserve source/settings and rerun the printed command with `--resume`;
 do not reacquire into that directory. Ordinary lifecycle/recovery uses
 `php artisan` and the restricted host executor. External development updater preflight/plan, apply and journaled resume are separate from acquisition. See [owner updates](updates.md).
 See [installation](installation.md) for settings, preservation and recovery.
 
-Offline acceptance: `python3 tools/maintainer/testing/bootstrap.py`. The local quality graph
+Offline acceptance: `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py`. The local quality graph
 includes `bootstrap-source-contracts`; tests use synthetic credentials and real
 temporary Git repositories/atomic filesystem operations. Live public acquisition
 checks the real API/ref/file identities without provisioning services. See

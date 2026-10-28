@@ -56,3 +56,5 @@ release number. Build replacements from pinned, integrity-verified sources with
 patched toolchains when explicitly authorized; keep compilers out of runtime.
 Follow [PostgreSQL runtime security](../../../../docs/runa/handbook/security/postgres-gosu-policy.md)
 for the supplied image, preserving database data and the documented entrypoint.
+
+Use the [runtime source projection](../../../../docs/runa/handbook/production/architecture.md#runtime-source-projection) and [public placement table](../../../../docs/runa/handbook/architecture/public-api.md#source-placement-and-supported-entrypoints) for image inputs. Retain operator diagnostics and persisted identities while excluding developer implementation and raw module frontend from PHP runtime.

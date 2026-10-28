@@ -9,6 +9,9 @@ final class OwnHistoryProxy extends GuardedApi implements OwnHistory
 {
     public function page(string $module, string $entityType, array $actions, ?string $before = null): array
     {
-        return $this->invoke(__FUNCTION__, [$module, $entityType, $actions, $before]);
+        /** @var array{entries: list<array{public_id: string, occurred_at: string, action: string, outcome: string}>, next: string|null} $result */
+        $result = $this->invoke(__FUNCTION__, [$module, $entityType, $actions, $before]);
+
+        return $result;
     }
 }

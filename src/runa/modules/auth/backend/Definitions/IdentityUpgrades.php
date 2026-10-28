@@ -9,6 +9,7 @@ use Runa\Modules\Auth\UpgradeAccountCards;
 use Runa\Modules\Auth\UpgradeAccountCopy;
 use Runa\Modules\Auth\UpgradeAccountEditor;
 use Runa\Modules\Auth\UpgradeAccountMethods;
+use Runa\Modules\Auth\UpgradeAccountOrchestration;
 use Runa\Modules\Auth\UpgradeAccountRefresh;
 use Runa\Modules\Auth\UpgradeAccountUi;
 use Runa\Modules\Auth\UpgradeAllPreferences;
@@ -19,14 +20,18 @@ use Runa\Modules\Auth\UpgradeCredentials;
 use Runa\Modules\Auth\UpgradeDevelopmentFixtures;
 use Runa\Modules\Auth\UpgradeEntry;
 use Runa\Modules\Auth\UpgradeEntryUi;
+use Runa\Modules\Auth\UpgradeExecutionLayout;
 use Runa\Modules\Auth\UpgradeFactorDialogs;
 use Runa\Modules\Auth\UpgradeFactorSpacing;
 use Runa\Modules\Auth\UpgradeFormNotifications;
 use Runa\Modules\Auth\UpgradeFormPresentation;
+use Runa\Modules\Auth\UpgradeFrontendContracts;
 use Runa\Modules\Auth\UpgradeHeadingFocus;
 use Runa\Modules\Auth\UpgradeMailLayout;
 use Runa\Modules\Auth\UpgradeNavigationCancellation;
 use Runa\Modules\Auth\UpgradePermissionDeclarations;
+use Runa\Modules\Auth\UpgradePlatformComposition;
+use Runa\Modules\Auth\UpgradePlatformDelivery;
 use Runa\Modules\Auth\UpgradePolicy;
 use Runa\Modules\Auth\UpgradePreferences;
 use Runa\Modules\Auth\UpgradePreferencesPresentation;
@@ -38,6 +43,7 @@ use Runa\Modules\Auth\UpgradeSecondaryDetails;
 use Runa\Modules\Auth\UpgradeSessions;
 use Runa\Modules\Auth\UpgradeSessionSorting;
 use Runa\Modules\Auth\UpgradeShellAvatar;
+use Runa\Modules\Auth\UpgradeTestLayout;
 use Runa\Modules\Auth\UpgradeTotpQr;
 use Runa\Modules\Auth\UpgradeUserPanel;
 use Runa\Modules\Auth\UpgradeWelcomeHeader;
@@ -101,7 +107,15 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('history_details', '0.21.15', '0.22.0', UpgradeFactorSpacing::class),
             new UpgradeDefinition('concrete_history', '0.22.0', '0.23.0', UpgradeFactorSpacing::class),
             new UpgradeDefinition('registration_confirmation', '0.23.0', '0.23.1', UpgradeFactorSpacing::class),
-            new UpgradeDefinition('stable_release', '0.23.1', '1.0.0', UpgradeFactorSpacing::class)];
+            new UpgradeDefinition('stable_release', '0.23.1', '1.0.0', UpgradeFactorSpacing::class),
+            new UpgradeDefinition('central_test_layout', '1.0.0', '1.0.1', UpgradeTestLayout::class),
+            new UpgradeDefinition('platform_composition', '1.0.1', '1.0.2', UpgradePlatformComposition::class),
+            new UpgradeDefinition('execution_layout', '1.0.2', '1.0.3', UpgradeExecutionLayout::class),
+            new UpgradeDefinition('frontend_contracts', '1.0.3', '1.1.0', UpgradeFrontendContracts::class),
+            new UpgradeDefinition('account_orchestration', '1.1.0', '1.1.1', UpgradeAccountOrchestration::class),
+            new UpgradeDefinition('platform_delivery', '1.1.1', '1.1.2', UpgradePlatformDelivery::class),
+            new UpgradeDefinition('frontend_source_checks', '1.1.2', '1.1.3', UpgradePlatformDelivery::class),
+            new UpgradeDefinition('verification_contracts', '1.1.3', '1.1.4', UpgradePlatformDelivery::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

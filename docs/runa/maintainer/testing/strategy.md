@@ -17,7 +17,7 @@ Before writing tests, identify the scenarios that matter:
 Coverage is informational, not a pass/fail target by itself.
 
 Standalone GitHub acquisition has offline source/security contracts in
-`python3 tools/maintainer/testing/bootstrap.py` (`bootstrap-source-contracts` local gate).
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py` (`bootstrap-source-contracts` local gate).
 They cover public/private credential transport, redirect denial, access failures,
 tag/commit mismatch, malicious paths/links, real Git blob/mode verification,
 atomic publication races, interruption, selection and installer failure/resume.
@@ -26,9 +26,9 @@ Live public acquisition and authorized private acceptance are recorded separatel
 synthetic private failures do not prove live private access.
 
 First-install orchestration has offline preservation/failure/configuration
-contracts in `tools/maintainer/testing/installation.py`, native command validation/mail
+contracts in `tests/tools/runa/contracts/test_installation.py`, native command validation/mail
 redaction in `InstallationTest`, and host acceptance in
-`tools/maintainer/testing/installation-host.py`. The latter uses real fresh isolated dev/prod
+`tests.tools.runa.acceptance.installation_host`. The latter uses real fresh isolated dev/prod
 containers and databases, certificate-verified HTTPS/SMTP and a deliberate SMTP
 rejection/resume. It checks unchanged active development identities, customer
 version/files, stable credentials, repeat behavior and absence of real production
@@ -51,9 +51,9 @@ Do not over-mock Laravel/application behavior merely to make a test "unit."
 
 ## Application and platform suite ownership
 
-Customer defaults are application-only: `php artisan test` and `php artisan runa:test` use `src/phpunit.xml` with `src/app/tests/Feature` and `Unit`; `runa:test:frontend` uses `src/vitest.config.mjs` with `src/app/tests/frontend`; `runa:test:e2e` uses `src/playwright.config.mjs` with `src/app/tests/e2e`. The welcome scaffold includes one PHP, component and browser smoke test. Native `make:test` still writes application tests, including PHPUnit tests extending the reusable `Tests\TestCase` in `src/runa/Testing/TestCase.php`. The native test adapter selects `src/app/tests` directly; there is no forwarding bootstrap in `src/tests`.
+Customer defaults are application-only: `php artisan test` and `php artisan runa:test` use `src/phpunit.xml` with `tests/backend/app/Feature` and `Unit`; `runa:test:frontend` uses `src/vitest.config.mjs` with `tests/frontend/app/unit`; `runa:test:e2e` uses `src/playwright.config.mjs` with `tests/frontend/app/e2e`. The welcome scaffold includes one PHP, component and browser smoke test. Native `make:test` still writes application tests, including PHPUnit tests extending the reusable `Tests\TestCase` in `src/runa/Testing/TestCase.php`. The native test adapter selects `tests/backend/app` directly; there is no forwarding bootstrap in `src/tests`.
 
-Owner commands `python3 tools/maintainer/test-backend`, `test-frontend` and `test-e2e` select private configurations under `src/runa/tests`. The owner backend uses `Tests\PlatformTestCase`, a private fixture autoloader and explicit platform migration preparation. The shared customer base performs application migrations and bootstraps a fresh worker's missing technical platform history only through the delivered forward-only primitive, preserving guarded worker storage/database/cache isolation. Customer test setup never invokes owner distribution tools. Platform suites and `src/runa/tools` harnesses are excluded from customer acquisition; production images exclude both owners' tests.
+Owner commands `python3 tools/maintainer/test-backend`, `test-frontend` and `test-e2e` select private configurations under `tests/backend/runa`. The owner backend uses `Tests\PlatformTestCase`, a private fixture autoloader and explicit platform migration preparation. The shared customer base performs application migrations and bootstraps a fresh worker's missing technical platform history only through the delivered forward-only primitive, preserving guarded worker storage/database/cache isolation. Customer test setup never invokes owner distribution tools. Platform suites and `src/runa/tools` harnesses are excluded from customer acquisition; production images exclude both owners' tests.
 
 The three `runa:test*` wrappers, native `php artisan test` and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native read-only test discovery bypasses lifecycle mutation. Direct Pest/Node runners bypass the wrapper lock and cleanup; use supported runners for execution. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
 
@@ -230,11 +230,11 @@ Guarded subclasses of Laravel's `db:wipe`, `migrate:fresh`, `migrate:refresh`, `
 Run inside the devcontainer:
 
 ```sh
-python3 tools/maintainer/testing/database-guards.py
+python3 tools/maintainer/test-backend --parallel --processes=1 --filter=DatabaseTest
 APP_ENV=testing php artisan runa:test-db:guard
 ```
 
-The regression script deliberately resets only the guarded test database after verifying unsafe environment/host/role/name/connection rejection. It supplements the Pest/parallel suite. A separate test-role-owned parallel database was provisioned, migrated and removed successfully during initial verification.
+The focused backend runner executes `DatabaseTest` in one disposable worker after verifying unsafe environment/host/role/name/connection rejection. It preserves the persistent base `runa_test` and uses the shared worker cleanup and suite lock. `check-database-migrations` selects this same runner; no private filename adapter or nested pytest process is involved.
 
 ## Local commands
 
@@ -279,7 +279,7 @@ The owner `python3 tools/maintainer/test-e2e` entrypoint starts, waits for and t
 
 ## UI foundations and isolated browser tests
 
-Public UI imports are exercised by `src/runa/tests/frontend/public-ui.test.ts` and compile-checked consumers. `src/runa/tools/testing/ui-boundaries.mjs` bundles the real production entry and a public Table/ConfirmDialog consumer in memory: production must contain no retired review or test modules; components must not implicitly initialize layouts, routing or preferences. Docker context excludes tests/tools/.runtime and legacy public/ui-review output. `RetiredReviewTest` verifies that application routes have no previews/fixtures in local/testing/staging/production and former URLs return real 404s. No environment flag restores them.
+Public UI imports are exercised by `tests/frontend/runa/unit/public-ui.test.ts` and compile-checked consumers. `tests/frontend/runa/acceptance/ui-boundaries.mjs` bundles the real production entry and a public Table/ConfirmDialog consumer in memory: production must contain no retired review or test modules; components must not implicitly initialize layouts, routing or preferences. Docker context excludes tests/tools/.runtime and legacy public/ui-review output. `RetiredReviewTest` verifies that application routes have no previews/fixtures in local/testing/staging/production and former URLs return real 404s. No environment flag restores them.
 
 Before browser checks, build the application/native error renderer:
 
@@ -288,9 +288,9 @@ Before browser checks, build the application/native error renderer:
 python3 tools/maintainer/test-e2e --critical
 ```
 
-The owner E2E runner first finalizes static emergency documents with `php src/runa/resources/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The owner test command uses isolated testing Nginx/PHP-FPM. Its private Playwright configuration owns `src/runa/tools/testing/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
+The owner E2E runner first finalizes static emergency documents with `php src/runa/build/errors/build.php` inside the application container, after the build and before Playwright starts. Missing renderer output fails preparation explicitly. The Node-only build does not need PHP; its regenerated output must never rely on stale static documents from an earlier setup. The owner test command uses isolated testing Nginx/PHP-FPM. Its private Playwright configuration owns `tests/frontend/runa/acceptance/browser-harness.mjs`, bound only to 127.0.0.1:4178 with reuse disabled, and stops it after the suite. It builds component/layout scenarios under tests/frontend/runa/unit/fixtures/browser into ignored `.runtime/browser-harness`, plus a separate independent consumer build. Before serving, the private harness verifies the isolated testing database and the actual checkout commit, then applies pending Core source metadata and no-data upgrades forward through ModuleUpdates. Existing application data remains intact; customer browser commands never execute this private preparation. There is no catalog selector, demo navigation, public output or application registration. Root/API/assets/real missing pages are proxied to nginx-test:8080. A test-only PHP HTTP-kernel adapter registers synthetic error/mail routes only in that child process, preserving actual Laravel response status, JSON negotiation, Retry-After, native preference forms and real array-transport MIME rendering. It does not start another PHP application server or deliver external messages. RUNA_E2E_UPSTREAM may select an existing development Nginx for focused local checks; it is test-tool input, not application runtime configuration. Missing generated emergency documents fail harness startup.
 
-The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored .runtime/artifacts/playwright/runa; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `src/runa/tools/testing/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against their independent application/platform manifests.
+The 1440×900, tablet and 390×844 PL/EN light/dark matrices retain root, independent identity/version/footer, minimal optional illustration/long-content, application navigation/optional regions, forms, tables and component motion coverage. Real root preference interactions also run in Firefox and mobile Chromium. Screenshots and timing/trace attachments remain under ignored .runtime/artifacts/playwright/runa; they are evidence, not owner acceptance. Full CDP accessibility-tree inspection and Playwright-generated A4 PDF evidence run only on Chromium; Firefox retains the shared DOM/reflow and print-document geometry checks. Native browser-menu zoom and manual NVDA/VoiceOver certification are not claimed. `tests/frontend/runa/acceptance/frontend.mjs` remains an additional real-Nginx root diagnostic, checking MinimalLayout preference readiness and both footer versions against their independent application/platform manifests.
 
 ### Layouts, forms and interactions
 
@@ -302,7 +302,7 @@ Form/unit scenarios cover controlled submission/validation, field/error associat
 
 MailLayoutTest sends real messages through Laravel’s array transport, checking standard Markdown/notification defaults, multipart/alternative, related CID branding, PL/EN, explicit/automatic text, independent versions, escaping, HTTPS/missing/unsafe image inputs, namespaced overrides and footer visibility. Test-only mail/browser templates live under tests/Fixtures; RunaServiceProvider registers only the production runa-mail namespace. Browser email checks cover no-JavaScript responsive HTML, long/blocked images, real text/MIME attachments and a public action URL. Browser engines do not certify Outlook/Gmail/Apple Mail rendering.
 
-HttpErrorsTest registers synthetic failures inside the test process and covers six statuses in PL/EN, unknown paths, API/JSON negotiation, Retry-After/request IDs, identity escaping and database/build-asset failure without sensitive exception detail. Browser errors cover actual kernel statuses, no-JavaScript 404/503 responsive/theme matrices, shared MinimalLayout artwork, GET preference controls and generated standalone emergency output. These tests do not prove production Nginx fallback: retain the separate host `tools/maintainer/testing/error-fallback-host.py` gate and production isolation checks. Favicon shape/dimensions and native asset contracts remain permanent.
+HttpErrorsTest registers synthetic failures inside the test process and covers six statuses in PL/EN, unknown paths, API/JSON negotiation, Retry-After/request IDs, identity escaping and database/build-asset failure without sensitive exception detail. Browser errors cover actual kernel statuses, no-JavaScript 404/503 responsive/theme matrices, shared MinimalLayout artwork, GET preference controls and generated standalone emergency output. These tests do not prove production Nginx fallback: retain the separate host `tests.tools.runa.acceptance.error_fallback_host` gate and production isolation checks. Favicon shape/dimensions and native asset contracts remain permanent.
 
 ### Tables and exports
 
@@ -318,12 +318,31 @@ Component motion tests cover Select exits/interrupted reopening, immediate inert
 
 ## Management transport and cold recovery
 
-`python3 tools/maintainer/testing/management.py` checks host-plan rejection (including duplicate/unknown fields and arbitrary execution payloads), schema/allowlist agreement, output/time limits, shared production-lock contention, private receipt permissions/removal, unresolved-operation fencing, symlink rejection, plan-only behavior and scoped container cleanup after interruption. `ManagementTest` verifies the shared normal Artisan command and its absence from the normal production registry.
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_management.py` checks host-plan rejection (including duplicate/unknown fields and arbitrary execution payloads), schema/allowlist agreement, output/time limits, shared production-lock contention, private receipt permissions/removal, unresolved-operation fencing, symlink rejection, plan-only behavior and scoped container cleanup after interruption. `ManagementTest` verifies the shared normal Artisan command and its absence from the normal production registry.
 
-On the native Docker host, `python3 tools/maintainer/testing/management-host.py` builds/reuses the isolated management image, copies only explicit credential-free transport/build inputs into a disposable checkout, proves discovery and plan-only with no application kernel/vendor/key/DB, then runs the real development command lifecycle against small isolated PHP process services. It stops and recovers that fixture app, rejects bad inputs and verifies active development app identity/start time did not change. This is transport/Compose recovery acceptance, not full Laravel installation or production acceptance. No database, model cache or durable volume is provisioned. Before scoped cleanup it lists fixture container/network identities; it preserves development/test data, caches, backups and evidence. The report is `.runtime/ownership/RM-2026-005-point-2-host.json`.
+On the native Docker host, `python3 -m tests.tools.runa.acceptance.management_host` builds/reuses the isolated management image, copies only explicit credential-free transport/build inputs into a disposable checkout, proves discovery and plan-only with no application kernel/vendor/key/DB, then runs the real development command lifecycle against small isolated PHP process services. It stops and recovers that fixture app, rejects bad inputs and verifies active development app identity/start time did not change. This is transport/Compose recovery acceptance, not full Laravel installation or production acceptance. No database, model cache or durable volume is provisioned. Before scoped cleanup it lists fixture container/network identities; it preserves development/test data, caches, backups and evidence. The report is `.runtime/ownership/RM-2026-005-point-2-host.json`.
 
 Both tests are selected by tooling quality gates, with the real host acceptance explicitly marked host-only. They do not require Docker privileges inside the devcontainer. Management PHP is included in the existing Pint and PHPStan scopes.
 
 ## Backend composition acceptance
 
-`CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under src/runa/tests; src/app/tests has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. Native Artisan and the application wrapper select app/tests directly; direct Pest uses --test-directory=app/tests. There is no src/tests directory or forwarding bootstrap. Owner bootstrap and fixture discovery are selected exclusively by the maintainer backend runner.
+`CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under tests/backend/runa; tests/backend/app has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. Native Artisan and the application wrapper select ../tests/backend/app directly; direct Pest uses --test-directory=../tests/backend/app. There is no src/tests directory or forwarding bootstrap. Owner bootstrap and fixture discovery are selected exclusively by the maintainer backend runner.
+
+### Native Pest parallel transport
+
+`php artisan test --parallel --processes=2` keeps the application PHP scope and
+shared TestRun lock/worker cleanup. Its adapter passes the central test root to
+Pest before Pest delegates to ParaTest; Collision's separate early ParaTest option
+parser does not support Pest's test-directory flag. Sequential/PHPUnit commands
+continue composing Collision. Both paths retain literal arguments, native exits,
+TTY selection and guarded testing environment; Laravel parallel/cache flags remain
+explicit child inputs. This is a fixed transport to the installed engine, not a
+second scheduler or a reason to bypass the supported command.
+
+### Browser geometry precision
+
+Compare DOM bounding-box dimensions with explicit subpixel tolerance rather than
+exact floating-point equality. Avatar loading coverage requires both dimensions
+near 40 px to two decimal places; retain visibility, animation, reduced-motion and
+image-loading assertions. This tolerance addresses browser arithmetic, not layout
+regressions or permission to skip failed cases.

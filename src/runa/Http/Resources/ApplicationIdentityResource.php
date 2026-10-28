@@ -4,7 +4,7 @@ namespace Runa\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Runa\Support\ApplicationIdentity;
+use Runa\Identity\ApplicationIdentity;
 
 final class ApplicationIdentityResource extends JsonResource
 {

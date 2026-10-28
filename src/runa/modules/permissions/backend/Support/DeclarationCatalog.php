@@ -8,8 +8,8 @@ use Runa\Contracts\Modules\ManagementPermission;
 use Runa\Contracts\Modules\ManagementProvider;
 use Runa\Contracts\Modules\RoleDefinition;
 use Runa\Contracts\Modules\RoleProvider;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleRegistry;
 
 /** Pure source reads through existing owned management descriptors. No boot-time writes. */
 final readonly class DeclarationCatalog
@@ -26,6 +26,7 @@ final readonly class DeclarationCatalog
             if (! $provider instanceof ManagementProvider) {
                 throw new \RuntimeException('Invalid permission provider.');
             }
+            /** @var array<array-key, mixed> $values */
             $values = $provider->permissions();
             if (! array_is_list($values) || count($values) > 128) {
                 throw new \RuntimeException('Invalid permission declarations.');
@@ -42,6 +43,7 @@ final readonly class DeclarationCatalog
                 $this->validateDictionary($permissions[$code]);
             }
             if ($provider instanceof RoleProvider) {
+                /** @var array<array-key, mixed> $values */
                 $values = $provider->roles();
                 if (! array_is_list($values) || count($values) > 32) {
                     throw new \RuntimeException('Invalid role declarations.');

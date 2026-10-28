@@ -3,6 +3,7 @@
 namespace Runa\Support\Modules;
 
 use InvalidArgumentException;
+use Runa\ModuleFramework\ModuleManifest;
 
 final readonly class ModuleIdentity
 {

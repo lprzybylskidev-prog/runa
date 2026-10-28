@@ -3,9 +3,9 @@
 namespace Runa\Modules\Permissions\Queries;
 
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\Modules\Permissions\Contracts\PermissionsSelections;
 use Runa\Modules\Permissions\Contracts\UserSelection;
-use Runa\Support\Modules\Api\OperationGuard;
 
 final readonly class SelectUsers implements PermissionsSelections
 {

@@ -5,8 +5,8 @@ namespace Runa\Modules\Permissions\Support;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Auth\Contracts\OperatorAuthority as OperatorContract;
-use Runa\Support\Modules\Data\AuthorityLock;
 
 /** Only the trusted framework operator bridge calls this participant, never public ingress. */
 final readonly class OperatorAuthority implements OperatorContract
@@ -22,7 +22,9 @@ final readonly class OperatorAuthority implements OperatorContract
         }
         $connection->table('runa_permissions.user_roles')->insert(['role_id' => $role->id, 'user_public_id' => $publicId,
             'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
-        $revision = (int) ($connection->table('runa_permissions.user_access')->where('user_public_id', $publicId)->value('version') ?? 0);
+        /** @var int|null $storedRevision */
+        $storedRevision = $connection->table('runa_permissions.user_access')->where('user_public_id', $publicId)->value('version');
+        $revision = $storedRevision ?? 0;
         $connection->table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $publicId], ['version' => $revision + 1, 'updated_at' => now('UTC')]);
         $this->audit->record('authority.initialized', 'user', $publicId, ['super_admin' => false, 'revision' => $revision],
             ['super_admin' => true, 'revision' => $revision + 1], ['role' => $role->public_id]);
@@ -35,6 +37,7 @@ final readonly class OperatorAuthority implements OperatorContract
         return $connection->table('runa_permissions.user_roles')->where('role_id', $role->id)->where('user_public_id', $publicId)->exists();
     }
 
+    /** @return \stdClass&object{id: int, public_id: string} */
     private function role(Connection $connection, string $publicId): object
     {
         new TrustedPrincipal($publicId);
@@ -43,8 +46,11 @@ final readonly class OperatorAuthority implements OperatorContract
         }
         $this->lock->acquire($connection);
 
-        return $connection->table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')
+        /** @var \stdClass&object{id: int, public_id: string} $role */
+        $role = $connection->table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')
             ->where('module_id', 'runa.permissions')->where('system', true)->whereNull('deleted_at')->lockForUpdate()->first()
             ?? throw new \RuntimeException('Protected system role unavailable.');
+
+        return $role;
     }
 }

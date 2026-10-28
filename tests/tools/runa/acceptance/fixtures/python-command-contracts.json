@@ -1,0 +1,3110 @@
+{
+  "schema_version": 1,
+  "roadmap": "RM-2026-012",
+  "baseline_commit": "32d55d2f6b7647a494a15d7793fcd9df705fff4d",
+  "purpose": "Declarative regression definitions for migration; not an executable runner, allowlist or PASS attestation. Point 2 consumes these into unified tests, domain points implement scenarios and point 10 executes broad acceptance.",
+  "execution_policy": "No automatic invocation derived from this file. Mutating and private helper cases require explicit isolated fixture setup.",
+  "scenarios": [
+    {
+      "id": "literal-arguments",
+      "assertions": "Pass spaces, shell metacharacters and embedded newlines as literal argv; no shell expansion. Inject child exit 7 where the adapter promises native propagation.",
+      "existing_evidence": "wrappers.py; tool-ownership.py",
+      "fixture_requirements": "fake-process; real adapter subprocess in final verification",
+      "execution_point": 10
+    },
+    {
+      "id": "scope-and-cwd",
+      "assertions": "Resolve tools by launcher root, retain distinct target repository for hooks; customer receipt never enables owner scope. Exercise host, devcontainer, unrelated cwd and path with spaces.",
+      "existing_evidence": "repository-boundary.py; wrappers.py; management.py",
+      "fixture_requirements": "isolated temporary repositories",
+      "execution_point": 10
+    },
+    {
+      "id": "help-and-errors",
+      "assertions": "Assert the per-surface help/error matrix in README. Argparse parse failure is 2; string SystemExit is 1; preserve other documented native codes. Do not assume every internal fixture supports --help or invoke its no-argument mode generically.",
+      "existing_evidence": "tool-ownership.py; bootstrap.py; wrappers.py",
+      "fixture_requirements": "fake effects; external subprocess only after fixture setup",
+      "execution_point": 10
+    },
+    {
+      "id": "nonexecuting-plan",
+      "assertions": "Explicit --plan returns a preview bound to null request id without dispatch, locks, operation receipts or Docker lifecycle effects. Cold discovery may use the isolated existing management artifact as documented.",
+      "existing_evidence": "management.py; host-executor.py",
+      "fixture_requirements": "recording process runner; prepared management artifact",
+      "execution_point": 10
+    },
+    {
+      "id": "quality-selection",
+      "assertions": "Repeated --group and --all retain exact graph/prerequisites, exclusions and hash; invalid combinations refuse before mutation; customer has no owner roadmap requirement.",
+      "existing_evidence": "quality.py; tool-ownership.py",
+      "fixture_requirements": "temporary state plus fake tasks",
+      "execution_point": 10
+    },
+    {
+      "id": "quality-interruption",
+      "assertions": "Restore signals and stable locks; terminate/reap process groups; interrupted coordinator and surviving children cannot be mistaken for PASS or overwritten evidence.",
+      "existing_evidence": "quality.py; management.py",
+      "fixture_requirements": "isolated controlled child processes",
+      "execution_point": 10
+    },
+    {
+      "id": "hook-index-integrity",
+      "assertions": "Inspect actual staged blobs, reject secret/env/key and invalid message; preserve partial staging and nondefault index; retain receipt role and knowledge freshness; never auto-index inside a hook.",
+      "existing_evidence": "tools/application/testing/hooks.py; documentation.py",
+      "fixture_requirements": "isolated Git repositories and synthetic nonsecret fixtures",
+      "execution_point": 10
+    },
+    {
+      "id": "knowledge-identity-freshness",
+      "assertions": "Retain model/dimension/input limits, pending manifests, no mixed embedding space, branch/parser/source freshness, deterministic chunks and golden filters; injected owner additions never enter customer corpus.",
+      "existing_evidence": "knowledge.py; knowledge-retrieval.py; knowledge-live.py; documentation-live.py",
+      "fixture_requirements": "fakes first; isolated collections for final live scenarios",
+      "execution_point": 10
+    },
+    {
+      "id": "security-strict-results",
+      "assertions": "Direct diagnostics and quality share results; lock/image identity mismatch and scanner failure remain nonzero; collect remaining selected reports and redact payloads; actual review evidence is required.",
+      "existing_evidence": "security.py; installation-host.py",
+      "fixture_requirements": "fake scanner plus isolated exact-image scan in final point",
+      "execution_point": 10
+    },
+    {
+      "id": "production-recovery",
+      "assertions": "Build/deploy exact customer source/images, forward data only, preserve maintenance/recovery fencing and refuse unsafe rollback; no tooling/AI in runtime artifacts.",
+      "existing_evidence": "operations.py; production.py; customer-deployment.py; installation-host.py",
+      "fixture_requirements": "owned customer simulation; no existing deployment",
+      "execution_point": 10
+    },
+    {
+      "id": "startup-independence",
+      "assertions": "Ordinary setup/reopen does not migrate/seed; explicit initialization does; application readiness remains independent of optional AI failures.",
+      "existing_evidence": "development-startup.py; customer-initialization.py",
+      "fixture_requirements": "fake process and isolated customer fixture",
+      "execution_point": 10
+    },
+    {
+      "id": "host-plan-refusal",
+      "assertions": "Refuse duplicate, unknown, oversized or mismatched request fields, foreign identity and source mismatch before effects; preserve disconnected receipts, cancellation and recovery.",
+      "existing_evidence": "host-executor.py; management.py; host-executor-host.py",
+      "fixture_requirements": "private test transport and fake Docker",
+      "execution_point": 10
+    },
+    {
+      "id": "distribution-upgrade",
+      "assertions": "Exercise verified acquisition/reference projection and explicit customer remote; external bundle without maintainer code; 0.5.0 to 0.6.0 upgrade preserves application/custom guidance and forbidden paths stay absent.",
+      "existing_evidence": "bootstrap.py; update.py; update-execution.py; installation-host.py",
+      "fixture_requirements": "separate customer repositories and complete reviewed external bundle",
+      "execution_point": 10
+    },
+    {
+      "id": "distribution-interruption",
+      "assertions": "Interrupt source replacement and committed data transitions; resume exact approved identity/journal without replay or resetting pending state; preserve credentials and durable evidence.",
+      "existing_evidence": "update-execution.py; update-host.py; installation.py",
+      "fixture_requirements": "failure-injected filesystem/runtime then final isolated host acceptance",
+      "execution_point": 10
+    },
+    {
+      "id": "source-helper-boundary",
+      "assertions": "Retain extracted argument grammar and exact caller protocol; library imports become inert; unsafe internal direct invocation must not be promoted to a public command. Executable tests retain meaningful scenarios under pytest discovery.",
+      "existing_evidence": "inventory.json per-component evidence",
+      "fixture_requirements": "source contract; suitable isolated fixtures, never generic no-arg invocation",
+      "execution_point": 10
+    },
+    {
+      "id": "resource-lifecycle",
+      "assertions": "Retain suite lock, guarded inactive runa_test_test_N cleanup, base runa_test preservation and automatic browser label/journal ownership; cleanup only exact task-created resources and reap children first.",
+      "existing_evidence": "management.py; owner_tests.py; installation-host.py",
+      "fixture_requirements": "isolated test resources with explicit ownership",
+      "execution_point": 10
+    },
+    {
+      "id": "packaging-boundaries",
+      "assertions": "Compare projected source/wheel/bundle contents; customer works physically without owner/distribution; external works outside checkout; runtime has no Python tooling or AI.",
+      "existing_evidence": "tool-ownership.py; repository-boundary.py; installation-host.py",
+      "fixture_requirements": "isolated projections and package installs outside source cwd",
+      "execution_point": 10
+    },
+    {
+      "id": "deployment-explicit-contexts",
+      "assertions": "Use distinct operator/release roots and TLS overlays in one interpreter; production source/data failures retain fencing and native exits; rollback refuses unproven data compatibility.",
+      "existing_evidence": "contracts/test_deployment_services.py; native production/installation harnesses (pending migrated fixture reconciliation)",
+      "fixture_requirements": "injected services now; isolated native production project in final verification",
+      "execution_point": 10
+    },
+    {
+      "id": "upgrade-050-development-tooling",
+      "assertions": "Acquire an independently verified 0.5.0 installation and exact 0.6.0 candidate; preserve customer Python config/tests/frozen inputs and reconcile shared defaults with exact consent. Interrupt source/data boundaries and resume without replaying committed effects. Verify initial installation with each release matching installer/gateway.",
+      "existing_evidence": "contracts/test_update_services.py; contracts/test_installation_services.py",
+      "fixture_requirements": "injected original/target projections now; real customer/Git/Compose/PHP/database/toolchain acceptance in point 10",
+      "execution_point": 10
+    }
+  ],
+  "bindings": [
+    {
+      "id": "bin/analyse",
+      "invocation": ["./bin/analyse"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/artisan",
+      "invocation": ["./bin/artisan"],
+      "surface": "artisan",
+      "source": "bin/artisan",
+      "alias": false,
+      "baseline_contract": "ledger: artisan",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/boost-mcp",
+      "invocation": ["./bin/boost-mcp"],
+      "surface": "boost",
+      "source": "bin/boost-mcp",
+      "alias": false,
+      "baseline_contract": "ledger: boost",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/check",
+      "invocation": ["./bin/check"],
+      "surface": "discovery",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: discovery",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/command",
+      "invocation": ["./bin/command"],
+      "surface": "discovery",
+      "source": "bin/command",
+      "alias": false,
+      "baseline_contract": "ledger: discovery",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/composer",
+      "invocation": ["./bin/composer"],
+      "surface": "transport",
+      "source": "bin/passthrough",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/deploy",
+      "invocation": ["./bin/deploy"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/format",
+      "invocation": ["./bin/format"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/lint",
+      "invocation": ["./bin/lint"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/logs",
+      "invocation": ["./bin/logs"],
+      "surface": "transport",
+      "source": "bin/passthrough",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/operations",
+      "invocation": ["./bin/operations"],
+      "surface": "discovery",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: discovery",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/passthrough",
+      "invocation": ["./bin/passthrough"],
+      "surface": "transport",
+      "source": "bin/passthrough",
+      "alias": false,
+      "baseline_contract": "Internal shared adapter; supported aliases carry public purpose. Preserve exact source behavior, not a new generic command interface.",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed",
+      "public_alias_contract": false
+    },
+    {
+      "id": "bin/pnpm",
+      "invocation": ["./bin/pnpm"],
+      "surface": "transport",
+      "source": "bin/passthrough",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/test",
+      "invocation": ["./bin/test"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "bin/typecheck",
+      "invocation": ["./bin/typecheck"],
+      "surface": "transport",
+      "source": "bin/command",
+      "alias": true,
+      "baseline_contract": "ledger: transport",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/bin/commit-msg",
+      "invocation": ["./tools/application/bin/commit-msg"],
+      "surface": "hook",
+      "source": "tools/application/bin/git-hook",
+      "alias": true,
+      "baseline_contract": "ledger: hook",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "hook-index-integrity"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/bin/git-hook",
+      "invocation": ["./tools/application/bin/git-hook"],
+      "surface": "hook",
+      "source": "tools/application/bin/git-hook",
+      "alias": false,
+      "baseline_contract": "Internal shared adapter; supported aliases carry public purpose. Preserve exact source behavior, not a new generic command interface.",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "hook-index-integrity"
+      ],
+      "status": "specified-not-executed",
+      "public_alias_contract": false
+    },
+    {
+      "id": "tools/application/bin/pre-commit",
+      "invocation": ["./tools/application/bin/pre-commit"],
+      "surface": "hook",
+      "source": "tools/application/bin/git-hook",
+      "alias": true,
+      "baseline_contract": "ledger: hook",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "hook-index-integrity"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-cleanliness",
+      "invocation": ["python3", "tools/maintainer/check-cleanliness"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-database-migrations",
+      "invocation": ["python3", "tools/maintainer/check-database-migrations"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-development",
+      "invocation": ["python3", "tools/maintainer/check-development"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-docs",
+      "invocation": ["python3", "tools/maintainer/check-docs"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-frontend",
+      "invocation": ["python3", "tools/maintainer/check-frontend"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-maintenance",
+      "invocation": ["python3", "tools/maintainer/check-maintenance"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-release",
+      "invocation": ["python3", "tools/maintainer/check-release"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-repository",
+      "invocation": ["python3", "tools/maintainer/check-repository"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/check-tooling",
+      "invocation": ["python3", "tools/maintainer/check-tooling"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-diagnostic",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/database",
+      "invocation": ["python3", "tools/maintainer/database"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": false,
+      "baseline_contract": "Internal shared adapter; supported aliases carry public purpose. Preserve exact source behavior, not a new generic command interface.",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed",
+      "public_alias_contract": false
+    },
+    {
+      "id": "tools/maintainer/entrypoint",
+      "invocation": ["python3", "tools/maintainer/entrypoint"],
+      "surface": "owner-diagnostic",
+      "source": "tools/maintainer/entrypoint",
+      "alias": false,
+      "baseline_contract": "Internal shared adapter; supported aliases carry public purpose. Preserve exact source behavior, not a new generic command interface.",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed",
+      "public_alias_contract": false
+    },
+    {
+      "id": "tools/maintainer/make-migration",
+      "invocation": ["python3", "tools/maintainer/make-migration"],
+      "surface": "owner-migration-generator",
+      "source": "tools/maintainer/make-migration",
+      "alias": false,
+      "baseline_contract": "ledger: owner-migration-generator",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate",
+      "invocation": ["python3", "tools/maintainer/migrate"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate-fresh",
+      "invocation": ["python3", "tools/maintainer/migrate-fresh"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate-refresh",
+      "invocation": ["python3", "tools/maintainer/migrate-refresh"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate-reset",
+      "invocation": ["python3", "tools/maintainer/migrate-reset"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate-rollback",
+      "invocation": ["python3", "tools/maintainer/migrate-rollback"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/migrate-status",
+      "invocation": ["python3", "tools/maintainer/migrate-status"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/quality-final",
+      "invocation": ["python3", "tools/maintainer/quality-final"],
+      "surface": "owner-quality",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-quality",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/quality-plan",
+      "invocation": ["python3", "tools/maintainer/quality-plan"],
+      "surface": "owner-quality",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-quality",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/quality-roadmap",
+      "invocation": ["python3", "tools/maintainer/quality-roadmap"],
+      "surface": "owner-quality",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-quality",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/quality-status",
+      "invocation": ["python3", "tools/maintainer/quality-status"],
+      "surface": "owner-quality",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-quality",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/seed",
+      "invocation": ["python3", "tools/maintainer/seed"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/test-backend",
+      "invocation": ["python3", "tools/maintainer/test-backend"],
+      "surface": "owner-test",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-test",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/test-e2e",
+      "invocation": ["python3", "tools/maintainer/test-e2e"],
+      "surface": "owner-test",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-test",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/test-frontend",
+      "invocation": ["python3", "tools/maintainer/test-frontend"],
+      "surface": "owner-test",
+      "source": "tools/maintainer/entrypoint",
+      "alias": true,
+      "baseline_contract": "ledger: owner-test",
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/wipe",
+      "invocation": ["python3", "tools/maintainer/wipe"],
+      "surface": "owner-database",
+      "source": "tools/maintainer/database",
+      "alias": true,
+      "baseline_contract": "ledger: owner-database",
+      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:validate",
+      "invocation": ["php", "artisan", "runa:production:validate"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:validate"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["validate"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:build",
+      "invocation": ["php", "artisan", "runa:production:build"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:build"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["build"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:up",
+      "invocation": ["php", "artisan", "runa:production:up"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:up"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["up"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:down",
+      "invocation": ["php", "artisan", "runa:production:down"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:down"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["down"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:restart",
+      "invocation": ["php", "artisan", "runa:production:restart"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:restart"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "{service?}",
+      "helper_family": "production",
+      "helper_prefix": ["restart"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:status",
+      "invocation": ["php", "artisan", "runa:production:status"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:status"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["status"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:logs",
+      "invocation": ["php", "artisan", "runa:production:logs"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:logs"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "{service?}",
+      "helper_family": "production",
+      "helper_prefix": ["logs"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:self-test",
+      "invocation": ["php", "artisan", "runa:production:self-test"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:self-test"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["self-test"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:production:verify-ai-isolation",
+      "invocation": ["php", "artisan", "runa:production:verify-ai-isolation"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:production:verify-ai-isolation"
+      ],
+      "surface": "artisan-production",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "production",
+      "helper_prefix": ["verify-ai-isolation"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:deploy",
+      "invocation": ["php", "artisan", "runa:deploy"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:deploy"],
+      "surface": "artisan-deploy",
+      "source": "src/runa/management/operations.json",
+      "signature": "{target?} {--simulation}",
+      "helper_family": "deploy",
+      "helper_prefix": [],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:deploy:rollback",
+      "invocation": ["php", "artisan", "runa:deploy:rollback"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:deploy:rollback"
+      ],
+      "surface": "artisan-deploy",
+      "source": "src/runa/management/operations.json",
+      "signature": "{--simulation}",
+      "helper_family": "deploy",
+      "helper_prefix": ["rollback"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "production-recovery",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:host:status",
+      "invocation": ["php", "artisan", "runa:host:status"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:host:status"],
+      "surface": "artisan-host",
+      "source": "src/runa/management/operations.json",
+      "signature": "{request?}",
+      "helper_family": "host",
+      "helper_prefix": ["status"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "host-plan-refusal"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:host:stop",
+      "invocation": ["php", "artisan", "runa:host:stop"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:host:stop"],
+      "surface": "artisan-host",
+      "source": "src/runa/management/operations.json",
+      "signature": "",
+      "helper_family": "host",
+      "helper_prefix": ["stop"],
+      "production_catalog": true,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "host-plan-refusal"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:initialize",
+      "invocation": ["php", "artisan", "runa:dev:initialize"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:dev:initialize"
+      ],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["initialize"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:prepare",
+      "invocation": ["php", "artisan", "runa:dev:prepare"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:prepare"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["prepare"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:up",
+      "invocation": ["php", "artisan", "runa:dev:up"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:up"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["up"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:down",
+      "invocation": ["php", "artisan", "runa:dev:down"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:down"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["down"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:config",
+      "invocation": ["php", "artisan", "runa:dev:config"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:config"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["config"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:shell",
+      "invocation": ["php", "artisan", "runa:dev:shell"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:shell"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["shell"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:build",
+      "invocation": ["php", "artisan", "runa:dev:build"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:build"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{services?*}",
+      "helper_family": "dev",
+      "helper_prefix": ["build"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:recreate",
+      "invocation": ["php", "artisan", "runa:dev:recreate"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:recreate"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{services*}",
+      "helper_family": "dev",
+      "helper_prefix": ["recreate"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:restart",
+      "invocation": ["php", "artisan", "runa:dev:restart"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:restart"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{service?}",
+      "helper_family": "dev",
+      "helper_prefix": ["restart"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:logs",
+      "invocation": ["php", "artisan", "runa:dev:logs"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:logs"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{service?}",
+      "helper_family": "dev",
+      "helper_prefix": ["logs"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:status",
+      "invocation": ["php", "artisan", "runa:dev:status"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:status"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["status"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:setup",
+      "invocation": ["php", "artisan", "runa:dev:setup"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:setup"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{--if-needed}",
+      "helper_family": "dev",
+      "helper_prefix": ["setup"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:knowledge-init",
+      "invocation": ["php", "artisan", "runa:dev:knowledge-init"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:dev:knowledge-init"
+      ],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["knowledge-init"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:knowledge-status",
+      "invocation": ["php", "artisan", "runa:dev:knowledge-status"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:dev:knowledge-status"
+      ],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["knowledge-status"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:profile",
+      "invocation": ["php", "artisan", "runa:dev:profile"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:dev:profile"],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "dev",
+      "helper_prefix": ["profile"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:profile:set",
+      "invocation": ["php", "artisan", "runa:dev:profile:set"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:dev:profile:set"
+      ],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{profile} {settings?*}",
+      "helper_family": "dev",
+      "helper_prefix": ["profile"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:dev:embeddings:set",
+      "invocation": ["php", "artisan", "runa:dev:embeddings:set"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:dev:embeddings:set"
+      ],
+      "surface": "artisan-dev",
+      "source": "src/runa/management/development.json",
+      "signature": "{device}",
+      "helper_family": "dev",
+      "helper_prefix": ["embeddings"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "startup-independence"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:repository",
+      "invocation": ["php", "artisan", "runa:doctor:repository"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:repository"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["repository"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:config",
+      "invocation": ["php", "artisan", "runa:doctor:config"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:config"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["config"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:maintenance",
+      "invocation": ["php", "artisan", "runa:doctor:maintenance"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:maintenance"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["maintenance"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:hooks",
+      "invocation": ["php", "artisan", "runa:doctor:hooks"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:doctor:hooks"],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["hooks"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:frontend",
+      "invocation": ["php", "artisan", "runa:doctor:frontend"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:frontend"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["frontend"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:database-migrations",
+      "invocation": ["php", "artisan", "runa:doctor:database-migrations"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:database-migrations"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["database-migrations"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:database",
+      "invocation": ["php", "artisan", "runa:doctor:database"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:database"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["database"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:seeding",
+      "invocation": ["php", "artisan", "runa:doctor:seeding"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:seeding"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["seeding"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:boost",
+      "invocation": ["php", "artisan", "runa:doctor:boost"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:doctor:boost"],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["boost"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:tooling",
+      "invocation": ["php", "artisan", "runa:doctor:tooling"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:tooling"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["tooling"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:docs",
+      "invocation": ["php", "artisan", "runa:doctor:docs"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:doctor:docs"],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["docs"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:development",
+      "invocation": ["php", "artisan", "runa:doctor:development"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:development"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["development"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:quality:plan",
+      "invocation": ["php", "artisan", "runa:quality:plan"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:quality:plan"],
+      "surface": "artisan-quality",
+      "source": "src/runa/management/development.json",
+      "signature": "{--group=*} {--all}",
+      "helper_family": "quality",
+      "helper_prefix": ["show"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:quality:roadmap",
+      "invocation": ["php", "artisan", "runa:quality:roadmap"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:quality:roadmap"
+      ],
+      "surface": "artisan-quality",
+      "source": "src/runa/management/development.json",
+      "signature": "{--background} {--group=*} {--all}",
+      "helper_family": "quality",
+      "helper_prefix": ["roadmap"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:quality:final",
+      "invocation": ["php", "artisan", "runa:quality:final"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:quality:final"
+      ],
+      "surface": "artisan-quality",
+      "source": "src/runa/management/development.json",
+      "signature": "{--background} {--group=*} {--all}",
+      "helper_family": "quality",
+      "helper_prefix": ["final"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:quality:status",
+      "invocation": ["php", "artisan", "runa:quality:status"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:quality:status"
+      ],
+      "surface": "artisan-quality",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "quality",
+      "helper_prefix": ["status"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "quality-selection",
+        "quality-interruption"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:search",
+      "invocation": ["php", "artisan", "runa:knowledge:search"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:search"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["search"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:index",
+      "invocation": ["php", "artisan", "runa:knowledge:index"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:index"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": " {--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["index"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:rebuild",
+      "invocation": ["php", "artisan", "runa:knowledge:rebuild"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:rebuild"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": " {--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["rebuild"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:status",
+      "invocation": ["php", "artisan", "runa:knowledge:status"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:status"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "knowledge",
+      "helper_prefix": ["status"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:stale",
+      "invocation": ["php", "artisan", "runa:knowledge:stale"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:stale"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "knowledge",
+      "helper_prefix": ["stale"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:doctor",
+      "invocation": ["php", "artisan", "runa:knowledge:doctor"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:doctor"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": " {--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["doctor"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:eval",
+      "invocation": ["php", "artisan", "runa:knowledge:eval"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:eval"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": " {--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["eval"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:knowledge:initialize",
+      "invocation": ["php", "artisan", "runa:knowledge:initialize"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:knowledge:initialize"
+      ],
+      "surface": "artisan-knowledge",
+      "source": "src/runa/management/development.json",
+      "signature": "{--device=}",
+      "helper_family": "knowledge",
+      "helper_prefix": ["initialize"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "knowledge-identity-freshness"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:security:trivy",
+      "invocation": ["php", "artisan", "runa:security:trivy"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:security:trivy"
+      ],
+      "surface": "artisan-security",
+      "source": "src/runa/management/development.json",
+      "signature": "{--dependencies-root=}",
+      "helper_family": "security",
+      "helper_prefix": ["trivy"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "security-strict-results"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:security:review-changed-surface",
+      "invocation": ["php", "artisan", "runa:security:review-changed-surface"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:security:review-changed-surface"
+      ],
+      "surface": "artisan-security",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "security",
+      "helper_prefix": ["review-changed-surface"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "security-strict-results"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:security:dependencies",
+      "invocation": ["php", "artisan", "runa:security:dependencies"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:security:dependencies"
+      ],
+      "surface": "artisan-security",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "security",
+      "helper_prefix": ["dependencies"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "security-strict-results"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:security:secrets",
+      "invocation": ["php", "artisan", "runa:security:secrets"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:security:secrets"
+      ],
+      "surface": "artisan-security",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "security",
+      "helper_prefix": ["secrets"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "security-strict-results"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:xdebug:enable",
+      "invocation": ["php", "artisan", "runa:xdebug:enable"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:xdebug:enable"
+      ],
+      "surface": "artisan-xdebug",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "xdebug",
+      "helper_prefix": ["on"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:xdebug:disable",
+      "invocation": ["php", "artisan", "runa:xdebug:disable"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:xdebug:disable"
+      ],
+      "surface": "artisan-xdebug",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "xdebug",
+      "helper_prefix": ["off"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:xdebug:status",
+      "invocation": ["php", "artisan", "runa:xdebug:status"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:xdebug:status"
+      ],
+      "surface": "artisan-xdebug",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "xdebug",
+      "helper_prefix": ["status"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:hook:pre-commit",
+      "invocation": ["php", "artisan", "runa:hook:pre-commit"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:hook:pre-commit"
+      ],
+      "surface": "artisan-hook",
+      "source": "src/runa/management/development.json",
+      "signature": "{--repository= : Internal Git repository context}",
+      "helper_family": "hook",
+      "helper_prefix": ["pre-commit"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "hook-index-integrity"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:hook:commit-msg",
+      "invocation": ["php", "artisan", "runa:hook:commit-msg"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:hook:commit-msg"
+      ],
+      "surface": "artisan-hook",
+      "source": "src/runa/management/development.json",
+      "signature": "{message_file} {--repository= : Internal Git repository context}",
+      "helper_family": "hook",
+      "helper_prefix": ["commit-msg"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "hook-index-integrity"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:check:debug-residue",
+      "invocation": ["php", "artisan", "runa:check:debug-residue"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:check:debug-residue"
+      ],
+      "surface": "artisan-check",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "check",
+      "helper_prefix": ["debug-residue"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:format",
+      "invocation": ["php", "artisan", "runa:format"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:format"],
+      "surface": "artisan-format",
+      "source": "src/runa/management/development.json",
+      "signature": "{--check}",
+      "helper_family": "format",
+      "helper_prefix": [],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:lint",
+      "invocation": ["php", "artisan", "runa:lint"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:lint"],
+      "surface": "artisan-lint",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*}",
+      "helper_family": "lint",
+      "helper_prefix": [],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:typecheck",
+      "invocation": ["php", "artisan", "runa:typecheck"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:typecheck"],
+      "surface": "artisan-typecheck",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*}",
+      "helper_family": "typecheck",
+      "helper_prefix": [],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:analyse",
+      "invocation": ["php", "artisan", "runa:analyse"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:analyse"],
+      "surface": "artisan-analyse",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*}",
+      "helper_family": "analyse",
+      "helper_prefix": [],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:test",
+      "invocation": ["php", "artisan", "runa:test"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:test"],
+      "surface": "artisan-test",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*} {--parallel} {--processes=} {--filter=} {--compact}",
+      "helper_family": "test",
+      "helper_prefix": [],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:test:frontend",
+      "invocation": ["php", "artisan", "runa:test:frontend"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:test:frontend"
+      ],
+      "surface": "artisan-test",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*}",
+      "helper_family": "test",
+      "helper_prefix": ["frontend"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:test:e2e",
+      "invocation": ["php", "artisan", "runa:test:e2e"],
+      "cold_invocation": ["./bin/artisan", "--management", "runa:test:e2e"],
+      "surface": "artisan-test",
+      "source": "src/runa/management/development.json",
+      "signature": "{arguments?*} {--critical}",
+      "helper_family": "test",
+      "helper_prefix": ["e2e"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan",
+        "resource-lifecycle"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "runa:doctor:templates",
+      "invocation": ["php", "artisan", "runa:doctor:templates"],
+      "cold_invocation": [
+        "./bin/artisan",
+        "--management",
+        "runa:doctor:templates"
+      ],
+      "surface": "artisan-doctor",
+      "source": "src/runa/management/development.json",
+      "signature": "",
+      "helper_family": "doctor",
+      "helper_prefix": ["templates"],
+      "production_catalog": false,
+      "scenario_ids": [
+        "literal-arguments",
+        "scope-and-cwd",
+        "help-and-errors",
+        "nonexecuting-plan"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "distribution/bootstrap.py",
+      "invocation": ["python3", "distribution/bootstrap.py"],
+      "surface": "external-distribution",
+      "source": "distribution/bootstrap.py",
+      "argument_declarations": [
+        {
+          "line": 376,
+          "declaration": "parser.add_argument('--repository', help='Authorized GitHub owner/name (public access needs no token)')"
+        },
+        {
+          "line": 377,
+          "declaration": "parser.add_argument('--tag', help='Exact published annotated vX.Y.Z release')"
+        },
+        {
+          "line": 378,
+          "declaration": "parser.add_argument('--destination', help='New directory under an existing owned parent')"
+        },
+        {
+          "line": 379,
+          "declaration": "parser.add_argument('--install', choices=('now', 'later'))"
+        },
+        {
+          "line": 380,
+          "declaration": "parser.add_argument('--non-interactive', action='store_true', help='Require every selection; never prompt')"
+        },
+        {
+          "line": 381,
+          "declaration": "parser.add_argument('--reference-module', choices=('include', 'exclude'), help='Development working example; default exclude in automation')"
+        },
+        {
+          "line": 382,
+          "declaration": "parser.add_argument('--profile', choices=('low', 'standard', 'high'), help='Unified development install resource profile')"
+        },
+        {
+          "line": 384,
+          "declaration": "credentials.add_argument('--token-file', help='Private GitHub read credential file (never pass a token as an argument)')"
+        },
+        {
+          "line": 385,
+          "declaration": "credentials.add_argument('--ask-token', action='store_true', help='Read private access token without echo')"
+        },
+        {
+          "line": 386,
+          "declaration": "parser.add_argument('--expected-commit', help='Independently delivered full lowercase commit SHA')"
+        },
+        {
+          "line": 387,
+          "declaration": "parser.add_argument('--expected-digest', help='Independently delivered SHA-256 source digest')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": [
+        "source-helper-boundary",
+        "distribution-upgrade",
+        "distribution-interruption",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "distribution/initialize.py",
+      "invocation": ["python3", "distribution/initialize.py"],
+      "surface": "external-distribution",
+      "source": "distribution/initialize.py",
+      "argument_declarations": [
+        {
+          "line": 91,
+          "declaration": "parser.add_argument('--repository', required=True, help='Customer repository URL; operator Git credentials remain external')"
+        },
+        {
+          "line": 92,
+          "declaration": "parser.add_argument('--destination', required=True)"
+        },
+        {
+          "line": 93,
+          "declaration": "parser.add_argument('--target', default='main')"
+        },
+        {
+          "line": 94,
+          "declaration": "parser.add_argument('--install', choices=('now', 'later'), default='later')"
+        },
+        {
+          "line": 95,
+          "declaration": "parser.add_argument('--settings-file')"
+        },
+        {
+          "line": 96,
+          "declaration": "parser.add_argument('--simulation', action='store_true')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": [
+        "source-helper-boundary",
+        "distribution-upgrade",
+        "distribution-interruption",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "distribution/installation.py",
+      "invocation": ["python3", "distribution/installation.py"],
+      "surface": "external-distribution",
+      "source": "distribution/installation.py",
+      "argument_declarations": [
+        {
+          "line": 488,
+          "declaration": "parser.add_argument('mode', choices=('dev', 'prod'))"
+        },
+        {
+          "line": 489,
+          "declaration": "parser.add_argument('target')"
+        },
+        {
+          "line": 490,
+          "declaration": "parser.add_argument('--settings-file')"
+        },
+        {
+          "line": 491,
+          "declaration": "parser.add_argument('--profile', choices=('low', 'standard', 'high'))"
+        },
+        {
+          "line": 492,
+          "declaration": "parser.add_argument('--simulation', action='store_true')"
+        },
+        {
+          "line": 493,
+          "declaration": "parser.add_argument('--resume', action='store_true')"
+        },
+        {
+          "line": 494,
+          "declaration": "parser.add_argument('--non-interactive', action='store_true')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": [
+        "source-helper-boundary",
+        "distribution-upgrade",
+        "distribution-interruption",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "distribution/update.py",
+      "invocation": ["python3", "distribution/update.py"],
+      "surface": "external-distribution",
+      "source": "distribution/update.py",
+      "argument_declarations": [
+        {
+          "line": 193,
+          "declaration": "mode.add_argument('--preflight', action='store_true')"
+        },
+        {
+          "line": 194,
+          "declaration": "mode.add_argument('--plan', action='store_true')"
+        },
+        {
+          "line": 195,
+          "declaration": "mode.add_argument('--apply', action='store_true')"
+        },
+        {
+          "line": 196,
+          "declaration": "mode.add_argument('--resume', action='store_true')"
+        },
+        {
+          "line": 197,
+          "declaration": "parser.add_argument('--customization-decision', choices=('continue', 'abort'))"
+        },
+        {
+          "line": 198,
+          "declaration": "parser.add_argument('--review-fingerprint', help='Exact reviewed delivered-file fingerprint, required for changed resume reviews')"
+        },
+        {
+          "line": 199,
+          "declaration": "parser.add_argument('--non-interactive', action='store_true')"
+        },
+        {
+          "line": 200,
+          "declaration": "parser.add_argument('--installation', required=True)"
+        },
+        {
+          "line": 201,
+          "declaration": "parser.add_argument('--target', required=True, help='Exact published stable vX.Y.Z release')"
+        },
+        {
+          "line": 202,
+          "declaration": "parser.add_argument('--repository', default=bootstrap.REPOSITORY, help='Explicitly authorized GitHub owner/name')"
+        },
+        {
+          "line": 203,
+          "declaration": "parser.add_argument('--toolchain-image', default='runa-development:dev', help='Existing trusted owner toolchain image; no automatic pull/build')"
+        },
+        {
+          "line": 204,
+          "declaration": "parser.add_argument('--expected-commit', help='Independently supplied target release commit')"
+        },
+        {
+          "line": 205,
+          "declaration": "parser.add_argument('--json', action='store_true')"
+        },
+        {
+          "line": 207,
+          "declaration": "credentials.add_argument('--token-file')"
+        },
+        {
+          "line": 208,
+          "declaration": "credentials.add_argument('--ask-token', action='store_true')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": [
+        "source-helper-boundary",
+        "distribution-upgrade",
+        "distribution-interruption",
+        "resource-lifecycle",
+        "packaging-boundaries"
+      ],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/dependencies.py",
+      "invocation": ["python3", "tools/application/dependencies.py"],
+      "surface": "documented-source-helper",
+      "source": "tools/application/dependencies.py",
+      "argument_declarations": [
+        {
+          "line": 56,
+          "declaration": "parser.add_argument('--check', action='store_true')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/dev.py",
+      "invocation": ["python3", "tools/application/executors/dev.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/dev.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/doctor.py",
+      "invocation": ["python3", "tools/application/executors/doctor.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/doctor.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/knowledge.py",
+      "invocation": ["python3", "tools/application/executors/knowledge.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/knowledge.py",
+      "argument_declarations": [
+        {
+          "line": 17,
+          "declaration": "parser.add_argument('command', choices=['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'])"
+        },
+        {
+          "line": 18,
+          "declaration": "parser.add_argument('--device', choices=['auto', 'cpu'], default=None, help='Prefer CUDA when reachable, or force CPU for fallback acceptance.')"
+        },
+        {
+          "line": 19,
+          "declaration": "parser.add_argument('query', nargs='?')"
+        },
+        {
+          "line": 20,
+          "declaration": "parser.add_argument('--top-k', type=int, default=5)"
+        },
+        {
+          "line": 21,
+          "declaration": "parser.add_argument('--explain', action='store_true')"
+        },
+        {
+          "line": 23,
+          "declaration": "parser.add_argument('--' + field.replace('_', '-'))"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/operations.py",
+      "invocation": ["python3", "tools/application/executors/operations.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/operations.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/production.py",
+      "invocation": ["python3", "tools/application/executors/production.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/production.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/quality.py",
+      "invocation": ["python3", "tools/application/executors/quality.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/quality.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/quality_check.py",
+      "invocation": ["python3", "tools/application/executors/quality_check.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/quality_check.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/executors/security.py",
+      "invocation": ["python3", "tools/application/executors/security.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/executors/security.py",
+      "argument_declarations": [
+        {
+          "line": 13,
+          "declaration": "parser.add_argument('action', choices=['trivy', 'review-changed-surface', 'dependencies', 'secrets'])"
+        },
+        {
+          "line": 14,
+          "declaration": "parser.add_argument('--dependencies-root', type=Path, help='Existing development checkout for audits from an isolated installer clone; lockfiles must match')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/git_hook.py",
+      "invocation": ["python3", "tools/application/git_hook.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/git_hook.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/host_executor.py",
+      "invocation": ["python3", "tools/application/host_executor.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/host_executor.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/install-scanners.py",
+      "invocation": ["python3", "tools/application/install-scanners.py"],
+      "surface": "documented-source-helper",
+      "source": "tools/application/install-scanners.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/knowledge/startup.py",
+      "invocation": ["python3", "tools/application/knowledge/startup.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/knowledge/startup.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/module_versions.py",
+      "invocation": ["python3", "tools/application/module_versions.py"],
+      "surface": "documented-source-helper",
+      "source": "tools/application/module_versions.py",
+      "argument_declarations": [
+        {
+          "line": 66,
+          "declaration": "parser.add_argument('--owner', required=True, choices=['app', 'runa'])"
+        },
+        {
+          "line": 67,
+          "declaration": "parser.add_argument('--base', default='main', help='Existing baseline ref; use the project default branch for normal roadmap checks.')"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/application/testing/hooks.py",
+      "invocation": ["python3", "tools/application/testing/hooks.py"],
+      "surface": "internal-engine",
+      "source": "tools/application/testing/hooks.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/localization/snapshot.py",
+      "invocation": ["python3", "tools/maintainer/localization/snapshot.py"],
+      "surface": "documented-source-helper",
+      "source": "tools/maintainer/localization/snapshot.py",
+      "argument_declarations": [
+        {
+          "line": 121,
+          "declaration": "candidate.add_argument('--commit', required=True)"
+        },
+        {
+          "line": 122,
+          "declaration": "candidate.add_argument('--version', required=True)"
+        }
+      ],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/bootstrap.py",
+      "invocation": ["python3", "tools/maintainer/testing/bootstrap.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/bootstrap.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/customer-deployment.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/customer-deployment.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/customer-deployment.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/customer-initialization.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/customer-initialization.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/customer-initialization.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/database-guards.py",
+      "invocation": ["python3", "tools/maintainer/testing/database-guards.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/database-guards.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/dependencies.py",
+      "invocation": ["python3", "tools/maintainer/testing/dependencies.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/dependencies.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/development-startup.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/development-startup.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/development-startup.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/docker-test-inventory.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/docker-test-inventory.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/docker-test-inventory.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/docs.py",
+      "invocation": ["python3", "tools/maintainer/testing/docs.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/docs.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/documentation-live.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/documentation-live.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/documentation-live.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/documentation.py",
+      "invocation": ["python3", "tools/maintainer/testing/documentation.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/documentation.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/error-fallback-host.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/error-fallback-host.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/error-fallback-host.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/error-fastcgi-fixture.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/error-fastcgi-fixture.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/error-fastcgi-fixture.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/fixtures/installation-smtp.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/fixtures/installation-smtp.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/fixtures/installation-smtp.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/host-executor-host.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/host-executor-host.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/host-executor-host.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/host-executor.py",
+      "invocation": ["python3", "tools/maintainer/testing/host-executor.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/host-executor.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/installation-host.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/installation-host.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/installation-host.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary", "packaging-boundaries"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/installation.py",
+      "invocation": ["python3", "tools/maintainer/testing/installation.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/installation.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/knowledge-live.py",
+      "invocation": ["python3", "tools/maintainer/testing/knowledge-live.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/knowledge-live.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/knowledge-retrieval.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/knowledge-retrieval.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/knowledge-retrieval.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/knowledge.py",
+      "invocation": ["python3", "tools/maintainer/testing/knowledge.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/knowledge.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/maintenance.py",
+      "invocation": ["python3", "tools/maintainer/testing/maintenance.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/maintenance.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/management-host.py",
+      "invocation": ["python3", "tools/maintainer/testing/management-host.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/management-host.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/management.py",
+      "invocation": ["python3", "tools/maintainer/testing/management.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/management.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/module-development.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/module-development.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/module-development.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/operations.py",
+      "invocation": ["python3", "tools/maintainer/testing/operations.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/operations.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/postgres-alpine-contracts.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/postgres-alpine-contracts.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/postgres-alpine-contracts.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/postgres-alpine.py",
+      "invocation": ["python3", "tools/maintainer/testing/postgres-alpine.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/postgres-alpine.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/postgres-switch-contracts.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/postgres-switch-contracts.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/postgres-switch-contracts.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/production.py",
+      "invocation": ["python3", "tools/maintainer/testing/production.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/production.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/quality.py",
+      "invocation": ["python3", "tools/maintainer/testing/quality.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/quality.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/release.py",
+      "invocation": ["python3", "tools/maintainer/testing/release.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/release.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/repository-boundary.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/repository-boundary.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/repository-boundary.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary", "packaging-boundaries"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/security.py",
+      "invocation": ["python3", "tools/maintainer/testing/security.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/security.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/services.py",
+      "invocation": ["python3", "tools/maintainer/testing/services.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/services.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/switch-postgres-icu.py",
+      "invocation": [
+        "python3",
+        "tools/maintainer/testing/switch-postgres-icu.py"
+      ],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/switch-postgres-icu.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/tool-ownership.py",
+      "invocation": ["python3", "tools/maintainer/testing/tool-ownership.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/tool-ownership.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary", "packaging-boundaries"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/update-execution.py",
+      "invocation": ["python3", "tools/maintainer/testing/update-execution.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/update-execution.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/update.py",
+      "invocation": ["python3", "tools/maintainer/testing/update.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/update.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": "tools/maintainer/testing/wrappers.py",
+      "invocation": ["python3", "tools/maintainer/testing/wrappers.py"],
+      "surface": "private-test-or-fixture",
+      "source": "tools/maintainer/testing/wrappers.py",
+      "argument_declarations": [],
+      "baseline_contract": "Private engines are not new public commands; retain their callers and process protocol. See family matrix and source snapshot.",
+      "scenario_ids": ["source-helper-boundary"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": ".githooks/pre-commit",
+      "invocation": ["./.githooks/pre-commit"],
+      "surface": "installed-shell-hook",
+      "source": ".githooks/pre-commit",
+      "baseline_contract": "Shell sets repository root and execs the dedicated application hook alias; preserve arguments and native hook status.",
+      "scenario_ids": ["scope-and-cwd", "hook-index-integrity"],
+      "status": "specified-not-executed"
+    },
+    {
+      "id": ".githooks/commit-msg",
+      "invocation": ["./.githooks/commit-msg"],
+      "surface": "installed-shell-hook",
+      "source": ".githooks/commit-msg",
+      "baseline_contract": "Shell sets repository root and execs the dedicated application hook alias; preserve arguments and native hook status.",
+      "scenario_ids": ["scope-and-cwd", "hook-index-integrity"],
+      "status": "specified-not-executed"
+    }
+  ]
+}

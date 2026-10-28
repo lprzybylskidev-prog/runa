@@ -2,6 +2,8 @@
 
 namespace Runa\Modules\Auth\Http\Requests;
 
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class PreferenceRequest extends FormRequest
@@ -11,6 +13,9 @@ final class PreferenceRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, string|list<string|Rule|ValidationRule|\Closure|\Stringable>>
+     */
     public function rules(): array
     {
         return ['application' => ['required', 'string', 'regex:/\A[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}\z/D'],

@@ -5,12 +5,12 @@ namespace Runa\Modules\Permissions;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Contracts\Modules\UpgradeHandler;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\Data\AuthorityLock;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditWriter;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\Data\AuthorityLock;
-use Runa\Support\Modules\ModuleRegistry;
 
 final class InitializePermissions implements UpgradeHandler
 {

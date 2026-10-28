@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""Stable owner transport, independent of the caller's working directory."""
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+if __name__ == "__main__":
+    root = Path(__file__).resolve().parents[2]
+    raise SystemExit(
+        subprocess.call(
+            [sys.executable, "-m", "tools.maintainer.python_cli", "test", *sys.argv[1:]],
+            cwd=root,
+            env=dict(
+                os.environ,
+                PYTHONDONTWRITEBYTECODE="1",
+                PYTHONPYCACHEPREFIX=str(root / ".runtime/python/pycache"),
+            ),
+        )
+    )

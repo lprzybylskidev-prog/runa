@@ -4,7 +4,7 @@ namespace Runa\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Runa\Http\Resources\ApplicationIdentityResource;
-use Runa\Support\ApplicationIdentity;
+use Runa\Identity\ApplicationIdentity;
 
 final class ApplicationIdentityController extends Controller
 {

@@ -167,3 +167,15 @@ Account-history details can be replaced through the Auth `historyDetail` present
 entry. Reuse the public controller/types and accessible Dialog contract documented
 in docs/runa/handbook/modules/auth/history.md; never fetch general Audit payloads
 or reconstruct missing historical values from current account state.
+
+Use the named public controller, props, slots, events and component-handle types
+listed in docs/runa/handbook/development/frontend/customization.md#public-presentation-types.
+Import types from the same facade as the capability; application wrappers should
+not derive their contracts from private implementation imports.
+
+Compose account cards from one public `useAuthAccount` instance per keyed account;
+reuse its conflict/list state and save methods rather than creating per-card
+controllers or preference adapters. The [account UI guide](../../../../docs/runa/handbook/modules/auth/account-ui.md#automatic-account-refresh)
+owns the lifetime and shared-write contract.
+
+Use docs/runa/handbook/architecture/public-api.md for the source-placement and public entrypoint table. New application screens and generated consumers use the same facade/type contracts; private Auth collaborators are never application dependencies.

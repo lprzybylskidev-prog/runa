@@ -1,7 +1,7 @@
 <?php
 
-use Runa\Support\ApplicationManifest;
-use Runa\Support\PlatformManifest;
+use Runa\Identity\ApplicationManifest;
+use Runa\Identity\PlatformManifest;
 
 $platform = PlatformManifest::load(base_path('runa/platform.json'));
 $version = $platform->version;

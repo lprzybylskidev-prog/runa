@@ -1,0 +1,28 @@
+<?php
+
+use Symfony\Component\Process\Process;
+use Tests\TestCase;
+
+it('keeps native application test discovery independent of private owner bootstraps', function (): void {
+    $native = new Process([PHP_BINARY, 'artisan', 'test', '--list-tests'], base_path());
+    $native->mustRun();
+    expect($native->getOutput())->toContain('WelcomeTest')
+        ->not->toContain('ManagementTest', 'DatabaseOwnershipTest', 'TestSuiteOwnershipTest');
+
+    foreach (['test', 'runa:test'] as $command) {
+        $competing = new Process([PHP_BINARY, 'artisan', $command, '--filter=WelcomeTest'], base_path());
+        expect($competing->run())->not->toBe(0);
+        expect($competing->getOutput().$competing->getErrorOutput())->toContain('Another test suite is running');
+    }
+
+    $owner = new Process([PHP_BINARY, 'vendor/bin/pest', '--configuration=../tests/backend/runa/phpunit.xml', '--test-directory=../tests/backend/runa', '--list-tests'], base_path());
+    $owner->mustRun();
+    expect($owner->getOutput())->toContain('ManagementTest', 'DatabaseOwnershipTest')
+        ->not->toContain('WelcomeTest');
+
+    $pest = new Process([PHP_BINARY, 'vendor/bin/pest', '--test-directory=../tests/backend/app', '--list-tests'], base_path());
+    $pest->mustRun();
+    expect($pest->getOutput())->toContain('WelcomeTest')->not->toContain('ManagementTest');
+    expect(is_dir(base_path('tests')))->toBeFalse()
+        ->and((new ReflectionClass(TestCase::class))->getFileName())->toBe(base_path('runa/Testing/TestCase.php'));
+});

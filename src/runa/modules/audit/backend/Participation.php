@@ -7,9 +7,9 @@ use Runa\Contracts\Modules\PreparationContext;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Storage\AppendEvents;
-use Runa\Support\Modules\ModuleRegistry;
 
 /** Only the trusted framework adapter uses this class, never customer business code. */
 final readonly class Participation implements PreparationParticipant, SettingsParticipant

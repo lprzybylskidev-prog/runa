@@ -9,21 +9,33 @@ final class SecurityProxy extends GuardedApi implements AuthSecurity
 {
     public function requestPasswordReset(string $publicId, int $expectedVersion): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+
+        return $result;
     }
 
     public function resetFactors(string $publicId, int $expectedVersion): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+
+        return $result;
     }
 
     public function trustedDevices(string $publicId, ?string $before = null): array
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $before]);
+        /** @var list<array{public_id: string, created_at: string, expires_at: string}> $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $before]);
+
+        return $result;
     }
 
     public function revokeDevice(string $publicId, string $deviceId): bool
     {
-        return $this->invoke(__FUNCTION__, [$publicId, $deviceId]);
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $deviceId]);
+
+        return $result;
     }
 }

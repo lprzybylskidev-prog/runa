@@ -15,8 +15,8 @@ Technical/backend and administration output stays English by default. Future use
 Inside the devcontainer:
 
 ```sh
-python3 tools/maintainer/localization/snapshot.py check
-php tools/maintainer/testing/localization.php
+python3 -m tools.maintainer.localization.snapshot check
+php tests/tools/runa/acceptance/localization.php
 ```
 
 The first command validates catalog keys and placeholders against installed Laravel and verifies the imported license hash. It reports local edits since import without overwriting them. The integration check exercises native Laravel validation, Polish message loading and nested parameter interpolation, while preserving the English technical default. Re-run both when upgrading Laravel or editing the snapshot.
@@ -28,7 +28,7 @@ An update requires an active maintenance/feature roadmap, upstream/license/secur
 1. Before changing the current framework/catalog, prepare the currently recorded source with its exact metadata, keeping the result as a baseline:
 
    ```sh
-   python3 tools/maintainer/localization/snapshot.py prepare --version 15.37.4 --commit a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7
+   python3 -m tools.maintainer.localization.snapshot prepare --version 15.37.4 --commit a3a9ef9b039d10db442bfb3bed0a97c9b50f30a7
    ```
 
 2. Prepare the reviewed new version with `prepare --version X.Y.Z --commit <40-character-SHA>`. The tool resolves the exact tag, fetches only translation JSON and license over HTTPS, selects required validation keys, validates placeholders and writes candidate data/metadata/license under `.runtime/localization/<SHA>/`. It never writes `src/runa/lang/` or project manifests.

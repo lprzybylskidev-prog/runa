@@ -224,7 +224,7 @@ TableActions composes sm icon export/print actions, a scope/orientation settings
 
 ## Independent consumer verification
 
-Verify independent application consumers through src/app/tests: compose public forms, selections, Tabs, ConfirmDialog, Table and TableActions with caller-owned state and bounded fixtures. Import the shared CSS and initialize only the needed locale/theme; a shell, resolver, registry or preference bootstrap is optional. Use the real testing Nginx endpoint for application E2E. Platform fixture harnesses and regressions remain owner-only and are not installed customer dependencies. Test tools/output never enter production.
+Verify independent application consumers through tests/backend/app: compose public forms, selections, Tabs, ConfirmDialog, Table and TableActions with caller-owned state and bounded fixtures. Import the shared CSS and initialize only the needed locale/theme; a shell, resolver, registry or preference bootstrap is optional. Use the real testing Nginx endpoint for application E2E. Platform fixture harnesses and regressions remain owner-only and are not installed customer dependencies. Test tools/output never enter production.
 
 ## Import and extension example
 
@@ -242,7 +242,7 @@ const name = ref('');
 </template>
 ```
 
-Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Keep application composition coverage under src/app/tests; test scenarios are test assets, never application demo routes.
+Extend presentation through existing slots/props first: for example Table's `cell-<key>`/`actions` and ApplicationLayout's toolbar/statistics slots. Keep authorization, business validation and writes in the owning feature; add a reusable prop only when multiple real consumers share its behavior. Keep application composition coverage under tests/backend/app; test scenarios are test assets, never application demo routes.
 
 IdentityProvider keeps its existing reactive subtree contract. Normal application startup resolves the public backend identity with `loadApplicationIdentity` from the UI facade; build-time fallback uses the customer application manifest ID/name/version and separate platform manifest version; customer scaffold VERSION is not a runtime identity input. See docs/runa/handbook/architecture/configuration.md for canonical metadata and compatibility, and docs/runa/handbook/architecture/frontend.md for consumer behavior.
 
@@ -300,7 +300,7 @@ entry/account/welcome/session controllers. See [frontend adoption](customization
 for supported props, slots, lifetime and security obligations. All future Runa
 module views follow the same usable-default/public-replacement requirement.
 Canonical custom consumers are owner-only fixtures under
-src/runa/tests/frontend/fixtures/customization; they are excluded from delivery.
+tests/frontend/runa/unit/fixtures/customization; they are excluded from delivery.
 
 MinimalLayout exposes `header-actions` with translator `t` inside the default
 header action group beside locale/theme controls. Use it for page entry actions
@@ -373,3 +373,9 @@ The controller fences overlapping/closed reads and supports retry. Public presen
 replacement and exported types are documented in the
 [history contract](../../modules/auth/history.md); custom application presentation
 lives in src/app. Existing Dialog owns motion/focus; no new transition is added.
+
+Public replacement and controller types are listed in
+[frontend adoption](customization.md#public-presentation-types). Import the named
+Auth, layout, module page/slot and static-error contracts through their respective
+facades. Supplied components consume the same prop/slot/event declarations;
+customer wrappers need no private source imports.

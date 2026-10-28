@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runa-application-tooling"
+dynamic = ["version"]
+description = "Private Runa core and delivered application tooling"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+packages = ["tools", "tools.core", "tools.application", "tools.application.knowledge", "tools.application.testing", "tools.application.testing.support"]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.package-data]
+"tools.application" = ["python/requirements.lock", "python/pyright.lock.json", "python/pip-bootstrap.lock.json", "python/pytest.ini", "python/ruff.toml", "python/pyrightconfig.json", "quality.yml", "gateway.json", "read-yaml.php", "bin/git-hook", "bin/pre-commit", "bin/commit-msg"]
+"tools.application.knowledge" = ["config.json", "golden.json"]
+"tools.application.testing" = ["production-runtime.php"]
+
+[tool.ruff]
+extend = "tools/application/python/ruff.toml"
+cache-dir = ".runtime/python/cache/ruff"
+include = ["**/*.py", "bin/artisan", "bin/command", "bin/passthrough", "bin/boost-mcp", "tools/application/bin/git-hook"]
+
+[tool.pyright]
+extends = "tools/application/python/pyrightconfig.json"

@@ -104,10 +104,26 @@ COPY --chown=runa:runa src/runa/Foundation/ runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ runa/Http/
 COPY --chown=runa:runa src/runa/Providers/ runa/Providers/
 COPY --chown=runa:runa src/runa/Support/ runa/Support/
+COPY --chown=runa:runa src/runa/Configuration/ runa/Configuration/
+COPY --chown=runa:runa src/runa/Identity/ runa/Identity/
+COPY --chown=runa:runa src/runa/Integration/ runa/Integration/
+COPY --chown=runa:runa src/runa/Logging/ runa/Logging/
+COPY --chown=runa:runa src/runa/Mail/ runa/Mail/
+COPY --chown=runa:runa src/runa/ModuleFramework/ runa/ModuleFramework/
+COPY --chown=runa:runa src/runa/Runtime/ runa/Runtime/
 COPY --chown=runa:runa src/runa/modules/ runa/modules/
 COPY --chown=runa:runa src/runa/database/ runa/database/
-RUN composer dump-autoload --no-dev --no-scripts --optimize \
-    && rm -rf app/resources/js app/resources/css app/resources/index.html
+# Keep runtime diagnostics and persisted upgrade handlers; remove executable developer support.
+RUN rm -rf runa/Console/Commands/Generators \
+        runa/Console/Commands/MakeModule.php runa/Console/Commands/CheckTestDatabase.php \
+        runa/Console/Commands/DevelopmentAccounts.php \
+        runa/Support/Seeding/DevelopmentContributor.php runa/Support/Seeding/DevelopmentFixtures.php \
+        runa/modules/auth/backend/Development runa/modules/permissions/backend/Development \
+        runa/modules/auth/backend/Contracts/DevelopmentAccounts.php \
+        runa/modules/permissions/backend/Contracts/DevelopmentAccess.php \
+        runa/modules/*/frontend app/modules/*/frontend \
+        app/resources/js app/resources/css app/resources/index.html \
+    && composer dump-autoload --no-dev --no-scripts --optimize
 COPY --chown=runa:runa src/runa/config/branding.php runa/config/branding.php
 COPY --chown=runa:runa src/runa/resources/errors/ runa/resources/errors/
 COPY --chown=runa:runa src/runa/resources/views/errors/ runa/resources/views/errors/
@@ -117,7 +133,7 @@ COPY --chown=runa:runa src/runa/platform.json runa/platform.json
 # A short-lived host management process, never a production application service.
 FROM production-runtime AS management
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /opt/runa/vendor/
-COPY --chown=runa:runa src/runa/management/autoload.php src/runa/management/bootstrap.php src/runa/management/commands.php src/runa/management/ToolingCommand.php src/runa/management/NamedToolCommand.php src/runa/management/operations.json src/runa/management/HostBridge.php /opt/runa/runa/management/
+COPY --chown=runa:runa src/runa/Tooling/Management/autoload.php src/runa/Tooling/Management/bootstrap.php src/runa/Tooling/Management/commands.php src/runa/Tooling/Management/ToolingCommand.php src/runa/Tooling/Management/NamedToolCommand.php src/runa/Tooling/Management/operations.json src/runa/Tooling/Management/HostBridge.php /opt/runa/runa/Tooling/Management/
 COPY --chown=runa:runa src/artisan /opt/runa/artisan
 WORKDIR /opt/runa
 HEALTHCHECK NONE
@@ -125,7 +141,7 @@ ENTRYPOINT ["php", "/opt/runa/artisan"]
 CMD ["--management", "list"]
 
 FROM management AS development-management
-COPY --chown=runa:runa src/runa/management/ /opt/runa/runa/management/
+COPY --chown=runa:runa src/runa/Tooling/Management/ /opt/runa/runa/Tooling/Management/
 
 FROM node AS frontend-build
 WORKDIR /build/src
@@ -134,6 +150,7 @@ COPY src/package.json src/pnpm-lock.yaml src/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY src/runa/resources/ runa/resources/
 COPY src/runa/frontend/ runa/frontend/
+COPY src/runa/build/ runa/build/
 COPY src/runa/modules/ runa/modules/
 COPY src/app/resources/ app/resources/
 COPY src/app/modules/ app/modules/
@@ -143,9 +160,10 @@ COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 RUN pnpm run build
 
 FROM php-dependencies AS error-pages-build
+COPY --chown=runa:runa src/runa/build/ runa/build/
 COPY --chown=runa:runa --from=frontend-build /build/.runtime/frontend/errors/templates/ /tmp/runa-build/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa --from=frontend-build /build/src/public/runa-error/ public/runa-error/
-RUN php runa/resources/errors/build.php
+RUN php runa/build/errors/build.php
 
 FROM production-runtime AS production
 COPY --from=production-runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
@@ -156,14 +174,21 @@ CMD ["php-fpm", "-F"]
 COPY --chown=runa:runa src/composer.json /workspace/src/composer.json
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /workspace/src/vendor/
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/app/ /workspace/src/app/
-COPY --chown=runa:runa src/runa/Console/ /workspace/src/runa/Console/
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/runa/Console/ /workspace/src/runa/Console/
 COPY --chown=runa:runa src/runa/Contracts/ /workspace/src/runa/Contracts/
 COPY --chown=runa:runa src/runa/Database/ /workspace/src/runa/Database/
 COPY --chown=runa:runa src/runa/Foundation/ /workspace/src/runa/Foundation/
 COPY --chown=runa:runa src/runa/Http/ /workspace/src/runa/Http/
 COPY --chown=runa:runa src/runa/Providers/ /workspace/src/runa/Providers/
-COPY --chown=runa:runa src/runa/Support/ /workspace/src/runa/Support/
-COPY --chown=runa:runa src/runa/modules/ /workspace/src/runa/modules/
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/runa/Support/ /workspace/src/runa/Support/
+COPY --chown=runa:runa src/runa/Configuration/ /workspace/src/runa/Configuration/
+COPY --chown=runa:runa src/runa/Identity/ /workspace/src/runa/Identity/
+COPY --chown=runa:runa src/runa/Integration/ /workspace/src/runa/Integration/
+COPY --chown=runa:runa src/runa/Logging/ /workspace/src/runa/Logging/
+COPY --chown=runa:runa src/runa/Mail/ /workspace/src/runa/Mail/
+COPY --chown=runa:runa src/runa/ModuleFramework/ /workspace/src/runa/ModuleFramework/
+COPY --chown=runa:runa src/runa/Runtime/ /workspace/src/runa/Runtime/
+COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/runa/modules/ /workspace/src/runa/modules/
 COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
 COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/
 COPY --chown=runa:runa src/runa/database/ /workspace/src/runa/database/

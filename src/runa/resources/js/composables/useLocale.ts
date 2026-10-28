@@ -1,4 +1,4 @@
-import { defaultPreferenceStore } from '../lib/preferenceStore';
+import { defaultPreferenceStore } from '../../../modules/auth/frontend/preferences/session';
 import { onScopeDispose, ref, watch } from 'vue';
 import { messages } from '../locales/messages';
 import type { Locale, MessageKey } from '../locales/messages';

@@ -1,0 +1,19 @@
+{
+  "include": [
+    "../../../tools/core",
+    "../../../tools/application",
+    "../../../src/app",
+    "../../../tests/tools/app"
+  ],
+  "exclude": [
+    "../../../.runtime",
+    "../../../src/vendor",
+    "../../../src/node_modules"
+  ],
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Linux",
+  "typeCheckingMode": "strict",
+  "venvPath": "../../../.runtime/python",
+  "venv": "venv",
+  "extraPaths": ["../../.."]
+}

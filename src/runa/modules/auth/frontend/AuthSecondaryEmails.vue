@@ -104,7 +104,8 @@ async function edit(address: Address) {
 }
 async function save() {
   if (busy.value || emailConflict.value !== undefined) return;
-  props.account.form.value = form.value;
+  const activeForm = props.account.form;
+  activeForm.value = form.value;
   const saved = await saveSecondary(
     editing.value ? 'secondaryChange' : 'secondaryAdd',
     {

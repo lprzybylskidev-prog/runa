@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\RuntimeHeartbeat;
+use Runa\Runtime\RuntimeHeartbeat;
 
 final class PulseScheduler extends Command
 {

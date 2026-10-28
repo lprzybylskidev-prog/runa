@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Runa host plan v1",
+  "description": "Only an immediately returned plan bound to the host's current request ID is executable. A null request ID denotes an explicit nonexecuting preview; normal host work uses the authenticated executor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "operation", "parameters"],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "request_id": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "operation": {
+      "enum": [
+        "development.initialize",
+        "development.prepare",
+        "development.up",
+        "development.down",
+        "development.config",
+        "development.shell",
+        "development.profile",
+        "development.embeddings",
+        "development.build",
+        "development.recreate",
+        "development.restart",
+        "development.logs",
+        "development.status",
+        "development.setup",
+        "development.knowledge-init",
+        "development.knowledge-status",
+        "tooling.doctor",
+        "tooling.quality",
+        "tooling.knowledge",
+        "tooling.security",
+        "tooling.xdebug",
+        "tooling.check",
+        "tooling.hook",
+        "tooling.format",
+        "tooling.lint",
+        "tooling.typecheck",
+        "tooling.analyse",
+        "tooling.test",
+        "tooling.production",
+        "tooling.deploy",
+        "tooling.host",
+        "tooling.python"
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "string",
+            "maxLength": 4096
+          }
+        }
+      }
+    }
+  }
+}

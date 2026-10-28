@@ -7,6 +7,7 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 
 final readonly class DefinitionInput
 {
+    /** @var array<string, string> */
     public array $dictionary;
 
     public function __construct(

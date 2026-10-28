@@ -11,10 +11,10 @@ use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\SlotContribution;
 use Runa\Contracts\Modules\SlotHost;
 use Runa\Contracts\Modules\SlotProvider;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\ModuleAvailability;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleAvailability;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\Modules\ModuleRecord;
-use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 use Throwable;
 

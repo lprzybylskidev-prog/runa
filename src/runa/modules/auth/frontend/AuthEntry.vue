@@ -2,11 +2,8 @@
 import AuthEntryFlow from './AuthEntryFlow.vue';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
-import type { EntrySession, EntryPage } from './entry';
-defineProps<{
-  page: EntryPage;
-  authenticated?: ((session: EntrySession) => void) | undefined;
-}>();
+import type { AuthEntryProps } from './contracts/presentation';
+defineProps<AuthEntryProps>();
 </script>
 <template>
   <component

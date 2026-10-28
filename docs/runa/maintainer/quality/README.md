@@ -242,7 +242,7 @@ Commands execute as argument arrays without a shell. Missing commands fail with 
 
 A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. A final run always starts from the beginning.
 
-`python3 tools/maintainer/quality-check debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Focused runner contracts: `python3 tools/maintainer/testing/quality.py`.
+`./bin/artisan runa:check:debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Private scheduler/evidence contracts use `python3 tools/maintainer/test-python --scope=contracts --filter=test_quality_`; obsolete private filename launchers are removed.
 
 ## Owner test routing
 
@@ -281,3 +281,78 @@ that invoke that CLI share the knowledge-state exclusive group. Even read comman
 hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
 refusal. Serialization retains strict checks and requires no automatic retry or
 weaker freshness policy.
+
+## Python tooling group
+
+Both explicit `tooling` and legacy tooling impact selection include frozen Python
+setup, Ruff format/lint, strict Pyright, unit/contracts and separate wheel/package
+contracts. Setup is a prerequisite, all nodes retain hard failure and share
+`testing-state` ownership with native suites. Commands, scope filters, markers,
+reports and physical projection boundaries are documented in the
+[Python owner workflow](../tooling/python-rebuild/toolchain.md). These checks run
+in final verification; migration points do not claim the full Python scope passes.
+Customer quality includes the delivered frozen Python development infrastructure
+and application analysis commands. Owner suites remain private. Python setup is
+a real prerequisite of migrated owner scheduler/security contracts; those nodes
+share `testing-state` with the other native suites.
+
+Owner composition passes private roadmap/gate/state paths to the shared quality
+services. No owner code patches imported application modules. Release-only allowed
+paths belong to the private release validator. Owner `.githooks` select the private
+history policy only in receipt-free maintenance context; customer snapshots use
+shared staged checks. The RM-010 first-closure exception and the completed
+2026-10-22 version-backfill transition are retired; exact historical hashes remain
+protected and historical bytes/decisions are retained.
+
+## Shared aggregate tests and private suite discovery
+
+`python3 tools/maintainer/test` runs Runa backend/frontend/tooling by default.
+Repeated `--scope=backend|frontend|tooling|e2e` and `--filter=TEXT` select scopes;
+native arguments require one scope. Focused `test-backend`, `test-frontend` and
+`test-e2e` retain their native engines. `test-python --scope=unit|contracts|integration|e2e`
+selects private pytest directories and accepts `--path`, `--filter`, `--marker`
+and `--collect-only`. Owner commands delegate to the configured app container;
+no host Python development install is required. E2E endpoints retain host-owned
+journals. A customer receipt refuses owner test commands, even if private source
+was copied there. Public Artisan always composes application ownership.
+
+The shared delivered `TestService` owns one suite lock, process-group lifecycle,
+worker cleanup and honest scope reporting. Owner results live in
+`.runtime/tests/runa-results.json` and Python JUnit in
+`.runtime/python/reports/runa-pytest.xml`. All independent scopes run after a
+failure; focused runs return native statuses, aggregates return 1 on failure or
+130 on interruption. Empty owner suites are failures. The command does not run
+the release quality graph. Final gates retain explicit focused suite nodes and
+resource exclusivity; ordinary aggregate commands are developer workflows.
+
+Private Python cases use importable `test_*.py` files under
+`tests/tools/runa/{unit,contracts,integration,e2e}`. Useful unittest
+assertions remain collected by pytest. Private fixture objects live in `support`,
+without inheriting other suites. Shared customer fakes/workspace helpers ship
+under `tools/application/testing/support`; PHP and browser helpers under
+`src/runa/Testing` remain delivered development support. Platform cases/fixtures
+and native acceptance harnesses stay private. Native Docker acceptance modules
+run on the host through their supported quality nodes; pytest live-service cases
+have explicit registered markers/prerequisites. No unit fixture starts services.
+The private browser harness prepares Core descriptors and forward-only updates in
+the guarded testing database before serving requests. It retains application data
+and uses the actual checkout commit; customer browser runners never load this fixture.
+The scenario map is [test migration](../tooling/python-rebuild/test-migration.json).
+
+The owner PHP analysis gate passes `--configuration=../tools/maintainer/phpstan.neon`.
+It includes the delivered maximum-level application rules, every platform source
+root and the private Auditable model consumer fixture. The delivered `src/phpstan.neon`
+selects application source; it never references an excluded private fixture. Trait
+analysis is exercised through the real fixture used by Audit runtime regressions.
+
+## Public boundary and projection evidence
+
+The existing php-static-analysis node invokes runa:analyse, including public PHP
+imports/signatures before PHPStan. The lint node owns customer TS/Vue imports,
+frontend-typecheck owns actual exported/consumer types, and python-tests includes
+the audience/placement/generated/update-preservation contracts. Installation-host
+acceptance authors customer PHP/Vue/Python cases without owner files. Production
+acceptance and repository-container-scan use real runtime absence/retained-identity
+checks and the operator module diagnostic. See the [consumer matrix](../architecture/api-boundary/README.md#public-consumer-and-final-quality-matrix).
+All retain existing prerequisites/severity/resource ownership; no duplicated node
+or earlier implementation gate is needed. RM-2026-012 final selection remains all.

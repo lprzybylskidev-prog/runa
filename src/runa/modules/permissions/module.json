@@ -2,8 +2,8 @@
   "schema_version": 1,
   "id": "runa.permissions",
   "kind": "core",
-  "version": "1.0.0",
-  "platform": ">=0.4.2 <0.6.0",
+  "version": "1.0.4",
+  "platform": ">=0.4.2 <0.7.0",
   "framework_api": "^1.0.0",
   "name": {
     "pl": "Uprawnienia",
@@ -49,5 +49,5 @@
     "upgrades": ["Runa\\Modules\\Permissions\\Definitions\\PermissionsUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/permissions/README.md"],
-  "tests": ["tests"]
+  "tests": ["tests/backend/runa/modules/permissions"]
 }

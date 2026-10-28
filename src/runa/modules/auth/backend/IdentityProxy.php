@@ -11,11 +11,17 @@ final class IdentityProxy extends GuardedApi implements AuthIdentities
 {
     public function identity(string $publicId): ?Identity
     {
-        return $this->invoke(__FUNCTION__, [$publicId]);
+        /** @var ?Identity $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
     }
 
     public function eligibility(string $publicId): ?Eligibility
     {
-        return $this->invoke(__FUNCTION__, [$publicId]);
+        /** @var ?Eligibility $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
     }
 }

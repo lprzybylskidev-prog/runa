@@ -13,7 +13,7 @@ final readonly class ModuleSchema
 {
     public function __construct(private Connection $connection, public ModuleIdentity $module) {}
 
-    /** @param Closure(Blueprint): void $columns */
+    /** @param Closure(Blueprint): mixed $columns */
     public function create(string $table, Closure $columns, bool $exposed = true): void
     {
         $qualified = $this->module->table($table);
@@ -34,7 +34,7 @@ final readonly class ModuleSchema
         });
     }
 
-    /** @param Closure(Blueprint): void $columns */
+    /** @param Closure(Blueprint): mixed $columns */
     public function table(string $table, Closure $columns): void
     {
         $qualified = $this->module->table($table);

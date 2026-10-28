@@ -16,8 +16,10 @@ use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Contracts\Modules\UpgradeContext;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Settings\NoSettingsParticipation;
+use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\Support\Modules\ModuleRecord;
-use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 use Throwable;
 
@@ -121,6 +123,37 @@ final class ModuleSettings
 
             return $values[$key];
         });
+    }
+
+    /** Typed owning-module access; retains the same guard and declaration validation as value(). */
+    public function integer(string $module, string $key): int
+    {
+        $value = $this->value($module, $key);
+        if (! is_int($value)) {
+            throw new RuntimeException('Expected an integer module setting.');
+        }
+
+        return $value;
+    }
+
+    public function boolean(string $module, string $key): bool
+    {
+        $value = $this->value($module, $key);
+        if (! is_bool($value)) {
+            throw new RuntimeException('Expected a boolean module setting.');
+        }
+
+        return $value;
+    }
+
+    public function text(string $module, string $key): ?string
+    {
+        $value = $this->value($module, $key);
+        if ($value !== null && ! is_string($value)) {
+            throw new RuntimeException('Expected a string module setting.');
+        }
+
+        return $value;
     }
 
     /** Patch declared keys; omitted values are retained. Sensitive null explicitly clears a value.

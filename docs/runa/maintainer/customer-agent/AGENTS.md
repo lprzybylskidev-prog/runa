@@ -79,6 +79,10 @@ If verification finds work:
 - implement and verify the fix point,
 - rerun final verification from the beginning.
 
+During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
+
+For a backend segfault (exit 139/SIGSEGV), follow the nondestructive development-container restart and complete backend rerun procedure in [the testing guide](docs/runa/handbook/testing/strategy.md#backend-segfault-recovery) before changing code. A recurrence requires diagnosis; a successful retry does not establish a root cause.
+
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
 Do not merge with failed hard gates, open roadmap points, an unsafe dirty worktree, or unresolved synchronization problems.
@@ -232,6 +236,16 @@ Load `.agents/skills/security/SKILL.md` for security-sensitive work or reviews.
 
 Development supports native Linux with Docker Engine/Compose, without distribution-specific assumptions. Keep the workspace bind mount and application toolchain in containers. For small host tasks provide a few ordered commands with effects and expected output; await and review results before dependent work. Before a substantial host transition, persist an `Execution handoff` in the active roadmap. Follow `docs/runa/handbook/development/editor-and-agents.md` and `docs/runa/handbook/workflows/roadmaps.md`; never assume `/workspace` is the host checkout.
 
+## Python tooling
+
+Follow [Python tooling](docs/runa/handbook/development/python-tooling.md) for the
+stdlib runtime, package ownership, CPython floor and generated artifact contract.
+Host operation requires no pip/project install; development tools stay in containers.
+Use qualified package imports for new integrations and keep package initializers inert.
+Shared frozen Python development tools/configuration ship with application tooling;
+private Runa suites and release policy remain excluded. Use the public Python guide
+for application-owned configuration and staged Ruff checks.
+
 ## Generated tooling state
 
 Keep generated private build/tooling artifacts under the single workspace-root
@@ -322,6 +336,20 @@ Do not persist:
 
 Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
 
+## Public APIs and platform internals
+
+Follow [the public API boundary](docs/runa/handbook/architecture/public-api.md).
+Implement and consume supported contracts from src/app; all Runa source remains
+protected, including public definitions. Contracts names, public methods and
+resolvable imports do not authorize internal dependencies or replacing security
+bindings. Use documented backend adapters and frontend facades; existing explicitly
+documented public helpers retain their supported identities. Use the public guide's
+source-placement table for current locations. For application capabilities, declare
+owner, audience, supported entrypoint and complete public signature in application
+guidance; keep implementation/tests/docs in application-owned roots. Generated and
+handwritten consumers follow the same boundary. This never authorizes protected
+platform edits or a new reserved integration binding.
+
 ## Module development
 
 For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New application-owned modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly project-owner-approved MAJOR before implementation, regardless of how much code is rewritten. Application/platform versioning remains independent; this rule does not authorize changes to protected Runa modules. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
@@ -347,6 +375,15 @@ See `docs/runa/handbook/architecture/language-and-naming.md`.
 
 When preparing release `1.0.0` or a later update to the stable application, load `docs/runa/handbook/release/1.0-readiness.md` and apply its release-scale validation requirements.
 
+## Central test ownership
+
+Author tests in repository-root tests/backend, tests/frontend and tests/tools,
+using the app subtree for customer application tests and runa for private platform
+suites. Module cases use modules/<code> within their owning area. Reusable test
+infrastructure remains in its source package; private Runa suites are excluded
+from customer delivery and all tests from production images. Follow the public
+[testing guide](docs/runa/handbook/testing/strategy.md) for discovery/configuration.
+
 ## Supported commands and check completion
 
 The agent manually selects proportionate quality groups with repeated `--group=NAME`
@@ -357,7 +394,7 @@ groups are not passing tests. Flag-free calls retain legacy behavior. No automat
 change classifier is authorized. See docs/runa/handbook/quality/README.md for the catalogue and evidence
 contract; ordinary group choices do not require repeated owner approval.
 
-Discover the supported operation in `docs/runa/handbook/tooling/commands.md` and Artisan list/help before choosing a runner. Use its documented host/container transport (`./bin/artisan` from the host). Preserve command guards, locks, reporting and exit codes. Application tests use `runa:test`, `runa:test:frontend`, `runa:test:e2e`; owner commands are unavailable. Do not substitute internal runners or detached log-only processes for supported tests/acceptance/quality. A direct runner is allowed only as a documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result before completing the point. Propose a missing command only for a reusable operational need.
+Discover the supported operation in `docs/runa/handbook/tooling/commands.md` and Artisan list/help before choosing a runner. Use its documented host/container transport (`./bin/artisan` from the host). Preserve command guards, locks, reporting and exit codes. Application default `runa:test` runs backend, frontend and tooling; focused `runa:test:backend`, `runa:test:frontend`, `runa:test:python` and `runa:test:e2e` retain explicit scope. Author application tooling/tests and optional discovery configuration under src/app; consume delivered support through the public testing guide. Owner commands are unavailable. Do not substitute internal runners or detached log-only processes for supported tests/acceptance/quality. A direct runner is allowed only as a documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result before completing the point. Propose a missing command only for a reusable operational need.
 
 Implementation points permit only necessary small, fast checks resolving a concrete uncertainty; receive their results, repair failures and continue. Duration alone does not authorize handing monitoring to the user. Only final full verification uses background quality: run `runa:quality:roadmap`, end the turn and provide `runa:quality:status` through the same documented transport. Status does not observe unrelated processes; `tail` is not its replacement.
 

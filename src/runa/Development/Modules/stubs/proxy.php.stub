@@ -1,0 +1,18 @@
+<?php
+
+namespace {{namespace}}\Proxies;
+
+use {{namespace}}\Contracts\{{name}};
+use Runa\Support\Modules\Api\GuardedApi;
+
+final class {{name}}Proxy extends GuardedApi implements {{name}}
+{
+    public function read(): string
+    {
+        $result = $this->invoke('read', []);
+        if (! is_string($result)) {
+            throw new \UnexpectedValueException('Invalid public API result.');
+        }
+        return $result;
+    }
+}

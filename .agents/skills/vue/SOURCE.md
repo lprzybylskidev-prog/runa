@@ -22,3 +22,7 @@ This skill is Runa-specific. Project rules, active roadmap decisions, and curren
 No upstream helper script is trusted/executed merely because it belongs to the source repository. Future updates must be reviewed as diffs, including referenced scripts/assets.
 
 See `docs/runa/handbook/ai/skills-policy.md`.
+
+Local placement reconciliation on 2026-10-28 (RM-2026-012 point 17) routes generated
+module components to the public module guide and opt-in frontend/components
+contract. No upstream update or new dependency was adopted.

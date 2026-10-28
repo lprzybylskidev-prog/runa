@@ -1,4 +1,4 @@
-@inject('branding', 'Runa\Support\MailBranding')
+@inject('branding', 'Runa\Mail\MailBranding')
 <x-mail::layout>
 <x-slot:header>@include('runa-mail::text.header')</x-slot:header>
 {{ $slot }}

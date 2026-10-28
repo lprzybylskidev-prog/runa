@@ -128,7 +128,8 @@ async function confirmRemoval() {
 }
 async function save(section: Exclude<AccountSection, 'security'>) {
   if (busy.value || cropping.value) return;
-  props.account.form.value = {
+  const activeForm = props.account.form;
+  activeForm.value = {
     details: detailForm,
     avatar: avatarForm,
     password: passwordForm,

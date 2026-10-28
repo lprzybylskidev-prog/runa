@@ -2,6 +2,8 @@
 
 namespace Runa\Modules\Auth\Http\Requests;
 
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class DeliveryRequest extends FormRequest
@@ -11,6 +13,9 @@ final class DeliveryRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, string|list<string|Rule|ValidationRule|\Closure|\Stringable>>
+     */
     public function rules(): array
     {
         return ['operation' => ['required', 'in:read,write'], 'module' => ['required_if:operation,write', 'string', 'max:128'],

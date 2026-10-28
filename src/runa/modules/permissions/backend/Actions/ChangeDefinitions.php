@@ -36,6 +36,7 @@ final readonly class ChangeDefinitions
         $oldSet = $before === null ? new AssignmentSet : new AssignmentSet(...$before['assigned']);
         $oldEffective = $this->state->effective($oldSet);
         $newEffective = $this->state->effective($set);
+        /** @var (\stdClass&object{total: int})|null $users */
         $users = $input->kind !== 'role' || $before === null ? null : $c->table('runa_permissions.user_roles as ur')
             ->join('runa_permissions.roles as r', 'r.id', '=', 'ur.role_id')->where('r.public_id', $input->publicId)->selectRaw("count(*) as total, md5(coalesce(string_agg(ur.user_public_id::text || ':' || ur.id::text, ',' ORDER BY ur.user_public_id), '')) as signature")->first();
         $after = ['dictionary' => $input->dictionary, 'assigned' => $set->toArray()];
@@ -45,6 +46,7 @@ final readonly class ChangeDefinitions
             array_values(array_diff($newEffective, $oldEffective)), array_values(array_diff($oldEffective, $newEffective)));
     }
 
+    /** @return array{public_id: string, version: int, dictionary: array<string, string>, module: string|null, system: bool, assigned: array{roles: list<string>, permissions: list<string>}} */
     public function save(DefinitionPreview $reviewed): array
     {
         return $this->transactions->run(function (Connection $c) use ($reviewed): array {
@@ -62,7 +64,8 @@ final readonly class ChangeDefinitions
             if ($current->before === null) {
                 $id = $c->table('runa_permissions.'.$table)->insertGetId($data + ['public_id' => $publicId, 'created_at' => now('UTC')]);
             } else {
-                $id = $c->table('runa_permissions.'.$table)->where('public_id', $publicId)->value('id');
+                /** @var int $id */
+                $id = $c->table('runa_permissions.'.$table)->where('public_id', $publicId)->value('id') ?? throw new \LogicException('Access definition disappeared.');
                 $c->table('runa_permissions.'.$table)->where('id', $id)->update($data + ['version' => $input->version + 1]);
             }
             $this->writeMembers($c, $input->kind, $id, new AssignmentSet(...$current->after['assigned']));
@@ -88,7 +91,8 @@ final readonly class ChangeDefinitions
             if ($before['version'] !== $version) {
                 $this->state->reject('access_definition_stale', 409);
             }
-            $id = $c->table('runa_permissions.'.$table)->where('public_id', $publicId)->value('id');
+            /** @var int $id */
+            $id = $c->table('runa_permissions.'.$table)->where('public_id', $publicId)->value('id') ?? throw new \LogicException('Access definition disappeared.');
             if ($kind === 'role' && ($c->table('runa_permissions.user_roles')->where('role_id', $id)->exists()
                 || $c->table('runa_permissions.preset_roles')->where('role_id', $id)->exists())) {
                 $this->state->reject('access_role_referenced', 409);

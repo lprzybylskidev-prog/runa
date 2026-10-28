@@ -1,37 +1,31 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
-import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
-import { accountPreferences } from '../lib/preferenceStore';
+import {
+  accountPreferences,
+  initializePreferenceSession,
+} from '../../../modules/auth/frontend/preferences/session';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import AppBrandIllustration from '../components/AppBrandIllustration.vue';
 import RunaLogo from '../components/RunaLogo.vue';
 import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
-import type { Locale } from '../locales/messages';
-import type { Theme } from '../composables/useTheme';
 import { useIdentity } from '../runa/ui/identity';
-import type { FooterOptions } from '../runa/ui/identity';
-const props = withDefaults(
-  defineProps<{
-    footer?: FooterOptions | undefined;
-    homeHref?: string;
-    illustration?: boolean;
-    constellationGlow?: boolean;
-    orbitMotion?: boolean;
-    staticPreferences?: { locale: Locale; theme: Theme } | undefined;
-  }>(),
-  {
-    illustration: true,
-    constellationGlow: true,
-    orbitMotion: true,
-    footer: undefined,
-    homeHref: '/',
-    staticPreferences: undefined,
-  },
-);
+import type {
+  MinimalLayoutProps,
+  MinimalLayoutSlots,
+} from '../runa/ui/layouts';
+defineSlots<MinimalLayoutSlots>();
+const props = withDefaults(defineProps<MinimalLayoutProps>(), {
+  illustration: true,
+  constellationGlow: true,
+  orbitMotion: true,
+  footer: undefined,
+  homeHref: '/',
+  staticPreferences: undefined,
+});
 const identity = useIdentity();
 const logoFailed = ref(false);
 onMounted(() => {

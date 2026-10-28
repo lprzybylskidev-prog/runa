@@ -4,7 +4,7 @@ namespace Runa\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Runa\Support\MaintenanceState;
+use Runa\Runtime\MaintenanceState;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class EnforceEffectiveMaintenance

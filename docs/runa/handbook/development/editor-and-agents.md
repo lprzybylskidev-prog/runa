@@ -21,7 +21,7 @@ Do not export a connection containing a password to workspace files. Database po
 
 Run Docker lifecycle commands in a host terminal. If reopening fails because `setup` exits with a missing tool that exists in the current development image, run `./bin/artisan runa:dev:up`, then `./bin/artisan runa:doctor:development`. Compose recreates outdated containers; restarting alone retains their old images. VS Code may reuse existing containers with `--no-recreate`. Preserve named volumes and local credentials during recovery. If the current image itself is outdated, use `./bin/artisan runa:dev:build` before `./bin/artisan runa:dev:up`.
 
-After selective app recreation outside VS Code, run `python3 tools/application/executors/dev.py setup --if-needed` in the recreated app container before the host doctor. The dependency/build marker lives in the workspace while container-user MCP registration is ephemeral; the fast setup path restores registration without reinstalling current dependencies. Reopening in VS Code runs this same setup through postCreateCommand.
+After selective app recreation outside VS Code, run `python3 -m tools.application.development setup --if-needed` in the recreated app container before the host doctor. The dependency/build marker lives in the workspace while container-user MCP registration is ephemeral; the fast setup path restores registration without reinstalling current dependencies. Reopening in VS Code runs this same setup through postCreateCommand.
 
 After the host doctor passes:
 
@@ -29,6 +29,20 @@ After the host doctor passes:
 2. In Extensions, install the OpenAI/Codex extension in **Dev Container: Runa** if needed, open its panel and sign in interactively. Start a session from `/workspace` and ask it to call Boost `application-info` and `search-docs`; check the installed versions. A successful CLI check alone does not verify the extension.
 3. Open Database Client, add the PostgreSQL connection described above, connect and run `SELECT current_database(), current_user;`. Both values should be `runa`. Keep the password in the extension's private credential field.
 4. Run `./bin/artisan runa:doctor:development` in the container terminal. Report editor-specific failures separately from the host service checks.
+
+## Python editing
+
+Devcontainer customization selects `/workspace/.runtime/python/venv/bin/python`
+and the pinned Ruff binary from that environment. Pylance uses strict typing;
+Python format-on-save and explicit Ruff import/fix actions share the container
+configuration. Reopening applies these editor settings after development setup
+prepares the frozen toolchain. Host Python does not need a venv or formatter.
+
+Use the [Python commands and application configuration contract](python-tooling.md)
+for formatting, lint and typing. PHP keeps the existing formatter/Pint workflow;
+Vue/TypeScript/JavaScript use Prettier, ESLint and their native type/test tools.
+The editor settings select tools; CLI checks and rendered/test acceptance still
+provide verification. No GUI/editor acceptance is inferred from configuration.
 
 ## Xdebug
 
@@ -75,3 +89,10 @@ For substantial Docker work:
 For sibling-only work, prefer `./bin/artisan runa:dev:restart <service>` when only a process restart is needed. Restart retains the existing image/configuration. Use `./bin/artisan runa:dev:build <service>` for a selected local image build, then `./bin/artisan runa:dev:recreate <service>` for image/configuration changes after dependency review; recreation uses `--no-deps` in the same Compose context and does not certify readiness. Check application/knowledge health as appropriate; record app container ID/start time before and after to verify it stayed running when no app change was necessary. `./bin/artisan runa:dev:build` without services builds all configured development images; `./bin/artisan runa:dev:down` affects the whole project and preserves volumes. Restart without a service affects the whole stack. Recreating the attached app needs a planned session transition.
 
 For generated/private inputs, template naming and credential mismatch recovery, use [environment file responsibilities](environment-files.md). Never repair an existing role by regenerating settings or deleting its volume.
+
+The root TypeScript configuration extends src/tsconfig.json so editor discovery
+includes central frontend tests. Test runner configurations stay in src beside
+the installed dependencies; cases live in tests/frontend/app or the excluded Runa
+suite. Python analysis includes tests/tools/app, with owner additions selected
+through the private maintainer configuration. See the public testing guide for
+central backend/frontend/tools ownership and shared test imports.

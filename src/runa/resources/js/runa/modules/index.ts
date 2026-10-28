@@ -13,3 +13,9 @@ export type {
   ModuleComponentLoaders,
   ModuleComponents,
 } from '../../lib/moduleFrontend';
+
+export type * from './presentation';
+export type {
+  ModulePageDefinition,
+  SlotContract,
+} from '../../lib/moduleFrontend';

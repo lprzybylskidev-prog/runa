@@ -3,7 +3,7 @@
 namespace Runa\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
-use Runa\Support\Modules\ModuleAvailability;
+use Runa\ModuleFramework\ModuleAvailability;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 

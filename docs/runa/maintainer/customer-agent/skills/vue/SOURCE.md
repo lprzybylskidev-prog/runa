@@ -26,3 +26,7 @@ See `docs/runa/handbook/ai/skills-policy.md`.
 ## Customer adaptation
 
 Reviewed and rewritten on 2026-10-23 from the existing local Runa skill and its references. This records the inherited upstream research baseline, not a fresh upstream review. Customer procedures use delivered public contracts and application ownership; owner implementation commands and protected-source writes are excluded.
+
+Local placement reconciliation on 2026-10-28 (RM-2026-012 point 17) routes generated
+module components to the public module guide and opt-in frontend/components
+contract. No upstream update or new dependency was adopted.

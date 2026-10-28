@@ -9,6 +9,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
@@ -19,7 +20,6 @@ use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Data\AuthorityLock;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Trusted owning use cases. Administrative ingress additionally requires API permission. */
@@ -134,10 +134,10 @@ final readonly class ChangeIdentity implements AuthLifecycle
                     $user->attempt_locked_until = $change->at;
                     break;
                 case 'set_security_lock':
-                    $user->security_locked = $change->enabled;
+                    $user->security_locked = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
                     break;
                 case 'require_password_change':
-                    $user->password_change_required = $change->enabled;
+                    $user->password_change_required = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
                     break;
             }
             if ($user->activate_at !== null && $user->deactivate_at !== null && $user->activate_at->gte($user->deactivate_at)) {
@@ -176,6 +176,9 @@ final readonly class ChangeIdentity implements AuthLifecycle
             ?? throw new \RuntimeException('Module registry unavailable.');
     }
 
+    /**
+     * @param  list<string>  $publicIds
+     */
     private function guard(Connection $connection, array $publicIds): void
     {
         try {
@@ -215,18 +218,24 @@ final readonly class ChangeIdentity implements AuthLifecycle
         return $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0');
     }
 
+    /**
+     * @param  array<string, array{old: mixed, new: mixed}>  $changes
+     */
     private function record(string $action, User $user, array $changes): void
     {
         $this->audit()->record(new AuditEvent('runa.auth', $action,
             entities: [new AuditEntity('runa.auth', 'user', $user->public_id)], changes: $changes));
     }
 
+    /**
+     * @return array<string, bool|int|string|null>
+     */
     private function state(User $user): array
     {
         $state = [];
         foreach (['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at', 'expires_at',
             'security_locked', 'attempt_locked_until', 'password_change_required', 'security_version', 'version'] as $key) {
-            $value = $user->getAttribute($key);
+            $value = $user->$key;
             $state[$key === 'password_change_required' ? 'renewal_required' : $key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s.u\Z') : $value;
         }
 

@@ -1,5 +1,11 @@
 # Page Patterns
 
+Public layout props and scoped slots are exported as `MinimalLayoutProps`,
+`MinimalLayoutSlots`, `ApplicationLayoutProps` and `ApplicationLayoutSlots` from
+`@/runa/ui`. Use them with `defineProps` / `defineSlots` in application wrappers;
+forward received props and relevant slots. `LayoutSlotContext.t` accepts public
+`MessageKey` values. These are presentation contracts, not routing/session APIs.
+
 Bundled MinimalLayout and ApplicationLayout pages share `/favicon.ico`, declared once in the application and isolated test HTML entry heads. Native/static errors declare the same icon in their PHP document wrapper. Keep document metadata at the HTML entry level rather than duplicating head mutations in layout components. External consumers supply their own document head and icon asset; importing a layout does not mutate their favicon.
 
 ## Minimal layout
@@ -42,7 +48,7 @@ Use `usePageResolver` with exact paths and matching named server entries; never 
 
 ## Isolated browser scenarios
 
-There are no application preview/catalog routes. Test customer pages through src/app/tests and the isolated testing Nginx endpoint; see docs/runa/handbook/testing/strategy.md. Platform fixture harnesses are owner-only.
+There are no application preview/catalog routes. Test customer pages through tests/backend/app and the isolated testing Nginx endpoint; see docs/runa/handbook/testing/strategy.md. Platform fixture harnesses are owner-only.
 
 Use public components directly; keep executable composition examples in the existing test fixtures and durable contracts in this skill. Do not add a catalog, demo navigation or environment-enabled preview route to the application merely to demonstrate a component.
 
@@ -52,7 +58,7 @@ Native Laravel Markdown/default notification layout (including direct Auth mail)
 
 ## HTTP errors
 
-Use **MinimalLayout.vue directly**, with error-specific content in its normal slot; it is also the welcome-dashboard template and the Auth entry template. Do not create an error-only shell/card/background/header/footer. `src/runa/resources/errors/render.mjs` builds native HTML from this exact component, its shared backdrop/illustration/footer and existing controls. `staticPreferences` renders native GET navigation without browser/storage hooks; ordinary interactive consumers are unchanged. `src/runa/resources/views/errors/page.php` only wraps/selects/escapes generated private shells for native Laravel errors and the static 503 finalizer. No Node/Vue/JS runtime is needed by the resulting pages. `docs/runa/handbook/architecture/frontend.md` owns generation/copy/locale/theme contracts; the generated files and standalone assets are ignored build output. Error-specific content does not duplicate shell markup or CSS.
+Use **MinimalLayout.vue directly**, with error-specific content in its normal slot; it is also the welcome-dashboard template and the Auth entry template. Do not create an error-only shell/card/background/header/footer. `src/runa/build/errors/render.mjs` builds native HTML from this exact component, its shared backdrop/illustration/footer and existing controls. `staticPreferences` renders native GET navigation without browser/storage hooks; ordinary interactive consumers are unchanged. `src/runa/resources/views/errors/page.php` only wraps/selects/escapes generated private shells for native Laravel errors and the static 503 finalizer. No Node/Vue/JS runtime is needed by the resulting pages. `docs/runa/handbook/architecture/frontend.md` owns generation/copy/locale/theme contracts; the generated files and standalone assets are ignored build output. Error-specific content does not duplicate shell markup or CSS.
 
 Content navigation uses public Breadcrumbs in ApplicationLayout’s breadcrumbs slot, intercepting its navigate event through the page resolver when appropriate. Statistics/Statistic provide global/filtered metrics with optional route-scoped account/guest preferences; providers own calculations. Card/Accordion/Tabs/Dropdown/Pagination are content primitives, independent of dedicated shell navigation.
 

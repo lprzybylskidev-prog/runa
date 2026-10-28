@@ -42,6 +42,12 @@ Do not introduce a new abstraction because one method is long. First identify wh
 
 ## Module framework design boundary
 
+Platform module engines (`Runa\ModuleFramework`) and Core bridges
+(`Runa\Integration\Core`) are internal. Existing documented Support adapters
+and values retain their public identities. Follow the public API boundary for
+container dependencies, persisted queue identities and supported entrypoints;
+implementation visibility is not permission for customer imports.
+
 During a lifecycle fence, ordinary availability reads use cached own health and stop required-graph traversal. Rejected ingress must not publish on-use observations that invalidate the waiting reservation. Keep regression coverage across HTTP, retained PHP proxies, CLI, scheduler, frontend projection and real queue draining; explicit diagnostic/scheduled recovery remains independent.
 
 For module framework work, consult the [public module contracts](../../../../docs/runa/handbook/architecture/module-framework.md) and active roadmap. Use explicit owner-scoped registry synchronization during installation/deployment; request boot and snapshot reads never discover or mutate registrations. Source version is not installed data version. Modules supply health and transition/work decision policies; the base enforces the shared protocol, fences and state revisions without guessing business behavior. Use `ModuleGraph` for pure dependency/cascade previews over one registry snapshot. A transition publisher must reacquire the snapshot under its publication lock and revalidate the complete preview; graph validity alone is not health, installed-data or preparation readiness. Use `ModuleTransitions` for durable reservation/preparation/publication and recovery; do not hold a transaction over module hooks. Consume snapshot fences at operational boundaries, keep preparation idempotent/reversible by operation ID and retain recovery fences after uncertain compensation. Tombstone unregister preserves data provenance, and explicit re-registration never implies installed-data compatibility. The contract document distinguishes delivered administrative lifecycle from planned operational adapters.
@@ -60,7 +66,7 @@ Declare owned EventProvider facts/subscriptions and IntegrationProvider optional
 
 Declare module settings through one owned SettingsProvider with validated typed/default/localized SettingDefinition values and a reversible SettingsHandler. Use ModuleSettings for generation/revision-fenced writes and encrypted DB persistence; infrastructure configuration stays external. Read secrets only through the explicit private backend value method, never management projections, handler contexts, observer payloads or logs. Immediate/reinitialize effects run behind the existing transition fence; compensate by stable operation ID after restoring prior values. Ambiguous restoration retains recovery_required, never a claimed rollback. SettingsObserver is a best-effort independent integration seam, not an Audit store/relay. Synchronize the [settings contract](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-declarative-settings) and failure/concurrency tests when changing this boundary.
 
-Module source keeps code/tests; module guides live centrally in docs/app/modules/<code> or docs/runa/handbook/modules/<code> by owner, never in a module-local docs directory. Manifest docs references are repository-root metadata and must not become runtime file dependencies. Generators preserve this placement.
+Module source keeps implementation; tests live in central tests/backend, tests/frontend and tests/tools under the app/runa owner and modules/<code>; module guides live centrally in docs/app/modules/<code> or docs/runa/handbook/modules/<code> by owner, never in a module-local docs directory. Manifest docs references are repository-root metadata and must not become runtime file dependencies. Generators preserve this placement.
 
 Use source-owned ManagementProvider DTOs for future administrative permissions/actions/custom-component metadata. Read combined status/settings/integration/work projections through Management\ModuleManagement; never serialize private runtime settings, work payloads or provider exceptions. Renderer compatibility is an explicit versioned bootstrap catalogue; custom backend setting types need separate renderer contracts. Component keys are owner-prefixed build identities, never dynamic imports/URLs/DB code. Descriptor permissions do not grant access: future execution must bind a trusted backend use case through OperationGuard/OperationAuthorizer and recheck generation/revision. Keep unavailable modules diagnosable and synchronize the [management contract](../../../../docs/runa/handbook/architecture/module-framework.md#delivered-management-descriptors) when this boundary changes.
 
@@ -116,3 +122,14 @@ application production seeding separate, reject production even through direct
 fixture calls, exchange public references and preserve credentials/provenance with
 atomic Audit. Initial account passwords use hidden local prompts; never argv or
 distributed defaults.
+
+For Python tooling changes, follow the [public Python tooling guide](../../../../docs/runa/handbook/development/python-tooling.md) for shared
+frozen tools, qualified packages, injected execution contexts and application-owned
+configuration. Keep private owner suites/release rules outside delivered services;
+verify staged Python through Ruff without running full suites in hooks. Internal integrations call explicit service APIs; process adapters execute fixed
+package modules with `python3 -m` from the selected tool checkout. Do not recreate
+removed executor paths or compatibility facades.
+
+For source-boundary diagnostics, use the [API enforcement guide](../../../../docs/runa/handbook/architecture/public-api.md#local-enforcement-and-delivery).
+Keep application consumers on public entrypoints and review new platform integration
+callers explicitly; passing static checks never replaces runtime authorization.

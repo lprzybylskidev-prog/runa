@@ -5,18 +5,7 @@ parameters:
     paths:
         - artisan
         - app
-        - runa/Console
-        - runa/Contracts
-        - runa/Database
-        - runa/Foundation
-        - runa/Http
-        - runa/Providers
-        - runa/Support
-        - runa/management
         - bootstrap/app.php
-        - runa/config
-        - runa/database
-        - runa/routes
     tmpDir: ../.runtime/phpstan
     parallel:
         maximumNumberOfProcesses: 1

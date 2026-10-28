@@ -43,11 +43,37 @@ Markdown is split at headings, respecting code fences; oversized sections split 
 
 Roadmap document IDs derive from roadmap IDs and survive lifecycle path changes. Other documents use deterministic path IDs (renames are remove+insert). Chunk IDs derive from document, headings, content hash and duplicate occurrence. Whitespace at source edges/line endings is normalized; meaningful code whitespace remains significant.
 
-The provider validates model/revision/runtime/input limits and vector dimensions before collection writes. `runa_knowledge` is one rebuildable collection, with a reserved metadata point describing model/schema identity and the source/chunk manifest. Retrieval filters `kind=chunk` and the current branch to exclude metadata and obsolete branch context. The small local corpus uses unindexed metadata filters; add payload indexes only if measured filtering cost warrants them.
+The provider validates model/revision/runtime/input limits and vector dimensions before collection writes. Consumed limits must be integers, automatic truncation must be explicitly disabled, and vector coordinates must be finite numbers rather than booleans. Missing or malformed consumed capability fields fail with fixed contract diagnostics; unrelated service metadata remains accepted. `runa_knowledge` is one rebuildable collection, with a reserved metadata point describing model/schema identity and the source/chunk manifest. Retrieval filters `kind=chunk` and the current branch to exclude metadata and obsolete branch context. The small local corpus uses unindexed metadata filters; add payload indexes only if measured filtering cost warrants them.
 
 Unchanged chunks are reused without embedding; source/Git metadata refreshes independently. A small embedding capability probe still runs on each index command. All changed vectors are prepared before content mutation. A remote `pending` marker is written before mutation and cleared only after upserts and obsolete/orphan deletion complete. Thus interrupted writes are visible even if local runtime state is lost; rerunning incremental indexing repairs them. This provides recoverable writes with an explicit error state, not transactional multi-point search isolation. A local lock prevents simultaneous index/status operations in the shared checkout. Do not run two checkouts against the same Compose project/collection.
 
 Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/artisan runa:knowledge:rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
+
+## Package and ownership composition
+
+Knowledge services use qualified `tools.application.knowledge` imports. The fixed
+source executor selects the application composition root or the excluded owner
+composition root in `tools.maintainer.knowledge_cli`; an acquisition receipt always
+selects customer scope. Public configuration/golden loaders read only delivered
+resources. Owner additions are explicit composition inputs, and source discovery
+still excludes private material under customer receipts and all customer authoring
+templates. Source allowlisting checks paths relative to the selected workspace.
+
+`KnowledgeIndexer` and `Retriever` receive an explicit workspace/process/clock
+context, store and embedding-provider factory. HTTP clients and retry waiting are
+injectable. Configuration validates identities, service URLs, budgets, source paths
+and retrieval weights before network operations. Collection manifests, chunk IDs,
+model/schema identity, golden expectations and the pending-write protocol retain
+their existing serialized format. Invalid service JSON and malformed source
+manifests fail explicitly; response bodies are never included in error messages.
+
+The parser fingerprint remains a hash of the actual corpus implementation. Package
+migration or parser edits can therefore mark an existing index stale. Incremental
+`runa:knowledge:index` reparses sources, updates metadata and reuses unchanged
+semantic chunk vectors; a parser move alone does not authorize collection deletion,
+model changes or `rebuild`. Existing regular operator-owned knowledge locks keep
+their inode. Optional readiness has a separate bounded probe process; failed
+initialization retries independently without blocking application setup.
 
 ## Supply-chain review and acceptance
 

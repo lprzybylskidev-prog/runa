@@ -1,7 +1,7 @@
 <?php
 
 use Monolog\Handler\StreamHandler;
-use Runa\Support\Logging\ConfigureStructuredLogging;
+use Runa\Logging\ConfigureStructuredLogging;
 
 return [
     'default' => 'stack',

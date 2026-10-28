@@ -1,8 +1,12 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `0.5.0`, with no
+`runa.audit` is a platform-owned Core module, version `1.0.2`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
 automatic model capture, local suppression and permission-protected reads. No Audit viewer or administration interface is supplied.
+
+See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
+for public APIs, local helpers and reserved integration. Contract paths remain
+stable; private module implementation is not an application extension seam.
 
 ## Installation and ownership
 

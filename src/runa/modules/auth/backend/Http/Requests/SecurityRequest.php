@@ -2,6 +2,8 @@
 
 namespace Runa\Modules\Auth\Http\Requests;
 
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class SecurityRequest extends FormRequest
@@ -11,9 +13,12 @@ final class SecurityRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, string|list<string|Rule|ValidationRule|\Closure|\Stringable>>
+     */
     public function rules(): array
     {
-        $operation = $this->route()->getName();
+        $operation = $this->route()?->getName() ?? throw new \LogicException('Security request requires a named route.');
         $password = str_ends_with($operation, 'totp_begin') || str_ends_with($operation, 'totp_confirm')
             || str_ends_with($operation, 'email_enable') || str_ends_with($operation, 'disable') || str_ends_with($operation, 'recovery_rotate');
 
