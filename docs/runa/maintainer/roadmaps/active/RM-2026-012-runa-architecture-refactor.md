@@ -58,8 +58,8 @@ customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
-the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 remains pending;
-final layout-specific instruction reconciliation remains part of implementation.
+the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
+Full candidate verification and release finalization remain point 20.
 
 ### Out of scope
 
@@ -1388,7 +1388,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     scenarios for final execution. Keep existing scoped quality ownership; broad
     package/image/install/upgrade/scanner acceptance belongs only to point 20.
 
-- [ ] 19. Synchronize architecture guidance and retire obsolete placement.
+- [x] 19. Synchronize architecture guidance and retire obsolete placement.
   - Prerequisites: points 12–18 implemented; finding F24 and final source map.
   - Write one authoritative public API/internal boundary and source-placement guide,
     with exact supported entrypoints and customer examples for PHP and frontend.
@@ -2959,6 +2959,58 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   test data, Qdrant/model/builder caches, backups and reports remain. Incremental
   indexing and mandatory staged hooks accompany the implementation commit.
   Points 19–20 remain open; final runtime/analysis acceptance is not claimed.
+
+### Point 19 completion — current placement and instruction products (2026-10-28)
+
+- Completed the authoritative public boundary guide with exact PHP/frontend/test/
+  build entrypoints, a source-placement table, ordinary Laravel and frontend
+  examples, operation/constructor limits and links to complete feature procedures.
+  Customer code remains application-owned; neither Contracts nor physical delivery
+  grants integration authority. Generated and handwritten consumers follow the same
+  rule. Root owner and separately authored customer AGENTS now require declared
+  owner/audience/entrypoint/signature/implementation/projection for new capabilities.
+- Reconciled backend/Laravel/frontend/Docker/security references and local source
+  provenance in both products. Skills route to public procedures rather than
+  copying them. Corrected the customer backend reference's obsolete invitation to
+  use reserved SettingsParticipant; mandatory application history uses approved
+  public Audit operations in its owning transaction. CLAUDE still delegates to
+  its corresponding AGENTS. Vue/Tailwind/PostgreSQL/RAG products require no further
+  changes: their existing public adoption/lifecycle/ownership rules remain accurate.
+- Current module/example guidance now records Reference 0.1.2, central authored
+  tests and production operator diagnostics distinct from development generation.
+  PHP source/resource casing, guarded module autoload, isolated management loading,
+  usable frontend defaults and public aliases remain documented and unchanged.
+  Removed contradictory current claims without rewriting closed roadmaps, dated
+  evidence, baseline signatures/hashes or imported snapshots/provenance.
+- Added a separate additions inventory for 29 new sources. Together with retained
+  baseline targets it covers 884 current tracked src/runa files; four owner configs/
+  renderers have explicit targets under tools/maintainer. All planned source targets
+  are present. Added a final source-map/obsolete-location contract without executing
+  it as early broad analysis. Public policy/caller identity contracts remain.
+- Removed only nine inspected empty source directories: Support/Modules/Console,
+  Management and Updates; lowercase management/Actions and management; stubs/modules
+  and stubs; tools/assets and tools under src/runa. Retained public Support adapters,
+  WorkContext, persisted ModuleJob, historical upgrade/migration identities, public
+  testing/browser/Vite imports and the isolated management loader deliberately.
+  No compatibility facade, duplicate suite configuration or parallel engine was added.
+- Prepared the public-only ordinary PHP/module/generator/frontend/teardown/error/
+  projected-customer/update/production evidence matrix against existing final nodes.
+  PHP imports/signatures run in php-static-analysis, frontend imports/types in lint/
+  frontend-typecheck, source/generator/update contracts in python-tests, actual
+  delivered/customer/runtime behavior in native installation/production/scanner
+  nodes. No redundant quality node/coordinator/CI or automatic scope classifier.
+- Knowledge was current after point 18 (189 documents/3180 chunks); queried placement
+  and instruction ownership and opened original boundary/production/quality/source
+  guides. Reviewed relevant skills and current code declarations/exports. Focused
+  source searches found no remaining relocated file/FQCN references in current
+  handbook/application/instruction products. No test, static-analysis, build,
+  installation or scanner acceptance was run for these guidance changes; mandatory
+  staged hooks and incremental indexing accompany the point commit.
+- No module code/version, dependency, data/schema or runtime configuration changed
+  in this point. VERSION remains 0.5.0 and proposed feature remains 0.6.0. No Docker
+  resource was created or deleted; current management image, active development/
+  test/base data, rollback resources, Qdrant/model/builder caches, backups and reports
+  remain preserved. Only final point 20 remains open after this commit.
 
 ### Draft preparation validation (historical)
 

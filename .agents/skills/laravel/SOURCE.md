@@ -27,3 +27,7 @@ Public/internal API boundary routing was added from the owner-approved
 RM-2026-012 source review on 2026-10-27. Its authoritative rule is
 `docs/runa/handbook/architecture/public-api.md`; no upstream refresh or new
 dependency was involved.
+
+Source-placement and audience routing was reconciled on 2026-10-28 for local
+RM-2026-012 point 19. The delivered public boundary/projection guides own the
+procedures; no upstream refresh, dependency or protected-edit authority was added.

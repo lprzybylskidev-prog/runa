@@ -46,4 +46,4 @@ Run `./bin/artisan runa:test app/modules/reference/tests` for the delivered sour
 - Waiting disable: inspect active work; run/reconcile the module's own bounded policy. Do not edit flags or discard leases.
 - Production refusal: remove development reference source from the delivery projection; disabling it is insufficient.
 
-Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.1.0, independently of platform VERSION.
+Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.1.2, independently of platform VERSION.

@@ -41,3 +41,7 @@ change was involved; the public adoption guide owns the procedure.
 Account-controller lifetime routing was synchronized with RM-2026-012 point 16
 on 2026-10-28 from the local account UI guide. No upstream refresh or dependency
 change was involved; internal collaborator paths are not customer entrypoints.
+
+Source-placement and audience routing was reconciled on 2026-10-28 for local
+RM-2026-012 point 19. The delivered public boundary/projection guides own the
+procedures; no upstream refresh, dependency or protected-edit authority was added.

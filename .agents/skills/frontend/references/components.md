@@ -42,3 +42,5 @@ Compose account cards from one public `useAuthAccount` instance per keyed accoun
 reuse its conflict/list state and save methods rather than creating per-card
 controllers or preference adapters. The [account UI guide](../../../../docs/runa/handbook/modules/auth/account-ui.md#automatic-account-refresh)
 owns the lifetime and shared-write contract.
+
+Use the [public source-placement table](../../../../docs/runa/handbook/architecture/public-api.md#source-placement-and-supported-entrypoints) for facade, feature implementation and development support ownership. New consumer contracts and generated screens follow the same public entrypoints.

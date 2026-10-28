@@ -39,3 +39,7 @@ upstream source or dependency changed.
 API enforcement routing was synchronized from local RM-2026-012 point 18 on
 2026-10-28. The public boundary guide owns diagnostics and delivery detail;
 no upstream refresh, dependency addition or new runtime authority was involved.
+
+Source-placement and audience routing was reconciled on 2026-10-28 for local
+RM-2026-012 point 19. The delivered public boundary/projection guides own the
+procedures; no upstream refresh, dependency or protected-edit authority was added.

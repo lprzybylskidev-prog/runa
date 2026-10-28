@@ -64,3 +64,5 @@ for dedicated superadministrator changes and confirmed custom-role force deletio
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
 capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
+
+Use the [public source-placement and entrypoint table](../../../../docs/runa/handbook/architecture/public-api.md#source-placement-and-supported-entrypoints) when adding PHP capabilities or generator consumers. Declare complete public signatures and keep named Core integration separate from customer extensions.

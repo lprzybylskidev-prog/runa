@@ -1,7 +1,7 @@
 # RM-2026-012 API and placement map
 
-This is the point-12 migration specification. It freezes compatible targets for
-points 13–19. Point 13 delivers the platform PHP relocations and provider split.
+This record preserves the point-12 baseline and the compatible layout delivered
+by points 13–19. Final verification remains point 20. Point 13 delivers the platform PHP relocations and provider split.
 Point 14 delivers the built-in module execution layout while retaining contract
 and historical upgrade identities. Point 15 publishes named frontend consumer
 contracts through the retained facades and normalizes reactive presentation maps.
@@ -9,8 +9,9 @@ Point 16 delivers the internal account collaborators and Auth-owned preference/
 welcome composition while retaining the public controller and facade identities.
 Point 17 delivers isolated management tooling, grouped developer support, canonical
 generator anatomy, private browser configurations/branding tools and delivered
-static-error builders. Point 18 delivers symbol/import enforcement and runtime projection; remaining targets are planned until their
-owning points are complete. The public authority for
+static-error builders. Point 18 delivers symbol/import enforcement and runtime
+projection. Point 19 reconciles the public placement guide and both instruction
+products with those sources. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and
 optional application-owned modules remain equally supported.
@@ -22,7 +23,7 @@ at `baseline_commit`, including the hidden module placeholder. Each row records
 owner, audience, execution mode, customer source projection, production disposition,
 exact current/target file and PHP symbol where applicable. An unchanged target is
 intentional, not an unreviewed remainder. `point` owns a relocation; null means no
-relocation. New collaborators are listed below because they have no baseline file.
+relocation. The separate additions list records 29 new collaborators without assigning them fictitious baseline source objects. Baseline targets plus those additions cover all 884 current tracked src/runa files; four owner configurations/renderers moved outside that tree. This is source inventory, not runtime acceptance.
 Hashes describe the baseline, not a freshness requirement after implementation.
 
 [signatures.json](signatures.json) records PHP declarations, frontend facade and
@@ -286,3 +287,45 @@ code/config/docs and all three test roots. Production acceptance checks the
 pruned material and retained runtime/operator identities, then invokes the actual
 module runtime diagnostic. Full analysis/projection/image/upgrade evidence belongs
 to final point 20; focused unit/source probes are not that acceptance.
+
+## Final source coverage and retained identities
+
+The `files` baseline rows keep their original hashes/source identities and exact
+current targets. The separate `additions` rows classify all 29 new files by owner,
+audience, execution mode and projection. Together their src/runa targets cover all
+884 current tracked source files. Four baseline owner configs/renderers now live
+under tools/maintainer. The final source-map contract checks coverage and absence
+of obsolete relocated files; it is scheduled with Python contracts in point 20.
+
+Deliberate retained paths include public Support helpers, WorkContext, persisted
+ModuleJob, all historical module-root upgrades/migrations, Database infrastructure
+versus database resources, Tests\TestCase, browserProblems/frontend-runtime,
+frontend/module-components.mjs and public frontend facades/subpaths. Management's
+isolated loader retains its namespace. These are supported/persisted boundaries,
+not temporary compatibility shims. Removed only the nine empty old source homes
+under Support/Modules/{Console,Management,Updates}, management/Actions and management,
+stubs/modules and stubs, tools/assets and tools. Runtime caches, reports and data
+are outside this source cleanup.
+
+## Public consumer and final quality matrix
+
+| Consumer/contract                                                      | Authored evidence                                                                                                       | Final owner                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Ordinary Laravel PHP and public signature closure                      | test_api_boundary.py native/PHPDoc/ordinary-source cases; application scaffold route/seeder; generated public consumers | php-static-analysis, python-tests                                      |
+| Optional application modules and generation                            | ModuleDevelopmentTest.php; test_api_boundary.py generated shapes; central app Reference cases                           | backend-tests, module-development-contracts, python-tests              |
+| Public aliases, relative imports and TS/Vue types                      | test_api_boundary.py ESLint AST cases; customization/contracts.ts and all Customer*.vue fixtures                        | lint, frontend-typecheck, frontend-tests, python-tests                 |
+| Entry/default/custom layouts, CSRF/refusal and keyed pages             | auth-entry.test.ts and its CustomerEntry/MinimalLayout/NestedEntry fixtures                                             | frontend-tests, frontend-browser                                       |
+| Custom account, full shell, 401 cleanup and account/draft lifetime     | auth-account.test.ts CustomerAccount/Application/Host fixtures and orchestration regressions                            | frontend-tests, frontend-browser                                       |
+| Module pages/slots and static errors                                   | modules.test.ts CustomerModules fixture; error-customization.test.ts CustomerErrorLayout fixture                        | frontend-tests, frontend-build, production-acceptance                  |
+| Delivered PHP/Vue/Python support without private files                 | installation_host.py authors public PHP/Vue/Python cases and invokes the delivered checker                              | installation-host-acceptance                                           |
+| Interrupted upgrades preserve customer code/config/docs/tests          | test_update_services.py 0.5.0→0.6.0 case and native update/team acceptance                                              | python-tests, update-execution-contracts, installation-host-acceptance |
+| Runtime projection, required diagnostics and upgrade identities        | production-runtime.php absence/retained-source checks and installation_host.py actual module runtime diagnostic         | production-acceptance, repository-container-scan                       |
+| All current source classifications and public policy/caller identities | test_api_boundary.py current map/declared policy contracts                                                              | python-tests                                                           |
+
+Paths above refer to central tests/tools/runa/contracts, tests/backend/runa/Feature,
+tests/frontend/runa/unit (and its fixtures/customization), or native
+tests/tools/runa/acceptance as appropriate. Existing quality definitions own these
+commands; no new coordinator/registry/CI or automatic group selector is introduced.
+All groups remain selected. Final preview, actual candidate-bound acceptance and
+current-state release review still belong to point 20. Historical PASS/failure
+reports are preserved and do not establish acceptance for the new candidate.

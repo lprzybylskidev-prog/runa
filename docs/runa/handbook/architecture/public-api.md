@@ -27,15 +27,11 @@ implementing an extension, consuming a guarded service and replacing an internal
 binding are different permissions. Public signatures include required values,
 exceptions, base classes, callbacks, props, slots and controller return members.
 
-The current source has mixed locations. Existing documented public helper paths
-remain valid until an explicit compatible migration is delivered. Do not infer
-that all `Support` classes are internal or that all module `Contracts` are public.
-Internal reorganization preserves these public file/FQCN identities and supported
-frontend/test/build entrypoints. This includes public helpers used by the supplied
-application scaffold, generated consumers and application test/build configuration.
-A cleaner directory grouping alone does not authorize changing their import paths.
-New internal homes become current guidance only when their owning implementation
-is delivered.
+Documented public helper paths remain supported after internal reorganization.
+Internal grouping preserves their file/FQCN identities and frontend/test/build
+entrypoints, including helpers used by the supplied scaffold and generators.
+Neighboring implementation files remain private. The placement table below records
+the delivered layout; physical presence is independent of consumer permission.
 
 ## Backend and modules
 
@@ -135,6 +131,92 @@ cancellation, dirty drafts and account isolation; do not copy the private logic.
 The minimal supplied dispatcher is not a general application router. Customers
 own their application entrypoint, screens and navigation; server authorization
 remains authoritative. Module pages/slots retain manifest/build identity checks.
+
+## Source placement and supported entrypoints
+
+| Location                                                                                              | Responsibility and consumer                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app`, `tests/*/app`, `docs/app`                                                                  | Customer application code/configuration/presentation, authored cases and domain guidance. Ordinary Laravel and optional application modules are supported.                                          |
+| `src/runa/Contracts/Modules`                                                                          | Platform declarations, values and reserved integration contracts. Use the individually documented symbols in [module contracts](module-framework.md); namespace membership grants no audience.      |
+| `src/runa/Support/Modules`                                                                            | Retained public adapters/values listed below. ModuleJob is the deliberately retained internal persisted envelope.                                                                                   |
+| `src/runa/ModuleFramework`, `src/runa/Integration/Core`                                               | Internal engines and named Core bridges. Runtime module diagnostics remain available without developer dependencies.                                                                                |
+| `src/runa/modules/<code>/backend`                                                                     | Module-owned public Contracts, private Actions/Queries/Models/Proxies, HTTP Controllers/Requests/Resources, pure Definitions and executable Work. Retain module-root historical upgrade identities. |
+| `src/runa/Providers`, `Configuration`, `Identity`, `Logging`, `Mail`, `Runtime`, `Foundation`, `Http` | Platform composition and internal infrastructure, except explicitly documented public adapters/controllers.                                                                                         |
+| `src/runa/Database`, `src/runa/database`                                                              | PHP database infrastructure versus migration/seed/deploy resources. These are distinct responsibilities; preserve persisted migration identities.                                                   |
+| `src/runa/resources/js/runa`                                                                          | Public frontend facade/type/style entrypoints; compose their exports from application-owned code.                                                                                                   |
+| `src/runa/resources/js`, `src/runa/modules/auth/frontend`                                             | Private supplied presentation and session/account orchestration. Module-owned public types are reexported through facades.                                                                          |
+| `src/runa/Tooling/Management`                                                                         | Delivered isolated Artisan tooling/registry/schema. Retains its dedicated loader and Runa\Management identity; separate from module business management.                                            |
+| `src/runa/Development/Modules`                                                                        | Development generator and its stubs. Generated code follows the same public APIs and application/test/doc ownership as handwritten code.                                                            |
+| `src/runa/Development`                                                                                | Developer-only PHP analysis support and fixed source-check adapter, used through runa:analyse.                                                                                                      |
+| `src/runa/Testing`, `src/runa/testing/backend`                                                        | Delivered reusable development test support, internal runner/database adapters and the worker transport; not private authored cases.                                                                |
+| `src/runa/frontend`, `src/runa/build/errors`                                                          | Delivered Vite module discovery/import policy and error build executables. They are build/development inputs, excluded from production PHP runtime.                                                 |
+| `src/runa/resources`, `config`, `routes`, `lang`, manifests                                           | Owned runtime/build resources and source declarations; application overrides use documented application-owned locations. Preserve mail bridges and imported provenance/licenses.                    |
+| `tools/maintainer/frontend`, `tools/maintainer/assets`, `tests/*/runa`                                | Private owner configurations, branding renderers and authored platform suites/fixtures. Excluded from customer delivery.                                                                            |
+
+The supported PHP helpers keep their exact `Runa\Support` identities:
+
+- `Modules\Api\{ModuleApis,GuardedApi,OperationRejected}` for guarded API use.
+- `Modules\Data\{ModuleModel,ModuleSchema,PublicReferenceRule}` and
+  `Modules\{ModuleIdentity,ModuleRecord,RegistrySnapshot}` for documented data/value roles.
+- `Modules\Storage\{ModuleStorage,ModuleDisk}`, `Modules\Events\ModuleEvents`,
+  `Modules\Frontend\ModuleFrontend` and `Modules\Settings\ModuleSettings` for their
+  documented scoped operations. Not every public method is an ordinary application action.
+- `Modules\Work\{ModuleWork,WorkContext,WorkStopped}` and
+  `Modules\Development\ModuleContractSuite` for classified work and diagnostics.
+- `Seeding\{ManagedSeeder,SeedCategory,SeedContext,SeedGraph,DevelopmentContributor,DevelopmentFixtures}`,
+  `Logging\LogContext` and `VersionCompatibility` under their linked public procedures.
+
+Module-owned API/value/exception identities stay in their owning Contracts paths;
+use the [Auth](../modules/auth/README.md), [Audit](../modules/audit/README.md) and
+[Permissions](../modules/permissions/README.md) guides for exact signatures and
+preconditions. `Runa\Http\Controllers\WelcomePageController` remains the supplied
+application-route entry. `Tests\TestCase` and the documented browser bridges are
+development support, independently of the platform runtime namespace.
+
+| Frontend entrypoint                                                         | Supported consumer                                                                                                                                           |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@/runa/ui` and documented UI type/style subpaths                           | Components, layouts, forms, navigation, preferences, tables/exports and typed props/slots. See [component contracts](../development/frontend/components.md). |
+| `@/runa/auth`                                                               | Supplied Auth views, presentation provider, named controller/props/slots/events types and headless session/entry/account/welcome orchestration.              |
+| `@/runa/http`                                                               | The shared HTTP client and its public errors/types.                                                                                                          |
+| `@/runa/modules`, `@/runa/modules/presentation`                             | Module page/slot/registry consumers and public presentation types.                                                                                           |
+| `@runa/testing/vue`, `@runa/testing/vitest`, `@runa/testing/playwright`     | Delivered developer test bridges, resolved from one installed toolchain.                                                                                     |
+| `src/runa/Testing/browserProblems.ts`, `frontend-runtime.mjs`               | Retained documented browser observation and frontend configuration imports.                                                                                  |
+| `src/runa/frontend/module-components.mjs`, `virtual:runa-module-components` | Build plugin and opt-in manifest-bound component discovery.                                                                                                  |
+
+An ordinary Laravel service can consume a guarded Core API without becoming a module:
+
+```php
+use Runa\Modules\Auth\Contracts\AuthIdentities;
+use Runa\Support\Modules\Api\ModuleApis;
+
+$identities = app(ModuleApis::class)->resolve('runa.auth', AuthIdentities::class, '1.0.0');
+$identity = $identities->identity($publicId);
+```
+
+Handle availability/operation refusal and enforce the use case's authorization and
+record policies. Use an application-owned Form Request/Action/JsonResource for a
+substantial write; resolving an API never grants permission for private persistence.
+
+A customer screen composes public controls and retains shared HTTP behavior:
+
+```vue
+<script setup lang="ts">
+import { Button } from '@/runa/ui';
+import { request } from '@/runa/http';
+
+async function refresh() {
+  await request('/api/customer/documents');
+}
+</script>
+
+<template>
+  <Button @click="refresh">Odśwież</Button>
+</template>
+```
+
+This illustrates import ownership; the application owns the endpoint and loading/
+error states. See [frontend adoption](../development/frontend/customization.md) for
+complete headless/replacement examples, cancellation and session lifecycle.
 
 ## Authoring and maintaining the boundary
 

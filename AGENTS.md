@@ -327,7 +327,11 @@ Classify capabilities by owner, supported consumer and entrypoint separately fro
 delivery/runtime mode. Keep customer extension/consumption APIs distinct from
 internal engines and trusted integration; Contracts/Support names alone do not
 establish public use. Preserve documented signatures, generator/example consumers
-and frontend replacement contracts during refactors.
+and frontend replacement contracts during refactors. Before adding or relocating
+capabilities, declare owner, audience, supported entrypoint, complete public
+signature, implementation home and runtime/delivery mode in the owning guide.
+Use the public guide's source-placement table; generated and handwritten consumers
+follow the same boundary. Update both instruction products when a reusable rule changes.
 
 ## Module development
 

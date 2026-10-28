@@ -335,3 +335,15 @@ and native acceptance harnesses stay private. Native Docker acceptance modules
 run on the host through their supported quality nodes; pytest live-service cases
 have explicit registered markers/prerequisites. No unit fixture starts services.
 The scenario map is [test migration](../tooling/python-rebuild/test-migration.json).
+
+## Public boundary and projection evidence
+
+The existing php-static-analysis node invokes runa:analyse, including public PHP
+imports/signatures before PHPStan. The lint node owns customer TS/Vue imports,
+frontend-typecheck owns actual exported/consumer types, and python-tests includes
+the audience/placement/generated/update-preservation contracts. Installation-host
+acceptance authors customer PHP/Vue/Python cases without owner files. Production
+acceptance and repository-container-scan use real runtime absence/retained-identity
+checks and the operator module diagnostic. See the [consumer matrix](../architecture/api-boundary/README.md#public-consumer-and-final-quality-matrix).
+All retain existing prerequisites/severity/resource ownership; no duplicated node
+or earlier implementation gate is needed. RM-2026-012 final selection remains all.

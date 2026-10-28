@@ -10566,5 +10566,283 @@
       "target": "tools/maintainer/assets/render-mail-logo.mjs",
       "point": 17
     }
+  ],
+  "additions": [
+    {
+      "target": "src/runa/Development/ApiSourceCheck.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "development",
+      "customer_source": true,
+      "production": "exclude",
+      "point": 18,
+      "target_symbol": "Runa\\Development\\ApiSourceCheck"
+    },
+    {
+      "target": "src/runa/Development/check-api.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "development",
+      "customer_source": true,
+      "production": "exclude",
+      "point": 13
+    },
+    {
+      "target": "src/runa/ModuleFramework/Development/ApiBoundary.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "operator",
+      "customer_source": true,
+      "production": "source",
+      "point": 18,
+      "target_symbol": "Runa\\ModuleFramework\\Development\\ApiBoundary"
+    },
+    {
+      "target": "src/runa/ModuleFramework/Development/PhpReferences.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "operator",
+      "customer_source": true,
+      "production": "source",
+      "point": 18,
+      "target_symbol": "Runa\\ModuleFramework\\Development\\PhpReferences"
+    },
+    {
+      "target": "src/runa/ModuleFramework/Development/api-boundary.json",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "operator",
+      "customer_source": true,
+      "production": "source",
+      "point": 18
+    },
+    {
+      "target": "src/runa/Providers/CoreIntegrationServiceProvider.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Providers\\CoreIntegrationServiceProvider"
+    },
+    {
+      "target": "src/runa/Providers/DevelopmentServiceProvider.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Providers\\DevelopmentServiceProvider"
+    },
+    {
+      "target": "src/runa/Providers/ModuleFrameworkServiceProvider.php",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Providers\\ModuleFrameworkServiceProvider"
+    },
+    {
+      "target": "src/runa/frontend/api-boundary.mjs",
+      "owner": "platform",
+      "audience": "internal",
+      "mode": "development",
+      "customer_source": true,
+      "production": "exclude",
+      "point": 18
+    },
+    {
+      "target": "src/runa/modules/audit/backend/UpgradePlatformComposition.php",
+      "owner": "runa.audit",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Modules\\Audit\\UpgradePlatformComposition"
+    },
+    {
+      "target": "src/runa/modules/audit/backend/UpgradePlatformDelivery.php",
+      "owner": "runa.audit",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 18,
+      "target_symbol": "Runa\\Modules\\Audit\\UpgradePlatformDelivery"
+    },
+    {
+      "target": "src/runa/modules/auth/backend/UpgradeAccountOrchestration.php",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 16,
+      "target_symbol": "Runa\\Modules\\Auth\\UpgradeAccountOrchestration"
+    },
+    {
+      "target": "src/runa/modules/auth/backend/UpgradeExecutionLayout.php",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 14,
+      "target_symbol": "Runa\\Modules\\Auth\\UpgradeExecutionLayout"
+    },
+    {
+      "target": "src/runa/modules/auth/backend/UpgradeFrontendContracts.php",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 15,
+      "target_symbol": "Runa\\Modules\\Auth\\UpgradeFrontendContracts"
+    },
+    {
+      "target": "src/runa/modules/auth/backend/UpgradePlatformComposition.php",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Modules\\Auth\\UpgradePlatformComposition"
+    },
+    {
+      "target": "src/runa/modules/auth/backend/UpgradePlatformDelivery.php",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 18,
+      "target_symbol": "Runa\\Modules\\Auth\\UpgradePlatformDelivery"
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/context.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/delivery.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/lists.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/profile.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/types.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/account/validation.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/contracts/controllers.ts",
+      "owner": "runa.auth",
+      "audience": "public-frontend",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 15
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/contracts/presentation.ts",
+      "owner": "runa.auth",
+      "audience": "public-frontend",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 15
+    },
+    {
+      "target": "src/runa/modules/auth/frontend/preferences/session.ts",
+      "owner": "runa.auth",
+      "audience": "internal",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 16
+    },
+    {
+      "target": "src/runa/modules/permissions/backend/UpgradePlatformComposition.php",
+      "owner": "runa.permissions",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 13,
+      "target_symbol": "Runa\\Modules\\Permissions\\UpgradePlatformComposition"
+    },
+    {
+      "target": "src/runa/modules/permissions/backend/UpgradePlatformDelivery.php",
+      "owner": "runa.permissions",
+      "audience": "internal",
+      "mode": "runtime",
+      "customer_source": true,
+      "production": "source",
+      "point": 18,
+      "target_symbol": "Runa\\Modules\\Permissions\\UpgradePlatformDelivery"
+    },
+    {
+      "target": "src/runa/resources/js/runa/modules/presentation.ts",
+      "owner": "runa.js",
+      "audience": "public-frontend",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 15
+    },
+    {
+      "target": "src/runa/resources/js/runa/ui/layouts.ts",
+      "owner": "platform",
+      "audience": "public-frontend",
+      "mode": "frontend",
+      "customer_source": true,
+      "production": "compiled",
+      "point": 15
+    }
   ]
 }

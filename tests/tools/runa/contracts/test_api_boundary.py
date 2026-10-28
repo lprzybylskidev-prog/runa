@@ -179,3 +179,21 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
         str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_current_source_placement_is_complete_and_old_private_locations_are_absent() -> None:
+    mapping = json.loads(
+        (ROOT / "docs/runa/maintainer/architecture/api-boundary/source-map.json").read_text()
+    )
+    rows = [*mapping["files"], *mapping["additions"]]
+    tracked = set(
+        subprocess.check_output(["git", "ls-files", "src/runa"], cwd=ROOT, text=True).splitlines()
+    )
+    targets = {row["target"] for row in rows if row["target"].startswith("src/runa/")}
+    assert targets == tracked
+    for row in rows:
+        assert (ROOT / row["target"]).is_file()
+        assert row["owner"] and row["audience"] and row["mode"] and row["production"]
+    for row in mapping["files"]:
+        if row["source"] != row["target"]:
+            assert not (ROOT / row["source"]).exists()

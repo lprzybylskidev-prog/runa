@@ -339,7 +339,12 @@ Implement and consume supported contracts from src/app; all Runa source remains
 protected, including public definitions. Contracts names, public methods and
 resolvable imports do not authorize internal dependencies or replacing security
 bindings. Use documented backend adapters and frontend facades; existing explicitly
-documented public helpers remain supported during migration.
+documented public helpers retain their supported identities. Use the public guide's
+source-placement table for current locations. For application capabilities, declare
+owner, audience, supported entrypoint and complete public signature in application
+guidance; keep implementation/tests/docs in application-owned roots. Generated and
+handwritten consumers follow the same boundary. This never authorizes protected
+platform edits or a new reserved integration binding.
 
 ## Module development
 

@@ -72,3 +72,5 @@ fixture entry. Customer workflows use delivered commands, never owner test tools
 Native test execution and supported test wrappers share the suite lock and guarded
 worker cleanup. Use the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle);
 read-only discovery is exempt, while direct runners bypass protection.
+
+Use the public source-placement and entrypoint table in docs/runa/handbook/architecture/public-api.md for application PHP, module and generated consumers. Declare complete application contracts without importing protected engines or rebinding reserved participants.
