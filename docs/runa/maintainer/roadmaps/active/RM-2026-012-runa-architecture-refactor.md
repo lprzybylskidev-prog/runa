@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 20.
+Full candidate verification and release finalization remain point 21.
 
 ### Out of scope
 
@@ -1034,7 +1034,7 @@ point 11. Later public-only consumer fixtures must additionally cover authored
 application pages/forms/navigation, module pages/slots, custom error layouts,
 controller disposal/account switch, draft preservation and compatibility with
 existing defaults. Implement scenarios during the relevant points; broad browser,
-type, production and projected-customer acceptance runs only in final point 20.
+type, production and projected-customer acceptance runs only in final point 21.
 
 #### Planned compatibility and validation
 
@@ -1201,7 +1201,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 20.
+    Full strict analysis, artifact and runtime PASS belong to point 21.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1237,7 +1237,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     update current target mappings rather than rewriting their baseline identities.
   - Synchronize public testing/module/command guides and both instruction products.
     Include focused ownership/discovery/generator/projection regressions; full
-    suites, analysis, builds and live acceptance remain exclusively in point 20.
+    suites, analysis, builds and live acceptance remain exclusively in point 21.
   - Commit completed implementation, documentation and checklist together.
 
 - [x] 11. Repair central frontend test package resolution.
@@ -1386,7 +1386,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     suites/owner configs and development-only packages from inappropriate outputs.
   - Implement projected-customer extension/update and production-isolation
     scenarios for final execution. Keep existing scoped quality ownership; broad
-    package/image/install/upgrade/scanner acceptance belongs only to point 20.
+    package/image/install/upgrade/scanner acceptance belongs only to point 21.
 
 - [x] 19. Synchronize architecture guidance and retire obsolete placement.
   - Prerequisites: points 12–18 implemented; finding F24 and final source map.
@@ -1408,7 +1408,18 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     final quality graph definitions. Commit completed implementation/docs/products;
     no full verification or acceptance runs in this point.
 
-- [ ] 20. Full verification, release finalization, merge and final report.
+- [x] 20. Restore safe access to pre-existing quality evidence.
+  - The first final-run launch failed before scheduling: legacy .runtime/quality
+    was mode 0775 and state.json was 0664, rejected by the current no-group-write
+    state policy. Do not weaken the policy or infer a current PASS from old evidence.
+  - Inspect exact ownership/file identities, acquire the existing stable lock and
+    refuse any still-active recorded child. Preserve prior evidence before starting
+    a new latest run. Narrow only the directory to 0755 and state.json to 0644.
+  - Receive successful supported status access, document recovery and commit it;
+    no runtime source/configuration, dependency or data change is needed.
+  - Full verification moves to point 21 and starts from the beginning.
+
+- [ ] 21. Full verification, release finalization, merge and final report.
   - Prerequisites: points 1–19 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
@@ -3054,6 +3065,25 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   If any selected gate fails, retain the active roadmap, insert a fix point and
   rerun the complete final selection from the beginning. Final resource disposition
   and release metadata/closure synchronization remain after actual PASS.
+
+### Point 20 completion — existing quality evidence recovery (2026-10-28)
+
+- Initial final launch and status both refused the pre-existing quality state before
+  any new coordinator/step was started. Inspected operator-owned regular identities:
+  .runtime/quality directory 0775, state.json 0664, stable quality.lock 0644, all
+  UID/GID 1000. The no-group-write state policy correctly rejected old evidence.
+- Acquired the existing lock without replacing/truncating its inode; no active
+  recorded child remained. Archived the complete old directory at
+  .runtime/artifacts/quality-before-RM-2026-012-final/1793188783691052902. Its PASS
+  belongs to predecessor evidence, not this candidate. Narrowed only the existing
+  quality directory to 0755 and state.json to 0644; content/logs and lock identity
+  were preserved. No broad cleanup or resource deletion occurred.
+- Supported python3 tools/maintainer/quality-status then returned successfully and
+  read the historical evidence. No new test or final gate ran in this recovery;
+  no state-validation rule was relaxed. Final verification is now point 21 and
+  will run the complete all-group graph from its beginning. Runtime/source/security
+  review hashes and the 60-step graph are unchanged; knowledge freshness and hooks
+  accompany this documentation-only recovery commit.
 
 ### Draft preparation validation (historical)
 

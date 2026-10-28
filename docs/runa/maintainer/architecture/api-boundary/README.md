@@ -1,7 +1,7 @@
 # RM-2026-012 API and placement map
 
 This record preserves the point-12 baseline and the compatible layout delivered
-by points 13–19. Final verification remains point 20. Point 13 delivers the platform PHP relocations and provider split.
+by points 13–19. Final verification remains point 21. Point 13 delivers the platform PHP relocations and provider split.
 Point 14 delivers the built-in module execution layout while retaining contract
 and historical upgrade identities. Point 15 publishes named frontend consumer
 contracts through the retained facades and normalizes reactive presentation maps.
@@ -37,7 +37,7 @@ imports are findings to repair, not new supported APIs.
 
 The map is owner engineering data, excluded from customer acquisition and production.
 Do not install it as another runtime registry. Point 18 implements boundary checks
-through existing source/quality ownership. Final acceptance remains point 20.
+through existing source/quality ownership. Final acceptance remains point 21.
 
 ## Frozen dependency direction
 
@@ -286,7 +286,7 @@ the delivered checker without owner source; updater fixtures preserve applicatio
 code/config/docs and all three test roots. Production acceptance checks the
 pruned material and retained runtime/operator identities, then invokes the actual
 module runtime diagnostic. Full analysis/projection/image/upgrade evidence belongs
-to final point 20; focused unit/source probes are not that acceptance.
+to final point 21; focused unit/source probes are not that acceptance.
 
 ## Final source coverage and retained identities
 
@@ -295,7 +295,7 @@ current targets. The separate `additions` rows classify all 29 new files by owne
 audience, execution mode and projection. Together their src/runa targets cover all
 884 current tracked source files. Four baseline owner configs/renderers now live
 under tools/maintainer. The final source-map contract checks coverage and absence
-of obsolete relocated files; it is scheduled with Python contracts in point 20.
+of obsolete relocated files; it is scheduled with Python contracts in point 21.
 
 Deliberate retained paths include public Support helpers, WorkContext, persisted
 ModuleJob, all historical module-root upgrades/migrations, Database infrastructure
@@ -327,5 +327,5 @@ tests/frontend/runa/unit (and its fixtures/customization), or native
 tests/tools/runa/acceptance as appropriate. Existing quality definitions own these
 commands; no new coordinator/registry/CI or automatic group selector is introduced.
 All groups remain selected. Final preview, actual candidate-bound acceptance and
-current-state release review still belong to point 20. Historical PASS/failure
+current-state release review still belong to point 21. Historical PASS/failure
 reports are preserved and do not establish acceptance for the new candidate.
