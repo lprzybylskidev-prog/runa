@@ -61,6 +61,38 @@ module operations use guarded adapters. Local helpers such as Auditable and scop
 Audit suppression have their own transaction and field rules. Private resolvers,
 foreign models/queries and reserved installation writers are not shortcuts.
 
+## Built-in module contracts and execution
+
+All supported module contract identities remain in their owning
+`Runa\Modules\{Auth,Audit,Permissions}\Contracts` namespace. Classify the symbol
+and operation rather than granting access to that whole directory:
+
+| Owner       | Customer consumption or extension                                                                                                                                                                                                       | Reserved integration                                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Auth        | Guarded `Auth*` APIs and their immutable values, exceptions and selections; `PreferenceProvider`/`DeliveryProvider` declarations.                                                                                                       | `AuthorizationIdentity`, `BulkUserSelection`, `OperatorAuthority`, `SecurityMailDelivery`, `DevelopmentAccounts`. |
+| Audit       | Guarded `AuditRecords`, `AuditReads`, `OwnHistory`, `OwnHistoryDetails` and their values/exceptions; `Auditable` and `AuditModelPolicy` for opt-in capture; scoped `AuditSuppression::run` under the Audit transaction/redaction rules. | `AuditWriter`, `AuditActorResolver`; suppression's `active()` is capture plumbing.                                |
+| Permissions | Guarded `Permissions`, `PermissionsAccess`, `PermissionsAuthority`, `PermissionsSelections` and their preview/selection/declaration values.                                                                                             | `DevelopmentAccess`, only for explicit development contributors.                                                  |
+
+Reserved contracts support the existing named Core integration, owning Actions,
+transaction participants and operator/development procedures in each module's
+guide. They do not authorize application security-binding replacement, direct
+foreign persistence or ordinary unguarded service calls. Availability, current
+grants, fresh proof, record policies and atomic Audit remain independent checks.
+
+Private `Actions`, `Queries`, `Models`, `Proxies`, `Support` and definition
+providers remain owned by the module. Auth executable work handlers and its work
+policy live in `backend/Work`; `Definitions/EntryWork` declares stable operation
+keys and delegates execution there. Auth HTTP adapters use `Http/Controllers`,
+`Http/Requests` and `Http/Resources`. Public consumers use guarded contracts and
+named HTTP endpoints, without importing these implementation classes. Combined
+settings declaration/application handlers retain their existing source identity.
+
+Initialization and historical `Upgrade*.php` files deliberately retain their
+module-root paths and classes. Their bytes, edge keys and fingerprints participate
+in installed-history and interrupted-update validation. Do not consolidate empty
+handlers or regroup these persisted identities as directory cleanup. A compatible
+source change adds its own forward edge without rewriting prior steps.
+
 ## Platform implementation homes
 
 The module engine lives in `Runa\ModuleFramework`, with registry-aware module

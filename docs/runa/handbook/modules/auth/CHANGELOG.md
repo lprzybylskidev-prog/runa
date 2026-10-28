@@ -1,5 +1,10 @@
 # Auth module changelog
 
+## 1.0.3 — 2026-10-28
+
+- Separate private work handlers/policy and HTTP controllers/resources from declarations; retain public contract identities and guarded behavior.
+- Preserve historical upgrade handlers, edges and migration bytes; add the source-only execution_layout edge without schema or data changes.
+
 ## 1.0.2 — 2026-10-28
 
 - Reconcile internal platform collaborators with the module framework and Core integration homes; public contracts and runtime behavior remain compatible.

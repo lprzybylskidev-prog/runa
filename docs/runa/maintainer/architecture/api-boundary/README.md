@@ -1,8 +1,10 @@
 # RM-2026-012 API and placement map
 
 This is the point-12 migration specification. It freezes compatible targets for
-points 13–19. Point 13 delivers the platform PHP relocations and provider split;
-remaining targets are planned until their owning points are complete. The public authority for
+points 13–19. Point 13 delivers the platform PHP relocations and provider split.
+Point 14 delivers the built-in module execution layout while retaining contract
+and historical upgrade identities. Remaining targets are planned until their
+owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and
 optional application-owned modules remain equally supported.

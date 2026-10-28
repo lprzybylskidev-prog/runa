@@ -57,7 +57,7 @@ The owner expanded planning on 2026-10-27 to cover all `src/runa`: public
 customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
-API/placement map and platform PHP reorganization. Points 14–19 remain pending;
+API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; points 15–19 remain pending;
 final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
@@ -1291,7 +1291,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Deliver regression scenarios and current docs in the same point. Only
     necessary focused uncertainty checks run; full analysis/suites remain final.
 
-- [ ] 14. Separate built-in module contracts from private execution.
+- [x] 14. Separate built-in module contracts from private execution.
   - Prerequisites: point 13; findings F02, F08–F09 and the point-12 contract map.
   - Organize Auth/Audit/Permissions public DTOs/interfaces/traits and documented
     local helpers separately from trusted participants/resolvers, private queries,
@@ -2652,6 +2652,63 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   prepared operational management tag runa-management:bb12fe0c186bd993ba0a8fee
   after Dockerfile changed; retain it for current tooling, not acceptance evidence.
   VERSION remains 0.5.0, confirmed feature projection 0.6.0; point 14 is next.
+
+### Point 14 completion — built-in contract audiences and private execution (2026-10-28)
+
+- Applied all 54 point-14 relocations from the frozen map: Auth executable work
+  handlers/policy live in Work, HTTP adapters in Http/Controllers and projections
+  in Http/Resources. EntryWork and HTTP descriptors retain their identities and
+  stable operations, routing/access metadata and payload semantics. No aliases or
+  duplicate engines remain; public and reserved Contracts identities are unchanged.
+- The public API guide now distinguishes Auth/Audit/Permissions guarded APIs and
+  values, extension declarations/traits, local Audit suppression and reserved
+  identity/authority/writer/development integration. Private Actions, Queries,
+  Models and Proxies retain their cohesive existing homes. Combined settings
+  declaration/application handlers deliberately retain their frozen identities.
+  Historical initialization/Upgrade classes stay at module roots; no historical
+  handler consolidation or migration rewrite was introduced.
+- Auth advances compatibly from 1.0.2 to PATCH 1.0.3 with the source-only
+  execution_layout edge and central changelog. Audit/Permissions implementation
+  is unchanged at 1.0.2; required ^1.0.0 dependencies remain compatible. Updated
+  all three module guides' obsolete version/dependency claims. Platform VERSION
+  remains 0.5.0 and the approved feature projection remains 0.6.0.
+- Added a pre-relocation history fixture anchored to dada9275: 86 successful
+  upgrade fingerprints and 13 migration hashes across the built-in modules.
+  The isolated target-planner regression validates retained fingerprints from
+  installation, suppresses completed work, plans only Auth's new edge from 1.0.2,
+  and refuses tampered history. The previous composition planner case includes
+  the additional compatible Auth edge. Added source-owned work resolution through
+  the actual guarded declarations without executing or enqueueing handlers.
+- Necessary focused diagnostics passed through supported test-backend: two
+  history/target-planner cases (32 assertions), and three single-worker Auth cases
+  for work resolution, guarded login/logout and actual CSRF refusal (45 assertions).
+  Scoped module version checks against the point baseline returned no errors for
+  all three modules. Exact moved-symbol search found no stale FQCNs in current
+  source/test/tool consumers, and all 54 frozen relocation targets exist. No full
+  suite, static analysis, image build, scanner pipeline or broad acceptance ran;
+  these remain exclusively final point 20. The first mandatory hook attempt
+  detected eight generic-api-key false positives where migration filenames
+  containing token/key words were JSON keys beside source hashes. A focused
+  redacted scanner report identified only those public source hashes. Stored
+  migration path and SHA256 as separate named fields, preserving the same values
+  without any scanner exception or policy change; repeated the affected history
+  case and mandatory hooks. The private report remains under .runtime/security.
+  Incremental indexing reached 189 documents/3138 chunks before final hook
+  formatting; staged freshness remains mandatory.
+- Local knowledge was current (189 documents, 3133 chunks); queried boundary and
+  upgrade guidance and read original public API/module/security sources. Loaded
+  backend/Laravel/security skills. Updated the public boundary and module guides,
+  Auth changelog and owner placement-map delivery status in this point. Root
+  AGENTS and owner/customer backend/Laravel/security products already require
+  public signature preservation, guarded module APIs and source-owned placement;
+  this adds no authority, extension entrypoint or new operating procedure, so
+  those instruction products need no duplicate changes. Frontend contracts remain
+  point 15 work. Incremental knowledge refresh and mandatory hooks accompany commit.
+- The supported runner showed and removed its disposable runa_test_test_1 worker.
+  Base runa_test, development data/services, Qdrant/model/builder caches, backups
+  and reports are preserved. No task-created Docker containers, networks, image
+  tags or volumes required deletion. No production operation or business-data
+  migration ran. Point 15 is next; points 15–20 remain open.
 
 ### Draft preparation validation (historical)
 

@@ -1,0 +1,575 @@
+{
+  "baseline_commit": "dada92753d4d9a4fc3c43a4d3e91e3c9b81f10b2",
+  "module_steps": [
+    {
+      "module": "runa.auth",
+      "step": "upgrade:initialize:install:0.1.0",
+      "fingerprint": "396c311108d89a2327630f3fa187a0985d75c551922e346c88fd9c51a6cfb233",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:entry:0.1.0:0.2.0",
+      "fingerprint": "674f1a665efb870349849b443f05424fe569090a650f3297a76c6c66b4b9ca85",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:sessions:0.2.0:0.3.0",
+      "fingerprint": "9c7e338bdf473943c75f85ed5ae1599dbead83fd78736fdd8ec909f6fb93c9a4",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:credentials:0.3.0:0.4.0",
+      "fingerprint": "82c4f5a09e0c3a8b1561be7a2bb089d6bbc1452ecb29c06edbc1939e96a34383",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:profiles:0.4.0:0.5.0",
+      "fingerprint": "66e44bfff26550092b0f933f3c21eaadaba9c7282494be0fc0938dcfa52fb552",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:preferences:0.5.0:0.6.0",
+      "fingerprint": "840269978ede5485cda61c5677f0f7c58b6d8500be125806a17c10498fb2e3b0",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:policy:0.6.0:0.7.0",
+      "fingerprint": "0ebb65af8a638c1ac067811e2132b7aef7ba769218ed21d150e4944359cd7862",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:entry_ui:0.7.0:0.8.0",
+      "fingerprint": "5e8240ded4dc47b5162169abd471c313b2d13e0e88abd0fad886eecbbb7e86df",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_ui:0.8.0:0.9.0",
+      "fingerprint": "e080328f0e0e58a87705882c30c9cbbe56291468e5ba643cfea0ea099f28d96b",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:permission_declarations:0.9.0:0.10.0",
+      "fingerprint": "7093a041781cc6eedb5ef586ba8b2f2acc370f1b403098909435a76819d4066d",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:authority_participation:0.10.0:0.10.1",
+      "fingerprint": "1b61f03fa496e088738045aac7a2bae3d12e4ad7d32b22df32129f3aae8808f2",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:core_integration:0.10.1:0.11.0",
+      "fingerprint": "d1f928bc2011175e1b21e6ac5c6ce9450f4e2b1fa7fdd9f12fbe60fc87e1a794",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:development_fixtures:0.11.0:0.12.0",
+      "fingerprint": "6bd8eac65936915c4782379aa621a00bfb42a845faf66cc95a019d1ea9758d45",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:presentation:0.12.0:0.13.0",
+      "fingerprint": "ff7c2609bce65798ee465508bcf655e8a554c5a380cf82d9f0ed6c5bb9d6d2c2",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:welcome_header:0.13.0:0.13.1",
+      "fingerprint": "ef32d53a97d1751de22fc1a26bf03899b282285455adac3530eadaa9275a44c0",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:welcome_links:0.13.1:0.13.2",
+      "fingerprint": "185a6c48648fc3982ab8a92fed63dd2e4777d8da32f8b2d18002102e9ad93575",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:heading_focus:0.13.2:0.13.3",
+      "fingerprint": "7a0d74e12faf6f35a79fddfefae7bbfeb6830c09f86d2ab12ba97b422709b2a5",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:form_presentation:0.13.3:0.13.4",
+      "fingerprint": "7f3486d34aecfc201e0377cf6186dd54433073dc0a7c1454345e77d4964a8675",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:user_panel:0.13.4:0.13.5",
+      "fingerprint": "453c6e0454d963a70bac6429beef5f9dab582c1b5acc1c39da6dcca709e28c3c",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:navigation_cancellation:0.13.5:0.13.6",
+      "fingerprint": "b813bdb48a5ee6a3944d435adec2c7bc0dc81c3285881612b2f64ca740dfe487",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_editor:0.13.6:0.13.7",
+      "fingerprint": "354a47547a36b28bc0441c6d3d0e65523a418453172534a05d00526f46a4e4c5",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_cards:0.13.7:0.14.0",
+      "fingerprint": "f053127f8700126a3a93f697689c5f1f032a0d31c45064d2cfa5953cf77ebfa9",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:avatar_modal:0.14.0:0.14.1",
+      "fingerprint": "8f65c27645fcd8466329dbc8378541f8cacf6cb07cd680a03622a96154ee946a",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:form_notifications:0.14.1:0.14.2",
+      "fingerprint": "8d270251c41f01997f3b7a6d73302808e868e4e667b635d240421cd115646468",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:shell_avatar:0.14.2:0.15.0",
+      "fingerprint": "dfb761115951ec0180a8949f290c0f1d8a1eb4e1b3852c67c01412d2d350489e",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_methods:0.15.0:0.15.1",
+      "fingerprint": "8a1fbd33e2c162a49fb136a3a7cfeed2d10695dd1afbe6aa3c1a60abb53fec99",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:totp_qr:0.15.1:0.16.0",
+      "fingerprint": "d83b5adbb461d230045e26bdcf55168a0e91255840b3696fae0b1e1456333e09",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:recovery_dialog:0.16.0:0.17.0",
+      "fingerprint": "94818f61a4b126e515e7bf6fc902407738fe94eccebfc4b3c37dd6828377fab6",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:secondary_details:0.17.0:0.18.0",
+      "fingerprint": "ec5b872ff017c18292bcc86989974833266eac65016e75ee27a0ade2feacba04",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:mail_layout:0.18.0:0.18.1",
+      "fingerprint": "bffec713784d7a89f7ef1c32b7b4371b4c5f745d79080ebfd972f23188375a40",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:session_sorting:0.18.1:0.18.2",
+      "fingerprint": "de153f93afd74b7e240e1dcc7e15531f7e596e5332bb07cc21d3ea3a2653770e",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:factor_dialogs:0.18.2:0.19.0",
+      "fingerprint": "52c28fb9617ac6b38742d0dd1d44e36299c1e899fda4ac8950060c39f4d4bb8e",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:preferences_presentation:0.19.0:0.19.1",
+      "fingerprint": "52de60aaf04bd4ce0a67bdb36f152ef2ba08d8ca2e2c9d90d892f469222dda29",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:all_preferences:0.19.1:0.20.0",
+      "fingerprint": "09b73c4ad8a55457349f9de1d53be6f8b091017cf98d4cdb01b4ba33f966d334",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:preferences_selection:0.20.0:0.20.1",
+      "fingerprint": "d370a3d7250cdea12607faab89a48fb7b01f88890c6c92de1666a43bcc11c8fe",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_refresh:0.20.1:0.21.0",
+      "fingerprint": "4d1723a6fb1d84723761217e55c30090fbb8dbd4b7d35128e2f7841af2ec0144",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_copy:0.21.0:0.21.1",
+      "fingerprint": "6a48f969d25d6b171746122003fe688f8c46f77419d9ec1b46fcd3f7f2fa4cff",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:factor_spacing:0.21.1:0.21.2",
+      "fingerprint": "ede21bfdb6fdee8759c0537da85e425b7308ab2decd1e37184832da4cd2f1daa",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:trust_heading:0.21.2:0.21.3",
+      "fingerprint": "c1e532d36035c8ca93f5485aa15216ae1d2737a534ad153cf3af3b2005bc6b22",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:secondary_status_layout:0.21.3:0.21.4",
+      "fingerprint": "172a841ff5b0b5c4f1a895f9889cf65a588114b5c0f07c62d1dad72187b49466",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:frontend_type_safety:0.21.4:0.21.5",
+      "fingerprint": "ac20e1b111ef50b54708a0715751e31761fe4a966c997c1cfcf81da467c44ec4",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:structural_loading:0.21.5:0.21.6",
+      "fingerprint": "0ac0b9d5207fcd6bdcdea656ab47918ee8619977fa7779109f83cd0ee701ac08",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:table_loading:0.21.6:0.21.7",
+      "fingerprint": "2a25d098c9303b24b3c62cbbffee2a023e31a381f55c496816a2348487547b40",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:single_table_read:0.21.7:0.21.8",
+      "fingerprint": "848602555cd558d90ee1decd162feea8a34f631588ccaa6a85893afc34af9925",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:welcome_modules:0.21.8:0.21.9",
+      "fingerprint": "573089a5bfd38b21e07457bf568ff8dc157414084e33888c3d75c062dee26cbb",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:avatar_loading:0.21.9:0.21.10",
+      "fingerprint": "f4ed46d499eb9697ff63049c746dc80ab95d6280588832e7bbb20f2b5ca3db6c",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:welcome_navigation:0.21.10:0.21.11",
+      "fingerprint": "f1fa237146068e3e7d1435cfbb14031d2aa4a8e3c2678f171867c82f3291f606",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:account_action_tones:0.21.11:0.21.12",
+      "fingerprint": "5f51480652197c50899dda5514786477f26c1afd64ad407e6fc2120ff662cacf",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:targeted_throttling:0.21.12:0.21.13",
+      "fingerprint": "22cf37a6575a0ae464cb74e0d882526f4a2c5024fbceebdd04b95d7e11c9cc1a",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:preference_history:0.21.13:0.21.14",
+      "fingerprint": "2e7fb85f7f0c3ebda05ed5b25cdbee3974b98a81d479640e515cb0fb6a7c36d2",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:preference_history_labels:0.21.14:0.21.15",
+      "fingerprint": "94522ec997bbb466a1d99c3741497558cc7b87a5c80b718668b606cdf7513d80",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:history_details:0.21.15:0.22.0",
+      "fingerprint": "865fd99ad489230159b7ee9464e3be1d41d7ffe5bf65360e4aa7359958266824",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:concrete_history:0.22.0:0.23.0",
+      "fingerprint": "970d02272892779de76c25bb4950d02f4ee2925e039b9c56624ef444b033c3d9",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:registration_confirmation:0.23.0:0.23.1",
+      "fingerprint": "46946441c2456bec329637b7e3cc97e6980bfdcae3110f2faf415e8bcf1202f0",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:stable_release:0.23.1:1.0.0",
+      "fingerprint": "99898bb63600c7a3d8ed15abf614b244f524132114e4a5307bd0ea37fedb958e",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:central_test_layout:1.0.0:1.0.1",
+      "fingerprint": "07e10b1f93a0983a60d9f2f16ebc183c30fddde8f5003fe0d16b2d87fea1eceb",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.auth",
+      "step": "upgrade:platform_composition:1.0.1:1.0.2",
+      "fingerprint": "436e928654d625664d73fb88954ee0031f04b50e8c75677c3a1a3d87fdc2f2bf",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:initialize:install:0.1.0",
+      "fingerprint": "ad25fc0de0910210ed7ee89ce60597afe6e507635fadbfd9f4eb0ee761901e95",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:capture:0.1.0:0.2.0",
+      "fingerprint": "69977f865ea862c234c0d7ccc59e9bd367e2813d126325a4a6f33f74ec33c386",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:own_history:0.2.0:0.3.0",
+      "fingerprint": "189b59165611c2f6465b697dba9ac424d8d6362c4d4f62f4f90937954ca4c525",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:permission_declarations:0.3.0:0.4.0",
+      "fingerprint": "ea34794e806416e0513ea1712a2884e7b26c12f02fa7f8b228ceabb41d242b90",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:management:0.4.0:0.5.0",
+      "fingerprint": "27302c88424b2ed99c3851638014096482623755d27a6359df9992d496037d05",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:own_history_details:0.5.0:0.6.0",
+      "fingerprint": "f0694fccbca554acf21fae23b0c2451707d3b5d154d1ecf16f17af9aea175f6f",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:structured_history:0.6.0:0.7.0",
+      "fingerprint": "3a9ba8cda54764615703022236f8772dafa0e81ffa2317f753a6821b6542b784",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:stable_release:0.7.0:1.0.0",
+      "fingerprint": "858f14163ee4d6484641746791ced0ab294a951f95e35462a06d0c91a719f6e2",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:central_test_layout:1.0.0:1.0.1",
+      "fingerprint": "b2054961c4c0ea5d8e15ba9743fac3cf79d47462ec36fe66b46e0f0f8360d43a",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.audit",
+      "step": "upgrade:platform_composition:1.0.1:1.0.2",
+      "fingerprint": "47d120c03cd042dfe2756a56d645827f624b30ad201df880fdefdc7ecdd63e66",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:initialize:install:0.1.0",
+      "fingerprint": "ca87a29a84ebe9ff534ff79e169e66af95699600937ba6ee11940982866952f8",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:access:0.1.0:0.2.0",
+      "fingerprint": "24dbae35e1de3a0671d6a978bc29c4b6ad436dba9152bb5636b4ec8796945d8b",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:authority:0.2.0:0.3.0",
+      "fingerprint": "8fe0b539d6e33b394e8f1718bc7a6d3be7cefdf4c3ffe54594ba45b0066c6708",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:core_integration:0.3.0:0.4.0",
+      "fingerprint": "70104b43d5774bf541c3406cbbb78490f60a5de9b633d8c74e964306dfb67c2a",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:development_fixtures:0.4.0:0.5.0",
+      "fingerprint": "0c0a6f00cbf15c2d9d25073f38c8f54b2165b4a99f8cc86670c2c3d9b72c53c1",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_presentation:0.5.0:0.5.1",
+      "fingerprint": "56103a73a940042235f80731503be0f18b94c1c63d3b043629659fb7e0b5b89b",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_cards:0.5.1:0.5.2",
+      "fingerprint": "a0900bd84467a16a3a7e364a55473a62fd68a1975a6222afca2f7e0b03e22cd6",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_avatar:0.5.2:0.5.3",
+      "fingerprint": "14c43119be407afa45c8abc91dc1ce18de07588a3aae408e3f9d9b88536b976f",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_qr:0.5.3:0.5.4",
+      "fingerprint": "8f840ba3d46df1399d038f1cb4a14b421a2046e2467d616f20f1e4f6dede1f27",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_recovery_dialog:0.5.4:0.5.5",
+      "fingerprint": "6f770fff419b2d418540fe3bbf3d331256fca67d4ac5136caf38cbfd52d8b2b9",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_secondary_details:0.5.5:0.5.6",
+      "fingerprint": "f14c89231eaf847522857bbe3942cedeccd38a6519558c9fe5c177550d533f58",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_factor_dialogs:0.5.6:0.5.7",
+      "fingerprint": "8a364cf8503fa61bbf05f9bfb1ca1f59a465c59a06f0fc0e24437bc1e120f78d",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_all_preferences:0.5.7:0.5.8",
+      "fingerprint": "1dfc284b9f6b4d9fcceb070fdd810e24970752186a52c3cd2a65c97cd70f1f77",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:auth_refresh:0.5.8:0.5.9",
+      "fingerprint": "7a36f41d29f411516942d90a31a8eae3d45e967b33128d458c9fceea749c3193",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:history_dependencies:0.5.9:0.5.10",
+      "fingerprint": "66e0e5e21b150c39d3a1348c47d020dfcb0d04a0b9bb451c3c8d1b934deb68f1",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:history_capture_dependencies:0.5.10:0.5.11",
+      "fingerprint": "30b333135118d4dbbb2f1c2db9125f8e4f517da57a8acc9c064df1c96bf51b49",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:stable_release:0.5.11:1.0.0",
+      "fingerprint": "b263544b242e463ac786d71d073e9b88852f0e3064cebd96adbf43805ec7e653",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:central_test_layout:1.0.0:1.0.1",
+      "fingerprint": "8302876526e1adb4cdc52ea3f0c89a4ba62f2a3a8ee4f4c00a090c5a90a72ebb",
+      "status": "succeeded"
+    },
+    {
+      "module": "runa.permissions",
+      "step": "upgrade:platform_composition:1.0.1:1.0.2",
+      "fingerprint": "8254b67cec5ae562f77f118a5b57c94eb4c45d7b38281f2c8f0eefba5f7add7e",
+      "status": "succeeded"
+    }
+  ],
+  "migrations": [
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000001_runa_auth_identities.php",
+      "sha256": "52fa79e5a3c77098f1d4309a2e4e99f5e182e91fbd19d79edef9fce43cff0b02"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php",
+      "sha256": "dc55058bb678e4da45cef4c734dc758f53fc4670d16694c114313f555fb6446c"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php",
+      "sha256": "e79d63b52c8057c2d1b31267a8a38d3a5292ea6b83b70311db4f740da1c8695c"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php",
+      "sha256": "7d2445b4050c9943e3137c94f7436218b250bfbb7b552eae73cc24690b2acb86"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php",
+      "sha256": "956af8f747ee3c6e09965570ab8a10b81f4ca5982546a9b20f012d1e962f3d54"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php",
+      "sha256": "35046efc6fe312f4b4c9af5fc875bf27deaf0cb8fc7a71af7ad6684131319f21"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php",
+      "sha256": "f2420d58e66335280a514b38f8fe78e55a629ce378bce0cf92d99bc09bbf860d"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php",
+      "sha256": "30d7622aa94037bce118efb0c15bb613222552f7c89c16467252cd61cd1509b0"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_10_23_000001_runa_audit_events.php",
+      "sha256": "69793c4484f2aa0d392c3c259aacfaf32af2ee6343b2f04f844c2aef1c0f06dd"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_10_23_000002_runa_audit_read_indexes.php",
+      "sha256": "3cc4e4f865cab18f72a46bd30b207061e502a8196af734a2add200786c662f25"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_10_24_000001_runa_permissions_grants.php",
+      "sha256": "54f337a9f0f885b0a3479c4a6763e06c93c8b3a20ca157baecff4eb07f5dc162"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_10_24_000002_runa_permissions_access.php",
+      "sha256": "a0a3a9e10c99134382355dada1fff4e1ed55a7f89dc7a2422f82586906a21b6b"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_10_24_000017_runa_permissions_development_fixtures.php",
+      "sha256": "2c9b19286a5c820a72ddc5e917fe8b108ba14ba684c2dccf318153501bb8f77a"
+    }
+  ]
+}

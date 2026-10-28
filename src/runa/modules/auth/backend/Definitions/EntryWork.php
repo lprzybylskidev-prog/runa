@@ -8,6 +8,14 @@ use Runa\Contracts\Modules\JobDefinition;
 use Runa\Contracts\Modules\JobProvider;
 use Runa\Contracts\Modules\ScheduleDefinition;
 use Runa\Contracts\Modules\ScheduleProvider;
+use Runa\Modules\Auth\Work\EntryMailHandler;
+use Runa\Modules\Auth\Work\EntryReminderHandler;
+use Runa\Modules\Auth\Work\EntryWorkPolicy;
+use Runa\Modules\Auth\Work\ProfileMailHandler;
+use Runa\Modules\Auth\Work\ScheduledLifecycleHandler;
+use Runa\Modules\Auth\Work\SecurityNoticeHandler;
+use Runa\Modules\Auth\Work\SecurityReminderHandler;
+use Runa\Modules\Auth\Work\SessionCleanupHandler;
 
 final class EntryWork implements CommandProvider, JobProvider, ScheduleProvider
 {

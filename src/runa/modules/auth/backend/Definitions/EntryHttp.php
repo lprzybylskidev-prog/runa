@@ -6,7 +6,7 @@ use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\HttpAccess;
 use Runa\Contracts\Modules\HttpEndpoint;
 use Runa\Contracts\Modules\HttpProvider;
-use Runa\Modules\Auth\Http;
+use Runa\Modules\Auth\Http\Controllers as Http;
 
 final class EntryHttp implements HttpProvider
 {

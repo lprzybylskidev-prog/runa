@@ -26,10 +26,13 @@ use Laravel\Fortify\FortifyServiceProvider;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Contracts\Modules\WorkHandler;
+use Runa\Contracts\Modules\WorkPolicy;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
+use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Audit\Contracts\OwnHistoryDetails;
 use Runa\Modules\Auth\Actions\AuthenticateSession;
@@ -67,6 +70,7 @@ use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Definitions\EntryWork;
 use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -201,6 +205,19 @@ afterEach(function (): void {
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     DB::purge('auth_competitor');
     DB::purge('auth_entry_competitor');
+});
+
+it('resolves relocated Auth work through source-owned declarations without executing handlers', function (): void {
+    $definitions = app(WorkDefinitions::class);
+    $jobs = (new EntryWork)->jobs();
+    expect(array_column($jobs, 'key'))->toBe(['lifecycle.apply', 'security.deliver', 'security.remind', 'profile.deliver', 'sessions.cleanup', 'entry.deliver', 'entry.remind']);
+    foreach ($jobs as $job) {
+        [$record, $resolved] = $definitions->resolve('runa.auth', $job->key);
+        expect($resolved)->toEqual($job)
+            ->and($definitions->handler($record, $resolved))->toBeInstanceOf(WorkHandler::class)
+            ->and($definitions->policy($record, $resolved))->toBeInstanceOf(WorkPolicy::class);
+    }
+    expect(DB::table('shared.module_work')->count())->toBe(0);
 });
 
 it('uses guarded named Auth endpoints without Fortify bypasses and rotates cookie sessions on login and logout', function (): void {

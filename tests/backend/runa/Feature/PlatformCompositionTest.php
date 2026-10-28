@@ -108,8 +108,9 @@ final class PlatformCompositionTest extends TestCase
         $plan = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
         self::assertCount(3, $plan);
         foreach ($plan as $module) {
-            self::assertSame('1.0.2', $module['to']);
-            self::assertSame(['platform_composition'], $module['pending_upgrades']);
+            $auth = $module['module'] === 'runa.auth';
+            self::assertSame($auth ? '1.0.3' : '1.0.2', $module['to']);
+            self::assertSame($auth ? ['platform_composition', 'execution_layout'] : ['platform_composition'], $module['pending_upgrades']);
             self::assertSame('1.0.1', $module['from']);
         }
     }
