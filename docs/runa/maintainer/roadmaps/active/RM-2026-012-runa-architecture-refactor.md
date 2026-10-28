@@ -3012,6 +3012,49 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   test/base data, rollback resources, Qdrant/model/builder caches, backups and reports
   remain preserved. Only final point 20 remains open after this commit.
 
+### Point 20 preparation — current-state review and complete graph (2026-10-28)
+
+- Points 1–19 are complete and committed through 0f774439; only final point 20
+  remains open. Branch/worktree inspection found the expected roadmap branch and
+  clean candidate. Confirmed quality_groups: all and the existing cross-language/
+  delivery/security/AI rationale; no group or hard prerequisite is excluded.
+- Reviewed current-state sources: root README/AGENTS and docs/README; maintainer
+  README/release workflow; public API/source placement, module development and
+  Reference guidance; frontend adoption, command/Python/testing/editor/production
+  guides; tools/distribution ownership; owner/customer skills and placement maps.
+  VERSION and platform manifest remain 0.5.0, application identity remains separate,
+  maintainer state records this active roadmap, and 0.6.0 remains a projection.
+  Points 18–19 corrected stale audience/Reference/production-diagnostic claims.
+  No closed/dated record was rewritten and no current capability is reported as
+  having passed the pending final verification.
+- Previewed the exact graph with python3 tools/maintainer/quality-plan --all:
+  60 commands, 14 requested groups, no exclusions. Inspected native backend/frontend/
+  browser, frozen Python format/lint/strict types/unit/contracts/packages, actual
+  customer install/update/team/deploy, production/security, hooks and knowledge
+  prerequisites. Existing testing-state, knowledge-state and production-simulation
+  serialization and late scanner prerequisites remain; no duplicate early gate.
+  Saved preview at .runtime/artifacts/RM-2026-012-quality-plan.txt, SHA256
+  e4aaa0b97e782841de80815e967efa293e0d334bf01bb16670ce8513a2914dc7.
+- Performed a focused changed-boundary security source review: core context/process/
+  private state/locks; receipt/customer source and credential-isolated acquisition;
+  authenticated bounded host plans/transport; durable updater refusal/resume/data
+  fencing; suite ownership/cleanup; guarded module loading/admission/provider
+  composition; public import/signature policy; production pruning/early development
+  refusal; retained queue/upgrades and Auth account teardown. No blocking security
+  finding was identified in the inspected boundaries. This is not a line-by-line
+  audit or scanner/runtime acceptance. Documented static-check and trusted-operator
+  limits; no vulnerability waiver or security exception was added.
+  The report is .runtime/security/reviews/RM-2026-012-0f7744393c1e.md, with its hash
+  and 859 changed non-doc/instruction-source file identities bound through
+  .runtime/security-review.json; prior local evidence was preserved. The supported
+  review-changed-surface validator accepted that content-bound review. Subsequent
+  source changes invalidate it; strict scans and behavior gates remain pending.
+- Final candidate verification will use the supported --all --background handoff.
+  This preparation records no final PASS, release, merge or production deployment.
+  If any selected gate fails, retain the active roadmap, insert a fix point and
+  rerun the complete final selection from the beginning. Final resource disposition
+  and release metadata/closure synchronization remain after actual PASS.
+
 ### Draft preparation validation (historical)
 
 Planning validation is limited to metadata, ownership, source links, point order,
