@@ -63,7 +63,7 @@ abstract class ToolingCommand extends Command
                 || ($this->tool === 'security' && $arguments[0] === 'trivy')
                 || ($this->tool === 'doctor' && ($arguments[0] ?? null) === 'production')
                 || ($this->tool === 'dev' && ! in_array($arguments[0], ['setup', 'knowledge-init', 'knowledge-status'], true) && ! ($arguments[0] === 'profile' && count($arguments) === 1));
-            $root = dirname(__DIR__, 3);
+            $root = dirname(__DIR__, 4);
             if (! in_array($this->tool, ['production', 'deploy', 'host'], true) && ! $this->input->hasParameterOption('--plan') && $request === null) {
                 DevelopmentContext::assertAllowed($root);
             }

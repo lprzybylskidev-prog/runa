@@ -1,6 +1,6 @@
 <?php
 
-namespace Runa\Support;
+namespace Runa\Testing\Database;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\DatabaseManager;

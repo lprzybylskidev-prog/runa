@@ -2,7 +2,7 @@
   "schema_version": 1,
   "roadmap": "RM-2026-012",
   "baseline_commit": "32d55d2f6b7647a494a15d7793fcd9df705fff4d",
-  "evidence": "Baseline identities retain their historical paths; targets include point-10 central test relocation. Source reconciliation is not final test/analysis/build acceptance.",
+  "evidence": "Baseline identities retain their historical paths; targets include central tests and points 13\u201317 placement. Source reconciliation is not final test/analysis/build acceptance.",
   "components": [
     {
       "path": "bin/artisan",
@@ -958,8 +958,9 @@
     },
     {
       "path": "src/runa/Support/Modules/Development/ModuleGenerator.php",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Development/Modules/ModuleGenerator.php"]
     },
     {
       "path": "src/runa/composer.json",
@@ -968,43 +969,51 @@
     },
     {
       "path": "src/runa/management/Actions/RunSourceChecks.php",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunSourceChecks.php"]
     },
     {
       "path": "src/runa/management/Actions/RunTool.php",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunTool.php"]
     },
     {
       "path": "src/runa/management/HostBridge.php",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/HostBridge.php"]
     },
     {
       "path": "src/runa/management/ToolingCommand.php",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/ToolingCommand.php"]
     },
     {
       "path": "src/runa/management/development.json",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/development.json"]
     },
     {
       "path": "src/runa/management/host-plan.v1.schema.json",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/host-plan.v1.schema.json"]
     },
     {
       "path": "src/runa/management/operations.json",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/operations.json"]
     },
     {
       "path": "src/runa/management/quality-groups.json",
-      "disposition": "reconciled",
-      "reason": "Ownership, tooling paths and current source/generator/catalog/editor contracts reviewed; native PHP/JS engines retained."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/quality-groups.json"]
     },
     {
       "path": "src/runa/package.json",
@@ -1360,18 +1369,21 @@
     },
     {
       "path": "src/runa/Support/Modules/Development/ModuleGenerator.php",
-      "disposition": "reconciled",
-      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Development/Modules/ModuleGenerator.php"]
     },
     {
       "path": "src/runa/management/Actions/RunTool.php",
-      "disposition": "reconciled",
-      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/Actions/RunTool.php"]
     },
     {
       "path": "src/runa/management/ToolingCommand.php",
-      "disposition": "reconciled",
-      "reason": "Current command, resource, ownership and aggregate-default references reconciled against package composition; no old executor/facade consumer."
+      "disposition": "relocated",
+      "reason": "Point 17 places developer/tooling responsibilities according to the frozen API map; command and public consumer contracts are retained.",
+      "targets": ["src/runa/Tooling/Management/ToolingCommand.php"]
     },
     {
       "path": "src/runa/tests/Feature/ModuleDevelopmentTest.php",

@@ -1,6 +1,6 @@
 <?php
 
-namespace {{namespace}}\Http;
+namespace {{namespace}}\Http\Controllers;
 
 /** Registered only through the module HTTP descriptor and central operational guard. */
 final class {{name}}

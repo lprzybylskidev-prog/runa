@@ -8,11 +8,13 @@ parameters:
         - runa/Console
         - runa/Contracts
         - runa/Database
+        - runa/Development
         - runa/Foundation
         - runa/Http
         - runa/Providers
         - runa/Support
-        - runa/management
+        - runa/Testing
+        - runa/Tooling/Management
         - bootstrap/app.php
         - runa/config
         - runa/database

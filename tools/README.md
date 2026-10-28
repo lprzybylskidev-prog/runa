@@ -8,3 +8,9 @@ Python package ownership, language and generated-state rules are documented in t
 [public Python guide](../docs/runa/handbook/development/python-tooling.md).
 Command families use qualified package services and fixed thin transports;
 public CLI names and native PHP/JS runners retain their documented contracts.
+
+Private frontend suite configurations live in tools/maintainer/frontend and
+branding renderers in tools/maintainer/assets. They use the existing src Node
+installation. Delivered PHP operational tooling lives in src/runa/Tooling/Management;
+module generators/templates in src/runa/Development/Modules; static-error build
+executables in src/runa/build/errors. Runtime resources remain under resources.

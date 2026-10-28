@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 
 require realpath(__DIR__.'/..').'/bootstrap.php';
 $app = require 'bootstrap/app.php';

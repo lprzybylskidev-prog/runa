@@ -4,7 +4,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Runa\Modules\Auth\Actions\OperatorAccounts;
 use Runa\Modules\Auth\Contracts\NewIdentity;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 
 require realpath(__DIR__.'/..').'/bootstrap.php';
 $app = require 'bootstrap/app.php';

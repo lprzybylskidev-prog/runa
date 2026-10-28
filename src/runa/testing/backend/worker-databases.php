@@ -3,7 +3,7 @@
 // Fixed-purpose child process; the caller must hold .runtime/tests/suite.lock.
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 
 $failure = 'Worker cleanup requires the isolated testing environment.';
 try {
@@ -11,8 +11,8 @@ try {
         throw new RuntimeException('Worker cleanup requires the isolated testing environment.');
     }
 
-    require dirname(__DIR__, 2).'/vendor/autoload.php';
-    $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
+    require dirname(__DIR__, 3).'/vendor/autoload.php';
+    $app = require dirname(__DIR__, 3).'/bootstrap/app.php';
     $failure = 'Worker cleanup could not verify the isolated testing database identity.';
     $app->make(Kernel::class)->bootstrap();
     $app->make(TestDatabaseGuard::class)->assertSafe();

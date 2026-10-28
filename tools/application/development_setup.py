@@ -188,7 +188,7 @@ class DevelopmentSetup:
             ["pnpm", "--dir", "src", "run", "build"], cwd=self.workspace.root, check=True
         )
         self.processes.run(
-            ["php", "src/runa/resources/errors/build.php"], cwd=self.workspace.root, check=True
+            ["php", "src/runa/build/errors/build.php"], cwd=self.workspace.root, check=True
         )
         self.register_boost()
         marker.parent.mkdir(parents=True, exist_ok=True)

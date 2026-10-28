@@ -1,5 +1,9 @@
 // Snapshot the actual Vue brand tile for email engines without CSS mask support.
-import { chromium } from '@playwright/test';
+import { createRequire } from 'node:module';
+const require = createRequire(
+  new URL('../../../src/package.json', import.meta.url),
+);
+const { chromium } = require('@playwright/test');
 
 const browser = await chromium.launch();
 try {

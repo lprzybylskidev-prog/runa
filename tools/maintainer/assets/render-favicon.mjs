@@ -1,5 +1,9 @@
 // Snapshot the actual MinimalLayout brand tile; preserve the supplied raster mark.
-import { chromium } from '@playwright/test';
+import { createRequire } from 'node:module';
+const require = createRequire(
+  new URL('../../../src/package.json', import.meta.url),
+);
+const { chromium } = require('@playwright/test');
 import { writeFile } from 'node:fs/promises';
 
 const sizes = [16, 32, 48];

@@ -58,7 +58,7 @@ customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
-the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; points 17–19 remain pending;
+the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; points 18–19 remain pending;
 final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
@@ -1348,7 +1348,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     concurrency/disposal/replacement regressions now; broad execution stays final.
   - Synchronize frontend/component references and public examples in this point.
 
-- [ ] 17. Organize developer support, generators and executable build tooling.
+- [x] 17. Organize developer support, generators and executable build tooling.
   - Prerequisites: points 13–16; findings F10–F14 and F20–F21.
   - Place isolated management PHP tooling/catalogues/schemas with their delivered
     tooling responsibility, separate from module management. Keep one source-owned
@@ -2836,6 +2836,66 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   backend cleanup reported an empty worker list. Base runa_test, development data/
   services, Qdrant/model/builder caches, backups and reports remain preserved.
   Point 17 is next; points 17–20 remain open.
+
+### Point 17 completion — developer support, generators and build ownership (2026-10-28)
+
+- Moved isolated PHP management adapters/catalogues/schema to Tooling/Management,
+  retaining the Runa\Management namespace, explicit cold loader and single Artisan
+  registry. Updated bin-facing PHP paths, image inputs, fingerprint/source catalogue
+  readers and host/acceptance fixtures together. Production remains an isolated
+  operator bundle; ordinary application startup does not load management providers.
+- Grouped internal PHP runner adapters under Testing/Backend and the database guard
+  under Testing/Database; the fixed worker child lives in testing/backend. Retained
+  Tests\TestCase, browserProblems/frontend-runtime and all public testing aliases.
+  Native/supported runners retain the same suite lock, status and cleanup. Outside
+  testing, destructive commands refuse before resolving excluded developer support;
+  production does not require the test guard just to reject a destructive command.
+  Static PHP analysis includes the relocated development/testing responsibilities.
+- Private Vitest/Playwright configurations now live under tools/maintainer/frontend,
+  resolving the existing src packages explicitly without another installation or
+  directory facade. Kept the delivered module Vite plugin in its supported location.
+  Moved generator/templates together into Development/Modules. Generated controllers
+  use Http/Controllers, API execution uses Handlers/Proxies, and components use
+  frontend/components/<snake_case>.vue. Opt-in discovery binds generated keys to
+  their manifest hash; generation never registers pages/slots or activates modules.
+  Public API consumers, central tests/docs and exact hash overwrite guards remain.
+- Moved static-error executables into delivered build/errors, updated renderer
+  imports, Vite, setup/updater/test callers and explicit image build-stage copies.
+  Runtime messages/templates, native mail bridges, assets/licenses, public output
+  and workspace .runtime placement remain intact. Branding scripts moved to private
+  owner assets tooling with documented cwd/endpoint/output ownership; no raster or
+  generated production asset was regenerated. Historical receipt exclusion paths
+  for removed InstallCommand/ProjectCommand remain exact, preserving old receipts.
+- Necessary focused diagnostics passed through supported transports: four backend
+  generator/hash/cold-registry cases (186 assertions), one production-refusal case
+  (10 assertions), three tooling cases for config resolution, generated component
+  discovery/hash and cold PHP error finalization, plus catalogue/schema/allowlist
+  agreement. The finalizer fixture has no Laravel bootstrap or env file and checks
+  six escaped customer-branded pages plus English JSON. The public headless entry
+  CSRF/refusal case passed in Chromium through the relocated Vitest config. Composer
+  autoload regeneration succeeded without scripts or dependency changes.
+- Initial dynamic import of Playwright's require-selected module lacked its named
+  devices export; use its existing CommonJS exports via src-scoped createRequire.
+  Repeated config resolution passed. An initial frontend name filter selected no
+  cases; the explicit existing headless-entry name above supplied executed evidence.
+  Vite retains the previously observed generated Vitest runner
+  dynamic-import warning, without suppression or dependency changes.
+- Local knowledge was current (189 documents/3162 chunks); queried placement and
+  generator/build contracts and opened the original guides. Used backend/Laravel,
+  frontend/Vue, Docker/security guidance and version-aware Boost provider/command
+  documentation. Synchronized public commands/tests/modules/errors/assets guides,
+  owner placement/migration targets and owner/customer Vue references/provenance.
+  Root AGENTS and backend/Laravel/frontend/Docker/security rules already route to
+  these guides and preserve public ownership; no duplicate procedure or authority
+  change is needed. Independent module source/contracts are unchanged, so no module
+  version/changelog bump applies. Incremental indexing and mandatory hooks accompany
+  the implementation commit.
+- No broad suite, full static analysis, image/wheel build, scanner or live
+  installation/production acceptance ran. No disposable Docker resource was created
+  or removed; backend cleanup reported an empty worker list. Development/test/base
+  data, active services, Qdrant/model/builder caches, backups and reports are
+  preserved. VERSION remains 0.5.0; confirmed feature projection remains 0.6.0.
+  Points 18–20 remain open; delivery enforcement and final acceptance are not claimed.
 
 ### Draft preparation validation (historical)
 

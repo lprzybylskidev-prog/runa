@@ -279,7 +279,7 @@ class StartupContracts(DevelopmentFixture):
                     commands,
                 )
                 self.assertIn(["pnpm", "--dir", "src", "run", "build"], commands)
-                self.assertIn(["php", "src/runa/resources/errors/build.php"], commands)
+                self.assertIn(["php", "src/runa/build/errors/build.php"], commands)
                 self.assertEqual(marker.read_text(), "current\n")
 
     def test_optional_probe_has_process_deadline(self) -> None:

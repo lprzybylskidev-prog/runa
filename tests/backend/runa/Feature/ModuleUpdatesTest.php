@@ -122,7 +122,7 @@ it('resumes committed module steps after an independent updater process exits du
 require '../tests/backend/runa/bootstrap.php';
 $app = require 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-$app->make(Runa\Support\TestDatabaseGuard::class)->assertSafe();
+$app->make(Runa\Testing\Database\TestDatabaseGuard::class)->assertSafe();
 Tests\Fixtures\UpgradeCalls::$interrupt = $argv[2].':step_b';
 $connection = Illuminate\Support\Facades\DB::connection();
 $registry = new Runa\ModuleFramework\ModuleRegistry($connection, new Runa\ModuleFramework\ModuleDiscovery($argv[1]));

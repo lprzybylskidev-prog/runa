@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 use Symfony\Component\Process\Process;
 
 it('uses an isolated PostgreSQL database with the technical schema', function () {
@@ -62,4 +62,13 @@ it('runs native destructive guard acceptance only inside its disposable worker',
     $invoke(['db:wipe', '--database=other', '--force'], error: 'guarded pgsql connection');
     $invoke(['runa:test-db:guard']);
     $invoke(['migrate:fresh', '--force']);
+});
+
+it('refuses production destructive commands before resolving excluded test support', function (): void {
+    config()->set('app.env', 'production');
+    app()->bind(TestDatabaseGuard::class, static fn () => throw new LogicException('Test support must remain unloaded.'));
+    foreach (['db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback'] as $command) {
+        expect(fn () => Artisan::call($command, ['--force' => true]))
+            ->toThrow(RuntimeException::class, 'Destructive database operations require');
+    }
 });

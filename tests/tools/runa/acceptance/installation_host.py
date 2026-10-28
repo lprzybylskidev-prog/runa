@@ -972,7 +972,7 @@ def main() -> None:
     finally:
         for mode in ("dev", "prod", "teammate"):
             source = fixture_directory / mode
-            if (source / "src/runa/management").is_dir():
+            if (source / "src/runa/Tooling/Management").is_dir():
                 identity = call(
                     [
                         sys.executable,

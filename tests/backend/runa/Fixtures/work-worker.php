@@ -20,7 +20,7 @@ use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Modules\Work\ModuleWork;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 use Tests\Fixtures\WorkCalls;
 
 require realpath(__DIR__.'/..').'/bootstrap.php';

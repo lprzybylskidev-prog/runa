@@ -7,7 +7,9 @@ and historical upgrade identities. Point 15 publishes named frontend consumer
 contracts through the retained facades and normalizes reactive presentation maps.
 Point 16 delivers the internal account collaborators and Auth-owned preference/
 welcome composition while retaining the public controller and facade identities.
-Remaining targets are planned until their
+Point 17 delivers isolated management tooling, grouped developer support, canonical
+generator anatomy, private browser configurations/branding tools and delivered
+static-error builders. Remaining targets are planned until their
 owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and

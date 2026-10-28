@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\Modules\Development\ModuleGenerator;
+use Runa\Development\Modules\ModuleGenerator;
 use Throwable;
 
 final class MakeModule extends Command

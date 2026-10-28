@@ -65,7 +65,7 @@ def main() -> None:
             root / "tools/application",
             ignore=shutil.ignore_patterns("__pycache__"),
         )
-        shutil.copytree(ROOT / "src/runa/management", root / "src/runa/management")
+        shutil.copytree(ROOT / "src/runa/Tooling/Management", root / "src/runa/Tooling/Management")
         (root / ".devcontainer").mkdir()
         (root / ".devcontainer/compose.resources.yaml").write_text('{"services":{}}')
         (root / ".env.dev.local").write_text(
@@ -328,7 +328,9 @@ def main() -> None:
                 "runa:knowledge:search": ["fixture query"],
                 "runa:hook:commit-msg": ["message.txt"],
             }
-            development = json.loads((root / "src/runa/management/development.json").read_text())
+            development = json.loads(
+                (root / "src/runa/Tooling/Management/development.json").read_text()
+            )
             for entry in development:
                 result = subprocess.run(
                     php + [entry["name"], *examples.get(entry["name"], [])],

@@ -10,10 +10,10 @@ import {
 } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import ErrorLayout from 'virtual:runa-error-layout';
-import IdentityProvider from '../js/components/AppIdentityProvider.vue';
-import MinimalErrorContent from '../js/layouts/MinimalErrorContent.vue';
-import copy from './messages.json';
-import '../css/app.css';
+import IdentityProvider from '../../resources/js/components/AppIdentityProvider.vue';
+import MinimalErrorContent from '../../resources/js/layouts/MinimalErrorContent.vue';
+import copy from '../../resources/errors/messages.json';
+import '../../resources/css/app.css';
 
 const codes = copy.codes;
 // The package build runs from src; all private generated state belongs to the workspace root.

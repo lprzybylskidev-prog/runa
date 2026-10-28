@@ -153,7 +153,7 @@ class ProductionContracts(unittest.TestCase):
         self.assertTrue(maintenance["read_only"])
         self.assertEqual(maintenance["volume"]["subpath"], "framework/maintenance")
         image_source = (ROOT / "docker/php/Dockerfile").read_text()
-        self.assertIn("RUN php runa/resources/errors/build.php", image_source)
+        self.assertIn("RUN php runa/build/errors/build.php", image_source)
         self.assertEqual(
             image_source.count(
                 "/tmp/runa-build/src/public/runa-error/ /workspace/src/public/runa-error/"

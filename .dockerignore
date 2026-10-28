@@ -63,3 +63,5 @@ src/app/modules/reference
 # Earlier customer source layouts are excluded too.
 src/app/tests
 src/runa/tests
+
+src/runa/testing

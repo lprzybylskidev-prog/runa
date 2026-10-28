@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Runa\Development\Modules\ModuleGenerator;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Console\ModuleConsole;
@@ -16,7 +17,6 @@ use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Development\ModuleContractSuite;
-use Runa\Support\Modules\Development\ModuleGenerator;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
 
 beforeEach(function (): void {
@@ -135,7 +135,7 @@ it('requires exact scoped overwrite hashes and preflights every target before mu
     $manifest = $this->relative.'/module.json';
     $before = file_get_contents($this->directory.'/'.$manifest);
     expect(fn () => $this->generator->write($plan))->toThrow(RuntimeException::class);
-    expect(is_file($this->directory.'/'.$this->relative.'/backend/Http/ReadController.php'))->toBeFalse();
+    expect(is_file($this->directory.'/'.$this->relative.'/backend/Http/Controllers/ReadController.php'))->toBeFalse();
     expect(fn () => $this->generator->write($plan, [$manifest => str_repeat('0', 64)]))->toThrow(RuntimeException::class);
     expect(fn () => $this->generator->write($plan, ['src/app/config/foreign.php' => hash('sha256', '')]))->toThrow(InvalidArgumentException::class);
     $this->generator->write($plan, [$manifest => hash('sha256', $before)]);

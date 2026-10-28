@@ -177,9 +177,9 @@ class OperationContracts(unittest.TestCase):
                 "src/runa/platform.json": "{}",
                 "src/runa/Http/Controllers/HealthController.php": "<?php",
                 "src/runa/lang/pl/validation.php": "<?php",
-                "src/runa/management/commands.php": "operational registry",
-                "src/runa/management/development.json": "excluded",
-                "src/runa/management/development.php": "excluded",
+                "src/runa/Tooling/Management/commands.php": "operational registry",
+                "src/runa/Tooling/Management/development.json": "excluded",
+                "src/runa/Tooling/Management/development.php": "excluded",
                 "tools/application/deployment_cli.py": "operational helper",
                 "tools/application/knowledge/cli.py": "excluded",
                 "src/runa/tools/example.py": "excluded",
@@ -267,10 +267,10 @@ class OperationContracts(unittest.TestCase):
                 )
                 self.assertTrue((release / "src/runa/lang/pl/validation.php").is_file())
                 self.assertTrue((release / "src/runa/platform.json").is_file())
-                self.assertTrue((release / "src/runa/management/commands.php").is_file())
+                self.assertTrue((release / "src/runa/Tooling/Management/commands.php").is_file())
                 self.assertTrue((release / "tools/application/deployment_cli.py").is_file())
-                self.assertTrue((release / "src/runa/management/development.json").exists())
-                self.assertTrue((release / "src/runa/management/development.php").exists())
+                self.assertTrue((release / "src/runa/Tooling/Management/development.json").exists())
+                self.assertTrue((release / "src/runa/Tooling/Management/development.php").exists())
                 self.assertTrue((release / "tools/application/knowledge/cli.py").exists())
                 for excluded in ("tools", "tests"):
                     self.assertFalse((release / "src/runa" / excluded).exists())

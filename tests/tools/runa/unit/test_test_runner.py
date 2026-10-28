@@ -46,7 +46,9 @@ def test_defaults_run_all_independent_scopes_and_keep_native_failures(tmp_path: 
     assert [row["exit_code"] for row in results(tmp_path)] == [7, 3, 5]
     assert len(runner.calls) == 5
     assert (
-        runner.calls[0].argv == runner.calls[2].argv == ("php", "runa/Testing/worker-databases.php")
+        runner.calls[0].argv
+        == runner.calls[2].argv
+        == ("php", "runa/testing/backend/worker-databases.php")
     )
     assert runner.calls[4].cwd == tmp_path
 

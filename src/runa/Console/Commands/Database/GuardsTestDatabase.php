@@ -4,7 +4,7 @@ namespace Runa\Console\Commands\Database;
 
 use Illuminate\Database\DatabaseManager;
 use Runa\Database\DatabaseScope;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,6 +19,10 @@ trait GuardsTestDatabase
             if ($connection !== 'pgsql') {
                 throw new RuntimeException('Destructive database operations only support the guarded pgsql connection.');
             }
+        }
+        // Production excludes developer test support; refuse before resolving it.
+        if ($this->laravel['config']->get('app.env') !== 'testing') {
+            throw new RuntimeException('Destructive database operations require the isolated PostgreSQL testing environment, host, role and database.');
         }
         $this->laravel->make(TestDatabaseGuard::class)->assertSafe();
 

@@ -28,6 +28,6 @@ final class ConfigureXdebug
         }
 
         // The current CLI process retains its startup ini; inspect a fresh process after a toggle.
-        return (new RunTool)->process([PHP_BINARY, '-r', 'fwrite(STDOUT, "Xdebug ".phpversion("xdebug")." mode=".(ini_get("xdebug.mode") ?: "off").PHP_EOL);'], dirname(__DIR__, 4), $output);
+        return (new RunTool)->process([PHP_BINARY, '-r', 'fwrite(STDOUT, "Xdebug ".phpversion("xdebug")." mode=".(ini_get("xdebug.mode") ?: "off").PHP_EOL);'], dirname(__DIR__, 5), $output);
     }
 }

@@ -3,7 +3,7 @@
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Runa\ModuleFramework\ModuleRegistry;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 use Symfony\Component\Process\Process;
 
 uses(DatabaseTransactions::class);
@@ -18,7 +18,7 @@ it('retains one guarded worker suffix after framework transaction setup and in c
 require 'vendor/autoload.php';
 $app = require 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-$app->make(Runa\Support\TestDatabaseGuard::class)->assertSafe();
+$app->make(Runa\Testing\Database\TestDatabaseGuard::class)->assertSafe();
 fwrite(STDOUT, Illuminate\Support\Facades\DB::connection()->getDatabaseName());
 PHP;
     $child = new Process([PHP_BINARY, '-r', $script], base_path(), [

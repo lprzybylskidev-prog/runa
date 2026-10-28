@@ -1,8 +1,14 @@
-import { defineConfig, devices } from '@playwright/test';
+import { createRequire } from 'node:module';
+const require = createRequire(
+  new URL('../../../src/package.json', import.meta.url),
+);
+const { defineConfig, devices } = require('@playwright/test');
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
-  tsconfig: fileURLToPath(new URL('../../tsconfig.json', import.meta.url)),
+  tsconfig: fileURLToPath(
+    new URL('../../../src/tsconfig.json', import.meta.url),
+  ),
   testDir: '../../../tests/frontend/runa/e2e',
   outputDir: '../../../.runtime/artifacts/playwright/runa/results',
   fullyParallel: false,
@@ -10,7 +16,7 @@ export default defineConfig({
   forbidOnly: true,
   retries: 0,
   webServer: {
-    cwd: fileURLToPath(new URL('../..', import.meta.url)),
+    cwd: fileURLToPath(new URL('../../../src', import.meta.url)),
     command: 'node ../tests/frontend/runa/acceptance/browser-harness.mjs',
     url: 'http://127.0.0.1:4178/__fixtures/ready',
     reuseExistingServer: false,

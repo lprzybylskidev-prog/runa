@@ -12,7 +12,7 @@ use Runa\Console\Commands\DevelopmentAccounts;
 use Runa\Console\Commands\Generators\ApplicationConfigMakeCommand;
 use Runa\Console\Commands\Generators\ApplicationTestMakeCommand;
 use Runa\Console\Commands\MakeModule;
-use Runa\Testing\ApplicationTestCommand;
+use Runa\Testing\Backend\ApplicationTestCommand;
 
 final class DevelopmentServiceProvider extends ServiceProvider
 {
@@ -34,7 +34,7 @@ final class DevelopmentServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if ($this->app->runningInConsole() && $this->app->environment(['local', 'testing'])) {
-            $commands = base_path('runa/management/commands.php');
+            $commands = base_path('runa/Tooling/Management/commands.php');
             if (is_file($commands)) {
                 $this->commands(require $commands);
             }

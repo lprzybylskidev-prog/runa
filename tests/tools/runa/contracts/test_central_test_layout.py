@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 from functools import partial
 from pathlib import Path
@@ -74,11 +75,14 @@ def test_module_generator_owns_central_cases_and_runtime_needs_no_test_tree(tmp_
     code = r"""
 require $argv[1].'/src/vendor/autoload.php';
 $root = $argv[2];
-$generator = new Runa\Support\Modules\Development\ModuleGenerator($root, true);
+$generator = new Runa\Development\Modules\ModuleGenerator($root, true);
 $plan = $generator->plan('app.central_probe');
 $expected = 'tests/backend/app/modules/central_probe/ModuleContractTest.php';
 if (! isset($plan[$expected]) || isset($plan['src/app/modules/central_probe/tests/ModuleContractTest.php'])) { exit(11); }
 $generator->write($plan);
+$component = $generator->plan('app.central_probe', 'component', 'DocumentSummary');
+if (! isset($component['src/app/modules/central_probe/frontend/components/document_summary.vue'])) { exit(16); }
+$generator->write($component);
 $source = (new Runa\ModuleFramework\ModuleDiscovery($root.'/src', true))->discover('app')[0];
 if ($source->manifest->definition['tests'] !== ['tests/backend/app/modules/central_probe']) { exit(12); }
 unlink($root.'/'.$expected);
@@ -92,13 +96,30 @@ if (file_exists($root.'/tests/backend/runa')) { exit(15); }
         ["php", "-r", code, str(ROOT), str(tmp_path)], cwd=ROOT, capture_output=True, text=True
     )
     assert result.returncode == 0, result.stderr
+    component_probe = """
+const { discoverModuleComponents } = await import('./src/runa/frontend/module-components.mjs');
+const entries = discoverModuleComponents(process.argv[1] + '/src');
+if (entries.length !== 1 || entries[0][0] !== 'app.central_probe.document_summary') process.exit(17);
+if (!entries[0][1].endsWith('/frontend/components/document_summary.vue')) process.exit(18);
+const { createHash } = await import('node:crypto');
+const { readFileSync } = await import('node:fs');
+const manifest = readFileSync(process.argv[1] + '/src/app/modules/central_probe/module.json');
+if (entries[0][2] !== createHash('sha256').update(manifest).digest('hex')) process.exit(19);
+"""
+    discovery = subprocess.run(
+        ["node", "--input-type=module", "-e", component_probe, str(tmp_path)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert discovery.returncode == 0, discovery.stderr
 
 
 def test_central_frontend_configurations_resolve_existing_src_dependencies() -> None:
     code = """
 const app = (await import('./src/vitest.config.mjs')).default;
-const owner = (await import('./src/runa/frontend/vitest.config.mjs')).default;
-const browser = (await import('./src/runa/frontend/playwright.config.mjs')).default;
+const owner = (await import('./tools/maintainer/frontend/vitest.config.mjs')).default;
+const browser = (await import('./tools/maintainer/frontend/playwright.config.mjs')).default;
 await import('./src/runa/Testing/playwright.ts');
 if (!app.test.include[0].includes('tests/frontend/app/unit')) process.exit(11);
 if (!owner.test.include[0].includes('tests/frontend/runa/unit')) process.exit(12);
@@ -155,3 +176,52 @@ def test_unreconciled_legacy_cases_never_become_successful_empty_scope(tmp_path:
     assert result.status == "blocked" and result.exit_code == 1
     assert "explicit reconciliation" in messages[0]
     assert legacy.is_file() and not runner.calls
+
+
+def test_relocated_static_error_finalizer_runs_without_application_bootstrap(
+    tmp_path: Path,
+) -> None:
+    for relative in (
+        "runa/build/errors/build.php",
+        "runa/config/branding.php",
+        "runa/platform.json",
+        "runa/resources/errors/messages.json",
+        "runa/resources/css/light-palette.css",
+        "runa/resources/views/errors/page.php",
+        "app/application.json",
+    ):
+        target = tmp_path / "src" / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / "src" / relative, target)
+    vendor = tmp_path / "src/vendor"
+    vendor.mkdir()
+    (vendor / "autoload.php").write_text(
+        "<?php require " + json.dumps(str(ROOT / "src/vendor/autoload.php")) + ";"
+    )
+    overrides = tmp_path / "src/app/config"
+    overrides.mkdir()
+    (overrides / "branding.php").write_text(
+        "<?php return ['application_name' => 'Customer <Example>', 'application_version' => '2.3.4'];"
+    )
+    templates = tmp_path / ".runtime/frontend/errors/templates"
+    templates.mkdir(parents=True)
+    for locale in ("pl", "en"):
+        for theme in ("system", "light", "dark"):
+            (templates / f"503-{locale}-{theme}-custom.html").write_text(
+                "<main>__RUNA_APPLICATION_NAME__ __RUNA_APPLICATION_VERSION__</main>"
+            )
+    output = tmp_path / "src/public/runa-error"
+    output.mkdir(parents=True)
+    (output / "styles.css").write_text("/* fixture */")
+    # Neither a Laravel bootstrap nor an environment file exists in this source fixture.
+    result = subprocess.run(
+        ["php", str(tmp_path / "src/runa/build/errors/build.php")],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    pages = sorted((output / "pages").glob("*.html"))
+    assert len(pages) == 6
+    assert all("Customer &lt;Example&gt; 2.3.4" in page.read_text() for page in pages)
+    assert json.loads((output / "pages/503.json").read_text())["code"] == "service_unavailable"

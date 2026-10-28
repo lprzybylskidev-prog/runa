@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Illuminate\Support\Facades\DB;
-use Runa\Support\TestDatabaseGuard;
+use Runa\Testing\Database\TestDatabaseGuard;
 
 /** Exact disposable owner-test objects only. Never used against development data. */
 final class CoreModuleStorage

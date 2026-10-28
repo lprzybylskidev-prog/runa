@@ -321,7 +321,7 @@ it('recovers a real worker exit between durable hook intent and preparation resp
 require '../tests/backend/runa/bootstrap.php';
 $app = require 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-$app->make(Runa\Support\TestDatabaseGuard::class)->assertSafe();
+$app->make(Runa\Testing\Database\TestDatabaseGuard::class)->assertSafe();
 $db = Illuminate\Support\Facades\DB::connection();
 $registry = new Runa\ModuleFramework\ModuleRegistry($db, new Runa\ModuleFramework\ModuleDiscovery($argv[1]));
 $policies = new Runa\ModuleFramework\LifecyclePolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true);

@@ -1,6 +1,6 @@
 <?php
 
-namespace {{namespace}};
+namespace {{namespace}}\Proxies;
 
 use {{namespace}}\Contracts\{{name}};
 use Runa\Support\Modules\Api\GuardedApi;

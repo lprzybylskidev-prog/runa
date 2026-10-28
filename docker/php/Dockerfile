@@ -124,7 +124,7 @@ COPY --chown=runa:runa src/runa/platform.json runa/platform.json
 # A short-lived host management process, never a production application service.
 FROM production-runtime AS management
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/vendor/ /opt/runa/vendor/
-COPY --chown=runa:runa src/runa/management/autoload.php src/runa/management/bootstrap.php src/runa/management/commands.php src/runa/management/ToolingCommand.php src/runa/management/NamedToolCommand.php src/runa/management/operations.json src/runa/management/HostBridge.php /opt/runa/runa/management/
+COPY --chown=runa:runa src/runa/Tooling/Management/autoload.php src/runa/Tooling/Management/bootstrap.php src/runa/Tooling/Management/commands.php src/runa/Tooling/Management/ToolingCommand.php src/runa/Tooling/Management/NamedToolCommand.php src/runa/Tooling/Management/operations.json src/runa/Tooling/Management/HostBridge.php /opt/runa/runa/Tooling/Management/
 COPY --chown=runa:runa src/artisan /opt/runa/artisan
 WORKDIR /opt/runa
 HEALTHCHECK NONE
@@ -132,7 +132,7 @@ ENTRYPOINT ["php", "/opt/runa/artisan"]
 CMD ["--management", "list"]
 
 FROM management AS development-management
-COPY --chown=runa:runa src/runa/management/ /opt/runa/runa/management/
+COPY --chown=runa:runa src/runa/Tooling/Management/ /opt/runa/runa/Tooling/Management/
 
 FROM node AS frontend-build
 WORKDIR /build/src
@@ -141,6 +141,7 @@ COPY src/package.json src/pnpm-lock.yaml src/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY src/runa/resources/ runa/resources/
 COPY src/runa/frontend/ runa/frontend/
+COPY src/runa/build/ runa/build/
 COPY src/runa/modules/ runa/modules/
 COPY src/app/resources/ app/resources/
 COPY src/app/modules/ app/modules/
@@ -150,9 +151,10 @@ COPY src/vite.config.mjs src/vite.errors.config.mjs src/tsconfig.json ./
 RUN pnpm run build
 
 FROM php-dependencies AS error-pages-build
+COPY --chown=runa:runa src/runa/build/ runa/build/
 COPY --chown=runa:runa --from=frontend-build /build/.runtime/frontend/errors/templates/ /tmp/runa-build/.runtime/frontend/errors/templates/
 COPY --chown=runa:runa --from=frontend-build /build/src/public/runa-error/ public/runa-error/
-RUN php runa/resources/errors/build.php
+RUN php runa/build/errors/build.php
 
 FROM production-runtime AS production
 COPY --from=production-runtime /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini

@@ -17,6 +17,13 @@ tests/
 Application developers own the `app` directories. Runa's private `runa` directories
 are excluded from customer acquisition. Reusable development infrastructure stays
 in `src/runa/Testing` and `tools/application/testing`; it is not a private suite.
+The public `Tests\TestCase` and `@runa/testing/{vue,vitest,playwright}` entrypoints
+retain their identities. Internal PHP runner adapters live in `Testing/Backend`,
+the test-database guard in `Testing/Database`, and the fixed worker-cleanup child
+in `src/runa/testing/backend`. These implementation paths are not application
+extension APIs. Private Runa browser configurations live under owner tooling
+and resolve the same installed src packages; customers own src/vitest.config.mjs
+and src/playwright.config.mjs.
 Runtime images omit the entire test tree and development dependencies. Laravel
 and frontend runner configuration stays beside its source/dependency manifests in
 `src`; PHPUnit's private owner configuration/bootstrap lives with its backend suite.

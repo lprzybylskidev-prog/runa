@@ -162,8 +162,8 @@ class RepositoryBoundary(unittest.TestCase):
     def test_customer_command_registry_excludes_maintenance_even_if_restored(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
-            source = root / "src/runa/management"
-            shutil.copytree(ROOT / "src/runa/management", source)
+            source = root / "src/runa/Tooling/Management"
+            shutil.copytree(ROOT / "src/runa/Tooling/Management", source)
             program = 'require $argv[1]; $classes = require $argv[2]; foreach ($classes as $command) { echo $command->getName(), "\\n"; }'
 
             def names() -> list[str]:

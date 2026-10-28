@@ -9,7 +9,7 @@ it('refuses worker cleanup while a test database is in use', function (): void {
     if ($name === 'runa_test') {
         $this->markTestSkipped('This regression requires a parallel worker.');
     }
-    $cleanup = new Process([PHP_BINARY, 'runa/Testing/worker-databases.php'], base_path(), [
+    $cleanup = new Process([PHP_BINARY, 'runa/testing/backend/worker-databases.php'], base_path(), [
         'APP_ENV' => 'testing', 'DB_DATABASE' => 'runa_test', 'TEST_TOKEN' => false,
     ]);
     expect($cleanup->run())->not->toBe(0);
@@ -18,7 +18,7 @@ it('refuses worker cleanup while a test database is in use', function (): void {
 });
 
 it('refuses worker cleanup outside the testing environment before booting the application', function (): void {
-    $cleanup = new Process([PHP_BINARY, 'runa/Testing/worker-databases.php'], base_path(), ['APP_ENV' => 'production']);
+    $cleanup = new Process([PHP_BINARY, 'runa/testing/backend/worker-databases.php'], base_path(), ['APP_ENV' => 'production']);
     expect($cleanup->run())->not->toBe(0);
     expect($cleanup->getErrorOutput())->toContain('Worker cleanup requires the isolated testing environment.');
 });

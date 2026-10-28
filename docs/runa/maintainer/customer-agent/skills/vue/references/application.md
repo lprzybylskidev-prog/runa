@@ -40,3 +40,8 @@ Do not add page-local raw fetch/unload handlers to bypass the shared lifecycle.
 For view refresh, follow the public forms guide's automatic read reconciliation.
 Coalesce reads, fence late snapshots, clean up listeners, merge against confirmed
 baselines and preserve dirty refs; component remount/reset is not reconciliation.
+
+For module components use runa:make:module and the public module development guide.
+The generated frontend/components/<snake_case>.vue uses the delivered opt-in build
+plugin; page/slot declarations remain explicit. Consume public facades from owned
+application code and preserve generator preview/exact-hash overwrite review.

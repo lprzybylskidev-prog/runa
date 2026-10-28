@@ -146,7 +146,7 @@ exit(1);"""
             ["php", "artisan", "config:clear", "--no-interaction"],
             ["pnpm", "--dir", "src", "install", "--frozen-lockfile"],
             ["pnpm", "--dir", "src", "run", "build"],
-            ["php", "src/runa/resources/errors/build.php"],
+            ["php", "src/runa/build/errors/build.php"],
             ["php", "artisan", "runa:config:validate"],
             ["php", "artisan", "runa:config:templates"],
         ]

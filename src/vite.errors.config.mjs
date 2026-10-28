@@ -40,7 +40,7 @@ export default defineConfig({
   publicDir: false,
   plugins: [vue(), tailwindcss()],
   build: {
-    ssr: 'runa/resources/errors/render.mjs',
+    ssr: 'runa/build/errors/render.mjs',
     outDir: fileURLToPath(
       new URL('../.runtime/frontend/errors/renderer', import.meta.url),
     ),

@@ -149,7 +149,9 @@ class QualityCompatibility(unittest.TestCase):
                 for n in customer_nodes.values()
             )
         )
-        catalogue = json.loads((ROOT / "src/runa/management/quality-groups.json").read_text())
+        catalogue = json.loads(
+            (ROOT / "src/runa/Tooling/Management/quality-groups.json").read_text()
+        )
         self.assertEqual(set(catalogue), set(customer["groups"]))
         for group in ("installation", "updates", "transport", "production"):
             with self.assertRaises(ValueError):

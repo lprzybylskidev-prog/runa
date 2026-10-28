@@ -87,7 +87,9 @@ def test_duplicate_plan_fields_and_frozen_arguments() -> None:
 
 
 def test_catalog_schema_and_independent_allowlist_agree() -> None:
-    schema = decode_object((ROOT / "src/runa/management/host-plan.v1.schema.json").read_text())
+    schema = decode_object(
+        (ROOT / "src/runa/Tooling/Management/host-plan.v1.schema.json").read_text()
+    )
     properties = schema["properties"]
     assert isinstance(properties, dict)
     operation = properties["operation"]
@@ -101,7 +103,9 @@ def test_catalog_schema_and_independent_allowlist_agree() -> None:
     assert declared_enum == set(OPERATIONS)
     declared: set[str] = set()
     for name in ("operations.json", "development.json"):
-        definitions = json_value(json.loads((ROOT / "src/runa/management" / name).read_text()))
+        definitions = json_value(
+            json.loads((ROOT / "src/runa/Tooling/Management" / name).read_text())
+        )
         assert isinstance(definitions, list)
         for entry in definitions:
             assert isinstance(entry, dict)

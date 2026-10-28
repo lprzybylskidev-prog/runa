@@ -79,9 +79,9 @@ it('keeps all development command families out of the production registry', func
 it('preserves literal runner arguments, nonzero exits and test suite exclusion in PHP actions', function (): void {
     $root = sys_get_temp_dir().'/runa-checks-'.bin2hex(random_bytes(6));
     mkdir($root.'/src/vendor/bin', 0775, true);
-    mkdir($root.'/src/runa/Testing', 0775, true);
+    mkdir($root.'/src/runa/testing/backend', 0775, true);
     // This process fixture has no database; lifecycle behavior is covered separately.
-    file_put_contents($root.'/src/runa/Testing/worker-databases.php', '<?php exit(0);');
+    file_put_contents($root.'/src/runa/testing/backend/worker-databases.php', '<?php exit(0);');
     $runner = $root.'/src/vendor/bin/pest';
     file_put_contents($runner, '#!/usr/bin/env php'."\n".'<?php fwrite(STDOUT, json_encode(array_slice($argv, 1))); exit(7);');
     chmod($runner, 0755);
@@ -153,8 +153,8 @@ it('keeps owner release diagnostics outside customer Artisan', function (): void
 });
 
 it('binds every named operation to its own fixed action in cold preview', function (): void {
-    $definitions = [...json_decode(file_get_contents(base_path('runa/management/operations.json')), true, flags: JSON_THROW_ON_ERROR),
-        ...json_decode(file_get_contents(base_path('runa/management/development.json')), true, flags: JSON_THROW_ON_ERROR)];
+    $definitions = [...json_decode(file_get_contents(base_path('runa/Tooling/Management/operations.json')), true, flags: JSON_THROW_ON_ERROR),
+        ...json_decode(file_get_contents(base_path('runa/Tooling/Management/development.json')), true, flags: JSON_THROW_ON_ERROR)];
     $examples = ['runa:deploy' => ['v0.2.1'], 'runa:dev:profile:set' => ['low'],
         'runa:dev:embeddings:set' => ['cpu'], 'runa:dev:recreate' => ['nginx'],
         'runa:knowledge:search' => ['literal $(false); query'], 'runa:hook:commit-msg' => ['message.txt']];

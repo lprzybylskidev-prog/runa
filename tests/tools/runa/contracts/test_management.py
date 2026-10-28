@@ -40,7 +40,9 @@ class ManagementContracts(unittest.TestCase):
         )
 
     def test_published_schema_and_executor_allowlist_agree(self) -> None:
-        schema = json.loads((ROOT / "src/runa/management/host-plan.v1.schema.json").read_text())
+        schema = json.loads(
+            (ROOT / "src/runa/Tooling/Management/host-plan.v1.schema.json").read_text()
+        )
         self.assertEqual(set(schema["properties"]["operation"]["enum"]), set(OPERATIONS))
         self.assertFalse(schema["additionalProperties"])
         self.assertFalse(schema["properties"]["parameters"]["additionalProperties"])
@@ -315,4 +317,4 @@ class TestResourceContracts(unittest.TestCase):
         service = SuiteService(WorkspaceContext(self.root), OWNER, runner, {}, lambda _: None)
         self.assertEqual(service.execute(Selection(("backend",))), 1)
         self.assertEqual(len(runner.calls), 1)
-        self.assertEqual(runner.calls[0].argv, ("php", "runa/Testing/worker-databases.php"))
+        self.assertEqual(runner.calls[0].argv, ("php", "runa/testing/backend/worker-databases.php"))

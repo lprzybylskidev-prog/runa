@@ -240,7 +240,7 @@ class TestService:
         ):
             self.report("Clear cached development config before testing: php artisan config:clear")
             return ScopeResult(scope, "blocked", 1)
-        cleanup_command = ("php", "runa/Testing/worker-databases.php")
+        cleanup_command = ("php", "runa/testing/backend/worker-databases.php")
         if scope == "backend":
             before = self.process(cleanup_command)
             if before:
@@ -248,7 +248,7 @@ class TestService:
         cleanup = 0
         try:
             if scope == "e2e":
-                built = self.process(("php", "runa/resources/errors/build.php"))
+                built = self.process(("php", "runa/build/errors/build.php"))
                 if built:
                     return ScopeResult(scope, "blocked", built)
             status = self.process(command, source=scope != "tooling")

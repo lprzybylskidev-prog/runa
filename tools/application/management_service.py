@@ -99,13 +99,13 @@ class ManagementService:
             )
         ]
         if (
-            not (self.workspace.root / "src/runa/management").is_dir()
-            or (self.workspace.root / "src/runa/management").is_symlink()
+            not (self.workspace.root / "src/runa/Tooling/Management").is_dir()
+            or (self.workspace.root / "src/runa/Tooling/Management").is_symlink()
         ):
             raise ValueError("Management build inputs must not traverse symlinks.")
         paths += sorted(
             path
-            for path in (self.workspace.root / "src/runa/management").rglob("*")
+            for path in (self.workspace.root / "src/runa/Tooling/Management").rglob("*")
             if not path.is_dir() or path.is_symlink()
         )
         for path in paths:
@@ -140,7 +140,7 @@ class ManagementService:
             )
             target = (
                 "development-management"
-                if (self.workspace.root / "src/runa/management/development.json").is_file()
+                if (self.workspace.root / "src/runa/Tooling/Management/development.json").is_file()
                 else "management"
             )
             self.processes.run(
@@ -264,9 +264,9 @@ class ManagementService:
         """Resolve only fixed public definitions; the destination reparses its own options."""
         arguments = list(arguments)
         definitions = command_definitions(
-            (self.workspace.root / "src/runa/management/operations.json").read_text()
+            (self.workspace.root / "src/runa/Tooling/Management/operations.json").read_text()
         )
-        development = self.workspace.root / "src/runa/management/development.json"
+        development = self.workspace.root / "src/runa/Tooling/Management/development.json"
         if development.exists():
             definitions += command_definitions(development.read_text())
         candidates = [

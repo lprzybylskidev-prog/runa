@@ -21,14 +21,14 @@ if ($management) {
     array_splice($arguments, 1, 1);
 }
 $input = new ArgvInput($arguments);
-$registry = __DIR__.'/runa/management/commands.php';
+$registry = __DIR__.'/runa/Tooling/Management/commands.php';
 if (is_file($registry)) {
     /** @var list<Command> $commands */
     $commands = require $registry;
     $names = array_map(static fn (Command $command): ?string => $command->getName(), $commands);
     if ($management || in_array($input->getFirstArgument(), $names, true)) {
         /** @var Illuminate\Console\Application $console */
-        $console = require __DIR__.'/runa/management/bootstrap.php';
+        $console = require __DIR__.'/runa/Tooling/Management/bootstrap.php';
         exit($console->run($input, new ConsoleOutput));
     }
 } elseif ($management) {

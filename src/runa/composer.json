@@ -26,7 +26,7 @@
       "Database\\Factories\\": "app/database/factories/"
     },
     "exclude-from-classmap": [
-      "runa/management/",
+      "runa/Tooling/Management/",
       "runa/Testing/",
       "runa/modules/",
       "app/modules/"

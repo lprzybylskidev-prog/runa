@@ -39,7 +39,7 @@
 
 ## Module component skeletons
 
-`runa:make:module owner.code component ComponentName` previews an unregistered `resources/js/ComponentName.vue` with TypeScript script setup and a static slot wrapper. Use the existing component catalogue when implementing it; add owned frontend/slot declarations separately and verify rendered states. Generation supplies no page registration, styling or visual acceptance. See docs/runa/handbook/development/modules.md.
+`runa:make:module owner.code component ComponentName` previews an unregistered `frontend/components/component_name.vue` with TypeScript script setup and a static slot wrapper. Use the existing component catalogue when implementing it; add owned frontend/slot declarations separately and verify rendered states. The build plugin discovers its manifest-bound key only in an opt-in consuming entry. Generation supplies no page registration, styling or visual acceptance. See docs/runa/handbook/development/modules.md.
 
 ## Replaceable platform presentation
 

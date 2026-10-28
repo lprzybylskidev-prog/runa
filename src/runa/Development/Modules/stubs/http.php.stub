@@ -2,7 +2,7 @@
 
 namespace {{namespace}}\Definitions;
 
-use {{namespace}}\Http\{{name}};
+use {{namespace}}\Http\Controllers\{{name}};
 use Runa\Contracts\Modules\{ApiOperation, HttpEndpoint, HttpProvider};
 
 final class {{name}}Http implements HttpProvider

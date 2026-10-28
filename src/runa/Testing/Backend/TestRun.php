@@ -1,6 +1,6 @@
 <?php
 
-namespace Runa\Testing;
+namespace Runa\Testing\Backend;
 
 use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -58,7 +58,7 @@ final class TestRun
 
     private static function cleanup(string $root, OutputInterface $output): int
     {
-        $process = new Process([PHP_BINARY, 'runa/Testing/worker-databases.php'], $root.'/src', [
+        $process = new Process([PHP_BINARY, 'runa/testing/backend/worker-databases.php'], $root.'/src', [
             'APP_ENV' => 'testing', 'TEST_TOKEN' => false,
         ]);
         $process->setTimeout(null);

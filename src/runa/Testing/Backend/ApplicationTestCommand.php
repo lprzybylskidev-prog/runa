@@ -1,6 +1,6 @@
 <?php
 
-namespace Runa\Testing;
+namespace Runa\Testing\Backend;
 
 use NunoMaduro\Collision\Adapters\Laravel\Commands\TestCommand;
 

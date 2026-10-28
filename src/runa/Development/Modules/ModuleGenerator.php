@@ -1,6 +1,6 @@
 <?php
 
-namespace Runa\Support\Modules\Development;
+namespace Runa\Development\Modules;
 
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -80,11 +80,11 @@ final readonly class ModuleGenerator
             $tokens += ['name' => $name, 'table' => Str::snake(Str::pluralStudly($name)), 'slug' => Str::kebab($name), 'operation' => Str::snake($name).'.read'];
             $module->table($tokens['table']);
             $templates = match ($type) {
-                'controller' => ['backend/Http/'.$name.'.php' => 'controller.php', 'backend/Definitions/'.$name.'Http.php' => 'http.php'],
+                'controller' => ['backend/Http/Controllers/'.$name.'.php' => 'controller.php', 'backend/Definitions/'.$name.'Http.php' => 'http.php'],
                 'model' => ['backend/Models/'.$name.'.php' => 'model.php'],
                 'migration' => ['database/migrations/'.gmdate('Y_m_d_His').'_'.$module->schema().'_create_'.$tokens['table'].'.php' => 'migration.php'],
-                'api' => ['backend/Contracts/'.$name.'.php' => 'contract.php', 'backend/'.$name.'Handler.php' => 'handler.php', 'backend/'.$name.'Proxy.php' => 'proxy.php', 'backend/Definitions/'.$name.'Api.php' => 'api.php'],
-                'component' => ['resources/js/'.$name.'.vue' => 'component.vue'],
+                'api' => ['backend/Contracts/'.$name.'.php' => 'contract.php', 'backend/Handlers/'.$name.'Handler.php' => 'handler.php', 'backend/Proxies/'.$name.'Proxy.php' => 'proxy.php', 'backend/Definitions/'.$name.'Api.php' => 'api.php'],
+                'component' => ['frontend/components/'.Str::snake($name).'.vue' => 'component.vue'],
                 'test' => [$name.'.php' => 'test.php'],
                 default => ['backend/'.($type === 'action' ? 'Actions' : 'Services').'/'.$name.'.php' => $type.'.php'],
             };
@@ -234,7 +234,7 @@ final readonly class ModuleGenerator
     /** @param array<string, string> $tokens */
     private function stub(string $name, array $tokens): string
     {
-        $template = file_get_contents(__DIR__.'/../../../stubs/modules/'.$name.'.stub');
+        $template = file_get_contents(__DIR__.'/stubs/'.$name.'.stub');
         if ($template === false) {
             throw new RuntimeException('Module template unavailable.');
         }

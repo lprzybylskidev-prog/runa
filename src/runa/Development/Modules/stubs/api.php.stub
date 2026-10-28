@@ -3,8 +3,8 @@
 namespace {{namespace}}\Definitions;
 
 use {{namespace}}\Contracts\{{name}};
-use {{namespace}}\{{name}}Handler;
-use {{namespace}}\{{name}}Proxy;
+use {{namespace}}\Handlers\{{name}}Handler;
+use {{namespace}}\Proxies\{{name}}Proxy;
 use Runa\Contracts\Modules\{ApiDefinition, ApiOperation, ApiProvider};
 
 final class {{name}}Api implements ApiProvider

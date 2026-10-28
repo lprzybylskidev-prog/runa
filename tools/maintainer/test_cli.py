@@ -15,8 +15,8 @@ OWNER = TestLayout(
     "runa",
     "../tests/backend/runa",
     "../tests/backend/runa/phpunit.xml",
-    "runa/frontend/vitest.config.mjs",
-    "runa/frontend/playwright.config.mjs",
+    "../tools/maintainer/frontend/vitest.config.mjs",
+    "../tools/maintainer/frontend/playwright.config.mjs",
     ("tests/tools/runa",),
 )
 

@@ -79,7 +79,7 @@ def main() -> None:
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
-        shutil.copytree(ROOT / "src/runa/management", root / "src/runa/management")
+        shutil.copytree(ROOT / "src/runa/Tooling/Management", root / "src/runa/Tooling/Management")
         shutil.copytree(ROOT / "tools/application/executors", root / "tools/application/executors")
         (root / ".devcontainer").mkdir()
         (root / ".devcontainer/compose.resources.yaml").write_text('{"services":{}}\n')
