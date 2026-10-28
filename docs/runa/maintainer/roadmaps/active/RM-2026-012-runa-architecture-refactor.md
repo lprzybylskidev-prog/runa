@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 25.
+Full candidate verification and release finalization remain point 26.
 
 ### Out of scope
 
@@ -181,6 +181,15 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
   these guides and need no duplicate rule. The current bc741df4 candidate failed
   only backend-tests (worker exit 139 at PermissionsTest.php); 53 nodes passed
   and six were blocked. No repair or new test PASS is claimed by this decision.
+
+- 2026-10-28 — The owner explicitly defers diagnosis of intermittent backend
+  SIGSEGV to draft [RM-2026-014](../draft/RM-2026-014-backend-segfault-reliability.md),
+  fix 0.6.2 after RM-013 maintenance 0.6.1. Until corrected verification there,
+  backend segfaults may receive disclosed owner acceptance using the complete
+  prior backend PASS; raw FAILED evidence remains unchanged. Other failures and
+  blocked/unexecuted gates are not passing evidence. This exception changes no
+  customer rule, runner exit or security gate; retire it with the verified fix.
+  The unrelated browser precision failure remains point 25 repair work.
 
 ### Audit basis and limits
 
@@ -1470,8 +1479,15 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Synchronize the public procedure and both instruction products; commit before
     a fresh all-group final verification.
 
-- [ ] 25. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–24 complete and committed, migration/coverage ledgers
+- [x] 25. Repair browser avatar geometry precision after final verification.
+  - Preserve candidate 36fd9d19 failure evidence and correct the exact floating-point
+    geometry comparison without changing presentation or dropping assertions.
+  - Run the complete critical browser suite until PASS and repair any further
+    failures in that area; synchronize testing guidance and instruction assessment.
+  - Commit this repair before restarting the complete final graph.
+
+- [ ] 26. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–25 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3342,3 +3358,34 @@ quality PASS or implementation completion was claimed by that planning validatio
   data, Qdrant/model caches, backups, other projects and evidence were preserved.
   Full all-group verification starts fresh at point 25 after this documentation
   commit and mandatory hooks. VERSION remains 0.5.0, proposed feature 0.6.0.
+
+### Point 25 — browser geometry precision repair (2026-10-28)
+
+- Candidate 36fd9d19 completed with 49 passed, two failed and nine blocked nodes.
+  Preserved complete logs/state under .runtime/artifacts/RM-2026-012-failed-36fd9d19.
+  Backend failed with SIGSEGV at AuthEntryTest.php; browser acceptance had one
+  failure among 386 executed cases (385 passed, 139 existing matrix exclusions).
+- Chromium returned avatar skeleton height 40.00000762939453 for the expected
+  40 px. Both dimension assertions now compare to 40 at two decimal places,
+  tolerating subpixel arithmetic while still rejecting meaningful size changes.
+  No production source, dependency, module contract/version or skip changed.
+- Root/customer instructions and frontend skills already delegate acceptance to
+  testing guidance; no new authority or delivered capability needs duplication.
+  Full affected browser acceptance must pass before this point is completed.
+
+- Complete supported test-e2e --critical passed: 386 tests, 139 unchanged
+  project-specific matrix exclusions, zero failures, 13.7 minutes, native exit 0
+  and cleanup 0. Chromium, Firefox and mobile Chromium completed; all four avatar
+  loading/breadcrumb cases passed. No further browser repair was required.
+- The run inspected and removed only its labeled app-test/nginx-test containers
+  fd3663976ea65a7625f2d858d99e583f4c3d2a5ed10b7657793a13e79f24105e and
+  0c204c588b8a392a374ef7def1d30a62a82216ff56c98c9a53e898b9c2174bfd.
+  Development/test databases, volumes, model/Qdrant caches, backups and reports
+  remain preserved. Browser evidence stays under .runtime/artifacts/playwright.
+- Current testing guidance records explicit geometry tolerance. Owner/customer
+  skills and instructions already reference testing and require rendered
+  acceptance, so this private assertion correction needs no duplicated rule or
+  module bump. Draft RM-014 was separately committed as 9f65b9dc, remains inactive
+  and records the owner-approved fix 0.6.2 after RM-013 plus exception retirement.
+- After mandatory hooks and this repair commit, point 26 restarts the complete
+  all-group graph. The previous FAILED state is preserved, not rewritten as PASS.

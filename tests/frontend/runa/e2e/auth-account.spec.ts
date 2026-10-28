@@ -357,8 +357,8 @@ for (const welcome of [true, false]) {
         await expect(avatar).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
         const pulse = avatar.locator('.avatar-skeleton span');
         const bounds = await pulse.boundingBox();
-        expect(bounds?.width).toBe(40);
-        expect(bounds?.height).toBe(40);
+        expect(bounds?.width).toBeCloseTo(40, 2);
+        expect(bounds?.height).toBeCloseTo(40, 2);
         const opacity = await pulse.evaluate((el) => {
           const animation = el.getAnimations()[0]!;
           animation.pause();

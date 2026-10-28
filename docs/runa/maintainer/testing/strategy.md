@@ -338,3 +338,11 @@ continue composing Collision. Both paths retain literal arguments, native exits,
 TTY selection and guarded testing environment; Laravel parallel/cache flags remain
 explicit child inputs. This is a fixed transport to the installed engine, not a
 second scheduler or a reason to bypass the supported command.
+
+### Browser geometry precision
+
+Compare DOM bounding-box dimensions with explicit subpixel tolerance rather than
+exact floating-point equality. Avatar loading coverage requires both dimensions
+near 40 px to two decimal places; retain visibility, animation, reduced-motion and
+image-loading assertions. This tolerance addresses browser arithmetic, not layout
+regressions or permission to skip failed cases.
