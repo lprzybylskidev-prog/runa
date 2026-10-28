@@ -321,5 +321,8 @@ class QualityCompatibility(unittest.TestCase):
         nodes = quality.select(definition, ["production", "security"])
         for key in ("production-acceptance", "repository-container-scan"):
             self.assertEqual(nodes[key]["exclusive_group"], "production-simulation", key)
-            self.assertIn("installation-host.py --production-only", nodes[key]["command"])
+            self.assertIn(
+                "tests.tools.runa.acceptance.installation_host --production-only",
+                nodes[key]["command"],
+            )
             self.assertNotIn("./bin/artisan runa:production:", nodes[key]["command"])

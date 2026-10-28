@@ -66,8 +66,8 @@ def test_extension():
 """,
     )
     python = tmp_path / ".runtime/python/venv/bin/python"
-    python.parent.mkdir(parents=True)
-    python.symlink_to(PYTHON)
+    python.parent.parent.parent.mkdir(parents=True, exist_ok=True)
+    python.parent.parent.symlink_to(PYTHON.parent.parent, target_is_directory=True)
     service = SuiteService(
         WorkspaceContext(tmp_path),
         APPLICATION,

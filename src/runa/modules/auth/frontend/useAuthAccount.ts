@@ -445,7 +445,7 @@ export function useAuthAccount(accountId: string) {
     if (needsProof.value) input.method = method.value;
     let reauthenticating = false;
     const saved = await performTask(async () => {
-      let path = '',
+      let path: string,
         verb: 'POST' | 'PATCH' | 'DELETE' = 'POST';
       let body: Record<string, unknown> | FormData = input;
       if (op === 'details') {

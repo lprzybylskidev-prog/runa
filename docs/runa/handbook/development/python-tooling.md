@@ -303,3 +303,8 @@ for migration, pending-write recovery and nondestructive incremental refresh.
 `runa:test` includes it alongside PHP and frontend scopes. Public fakes/workspace
 support lives in `tools.application.testing.support`, separately from private
 suite roots. See [testing and extension configuration](../testing/strategy.md#python-tooling-and-public-test-support).
+
+The frozen official Pyright package runs through its index.js entrypoint so its
+bundled standard-library types resolve independently of the working directory.
+Setup readiness requires that entrypoint; invoking its internal dist script
+directly bypasses the upstream resource-root initialization.

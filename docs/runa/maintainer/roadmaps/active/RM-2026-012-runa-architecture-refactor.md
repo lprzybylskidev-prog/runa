@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 21.
+Full candidate verification and release finalization remain point 22.
 
 ### Out of scope
 
@@ -1034,7 +1034,7 @@ point 11. Later public-only consumer fixtures must additionally cover authored
 application pages/forms/navigation, module pages/slots, custom error layouts,
 controller disposal/account switch, draft preservation and compatibility with
 existing defaults. Implement scenarios during the relevant points; broad browser,
-type, production and projected-customer acceptance runs only in final point 21.
+type, production and projected-customer acceptance runs only in final point 22.
 
 #### Planned compatibility and validation
 
@@ -1201,7 +1201,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 21.
+    Full strict analysis, artifact and runtime PASS belong to point 22.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1237,7 +1237,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     update current target mappings rather than rewriting their baseline identities.
   - Synchronize public testing/module/command guides and both instruction products.
     Include focused ownership/discovery/generator/projection regressions; full
-    suites, analysis, builds and live acceptance remain exclusively in point 21.
+    suites, analysis, builds and live acceptance remain exclusively in point 22.
   - Commit completed implementation, documentation and checklist together.
 
 - [x] 11. Repair central frontend test package resolution.
@@ -1386,7 +1386,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     suites/owner configs and development-only packages from inappropriate outputs.
   - Implement projected-customer extension/update and production-isolation
     scenarios for final execution. Keep existing scoped quality ownership; broad
-    package/image/install/upgrade/scanner acceptance belongs only to point 21.
+    package/image/install/upgrade/scanner acceptance belongs only to point 22.
 
 - [x] 19. Synchronize architecture guidance and retire obsolete placement.
   - Prerequisites: points 12–18 implemented; finding F24 and final source map.
@@ -1417,10 +1417,21 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     a new latest run. Narrow only the directory to 0755 and state.json to 0644.
   - Receive successful supported status access, document recovery and commit it;
     no runtime source/configuration, dependency or data change is needed.
-  - Full verification moves to point 21 and starts from the beginning.
+  - Full verification moves to point 22 and starts from the beginning.
 
-- [ ] 21. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–19 complete and committed, migration/coverage ledgers
+- [x] 21. Repair failures from the first complete candidate verification.
+  - Preserve the failed candidate evidence; diagnose runtime, source-check, test
+    fixture and toolchain failures without relaxing quality or security rules.
+  - Repair canonical paths/composition, public-boundary classification, browser
+    fixtures and portable production diagnostics; retain recovery/data contracts.
+  - Review the PHPUnit advisory and deliberately update the existing affected
+    development dependency to a compatible corrected release with a locked review.
+  - Add focused regressions for concrete failures and synchronize current guidance
+    and instruction assessments. Commit fixes before restarting full verification.
+  - Keep this point open until every reported failure has a recorded disposition.
+
+- [ ] 22. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–21 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3091,3 +3102,61 @@ Planning validation is limited to metadata, ownership, source links, point order
 compatibility coverage and final-only broad verification scheduling. At draft
 preparation all checklist items remained open and only the draft changed. No
 quality PASS or implementation completion was claimed by that planning validation.
+
+### Point 21 — candidate failure repairs (2026-10-28)
+
+- Preserved the complete failed 40a60ba9 candidate under
+  `.runtime/artifacts/RM-2026-012-failed-40a60ba9`. The coordinator completed with
+  FAILED; no stage remained running. Python reported 33 failures and 448 passes
+  (including subtests); selected failed/blocked gates are not acceptance.
+- Corrected both Pyright adapters to the official index.js entrypoint, which sets
+  the bundled typeshed root. A minimal strict diagnostic now resolves pathlib
+  without errors and rejects an intentional wrong assignment with exactly one
+  assignment error. Full first-party strict analysis remains final verification.
+  Postponed process Protocol annotations preserve inert imports when subprocess
+  operations are replaced by refusal fixtures. Formatted/sorted executable adapters.
+- Reconciled central suite paths, explicit owner knowledge composition/context,
+  private deployment policy and injected real-Git versus recording transports.
+  Projected customer tests reuse the complete existing venv, retaining pytest;
+  external tests project the real package rather than copying obsolete scripts.
+  Copy interruption now targets the updater's copy operation without patching
+  recursive shutil calls used by release acquisition. Lock contention still raises
+  the narrow safe StateFailure and preserves the lock inode.
+- Fixed same-module namespace declaration classification and documented the fifth
+  container-owned adapter constructor, ModuleEvents. Public callable signature
+  closure and reserved named-caller enforcement remain required. Corrected the
+  relocated browser stylesheet and portable production frontend inventory without
+  relying on Alpine's unavailable GLOB_BRACE constant.
+- Supplied Auth views resolve their existing writable controller refs locally,
+  retain prop bindings and reactive timing, and fix attribute/local-name lint.
+  Browser-native globals are declared explicitly. Auth advances compatibly to
+  1.1.3 with a no-data frontend_source_checks edge using the retained no-data
+  handler; all previous steps, identities and migration bytes remain unchanged.
+- Composer audit exposed PHPUnit GHSA-9vw2-f4vp-x7gf. Reviewed upstream advisory
+  and package metadata: Pest 5.3.2/5.3.3 reject corrected PHPUnit. Updated the
+  existing Pest pin to 5.3.4; the minimal lock changes only Pest, PHPUnit 13.4.5,
+  ParaTest 7.27.4 and git-state 1.1.0, adding/removing no package. Composer's
+  post-update advisory check is clear; full selected scanners remain strict.
+- Focused supported cases confirmed inert imports, central configuration, physical
+  customer tooling execution, setup failure/current markers, projection, ownership,
+  install/resume, rollback refusal, image selection, lock contention, external
+  package help and interrupted copying. Public/generated PHP consumers and their
+  current module upgrade targets passed. Changed Auth sources pass ESLint with
+  zero warnings. One formerly crashing backend worker case passed with 16
+  assertions using the updated toolchain; this does not establish full-suite PASS.
+- The development Nginx container had exited cleanly many hours before verification;
+  recreated only that configured service through supported dev:recreate. The setup
+  container also retained an earlier failed setup (the already-repaired CustomerEntry
+  type error); ordinary supported startup recovery is required before final launch.
+  Its failure is retained as evidence, not replaced by a manufactured setup marker.
+- Public API/toolchain/changelog guidance is synchronized. Root and customer AGENTS
+  and skills already cover qualified composition, public refs, guarded execution,
+  dependency review and separate test ownership; these compatible repairs add no
+  public entrypoint, permission or reusable authority rule requiring another edit.
+- No full suite, broad static analysis, production image/installation acceptance or
+  scanner pipeline was rerun in this fix point. The first failed run's disposable
+  installation/SMTP resources and exact unused simulation image tags were cleaned
+  by their journals; reports record those scopes. Development/test databases,
+  Qdrant/model caches, backups and all reports remain preserved. Operational
+  management image 5b560366bf7dbaf4ff736e0a is retained for current tooling.
+  VERSION stays 0.5.0; full verification restarts from the beginning in point 22.

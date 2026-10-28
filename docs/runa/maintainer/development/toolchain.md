@@ -38,7 +38,7 @@ do not authorize automatic dependency upgrades; Composer/pnpm locks remain uncha
 | vue-tsc                       | 3.3.13                                            | https://registry.npmjs.org/vue-tsc/3.3.13                                    |
 | Pint                          | 1.32.1                                            | https://repo.packagist.org/p2/laravel/pint.json                              |
 | Larastan / PHPStan            | 3.13.0 / 2.3.1                                    | https://repo.packagist.org/p2/larastan/larastan.json                         |
-| Pest / Laravel plugin         | 5.3.2 / 5.0.1                                     | https://repo.packagist.org/p2/pestphp/pest-plugin-laravel.json               |
+| Pest / Laravel plugin         | 5.3.4 / 5.0.1                                     | https://repo.packagist.org/p2/pestphp/pest-plugin-laravel.json               |
 | Vitest                        | 5.0.5                                             | https://registry.npmjs.org/vitest/5.0.5                                      |
 | Vue Test Utils                | 2.5.1                                             | https://registry.npmjs.org/@vue/test-utils/2.5.1                             |
 | Playwright                    | 1.64.1                                            | https://registry.npmjs.org/@playwright/test/1.64.1                           |
@@ -73,3 +73,19 @@ are recorded in the [Python dependency review](../tooling/python-rebuild/depende
 Use the [private setup/testing workflow](../tooling/python-rebuild/toolchain.md);
 these tools do not change the host stdlib-only operational contract or customer
 Composer/pnpm manifests. No image rebuild is required to initialize this private venv.
+
+### RM-2026-012 test dependency correction (2026-10-28)
+
+The first candidate audit found PHPUnit GHSA-9vw2-f4vp-x7gf. PHPUnit 13.4.2
+was affected; upstream fixes it from 13.4.4. Pest 5.3.2 and 5.3.3 explicitly
+reject that corrected PHPUnit range, so the compatible existing Pest pin advances
+to 5.3.4. The minimal resolved lock changes only Pest 5.3.4, PHPUnit 13.4.5,
+ParaTest 7.27.4 and sebastian/git-state 1.1.0. No package is added or removed.
+All remain development-only; PHP ^8.4 and existing Laravel integration are retained.
+Pest remains MIT, PHPUnit BSD-3-Clause; the lock records upstream source revisions.
+Composer's post-update advisory check reports no advisories for this lock; full
+candidate scanner/runtime verification is still required. No audit exception is used.
+
+Sources: [upstream advisory](https://github.com/sebastianbergmann/phpunit/security/advisories/GHSA-9vw2-f4vp-x7gf),
+[Pest metadata](https://repo.packagist.org/p2/pestphp/pest.json),
+[PHPUnit metadata](https://repo.packagist.org/p2/phpunit/phpunit.json).

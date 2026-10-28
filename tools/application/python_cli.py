@@ -67,7 +67,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.action == "typecheck":
             command = (
                 "node",
-                str(workspace.runtime("python") / "node/pyright/dist/pyright.js"),
+                str(workspace.runtime("python") / "node/pyright/index.js"),
                 "--project",
                 str(config),
             )

@@ -149,7 +149,8 @@ class DocumentationContracts(unittest.TestCase):
             selected["version-changelog-roadmap"]["command"],
             "python3 tools/maintainer/check-release",
         )
-        self.assertIn("--with-docs-and-knowledge", selected["release-metadata-contract"]["command"])
+        self.assertIn("test_docs", selected["release-metadata-contract"]["command"])
+        self.assertIn("test_knowledge_ingestion", selected["release-metadata-contract"]["command"])
         # Closed fixture metadata would otherwise pass the actual release doctor.
         self.write("docs/runa/maintainer/CHANGELOG.md", "# Changelog\n\n## [0.1.0]\nRM-2026-001\n")
         self.write(

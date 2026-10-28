@@ -582,7 +582,7 @@ class Execution(unittest.TestCase):
             )
 
         with (
-            patch.object(execution.shutil, "copytree", side_effect=copy),
+            patch.object(execution, "copytree", side_effect=copy),
             self.assertRaises(KeyboardInterrupt),
         ):
             self.apply()

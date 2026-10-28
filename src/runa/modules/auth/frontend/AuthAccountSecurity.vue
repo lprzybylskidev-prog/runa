@@ -59,8 +59,9 @@ function clearDraft() {
     sectionFields.security[key] = '';
   for (const key of Object.keys(sectionErrors.security))
     delete sectionErrors.security[key];
+  const errors = props.account.errors;
   for (const key of ['current_password', 'code', 'enrollment_code'])
-    delete props.account.errors[key];
+    delete errors[key];
 }
 onScopeDispose(() => {
   clearDraft();
@@ -206,7 +207,8 @@ function close(value: boolean) {
 async function save() {
   if (busy.value) return;
   attempt.value++;
-  props.account.form.value = securityForm.value;
+  const activeForm = props.account.form;
+  activeForm.value = securityForm.value;
   await saveSection('security');
   if (
     !failure.value &&
@@ -271,21 +273,21 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
     <div class="space-y-4">
       <div class="divide-y divide-[var(--runa-border)]">
         <div
-          v-for="method in methods"
-          :key="method.value"
+          v-for="securityMethod in methods"
+          :key="securityMethod.value"
           class="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0"
         >
           <div class="min-w-0 space-y-1">
-            <h4 class="text-sm font-semibold">{{ method.label }}</h4>
-            <p class="text-xs text-muted">{{ method.description }}</p>
+            <h4 class="text-sm font-semibold">{{ securityMethod.label }}</h4>
+            <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
             variant="outline"
-            :tone="method.enrolled ? 'danger' : 'primary'"
-            :disabled="busy || modal !== null || !method.available"
-            @click="selectMethod(method.value, method.enrolled)"
+            :tone="securityMethod.enrolled ? 'danger' : 'primary'"
+            :disabled="busy || modal !== null || !securityMethod.available"
+            @click="selectMethod(securityMethod.value, securityMethod.enrolled)"
             >{{
-              method.enrolled
+              securityMethod.enrolled
                 ? text('Wyłącz', 'Disable')
                 : text('Skonfiguruj', 'Set up')
             }}</Button

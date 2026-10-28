@@ -16,16 +16,17 @@ from tools.application.processes import ApplicationProcesses
 from tools.application.production_runtime import ProductionRuntime
 from tools.application.testing.support.process import RecordingRunner
 from tools.core.context import ExecutionLocation, WorkspaceContext
+from tools.core.process import ProcessRunner
 
 
 class DeploymentFixture(Protocol):
     deployment: DeploymentService
 
 
-def deployment(root: Path) -> DeploymentService:
+def deployment(root: Path, runner: ProcessRunner | None = None) -> DeploymentService:
     actual = OperationContext(
         WorkspaceContext(root),
-        ApplicationProcesses(RecordingRunner(), {"RUNA_HOST_WORKER": "1"}),
+        ApplicationProcesses(runner or RecordingRunner(), {"RUNA_HOST_WORKER": "1"}),
         ExecutionLocation.HOST,
     )
     context = Mock(wraps=actual)
@@ -33,15 +34,19 @@ def deployment(root: Path) -> DeploymentService:
     context.state = actual.state
     context.processes = actual.processes
     context.location = actual.location
+    context.policy = actual.policy
+    context.customer_source = actual.customer_source
     source = SourceAcquisition(context)
     runtime = DeploymentRuntime(context, source, ProductionRuntime(context))
     return DeploymentService(context, source, runtime)
 
 
 @contextmanager
-def bind_deployment(case: DeploymentFixture, root: Path) -> Iterator[None]:
+def bind_deployment(
+    case: DeploymentFixture, root: Path, runner: ProcessRunner | None = None
+) -> Iterator[None]:
     previous = case.deployment
-    case.deployment = deployment(root)
+    case.deployment = deployment(root, runner)
     try:
         yield
     finally:

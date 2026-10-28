@@ -42,12 +42,12 @@ def test_owner_adapters_reject_scope_overrides_without_docker(
 def test_owner_native_test_configurations_are_explicit_and_separate(tmp_path: Path) -> None:
     service = SuiteService(WorkspaceContext(tmp_path), OWNER, RecordingRunner(), {})
     for scope, config in (
-        ("backend", "phpunit.xml"),
-        ("frontend", "vitest.config.mjs"),
-        ("e2e", "playwright.config.mjs"),
+        ("backend", "../tests/backend/runa/phpunit.xml"),
+        ("frontend", "../tools/maintainer/frontend/vitest.config.mjs"),
+        ("e2e", "../tools/maintainer/frontend/playwright.config.mjs"),
     ):
         assert any(
-            argument.endswith("=../tests/backend/runa/" + config)
+            argument.endswith("=" + config)
             for argument in service.command(scope, Selection((scope,)))
         )
 

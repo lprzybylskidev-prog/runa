@@ -19,6 +19,7 @@ use RecursiveIteratorIterator;
 use Runa\ModuleFramework\Development\ApiBoundary;
 use Runa\ModuleFramework\Development\PhpReferences;
 use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Events\ModuleEvents;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
@@ -109,7 +110,7 @@ final class ApiSourceCheck
                     continue;
                 }
                 // Adapter construction is container-owned; DTO and declaration constructors are public.
-                if ($member->name->toString() === '__construct' && in_array($symbol, [ModuleApis::class, ModuleFrontend::class, ModuleSettings::class, ModuleWork::class], true)) {
+                if ($member->name->toString() === '__construct' && in_array($symbol, [ModuleApis::class, ModuleFrontend::class, ModuleEvents::class, ModuleSettings::class, ModuleWork::class], true)) {
                     continue;
                 }
                 $documentation .= "\n".(string) $member->getDocComment();

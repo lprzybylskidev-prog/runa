@@ -304,9 +304,9 @@ entries:
     package: 'pestphp/pest'
     type: framework_tooling
     name: pest
-    version: 5.3.2
+    version: 5.3.4
     source: docs/runa/maintainer/development/toolchain.md
-    last_reviewed: 2026-10-17
+    last_reviewed: 2026-10-28
     review_every_days: 90
 
   - id: pest-laravel-plugin

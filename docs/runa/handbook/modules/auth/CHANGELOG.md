@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 1.1.3 — 2026-10-28
+
+- Resolve writable controller refs explicitly in supplied account views; preserve controller signatures, reactive lifetimes and writes.
+- Correct supplied Vue attribute order and local names for the enforced source checks.
+- Add the source-only frontend_source_checks forward edge without schema or data changes.
+
 ## 1.1.2 — 2026-10-28
 
 - Support platform 0.6.x explicitly while retaining public APIs and all historical upgrade identities.

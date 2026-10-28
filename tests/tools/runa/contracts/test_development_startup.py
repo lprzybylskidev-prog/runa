@@ -29,17 +29,19 @@ class DevelopmentFixture(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.processes = Mock()
-        self.processes.environment = {}
+        self.processes.environment = {"RUNA_HOST_WORKER": "1"}
         self.dev = DevelopmentService(
             WorkspaceContext(Path(self.temporary.name)), self.processes, ExecutionLocation.HOST
         )
         self.arguments = []
 
     @contextmanager
-    def bind(self, root: Path, real: bool = False) -> Iterator[None]:
+    def bind(
+        self, root: Path, real: bool = False, location: ExecutionLocation = ExecutionLocation.HOST
+    ) -> Iterator[None]:
         previous = self.dev
         processes = ApplicationProcesses(SubprocessRunner(), {}) if real else self.processes
-        self.dev = DevelopmentService(WorkspaceContext(root), processes, ExecutionLocation.HOST)
+        self.dev = DevelopmentService(WorkspaceContext(root), processes, location)
         try:
             yield
         finally:
@@ -189,7 +191,7 @@ class StartupContracts(DevelopmentFixture):
                 return SimpleNamespace(returncode=0)
 
             with (
-                self.bind(root),
+                self.bind(root, location=ExecutionLocation.CONTAINER),
                 patch.object(type(self.dev.configuration), "load", return_value={}),
                 patch.object(type(self.dev.configuration), "environment_files"),
                 patch.object(type(self.dev.setup), "register_boost"),
@@ -203,6 +205,8 @@ class StartupContracts(DevelopmentFixture):
 
     def setup_fixture(self, root: Path) -> Path:
         for name in (
+            ".runtime/python/venv/bin/python",
+            ".runtime/python/node/pyright/index.js",
             "src/vendor/autoload.php",
             "src/node_modules/.modules.yaml",
             "src/public/build/index.html",

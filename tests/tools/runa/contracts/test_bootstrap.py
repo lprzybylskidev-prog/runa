@@ -445,17 +445,10 @@ class BootstrapContracts(unittest.TestCase):
             "routes/web.php",
             "config/branding.php",
             "database/seeders/DatabaseSeeder.php",
-            "tests/Pest.php",
-            "tests/Feature/WelcomeTest.php",
-            "tests/frontend/welcome.test.ts",
-            "tests/e2e/welcome.spec.ts",
-            "tests/Feature/.gitignore",
             "database/migrations/.gitignore",
             "config/.gitignore",
-            "tests/Unit/.gitkeep",
             "database/factories/.gitignore",
             "lang/.gitignore",
-            "tests/.gitignore",
             "Actions/.gitignore",
         }
         actual = {

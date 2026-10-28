@@ -17,6 +17,8 @@ from tools.application import repository_boundary_service as repository_boundary
 from tools.application.customer_source_service import CustomerSource
 from tools.application.deployment_context import read_env
 from tools.application.repository_boundary_service import RepositoryPolicy
+from tools.core.process import SubprocessRunner
+from tools.core.state import StateFailure
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -49,6 +51,9 @@ class OperationContracts(unittest.TestCase):
             with (
                 self.subTest(codes=codes),
                 patch("tools.application.dependencies.materialize"),
+                patch.object(
+                    self.deployment.runtime, "command", return_value=["docker", "compose"]
+                ),
                 patch.object(self.deployment.runtime, "dc", side_effect=dc) as compose,
                 patch.object(self.deployment.context, "run", side_effect=results),
                 patch.object(self.deployment.runtime.production, "verify_images") as verify,
@@ -256,7 +261,7 @@ class OperationContracts(unittest.TestCase):
                 check=True,
             )
             with (
-                bind_deployment(self, root),
+                bind_deployment(self, root, SubprocessRunner()),
                 patch.object(self.deployment.context, "state", Path(folder) / "state"),
             ):
                 release = self.deployment.source.checkout(sha)
@@ -591,7 +596,7 @@ class OperationContracts(unittest.TestCase):
             patch.object(self.deployment.context, "state", Path(folder)),
         ):
             with self.deployment.context.lock():
-                with self.assertRaisesRegex(ValueError, "Another production"):
+                with self.assertRaisesRegex(StateFailure, "Another production"):
                     with self.deployment.context.lock():
                         pass
 

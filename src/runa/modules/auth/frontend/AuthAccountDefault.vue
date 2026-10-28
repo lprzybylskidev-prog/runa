@@ -302,15 +302,15 @@ const passwordHint = computed(() =>
   />
 
   <component
-    v-if="!ready && !failure"
     :is="presentation.accountLoading ?? AuthAccountLoading"
+    v-if="!ready && !failure"
   />
   <div
     v-else
     class="space-y-6"
-    @submit.capture="feedbackAttempt++"
     :aria-busy="busy"
     :inert="display.changingPreference.value || undefined"
+    @submit.capture="feedbackAttempt++"
   >
     <nav
       class="flex flex-wrap gap-2"
@@ -368,10 +368,10 @@ const passwordHint = computed(() =>
         <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
       </Alert>
       <AuthAccountEditor
-        @feedback-modal="modalFeedback = $event"
         v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
         :account="account"
         :password-hint="passwordHint"
+        @feedback-modal="modalFeedback = $event"
       />
       <div
         v-if="

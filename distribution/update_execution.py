@@ -11,6 +11,7 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import AbstractContextManager, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from shutil import copytree
 from typing import Unpack
 
 from distribution import bootstrap, update_customization, update_files, update_runtime
@@ -537,7 +538,7 @@ def execute(
             if position == "original":
                 incoming = operation / "incoming/src/runa"
                 incoming.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copytree(target / "src/runa", incoming, symlinks=True, dirs_exist_ok=True)
+                copytree(target / "src/runa", incoming, symlinks=True, dirs_exist_ok=True)
                 if compare(operation / "incoming", target):
                     raise Blocker(
                         "protected-source-mismatch",

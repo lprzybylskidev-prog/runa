@@ -383,21 +383,12 @@ class Updater(unittest.TestCase):
     def test_external_tool_package_runs_without_the_maintenance_checkout(self) -> None:
         package = self.fixture.base / "owner-tools"
         package.mkdir()
-        for name in (
-            "update.py",
-            "update_contracts.py",
-            "update_runtime.py",
-            "update_customization.py",
-            "update_execution.py",
-            "update_modules.py",
-            "update_files.py",
-            "module-plan.php",
-            "bootstrap.py",
-        ):
-            shutil.copyfile(ROOT / "distribution" / name, package / name)
+        from tools.maintainer.python_packages import stage
+
+        stage("external", package)
         result = subprocess.run(
-            [sys.executable, str(package / "update.py"), "--help"],
-            cwd="/",
+            [sys.executable, "-m", "distribution.update", "--help"],
+            cwd=package,
             capture_output=True,
             text=True,
         )

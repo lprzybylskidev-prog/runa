@@ -35,7 +35,7 @@ final class ApiBoundary
         foreach ($names as $name) {
             $lower = strtolower($name);
             if (! str_starts_with($lower, 'runa\\')) {
-                if ($ownPrefix !== '' && str_starts_with($lower, 'app\\modules\\') && ! str_starts_with($lower, strtolower($ownPrefix))
+                if ($ownPrefix !== '' && str_starts_with($lower, 'app\\modules\\') && $lower !== strtolower(rtrim($ownPrefix, '\\')) && ! str_starts_with($lower, strtolower($ownPrefix))
                     && ! str_contains($lower, '\\contracts\\')) {
                     $errors[] = 'foreign_module_import';
                 }

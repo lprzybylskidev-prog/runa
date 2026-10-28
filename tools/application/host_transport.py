@@ -1,5 +1,7 @@
 """Workspace-owned host executor service and explicit process boundary."""
 
+from __future__ import annotations
+
 import base64
 import contextlib
 import fcntl
@@ -80,7 +82,7 @@ class Server(socketserver.ThreadingUnixStreamServer):
         address: str,
         handler: type[socketserver.BaseRequestHandler],
         *,
-        service: "HostExecutor",
+        service: HostExecutor,
         credentials: Credentials,
         image: str,
         identity: str,

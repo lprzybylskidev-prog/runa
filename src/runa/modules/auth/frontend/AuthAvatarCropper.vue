@@ -337,12 +337,6 @@ onScopeDispose(() => {
             'Drag the image. Use the mouse wheel or plus and minus keys to zoom, arrow keys to move, Home to reset.',
           )
         "
-        @wheel="wheel"
-        @keydown="key"
-        @touchstart="touch"
-        @touchmove="touch"
-        @touchend="pinch = undefined"
-        @touchcancel="pinch = undefined"
         :aria-label="
           text(
             'Podgląd kadru zdjęcia profilowego',
@@ -350,6 +344,12 @@ onScopeDispose(() => {
           )
         "
         class="avatar-crop-preview"
+        @wheel="wheel"
+        @keydown="key"
+        @touchstart="touch"
+        @touchmove="touch"
+        @touchend="pinch = undefined"
+        @touchcancel="pinch = undefined"
         @pointerdown="start"
         @pointermove="move"
         @pointerup="drag = undefined"

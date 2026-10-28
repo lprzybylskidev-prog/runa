@@ -126,7 +126,7 @@ class DevelopmentSetup:
         marker = self.workspace.root / ".runtime/dev/setup.sha256"
         required = [
             ".runtime/python/venv/bin/python",
-            ".runtime/python/node/pyright/dist/pyright.js",
+            ".runtime/python/node/pyright/index.js",
             "src/vendor/autoload.php",
             "src/node_modules/.modules.yaml",
             "src/public/build/index.html",

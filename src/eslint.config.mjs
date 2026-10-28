@@ -47,6 +47,16 @@ export default ts.config(
       globals: Object.fromEntries(
         [
           'Event',
+          'File',
+          'Blob',
+          'URL',
+          'Image',
+          'HTMLCanvasElement',
+          'HTMLImageElement',
+          'PointerEvent',
+          'WheelEvent',
+          'KeyboardEvent',
+          'TouchEvent',
           'window',
           'document',
           'fetch',

@@ -172,7 +172,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.action == "typecheck":
         command = [
             "node",
-            str(STATE / "node/pyright/dist/pyright.js"),
+            str(STATE / "node/pyright/index.js"),
             "--project",
             "tools/maintainer/python/pyrightconfig.json",
         ]

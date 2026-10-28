@@ -1,5 +1,7 @@
 """Concurrent quality scheduling with explicit transport and owned child groups."""
 
+from __future__ import annotations
+
 import os
 import signal
 import subprocess

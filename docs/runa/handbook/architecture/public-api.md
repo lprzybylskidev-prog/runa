@@ -260,8 +260,8 @@ names, computed imports, runtime object members and semantic compatibility still
 need review and behavioral tests. Checks prevent accidental coupling, not trusted
 code execution; a diagnostic path never confers runtime authority.
 
-Keep public value/extension signatures free of internal types. The four adapters
-ModuleApis, ModuleFrontend, ModuleSettings and ModuleWork retain container-owned
+Keep public value/extension signatures free of internal types. The five adapters
+ModuleApis, ModuleFrontend, ModuleEvents, ModuleSettings and ModuleWork retain container-owned
 constructor collaborators; this does not make those engines customer extension APIs.
 Their supported operation signatures remain checked. PHPDoc alias/FQCN checks cover
 callback/generic/exception references; they are not a complete PHPDoc type theorem.

@@ -15,11 +15,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 if __package__:
+    from dataclasses import replace
+
     from tools.application import docs_checks
     from tools.application.documentation import maintainer_checkout, roadmap_root
     from tools.application.hooks import commit_message
     from tools.application.knowledge import corpus
     from tools.application.knowledge.configuration import golden, load
+    from tools.application.knowledge.context import KnowledgeContext
+    from tools.maintainer.knowledge_cli import configuration as owner_configuration
 
 
 class DocumentationOwnership(unittest.TestCase):
@@ -105,8 +109,10 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertFalse(any("/maintainer/" in p for p in paths))
         self.receipt.unlink()
         self.assertTrue(maintainer_checkout(self.root))
-        self.assertIn("docs/runa/maintainer", load(self.root)["markdown_roots"])
-        self.assertTrue(any("/maintainer/" in q["source_path"] for q in golden(self.root)))
+        self.assertIn("docs/runa/maintainer", owner_configuration(self.root)[0]["markdown_roots"])
+        self.assertTrue(
+            any("/maintainer/" in q["source_path"] for q in owner_configuration(self.root)[1])
+        )
 
     def test_customer_authoring_templates_never_enter_owner_retrieval(self) -> None:
         self.copy_owner_inputs()
@@ -116,9 +122,16 @@ class DocumentationOwnership(unittest.TestCase):
             "docs/runa/maintainer/customer-agent/skills/frontend/SKILL.md", "# Customer UI rules"
         )
         self.track()
-        config = load(self.root)
+        config, _ = owner_configuration(self.root)
         config["files"].append("docs/runa/maintainer/customer-agent/AGENTS.md")
-        paths = {p.relative_to(self.root).as_posix() for p in corpus.sources(self.root, config)}
+        paths = {
+            p.relative_to(self.root).as_posix()
+            for p in corpus.sources(
+                self.root,
+                config,
+                context=replace(KnowledgeContext.for_workspace(self.root), owner_corpus=True),
+            )
+        }
         self.assertIn("docs/runa/maintainer/internal.md", paths)
         self.assertFalse(any(p.startswith("docs/runa/maintainer/customer-agent/") for p in paths))
 

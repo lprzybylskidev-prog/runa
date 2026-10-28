@@ -142,8 +142,8 @@ const initials = computed(
     </template>
     <slot v-if="loading" name="loading" :account="account">
       <component
-        v-if="account"
         :is="presentation.accountLoading ?? AuthAccountLoading"
+        v-if="account"
       />
       <div v-else aria-busy="true" class="space-y-6">
         <p role="status" class="sr-only">

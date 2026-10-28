@@ -75,7 +75,7 @@ foreach (['.git', '.env', '.agents', '.devcontainer', 'docs', 'tools', 'bin', 't
 foreach (['src/runa/Support/Modules/Development/ModuleContractSuite.php', 'src/runa/ModuleFramework/Development/api-boundary.json', 'src/runa/Support/Modules/Work/ModuleJob.php', 'src/runa/Console/Commands/CheckModules.php', 'src/runa/Console/Commands/TestMail.php'] as $path) {
     $expect(is_file('/workspace/'.$path), 'Missing runtime/operator contract: '.$path);
 }
-foreach (glob('/workspace/src/{runa,app}/modules/*/frontend', GLOB_BRACE) ?: [] as $path) {
+foreach ([...(glob('/workspace/src/runa/modules/*/frontend') ?: []), ...(glob('/workspace/src/app/modules/*/frontend') ?: [])] as $path) {
     $expect(! is_dir($path), 'Raw module frontend in runtime.');
 }
 $installed = json_decode(file_get_contents('/workspace/src/vendor/composer/installed.json'), true, 512, JSON_THROW_ON_ERROR);
