@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 27.
+Full candidate verification and release finalization remain point 28.
 
 ### Out of scope
 
@@ -1494,8 +1494,15 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     synchronize dependency review/current guidance and instruction assessment.
   - Commit the completed repair before restarting the complete final graph.
 
-- [ ] 27. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–26 complete and committed, migration/coverage ledgers
+- [x] 27. Align the example application compatibility with the planned release.
+  - Retain application version 0.0.0 and its minimum supported platform; extend
+    only the upper compatibility bound to include the compatible 0.6.x release.
+  - Receive complete backend acceptance and the supported active release check.
+  - Record the previously blocked checks, synchronize evidence, commit the fix
+    and restart final verification before closure.
+
+- [ ] 28. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–27 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3442,3 +3449,33 @@ quality PASS or implementation completion was claimed by that planning validatio
   policy needs duplication. No independently versioned module source changed.
   Following mandatory hooks and the repair commit, point 27 restarts the complete
   all-group graph; VERSION remains 0.5.0 and proposed feature release 0.6.0.
+
+### Point 27 — example application release compatibility (2026-10-28)
+
+- Candidate 00ddaf35 completed with 53 passed, one backend worker SIGSEGV and six
+  blocked nodes. Preserved raw evidence under .runtime/artifacts/RM-2026-012-failed-00ddaf35.
+  The owner explicitly requested closure under the recorded segfault exception;
+  no failed/blocked state is rewritten as PASS.
+- Independently completed previously blocked database-migrations (9 tests/50
+  assertions), database-constraints (27/224), seeding-contract (6/30) and source
+  cleanliness. Native results and cleanup passed. The release metadata command
+  uncovered the example application's existing >=0.2.1 <0.6.0 constraint, which
+  rejects planned platform 0.6.0 despite compatible implementation.
+- Extend only the example's upper bound to <0.7.0, retaining application version
+  0.0.0, minimum 0.2.1 and the bounded compatibility model. Existing module manifests
+  already allow 0.6.x. No module/API/dependency or reusable policy changes; owner
+  and customer instructions already require actual release compatibility checks.
+  Complete backend and active release validation precede the repair commit; the
+  complete final graph must then be restarted because application metadata changed.
+
+- Complete backend after the compatibility correction passed 588 tests/6117
+  assertions in 214.15 seconds with four workers, exit 0 and cleanup 0. The
+  previously blocked release/docs/knowledge contract selection passed all 37
+  selected cases. The example metadata is the only changed source identity;
+  supplemental direct review is .runtime/security/reviews/RM-2026-012-application-compatibility.md.
+- All scope-owned disposable worker databases were cleaned by supported runners;
+  no containers/volumes were deleted and persistent data/caches/reports remain.
+  The prompt requested by the owner is a local artifact under
+  .runtime/artifacts/backend-segfault-chatgpt-prompt.md, not a new maintained rule.
+  Final closure remains pending point 28's fresh all-group candidate after the
+  metadata repair; the segfault exception does not excuse other failures.
