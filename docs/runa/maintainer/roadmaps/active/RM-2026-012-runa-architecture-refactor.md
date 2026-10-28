@@ -171,6 +171,17 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
   regression coverage. The owner noted there is currently no database data; no
   database reset, payload rewrite or destructive operation is needed.
 
+- 2026-10-28 — The owner clarified final-verification repair acceptance: ordinary
+  implementation retains small focused checks, but each final-gate repair must
+  run the complete affected-area suite in the failing mode until PASS (for PHP,
+  the full parallel backend suite), without unrelated suites or a whole-graph
+  rerun during that loop. Receive results before completing the repair; only then
+  restart the full final graph. Root/customer instruction products and both
+  roadmap workflows now state this exception. Skills delegate test procedure to
+  these guides and need no duplicate rule. The current bc741df4 candidate failed
+  only backend-tests (worker exit 139 at PermissionsTest.php); 53 nodes passed
+  and six were blocked. No repair or new test PASS is claimed by this decision.
+
 ### Audit basis and limits
 
 Source baseline: `0c51a1b33e2081549ed2e6becaee1b3c395aed0d` on `main`, VERSION
