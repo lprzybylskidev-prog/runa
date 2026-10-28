@@ -59,7 +59,7 @@ frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
 the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; point 17 has delivered developer support, generators and build-tool placement; point 18 has delivered API-boundary enforcement and runtime projection; point 19 has synchronized final placement guidance and both instruction products.
-Full candidate verification and release finalization remain point 23.
+Full candidate verification and release finalization remain point 24.
 
 ### Out of scope
 
@@ -1034,7 +1034,7 @@ point 11. Later public-only consumer fixtures must additionally cover authored
 application pages/forms/navigation, module pages/slots, custom error layouts,
 controller disposal/account switch, draft preservation and compatibility with
 existing defaults. Implement scenarios during the relevant points; broad browser,
-type, production and projected-customer acceptance runs only in final point 23.
+type, production and projected-customer acceptance runs only in final point 24.
 
 #### Planned compatibility and validation
 
@@ -1201,7 +1201,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Completed: caller/facade retirement, explicit service composition, private
     analysis separation, source-bundle preparation, full-scope function/fixture
     annotations and complete alias/resource/non-Python/inline reconciliation.
-    Full strict analysis, artifact and runtime PASS belong to point 23.
+    Full strict analysis, artifact and runtime PASS belong to point 24.
   - Prerequisites: points 1–8 implemented; no old-only service consumer.
   - Reconcile every ledger row; update remaining PHP/JS/shell/generator/Compose/
     Docker/gate/config references, symlink behavior and compatibility transports.
@@ -1237,7 +1237,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     update current target mappings rather than rewriting their baseline identities.
   - Synchronize public testing/module/command guides and both instruction products.
     Include focused ownership/discovery/generator/projection regressions; full
-    suites, analysis, builds and live acceptance remain exclusively in point 23.
+    suites, analysis, builds and live acceptance remain exclusively in point 24.
   - Commit completed implementation, documentation and checklist together.
 
 - [x] 11. Repair central frontend test package resolution.
@@ -1386,7 +1386,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     suites/owner configs and development-only packages from inappropriate outputs.
   - Implement projected-customer extension/update and production-isolation
     scenarios for final execution. Keep existing scoped quality ownership; broad
-    package/image/install/upgrade/scanner acceptance belongs only to point 23.
+    package/image/install/upgrade/scanner acceptance belongs only to point 24.
 
 - [x] 19. Synchronize architecture guidance and retire obsolete placement.
   - Prerequisites: points 12–18 implemented; finding F24 and final source map.
@@ -1417,7 +1417,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     a new latest run. Narrow only the directory to 0755 and state.json to 0644.
   - Receive successful supported status access, document recovery and commit it;
     no runtime source/configuration, dependency or data change is needed.
-  - Full verification moves to point 23 and starts from the beginning.
+  - Full verification moves to point 24 and starts from the beginning.
 
 - [x] 21. Repair failures from the first complete candidate verification.
   - Preserve the failed candidate evidence; diagnose runtime, source-check, test
@@ -1440,8 +1440,19 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Synchronize current documentation and instruction assessments; commit repairs.
   - Start full verification again from the beginning after affected checks pass.
 
-- [ ] 23. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–22 complete and committed, migration/coverage ledgers
+- [x] 23. Repair SMTP exit propagation, native parallel testing and upgrade expectations.
+  - Preserve failed 257c1cc4 evidence and retain strict refusal/recovery contracts.
+  - Restore checked Compose execution by default with explicit unchecked probes.
+  - Adapt native Pest parallel transport to its supported central test root without
+    passing Pest-only options through Collision's ParaTest option validation.
+  - Reconcile the generated consumer's current upgrade-edge expectation; preserve
+    every historical edge and exact target version validation.
+  - The owner requests only affected checks before the full rerun. Receive SMTP
+    failure/resume, native parallel and generated-consumer results, synchronize
+    current guidance and instruction assessments, then commit the fix point.
+
+- [ ] 24. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–23 complete and committed, migration/coverage ledgers
     reconciled, only this final point open; no unsafe worktree or unresolved premise.
   - Review current-state README/docs/metadata/AGENTS/skills/customer products against
     actual delivered behavior, startup, commands and development/production scope.
@@ -3240,3 +3251,52 @@ quality PASS or implementation completion was claimed by that planning validatio
   Qdrant caches, backups and all verification evidence are preserved.
 - VERSION stays 0.5.0 with confirmed feature projection 0.6.0. This point records
   affected-check PASS only; the complete new candidate still requires point 23.
+
+### Point 23 — SMTP, native parallel and upgrade expectation repairs (2026-10-28)
+
+- Preserved failed candidate 257c1cc4 in
+  `.runtime/artifacts/RM-2026-012-failed-257c1cc4`: 51 passed, three failed and six
+  blocked nodes. Existing PASS remains candidate-bound; blocked scanners/packages
+  and closure checks are not passing evidence.
+- Restored checked execution in DeploymentRuntime.dc by default. Text and binary
+  Compose/Artisan failures now propagate their child status; explicit check=False
+  probes retain their existing behavior. Added two recording-runner regressions
+  for default Compose/SMTP refusal and explicit unchecked results. No journal,
+  retry, data-step or source verification policy was weakened.
+- Native Pest parallel execution receives the central application test root before
+  Pest delegates to ParaTest. It uses the existing TestRun lock/worker lifecycle,
+  shared guarded child environment, literal argv, terminal behavior and native
+  exits. Laravel worker/cache controls remain explicit child inputs. Sequential
+  and PHPUnit testing still compose Collision. Read-only discovery ignores worker
+  scheduling/data flags and performs no cleanup or worker execution. No second
+  test scheduler, vendor patch, dependency or source-directory facade was added.
+- Updated the generated/public consumer contract to expect verification_contracts
+  while still checking exact manifest targets and compatible platform bounds.
+  All historical module edges/migration bytes remain unchanged. No independently
+  versioned module source changed, so no further module version bump is needed.
+- Necessary affected checks passed: 44 Python API/deployment/installation contracts;
+  native application parallel execution (two tests/four assertions) both with
+  default and explicit TTY/cache/database flags; sequential welcome (one test/
+  three assertions); read-only parallel discovery even with recreate/drop flags;
+  and nonzero native exit for invalid configuration. Scoped maximum-level PHPStan
+  passed the two changed PHP classes. Initial type/discovery diagnostics were
+  corrected and their exact selections repeated; no failed check was waived.
+- Real isolated `installation_host --production-only` passed 15 checks, including
+  actual TLS SMTP DATA rejection, retained incomplete operation, explicit resume,
+  accepted delivery, unchanged generated secrets and repeat without redeployment.
+  Report: `.runtime/ownership/installation-host-42b6d00ea8.json`. Broader customer
+  deployment/update acceptance remains in the complete final graph.
+- The fixture inspected/listed and removed only its five production containers,
+  two disposable volumes under runa-prod-simulation-42b6d00ea8, synthetic SMTP
+  container/network runa-install-smtp-42b6d00ea8 and three unused simulation image
+  tags for 5ae1d20254d2adf47e102c054b81b765f0c13697. Exact identities remain in
+  `.runtime/artifacts/RM-2026-012-third-smtp-acceptance.log`. Native tests removed
+  inactive runa_test_test_1/2 under the suite lock; base runa_test and development
+  data, Qdrant/model/builder caches, backups and reports are preserved.
+- Synchronized public testing and owner native-test/installation guidance. Existing
+  root/customer AGENTS and backend/Laravel/Docker/security products already require
+  native engines, guarded effects, safe exits/recovery and private/public ownership;
+  no new authority or customer API requires another instruction rule. VERSION
+  remains 0.5.0 with agreed feature projection 0.6.0. Mandatory hooks, incremental
+  knowledge freshness and the repair commit complete this point; full verification
+  restarts from the beginning in point 24 with all groups and strict prerequisites.

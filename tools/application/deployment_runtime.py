@@ -91,7 +91,7 @@ class DeploymentRuntime:
         options: ProcessOptions = {
             "input": kwargs.get("input"),
             "capture_output": kwargs.get("capture_output", False),
-            "check": kwargs.get("check", False),
+            "check": kwargs.get("check", True),
             "timeout": kwargs.get("timeout"),
             "stdin": stdin,
             "stdout": kwargs.get("stdout"),

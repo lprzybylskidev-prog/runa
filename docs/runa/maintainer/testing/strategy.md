@@ -327,3 +327,14 @@ Both tests are selected by tooling quality gates, with the real host acceptance 
 ## Backend composition acceptance
 
 `CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under tests/backend/runa; tests/backend/app has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. Native Artisan and the application wrapper select ../tests/backend/app directly; direct Pest uses --test-directory=../tests/backend/app. There is no src/tests directory or forwarding bootstrap. Owner bootstrap and fixture discovery are selected exclusively by the maintainer backend runner.
+
+### Native Pest parallel transport
+
+`php artisan test --parallel --processes=2` keeps the application PHP scope and
+shared TestRun lock/worker cleanup. Its adapter passes the central test root to
+Pest before Pest delegates to ParaTest; Collision's separate early ParaTest option
+parser does not support Pest's test-directory flag. Sequential/PHPUnit commands
+continue composing Collision. Both paths retain literal arguments, native exits,
+TTY selection and guarded testing environment; Laravel parallel/cache flags remain
+explicit child inputs. This is a fixed transport to the installed engine, not a
+second scheduler or a reason to bypass the supported command.

@@ -122,7 +122,9 @@ check the recipient mailbox for downstream delivery/filtering.
 
 Success requires actual HTTPS root/readiness and SMTP acceptance after the
 existing exact-image/config/migration/seeding/health/isolation sequence. A failed
-verification cannot complete the installation journal. Production still uses
+verification cannot complete the installation journal. Compose and Artisan execution
+check child exits by default; only explicitly unchecked diagnostic probes may
+return a nonzero result without aborting the operation. Production still uses
 only PHP-FPM/Nginx/PostgreSQL/queue/scheduler and two durable storage/database
 volumes. Shared operational helpers remain host source, never application-image content; AI/RAG/development tooling remains excluded from runtime.
 

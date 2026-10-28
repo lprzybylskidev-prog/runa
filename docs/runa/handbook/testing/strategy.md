@@ -103,8 +103,11 @@ Automatic host browser startup serializes endpoint ownership with `.runtime/test
 
 ## Concurrency and acceptance
 
-The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. The native command composes the installed Collision command and scopes its raw-argv
-adaptation to that invocation, restoring the original arguments on every exit.
+The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Native sequential/PHPUnit testing composes Collision and restores its scoped raw-argv
+adaptation on every exit. Native Pest parallel testing invokes the same installed
+Pest engine with the application test root, preserving Laravel parallel flags,
+terminal behavior and native exits through the shared lock/cleanup lifecycle.
+Use `php artisan test --parallel --processes=2` to select two PHP workers.
 Cleanup children discard keys inherited from the development environment before
 loading `.env.testing`; environment parser diagnostics never expose file values.
 Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before backend test execution so .env.testing remains effective.

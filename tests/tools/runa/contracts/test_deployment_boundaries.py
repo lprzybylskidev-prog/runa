@@ -156,3 +156,23 @@ def test_operation_and_compose_adapters_preserve_text_bytes_and_explicit_stdin(
     with pytest.raises(subprocess.CalledProcessError) as caught:
         service.context.run(["probe"])
     assert caught.value.returncode == 8
+
+
+@pytest.mark.parametrize("text", [False, True])
+def test_compose_and_artisan_fail_closed_unless_explicitly_unchecked(
+    tmp_path: Path, text: bool
+) -> None:
+    runner = RecordingRunner(deque([ProcessResult(23), ProcessResult(24), ProcessResult(25)]))
+    service = DeploymentService.for_workspace(
+        tmp_path, processes=ApplicationProcesses(runner, {}), location=ExecutionLocation.HOST
+    )
+    (tmp_path / ".env.prod.compose").write_text("RUNA_IMAGE_TAG=" + "a" * 40 + "\n")
+    with pytest.raises(subprocess.CalledProcessError) as compose_error:
+        service.runtime.dc(["up", "-d"], text=text)
+    assert compose_error.value.returncode == 23
+    with pytest.raises(subprocess.CalledProcessError) as smtp_error:
+        service.runtime.artisan(["runa:mail:test", "verification@example.invalid"], text=text)
+    assert smtp_error.value.returncode == 24
+    assert service.runtime.artisan(["probe"], check=False, text=text).returncode == 25
+    assert "runa:mail:test" in runner.calls[1].argv
+    assert all(call.stdin is InputMode.CLOSED for call in runner.calls)

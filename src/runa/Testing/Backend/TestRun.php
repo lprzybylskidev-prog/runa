@@ -59,7 +59,8 @@ final class TestRun
         }
     }
 
-    private static function cleanup(string $root, OutputInterface $output): int
+    /** @return array<string, string|false> */
+    public static function testingEnvironment(string $root): array
     {
         // The parent Artisan kernel may already have loaded development .env values.
         // Clear only that file's keys in this child, then load the guarded testing identity.
@@ -81,7 +82,13 @@ final class TestRun
         }
         $environment['APP_ENV'] = 'testing';
         $environment['TEST_TOKEN'] = false;
-        $process = new Process([PHP_BINARY, 'runa/testing/backend/worker-databases.php'], $root.'/src', $environment);
+
+        return $environment;
+    }
+
+    private static function cleanup(string $root, OutputInterface $output): int
+    {
+        $process = new Process([PHP_BINARY, 'runa/testing/backend/worker-databases.php'], $root.'/src', self::testingEnvironment($root));
         $process->setTimeout(null);
 
         return $process->run(static fn (string $type, string $buffer) => $output->write($buffer, false, OutputInterface::OUTPUT_RAW));

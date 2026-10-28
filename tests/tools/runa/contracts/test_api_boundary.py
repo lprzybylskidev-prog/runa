@@ -173,7 +173,7 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
  $steps = (new $class)->upgrades();
  $last = end($steps);
  $manifest = json_decode(file_get_contents($argv[1].'/src/runa/modules/'.$code.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
- if ($last->to !== $manifest['version'] || $last->key !== ($code === 'auth' ? 'frontend_source_checks' : 'platform_delivery')) exit(41);
+ if ($last->to !== $manifest['version'] || $last->key !== 'verification_contracts') exit(41);
  if (!(new Runa\Support\VersionCompatibility)->supports($manifest['platform'], '0.6.0')) exit(42);
 }
 """,
