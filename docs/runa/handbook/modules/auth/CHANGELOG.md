@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 1.1.1 — 2026-10-28
+
+- Separate internal account profile/conflict, list/history/trust, validation and delivery collaborators behind the unchanged public controller; retain shared cancellation, revisions, draft reconciliation and explicit writes.
+- Own account preference transport/session composition and the welcome catalogue in Auth; generic preference storage remains independent.
+- Add the source-only account_orchestration forward edge without schema or data changes.
+
 ## 1.1.0 — 2026-10-28
 
 - Publish complete named frontend controller, replacement props/slots/events and cropper handle types through the existing public facade; preserve all existing members and Vue component replacements.

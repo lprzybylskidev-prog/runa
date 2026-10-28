@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAccountPreferenceStatus } from '../composables/useAccountPreferenceStatus';
-import { accountPreferences } from '../lib/preferenceStore';
+import { accountPreferences } from '../../../modules/auth/frontend/preferences/session';
 import AppFormNotifications from './AppFormNotifications.vue';
 import AppButton from './AppButton.vue';
 import type { Locale } from '../locales/messages';

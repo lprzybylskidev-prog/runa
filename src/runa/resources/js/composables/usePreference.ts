@@ -3,7 +3,7 @@ import type {
   PreferenceDefinition,
   PreferenceStore,
 } from '../lib/preferenceStore';
-import { defaultPreferenceStore } from '../lib/preferenceStore';
+import { defaultPreferenceStore } from '../../../modules/auth/frontend/preferences/session';
 import type { PreferenceScope } from '../runa/ui/preferences';
 
 export function usePreference<T>(

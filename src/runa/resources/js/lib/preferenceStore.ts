@@ -1,7 +1,3 @@
-import {
-  createAccountPreferenceStore,
-  bindPreferenceSession,
-} from './accountPreferences';
 import type {
   PreferenceScope,
   PreferenceStorage,
@@ -155,9 +151,3 @@ export function createPreferenceStore(
     },
   };
 }
-
-export const guestPreferenceStore = /* @__PURE__ */ createPreferenceStore();
-export const accountPreferences =
-  createAccountPreferenceStore(guestPreferenceStore);
-bindPreferenceSession(accountPreferences);
-export const defaultPreferenceStore = accountPreferences.store;

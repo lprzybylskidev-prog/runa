@@ -5,6 +5,8 @@ points 13–19. Point 13 delivers the platform PHP relocations and provider spli
 Point 14 delivers the built-in module execution layout while retaining contract
 and historical upgrade identities. Point 15 publishes named frontend consumer
 contracts through the retained facades and normalizes reactive presentation maps.
+Point 16 delivers the internal account collaborators and Auth-owned preference/
+welcome composition while retaining the public controller and facade identities.
 Remaining targets are planned until their
 owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
@@ -174,14 +176,31 @@ content types; the modules facade owns page/slot props and fallback slots. Exist
 wrapper components consume those declarations directly. Controller aliases include
 all returned members; type-only imports add no runtime dependency.
 
-Private account collaborators live in `modules/auth/frontend/account/`
-(profile, sessions, security, delivery, history and shared lifetime modules as
-needed); do not force an empty layer for each name. Generic preference storage
-stays in UI infrastructure; Auth transport moves from `resources/js/lib/accountPreferences.ts`
-to `modules/auth/frontend/preferences/accountPreferences.ts`, preserving public
-facade exports. Welcome module presentation moves from `resources/js/lib/welcomeModules.ts`
-to `modules/auth/frontend/welcomeModules.ts`. Shared revision, queue, cancellation
-and account epoch belong to one controller lifetime; no parallel caches or replay.
+Point 16 delivers private account collaborators in `modules/auth/frontend/account/`:
+`profile.ts` owns confirmed-profile/draft reconciliation and avatar conflicts;
+`lists.ts` owns paginated session/history/trust reads and detail cancellation;
+`validation.ts` owns task/proof field requirements and validation; `delivery.ts`
+owns delivery reads, recipient reconciliation and preference mutations. `context.ts`
+declares the shared lifetime and mutation contracts supplied by the parent; `types.ts`
+contains shared internal declarations, with existing public types reexported from
+the retained controller. There is no second account store or security controller.
+
+`useAuthAccount` retains the coordinated refresh and sequential section/task save
+pipeline, proof/secret cleanup and safe draft lifecycle. Splitting that pipeline
+into separate feature writers would obscure shared revisions and partial-success
+semantics. Entry and default presentation already compose feature components;
+no additional split is needed solely for their size. Public return members remain
+unchanged, including inferred values consumed by the named point-15 aliases.
+
+Generic `resources/js/lib/preferenceStore.ts` now contains storage/contracts only.
+Auth transport lives in `modules/auth/frontend/preferences/accountPreferences.ts`;
+`preferences/session.ts` composes one default adapter and session binding. Public
+facade exports stay stable; generic infrastructure imports no Auth code. Supplied
+account-aware UI consumers explicitly use that composition. Welcome catalogue
+presentation now lives in `modules/auth/frontend/welcomeModules.ts`, still reading
+all Runa manifests at build time. Both old private implementation files are removed.
+Shared revision, queue, cancellation and account epoch remain single-owned; no
+parallel caches or replay.
 
 Consumer evidence includes the minimal application shell/seeder/routes, Reference
 module, generated stubs, frontend replacement fixtures and public guides. Repair

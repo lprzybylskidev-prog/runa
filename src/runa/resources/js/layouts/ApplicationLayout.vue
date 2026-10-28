@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
-import { accountPreferences } from '../lib/preferenceStore';
+import {
+  accountPreferences,
+  initializePreferenceSession,
+} from '../../../modules/auth/frontend/preferences/session';
 import { lockDocumentScroll } from '../lib/scrollLock';
 import {
   computed,

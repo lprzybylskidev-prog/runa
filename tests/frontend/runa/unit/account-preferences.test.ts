@@ -1,5 +1,5 @@
 import { expect, it } from '@runa/testing/vitest';
-import { createAccountPreferenceStore } from '../../../../src/runa/resources/js/lib/accountPreferences';
+import { createAccountPreferenceStore } from '../../../../src/runa/modules/auth/frontend/preferences/accountPreferences';
 import { createPreferenceStore } from '../../../../src/runa/resources/js/lib/preferenceStore';
 import { ApiError } from '../../../../src/runa/resources/js/lib/http';
 const scope = {
@@ -115,7 +115,7 @@ it('renders localized rejected-save feedback through the shared layout control',
   const { mount } = await import('@runa/testing/vue');
   const { nextTick } = await import('vue');
   const { accountPreferences } =
-    await import('../../../../src/runa/resources/js/lib/preferenceStore');
+    await import('../../../../src/runa/modules/auth/frontend/preferences/session');
   const Feedback = (
     await import('../../../../src/runa/resources/js/components/AppPreferenceFeedback.vue')
   ).default;
@@ -142,7 +142,7 @@ it('mounts display consumers during delayed hydration without writes and persist
   const { mount, flushPromises } = await import('@runa/testing/vue');
   const { vi } = await import('@runa/testing/vitest');
   const { accountPreferences } =
-    await import('../../../../src/runa/resources/js/lib/preferenceStore');
+    await import('../../../../src/runa/modules/auth/frontend/preferences/session');
   const Consumer = (await import('./fixtures/PreferenceDisplayConsumer.vue'))
     .default;
   const account = '00000000-0000-7000-8000-000000000001';
@@ -340,7 +340,7 @@ it('same-account refresh retains cached values and fences a late snapshot after 
 it('a forbidden session refresh clears cached account preferences into a restricted hold', async () => {
   const { vi } = await import('@runa/testing/vitest');
   const { accountPreferences } =
-    await import('../../../../src/runa/resources/js/lib/preferenceStore');
+    await import('../../../../src/runa/modules/auth/frontend/preferences/session');
   const { request } =
     await import('../../../../src/runa/resources/js/lib/http');
   const account = '00000000-0000-7000-8000-000000000001';

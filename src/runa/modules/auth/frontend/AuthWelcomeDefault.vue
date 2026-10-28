@@ -8,7 +8,7 @@ import {
   Icon,
   Tooltip,
 } from '@/runa/ui';
-import { welcomeModules } from '@runa/lib/welcomeModules';
+import { welcomeModules } from './welcomeModules';
 import { useAuthWelcome } from './useAuthWelcome';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();

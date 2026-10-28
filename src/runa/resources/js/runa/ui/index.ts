@@ -17,10 +17,10 @@ export type * from './preferences';
 export type * from './exports';
 
 export { default as ApplicationLayout } from '../../layouts/ApplicationLayout.vue';
+export { defaultPreferenceStore } from '../../../../modules/auth/frontend/preferences/session';
 export { createPageResolver, usePageResolver } from '../../lib/pageResolver';
 export {
   createPreferenceStore,
-  defaultPreferenceStore,
   preferenceKey,
 } from '../../lib/preferenceStore';
 export type {
@@ -154,8 +154,8 @@ export { loadApplicationIdentity } from './loadIdentity';
 
 export { ModulePage, ModuleSlot } from '../modules';
 
-export { accountPreferences } from '../../lib/preferenceStore';
-export { createAccountPreferenceStore } from '../../lib/accountPreferences';
+export { accountPreferences } from '../../../../modules/auth/frontend/preferences/session';
+export { createAccountPreferenceStore } from '../../../../modules/auth/frontend/preferences/accountPreferences';
 export { default as PreferenceFeedback } from '../../components/AppPreferenceFeedback.vue';
 
 export { default as LinkButton } from '../../components/AppLinkButton.vue';

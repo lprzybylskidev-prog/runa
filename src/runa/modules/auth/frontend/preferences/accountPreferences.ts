@@ -3,9 +3,12 @@ import {
   observeRequests,
   ApiError,
   RequestCancelledError,
-} from './http';
-import type { PreferenceDefinition, PreferenceStore } from './preferenceStore';
-import type { PreferenceScope } from '../runa/ui/preferences';
+} from '../../../../resources/js/lib/http';
+import type {
+  PreferenceDefinition,
+  PreferenceStore,
+} from '../../../../resources/js/lib/preferenceStore';
+import type { PreferenceScope } from '../../../../resources/js/runa/ui/preferences';
 
 type Entry = { version: number; value: unknown; stored: boolean };
 type Status = {

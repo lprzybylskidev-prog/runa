@@ -29,14 +29,14 @@ final class BuiltInModuleBoundaryTest extends TestCase
         $process = $this->planner($root, $input);
         $process->mustRun();
         foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts'] : [], $module['pending_upgrades']);
+            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration'] : [], $module['pending_upgrades']);
         }
         // Installed-source planning must schedule the remaining compatible source-only edges.
         $input['modules'] = $modules;
         $process = $this->planner($root, $input);
         $process->mustRun();
         foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts'] : [], $module['pending_upgrades']);
+            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration'] : [], $module['pending_upgrades']);
         }
         foreach ($input['modules'] as &$module) {
             $module['installed'] = null;

@@ -37,3 +37,7 @@ dependency was involved.
 Named frontend consumer-type routing was synchronized with RM-2026-012 point 15
 on 2026-10-28 from local public facade contracts. No upstream refresh or dependency
 change was involved; the public adoption guide owns the procedure.
+
+Account-controller lifetime routing was synchronized with RM-2026-012 point 16
+on 2026-10-28 from the local account UI guide. No upstream refresh or dependency
+change was involved; internal collaborator paths are not customer entrypoints.

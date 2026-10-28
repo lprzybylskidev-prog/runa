@@ -1,6 +1,6 @@
+import { defaultPreferenceStore } from '../../../modules/auth/frontend/preferences/session';
 import { computed, onScopeDispose, shallowRef, watch, type Ref } from 'vue';
 import {
-  defaultPreferenceStore,
   type PreferenceDefinition,
   type PreferenceStore,
 } from '../lib/preferenceStore';

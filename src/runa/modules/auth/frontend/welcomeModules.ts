@@ -8,13 +8,10 @@ interface WelcomeModule {
 
 // Public source catalogue, independent of installation state and private grants.
 // Names and descriptions have one source: each module's validated manifest.
-const manifests = import.meta.glob<WelcomeModule>(
-  '../../../modules/*/module.json',
-  {
-    eager: true,
-    import: 'default',
-  },
-);
+const manifests = import.meta.glob<WelcomeModule>('../../*/module.json', {
+  eager: true,
+  import: 'default',
+});
 const icons: Record<string, IconName> = {
   'runa.audit': 'clipboard-list',
   'runa.auth': 'key',

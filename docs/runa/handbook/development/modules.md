@@ -36,7 +36,7 @@ Runa-owned generation additionally requires a receipt-free owner checkout with i
 
 Every new Runa-owned module must also complete the default welcome page: supply
 PL/EN names and descriptions in its manifest, add its icon to the platform-owned
-`src/runa/resources/js/lib/welcomeModules.ts` map, and inspect its tooltip in both
+`src/runa/modules/auth/frontend/welcomeModules.ts` map, and inspect its tooltip in both
 locales/themes with pointer and keyboard focus. The build-time catalogue discovers
 Runa manifests automatically and reuses their public descriptions; it does not
 represent installation/availability or disclose grants. A generic fallback avoids

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
-import { initializePreferenceSession } from '../composables/useAccountPreferenceStatus';
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
-import { accountPreferences } from '../lib/preferenceStore';
+import {
+  accountPreferences,
+  initializePreferenceSession,
+} from '../../../modules/auth/frontend/preferences/session';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import AppBrandIllustration from '../components/AppBrandIllustration.vue';
 import RunaLogo from '../components/RunaLogo.vue';

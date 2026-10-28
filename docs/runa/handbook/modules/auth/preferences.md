@@ -87,6 +87,13 @@ generating writes. The shell's compact preference controls retain their cycling 
 
 ## Browser integration and legacy ownership
 
+Public `@/runa/ui` exports retain `createPreferenceStore`, `defaultPreferenceStore`,
+`accountPreferences` and `createAccountPreferenceStore`. Generic versioned guest
+storage is independent of Auth. The supplied account adapter owns Auth transport
+and session binding, and the default UI composes that adapter once. Injected stores
+retain their own lifecycle; do not create a second adapter for each account card
+or import the private session/transport modules.
+
 `defaultPreferenceStore`, `usePreference`, language/theme, navigation,
 `useStatisticsMode` and `useTableViews` use the same account adapter. Signed-in
 values are memory-only caches; PostgreSQL values/defaults are authoritative.

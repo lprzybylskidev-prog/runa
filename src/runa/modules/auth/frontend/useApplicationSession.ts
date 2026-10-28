@@ -1,7 +1,7 @@
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import { computed, onMounted, onScopeDispose, ref, shallowRef } from 'vue';
 import { observeRequests } from '../../../resources/js/lib/http';
-import { accountPreferences } from '../../../resources/js/lib/preferenceStore';
+import { accountPreferences } from './preferences/session';
 import {
   authFailure,
   authGet,

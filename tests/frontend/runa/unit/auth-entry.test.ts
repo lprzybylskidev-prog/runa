@@ -19,7 +19,7 @@ import {
   safeReturnPath,
   takeEntryToken,
 } from '../../../../src/runa/modules/auth/frontend/entry';
-import { accountPreferences } from '../../../../src/runa/resources/js/lib/preferenceStore';
+import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 
 enableAutoUnmount(afterEach);
 async function settled(wrapper: VueWrapper) {

@@ -58,7 +58,7 @@ customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
 source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
 API/placement map and platform PHP reorganization. Point 14 has delivered the built-in module execution layout; point 15 has delivered
-the named frontend extension contracts; points 16–19 remain pending;
+the named frontend extension contracts; point 16 has delivered the internal frontend orchestration split; points 17–19 remain pending;
 final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
@@ -1332,7 +1332,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Update supported frontend adoption/type contracts in the same point; execute
     only focused diagnostics for concrete uncertainties, not broad browser builds.
 
-- [ ] 16. Refactor frontend orchestration behind the public contracts.
+- [x] 16. Refactor frontend orchestration behind the public contracts.
   - Prerequisites: point 15; findings F17–F18.
   - Split the 1,512-line account controller by profile/avatar, sessions/trust,
     proof/security, preferences/delivery and history responsibilities where useful.
@@ -2773,6 +2773,69 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   development data/services, Qdrant/model/builder caches, backups and reports are
   preserved. No production operation, database migration or business-data mutation
   ran. Point 16 is next; points 16–20 remain open.
+
+### Point 16 completion — shared account orchestration and Auth preference ownership (2026-10-28)
+
+- Extracted private profile/avatar conflict reconciliation, paginated sessions/
+  history/trust and history-detail cancellation, task/proof validation, and delivery
+  preference reads/writes into account collaborators. They receive the mounted
+  controller's identity, signal/liveness, shared refs and mutation gate; no second
+  account store, independent security flow or copied session controller exists.
+  Public useAuthAccount arguments, returned members and named type aliases remain
+  compatible. Existing AccountTab/AccountTask/AccountSection exports are retained.
+- Kept coordinated refresh, sequential section/task writes, partial-completion
+  handling, proof/secret cleanup and safe-draft lifetime in the parent controller.
+  Further splitting that pipeline would hide shared versions and ordering. Entry
+  and supplied presentation already compose feature components; they need no extra
+  layers solely for line counts. Public-only replacements continue using the same
+  controller; no application scaffold or visual redesign was introduced.
+- Generic preference storage/contracts no longer import Auth. Auth owns the
+  relocated accountPreferences transport plus the single preferences/session
+  composition and initial session probe. Updated internal consumers and public
+  facade reexports together, without compatibility shims or duplicate adapters.
+  Welcome catalogue presentation moved into Auth with its all-module manifest glob
+  and existing metadata/icons. Removed both former private lib implementation files.
+- Auth advances compatibly from 1.1.0 to PATCH 1.1.1 with the source-only
+  account_orchestration edge and central changelog. Historical handler/migration
+  bytes and fingerprints are unchanged. Audit/Permissions remain 1.0.2; required
+  ^1.0.0 constraints remain satisfied. Platform VERSION stays 0.5.0 and the owner-
+  confirmed feature projection remains 0.6.0. No dependency or data change occurred.
+- Twelve distinct necessary focused frontend cases passed in Chromium through
+  test-frontend: shared pending refresh/save revision and unrelated-draft retention;
+  trusted-read disposal/account replacement; profile/draft merge and overlapping
+  conflict; history-detail cancellation; display/delivery revision ordering;
+  delayed hydration; password validation/CSRF no-replay; public replacement;
+  welcome registration/catalogue; one delivery read per invalidation; and trailing
+  focus invalidation. Other cases were excluded by name, not accepted as passing.
+  The scoped public-consumer vue-tsc diagnostic through bin/pnpm passed. No scoped
+  typecheck command exists; this uses the point-15 temporary consumer project,
+  not the full source/static-analysis gate. Two supported backend history/target-
+  planner cases passed (32 assertions); scoped module version checks against this
+  point's HEAD baseline returned no errors for all three built-in modules.
+- The initial type diagnostic found two mixed imports still requesting generic
+  exports from the new session composition; split their imports and received PASS.
+  A delivery-count diagnostic failed because synthetic tab activation first focused
+  the browser document at heading.focus(), producing a separate legitimate focus
+  refresh. Traced both reads to the existing refresh pipeline; the fixture now
+  focuses Details before measuring tab entry and separately asserts one more read
+  on explicit window focus. The exact delivery and trailing-focus cases passed;
+  no refresh suppression, assertion removal or runtime retry was introduced.
+  Temporary tracing was removed. Vite retains the previously observed generated
+  Vitest module-runner dynamic-import analysis warning; no suppression was added.
+- Local knowledge was current (189 documents/3155 chunks); queried refresh/delivery
+  rules and opened original account/preferences/throttling guides. Loaded frontend/
+  Vue/security guidance and backend/Laravel guidance for the version edge. Updated
+  public account/preference/module guidance, owner placement-map delivery status,
+  and owner/customer frontend references with local provenance. Root AGENTS and
+  Vue/backend/Laravel/security products already enforce public ownership, shared
+  lifetimes, cleanup and explicit retries; no new authority or procedure requires
+  duplicate rules. Incremental indexing and mandatory staged hooks accompany commit.
+- No broad suite, full static analysis, build, scanner pipeline or installation/
+  production acceptance ran; these remain final point 20. No disposable Docker
+  containers, networks, image tags or volumes were created or deleted. Supported
+  backend cleanup reported an empty worker list. Base runa_test, development data/
+  services, Qdrant/model/builder caches, backups and reports remain preserved.
+  Point 17 is next; points 17–20 remain open.
 
 ### Draft preparation validation (historical)
 

@@ -37,7 +37,7 @@ import {
   rememberAccountDraft,
   takeAccountDraft,
 } from '../../../../src/runa/modules/auth/frontend/account';
-import { accountPreferences } from '../../../../src/runa/resources/js/lib/preferenceStore';
+import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 import { request } from '../../../../src/runa/resources/js/lib/http';
 
 type MultiSelectInstance = ComponentPublicInstance<
@@ -383,6 +383,9 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
     expect(w.find('a[href="/auth/login"]').exists()).toBe(true),
   );
   expect(w.find('a[href="/auth/register"]').exists()).toBe(false);
+  expect(
+    w.findAll('main [role=img]').map((icon) => icon.attributes('aria-label')),
+  ).toEqual(['Audyt', 'Uwierzytelnianie', 'Uprawnienia']);
   expect(w.find('header a[href="/auth/login"]').exists()).toBe(true);
   expect(w.find('main a[href="/auth/login"]').exists()).toBe(false);
   w.unmount();
@@ -2383,6 +2386,14 @@ it('reads delivery once per preference tab entry or account refresh while retain
           (JSON.parse(String(init?.body)) as { operation?: string })
             .operation === 'read',
       ).length;
+  // A real browser focus is a separate invalidation. Focus the document while
+  // still on Details, then measure the tab refresh independently of that event.
+  await loaded(w);
+  w.get<HTMLButtonElement>(
+    'nav[aria-label="Ustawienia konta"] button',
+  ).element.focus();
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  await state.refresh();
   await openPreferences(w);
   await vi.waitFor(() =>
     expect(
@@ -2391,13 +2402,14 @@ it('reads delivery once per preference tab entry or account refresh while retain
   );
   await flushPromises();
   expect(reads()).toBe(1);
-  const state = w.getComponent(AuthAccountPreferences).props('account');
   await state.refresh();
   await flushPromises();
   expect(reads()).toBe(2);
   await accountPreferences.refresh();
   await flushPromises();
   expect(reads()).toBe(3);
+  window.dispatchEvent(new Event('focus'));
+  await vi.waitFor(() => expect(reads()).toBe(4));
 });
 
 it('account history opens safe detail changes, handles retry and never restores a closed late response', async () => {
@@ -2576,4 +2588,110 @@ it('customization: keyed account replacements discard the previous account draft
     (w.get('input[name="customer-name"]').element as HTMLInputElement).value,
   ).toBe('Other User');
   expect(writes).toEqual([]);
+});
+
+it('account orchestration: a save waits for the shared refresh and uses its revision without clearing other drafts', async () => {
+  const { state } = mountController(() => useAuthAccount(id));
+  await vi.waitFor(() =>
+    expect(state.ready.value && !state.busy.value).toBe(true),
+  );
+  state.fields.name = 'Local name';
+  state.sectionFields.password.password = 'Other card draft';
+  const file = new File(['image'], 'avatar.png', { type: 'image/png' });
+  state.files.value = [file];
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let release!: (response: Response) => void;
+  let profileReads = 0;
+  vi.mocked(window.fetch).mockImplementation((input, init) => {
+    if (
+      String(input).endsWith('/profile') &&
+      (!init?.method || init.method === 'GET')
+    ) {
+      profileReads++;
+      if (profileReads === 1)
+        return new Promise<Response>((done) => {
+          release = done;
+        });
+    }
+    return original(input, init);
+  });
+  write = (path, body) => {
+    if (path.endsWith('/profile')) {
+      currentProfile = {
+        ...currentProfile,
+        version: 7,
+        name: String(body.name),
+      };
+      return json(currentProfile);
+    }
+    return json({ accepted: true });
+  };
+  const refresh = state.refresh();
+  const sameRefresh = state.refresh();
+  const save = state.saveSection('details');
+  await vi.waitFor(() => expect(release).toBeDefined());
+  expect(writes).toHaveLength(0);
+  currentProfile = { ...currentProfile, version: 6, login: 'remote-login' };
+  release(json(currentProfile));
+  await Promise.all([refresh, sameRefresh, save]);
+  expect(profileReads).toBe(2); // One coalesced read, then one confirmation after the write.
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.body).toMatchObject({
+    version: 6,
+    name: 'Local name',
+    login: 'remote-login',
+  });
+  expect(state.profile.value?.version).toBe(7);
+  expect(state.sectionFields.password.password).toBe('Other card draft');
+  expect(state.files.value[0]).toBe(file);
+  expect(state.failure.value).toBe('');
+});
+
+it('account orchestration: disposal aborts trusted reads and cannot repopulate a replacement account', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const { state, wrapper } = mountController(() => useAuthAccount(id));
+  await vi.waitFor(() =>
+    expect(state.ready.value && !state.busy.value).toBe(true),
+  );
+  const original = vi.mocked(window.fetch).getMockImplementation()!;
+  let release!: (response: Response) => void;
+  let signal: AbortSignal | null | undefined;
+  vi.mocked(window.fetch).mockImplementation((input, init) => {
+    if (String(input).endsWith('/trusted-devices')) {
+      signal = init?.signal;
+      return new Promise<Response>((done) => {
+        release = done;
+      });
+    }
+    return original(input, init);
+  });
+  const pending = state.loadTrustedDevices();
+  await vi.waitFor(() => expect(release).toBeDefined());
+  wrapper.unmount();
+  expect(signal?.aborted).toBe(true);
+  vi.mocked(window.fetch).mockImplementation(original);
+  sessionAccount = other;
+  currentProfile = {
+    ...profile,
+    public_id: other,
+    name: 'Replacement account',
+  };
+  const { state: replacement } = mountController(() => useAuthAccount(other));
+  await vi.waitFor(() =>
+    expect(replacement.ready.value && !replacement.busy.value).toBe(true),
+  );
+  release(
+    new Response(
+      JSON.stringify({ data: [{ public_id: id }], meta: { next_cursor: id } }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    ),
+  );
+  expect(await pending).toBe(false);
+  expect(state.trustedRows.value).toEqual([]);
+  expect(state.trustedCursor.value).toBeNull();
+  expect(replacement.profile.value?.public_id).toBe(other);
+  expect(replacement.trustedRows.value).toEqual([]);
+  expect(writes).toHaveLength(0);
 });
