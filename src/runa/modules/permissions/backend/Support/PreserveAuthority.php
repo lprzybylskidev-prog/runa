@@ -6,9 +6,9 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Data\AuthorityLock;
 
 /** Trusted invariant participant uses Auth's public non-recursive eligibility contract. */
 final readonly class PreserveAuthority implements AuthorityGuard

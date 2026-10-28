@@ -12,9 +12,9 @@ use Runa\Contracts\Modules\ManagementEntity;
 use Runa\Contracts\Modules\ManagementField;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
-use Runa\Support\Modules\Data\AuthorityLock;
 use Tests\Fixtures\CoreModuleStorage;
 
 it('unwinds trusted principal and recursive resolution across failed and sequential roots', function (): void {

@@ -5,12 +5,12 @@ namespace Runa\Modules\Permissions\Actions;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Str;
+use Runa\ModuleFramework\Data\AuthorityLock;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditWriter;
 use Runa\Modules\Permissions\Contracts\DeclarationPreview;
 use Runa\Modules\Permissions\Support\DeclarationCatalog;
-use Runa\Support\Modules\Data\AuthorityLock;
-use Runa\Support\Modules\ModuleRegistry;
 
 /** Trusted install/update only; no ordinary mutation API and no assignment side effects. */
 final readonly class SynchronizeDeclarations

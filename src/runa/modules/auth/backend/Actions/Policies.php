@@ -7,15 +7,15 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingsActor;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\Modules\Auth\Contracts\AuthPolicies;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
-use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
-use Runa\Support\Modules\Settings\SettingsDefinitions;
 
 final readonly class Policies implements AuthPolicies
 {

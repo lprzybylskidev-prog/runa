@@ -5,8 +5,12 @@ namespace Runa\Support\Modules\Api;
 use ReflectionNamedType;
 use Runa\Contracts\Modules\ApiDefinition;
 use Runa\Contracts\Modules\ApiProvider;
+use Runa\ModuleFramework\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\Api\OperationScope;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\Modules\ModuleRecord;
-use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 
 final readonly class ModuleApis

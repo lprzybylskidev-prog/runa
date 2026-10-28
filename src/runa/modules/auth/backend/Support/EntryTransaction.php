@@ -5,13 +5,13 @@ namespace Runa\Modules\Auth\Support;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Data\AuthorityLock;
 
 /** Registry -> settings -> authority -> Auth user -> token; one default connection. */
 final readonly class EntryTransaction

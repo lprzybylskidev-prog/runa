@@ -3,7 +3,7 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
-use Runa\Support\Modules\Management\ModuleManagement;
+use Runa\ModuleFramework\Management\ModuleManagement;
 use Throwable;
 
 final class DescribeModuleManagement extends Command

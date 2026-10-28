@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -13,7 +14,6 @@ use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class StepUp implements AuthStepUp
 {

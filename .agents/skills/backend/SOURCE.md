@@ -27,3 +27,7 @@ Public/internal API boundary routing was added from the owner-approved
 RM-2026-012 source review on 2026-10-27. Its authoritative rule is
 `docs/runa/handbook/architecture/public-api.md`; no upstream refresh or new
 dependency was involved.
+
+RM-2026-012 point 13 synchronized internal namespace guidance on 2026-10-28
+against the delivered public API boundary. This is local Runa guidance; no
+upstream source or dependency changed.

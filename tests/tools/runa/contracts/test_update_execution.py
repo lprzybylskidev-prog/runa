@@ -87,7 +87,7 @@ class Execution(unittest.TestCase):
     def setUp(self) -> None:
         self.fixture = UpdaterWorkspace(self.addCleanup)
         (self.fixture.installed / ".runtime/production").chmod(0o700)
-        modules = self.fixture.target / "src/runa/Support/Modules/Updates/ModuleUpdates.php"
+        modules = self.fixture.target / "src/runa/ModuleFramework/Updates/ModuleUpdates.php"
         modules.parent.mkdir(parents=True, exist_ok=True)
         modules.write_text("<?php // target module update capability fixture")
         self.engine = Runtime(self.fixture)
@@ -256,10 +256,19 @@ class Execution(unittest.TestCase):
         self.assertTrue(self.engine.fenced)
 
     def test_execution_legacy_target_without_module_phase_remains_supported(self) -> None:
-        (self.fixture.target / "src/runa/Support/Modules/Updates/ModuleUpdates.php").unlink()
+        (self.fixture.target / "src/runa/ModuleFramework/Updates/ModuleUpdates.php").unlink()
         result = self.apply()
         self.assertEqual(result["status"], "completed", result)
         self.assertNotIn("modules", self.engine.events)
+
+    def test_execution_previous_platform_layout_still_runs_module_preparation(self) -> None:
+        current = self.fixture.target / "src/runa/ModuleFramework/Updates/ModuleUpdates.php"
+        previous = self.fixture.target / "src/runa/Support/Modules/Updates/ModuleUpdates.php"
+        previous.parent.mkdir(parents=True, exist_ok=True)
+        current.rename(previous)
+        result = self.apply()
+        self.assertEqual(result["status"], "completed", result)
+        self.assertIn("modules", self.engine.events)
 
     def test_execution_failure_boundaries_resume_without_replaying_completed_seed_effects(
         self,

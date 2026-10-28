@@ -3,14 +3,14 @@
 namespace Runa\Modules\Auth\Queries;
 
 use Illuminate\Database\Connection;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleAvailability;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Auth\Contracts\PreferenceProvider;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\PreferenceDeclarations;
-use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\ModuleAvailability;
-use Runa\Support\Modules\ModuleRegistry;
 
 final readonly class AccountPreferenceSnapshot
 {

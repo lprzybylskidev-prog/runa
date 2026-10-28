@@ -16,11 +16,11 @@ use Runa\Http\Middleware\EnforceAccountPolicy;
 use Runa\Http\Middleware\EnforceEffectiveMaintenance;
 use Runa\Http\Middleware\SessionPersistence;
 use Runa\Http\Middleware\ThrottleAuthEntry;
+use Runa\ModuleFramework\Api\ModuleHttp;
+use Runa\ModuleFramework\Api\ModuleHttpGuard;
+use Runa\ModuleFramework\Console\ModuleConsole;
+use Runa\ModuleFramework\Frontend\ModuleFrontendRoutes;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
-use Runa\Support\Modules\Api\ModuleHttp;
-use Runa\Support\Modules\Api\ModuleHttpGuard;
-use Runa\Support\Modules\Console\ModuleConsole;
-use Runa\Support\Modules\Frontend\ModuleFrontendRoutes;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 

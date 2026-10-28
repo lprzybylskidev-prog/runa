@@ -4,20 +4,20 @@ use App\Modules\Reference\Contracts\Ping;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\DB;
+use Runa\ModuleFramework\Api\ModuleHttp;
+use Runa\ModuleFramework\Console\ModuleConsole;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleHealth;
+use Runa\ModuleFramework\ModuleManifest;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Console\ModuleConsole;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\ModuleHealth;
-use Runa\Support\Modules\ModuleManifest;
-use Runa\Support\Modules\ModuleRegistry;
-use Runa\Support\Modules\ModuleTransitions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Storage\ModuleStorage;
-use Runa\Support\Modules\Updates\ModuleUpdates;
 use Runa\Support\Modules\Work\ModuleWork;
 
 it('integrates reference updates HTTP frontend scheduler worker and draining lifecycle on PostgreSQL', function (): void {

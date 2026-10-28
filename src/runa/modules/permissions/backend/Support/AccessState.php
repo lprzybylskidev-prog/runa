@@ -4,11 +4,11 @@ namespace Runa\Modules\Permissions\Support;
 
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\ModuleAvailability;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\ModuleAvailability;
 
 /** Owned, bounded projections shared by assignment and definition operations. No grant cache. */
 final readonly class AccessState

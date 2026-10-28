@@ -9,9 +9,9 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
 use Runa\Contracts\Modules\HttpAccountPolicy;
 use Runa\Http\AuthAccountBridge;
+use Runa\Integration\Core\PermissionGate;
 use Runa\Modules\Auth\Actions\AuthenticateCredentials;
 use Runa\Modules\Auth\Actions\RegisterAccount;
-use Runa\Support\Modules\Api\PermissionGate;
 
 /** Package routes must be disabled before any provider boots, even on a cold install. */
 final class AuthTransportServiceProvider extends ServiceProvider

@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Runa\Configuration\ConfigurationValidator;
 use Runa\Console\Commands\Database\GuardedFreshCommand;
 use Runa\Providers\RunaServiceProvider;
-use Runa\Support\ConfigurationValidator;
-use Runa\Support\RuntimeHeartbeat;
+use Runa\Runtime\RuntimeHeartbeat;
 
 it('composes customer code and platform behavior under one Laravel base', function (): void {
     expect(base_path())->toBe(realpath(__DIR__.'/../../../../src'))

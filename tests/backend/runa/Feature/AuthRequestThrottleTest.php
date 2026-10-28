@@ -8,7 +8,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\RateLimiter;
 use Runa\Contracts\Modules\AuthRequestThrottle;
 use Runa\Http\Middleware\ThrottleAuthEntry;
-use Runa\Support\Modules\Api\NoAuthRequestThrottle;
+use Runa\Integration\Core\NoAuthRequestThrottle;
 use Runa\Support\Modules\Api\OperationRejected;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

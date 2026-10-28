@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Artisan;
+use Runa\Identity\ApplicationManifest;
 use Runa\Providers\RunaServiceProvider;
-use Runa\Support\ApplicationManifest;
 use Runa\Support\VersionCompatibility;
 
 it('matches the documented stable compatibility grammar', function (string $range, string $version, bool $expected) {

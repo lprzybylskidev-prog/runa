@@ -61,6 +61,30 @@ module operations use guarded adapters. Local helpers such as Auditable and scop
 Audit suppression have their own transaction and field rules. Private resolvers,
 foreign models/queries and reserved installation writers are not shortcuts.
 
+## Platform implementation homes
+
+The module engine lives in `Runa\ModuleFramework`, with registry-aware module
+loading, admission, lifecycle, persistence and update orchestration. Reserved
+Auth/Audit/Permissions bridges live in `Runa\Integration\Core`. Identity,
+configuration, logging, mail and runtime infrastructure use their respective
+platform namespaces. These are internal implementation homes, not customer APIs.
+
+Documented public adapters and values retain their existing `Runa\Support`
+identities, including WorkContext, ModuleApis, ModuleWork, ModuleSettings,
+ModuleFrontend, ModuleModel, ModuleSchema, ModuleStorage and LogContext. A public
+adapter can receive internal container dependencies without making those engines
+customer construction or extension seams. Use the documented adapter or CLI.
+
+`Runa\Support\Modules\Work\ModuleJob` also retains its exact identity because
+Laravel serializes it into durable queue envelopes. It remains internal; customers
+dispatch through ModuleWork. Do not rename persisted classes as directory cleanup.
+
+RunaServiceProvider remains the configured entrypoint. It registers the module
+framework, Core integration and development providers explicitly. Auth transport
+keeps its separate Fortify/HTTP provider. Platform boot retains logging, queue
+admission and heartbeat ordering. Composer excludes module source from classmap
+scanning; the guarded module loader remains responsible for module classes.
+
 ## Frontend composition and replacement
 
 Use public `@/runa/ui`, `@/runa/auth`, `@/runa/http`, `@/runa/modules` and their

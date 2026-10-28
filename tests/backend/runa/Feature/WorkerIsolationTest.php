@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\TestDatabaseGuard;
 use Symfony\Component\Process\Process;
 

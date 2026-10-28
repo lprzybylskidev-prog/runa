@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Runa\Contracts\Modules\HttpAccess;
 use Runa\Contracts\Modules\HttpAccountPolicy;
-use Runa\Support\Modules\Api\PrincipalScope;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Symfony\Component\HttpFoundation\Response;
 
 /** Ordinary API routes share Auth's session predicates; module routes use their own adapter. */

@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
 use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\OperationContext;
+use Runa\Logging\QueueLogContext;
+use Runa\ModuleFramework\Api\OperationScope;
 use Runa\Support\Logging\LogContext;
-use Runa\Support\Logging\QueueLogContext;
-use Runa\Support\Modules\Api\OperationScope;
 use Tests\Fixtures\LoggingJob;
 
 beforeEach(function (): void {

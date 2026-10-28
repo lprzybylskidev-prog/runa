@@ -16,8 +16,10 @@ use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Contracts\Modules\UpgradeContext;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Settings\NoSettingsParticipation;
+use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\Support\Modules\ModuleRecord;
-use Runa\Support\Modules\ModuleRegistry;
 use RuntimeException;
 use Throwable;
 

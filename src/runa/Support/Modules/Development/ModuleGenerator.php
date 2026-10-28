@@ -4,9 +4,9 @@ namespace Runa\Support\Modules\Development;
 
 use Illuminate\Support\Str;
 use InvalidArgumentException;
-use Runa\Support\Modules\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleManifest;
 use Runa\Support\Modules\ModuleIdentity;
-use Runa\Support\Modules\ModuleManifest;
 use RuntimeException;
 use Throwable;
 

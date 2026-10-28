@@ -3,8 +3,8 @@
 namespace Runa\Foundation;
 
 use Illuminate\Foundation\Application as LaravelApplication;
-use Runa\Support\MaintenanceState;
-use Runa\Support\RuntimeHeartbeat;
+use Runa\Runtime\MaintenanceState;
+use Runa\Runtime\RuntimeHeartbeat;
 
 final class Application extends LaravelApplication
 {

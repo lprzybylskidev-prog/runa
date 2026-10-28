@@ -5,11 +5,11 @@ namespace Runa\Modules\Permissions\Queries;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\ModuleAvailability;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Modules\Permissions\Contracts\PermissionPage;
 use Runa\Modules\Permissions\Contracts\Permissions;
-use Runa\Support\Modules\Api\PrincipalScope;
-use Runa\Support\Modules\ModuleAvailability;
 
 /** Deliberately uncached: all workers and reused scopes read committed current assignments. */
 final readonly class ResolvePermissions implements Permissions

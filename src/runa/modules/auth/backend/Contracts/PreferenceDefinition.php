@@ -2,7 +2,7 @@
 
 namespace Runa\Modules\Auth\Contracts;
 
-use Runa\Support\Modules\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\BoundaryValues;
 
 final readonly class PreferenceDefinition
 {

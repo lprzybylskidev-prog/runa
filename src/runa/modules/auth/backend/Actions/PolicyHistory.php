@@ -8,8 +8,8 @@ use Runa\Contracts\Modules\SettingsAuthorization;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Auth\Models\User;
-use Runa\Support\Modules\Data\AuthorityLock;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Synchronous required persistence behind the settings fence; never an observer. */

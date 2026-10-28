@@ -4,7 +4,7 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\SettingsObserver;
-use Runa\Support\Modules\Api\DenyProtectedOperations;
+use Runa\Integration\Core\DenyProtectedOperations;
 
 require '/workspace/src/vendor/autoload.php';
 

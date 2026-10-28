@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleRegistry;
 use Tests\Fixtures\ModuleSources;
 
 it('caches committed generations while discarding rolled back generations and refreshing another worker', function (): void {

@@ -6,7 +6,7 @@ use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Runa\Support\RuntimeHeartbeat;
+use Runa\Runtime\RuntimeHeartbeat;
 use Symfony\Component\Process\Process;
 
 it('keeps a maintenance-paused real daemon healthy without consuming queued work or refreshing from probes', function (): void {

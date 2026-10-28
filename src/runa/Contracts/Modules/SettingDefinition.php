@@ -3,7 +3,7 @@
 namespace Runa\Contracts\Modules;
 
 use InvalidArgumentException;
-use Runa\Support\Modules\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\BoundaryValues;
 
 final readonly class SettingDefinition
 {

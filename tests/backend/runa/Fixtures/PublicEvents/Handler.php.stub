@@ -6,7 +6,7 @@ final class Handler implements \Runa\Contracts\Modules\WorkHandler
     public function handle(\Runa\Support\Modules\Work\WorkContext $context, array $payload): void
     {
         $event = \Runa\Contracts\Modules\PublicEvent::fromArray($payload);
-        $scope = app(\Runa\Support\Modules\Api\OperationScope::class)->current();
+        $scope = app(\Runa\ModuleFramework\Api\OperationScope::class)->current();
         \Tests\Fixtures\EventCalls::$calls[] = ['async', $event->id, $context->deliveryKey(), $scope->originModule];
         if (\Tests\Fixtures\EventCalls::$async !== null) { (\Tests\Fixtures\EventCalls::$async)($context, $event); }
     }

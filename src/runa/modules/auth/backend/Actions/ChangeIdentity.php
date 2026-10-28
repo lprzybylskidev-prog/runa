@@ -9,6 +9,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
@@ -19,7 +20,6 @@ use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Data\AuthorityLock;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Trusted owning use cases. Administrative ingress additionally requires API permission. */

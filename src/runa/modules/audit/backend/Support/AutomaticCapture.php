@@ -7,6 +7,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditModelPolicy;
@@ -14,7 +15,6 @@ use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditSuppression;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Api\OperationGuard;
 
 final readonly class AutomaticCapture
 {

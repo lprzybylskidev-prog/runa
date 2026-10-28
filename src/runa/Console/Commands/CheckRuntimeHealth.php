@@ -4,7 +4,7 @@ namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Runa\Support\RuntimeHeartbeat;
+use Runa\Runtime\RuntimeHeartbeat;
 
 final class CheckRuntimeHealth extends Command
 {

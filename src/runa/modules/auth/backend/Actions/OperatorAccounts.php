@@ -7,6 +7,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingsActor;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Auth\Contracts\NewIdentity;
@@ -16,7 +17,6 @@ use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Trusted local installer/CLI entrypoint. No public issuance endpoint or module API. */

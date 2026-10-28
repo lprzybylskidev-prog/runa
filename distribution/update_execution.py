@@ -586,7 +586,13 @@ def execute(
                 done("platform-seeders/upgrades")
             if "platform-modules" not in journal["completed"]:
                 begin("platform-modules")
-                if (target / "src/runa/Support/Modules/Updates/ModuleUpdates.php").is_file():
+                if any(
+                    (target / path).is_file()
+                    for path in (
+                        "src/runa/ModuleFramework/Updates/ModuleUpdates.php",
+                        "src/runa/Support/Modules/Updates/ModuleUpdates.php",
+                    )
+                ):
                     runtime.data("modules", journal["target"]["commit"])
                 journal["module_steps"] = runtime.metadata().get("module_steps", [])
                 done("platform-modules")

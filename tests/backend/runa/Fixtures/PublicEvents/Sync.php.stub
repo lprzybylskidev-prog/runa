@@ -5,7 +5,7 @@ final class Sync implements \Runa\Contracts\Modules\EventListener
     public function __construct() { \Tests\Fixtures\EventCalls::$constructed++; }
     public function handle(\Runa\Contracts\Modules\PublicEvent $event, string $deliveryKey): void
     {
-        $scope = app(\Runa\Support\Modules\Api\OperationScope::class)->current();
+        $scope = app(\Runa\ModuleFramework\Api\OperationScope::class)->current();
         \Tests\Fixtures\EventCalls::$calls[] = [$scope->operation, $event->id, $deliveryKey, $scope->originModule];
         if (\Tests\Fixtures\EventCalls::$sync !== null) { (\Tests\Fixtures\EventCalls::$sync)($event, $deliveryKey); }
     }

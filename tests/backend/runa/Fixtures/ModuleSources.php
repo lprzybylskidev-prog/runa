@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Illuminate\Support\Facades\File;
-use Runa\Support\Modules\ModuleManifest;
+use Runa\ModuleFramework\ModuleManifest;
 
 final class ModuleSources
 {

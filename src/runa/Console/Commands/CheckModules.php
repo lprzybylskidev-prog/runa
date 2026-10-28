@@ -3,9 +3,9 @@
 namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\Modules\Development\ModuleContractSuite;
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\ModuleRegistry;
 use Throwable;
 
 final class CheckModules extends Command

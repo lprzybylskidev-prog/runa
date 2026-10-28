@@ -5,6 +5,7 @@ namespace Runa\Modules\Permissions\Actions;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Modules\Permissions\Contracts\AuthorityPreview;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
@@ -12,7 +13,6 @@ use Runa\Modules\Permissions\Contracts\RoleDeletionPreview;
 use Runa\Modules\Permissions\Support\AccessState;
 use Runa\Modules\Permissions\Support\AccessTransaction;
 use Runa\Modules\Permissions\Support\PreserveAuthority;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class ManageAuthority implements PermissionsAuthority
 {

@@ -1,7 +1,7 @@
 <?php
 
-use Runa\Support\ApplicationManifest;
-use Runa\Support\PlatformManifest;
+use Runa\Identity\ApplicationManifest;
+use Runa\Identity\PlatformManifest;
 
 it('keeps the placeholder application and installed platform versions independent', function () {
     $platform = PlatformManifest::load(base_path('runa/platform.json'));

@@ -5,6 +5,7 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
@@ -15,7 +16,6 @@ use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PreferenceDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 use Runa\Support\Modules\ModuleIdentity;
 
 final readonly class AccountPreferences implements AuthPreferences

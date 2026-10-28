@@ -9,6 +9,11 @@ use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Integration\Core\DenyAuthorityChanges;
+use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\PolicyHistory;
@@ -19,15 +24,10 @@ use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
-use Runa\Support\Modules\Api\DenyAuthorityChanges;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Api\OperationGuard;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 use Runa\Support\Modules\Development\ModuleContractSuite;
-use Runa\Support\Modules\ModuleRegistry;
 use Runa\Support\Modules\Settings\ModuleSettings;
-use Runa\Support\Modules\Updates\ModuleUpdates;
 use Tests\Fixtures\CoreModuleStorage;
 
 beforeEach(function (): void {

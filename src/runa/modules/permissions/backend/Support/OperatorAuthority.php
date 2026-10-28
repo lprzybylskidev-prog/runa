@@ -5,8 +5,8 @@ namespace Runa\Modules\Permissions\Support;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Auth\Contracts\OperatorAuthority as OperatorContract;
-use Runa\Support\Modules\Data\AuthorityLock;
 
 /** Only the trusted framework operator bridge calls this participant, never public ingress. */
 final readonly class OperatorAuthority implements OperatorContract

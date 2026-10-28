@@ -177,7 +177,13 @@ class DeploymentService:
                 self.runtime.platform_data(sha, "migrations", release)
                 phase("platform-seeding")
                 self.runtime.platform_data(sha, "required-seeds", release)
-                if (release / "src/runa/Support/Modules/Updates/ModuleUpdates.php").is_file():
+                if any(
+                    (release / path).is_file()
+                    for path in (
+                        "src/runa/ModuleFramework/Updates/ModuleUpdates.php",
+                        "src/runa/Support/Modules/Updates/ModuleUpdates.php",
+                    )
+                ):
                     phase("platform-modules")
                     self.runtime.platform_data(sha, "modules", release)
                 phase("application-migrations")

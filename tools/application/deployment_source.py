@@ -50,6 +50,7 @@ class SourceAcquisition:
                     "src/runa/modules",
                     "src/app/modules",
                     "src/runa/Support/Modules/Updates",
+                    "src/runa/ModuleFramework/Updates",
                 ],
                 capture_output=True,
             ).stdout

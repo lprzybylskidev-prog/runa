@@ -3,9 +3,9 @@
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Runa\Contracts\Modules\LifecyclePreview;
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\ModuleGraph;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleGraph;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Support\Modules\RegistrySnapshot;
 use Tests\Fixtures\ModuleSources;
 

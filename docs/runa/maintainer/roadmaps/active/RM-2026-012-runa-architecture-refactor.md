@@ -56,10 +56,9 @@ and tooling, with shared test infrastructure and separate owner/customer suites.
 The owner expanded planning on 2026-10-27 to cover all `src/runa`: public
 customer extension/consumption APIs, platform/module internals, PHP composition,
 frontend replacement, generators/templates, build/development support and their
-source/delivery boundaries. Findings and proposed implementation points below are
-planning only. No newly planned runtime refactor has started. Public/internal API
-guardrails are documented now; final layout-specific instruction updates remain
-part of implementation.
+source/delivery boundaries. Points 11–13 have delivered the frontend test repair,
+API/placement map and platform PHP reorganization. Points 14–19 remain pending;
+final layout-specific instruction reconciliation remains part of implementation.
 
 ### Out of scope
 
@@ -163,6 +162,13 @@ Do not rewrite mature Python engines in PHP or move PHP Actions into Python.
   to reflect the expanded scope. Retain ID, release metadata and all completed
   evidence. Original Python inventory paths remain historical identities; the
   reconciliation map records the current roadmap target.
+
+- 2026-10-28 — The owner approved retaining the exact file/FQCN identity of
+  `Runa\Support\Modules\Work\ModuleJob` in point 13. Laravel serializes this
+  envelope into durable queue payloads; it remains internal, with no alias or
+  duplicated engine. Correct the point-12 target map and add persisted-envelope
+  regression coverage. The owner noted there is currently no database data; no
+  database reset, payload rewrite or destructive operation is needed.
 
 ### Audit basis and limits
 
@@ -1269,7 +1275,7 @@ implementation. Build their harnesses/scenarios first and execute them at the en
   - Frozen specification: [API and placement map](../../architecture/api-boundary/README.md),
     with complete baseline file and source-anchored signature inventories.
 
-- [ ] 13. Reorganize platform PHP internals and composition.
+- [x] 13. Reorganize platform PHP internals and composition.
   - Prerequisites: point 12's compatible target map; findings F03–F07 and F22–F23.
   - Give the module framework an explicit internal home and separate supported
     adapters/base classes from registries, locks, persistence and resolvers.
@@ -1308,6 +1314,10 @@ implementation. Build their harnesses/scenarios first and execute them at the en
     customer-facing type/props/slot/controller surface needed for own screens.
     Distinguish public module exports from private components/composables and
     prevent examples such as Reference from teaching implementation imports.
+  - Repair the existing strict TypeScript failure in
+    `tests/frontend/runa/unit/fixtures/customization/CustomerEntry.vue` (line 31,
+    untyped callback parameter), observed during development setup on 2026-10-28.
+    Preserve replacement behavior and required assertions.
   - Keep defaults usable; support subtree presentation/layout overrides, custom
     forms/pages/navigation, full frontend replacement, module pages/slots and
     application error-layout composition without protected source edits.
@@ -2578,6 +2588,70 @@ tools/maintainer/quality-status`. Do not poll, substitute internal runners or
   Exact delivered-layout updates belong to their implementation points and the
   point-19 reconciliation. Public boundary guidance now records the stable-entry
   compatibility constraint without publishing owner-only migration artifacts.
+
+### Point 13 completion — platform internals and explicit composition (2026-10-28)
+
+- Applied the point-12 map to 68 private PHP classes: module engines now live in
+  ModuleFramework, named Core bridges in Integration/Core, and infrastructure in
+  Identity, Configuration, Logging, Mail, Runtime and Http. Public Support adapter,
+  value, exception and WorkHandler/WorkContext identities remain supported. The
+  owner-approved correction retains ModuleJob's exact serialized class identity;
+  no alias, copied engine or database reset was introduced.
+- RunaServiceProvider remains the configured entrypoint and registers explicit
+  ModuleFramework/CoreIntegration/Development providers. Core security bindings
+  remain lazy and bindIf precedence is preserved. Root boot retains the existing
+  logging, queue-admission and heartbeat callback order; AuthTransport retains
+  Fortify/HTTP ownership. Module loading remains registry/hash guarded. Explicit
+  Composer classmap exclusions remove module PSR-4 notices without bypassing that
+  loader. Fixed the central private fixture loader's missing path separator, found
+  by the focused registry diagnostic.
+- Reconciled current PHP, test/native fixtures, configuration, platform preparation,
+  release checks and external module planning consumers. Docker PHP source stages
+  include the moved runtime homes. Version-separated planners and deployment/update
+  capability probes retain both previous Support and current ModuleFramework target
+  layouts; rollback source hashes cover both. No source/image acceptance ran.
+- Auth, Audit and Permissions use compatible PATCH 1.0.2 for internal collaborator
+  imports, each with a new source-only forward edge. Public contracts/dependency
+  ranges stay compatible. Existing migration and Upgrade handler bytes, version
+  edges and recorded data histories are preserved; Permissions initialization now
+  imports the relocated collaborators. Pending-source/fingerprint refusal remains
+  intact. No business-data migration or production operation ran.
+- Focused evidence: four new PHP composition/autoload/public-signature/persisted
+  envelope/isolated target-planner cases passed (310 assertions across the two
+  selections); existing registry-loader case passed (2 assertions); the real queue
+  envelope case passed (15 assertions) in one disposable worker. Two updater layout
+  cases and one deployment failure-boundary case passed through supported Python
+  transports. Three module version checks against main returned no errors.
+  Composer regeneration/package discovery passed without module PSR-4 notices.
+  A targeted stale-symbol search found no old relocated FQCNs in current consumers.
+- Initial diagnostic failures were resolved: the autoload test now respects Core
+  contracts' guarded loading instead of expecting unconditional module imports;
+  the planner fixture checks its actual public pending_upgrades field. The registry
+  probe exposed the private fixture loader separator bug. A mistaken queue filter
+  collected no tests and was replaced by the exact existing case. Running that case
+  on the preserved base test database correctly refused its unrelated Core state;
+  the supported single-worker selection passed without changing those records.
+- Knowledge was initially unavailable because app was stopped, then available but
+  stale after these documentation edits; focused original sources supplied context.
+  Supported dev:up attempted normal setup, whose existing frontend typecheck failed
+  at CustomerEntry.vue:31 before Vite/image acceptance. This incidental setup check
+  is not final verification; point 15 now explicitly owns that fixture correction.
+  No full suite, full static analysis, scanner pipeline or intentional broad build
+  ran. Mandatory staged hooks and incremental knowledge refresh apply to the commit.
+- Updated the public API/module guides, placement-map status and owner/customer
+  backend references with local provenance. Root AGENTS and Laravel/security/Docker
+  products already require the same public boundary, guarded loading, container
+  ownership and scoped checks; they need no duplicate rule. Frontend/RAG rules are
+  unchanged; layout-specific remaining reconciliation stays in points 14–19.
+- The runner showed and removed only its disposable runa_test_test_1 database.
+  Preserved base runa_test, development data/services, Qdrant/model/builder caches,
+  backups and reports. No disposable Docker simulation resources were created or
+  deleted. Supported startup/tool transports retain their operational resources.
+  Incremental knowledge refresh reached 189 documents/3133 chunks with no stale,
+  missing or orphan chunks (21 embedded, 13 removed). Its supported transport
+  prepared operational management tag runa-management:bb12fe0c186bd993ba0a8fee
+  after Dockerfile changed; retain it for current tooling, not acceptance evidence.
+  VERSION remains 0.5.0, confirmed feature projection 0.6.0; point 14 is next.
 
 ### Draft preparation validation (historical)
 

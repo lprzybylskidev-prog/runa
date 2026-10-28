@@ -1,7 +1,8 @@
 # RM-2026-012 API and placement map
 
 This is the point-12 migration specification. It freezes compatible targets for
-points 13–19; it does not claim those moves have shipped. The public authority for
+points 13–19. Point 13 delivers the platform PHP relocations and provider split;
+remaining targets are planned until their owning points are complete. The public authority for
 customer use remains [the API boundary](../../../handbook/architecture/public-api.md)
 and each capability's linked public guide. Ordinary Laravel application code and
 optional application-owned modules remain equally supported.
@@ -181,6 +182,12 @@ implies automatic registration. Customer-authored existing files remain protecte
 by reviewed update decisions, never silently moved or overwritten.
 
 ## New composition and migration order
+
+The owner approved one target correction on 2026-10-28: retain the exact
+`Support/Modules/Work/ModuleJob.php` file and FQCN as the durable queue envelope.
+Laravel serializes its class identity; internal audience does not make a persisted
+identity disposable. The target inventory reflects this retained transport, with
+no alias or parallel implementation. Other work engines move as planned.
 
 Point 13 keeps RunaServiceProvider as the configured entrypoint and delegates to
 `Providers/ModuleFrameworkServiceProvider`, `Providers/CoreIntegrationServiceProvider`

@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 1.0.2 — 2026-10-28
+
+- Reconcile internal platform collaborators with the module framework and Core integration homes; public contracts and runtime behavior remain compatible.
+- Add a source-only forward edge with no schema or data transformation.
+
 ## 1.0.1 — 2026-10-27
 
 - Relocate module test metadata and cases to the central owner test tree; runtime APIs and data remain unchanged.

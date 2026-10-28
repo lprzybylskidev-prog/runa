@@ -79,11 +79,11 @@ $plan = $generator->plan('app.central_probe');
 $expected = 'tests/backend/app/modules/central_probe/ModuleContractTest.php';
 if (! isset($plan[$expected]) || isset($plan['src/app/modules/central_probe/tests/ModuleContractTest.php'])) { exit(11); }
 $generator->write($plan);
-$source = (new Runa\Support\Modules\ModuleDiscovery($root.'/src', true))->discover('app')[0];
+$source = (new Runa\ModuleFramework\ModuleDiscovery($root.'/src', true))->discover('app')[0];
 if ($source->manifest->definition['tests'] !== ['tests/backend/app/modules/central_probe']) { exit(12); }
 unlink($root.'/'.$expected);
 rmdir($root.'/tests/backend/app/modules/central_probe');
-if (count((new Runa\Support\Modules\ModuleDiscovery($root.'/src', true))->discover('app')) !== 1) { exit(13); }
+if (count((new Runa\ModuleFramework\ModuleDiscovery($root.'/src', true))->discover('app')) !== 1) { exit(13); }
 try { $generator->write(['tests/backend/runa/modules/central_probe/Foreign.php' => '<?php']); exit(14); }
 catch (InvalidArgumentException) {}
 if (file_exists($root.'/tests/backend/runa')) { exit(15); }

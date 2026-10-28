@@ -7,7 +7,7 @@ require_once __DIR__.'/PlatformTestCase.php';
 spl_autoload_register(static function (string $class): void {
     $prefix = 'Tests\\Fixtures\\';
     if (str_starts_with($class, $prefix)) {
-        $path = __DIR__.'/Fixtures'.str_replace('\\', '/', substr($class, strlen($prefix))).'.php';
+        $path = __DIR__.'/Fixtures/'.str_replace('\\', '/', substr($class, strlen($prefix))).'.php';
         if (is_file($path)) {
             require_once $path;
         }

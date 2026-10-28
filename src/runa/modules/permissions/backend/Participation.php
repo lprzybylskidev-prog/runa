@@ -4,10 +4,10 @@ namespace Runa\Modules\Permissions;
 
 use Runa\Contracts\Modules\PreparationContext;
 use Runa\Contracts\Modules\PreparationParticipant;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Audit\Contracts\AuditWriter;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\ModuleRegistry;
 
 /** Reserved default-connection capability only; never ordinary runtime ingress. */
 final readonly class Participation implements PreparationParticipant

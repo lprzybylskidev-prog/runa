@@ -5,10 +5,10 @@ namespace Runa\Modules\Audit\Queries;
 use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\OwnHistory;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class ReadOwnHistory implements OwnHistory
 {

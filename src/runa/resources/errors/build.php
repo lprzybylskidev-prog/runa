@@ -1,6 +1,6 @@
 <?php
 
-use Runa\Support\HttpErrorPage;
+use Runa\Http\HttpErrorPage;
 
 // Build standalone assets without booting Laravel, loading env files or accessing a database.
 require dirname(__DIR__, 3).'/vendor/autoload.php';

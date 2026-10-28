@@ -1,9 +1,5 @@
 <?php
 
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\Updates\ModuleStepHistory;
-use Runa\Support\Modules\Updates\ModuleUpdatePlanner;
-
 // Isolated read-only target-release planner. No Laravel boot, database, network or writable source mounts.
 try {
     $installed = $argv[1] ?? '/installed';
@@ -17,20 +13,25 @@ try {
             }
         }
     }, prepend: true);
-    $sources = (new ModuleDiscovery($root, true))->discover('runa');
-    spl_autoload_register(static function (string $class) use ($sources, $root): void {
+    // Fixed target-generation selection; never substitute installed platform engines.
+    $namespace = is_file($root.'/runa/ModuleFramework/ModuleDiscovery.php') ? 'Runa\\ModuleFramework' : 'Runa\\Support\\Modules';
+    $discovery = $namespace.'\\ModuleDiscovery';
+    $planner = $namespace.'\\Updates\\ModuleUpdatePlanner';
+    $history = $namespace.'\\Updates\\ModuleStepHistory';
+    $sources = (new $discovery($root, true))->discover('runa');
+    spl_autoload_register(static function (string $class) use ($sources, $root, $discovery): void {
         foreach ($sources as $source) {
             if (str_starts_with($class, $source->manifest->prefix)) {
                 $path = $root.'/'.$source->path.'/backend/'.str_replace('\\', '/', substr($class, strlen($source->manifest->prefix))).'.php';
-                require_once ModuleDiscovery::ownedPath($root.'/'.$source->path, $path);
+                require_once $discovery::ownedPath($root.'/'.$source->path, $path);
 
                 return;
             }
         }
     }, prepend: true);
     $input = json_decode(stream_get_contents(STDIN), true, 32, JSON_THROW_ON_ERROR);
-    $plan = (new ModuleUpdatePlanner($root, $input['platform'], true))->plan('runa', $input['modules']);
-    ModuleStepHistory::validate($root, $plan, $input['module_steps']);
+    $plan = (new $planner($root, $input['platform'], true))->plan('runa', $input['modules']);
+    $history::validate($root, $plan, $input['module_steps']);
     echo json_encode(array_map(static fn ($module) => $module->withHistory($input['module_steps'])->toArray(), $plan), JSON_THROW_ON_ERROR);
 } catch (Throwable) {
     fwrite(STDERR, "Module target preflight failed: inspect versions, dependencies, upgrade paths and source-owned preflight contracts.\n");

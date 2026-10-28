@@ -9,6 +9,11 @@ use Runa\Contracts\Modules\PreparationContext;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Integration\Core\AuditParticipation;
+use Runa\Logging\QueueLogContext;
+use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Audit\Actions\RecordAttempt;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
@@ -17,14 +22,9 @@ use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Audit\Storage\AppendEvents;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
 use Runa\Support\Logging\LogContext;
-use Runa\Support\Logging\QueueLogContext;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
-use Runa\Support\Modules\AuditParticipation;
 use Runa\Support\Modules\Development\ModuleContractSuite;
-use Runa\Support\Modules\ModuleRegistry;
-use Runa\Support\Modules\Updates\ModuleUpdates;
 use Tests\Fixtures\CoreModuleStorage;
 
 beforeEach(function (): void {

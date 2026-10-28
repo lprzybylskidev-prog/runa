@@ -464,7 +464,7 @@ class OperationContracts(unittest.TestCase):
                     "RUNA_IMAGE_TAG=" + previous["sha"] + "\nRUNA_PRODUCTION_MODE=simulation\n"
                 )
                 (root / ".env.prod.compose").write_text(original)
-                modules = root / sha / "src/runa/Support/Modules/Updates/ModuleUpdates.php"
+                modules = root / sha / "src/runa/ModuleFramework/Updates/ModuleUpdates.php"
                 modules.parent.mkdir(parents=True)
                 modules.write_text("<?php // module update capability fixture")
                 calls = []

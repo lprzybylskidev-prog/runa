@@ -2,11 +2,11 @@
 
 namespace Runa\Modules\Audit\Support;
 
+use Runa\Logging\QueueLogContext;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Audit\Contracts\AuditActor;
 use Runa\Modules\Audit\Contracts\AuditActorResolver;
 use Runa\Support\Logging\LogContext;
-use Runa\Support\Logging\QueueLogContext;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class TrustedActor implements AuditActorResolver
 {

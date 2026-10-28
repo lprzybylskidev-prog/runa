@@ -5,7 +5,7 @@ namespace Runa\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
-use Runa\Support\ConfigurationValidator;
+use Runa\Configuration\ConfigurationValidator;
 use Throwable;
 
 final class TestMail extends Command

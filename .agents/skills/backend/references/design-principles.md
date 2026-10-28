@@ -42,6 +42,12 @@ Do not introduce a new abstraction because one method is long. First identify wh
 
 ## Module framework design boundary
 
+Platform module engines (`Runa\ModuleFramework`) and Core bridges
+(`Runa\Integration\Core`) are internal. Existing documented Support adapters
+and values retain their public identities. Follow the public API boundary for
+container dependencies, persisted queue identities and supported entrypoints;
+implementation visibility is not permission for customer imports.
+
 During a lifecycle fence, ordinary availability reads use cached own health and stop required-graph traversal. Rejected ingress must not publish on-use observations that invalidate the waiting reservation. Keep regression coverage across HTTP, retained PHP proxies, CLI, scheduler, frontend projection and real queue draining; explicit diagnostic/scheduled recovery remains independent.
 
 For module framework work, consult the [public module contracts](../../../../docs/runa/handbook/architecture/module-framework.md) and active roadmap. Use explicit owner-scoped registry synchronization during installation/deployment; request boot and snapshot reads never discover or mutate registrations. Source version is not installed data version. Modules supply health and transition/work decision policies; the base enforces the shared protocol, fences and state revisions without guessing business behavior. Use `ModuleGraph` for pure dependency/cascade previews over one registry snapshot. A transition publisher must reacquire the snapshot under its publication lock and revalidate the complete preview; graph validity alone is not health, installed-data or preparation readiness. Use `ModuleTransitions` for durable reservation/preparation/publication and recovery; do not hold a transaction over module hooks. Consume snapshot fences at operational boundaries, keep preparation idempotent/reversible by operation ID and retain recovery fences after uncertain compensation. Tombstone unregister preserves data provenance, and explicit re-registration never implies installed-data compatibility. The contract document distinguishes delivered administrative lifecycle from planned operational adapters.

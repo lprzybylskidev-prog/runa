@@ -71,7 +71,7 @@ def check_application(root: Path, target: str) -> None:
     runtime = DevelopmentRuntime.for_workspace(ROOT)
 
     loader = ROOT / "src/vendor/autoload.php"
-    script = "require $argv[1]; $manifest = Runa\\Support\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); if (Runa\\Support\\PlatformManifest::load($argv[4])->version !== trim(file_get_contents($argv[5]))) { exit(1); }"
+    script = "require $argv[1]; $manifest = Runa\\Identity\\ApplicationManifest::load($argv[2]); $manifest->assertCompatible($argv[3]); if (Runa\\Identity\\PlatformManifest::load($argv[4])->version !== trim(file_get_contents($argv[5]))) { exit(1); }"
     result = subprocess.run(
         runtime.app_command(
             [

@@ -2728,10 +2728,10 @@
       "mode": "runtime",
       "customer_source": true,
       "production": "source",
-      "target": "src/runa/ModuleFramework/Work/ModuleJob.php",
-      "point": 13,
+      "target": "src/runa/Support/Modules/Work/ModuleJob.php",
+      "point": null,
       "symbol": "Runa\\Support\\Modules\\Work\\ModuleJob",
-      "target_symbol": "Runa\\ModuleFramework\\Work\\ModuleJob"
+      "target_symbol": "Runa\\Support\\Modules\\Work\\ModuleJob"
     },
     {
       "source": "src/runa/Support/Modules/Work/ModuleQueueGuard.php",

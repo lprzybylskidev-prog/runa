@@ -10,12 +10,12 @@ use Illuminate\Support\Facades\Cookie;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Fortify;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Api\PrincipalScope;
 
 final readonly class AuthenticateSession
 {

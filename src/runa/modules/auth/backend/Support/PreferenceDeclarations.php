@@ -3,14 +3,14 @@
 namespace Runa\Modules\Auth\Support;
 
 use Illuminate\Contracts\Validation\Factory;
+use Runa\ModuleFramework\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleAvailability;
+use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Auth\Contracts\PreferenceDefinition;
 use Runa\Modules\Auth\Contracts\PreferenceProvider;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
-use Runa\Support\Modules\Api\BoundaryValues;
-use Runa\Support\Modules\Api\ModuleDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\ModuleAvailability;
-use Runa\Support\Modules\ModuleRegistry;
 
 final readonly class PreferenceDeclarations
 {

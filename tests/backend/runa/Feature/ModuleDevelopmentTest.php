@@ -3,21 +3,21 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\Api\ModuleHttp;
+use Runa\ModuleFramework\Console\ModuleConsole;
+use Runa\ModuleFramework\Events\EventDefinitions;
+use Runa\ModuleFramework\HealthPolicies;
+use Runa\ModuleFramework\LifecyclePolicies;
+use Runa\ModuleFramework\ModuleAutoloader;
+use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Support\Modules\Api\ModuleApis;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\Api\ModuleHttp;
 use Runa\Support\Modules\Api\OperationRejected;
-use Runa\Support\Modules\Console\ModuleConsole;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Development\ModuleGenerator;
-use Runa\Support\Modules\Events\EventDefinitions;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
-use Runa\Support\Modules\HealthPolicies;
-use Runa\Support\Modules\LifecyclePolicies;
-use Runa\Support\Modules\ModuleAutoloader;
-use Runa\Support\Modules\ModuleDiscovery;
-use Runa\Support\Modules\ModuleRegistry;
-use Runa\Support\Modules\Work\WorkDefinitions;
 
 beforeEach(function (): void {
     $this->directory = sys_get_temp_dir().'/runa-generator-'.bin2hex(random_bytes(8));

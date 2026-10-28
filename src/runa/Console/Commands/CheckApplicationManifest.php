@@ -4,8 +4,8 @@ namespace Runa\Console\Commands;
 
 use Illuminate\Console\Command;
 use InvalidArgumentException;
-use Runa\Support\ApplicationManifest;
-use Runa\Support\PlatformManifest;
+use Runa\Identity\ApplicationManifest;
+use Runa\Identity\PlatformManifest;
 
 final class CheckApplicationManifest extends Command
 {

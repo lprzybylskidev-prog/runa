@@ -15,11 +15,12 @@ use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\PublicEvent;
 use Runa\Contracts\Modules\WorkDecision;
 use Runa\Contracts\Modules\WorkStatus;
-use Runa\Support\Modules\Api\BoundaryValues;
-use Runa\Support\Modules\Api\OperationGuard;
-use Runa\Support\Modules\Api\OperationScope;
-use Runa\Support\Modules\Events\EventSubscriptions;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\Api\BoundaryValues;
+use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\Api\OperationScope;
+use Runa\ModuleFramework\Events\EventSubscriptions;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Work\WorkDefinitions;
 use RuntimeException;
 use Throwable;
 

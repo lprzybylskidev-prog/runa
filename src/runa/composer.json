@@ -27,7 +27,9 @@
     },
     "exclude-from-classmap": [
       "runa/management/",
-      "runa/Testing/"
+      "runa/Testing/",
+      "runa/modules/",
+      "app/modules/"
     ]
   },
   "autoload-dev": {

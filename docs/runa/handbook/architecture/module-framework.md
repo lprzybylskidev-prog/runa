@@ -121,7 +121,7 @@ New Optional registrations are disabled; Core registrations are mandatory. No fu
 
 ### Delivered discovery and registry operations
 
-After forward platform migrations, installation/deployment code can call `Runa\Support\Modules\ModuleRegistry::synchronize('runa')` or `synchronize('app')`, or invoke the trusted CLI equivalent:
+After forward platform migrations, installation/deployment code can call `Runa\ModuleFramework\ModuleRegistry::synchronize('runa')` or `synchronize('app')`, or invoke the trusted CLI equivalent:
 
 ```sh
 php artisan runa:modules:sync runa
@@ -142,7 +142,7 @@ Required dependencies form the activation/availability graph. Optional dependenc
 
 ### Delivered dependency graph and lifecycle previews
 
-`Runa\Support\Modules\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
+`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
 
 ```php
 $graph = new ModuleGraph($registry->snapshot(), $platformVersion);
@@ -446,7 +446,7 @@ Manifest `docs` references are documentation metadata, not executable paths. App
 
 ## Delivered management descriptors
 
-`Runa\Support\Modules\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, integration toggle/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
+`Runa\ModuleFramework\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, integration toggle/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
 
 Declare pure owned `ManagementProvider` classes under `declarations.management`. They return lists of schema-version-1 `ManagementPermission(key, names, descriptions)`, `ManagementAction(key, permission, names, descriptions, renderer: 'action', rendererVersion: 1)` and `ManagementComponent(key, component, permission, renderer: 'panel', rendererVersion: 1)`. Permission/action metadata requires bounded PL/EN text; future Admin selects English. Keys follow the public operation dot/snake_case grammar. Keys must be unique within each collection; each collection is limited to 128 entries. Action/component permission references must resolve to the same module's permission declarations. Permission identity is scoped by the owning module ID. An action and component may share a local key without hiding either permission reference.
 
@@ -531,7 +531,7 @@ Each definition supplies a stable key, exact nullable `from` (null means first i
 The caller owns its existing exclusive installation/deployment lock, maintenance marker, writer shutdown, operation journal, infrastructure preflight and operator recovery. After platform migrations, application deployment code may explicitly invoke:
 
 ```php
-$updates = app(\Runa\Support\Modules\Updates\ModuleUpdates::class);
+$updates = app(\Runa\ModuleFramework\Updates\ModuleUpdates::class);
 $plan = $updates->plan('app');
 // Review/record the plan and enter the deployment's maintenance/writer fence first.
 $updates->apply('app', $exactCustomerCommit, function (string $module, string $step) use ($journal): void {

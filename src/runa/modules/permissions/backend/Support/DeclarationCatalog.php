@@ -8,8 +8,8 @@ use Runa\Contracts\Modules\ManagementPermission;
 use Runa\Contracts\Modules\ManagementProvider;
 use Runa\Contracts\Modules\RoleDefinition;
 use Runa\Contracts\Modules\RoleProvider;
-use Runa\Support\Modules\Api\ModuleDeclarations;
-use Runa\Support\Modules\ModuleRegistry;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\ModuleRegistry;
 
 /** Pure source reads through existing owned management descriptors. No boot-time writes. */
 final readonly class DeclarationCatalog
