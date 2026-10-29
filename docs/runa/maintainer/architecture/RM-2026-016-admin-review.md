@@ -78,7 +78,7 @@ Primary evidence (repository-root-relative paths):
 
 Sections 1–2 and 31–34 define the review process, reporting and execution limits;
 this review and linked draft satisfy the planning artifacts. Architectural decisions
-and release metadata are deliberately unconfirmed.
+remain unconfirmed; the owner confirmed release metadata as recorded below.
 
 ### Complete Core API integration matrix
 
@@ -503,9 +503,10 @@ task changes neither product: it introduces no operating rule or delivered API.
 
 - RM-2026-016 is the next unused number after closed RM-2026-015. RM-2026-014 was
   cancelled/removed by the owner; do not reuse its historical identity.
-- Proposed platform metadata: `release_type: feature`, `proposed_version: 0.7.0`
-  after 0.6.2; MINOR for a substantial compatible capability. Both require owner
-  confirmation. It is not platform 1.0.0, nor automatic approval of a module MAJOR.
+- 2026-10-29 — Owner-confirmed platform metadata: `release_type: feature`,
+  `proposed_version: 0.7.0` after 0.6.2; MINOR for a substantial compatible
+  capability. This resolves release metadata only. It is not platform 1.0.0,
+  activation approval or automatic approval of a module MAJOR.
 - Existing application and Core manifests cap platform support below 0.7.0.
   Explicitly review/adapt their compatibility declarations in implementation;
   never have the updater silently rewrite a customer's compatibility choice.

@@ -35,8 +35,8 @@ through documented public entrypoints, without protected edits or copied securit
 
 Baseline: released 0.6.2 after closed
 [RM-2026-015](../closed/RM-2026-015-proportionate-quality-and-fixture-reuse.md).
-There is no active roadmap. Proposed `feature` / `0.7.0` is **unconfirmed**: a MINOR
-increment for substantial compatible functionality. This draft neither changes
+There is no active roadmap. The owner confirmed `feature` / `0.7.0` on 2026-10-29:
+a MINOR increment for substantial compatible functionality. This draft neither changes
 VERSION nor authorizes activation, implementation or an incompatible module MAJOR.
 Refresh baseline, predecessor order and projected version before agreement.
 
@@ -82,7 +82,9 @@ Existing standard table exports remain supported within owning read permissions.
 - **ARCH-004 — BLOCKED:** approve app-owned dynamic presentation/settings ownership,
   separate canonical identity/presentation projection and fallback semantics; or
   explicitly retain developer-managed name/logo and revise dynamic branding scope.
-- **Release metadata — BLOCKED:** owner confirmation of both `feature` and `0.7.0`.
+- 2026-10-29 — **Release metadata confirmed:** the owner explicitly confirms
+  `release_type: feature` and `proposed_version: 0.7.0`. This resolves the release
+  metadata blocker only; ARCH-001–004 and activation remain pending.
 - **Activation — BLOCKED:** explicit owner declaration after decisions and complete
   proposed public signatures are recorded. Resolving metadata alone is not activation.
 
