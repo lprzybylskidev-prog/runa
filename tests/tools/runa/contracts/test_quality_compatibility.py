@@ -393,8 +393,7 @@ class QualityCompatibility(unittest.TestCase):
         for key in ("production-acceptance", "repository-container-scan"):
             assert "exclusive_group" in nodes[key]
             self.assertEqual(nodes[key].get("exclusive_group"), "production-simulation", key)
-            self.assertIn(
-                "tests.tools.runa.acceptance.installation_host --production-only",
-                nodes[key]["command"],
-            )
+            self.assertIn("tests.tools.runa.acceptance.installation_host", nodes[key]["command"])
             self.assertNotIn("./bin/artisan runa:production:", nodes[key]["command"])
+        self.assertIn("--shared-quality-producer", nodes["production-acceptance"]["command"])
+        self.assertIn("--verify-shared-quality", nodes["repository-container-scan"]["command"])

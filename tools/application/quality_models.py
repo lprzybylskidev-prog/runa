@@ -17,6 +17,7 @@ class QualityNode(TypedDict):
     execution_context: NotRequired[Literal["application", "host"]]
     exclusive_group: NotRequired[str | None]
     depends_on_if_selected: NotRequired[list[str]]
+    command_if_selected: NotRequired[dict[str, str]]
 
 
 class QualityDefinition(TypedDict):
@@ -116,6 +117,14 @@ def quality_nodes(value: JsonValue) -> list[QualityNode]:
             dependencies = string_list(item["depends_on_if_selected"])
             if any(not re.fullmatch(r"[a-z0-9-]+", dependency) for dependency in dependencies):
                 raise ValueError("Invalid conditional quality dependencies.")
+        if "command_if_selected" in item:
+            commands = item["command_if_selected"]
+            if not isinstance(commands, dict):
+                raise ValueError("Invalid conditional quality commands.")
+            for key, command in commands.items():
+                if not re.fullmatch(r"[a-z0-9-]+", key):
+                    raise ValueError("Invalid conditional quality command identity.")
+                QualityStep.parse(dict(item, command=command))
         nodes.append(cast(QualityNode, item))
     return nodes
 

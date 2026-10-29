@@ -204,7 +204,7 @@ approved guarantee or justification for weakening coverage.
     reconcile genuine prerequisite edges, selection explanations and exclusions.
   - Author regression contracts for isolated knowledge/tooling changes, changed
     delivery boundaries, and explicit broad or combined selections.
-- [ ] 3. Reuse compatible production preparation across acceptance and scanning.
+- [x] 3. Reuse compatible production preparation across acceptance and scanning.
   - Retain exact image/source identity, healthy-scan-before-failure ordering,
     standalone workflows, phase results and scoped cleanup/recovery ownership.
   - Implement through existing harness/coordinator composition and author failure,
@@ -324,3 +324,30 @@ Public quality/command guides document the complete CLI signature, audience,
 implementation home and development-only delivery. Customer group discovery is
 synchronized. Root AGENTS and both skill products already route group selection
 to those canonical guides; no new always-loaded rule is needed in this point.
+
+## Point 3 — One production fixture for combined acceptance and scanning
+
+Source-owned conditional commands resolve within the existing graph. Combined
+selection makes production acceptance run its existing healthy scan before
+deployment failures, then makes the scanner node validate the completed phase
+evidence. Standalone groups retain native preparation and neither silently runs
+the other's scenarios. Both node identities remain; selected frontend build/render
+dependencies also precede the shared scan. Commands/alternatives and dependencies
+are included in the existing graph fingerprint, preview and closure contract.
+
+The coordinator supplies fresh per-run identity and authoritative child scope.
+Private shared evidence binds run, source candidate, branch, selection and complete
+command graph; requires exact production image IDs/revision and all five successful
+ordered phases including cleanup. Atomic native reports persist ownership before
+setup and retain interrupted/running phases for recovery. Fixtures now live under
+`.runtime/ownership` rather than host temporary directories. SIGTERM participates
+in normal guarded cleanup. Existing exact project/tag cleanup and development
+identity preservation remain in force; no cross-run reuse or runtime migration
+execution change is introduced.
+
+Authored independent/combined/all/legacy selection, ambiguous command, phase
+failure/interruption/missing/stale/ordering and cleanup-failure regressions for the
+final point. The only diagnostic so far compiled the changed Python source to
+check indentation after wrapping existing phases; no suite or native acceptance
+ran. Owner quality guide is synchronized; customer instructions need no private
+fixture procedure, and domain skills continue routing to canonical lifecycle rules.

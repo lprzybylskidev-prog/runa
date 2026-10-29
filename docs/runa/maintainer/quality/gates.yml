@@ -182,9 +182,12 @@ impact_areas:
     - id: production-acceptance
       execution_context: host
       depends_on: [configuration]
+      depends_on_if_selected: [frontend-build, frontend-render-diagnostics]
       exclusive_group: production-simulation
       description: Build and verify dedicated customer-repository production with real deployment/data/failure acceptance.
       command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --customer-deployment
+      command_if_selected:
+        repository-container-scan: python3 -m tests.tools.runa.acceptance.installation_host --production-only --customer-deployment --security-scan --shared-quality-producer
       severity: hard_fail
 
   development:
@@ -251,6 +254,8 @@ impact_areas:
       depends_on_if_selected:
         [production-acceptance, frontend-build, frontend-render-diagnostics]
       command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --security-scan
+      command_if_selected:
+        production-acceptance: python3 -m tests.tools.runa.acceptance.installation_host --verify-shared-quality
       severity: hard_fail
 
     - id: expanded-security-review

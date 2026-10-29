@@ -73,6 +73,13 @@ class KnowledgeReport(TypedDict):
     sources: list[str]
 
 
+class PhaseRecord(TypedDict):
+    result: str
+    started_at: str
+    finished_at: str | None
+    duration_seconds: float | None
+
+
 class Report(TypedDict, total=False):
     result: str
     checks: list[str]
@@ -90,6 +97,9 @@ class Report(TypedDict, total=False):
     removed_images: list[str]
     natural_queue_rollovers: list[str]
     fixture_root: str
+    phases: dict[str, PhaseRecord]
+    quality_binding: dict[str, JsonValue]
+    ownership: dict[str, JsonValue]
 
 
 Snapshot = dict[str, tuple[int, str]]

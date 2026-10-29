@@ -36,6 +36,15 @@ def select(
     for key, node in nodes.items():
         if not re.fullmatch(r"[a-z0-9-]+", key) or node["severity"] not in ("hard_fail", "warning"):
             raise ValueError("Invalid step: " + key)
+        alternatives = {
+            command
+            for dependency, command in node.get("command_if_selected", {}).items()
+            if dependency in nodes
+        }
+        if len(alternatives) > 1:
+            raise ValueError("Ambiguous conditional quality command: " + key)
+        if alternatives:
+            node["command"] = alternatives.pop()
         node["depends_on"] = list(
             dict.fromkeys(
                 node["depends_on"]

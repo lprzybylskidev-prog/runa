@@ -163,6 +163,30 @@ Starting a new run replaces the prior completed/interrupted run; reject a concur
 
 ## Parallel execution
 
+When both production acceptance and repository/image scanning are selected, the
+source-owned `command_if_selected` alternatives compose them through one installer
+invocation. The production node scans the healthy exact selected images before
+deployment/failure scenarios; the scanner node then validates the persisted phases
+instead of preparing a second fixture. Both selected node IDs/results remain in
+the graph. Standalone selections keep their full original native workflows.
+Resolved commands, alternatives and dependencies enter the graph fingerprint and
+plan preview. Selected frontend preparation still precedes the shared scan.
+
+The coordinator supplies a fresh run ID and the exact evidence directory/step to
+children, overriding ambient values. Shared evidence under
+`.runtime/quality/production-fixture.json` must match run ID, branch, candidate,
+selection and command graph; it requires successful preparation, healthy validation,
+scanning, deployment and cleanup with ordered timings and exact image IDs. A failed
+producer blocks its scanner dependent; missing/stale/incomplete phase evidence
+fails verification. This is private owner composition, not customer evidence reuse.
+
+Installer native reports under `.runtime/ownership/installation-host-*.json` are
+atomically updated before setup and at phase transitions. They retain the fixture
+root, exact projects/SMTP/certificate ownership and interrupted/failed phase state
+for recovery, including abrupt termination where the last phase remains RUNNING.
+SIGTERM/interrupt attempts normal guarded cleanup. Successful fixtures are removed;
+failed source context and all reports remain. No prior-run resource is reused.
+
 Independent steps may run in parallel.
 
 Steps that share mutable database/environment/migration/production-stack state must be sequenced safely.
