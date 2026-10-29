@@ -29,8 +29,9 @@ current grants, ordinary access/preset/copy operations, protected authority and
 last-superadministrator participation. First-administrator integration and explicit
 local development fixtures are implemented. Independent versions and limitations
 belong in their public guides/changelogs; this registry records remaining scope.
-Frontend customization reconciliation remains RM-2026-011 point 19; final integrated
-acceptance/release remains point 20. Implementation is not a final PASS claim.
+Frontend customization and integrated acceptance were delivered by closed RM-2026-011
+and refined by released RM-2026-012 (0.6.0). Use the current public presentation
+contract; this registry does not carry an open implementation or verification point.
 
 ## Auth-owned user preferences
 

@@ -293,7 +293,8 @@ provider/store, incremental indexing, retrieval and optional startup using expli
 workspace/process/clock and HTTP dependencies. Private corpus and golden additions
 are composed by excluded owner tooling; customer loaders never import it. Typed
 configuration, HTTP opener/response, provider, ranked-hit and evaluation contracts
-preserve the existing collection schema and diagnostic fields. Provider metadata
+preserve embedding-space identity and compatible diagnostic fields; the knowledge
+guide owns the explicit additive payload-schema migration. Provider metadata
 requires literal integer limits and disabled truncation; embedding coordinates
 must be finite numbers, with booleans refused. Transient GPU failures still validate
 the CPU service before retrying the same request; incompatible model metadata is

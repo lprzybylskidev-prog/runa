@@ -456,7 +456,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Implement the scenarios now; run their full comparison and live acceptance
     only in point 10. Do not weaken existing golden expectations to make changes pass.
 
-- [ ] 7. Review and reconcile the current documentation system.
+- [x] 7. Review and reconcile the current documentation system.
   - Prerequisites: point 1 review inventory, RM-012 final architecture and points
     2–6 supported knowledge behavior.
   - Review all existing owner/customer skill products and current documentation
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -622,3 +622,18 @@ to the new catalogue entry. One focused offline evaluator case passed, proving
 missing coverage/forbidden sources fail and probe failures remain visible.
 No broad/live acceptance has run. Public procedures are synchronized; owner/customer
 RAG products already reference the canonical guide and need no duplicated recipe.
+
+### Point 7 — documentation contract/ownership review (2026-10-29)
+
+Completed the grouped current-documentation/skill-product coverage review in the
+existing review record, with canonical owners, intentional scope differences,
+source comparisons, concrete findings and limits. Corrected active-state projection,
+scaffold compatibility, deferred RM-011 delivery claims, profile/sign-out design
+claims, API-map closure routing and Python payload-schema prose. Explicit reviewed
+purpose rules distinguish public module changelogs, private evidence/security/
+engineering history, current workflows and proposals. Historical source bytes,
+upstream pins and customer extension ownership are preserved.
+All nine owner/customer skill families were assessed for point 8 consolidation;
+canonical public procedures remain their source of detail. No new constitutional
+rule, runtime behavior, dependency or broad check was introduced. Both instruction
+products need consolidation rather than duplicated fixes to these guide claims.

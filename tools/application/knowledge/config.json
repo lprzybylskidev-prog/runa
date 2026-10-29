@@ -52,6 +52,22 @@
     {
       "pattern": "docs/runa/handbook/*",
       "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/handbook/modules/*/CHANGELOG.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/app/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/app/modules/reference/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/app/modules/reference/CHANGELOG.md",
+      "purpose": "historical_evidence"
     }
   ]
 }

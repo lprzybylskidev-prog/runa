@@ -50,53 +50,53 @@ Inventory is complete for tracked Markdown at activation; **inventory is not com
 Points 7–8 must review every group/product and record individual changes or justified
 no-change dispositions. Review references progressively within their own domain.
 
-| Reader / canonical group                           | Files | Review state                                              |
-| -------------------------------------------------- | ----: | --------------------------------------------------------- |
-| .agents/skills/README.md                           |     1 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/backend                             |     5 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/docker                              |     5 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/frontend                            |     9 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/laravel                             |     5 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/postgresql                          |     4 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/rag                                 |     5 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/security                            |     5 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/tailwind                            |     4 | Inventoried; review pending except point 1 sources above. |
-| .agents/skills/vue                                 |     4 | Inventoried; review pending except point 1 sources above. |
-| AGENTS.md                                          |     1 | Inventoried; review pending except point 1 sources above. |
-| README.md                                          |     1 | Inventoried; review pending except point 1 sources above. |
-| closed roadmaps (immutable history)                |    12 | Inventoried; review pending except point 1 sources above. |
-| docs/README.md                                     |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/app (application)                             |     3 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/README.md                       |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/ai                              |     4 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/architecture                    |    10 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/data                            |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/design                          |     4 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/development                     |    15 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/modules                         |    18 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/production                      |     3 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/quality                         |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/release                         |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/security                        |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/testing                         |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/tooling                         |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/handbook/workflows                       |     4 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/CHANGELOG.md                  |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/README.md                     |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/agent-contract.md             |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/architecture                  |     5 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/customer-agent (product data) |    30 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/development                   |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/evidence                      |    15 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/maintenance                   |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/production                    |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/quality                       |     2 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/release                       |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/roadmaps                      |     3 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/security                      |     7 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/testing                       |     1 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/tooling                       |     9 | Inventoried; review pending except point 1 sources above. |
-| docs/runa/maintainer/workflows                     |     3 | Inventoried; review pending except point 1 sources above. |
+| Reader / canonical group                           | Files | Review state                                           |
+| -------------------------------------------------- | ----: | ------------------------------------------------------ |
+| .agents/skills/README.md                           |     1 | Contract/ownership review complete; disposition below. |
+| .agents/skills/backend                             |     5 | Contract/ownership review complete; disposition below. |
+| .agents/skills/docker                              |     5 | Contract/ownership review complete; disposition below. |
+| .agents/skills/frontend                            |     9 | Contract/ownership review complete; disposition below. |
+| .agents/skills/laravel                             |     5 | Contract/ownership review complete; disposition below. |
+| .agents/skills/postgresql                          |     4 | Contract/ownership review complete; disposition below. |
+| .agents/skills/rag                                 |     5 | Contract/ownership review complete; disposition below. |
+| .agents/skills/security                            |     5 | Contract/ownership review complete; disposition below. |
+| .agents/skills/tailwind                            |     4 | Contract/ownership review complete; disposition below. |
+| .agents/skills/vue                                 |     4 | Contract/ownership review complete; disposition below. |
+| AGENTS.md                                          |     1 | Contract/ownership review complete; disposition below. |
+| README.md                                          |     1 | Contract/ownership review complete; disposition below. |
+| closed roadmaps (immutable history)                |    12 | Contract/ownership review complete; disposition below. |
+| docs/README.md                                     |     1 | Contract/ownership review complete; disposition below. |
+| docs/app (application)                             |     3 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/README.md                       |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/ai                              |     4 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/architecture                    |    10 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/data                            |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/design                          |     4 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/development                     |    15 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/modules                         |    18 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/production                      |     3 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/quality                         |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/release                         |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/security                        |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/testing                         |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/tooling                         |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/handbook/workflows                       |     4 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/CHANGELOG.md                  |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/README.md                     |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/agent-contract.md             |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/architecture                  |     5 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/customer-agent (product data) |    30 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/development                   |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/evidence                      |    15 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/maintenance                   |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/production                    |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/quality                       |     2 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/release                       |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/roadmaps                      |     3 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/security                      |     7 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/testing                       |     1 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/tooling                       |     9 | Contract/ownership review complete; disposition below. |
+| docs/runa/maintainer/workflows                     |     3 | Contract/ownership review complete; disposition below. |
 
 ## Representative context baseline
 
@@ -121,3 +121,37 @@ runtime capability. Existing rules already require verified source/version claim
 All product consolidation remains explicitly scheduled in points 7–9.
 No suites, live concurrency or installation acceptance have run. Existing development
 services were reopened nondestructively; persistent volumes/caches/reports retained.
+
+## Point 7 contract and ownership review
+
+The complete grouped Markdown inventory above was reviewed by reader, purpose,
+heading/navigation coverage, version/delivery claims and canonical contract.
+Focused source searches covered residual pending-point/version claims across the
+current tree; public module versions were compared with all three real manifests
+and release changelogs, application compatibility with src/app/application.json,
+Artisan examples with the source-owned catalogue, and frontend entrypoints with
+public facades and the placement map. This is a complete contract-level coverage
+review, not an exhaustive reimplementation/security audit of every paragraph or
+runtime API. Final deterministic links/ownership and live navigation still run in
+point 10. Historical bytes and dated scanner/release evidence were not rewritten.
+
+| Owning contract / complete inventory group   | Canonical home and disposition                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Documentation/root/app indexes               | docs/README.md owns placement; handbook index owns public navigation, maintainer index owner state, docs/app application records. Corrected active RM-013 projection.                                                                                                                                                 |
+| Architecture/API/configuration/database      | Public architecture guides own supported contracts; maintainer architecture owns engineering maps. Corrected scaffold range to >=0.2.1 <0.7.0 from actual manifest. Public API placement/signature map remains separate from permission to invoke internals.                                                          |
+| Modules and seeding                          | Public module guides and manifests own use/version claims; changelogs are historical delivery evidence. Point 1 corrected residual versions/dependency. Versioned upgrade paragraphs remain explicit historical steps, not current-version assertions. No module/source upgrade edits.                                |
+| Frontend/design/localization                 | Public components/layouts/forms/tables/motion/customization guides own complete presentation contracts; domain references route to them. Corrected obsolete design statement that profile/sign-out were still future; notifications remain deferred. App-prefixed source paths and public facade exports still exist. |
+| Development/host/editor/Python               | Environment, editor, Python, resources and knowledge guides own procedures; command guide owns discovery. Reconciled old schema-preservation prose with additive payload migration. Optional AI remains independent; application toolchain stays containerized. No lifecycle redesign.                                |
+| Production/update/delivery                   | Public production/reconciliation guides own customer operations; maintainer installation/update/deploy guides own private mechanics/evidence. Separate owner/customer remote and protected-source policies are intentional. No infrastructure/security authority change.                                              |
+| Testing/quality/releases/workflows           | Public workflow/quality/test guides apply to applications; maintainer guides own platform gates/releases. Their authority scopes are intentional, so they are not deduplicated into one workflow. Final-only broad verification and repair exception remain unchanged.                                                |
+| Security/maintenance                         | Current security baseline/runtime policy and maintenance registry own current disposition. Dated gosu/Brotli/risk reports are historical, not active waivers; explicit purpose rules now classify them. No new security exception.                                                                                    |
+| Foundations/API map/Python migration records | Intermediate points/versions are historical engineering evidence. Added current routing/closure notice to API placement record, removed stale open RM-011 points from current deferred-concerns registry. Existing source-object maps/ledgers remain engineering data.                                                |
+| Closed roadmaps/extracted evidence           | Preserve bytes and annotate externally where needed; explicit reviewed purpose rules prevent these records being treated as current instructions. The original RM-005 decision evolution remains accessible.                                                                                                          |
+| All nine owner/customer skill products       | Triggers, domain references and local source metadata reviewed against the canonical homes above. Repeated shared workflow text, per-delivery appendices and near-duplicate public procedures are consolidation work for point 8. No upstream source was freshly researched or adopted.                               |
+| Customer AGENTS/CLAUDE/authoring             | Application-only authority is intentional. CLAUDE delegates to AGENTS instead of copying it. Local extensions survive reviewed updates. Templates remain excluded from owner corpus; installed product alone enters customer retrieval.                                                                               |
+
+Reviewed purpose configuration explicitly separates changelogs, extracted evidence,
+dated security/engineering records, current procedures and proposals. Unknown
+unclassified sources stay unknown. Directory/age is not independently authoritative:
+these are reviewed source declarations, with section-specific declarations available
+for mixed documents. Nothing claims source freshness certifies factual currency.

@@ -28,6 +28,74 @@
     {
       "pattern": "docs/runa/maintainer/CHANGELOG.md",
       "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/evidence/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/security/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/production/postgresql-alpine-assessment.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/api-boundary/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/python-rebuild/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/python-rebuild/toolchain.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/agent-contract.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/deferred-module-concerns.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/application-architecture.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/testing/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/quality/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/quality/core-module-acceptance.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/development/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/maintenance/*",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/RM-2026-013-knowledge-review.md",
+      "purpose": "historical_evidence"
     }
   ],
   "annotations": [
