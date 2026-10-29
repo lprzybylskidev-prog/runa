@@ -61,6 +61,7 @@ class QualityExecutor:
         }
         try:
             while True:
+                completed = False
                 for key, (process, log) in list(running.items()):
                     code = process.poll()
                     if code is not None:
@@ -73,6 +74,10 @@ class QualityExecutor:
                             duration_seconds=round(time.monotonic() - started.pop(key), 3),
                         )
                         del running[key]
+                        completed = True
+                # Dependents may inspect prerequisite evidence immediately after spawn.
+                if completed:
+                    save(directory, state, anchor=self.workspace.root)
                 if interrupted:
                     for key, (process, _log) in running.items():
                         signal_group(process, signal.SIGTERM)

@@ -92,6 +92,20 @@ def test_scan_collects_repository_all_images_and_both_audits(tmp_path: Path) -> 
     assert len(list((tmp_path / ".runtime/security").glob("*.json"))) == 4
 
 
+def test_scanner_report_override_cannot_escape_security_state(tmp_path: Path) -> None:
+    class Selected(SecurityService):
+        def production_images(self, root: Path) -> list[str]:
+            return ["image:fixture"]
+
+    runner = RecordingRunner()
+    target = Selected(
+        WorkspaceContext(tmp_path), ApplicationProcesses(runner, {}), ExecutionLocation.HOST
+    )
+    with pytest.raises(ValueError, match="security directory"):
+        target.trivy(report_directory=tmp_path / "elsewhere")
+    assert not runner.calls
+
+
 def test_missing_stale_blocking_and_changed_review_evidence_fail(tmp_path: Path) -> None:
     class Reviewed(SecurityService):
         def surface(self, reference: str = "main") -> dict[str, str]:

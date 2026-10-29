@@ -103,6 +103,7 @@ class Report(TypedDict, total=False):
     preparation_costs: JsonValue
     conditions: dict[str, JsonValue]
     resource_counts: dict[str, int]
+    security_reports: str
 
 
 Snapshot = dict[str, tuple[int, str]]

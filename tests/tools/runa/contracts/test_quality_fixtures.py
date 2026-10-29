@@ -85,6 +85,7 @@ def shared_report() -> dict[str, JsonValue]:
         "prod_sha": "a" * 40,
         "images": {"app": "sha256:" + "b" * 64},
         "cleanup": [{"project": "isolated"}],
+        "security_reports": ".runtime/security/installation-host-" + "a" * 10,
         "phases": {
             name: {
                 "result": "PASS",
@@ -166,6 +167,7 @@ def test_shared_proof_is_bound_to_native_producer_run_source_and_commands(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     subprocess.run(["git", "init", "-q", "-b", "fixture", str(tmp_path)], check=True)
+    (tmp_path / ".git/info/exclude").write_text(".runtime/\n")
     subprocess.run(
         [
             "git",
@@ -208,6 +210,7 @@ def test_shared_proof_is_bound_to_native_producer_run_source_and_commands(
         "images": {"app": "sha256:" + "b" * 64},
         "quality_binding": quality_binding(tmp_path, os.environ, "production-acceptance"),
         "cleanup": [{"project": "owned", "containers": [], "networks": [], "volumes": []}],
+        "security_reports": ".runtime/security/installation-host-" + "a" * 10,
     }
     path = tmp_path / ".runtime/ownership/fixture.json"
     evidence = FixtureEvidence(tmp_path, path, report)

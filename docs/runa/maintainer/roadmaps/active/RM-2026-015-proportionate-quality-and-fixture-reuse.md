@@ -387,3 +387,13 @@ from qualification runs. Fresh run/source/command-bound producer/consumer contra
 also cover actual atomic evidence publication and producer failure. Certificate
 fixture labels are included in exact project cleanup, including interruption.
 The focused grouped-shell diagnostic completed 4 PASS (0.05 seconds of test time).
+
+Source review before final verification identified and removed a prerequisite
+publication race: completion is now durable before a dependent is spawned.
+Shared evidence requires a clean candidate as well as exact HEAD/branch/run/graph.
+Standalone scanner qualification retains per-fixture raw report directories so it
+cannot overwrite combined evidence. Reports remain below `.runtime/security` and
+native fixture ownership is validated before creating its workspace directory.
+Authored deterministic spawn-time publication and report-path containment contracts.
+The focused real-store producer/consumer diagnostic passed (one case, 0.13 seconds)
+before these extra guards; the complete contracts remain part of final verification.

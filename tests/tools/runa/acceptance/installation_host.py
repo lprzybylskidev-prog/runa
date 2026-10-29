@@ -45,7 +45,7 @@ from tests.tools.runa.acceptance.installation_evidence import (
 from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
 from tools.core.context import WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
-from tools.core.state import json_value
+from tools.core.state import StateDirectory, json_value
 
 ROOT = Path(__file__).resolve().parents[4]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
@@ -240,7 +240,8 @@ def main() -> None:
         raise ValueError("Shared producer requires healthy scanning and deployment acceptance.")
     if "--team-propagation" in sys.argv[1:] and "--updater-preflight" not in sys.argv[1:]:
         raise SystemExit("--team-propagation requires --updater-preflight.")
-    REPORTS.mkdir(parents=True, exist_ok=True)
+    with StateDirectory(REPORTS, private=False, anchor=ROOT).open():
+        pass
     token = uuid.uuid4().hex[:10]
     report: Report = {
         "result": "RUNNING",
@@ -1056,8 +1057,12 @@ def main() -> None:
                 from tools.application.security_service import SecurityService
                 from tools.maintainer.service_fixtures import redis_image
 
+                report["security_reports"] = ".runtime/security/installation-host-" + token
+                evidence.persist()
                 SecurityService.for_workspace(ROOT).trivy(
-                    production_root=prod, additional_images=[redis_image()]
+                    production_root=prod,
+                    additional_images=[redis_image()],
+                    report_directory=ROOT / ".runtime/security" / ("installation-host-" + token),
                 )
                 check(
                     True,

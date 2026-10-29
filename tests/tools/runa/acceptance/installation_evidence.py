@@ -55,6 +55,11 @@ def quality_binding(root: Path, environment: Mapping[str, str], step: str) -> di
     ).strip()
     if state.get("commit") != commit or state.get("branch") != branch:
         raise ValueError("Shared production evidence requires the exact quality candidate.")
+    dirty = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=all"], cwd=root, text=True
+    )
+    if dirty.strip():
+        raise ValueError("Shared production evidence requires a clean quality candidate.")
     runtime_fields = {"status", "pid", "exit_code", "started_at", "finished_at", "duration_seconds"}
     graph = {
         key: {k: v for k, v in node.items() if k not in runtime_fields}
@@ -144,6 +149,11 @@ def validate_shared(report: JsonValue, binding: dict[str, JsonValue]) -> None:
         previous = finish
     if not isinstance(report.get("cleanup"), list) or not report["cleanup"]:
         raise ValueError("Missing shared production cleanup evidence.")
+    scans = report.get("security_reports")
+    if not isinstance(scans, str) or not re.fullmatch(
+        r"\.runtime/security/installation-host-[a-f0-9]{10}", scans
+    ):
+        raise ValueError("Missing exact fixture scanner report directory.")
 
 
 def publish_shared(root: Path, report: Report) -> None:
@@ -160,7 +170,10 @@ def verify_shared(root: Path) -> None:
         raise ValueError("Shared production producer did not complete successfully.")
     report = report_store(root, root / ".runtime/quality").read(SHARED_REPORT)
     validate_shared(report, binding)
+    assert isinstance(report, dict)
     print(
         "PASS: exact-run production preparation, healthy-image scanning, deployment and cleanup; native phase evidence: "
         + str(root / ".runtime/quality" / SHARED_REPORT)
+        + "; raw scans: "
+        + str(report["security_reports"])
     )

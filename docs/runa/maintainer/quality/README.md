@@ -193,6 +193,12 @@ root, exact projects/SMTP/certificate ownership and interrupted/failed phase sta
 for recovery, including abrupt termination where the last phase remains RUNNING.
 SIGTERM/interrupt attempts normal guarded cleanup. Successful fixtures are removed;
 failed source context and all reports remain. No prior-run resource is reused.
+Each native scanner fixture retains raw reports in its own
+`.runtime/security/installation-host-<token>/` directory. Standalone qualification
+therefore cannot overwrite the combined fixture's raw evidence. Default direct
+security commands retain `.runtime/security`; report paths stay inside that root.
+Shared publication also refuses a dirty source candidate, and the coordinator
+persists prerequisite completion before spawning its evidence-consuming dependent.
 
 Native installer reports retain cache/workload conditions, unique removed project
 resource/tag counts and successful production preparation `phase_costs` from the
@@ -329,7 +335,14 @@ Owner database-constraints and seeding-contract gates use the dedicated maintain
 
 ## Production fixture routing
 
-Owner production gates never target the maintenance checkout or customer development. production-acceptance runs the native installation harness with --production-only --customer-deployment; repository-container-scan runs --production-only --security-scan. Each creates a separate complete customer repository and locally prepared production role, builds exact images and tests actual health/AI isolation. Security scans retain the owner repository scope while resolving images from the customer fixture and auditing owner development locks. Fresh TLS/SMTP rejection/resume and scoped cleanup are part of both runs. Selected frontend artifact preparation precedes repository scanning. See [production acceptance](../production/deployment.md).
+Owner production gates target dedicated customer production fixtures, never the
+maintenance checkout or customer development. Standalone production/scanner
+selections each retain native source preparation, TLS/SMTP rejection/resume,
+exact-image health/isolation and cleanup. Combined selection shares that preparation
+and scans before deployment failures under the phase evidence contract above.
+Security retains the owner repository/audit scope while resolving exact images
+from the compatible customer fixture; selected frontend preparation precedes the
+scan. See [production acceptance](../production/deployment.md).
 
 ## Security source scope and additional-service fixture
 
