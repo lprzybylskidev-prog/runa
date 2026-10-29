@@ -399,7 +399,7 @@ the final point. Each point includes its test code, affected current documentati
 instruction-product assessment, commit and checklist update. Do not run broad
 acceptance as a prerequisite for subsequent implementation.
 
-- [ ] 1. Reconcile the predecessor and freeze the three research cases.
+- [x] 1. Reconcile the predecessor and freeze the three research cases.
   - Prerequisite: RM-012 closed, merged and released; owner activation of RM-013.
   - Refresh actual layout, public command contracts and source/version authority.
     Establish a compact source/claim ledger from the exercise evidence above.
@@ -535,6 +535,17 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is in progress; no release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
+
+### Point 1 — predecessor and fixed research evidence (2026-10-29)
+
+Source reconciliation, immutable-history limits, frozen research query budgets,
+complete grouped review inventory and instruction/context size baselines are
+recorded in [the review record](../../architecture/RM-2026-013-knowledge-review.md).
+Corrected residual public module versions and the Audit consumer dependency;
+labeled intermediate foundations as historical engineering material. Manifests,
+module behavior and historical bytes are unchanged. Owner/customer instructions
+need no rule change for this source-only reconciliation. No broad checks ran;
+mandatory hooks and incremental source refresh accompany the point commit.

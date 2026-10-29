@@ -14,5 +14,84 @@
       "roadmap_id": "RM-2026-001",
       "status": "closed"
     }
+  },
+  {
+    "query": "development only RAG baseline Qdrant embeddings",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md",
+    "section": "Knowledge",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-001"
+    }
+  },
+  {
+    "query": "independent application knowledge startup lifecycle",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-003-development-infrastructure-improvements.md",
+    "section": "Application and knowledge lifecycle",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-003"
+    }
+  },
+  {
+    "query": "platform migrations deploy forward steps decisions",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
+    "section": "Decisions",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-005"
+    }
+  },
+  {
+    "query": "atomic module transitions dependencies administrative",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-006-module-framework.md",
+    "section": "Dependencies and administrative transitions",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-006"
+    }
+  },
+  {
+    "query": "Auth independent eligibility security state grants",
+    "source_path": "docs/runa/handbook/modules/auth/README.md",
+    "section": "Independent eligibility",
+    "top_k": 6,
+    "filters": {
+      "source_path": "docs/runa/handbook/modules/auth/README.md"
+    }
+  },
+  {
+    "query": "Permissions grants eligibility policies owned storage authorization",
+    "source_path": "docs/runa/handbook/modules/permissions/README.md",
+    "section": "Owned storage and authorization",
+    "top_k": 6,
+    "filters": {
+      "source_path": "docs/runa/handbook/modules/permissions/README.md"
+    }
+  },
+  {
+    "query": "Audit bulk pivot aggregate manual transaction events",
+    "source_path": "docs/runa/handbook/modules/audit/README.md",
+    "section": "Automatic single-model capture",
+    "top_k": 6,
+    "filters": {
+      "source_path": "docs/runa/handbook/modules/audit/README.md"
+    }
+  },
+  {
+    "query": "current Auth Audit Permissions module versions dependency compatibility",
+    "source_path": "docs/runa/maintainer/CHANGELOG.md",
+    "section": "0.6.0",
+    "top_k": 6,
+    "filters": {}
+  },
+  {
+    "query": "complete customer source host production runtime AI isolation",
+    "source_path": "docs/runa/handbook/production/architecture.md",
+    "section": "",
+    "top_k": 6,
+    "filters": {
+      "source_path": "docs/runa/handbook/production/architecture.md"
+    }
   }
 ]
