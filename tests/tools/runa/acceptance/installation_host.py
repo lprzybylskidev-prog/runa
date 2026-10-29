@@ -49,7 +49,7 @@ from tools.core.state import StateDirectory, json_value
 
 ROOT = Path(__file__).resolve().parents[4]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
-REPORTS = ROOT / ".runtime/ownership"
+REPORTS = ROOT / ".runtime/acceptance/installation"
 
 
 def call(
@@ -240,7 +240,7 @@ def main() -> None:
         raise ValueError("Shared producer requires healthy scanning and deployment acceptance.")
     if "--team-propagation" in sys.argv[1:] and "--updater-preflight" not in sys.argv[1:]:
         raise SystemExit("--team-propagation requires --updater-preflight.")
-    with StateDirectory(REPORTS, private=False, anchor=ROOT).open():
+    with StateDirectory(REPORTS, anchor=ROOT).open():
         pass
     token = uuid.uuid4().hex[:10]
     report: Report = {
@@ -289,7 +289,7 @@ def main() -> None:
     report["conditions"] = {
         "cache_policy": "Existing dependency/model/build/scanner caches preserved; no forced cold build.",
         "initial_image_tag_count": len(before_images),
-        "scenario_flags": sorted(sys.argv[1:]),
+        "scenario_flags": json_value(sorted(sys.argv[1:])),
         "resource_counts_scope": "Unique removed owned project resources; auto-removed transient probes remain in native Docker/Compose logs.",
     }
     task_images: set[str] = set()

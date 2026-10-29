@@ -112,11 +112,11 @@ def test_dependency_results_are_published_before_dependent_spawn(tmp_path: Path)
     ) -> subprocess.Popen[bytes]:
         recorded = read_state(tmp_path, anchor=tmp_path)
         key = env["RUNA_QUALITY_STEP"]
-        assert env["RUNA_QUALITY_RUN_ID"] == recorded["run_id"]
+        assert env["RUNA_QUALITY_RUN_ID"] == recorded.get("run_id")
         assert env["RUNA_QUALITY_DIRECTORY"] == str(tmp_path)
         if key == "consumer":
             assert recorded["steps"]["producer"]["status"] == "passed"
-            assert recorded["steps"]["producer"]["exit_code"] == 0
+            assert recorded["steps"]["producer"].get("exit_code") == 0
         calls.append(key)
         return subprocess.Popen(
             args,

@@ -187,12 +187,16 @@ scanning, deployment and cleanup with ordered timings and exact image IDs. A fai
 producer blocks its scanner dependent; missing/stale/incomplete phase evidence
 fails verification. This is private owner composition, not customer evidence reuse.
 
-Installer native reports under `.runtime/ownership/installation-host-*.json` are
+Installer native reports under `.runtime/acceptance/installation/installation-host-*.json` are
 atomically updated before setup and at phase transitions. They retain the fixture
 root, exact projects/SMTP/certificate ownership and interrupted/failed phase state
 for recovery, including abrupt termination where the last phase remains RUNNING.
 SIGTERM/interrupt attempts normal guarded cleanup. Successful fixtures are removed;
 failed source context and all reports remain. No prior-run resource is reused.
+This private installer area is independent of legacy `.runtime/ownership` reports,
+which may have group-writable permissions from older harnesses. Preserve those
+reports and permissions; do not weaken private state checks or chmod a shared
+legacy directory to prepare new fixture evidence.
 Each native scanner fixture retains raw reports in its own
 `.runtime/security/installation-host-<token>/` directory. Standalone qualification
 therefore cannot overwrite the combined fixture's raw evidence. Default direct

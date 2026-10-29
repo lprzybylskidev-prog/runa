@@ -106,7 +106,13 @@ def test_spawn_refusal_preserves_literal_transport_and_fixed_diagnostic(tmp_path
     ) -> subprocess.Popen[bytes]:
         assert list(args) == ["container", "tool", "literal $value; keep"]
         assert cwd == tmp_path
-        assert env == {"FIXTURE": "literal $value"}
+        assert env == {
+            "FIXTURE": "literal $value",
+            "RUNA_QUALITY_DIRECTORY": str(tmp_path),
+            "RUNA_QUALITY_RUN_ID": state.get("run_id"),
+            "RUNA_QUALITY_STEP": "refused",
+        }
+        assert len(env["RUNA_QUALITY_RUN_ID"]) == 32
         assert stderr == subprocess.STDOUT and start_new_session is True
         logs.append(stdout)
         raise OSError("private process payload")

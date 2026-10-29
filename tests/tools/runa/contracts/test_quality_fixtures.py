@@ -25,7 +25,7 @@ from tools.application.quality_models import quality_definition
 from tools.application.quality_planning import graph_hash, resolve, select
 from tools.application.quality_reporting import save
 from tools.application.quality_state import run_record
-from tools.core.state import JsonValue, json_value
+from tools.core.state import JsonValue, StateDirectory, json_value
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -56,7 +56,7 @@ def test_independent_and_combined_production_commands_keep_both_selected_results
 
 
 def test_conditional_commands_reject_ambiguity_and_invalid_argv_before_execution() -> None:
-    definition = quality_definition(
+    payload = json_value(
         dict(
             base=[
                 dict(node("a"), command_if_selected={"b": "one", "c": "two"}),
@@ -67,15 +67,19 @@ def test_conditional_commands_reject_ambiguity_and_invalid_argv_before_execution
             final=[],
         )
     )
+    assert isinstance(payload, dict)
+    definition = quality_definition(payload)
     with pytest.raises(ValueError, match="Ambiguous"):
         select(definition, [])
     for commands in (["bad"], {"../bad": "one"}, {"b": "'"}, {"b": False}):
         with pytest.raises(ValueError):
-            quality_definition(
+            payload = json_value(
                 dict(
                     base=[dict(node("a"), command_if_selected=commands)], impact_areas={}, final=[]
                 )
             )
+            assert isinstance(payload, dict)
+            quality_definition(payload)
 
 
 def shared_report() -> dict[str, JsonValue]:
@@ -102,14 +106,15 @@ def test_shared_evidence_refuses_missing_failed_interrupted_and_different_run_ph
     good = shared_report()
     binding: dict[str, JsonValue] = {"run_id": "current"}
     validate_shared(good, binding)
-    for key, replacement in (
+    replacements: list[tuple[str, JsonValue]] = [
         ("result", "FAIL"),
         ("result", "INTERRUPTED"),
         ("quality_binding", {"run_id": "old"}),
         ("images", {}),
         ("prod_sha", "main"),
         ("cleanup", []),
-    ):
+    ]
+    for key, replacement in replacements:
         bad = copy.deepcopy(good)
         bad[key] = replacement
         with pytest.raises(ValueError):
@@ -249,3 +254,22 @@ def test_cleanup_failure_overrides_provisional_success(tmp_path: Path) -> None:
     assert json.loads(path.read_text())["result"] == "FAIL"
     with pytest.raises(ValueError):
         validate_shared(json_value(report), {})
+
+
+def test_private_installer_evidence_preserves_group_writable_legacy_reports(tmp_path: Path) -> None:
+    (tmp_path / ".runtime").mkdir(mode=0o755)
+    legacy = tmp_path / ".runtime/ownership"
+    legacy.mkdir()
+    legacy.chmod(0o775)
+    prior = legacy / "prior.json"
+    prior.write_text("retained historical evidence\n")
+    path = tmp_path / ".runtime/acceptance/installation/report.json"
+    with StateDirectory(path.parent, anchor=tmp_path).open():
+        pass
+    evidence = FixtureEvidence(tmp_path, path, {"result": "RUNNING"})
+    with evidence.phase("preparation"):
+        pass
+    assert path.parent.stat().st_mode & 0o777 == 0o700
+    assert path.stat().st_mode & 0o777 == 0o600
+    assert prior.read_text() == "retained historical evidence\n"
+    assert legacy.stat().st_mode & 0o777 == 0o775

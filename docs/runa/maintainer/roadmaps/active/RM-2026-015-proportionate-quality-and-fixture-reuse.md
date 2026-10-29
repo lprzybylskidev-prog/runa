@@ -219,8 +219,18 @@ approved guarantee or justification for weakening coverage.
     testing/workflow guides around the agreed proportionate execution rule.
   - Remove duplicated obsolete blanket instructions; retain strict selected checks,
     mandatory baseline, final-only broad verification and immutable history.
-- [ ] 6. Complete final verification, measured comparison, release and closure.
-  - Finish and commit points 1–5 first. Review current-state documentation and
+- [x] 6. Repair initial final-verification failures.
+  - Preserve failed candidate 3bf3508d logs and native reports.
+  - Update the spawn-refusal contract for authoritative quality environment values
+    and correct strict Python fixture/JSON typing without suppressions.
+  - Place new private installer reports/workspaces below `.runtime/acceptance/installation`,
+    preserving legacy `.runtime/ownership` reports and its existing permissions.
+  - Run the complete owner Python unit/contracts suite and strict typecheck, then
+    complete native combined production/scanning and installation/update/team/
+    customer-knowledge acceptance before committing this repair.
+  - Refresh source review and knowledge; restart the declared final graph.
+- [ ] 7. Complete final verification, measured comparison, release and closure.
+  - Finish and commit points 1–6 first. Review current-state documentation and
     finalize quality groups/rationale against actual changes; preview exact graph.
   - Run complete affected suites and independent/combined native acceptance,
     scanning and failure/cleanup scenarios, with performance measurements only here.
@@ -461,3 +471,61 @@ into `.runtime/python/pycache`; the exact inventory is retained in
 `.runtime/artifacts/RM-2026-015-bytecode-relocation.json`. Future ad hoc host
 inspection disables bytecode generation. No persistent service/data/cache deletion
 or Docker resource cleanup was needed during implementation.
+
+## Point 6 — Initial gate repair
+
+The first final run at 3bf3508d96d81ae285c5af01e75ec643105d2c5f finished
+34 passed, five failed and eight blocked in 171.61 seconds. Original state/logs
+are preserved at `.runtime/artifacts/RM-2026-015-failed-3bf3508d`.
+Failures have three causes: the existing spawn-refusal contract expected the old
+exact environment, strict Pyright rejected seven fixture/JSON/optional-field type
+uses, and native installer startup refused legacy `.runtime/ownership` mode 775.
+Both native installer nodes stopped before allocating scenario resources; their
+dependent scan/qualification/release checks were blocked, not PASS.
+
+Repair uses exact authoritative-environment assertions and validated JsonValue
+conversion/explicit payload types, with no suppressions. New private installer
+reports/workspaces use `.runtime/acceptance/installation`; legacy ownership evidence
+and mode remain unchanged. A regression proves that private reports can coexist
+with preserved group-writable legacy evidence. Owner quality/deployment procedures
+are synchronized; this private path change does not alter customer APIs or require
+new owner/customer instruction rules.
+
+Complete repair Python unit/contracts acceptance passed 511 cases with three
+intentional deselections in 33.21 seconds, cleanup exit 0; the native XML is copied
+to `.runtime/artifacts/RM-2026-015-repair-python-pytest.xml`. Complete strict Python
+analysis passed with zero errors/warnings; formatting and lint also passed.
+Native combined production/scanning and complete installer/update/team/customer
+knowledge acceptance both completed PASS. They use the documented native
+entrypoint in the foreground and retain real failing scenario modes. The combined
+repair run does not publish shared quality PASS from a dirty repair checkout;
+exact coordinator publication is covered by the complete Python suite and must
+run again in the restarted final graph after this repair is committed.
+
+Native combined production/scanning repair completed PASS with 50 assertions and
+all five phases (including cleanup) passing. Evidence is
+`.runtime/acceptance/installation/installation-host-c88827e5cc.json`, with separate
+raw scanner reports under `.runtime/security/installation-host-c88827e5cc`.
+Scoped cleanup removed six production containers, two disposable volumes and 19
+owned unused image tags, plus the synthetic SMTP container/network. Active
+development/test identities/data, shared caches, backups and evidence were preserved;
+the report records the independently proven natural queue lifetime rollover.
+The full installation/update/team/customer-knowledge repair run completed exit 0,
+77 assertions and all selected phases PASS. Its complete native log is retained
+at `.runtime/artifacts/RM-2026-015-repair-installation.log`; atomic report:
+`.runtime/acceptance/installation/installation-host-13844e5033.json`.
+Preparation took 1167.443 seconds, healthy validation 13.725 seconds and cleanup
+6.482 seconds. Cleanup removed 30 owned project containers, two project networks,
+ten disposable fixture volumes and six unused task image tags, plus the synthetic
+SMTP container/network. Active development/test data and identities, persistent
+model/dependency/build caches, backups, historical ownership reports and all
+verification evidence remain preserved. No natural queue rollover occurred in
+this run. These repair runs qualify affected areas; they do not replace the new
+complete final graph, which restarts from the beginning after this repair commit.
+
+Source review of the repair confirms private installer state no longer traverses
+the group-writable legacy directory; no chmod/adoption exception was introduced.
+JsonValue conversions preserve scenario content, exact spawn assertions retain
+literal transport and safe failure diagnostics, and optional-field accesses are
+explicit. Root owner/customer instructions and skills need no new rule for this
+internal path/type repair; owning quality/deployment guides are synchronized.
