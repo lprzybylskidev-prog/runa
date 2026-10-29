@@ -313,6 +313,10 @@ Development source ownership/manifest/required graph checks without executing mo
 
 ## Quality selection options
 
+`--group=security-source` selects dependency auditing without image scanning;
+`security` retains audits plus images. See the quality guide for exact ownership
+and scope; private maintainer delivery/acceptance groups are not application options.
+
 `runa:quality:plan`, `runa:quality:roadmap` and `runa:quality:final` accept repeated
 `--group=NAME` or standalone `--all`. Background remains limited to roadmap/final;
 status takes no flags. See [quality groups and examples](../quality/README.md).

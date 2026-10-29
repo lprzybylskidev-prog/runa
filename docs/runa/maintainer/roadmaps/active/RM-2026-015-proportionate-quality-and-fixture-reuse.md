@@ -199,7 +199,7 @@ approved guarantee or justification for weakening coverage.
   - Read the active roadmap, source catalogue, current harnesses and prior timings.
   - Identify repeated setup and indispensable fresh-state scenarios; document
     dependencies and the before/after scenario matrix without broad reruns.
-- [ ] 2. Make proportionate manual selection concrete in the existing catalogue.
+- [x] 2. Make proportionate manual selection concrete in the existing catalogue.
   - Separate narrow source/projection/guard checks from broad acceptance and
     reconcile genuine prerequisite edges, selection explanations and exclusions.
   - Author regression contracts for isolated knowledge/tooling changes, changed
@@ -304,3 +304,23 @@ This point changes planning/evidence only. Root owner instructions, domain skill
 and customer instruction products need no behavior update here; their affected
 execution guidance is assessed and synchronized with implementation in points 2–5.
 No dependencies, runtime configuration, databases or Docker resources were changed.
+
+## Point 2 — Explicit narrow verification scopes
+
+Added owner `delivery` for existing projection/customer-source/transport contracts
+and dedicated production-source/deployment-boundary nodes. These use source and
+fake-process contracts, never native installation/deployment. Production selection
+also includes its source nodes. Added `security-source`: owner dependency audits,
+security contracts and exact content-bound agent review; customer dependency audits.
+Existing `security` still selects actual runtime image scans. The source review's
+image prerequisite is conditional on image selection, retaining scan-before-review
+when both run without inventing a runtime prerequisite for source-only review.
+
+Regression contracts cover knowledge/tooling/delivery/source-security isolation
+despite broad historical impact areas, baseline retention, exact graph hashes,
+independent/combined scans and owner/customer catalogue separation. They are authored
+for final verification; no broad checks were run in this implementation point.
+Public quality/command guides document the complete CLI signature, audience,
+implementation home and development-only delivery. Customer group discovery is
+synchronized. Root AGENTS and both skill products already route group selection
+to those canonical guides; no new always-loaded rule is needed in this point.

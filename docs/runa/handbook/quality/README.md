@@ -56,6 +56,19 @@ candidate/results when an application checkpoint or readiness review is due.
 
 ## Manual group selection
 
+The Runa-owned development tooling exposes public CLI consumption through
+`php artisan runa:quality:{plan|roadmap|final} [--group=NAME ... | --all]`, with
+`--background` on roadmap/final only, and `runa:quality:status` without options.
+Implementation lives in `tools/application/quality*.py` with the Laravel management
+adapter in `src/runa/Tooling/Management`; it is delivered development tooling,
+excluded from production images. Python implementation names are internal.
+
+Use `--group=security-source` for dependency audits without runtime image scanning.
+`--group=security` still requires both dependency audits and real image scans;
+`--group=containers` selects image scanning directly. Select actual image checks
+when their inputs or the agreed scope change. A source-only result never claims an
+image scan PASS. The owner-only `delivery` group is unavailable in customer projects.
+
 The agent normally chooses proportionate groups using the roadmap, changed behavior
 and relevant dependencies; the owner may steer it. No source-diff classifier chooses
 tests. Use repeated `--group=NAME` or standalone `--all` on plan/roadmap/final.

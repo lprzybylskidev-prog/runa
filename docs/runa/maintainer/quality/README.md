@@ -57,10 +57,11 @@ Ordinary roadmap closure selects only changed behaviors/contracts and their real
 prerequisites, plus the mandatory baseline/hooks. Each heavy native installation,
 update, production, browser or image-scan selection needs a concrete affected
 contract; shared tooling or security labels alone do not justify unrelated suites.
-Knowledge ranking alone does not require complete installation/deployment. If a
-coarse catalogue node currently bundles necessary and unrelated work, disclose the
-limitation; do not bypass guards or pretend an unexecuted prerequisite passed.
-Catalogue/fixture optimization is planned separately in RM-2026-015.
+Knowledge ranking alone does not require complete installation/deployment. Use
+`delivery` for changed source/projection/command/production-guard contracts and
+`security-source` for dependency audits and content-bound source review. Neither
+prepares a native installation or production fixture. Add broad groups when their
+runtime behavior or images are affected; an excluded image scan is not PASS.
 
 Platform-wide verification uses supported `--all` for release 0.10.0, then 0.15.0,
 0.20.0 and subsequent 0.x.0 minor milestones divisible by five. The current 0.6.x
@@ -89,22 +90,24 @@ Explicit plan/roadmap/final resolve the same graph. Final rejects a selection th
 differs from the roadmap declaration. Plan lists exact commands, mandatory checks,
 prerequisites with reasons and excluded groups without creating run evidence.
 
-| Group        | Scope                                                                                |
-| ------------ | ------------------------------------------------------------------------------------ |
-| docs         | Documentation ownership source contracts                                             |
-| tooling      | Quality coordinator contracts and tooling diagnostics                                |
-| backend      | Owner backend tests, PHP analysis, module contracts, formatting/lint                 |
-| frontend     | Build, types, unit tests, formatting/lint                                            |
-| e2e          | Browser and render diagnostics; includes build/unit prerequisites                    |
-| database     | Migration, constraints and seeding acceptance; includes backend tests                |
-| development  | Dependency composition, startup, live development and hooks                          |
-| containers   | Real repository/image scan and assessed artifact disposition                         |
-| installation | Acquisition/bootstrap/customer initialization and complete native acceptance         |
-| updates      | Preflight/execution and complete native installation/update acceptance               |
-| transport    | Management/host executor source and native acceptance                                |
-| production   | Production operation/source contracts and real isolated deployment acceptance        |
-| security     | Dependency audit, security contracts and changed-surface review; includes image scan |
-| knowledge    | Documentation live contracts, knowledge doctor/evals and Boost                       |
+| Group           | Scope                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| docs            | Documentation ownership source contracts                                                                   |
+| tooling         | Quality coordinator contracts and tooling diagnostics                                                      |
+| backend         | Owner backend tests, PHP analysis, module contracts, formatting/lint                                       |
+| frontend        | Build, types, unit tests, formatting/lint                                                                  |
+| e2e             | Browser and render diagnostics; includes build/unit prerequisites                                          |
+| database        | Migration, constraints and seeding acceptance; includes backend tests                                      |
+| development     | Dependency composition, startup, live development and hooks                                                |
+| containers      | Real repository/image scan and assessed artifact disposition                                               |
+| installation    | Acquisition/bootstrap/customer initialization and complete native acceptance                               |
+| updates         | Preflight/execution and complete native installation/update acceptance                                     |
+| transport       | Management/host executor source and native acceptance                                                      |
+| production      | Production operation/source contracts and real isolated deployment acceptance                              |
+| security        | Dependency audit, security contracts and changed-surface review; includes image scan                       |
+| security-source | Dependency audit, security contracts and content-bound review; excludes image scanning                     |
+| delivery        | Customer projection/instructions, command transport and production source/guard contracts; no native stack |
+| knowledge       | Documentation live contracts, knowledge doctor/evals and Boost                                             |
 
 The authoritative step matrix is `gates.yml` (`mandatory`, `groups`, `group_steps`).
 Mandatory owner checks cover repository/release state, secrets, debug/scratch
@@ -124,13 +127,17 @@ python3 tools/maintainer/quality-plan --group=backend
 python3 tools/maintainer/quality-plan --group=frontend --group=e2e
 python3 tools/maintainer/quality-plan --group=installation --group=updates
 python3 tools/maintainer/quality-plan --group=containers
+python3 tools/maintainer/quality-plan --group=knowledge --group=delivery --group=security-source
 python3 tools/maintainer/quality-plan --all
 python3 tools/maintainer/quality-final --all --background
 ```
 
 Installation/update groups retain full updater/team/customer-knowledge acceptance;
-production retains actual data/security/isolation acceptance. Security review needs
-real image scans and content-bound agent findings. No lightweight tools/docs group
+production retains actual data/security/isolation acceptance. `security` retains
+real image scans and content-bound agent findings; `security-source` requires the
+same audits/review but leaves images unexecuted. Source review waits for image
+scanning when both are selected; its content binding does not itself require
+building a production fixture. No lightweight tools/docs group
 pulls these suites in merely because `impact_areas` includes tooling/security.
 
 State/status retain requested/excluded groups, mandatory checks, prerequisite
