@@ -70,7 +70,13 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
+The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
+
+Ordinary roadmap closure runs only complete checks for changed behavior/contracts
+and their real prerequisites, plus the mandatory baseline/hooks. Explain each
+heavy selection; knowledge-only changes do not imply installation/deployment tests.
+Excluded areas are not PASS. Periodic all-group verification is separate from
+ordinary affected-area closure; follow the owning quality guide for its cadence.
 
 If verification finds work:
 

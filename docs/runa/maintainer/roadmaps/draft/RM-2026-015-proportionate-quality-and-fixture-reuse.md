@@ -30,7 +30,7 @@ assertions, real execution, failure reporting and isolation those checks establi
 
 The owner requests **0.6.3** after released [RM-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md)
 maintenance 0.6.1 and planned
-[RM-014](RM-2026-014-backend-segfault-reliability.md) fix 0.6.2,
+[RM-014](../active/RM-2026-014-backend-segfault-reliability.md) fix 0.6.2,
 and explicitly delegates release-type selection to the agent. Select
 `maintenance`: compatible engineering/process optimization, a PATCH increment
 from the planned 0.6.2 predecessor. Refresh the baseline and ordering at activation.
@@ -71,7 +71,7 @@ suppression, weaker selected security/AI checks or manufactured PASS.
 - Owner explicitly requests closing and committing RM-013 before adding this
   draft on main. RM-013 closed and released as 0.6.1 after 47/47 selected checks
   passed; this separate planning commit preserves its implementation, raw results
-  and backend exclusion. RM-014 remains next and requires owner activation.
+  and backend exclusion. RM-014 was explicitly activated on 2026-10-29 and remains ahead of this draft.
 
 ### Observed baseline and limits
 
@@ -118,8 +118,11 @@ execution is part of the behavior under test and must remain real.
    from actual runtime-image scanning in the catalogue. Scan real images when
    their affected inputs or the agreed selected scope require it; never label an
    excluded image scan PASS or silently narrow a selected scanner.
-6. Default to the smallest sufficient manual selection. Use `--all` only with an
-   explicit all-area rationale. Retain documented flag-free compatibility and
+6. Default to the smallest sufficient manual selection for ordinary releases.
+   Owner policy requires `--all` at minor milestones 0.10.0, 0.15.0, 0.20.0 and
+   subsequent multiples of five, and before 1.0.0. PATCH releases do not advance
+   this cadence. Record full-run evidence at each due milestone; a scoped run
+   does not satisfy it. Use additional `--all` only with an explicit rationale. Retain documented flag-free compatibility and
    owner steering; no automatic change classifier or hidden test selection.
 7. Ordinary implementation permits only necessary small focused checks. Broad
    suites, builds, scanners, acceptance and performance comparisons belong to

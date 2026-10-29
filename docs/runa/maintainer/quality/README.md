@@ -44,6 +44,27 @@ When finished or interrupted:
 
 ## Manual group selection
 
+Ordinary roadmap closure selects only changed behaviors/contracts and their real
+prerequisites, plus the mandatory baseline/hooks. Each heavy native installation,
+update, production, browser or image-scan selection needs a concrete affected
+contract; shared tooling or security labels alone do not justify unrelated suites.
+Knowledge ranking alone does not require complete installation/deployment. If a
+coarse catalogue node currently bundles necessary and unrelated work, disclose the
+limitation; do not bypass guards or pretend an unexecuted prerequisite passed.
+Catalogue/fixture optimization is planned separately in RM-2026-015.
+
+Platform-wide verification uses supported `--all` for release 0.10.0, then 0.15.0,
+0.20.0 and subsequent 0.x.0 minor milestones divisible by five. The current 0.6.x
+series is followed by the first scheduled checkpoint at 0.10.0. PATCH releases do
+not count as five additional minor releases. A skipped checkpoint must be completed
+before a later release is finalized. Always run full verification before 1.0.0,
+including its readiness procedure; this does not authorize a major release.
+Record milestone scope, exact candidate, graph, results and raw evidence in its
+roadmap/final report. Scoped runs cannot satisfy an all-group checkpoint. Further
+all-group runs remain possible with explicit justification or owner instruction.
+This policy is manual release planning; automatic cadence enforcement and catalogue
+changes are not claimed as implemented.
+
 The agent normally selects proportionate groups from roadmap scope, changed behavior
 and real dependencies. The owner can steer that choice. There is no Git-diff
 classifier or automatic scope selection. Record the final choice and rationale in

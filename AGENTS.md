@@ -68,7 +68,18 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
+The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
+
+Ordinary roadmap closure runs only complete checks for changed behavior/contracts
+and their real prerequisites, plus the mandatory baseline/hooks. Explain each
+heavy selection; knowledge-only changes do not imply installation/deployment tests.
+Excluded areas are not PASS. Periodic all-group verification is separate from
+ordinary affected-area closure; follow the owning quality guide for its cadence.
+
+For platform releases, run the supported full graph with `--all` at 0.10.0,
+0.15.0, 0.20.0 and subsequent 0.x.0 minor milestones divisible by five, and before
+1.0.0 under its readiness requirements. PATCH releases do not advance this cadence.
+Record complete all-group PASS for the milestone; a scoped result is insufficient.
 
 If verification finds work:
 

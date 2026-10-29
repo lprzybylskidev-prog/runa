@@ -1,10 +1,10 @@
 ---
 id: RM-2026-014
 title: Backend test segfault diagnosis and reliability
-status: draft
+status: active
 branch: roadmap/RM-2026-014-backend-segfault-reliability
 created_at: 2026-10-28
-activated_at: null
+activated_at: 2026-10-29
 closed_at: null
 release_type: fix
 proposed_version: 0.6.2
@@ -28,9 +28,8 @@ Preserve native failure reporting, test assertions, isolation and cleanup.
 The owner explicitly requested a fix roadmap targeting **0.6.2**, after
 [RM-2026-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md) maintenance 0.6.1,
 on 2026-10-28. This is a PATCH increment from that planned predecessor; refresh
-the baseline and release ordering at activation. Drafting does not activate work,
-change VERSION or authorize implementation before RM-013 closes and the owner
-activates this roadmap.
+the baseline and release ordering at activation. RM-013 closed and released as v0.6.1; the owner explicitly activates this
+roadmap on 2026-10-29. VERSION remains 0.6.1 until verified fix release 0.6.2.
 
 Scope includes PHP/runtime/extensions, Pest/ParaTest and supported transports,
 Docker resources, test concurrency/order, evidence collection and the temporary
@@ -41,6 +40,14 @@ unapproved dependency or destructive data reset is authorized.
 ## Specification
 
 ### Decisions
+
+- 2026-10-29 — Owner authorizes activation and execution after released RM-013.
+  Retain confirmed fix 0.6.2. Owner also adopts affected-area verification for
+  ordinary closures and periodic all-group verification at minor milestones
+  0.10.0, 0.15.0, 0.20.0 onward, plus mandatory pre-1.0.0 readiness. PATCH
+  releases do not advance this minor-version cadence. Record this policy in both
+  instruction products and canonical workflow guides without adding runtime gate
+  machinery; RM-015 retains catalogue/fixture optimization implementation.
 
 - 2026-10-28 — Owner selects release_type fix and proposed_version 0.6.2, after
   RM-013, and defers backend segfault diagnosis until then.
@@ -155,7 +162,9 @@ point. Mandatory hooks and final-verification repair rules remain in force.
     annotated tag/publication and branch deletion. Do not close with the original
     segfault still waived.
 
-## Planning state
+## Execution state
 
-Draft only; no diagnosis or implementation is claimed. The interim exception is
-an explicit owner decision, not evidence that PHP code cannot cause the crash.
+Activated on 2026-10-29 with explicit owner authorization. Point 1 is in progress.
+No root cause is established yet. The interim exception remains an owner decision,
+not evidence that PHP code cannot cause the crash. All-group milestone verification
+is not due for fix 0.6.2; select complete affected suites and real prerequisites.

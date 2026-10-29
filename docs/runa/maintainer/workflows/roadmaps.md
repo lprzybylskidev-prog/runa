@@ -231,7 +231,13 @@ Move `paused/` -> `active/` and continue.
 
 ## Final verification point
 
-The final point runs the complete agreed manual selection and all mandatory/prerequisite gates, then performs release finalization. Record `quality_groups` (comma-separated names or `all`) and `quality_rationale` in frontmatter before execution. The agent chooses scope proportionately; owner steering overrides it. Excluded groups are not PASS. Flag-free workflows retain legacy behavior for compatibility. See the quality guide for group availability and closure evidence.
+The final point runs complete checks for changed behavior/contracts, their real prerequisites and the mandatory baseline, then performs release finalization. Full verification means completing that agreed scope; it does not mean all groups at every closure. Record `quality_groups` (comma-separated names or `all`) and `quality_rationale` in frontmatter before execution. The agent chooses scope proportionately; owner steering overrides it. Excluded groups are not PASS. Flag-free workflows retain legacy behavior for compatibility. See the quality guide for group availability and closure evidence.
+
+Ordinary scope must explain every heavy area and exclude unrelated suites. Apply
+the platform-wide milestone cadence in [the quality guide](../quality/README.md#manual-group-selection):
+0.10.0, 0.15.0 and subsequent five-minor checkpoints, plus pre-1.0.0 readiness.
+Record `quality_groups: all` and use `--all` when a checkpoint is due; PATCH
+releases do not advance the cadence.
 
 Before the gate, review current-state documentation against the delivered implementation: README, affected command/environment/deployment guidance, project-state metadata, agent rules and domain skill procedures. Check available versus deferred capabilities, startup instructions, CLI semantics and development/production boundaries. Classify dated reports, closed roadmaps and genuine proposals separately; do not rewrite history to describe newer behavior.
 
