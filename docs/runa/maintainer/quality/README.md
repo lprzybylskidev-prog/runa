@@ -163,6 +163,13 @@ Starting a new run replaces the prior completed/interrupted run; reject a concur
 
 ## Parallel execution
 
+The owner-only `fixture-acceptance` group qualifies changes to the acceptance
+harness itself: it runs the combined production/scanning prerequisites and fresh
+standalone production-only and scan-only invocations. It deliberately adds native
+work and is not a prerequisite of ordinary tooling/knowledge/delivery/production
+selection. Use it for changed fixture composition or at an explicit all-group
+checkpoint, not as a shortcut to measure an ordinary release's elapsed cost.
+
 When both production acceptance and repository/image scanning are selected, the
 source-owned `command_if_selected` alternatives compose them through one installer
 invocation. The production node scans the healthy exact selected images before

@@ -8,7 +8,7 @@ activated_at: 2026-10-29
 closed_at: null
 release_type: maintenance
 proposed_version: 0.6.2
-quality_groups: docs,tooling,development,installation,updates,transport,production,security
+quality_groups: docs,tooling,development,installation,updates,transport,production,security,fixture-acceptance
 quality_rationale: Verify changes to quality selection, shared acceptance environments, isolated command execution and evidence ownership across the actual installation, update, transport, production and security harnesses being changed. This roadmap changes those harnesses themselves; their final acceptance is relevant even though an isolated future knowledge-ranking change would not require them. Reconcile the exact selection and prerequisites before final execution; backend and application UI suites are excluded unless implementation actually affects them.
 impact_areas:
   - tooling
@@ -375,3 +375,15 @@ Production architecture and owner quality guides document the actual boundaries
 and measurement limits. Both instruction products retain their existing lifecycle
 rules; point 5 reconciles their selection hints. No dependency or topology change,
 database reset or migration was introduced.
+
+### Final matrix wiring (points 3–4 follow-up)
+
+The explicit owner-only `fixture-acceptance` group schedules standalone production
+and scanner qualification using their existing native entrypoint, in addition to
+combined prerequisites. It is selected for this harness change, not pulled into
+ordinary tooling/knowledge/production groups. This deliberately increases this
+roadmap's validation workload; compare the ordinary combined stage separately
+from qualification runs. Fresh run/source/command-bound producer/consumer contracts
+also cover actual atomic evidence publication and producer failure. Certificate
+fixture labels are included in exact project cleanup, including interruption.
+The focused grouped-shell diagnostic completed 4 PASS (0.05 seconds of test time).

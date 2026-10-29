@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -12,13 +14,17 @@ from tests.tools.runa.acceptance.acceptance import Report
 from tests.tools.runa.acceptance.installation_evidence import (
     SHARED_PHASES,
     FixtureEvidence,
+    publish_shared,
     quality_binding,
     validate_shared,
+    verify_shared,
 )
 from tests.tools.runa.support.quality import node
 from tools.application.configuration_reader import ConfigurationReader
 from tools.application.quality_models import quality_definition
 from tools.application.quality_planning import graph_hash, resolve, select
+from tools.application.quality_reporting import save
+from tools.application.quality_state import run_record
 from tools.core.state import JsonValue, json_value
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -154,6 +160,80 @@ def test_phase_failure_persists_recovery_inventory_and_never_passes(
 def test_shared_result_cannot_be_consumed_outside_owner_coordinator(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="owner quality directory"):
         quality_binding(tmp_path, {}, "repository-container-scan")
+
+
+def test_shared_proof_is_bound_to_native_producer_run_source_and_commands(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    subprocess.run(["git", "init", "-q", "-b", "fixture", str(tmp_path)], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--allow-empty",
+            "-qm",
+            "fixture",
+        ],
+        cwd=tmp_path,
+        check=True,
+    )
+    commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
+    directory = tmp_path / ".runtime/quality"
+    state = run_record(
+        {
+            "status": "running",
+            "run_id": "a" * 32,
+            "commit": commit,
+            "branch": "fixture",
+            "steps": {
+                key: dict(node(key), status="pending")
+                for key in ("production-acceptance", "repository-container-scan")
+            },
+        }
+    )
+    save(directory, state, anchor=tmp_path)
+    for key, value in {
+        "RUNA_QUALITY_DIRECTORY": str(directory),
+        "RUNA_QUALITY_RUN_ID": "a" * 32,
+        "RUNA_QUALITY_STEP": "production-acceptance",
+    }.items():
+        monkeypatch.setenv(key, value)
+    report: Report = {
+        "result": "PASS",
+        "prod_sha": "a" * 40,
+        "images": {"app": "sha256:" + "b" * 64},
+        "quality_binding": quality_binding(tmp_path, os.environ, "production-acceptance"),
+        "cleanup": [{"project": "owned", "containers": [], "networks": [], "volumes": []}],
+    }
+    path = tmp_path / ".runtime/ownership/fixture.json"
+    evidence = FixtureEvidence(tmp_path, path, report)
+    for name in SHARED_PHASES:
+        with evidence.phase(name):
+            pass
+    publish_shared(tmp_path, report)
+    monkeypatch.setenv("RUNA_QUALITY_STEP", "repository-container-scan")
+    with pytest.raises(ValueError, match="producer"):
+        verify_shared(tmp_path)
+    producer = state["steps"]["production-acceptance"]
+    producer.update(status="passed", exit_code=0)
+    save(directory, state, anchor=tmp_path)
+    verify_shared(tmp_path)
+    producer["command"] = "changed"
+    save(directory, state, anchor=tmp_path)
+    with pytest.raises(ValueError, match="stale"):
+        verify_shared(tmp_path)
+    monkeypatch.setenv("RUNA_QUALITY_RUN_ID", "b" * 32)
+    with pytest.raises(ValueError, match="different"):
+        verify_shared(tmp_path)
+    monkeypatch.setenv("RUNA_QUALITY_RUN_ID", "a" * 32)
+    state["commit"] = "c" * 40
+    save(directory, state, anchor=tmp_path)
+    with pytest.raises(ValueError, match="exact quality candidate"):
+        verify_shared(tmp_path)
 
 
 def test_cleanup_failure_overrides_provisional_success(tmp_path: Path) -> None:

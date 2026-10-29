@@ -1113,6 +1113,7 @@ def main() -> None:
             remove_project(dev_project, report)
             remove_project(team_project, report)
             remove_project(prod_project, report)
+            remove_project("runa-install-cert-" + token, report)
             existing_images = set(
                 output(
                     ["docker", "image", "ls", "--format", "{{.Repository}}:{{.Tag}}"]

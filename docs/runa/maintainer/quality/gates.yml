@@ -504,8 +504,24 @@ groups:
     ]
   knowledge:
     [documentation-ownership-live, knowledge-doctor, knowledge-evals, boost-mcp]
+  fixture-acceptance:
+    [production-standalone-acceptance, scan-standalone-acceptance]
 
 group_steps:
+  - id: production-standalone-acceptance
+    execution_context: host
+    depends_on: [production-acceptance]
+    exclusive_group: production-simulation
+    description: Qualify standalone production behavior when changing the acceptance harness itself.
+    command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --customer-deployment
+    severity: hard_fail
+  - id: scan-standalone-acceptance
+    execution_context: host
+    depends_on: [repository-container-scan]
+    exclusive_group: production-simulation
+    description: Qualify standalone scanner behavior when changing the acceptance harness itself.
+    command: python3 -m tests.tools.runa.acceptance.installation_host --production-only --security-scan
+    severity: hard_fail
   - id: production-source-contracts
     depends_on: [configuration]
     exclusive_group: testing-state
