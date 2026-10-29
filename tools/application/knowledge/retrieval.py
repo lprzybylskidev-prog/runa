@@ -1,13 +1,19 @@
 """Dense Qdrant retrieval plus local BM25 and weighted reciprocal-rank fusion."""
 
 import math
+import posixpath
 import re
 import statistics
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfig
+from tools.application.knowledge.configuration import (
+    EvidenceExpectation,
+    GoldenCase,
+    KnowledgeConfig,
+    RetrievalConfig,
+)
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import (
     CaseResult,
@@ -19,15 +25,52 @@ from tools.application.knowledge.contracts import (
     RankSignal,
     SearchHit,
 )
+from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
+
+INTENTS = ("legacy", "current", "history", "audit")
+REFERENCE_WEIGHT = 3.0
+
+# Reviewed heuristics rank declared purpose; none establishes semantic truth.
+PURPOSE_WEIGHTS = {
+    "current": {
+        "current_guidance": 1.2,
+        "historical_evidence": 0.65,
+        "proposal": 0.5,
+        "unknown": 1.0,
+    },
+    "history": {
+        "current_guidance": 0.9,
+        "historical_evidence": 1.2,
+        "proposal": 0.8,
+        "unknown": 1.0,
+    },
+}
 
 FILTERS = ("document_type", "scope", "roadmap_id", "status", "source_path")
 
 
 def tokens(text: str) -> list[str]:
-    return re.findall(r"[\w]+(?:[-/.][\w]+)*", text.lower())
+    # Preserve exact technical identifiers while matching their component words
+    # and ordinary English inflections (version/versions, dependency/dependencies).
+    original = re.findall(r"[\w]+(?:[-/.][\w]+)*", text.lower())
+    result: list[str] = []
+    for token in original:
+        variants = {token, *re.findall(r"[\w]+", token)}
+        for word in tuple(variants):
+            if word.isalpha():
+                if word.endswith("ies") and len(word) > 5:
+                    variants.add(word[:-3] + "y")
+                elif word.endswith("s") and len(word) > 4 and not word.endswith(("ss", "us")):
+                    variants.add(word[:-1])
+                if word.endswith("ability"):
+                    variants.add(word[:-7] + "able")
+                elif word.endswith("ibility"):
+                    variants.add(word[:-7] + "ible")
+        result.extend(sorted(variants))
+    return result
 
 
 def lexical(query: str, points: Mapping[str, ChunkPayload]) -> list[tuple[str, float]]:
@@ -46,6 +89,76 @@ def lexical(query: str, points: Mapping[str, ChunkPayload]) -> list[tuple[str, f
         if score:
             scores[key] = score
     return sorted(scores.items(), key=lambda row: (-row[1], row[0]))
+
+
+def references(
+    query: str, points: Mapping[str, ChunkPayload], seed_scores: Mapping[str, float]
+) -> list[tuple[str, float]]:
+    """Follow one bounded hop of explicit local citations inside the filtered corpus.
+
+    A cited passage supplies lexical context (including exact release identifiers),
+    rather than repeating a broad query that originally preferred the summary.
+    Links are navigation evidence, never authority or executable instructions.
+    """
+    by_source: dict[str, dict[str, ChunkPayload]] = {}
+    for key, point in points.items():
+        by_source.setdefault(point["source_path"], {})[key] = point
+    seeds = list(
+        dict.fromkeys(
+            points[key]["source_path"]
+            for key in sorted(seed_scores, key=lambda key: (-seed_scores[key], key))
+        )
+    )[:5]
+    terms = set(tokens(query))
+    result: list[tuple[str, float]] = []
+    visited: set[str] = set()
+    for source in seeds:
+        count = 0
+        lead = dict(
+            sorted(by_source[source].items(), key=lambda item: item[1].get("source_order", 0))[:16]
+        )
+        for key, _ in lexical(query, lead):
+            context = lead[key]["content"]
+            if len(terms & set(tokens(context))) < min(3, len(terms)):
+                continue
+            for target in re.findall(r"\[[^\]\n]+\]\(([^\s)]+)(?:\s+[^)]*)?\)", context):
+                if target.startswith(("/", "#")) or any(
+                    char in target for char in (":", "\\", "?")
+                ):
+                    continue
+                name = posixpath.normpath(
+                    posixpath.join(posixpath.dirname(source), target.split("#", 1)[0])
+                )
+                if name == source or name in visited or name not in by_source:
+                    continue
+                visited.add(name)
+                matches = lexical(context, by_source[name])
+                if matches:
+                    result.append(matches[0])
+                    count += 1
+                if count == 3:
+                    break
+            if count == 3:
+                break
+    return result
+
+
+def boosts(point: ChunkPayload, settings: RetrievalConfig, intent: str) -> dict[str, float]:
+    state = point.get("status")
+    status = (
+        (
+            settings["active_boost"]
+            if state == "active"
+            else settings["historical_weight"]
+            if state in ("closed", "paused", "deprecated")
+            else 1.0
+        )
+        if intent in ("legacy", "current")
+        else 1.0
+    )
+    applicability = point.get("applicability")
+    purpose = applicability["purpose"] if applicability is not None else "unknown"
+    return {"status": status, "purpose": PURPOSE_WEIGHTS.get(intent, {}).get(purpose, 1.0)}
 
 
 class Retriever:
@@ -73,10 +186,20 @@ class Retriever:
         self.health = health
 
     def search(
-        self, query: str, top_k: int = 5, filters: Mapping[str, str] | None = None
+        self,
+        query: str,
+        top_k: int = 5,
+        filters: Mapping[str, str] | None = None,
+        *,
+        intent: str = "legacy",
+        per_source: int | None = None,
     ) -> list[SearchHit]:
         if not query.strip() or type(top_k) is not int or not 1 <= top_k <= 50:
             raise ValueError("Provide a nonempty query and top-k between 1 and 50.")
+        if intent not in INTENTS:
+            raise ValueError("Intent must be legacy, current, history or audit.")
+        if per_source is not None and (type(per_source) is not int or not 1 <= per_source <= 10):
+            raise ValueError("Per-source budget must be between 1 and 10.")
         filters = filters or {}
         if set(filters) - set(FILTERS):
             raise ValueError("Unsupported metadata filter.")
@@ -127,49 +250,161 @@ class Retriever:
             for rank, (key, score) in enumerate(ranking, 1):
                 scores[key] = scores.get(key, 0) + weight / (settings["rrf_k"] + rank)
                 diagnostics.setdefault(key, {})[name] = {"rank": rank, "score": score}
+        seed_scores = {
+            key: score * math.prod(boosts(selected[key], settings, intent).values())
+            for key, score in scores.items()
+        }
+        for rank, (key, score) in enumerate(references(query, selected, seed_scores), 1):
+            scores[key] = scores.get(key, 0) + REFERENCE_WEIGHT / (settings["rrf_k"] + rank)
+            diagnostics.setdefault(key, {})["reference"] = {"rank": rank, "score": score}
+        factors = {key: boosts(selected[key], settings, intent) for key in scores}
         for key in scores:
-            state = selected[key].get("status")
-            scores[key] *= (
-                settings["active_boost"]
-                if state == "active"
-                else settings["historical_weight"]
-                if state in ("closed", "paused", "deprecated")
-                else 1
+            scores[key] *= math.prod(factors[key].values())
+        source_budget = (
+            per_source
+            if per_source is not None
+            else (
+                top_k
+                if filters and len({p["source_path"] for p in selected.values()}) == 1
+                else settings["per_source"]
             )
+        )
         results: list[SearchHit] = []
         counts: Counter[str] = Counter()
         for key in sorted(scores, key=lambda key: (-scores[key], key)):
             point = selected[key]
-            if counts[point["source_path"]] >= settings["per_source"]:
+            if counts[point["source_path"]] >= source_budget:
                 continue
             counts[point["source_path"]] += 1
             results.append(
-                {"id": key, "score": scores[key], "signals": diagnostics[key], "payload": point}
+                {
+                    "id": key,
+                    "score": scores[key],
+                    "signals": diagnostics[key],
+                    "payload": point,
+                    "ranking_factors": factors[key],
+                }
             )
             if len(results) == top_k:
                 break
         return results
 
 
+def covers(payload: ChunkPayload, expectation: EvidenceExpectation) -> bool:
+    applicability = payload.get("applicability")
+    return (
+        payload["source_path"] == expectation["source_path"]
+        and expectation.get("section", "").lower() in payload["section"].lower()
+        and (
+            "purpose" not in expectation
+            or (applicability is not None and applicability["purpose"] == expectation["purpose"])
+        )
+        and (
+            not expectation.get("decision_ids")
+            or (
+                applicability is not None
+                and set(expectation.get("decision_ids", []))
+                <= {d["id"] for d in applicability["decisions"]}
+            )
+        )
+        and (
+            not expectation.get("unknown_fields")
+            or (
+                applicability is not None
+                and all(
+                    applicability.get(field) is None
+                    for field in expectation.get("unknown_fields", [])
+                )
+            )
+        )
+    )
+
+
+def unknown_scope(payload: ChunkPayload) -> bool:
+    applicability = payload.get("applicability")
+    return (
+        applicability is None
+        or applicability["effective_date"] is None
+        or applicability["applicable_version"] is None
+    )
+
+
+def unknown_purpose(payload: ChunkPayload) -> bool:
+    applicability = payload.get("applicability")
+    return applicability is None or applicability["purpose"] == "unknown"
+
+
 def evaluate(retriever: Retriever, dataset: Sequence[GoldenCase]) -> Evaluation:
     results: list[CaseResult] = []
     for case in dataset:
         started = retriever.context.clock.monotonic()
-        hits = retriever.search(case["query"], case.get("top_k", 5), case.get("filters"))
-        passed = any(
-            hit["payload"]["source_path"] == case["source_path"]
-            and case.get("section", "").lower() in hit["payload"].get("section", "").lower()
-            for hit in hits
+        hits = retriever.search(
+            case["query"],
+            case.get("top_k", 5),
+            case.get("filters"),
+            intent=case.get("intent", "legacy"),
+            per_source=case.get("per_source"),
+        )
+        budget = case.get("max_chars", 24000)
+        evidence: dict[str, ChunkPayload] = {}
+        size = 0
+        # Account for every selected hit before expansion; never silently overrun.
+        for hit in hits:
+            if size + len(hit["payload"]["content"]) <= budget:
+                evidence[hit["id"]] = hit["payload"]
+                size += len(hit["payload"]["content"])
+        if case.get("expected"):
+            indexer = KnowledgeIndexer(retriever.context, retriever.config, retriever.store)
+            for hit in hits:
+                remaining = budget - size
+                if remaining < 1000:
+                    break
+                expanded = read(
+                    indexer,
+                    hit["id"],
+                    section=True,
+                    max_chars=min(60000, remaining + len(hit["payload"]["content"])),
+                )
+                for row in expanded["results"]:
+                    if (
+                        row["id"] not in evidence
+                        and size + len(row["payload"]["content"]) <= budget
+                    ):
+                        evidence[row["id"]] = row["payload"]
+                        size += len(row["payload"]["content"])
+        original = any(
+            covers(
+                payload, {"source_path": case["source_path"], "section": case.get("section", "")}
+            )
+            for payload in evidence.values()
+        )
+        coverage = [
+            any(covers(payload, expected) for payload in evidence.values())
+            for expected in case.get("expected", [])
+        ]
+        forbidden = sorted(
+            {payload["source_path"] for payload in evidence.values()}
+            & set(case.get("forbidden_sources", []))
         )
         results.append(
             {
                 "query": case["query"],
-                "passed": passed,
+                "passed": original and all(coverage) and not forbidden,
                 "seconds": round(retriever.context.clock.monotonic() - started, 3),
                 "sources": [hit["payload"]["source_path"] for hit in hits],
+                "intent": case.get("intent", "legacy"),
+                "probe_only": case.get("probe_only", False),
+                "coverage": coverage,
+                "forbidden_hits": forbidden,
+                "content_characters": size,
+                "distinct_sources": len({p["source_path"] for p in evidence.values()}),
+                "unknown_applicability": sum(unknown_scope(p) for p in evidence.values()),
             }
         )
-    return {"passed": all(row["passed"] for row in results), "cases": results}
+    return {
+        "passed": all(row["passed"] for row in results if not row.get("probe_only", False)),
+        "cases": results,
+    }
 
 
 def doctor(retriever: Retriever) -> DoctorReport:
@@ -180,6 +415,7 @@ def doctor(retriever: Retriever) -> DoctorReport:
         "embedding_revision": retriever.config["model_revision"],
         "embedding_dimension": retriever.config["dimension"],
         "chunk_schema_version": retriever.config["schema_version"],
+        "payload_schema_version": 2,
     }
     invalid = sum(
         any(p.get(key) != value for key, value in expected.items()) for p in points.values()
@@ -195,11 +431,17 @@ def doctor(retriever: Retriever) -> DoctorReport:
             }
         ],
     )
+    missing_provenance = sum(
+        any(not p.get(key) for key in ("source_hash", "git_branch", "git_commit"))
+        for p in points.values()
+    )
     return {
         **retriever.health,
         "invalid_metadata_chunks": invalid,
+        "unknown_applicability_chunks": sum(unknown_purpose(p) for p in points.values()),
+        "missing_provenance_chunks": missing_provenance,
         "average_chunk_words": round(statistics.mean(sizes), 1) if sizes else 0,
         "median_chunk_words": statistics.median(sizes) if sizes else 0,
         "smoke": smoke,
-        "passed": not invalid and bool(points) and smoke["passed"],
+        "passed": not invalid and not missing_provenance and bool(points) and smoke["passed"],
     }

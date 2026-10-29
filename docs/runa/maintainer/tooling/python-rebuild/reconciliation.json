@@ -1278,7 +1278,7 @@
       "path": "docs/runa/maintainer/roadmaps/active/RM-2026-012-python-tooling-architecture.md",
       "disposition": "relocated",
       "targets": [
-        "docs/runa/maintainer/roadmaps/active/RM-2026-012-runa-architecture-refactor.md"
+        "docs/runa/maintainer/roadmaps/closed/RM-2026-012-runa-architecture-refactor.md"
       ],
       "reason": "Roadmap renamed for the expanded Runa architecture/public API scope; original inventory identity and completed evidence are preserved."
     },

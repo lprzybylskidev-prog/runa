@@ -1,7 +1,9 @@
 # RM-2026-012 API and placement map
 
 This record preserves the point-12 baseline and the compatible layout delivered
-by points 13–19. Final verification remains point 22. Point 13 delivers the platform PHP relocations and provider split.
+by points 13–19. RM-012 subsequently closed and released as 0.6.0; point numbers
+and baseline inventories below are historical engineering evidence. Use the public
+API guide and current source for supported consumption. Point 13 delivers the platform PHP relocations and provider split.
 Point 14 delivers the built-in module execution layout while retaining contract
 and historical upgrade identities. Point 15 publishes named frontend consumer
 contracts through the retained facades and normalizes reactive presentation maps.
@@ -37,7 +39,8 @@ imports are findings to repair, not new supported APIs.
 
 The map is owner engineering data, excluded from customer acquisition and production.
 Do not install it as another runtime registry. Point 18 implements boundary checks
-through existing source/quality ownership. Final acceptance remains point 22.
+through existing source/quality ownership. Final acceptance is recorded in the
+closed RM-012 roadmap.
 
 ## Frozen dependency direction
 
@@ -280,7 +283,8 @@ removal, receipt/schema change, migration-history rewrite or public alias break
 is introduced. Auth 1.1.4, Audit/Permissions 1.0.4 explicitly support platform
 0.6.x and retain source-only platform_delivery edges. Their verification_contracts
 patch edges complete typed boundaries without data transformations. Dependent ^1.0.0 constraints
-remain compatible. Their manifests still support the current platform 0.5.0.
+remain compatible. At this baseline their manifests supported platform 0.5.0; current manifests and
+the released changelog establish current compatibility.
 
 Projected-customer acceptance now authors public PHP/Vue/Python cases and invokes
 the delivered checker without owner source; updater fixtures preserve application

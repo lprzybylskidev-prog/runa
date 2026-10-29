@@ -534,39 +534,16 @@ class BootstrapContracts(unittest.TestCase):
                 expected = (ROOT / "docs/runa/maintainer/customer-agent/AGENTS.md").read_bytes()
                 self.assertEqual((destination / "AGENTS.md").read_bytes(), expected)
                 self.assertIn(b"## Audit awareness", expected)
-                for area in ("backend", "laravel", "postgresql", "security", "frontend"):
-                    guidance = destination / ".agents/skills" / area / "references/application.md"
-                    if area != "frontend":
-                        self.assertIn("explicit manual Audit events", guidance.read_text())
-                    self.assertIn("docs/runa/handbook/modules/auth/README.md", guidance.read_text())
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/transport.md", guidance.read_text()
+                self.assertIn(b"explicit manual Audit events", expected)
+                for guidance in (ROOT / "docs/runa/maintainer/customer-agent/skills").glob(
+                    "*/references/application.md"
+                ):
+                    relative = guidance.relative_to(
+                        ROOT / "docs/runa/maintainer/customer-agent/skills"
                     )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/sessions.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/security.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/profile.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/preferences.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/policies-and-operators.md",
-                        guidance.read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/permissions/README.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/permissions/authority.md", guidance.read_text()
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/data/seeding.md#explicit-module-development-contributors",
-                        guidance.read_text(),
+                    self.assertEqual(
+                        (destination / ".agents/skills" / relative).read_bytes(),
+                        guidance.read_bytes(),
                     )
                 self.assertEqual(len(list((destination / ".agents/skills").glob("*/SKILL.md"))), 9)
                 assert "customer_agent" in receipt
@@ -590,7 +567,7 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertEqual((destination / "AGENTS.md").read_bytes(), expected)
                 for name, content in custom_frontend.items():
                     self.assertEqual((destination / name).read_text(), content)
-                for area in ("frontend", "vue", "tailwind", "security"):
+                for area in ("frontend", "vue", "tailwind"):
                     self.assertIn(
                         "docs/runa/handbook/development/frontend/customization.md",
                         (
@@ -622,58 +599,19 @@ class BootstrapContracts(unittest.TestCase):
                 self.assertEqual((clone / "AGENTS.md").read_bytes(), expected)
                 for name, content in custom_frontend.items():
                     self.assertEqual((clone / name).read_text(), content)
-                for area in ("frontend", "vue", "tailwind", "security"):
+                for area in ("frontend", "vue", "tailwind"):
                     self.assertIn(
                         "docs/runa/handbook/development/frontend/customization.md",
                         (clone / ".agents/skills" / area / "references/application.md").read_text(),
                     )
-                for area in ("backend", "laravel", "postgresql", "security", "frontend"):
-                    if area != "frontend":
-                        self.assertIn(
-                            "explicit manual Audit events",
-                            (
-                                clone / ".agents/skills" / area / "references/application.md"
-                            ).read_text(),
-                        )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/README.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
+                for guidance in (ROOT / "docs/runa/maintainer/customer-agent/skills").glob(
+                    "*/references/application.md"
+                ):
+                    relative = guidance.relative_to(
+                        ROOT / "docs/runa/maintainer/customer-agent/skills"
                     )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/transport.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/sessions.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/security.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/profile.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/preferences.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/auth/policies-and-operators.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/permissions/README.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/modules/permissions/authority.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
-                    self.assertIn(
-                        "docs/runa/handbook/data/seeding.md#explicit-module-development-contributors",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
+                    self.assertEqual(
+                        (clone / ".agents/skills" / relative).read_bytes(), guidance.read_bytes()
                     )
                 self.assertFalse((clone / ".git/runa-bootstrap.json").exists())
                 self.assertFalse((clone / "docs/runa/maintainer").exists())

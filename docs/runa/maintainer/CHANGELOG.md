@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.6.1] - 2026-10-29
+
+Maintenance release — RM-2026-013.
+
+- Deliver bounded source-verified knowledge evidence reads, shared reader admission, explicit applicability/decision metadata and current/history/audit retrieval intents.
+- Improve semantic passage retrieval and bounded local citation navigation; preserve original required evaluation sources, unknowns and customer corpus isolation.
+- Reconcile current module/version guidance and consolidate owner/customer instructions around canonical public procedures while preserving customer extensions and immutable history.
+- Correct Python typing, delivery acceptance expectations and evidence-bound queue lifetime handling. All 47 selected final checks pass, including real knowledge, installation/update, transport, production and strict security acceptance.
+
+The owner excluded the full backend suite; this release makes no backend-suite PASS claim. Native segfault diagnosis remains a separately planned follow-up. Two Polish retrieval probes remain visible limitations of the English model. Platform module/application versions are unchanged; no real production deployment occurred. Harnesses scoped-cleaned their disposable resources and preserved development/test data, Qdrant/model/build caches, backups and reports.
+
 ## [0.6.0] - 2026-10-28
 
 Feature release — RM-2026-012.

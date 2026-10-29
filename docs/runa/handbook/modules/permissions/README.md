@@ -1,6 +1,6 @@
 # Permissions
 
-Core `runa.permissions` has independent version `1.0.2`, requiring
+Core `runa.permissions` has independent version `1.0.4`, requiring
 `runa.auth ^1.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected

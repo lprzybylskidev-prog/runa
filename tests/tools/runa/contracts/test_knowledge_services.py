@@ -281,3 +281,64 @@ def test_injected_provider_rejects_gpu_model_mismatch_without_cpu_fallback(tmp_p
     with pytest.raises(ValueError, match="mismatch"):
         Embeddings(config, http_factory=Client)
     assert calls == [config["cuda_url"]]
+
+
+def test_knowledge_shared_reader_writer_modes_and_interruption_release(tmp_path: Path) -> None:
+    from tools.application.knowledge.cli import operation_lock
+    from tools.core.state import StateFailure
+
+    with operation_lock(tmp_path, "search").acquire():
+        lock = tmp_path / ".runtime/knowledge/index.lock"
+        inode = lock.stat().st_ino
+        with operation_lock(tmp_path, "read").acquire():
+            with operation_lock(tmp_path, "status").acquire():
+                with pytest.raises(StateFailure, match="write blocked by active readers"):
+                    with operation_lock(tmp_path, "index").acquire():
+                        pytest.fail("Writer entered a shared snapshot")
+    with pytest.raises(KeyboardInterrupt):
+        with operation_lock(tmp_path, "index").acquire():
+            with pytest.raises(StateFailure, match="read blocked by an exclusive writer"):
+                with operation_lock(tmp_path, "search").acquire():
+                    pytest.fail("Reader entered partial writes")
+            raise KeyboardInterrupt
+    with operation_lock(tmp_path, "index").acquire():
+        assert lock.stat().st_ino == inode
+    with operation_lock(tmp_path, "doctor").acquire():
+        assert lock.stat().st_ino == inode
+
+
+def test_knowledge_lock_refuses_symlink_and_preserves_legacy_inode(tmp_path: Path) -> None:
+    from tools.application.knowledge.cli import operation_lock
+    from tools.core.state import StateFailure
+
+    lock = tmp_path / ".runtime/knowledge/index.lock"
+    lock.parent.mkdir(parents=True, mode=0o700)
+    lock.write_text("")
+    lock.chmod(0o644)
+    inode = lock.stat().st_ino
+    with operation_lock(tmp_path, "read").acquire():
+        assert lock.stat().st_ino == inode
+    lock.unlink()
+    target = tmp_path / "outside"
+    target.write_text("unchanged")
+    lock.symlink_to(target)
+    with pytest.raises((OSError, StateFailure)):
+        with operation_lock(tmp_path, "read").acquire():
+            pytest.fail("Followed a lock symlink")
+    assert target.read_text() == "unchanged"
+
+
+def test_knowledge_invalid_annotation_date_never_echoes_source_payload() -> None:
+    from tools.application.knowledge.applicability import validate_metadata
+
+    with pytest.raises(ValueError) as failure:
+        validate_metadata(
+            {
+                "purpose": "current_guidance",
+                "effective_date": "private-invalid-fixture",
+                "applicable_version": None,
+                "decisions": [],
+            }
+        )
+    assert "private-invalid-fixture" not in str(failure.value)
+    assert "ISO calendar date" in str(failure.value)

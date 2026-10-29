@@ -1,15 +1,15 @@
 ---
 id: RM-2026-013
 title: Knowledge retrieval and agent guidance maintainability
-status: draft
+status: closed
 branch: roadmap/RM-2026-013-knowledge-retrieval-reliability
 created_at: 2026-10-28
-activated_at: null
-closed_at: null
+activated_at: 2026-10-29
+closed_at: 2026-10-29
 release_type: maintenance
 proposed_version: 0.6.1
-quality_groups: docs,tooling,backend,development,knowledge,installation,updates,production,security
-quality_rationale: Knowledge command contracts, locks, corpus ownership, provenance, retrieval and the owner/customer instruction and documentation system affect delivered development tooling. Include real customer acquisition/update, production isolation and security evidence alongside documentation, instruction-product, strict knowledge and tooling checks; preserve mandatory checks and all actual prerequisites. Reconcile the selection with the implemented scope before final verification.
+quality_groups: docs,tooling,development,knowledge,installation,updates,transport,production,security
+quality_rationale: Verify delivered knowledge commands, shared snapshots, payload provenance and evidence retrieval; instruction/documentation ownership; Python tooling and named PHP/host transports; real customer acquisition/update and production isolation. Retain strict security/image scanning and mandatory prerequisites. Per owner correction, exclude the full backend suite because no business backend behavior changed; its intermittent SIGSEGV remains RM-014 scope. No application UI, business schema or module behavior changed, so standalone frontend/e2e/database/container groups are excluded; transitive real prerequisites remain selected.
 impact_areas:
   - ai_environment
   - tooling
@@ -44,10 +44,10 @@ prepare this draft; no implementation source was inspected for those analyses.
 
 The owner explicitly requested version **0.6.1** and confirmed
 `release_type: maintenance` on 2026-10-28. This is a PATCH increment after the
-planned compatible feature **0.6.0**, not after today's VERSION 0.5.0. The required
+released compatible feature **0.6.0**. The completed
 predecessor is [RM-2026-012](../closed/RM-2026-012-runa-architecture-refactor.md).
-Refresh that link, actual baseline and projected arithmetic after its release.
-This draft does not activate work, change VERSION or extend RM-012 implementation.
+RM-012 closed, merged and released as v0.6.0 on 2026-10-28.
+Activation preserves VERSION until release finalization and does not extend RM-012 implementation.
 
 ### Scope
 
@@ -81,6 +81,13 @@ does not reopen RM-012's platform architecture or impose new customer app layers
 ## Specification
 
 ### Decisions
+
+- 2026-10-29 — After the failed first final run, owner requests Python repairs
+  and another run of necessary checks without backend tests. Backend SIGSEGV
+  diagnosis stays in RM-014. No retrieval/security failure is waived.
+- 2026-10-29 — Owner explicitly approves activation and execution of RM-013.
+  Confirmed maintenance 0.6.1 follows released v0.6.0; implementation begins on
+  the dedicated roadmap branch. Broad verification remains exclusively point 10.
 
 - 2026-10-28 — Owner requests a separate 0.6.1 roadmap based on all three Qdrant-only
   exercises and explicitly confirms maintenance classification. Activation remains
@@ -395,7 +402,7 @@ the final point. Each point includes its test code, affected current documentati
 instruction-product assessment, commit and checklist update. Do not run broad
 acceptance as a prerequisite for subsequent implementation.
 
-- [ ] 1. Reconcile the predecessor and freeze the three research cases.
+- [x] 1. Reconcile the predecessor and freeze the three research cases.
   - Prerequisite: RM-012 closed, merged and released; owner activation of RM-013.
   - Refresh actual layout, public command contracts and source/version authority.
     Establish a compact source/claim ledger from the exercise evidence above.
@@ -408,7 +415,7 @@ acceptance as a prerequisite for subsequent implementation.
     canonical contract; capture size/context baselines and predecessor coverage.
     Plan all-skill review without loading every reference before its own review task.
 
-- [ ] 2. Deliver supported full evidence reading, citations and context expansion.
+- [x] 2. Deliver supported full evidence reading, citations and context expansion.
   - Prerequisite: point 1 ownership/source map and existing typed engine boundaries.
   - Implement bounded read/section expansion, structured responses and stable
     provenance using the existing service and narrow Artisan adapters.
@@ -416,14 +423,14 @@ acceptance as a prerequisite for subsequent implementation.
     unavailable service and compatibility with existing concise/explain output.
   - Update command/help and public knowledge guidance in this point.
 
-- [ ] 3. Allow safe parallel readers and correct contention diagnostics.
+- [x] 3. Allow safe parallel readers and correct contention diagnostics.
   - Prerequisite: point 2 read paths identified; preserve existing write protocol.
   - Separate shared reads from exclusive writers with bounded lock behavior.
     Prevent pending/mixed-index reads and retain lock ownership/inode safeguards.
   - Implement deterministic reader/reader, reader/writer, interruption and recovery
     scenarios; defer broad real-service concurrency acceptance to point 10.
 
-- [ ] 4. Deliver explicit applicability and decision-history metadata.
+- [x] 4. Deliver explicit applicability and decision-history metadata.
   - Prerequisite: point 1 claim ledger and point 3 isolation contract.
   - Add minimal source annotations, provenance fields and immutable-history
     references; distinguish historical evidence, proposals and current guidance.
@@ -433,7 +440,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Implement migration, missing-date/rationale and supersession fixtures; update
     the authoritative knowledge/decision-authoring guidance in this point.
 
-- [ ] 5. Improve retrieval for current state, history and audit questions.
+- [x] 5. Improve retrieval for current state, history and audit questions.
   - Prerequisite: points 2–4 evidence, isolation and applicability contracts.
   - Implement explicit intent, bounded multi-section retrieval/context expansion,
     transparent applicability ranking and preserved source filters/legacy calls.
@@ -442,7 +449,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Retain the current provider/model and source-diversity baseline unless measured
     evidence and the required separate approvals justify an additional proposal.
 
-- [ ] 6. Extend representative retrieval evaluation and truthful diagnostics.
+- [x] 6. Extend representative retrieval evaluation and truthful diagnostics.
   - Prerequisite: points 1–5 candidate behavior and fixed expectations.
   - Integrate evidence coverage, negative/uncertain cases, paired language probes,
     budgets/latency and structured reports into existing golden/doctor commands.
@@ -452,7 +459,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Implement the scenarios now; run their full comparison and live acceptance
     only in point 10. Do not weaken existing golden expectations to make changes pass.
 
-- [ ] 7. Review and reconcile the current documentation system.
+- [x] 7. Review and reconcile the current documentation system.
   - Prerequisites: point 1 review inventory, RM-012 final architecture and points
     2–6 supported knowledge behavior.
   - Review all existing owner/customer skill products and current documentation
@@ -466,7 +473,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Keep any behavior or constitutional question requiring a changed premise in
     discussion; do not resolve an architectural conflict by rewriting guidance alone.
 
-- [ ] 8. Consolidate instruction products and establish growth prevention.
+- [x] 8. Consolidate instruction products and establish growth prevention.
   - Prerequisite: point 7 canonical ownership and reviewed corrections.
   - Refine owner AGENTS and every affected existing SKILL.md/reference to retain
     essential invariants, precise triggers and selective loading. Move duplicated
@@ -481,7 +488,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Add navigation/selection and duplicate-removal regression scenarios to existing
     harnesses; broad end-to-end acceptance remains point 10.
 
-- [ ] 9. Synchronize agent behavior, delivery and knowledge composition.
+- [x] 9. Synchronize agent behavior, delivery and knowledge composition.
   - Prerequisite: points 2–8 stable supported behavior and concise source products.
   - Update affected root owner guidance and existing RAG skill/references, plus
     separately authored customer guidance. Teach query intent, English baseline
@@ -491,10 +498,21 @@ acceptance as a prerequisite for subsequent implementation.
     handbook procedures or making retrieved text operating authority.
   - Reconcile public commands, package resources, owner annotations/evals and
     production exclusions. Record unaffected instruction products with reasons.
-    This planning-only draft itself changes no delivered capability or agent rule.
+    The original draft authorized no capability change before owner activation.
 
-- [ ] 10. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–9 complete and committed; only this point remains open.
+- [x] 9a. Repair failed final-verification Python, guidance and retrieval checks.
+  - Preserve the first failed run; correct strict typing, delivery assertions,
+    owner-context composition and fixed retrieval cases without weakening gates.
+  - Run complete affected Python/documentation/knowledge checks, receive results
+    and commit repairs before restarting final verification.
+  - Correct the host acceptance preservation assertion using the established
+    evidence-bound queue lifetime rollover contract; retain rejection of other
+    restarts and scoped cleanup.
+  - Owner explicitly excludes backend tests; do not investigate or repair SIGSEGV.
+
+- [x] 10. Full verification, release finalization, merge and final report.
+  - Prerequisites: points 1–9 and inserted repairs complete and committed.
+    Restart this point only after complete affected-area repair checks pass.
   - Review current-state docs, CLI/help, source/version claims, owner/customer
     products, startup and production exclusions against actual implementation.
     Record findings and preserve closed roadmaps and dated evidence.
@@ -529,9 +547,286 @@ acceptance as a prerequisite for subsequent implementation.
     Reconcile any actually changed independent module versions/contracts; do not
     bump Auth/Permissions/Audit merely for corrected knowledge prose.
 
-## Planning state
+## Execution state
 
-Draft only. No implementation point is started and no release gate has run.
-The two additional research tasks were completed without changing sources or the
-Qdrant index. Their grounded findings and the separately labeled hypothetical are
-recorded above as planning evidence, not current implementation claims.
+Activated and closed on 2026-10-29 with owner authorization. All implementation
+and repair points are committed. Final verification on b4401d1c passed all 47
+selected checks in 2628.135 seconds (43 minutes 48 seconds), without backend tests.
+Maintenance 0.6.1 finalizes the planned PATCH increment from 0.6.0. Earlier failed
+runs and research limits remain historical evidence below.
+
+### Point 1 — predecessor and fixed research evidence (2026-10-29)
+
+Source reconciliation, immutable-history limits, frozen research query budgets,
+complete grouped review inventory and instruction/context size baselines are
+recorded in [the review record](../../architecture/RM-2026-013-knowledge-review.md).
+Corrected residual public module versions and the Audit consumer dependency;
+labeled intermediate foundations as historical engineering material. Manifests,
+module behavior and historical bytes are unchanged. Owner/customer instructions
+need no rule change for this source-only reconciliation. No broad checks ran;
+mandatory hooks and incremental source refresh accompany the point commit.
+
+### Point 2 — supported evidence reading (2026-10-29)
+
+Added development-only `runa:knowledge:read` through the existing named Artisan
+catalogue and internal Python service. It verifies allowed sources/current hash,
+manifest and branch, expands exact sections or bounded neighbors in source order,
+reports whole omitted chunks and refuses insufficient target/serialized budgets.
+Unique literal source bodies receive one-based citation lines; ambiguous matches
+remain null. Search/status structured options preserve legacy output and exits.
+Focused offline evidence cases passed (2 tests, cleanup 0), resolving ordering,
+coordinates, omitted budgets, stale/pending state and no embedding writes.
+Synchronized command/knowledge guides and owner/customer RAG entrypoints. Root
+owner/customer AGENTS need no new always-loaded rule: existing source grounding
+already applies. No new dependency, module behavior or version change.
+
+### Point 3 — shared readers and exclusive writes (2026-10-29)
+
+CLI read/search/status/stale/doctor/eval now use shared admission on the existing
+stable-inode lock; index/rebuild/initialize remain exclusive throughout their
+operation. Contention returns immediately with mode-specific diagnostics. Remote
+pending/freshness refusal and all core lock ownership/no-follow checks remain.
+Two focused offline lock scenarios passed (reader coexistence, blocked writer/read,
+interruption release, legacy inode preservation and symlink refusal; cleanup 0).
+Real-service concurrency/recovery scenarios remain final acceptance. Updated the
+canonical knowledge procedure; owner/customer RAG entrypoints already link there,
+so no further instruction-product edit is needed for this internal lock change.
+
+### Point 4 — applicability and decision provenance (2026-10-29)
+
+Added payload schema 2 alongside unchanged embedding/chunk schema 1. Reviewed
+source-purpose rules, standalone source/section declarations and hash-bound owner
+annotations preserve explicit unknown dates/versions/rationale and supersession.
+RM-005's excluded/forward deployment decisions are annotated externally against
+its exact source hash/full heading; closed bytes remain unchanged. Fenced examples
+do not become declarations. Missing/moved annotation sections or changed hashes
+refuse persistence. Customer composition never loads owner annotations.
+Metadata policy/parser fingerprints require explicit incremental index refresh;
+unchanged semantic vectors/IDs are reused, without collection deletion or rebuild.
+Four narrow offline scenarios passed: vector reuse/backfill, explicit supersession,
+immutable hash refusal and literal fenced examples. Canonical guides and both RAG
+reference products are synchronized; no additional always-loaded AGENTS rule is
+needed. Broad migration/retrieval acceptance remains point 10.
+
+### Point 5 — explicit intent and bounded source diversity (2026-10-29)
+
+Search supports legacy/current/history/audit intent and explicit per-source budgets;
+exact-source filters now allow multiple sections within top-k. Unrestricted legacy
+source diversity remains unchanged. Current/history ranking uses declared purpose,
+with visible multipliers; audit neutralizes status/purpose discounts and retains
+contrary evidence. No age heuristic, model/dependency change or inferred truth.
+A focused offline scenario passed for current/history ranking, neutral audit,
+source expansion/budgets and invalid intent/limit refusal. Existing real research
+cases remain frozen for final baseline/candidate comparison. Updated public
+CLI/knowledge guidance and owner/customer RAG references; their entrypoints already
+link to these procedures, so root instruction products require no new invariant.
+
+### Point 6 — coverage evaluation and final acceptance scenarios (2026-10-29)
+
+Extended golden validation/evaluation with explicit source/section/purpose/decision
+coverage, unknown-field labels, forbidden sources, context budgets, source diversity,
+latency and separately visible diagnostic probes. Original English cases remain
+required. Doctor separates unknown applicability from invalid metadata/missing
+provenance; eval preserves timestamped reports in .runtime/knowledge.
+Added final-only unchanged pinned-search/current-corpus comparison with module hash,
+raw-hit regressions and candidate evidence coverage. It reuses current compatible
+transport seams and explicitly does not claim historical installation replay.
+Existing documentation-live acceptance now exercises CPU/CUDA/fallback and actual
+concurrent source-verified reads/write exclusion; customer acceptance uses named
+search/read and refuses deleted IDs. Existing production development guards apply
+to the new catalogue entry. One focused offline evaluator case passed, proving
+missing coverage/forbidden sources fail and probe failures remain visible.
+No broad/live acceptance has run. Public procedures are synchronized; owner/customer
+RAG products already reference the canonical guide and need no duplicated recipe.
+
+### Point 7 — documentation contract/ownership review (2026-10-29)
+
+Completed the grouped current-documentation/skill-product coverage review in the
+existing review record, with canonical owners, intentional scope differences,
+source comparisons, concrete findings and limits. Corrected active-state projection,
+scaffold compatibility, deferred RM-011 delivery claims, profile/sign-out design
+claims, API-map closure routing and Python payload-schema prose. Explicit reviewed
+purpose rules distinguish public module changelogs, private evidence/security/
+engineering history, current workflows and proposals. Historical source bytes,
+upstream pins and customer extension ownership are preserved.
+All nine owner/customer skill families were assessed for point 8 consolidation;
+canonical public procedures remain their source of detail. No new constitutional
+rule, runtime behavior, dependency or broad check was introduced. Both instruction
+products need consolidation rather than duplicated fixes to these guide claims.
+
+### Point 8 — instruction consolidation and growth maintenance (2026-10-29)
+
+Consolidated shared skill workflow and the guidance-editing procedure in the
+existing skills-policy guide. All nine owner/customer entrypoints route there;
+frontend/RAG and customer domain references now point to canonical public contracts
+instead of repeated delivery narratives. Backend design retains generic choices
+and routes module detail. Root owner/customer AGENTS retain critical boundaries
+with a short justified documentation-maintenance summary. CLAUDE already delegates
+and needs no edit; unrelated distinct domain references remain intentional.
+The review record contains exact activation/current counts and representative
+source-set costs, retained-duplication/no-edit reasons and provenance limits.
+Added projected-customer navigation/local-extension scenarios to the existing
+ownership harness. No broad checks ran; mandatory hooks/source refresh apply.
+No upstream update, new skill, dependency, arbitrary size gate or constitutional
+change was introduced. Only authored defaults change, never installed extensions.
+
+### Point 9 — agent grounding and delivery composition (2026-10-29)
+
+Synchronized owner/customer root knowledge summaries, RAG trigger and public
+research procedure: Qdrant-only findings remain distinct from source-verified
+implementation, inferences and unknowns; English intent queries, bounded evidence,
+source authority and truthful fallback share one canonical procedure.
+Reconciled existing package/resource catalogues, private owner annotations/goldens,
+receipt/template guards and production exclusions without adding packaging machinery.
+Strengthened source-verified reads against altered content/schema and refreshed
+cache eligibility; one focused offline tampered-content/repair case passed.
+Invalid annotation dates now return a fixed diagnostic without echoing source
+values; its focused privacy regression passed. Added final deterministic
+online/offline navigation fixtures; recorded their exact
+limits and unaffected-product reasons in the review record. No broad checks ran.
+All implementation points are complete; full selected verification remains open.
+
+### Point 10 — final review and selected graph (2026-10-29, in progress)
+
+Reviewed current README/maintainer state and docs/README ownership; public
+knowledge architecture/development/command/Python guides; root owner and customer
+AGENTS/CLAUDE and all skill routing; module version/manifests/changelogs; public API
+placement; environment/startup and production projection; package resource lists;
+and the complete grouped review record. Findings from points 1/7/8 are resolved
+in mutable guidance; closed roadmaps and dated evidence remain historical. New
+capabilities are documented as implemented but not yet final-acceptance PASS.
+No runtime dependency, business-module version, migration or real deployment changed.
+
+The selected ten groups above were previewed with repeated --group flags through
+`python3 tools/maintainer/quality-plan`. Added transport because named Artisan
+catalogue/options cross local/cold/host boundaries. Inspected the exact graph:
+mandatory repository/secrets/docs/ownership/cleanliness/release/freshness baseline;
+parallel backend and PHP analysis; Python setup/format/lint/strict types/contracts/
+packaging; live development/hooks; actual CPU/CUDA/fallback/evidence/concurrency/
+comparison/navigation; customer acquisition/update/team/knowledge; host/management
+acceptance; production deployment and actual repository/runtime-image scanning;
+and strict dependency/security/AI checks with all actual prerequisite edges.
+Excluded standalone groups are not PASS; selected acceptance retains its genuine
+frontend/build/runtime prerequisites. No automatic classifier or gate relaxation.
+
+Actual changed-surface security review covers the knowledge input/file/corpus,
+lock/pending-write, provenance/output-budget, private owner/customer boundary,
+Artisan process transport and final baseline-loader boundaries. Tampered evidence
+and source-date diagnostic leaks were corrected with focused regression cases.
+Private content-bound review evidence is preserved under .runtime/security.
+The first full verification failed; point 9a records the required repairs.
+Point 10 remains open until its
+actual results, any inserted repairs, release metadata and closure are completed.
+Task-created management image tags and disposable final-acceptance resources remain
+subject to scoped cleanup after their final use. Active development/test data,
+Qdrant/model caches, backups, reports and operation state are protected.
+
+### Repair point 9a — Python and acceptance corrections (2026-10-29)
+
+Corrected 26 strict Python type errors without disabling analysis or changing
+optional migration contracts. Acquisition/update tests now verify exact authored
+skill references and preserve customer extensions instead of requiring duplicated
+procedures in every skill. The mutable reconciliation index points to closed
+RM-012; historical inventory/roadmap bytes are preserved. Removed a private owner
+link from the publicly validated skill reference. Production command acceptance
+now supplies the required evidence-read argument before testing the real guard.
+The comparison/navigation harnesses use receipt-guarded owner context consistently.
+Single-source filtered retrieval expands within existing top-k even when selected
+by roadmap identity rather than a literal source path; original golden cases and
+budgets remain unchanged.
+
+Received repair checks: strict Pyright 0 errors; Ruff lint/format PASS; complete
+unit/contracts 490 PASS, 3 deselected, cleanup 0; separate packaging 2 PASS;
+complete documentation consistency PASS; complete host-executor acceptance PASS,
+scoped fixture containers/network removed, no volumes created and live data
+preserved. Complete documentation-live rerun passes CPU/CUDA/fallback, concurrent
+reads/write exclusion, interruption/branch repair and disposable collection cleanup;
+comparison now executes and reports no raw-hit regression, but fails fixed candidate
+evidence coverage. Knowledge evaluation still has three required retrieval failures
+(two intents for current module versions; cross-module Permissions coverage) and
+two nonblocking Polish probes. These are actual ranking/coverage gaps, not Python
+type errors or backend crashes. No benchmark/source expectation was weakened.
+
+The owner-requested rerun selects nine groups and the preview contains no backend
+suite or backend-analysis node. At that stage the repair remained open for the unresolved
+retrieval failures; the additional corrections below resolve them. No release,
+merge or complete final-graph PASS is claimed. First-run raw
+logs are preserved in .runtime/artifacts/RM-2026-013-failed-3bcc0884; subsequent
+runs retain their own native statuses.
+
+### Remaining final-verification repairs (2026-10-29)
+
+The c929ecda run completed 41 PASS, three FAILED and three blocked; backend was
+excluded. Raw logs are preserved under
+.runtime/artifacts/RM-2026-013-failed-c929ecda. The two knowledge failures shared
+fixed retrieval coverage gaps; host transport failed its start-time assertion
+when the queue logged its configured maximum-lifetime exit at 10:09:50 UTC.
+No segfault investigation or service restart was performed for these repairs.
+
+Corrected semantic passage boundaries and lexical identifier/inflection matching;
+added bounded one-hop citation navigation within the same filtered corpus, using
+citing context to retrieve actual linked evidence. Intent weighting now selects
+citation seeds as well as final results; current proposals receive weight 0.5.
+All original required query/source/section/top-k/budget expectations remain fixed.
+No query, module name, release number or roadmap path is hardcoded in ranking.
+Canonical public knowledge guides own the mechanics, limits and incremental parser
+refresh. Owner/customer RAG instructions already link those guides and need no
+additional always-loaded rule or duplicated procedure.
+
+Host acceptance now recognizes the established evidence-bound healthy queue
+lifetime rollover while retaining exact container identities and rejecting other
+restarts. Regression cases cover non-queue services, multiple restarts, unhealthy/
+stopped workers, absent logs and other exit causes. Its complete native acceptance
+passed and removed only its own listed containers/network; it created no volumes.
+Application/runtime queue configuration and all persistent data are unchanged.
+
+Received complete repair checks: 493 Python unit/contracts PASS, cleanup 0;
+required knowledge evaluation PASS; documentation-live PASS including real CPU/
+CUDA/fallback, reader/writer exclusion, recovery, unchanged-baseline comparison
+with no regressions, all four source navigation routes and customer receipt
+isolation. Disposable Qdrant collections were removed by their owning harnesses.
+The English baseline remains required; two Polish probes remain visible failures,
+not multilingual support or release exceptions. More granular passages increase
+corpus size and lexical cost; normal searches measured about 0.65 seconds on this
+checkout, without changing the model or adding a service/dependency. Source hash,
+branch, schema, unknown applicability and evidence budgets retain their guards.
+
+Strict Pyright, Ruff lint/format, separate packaging (2 PASS) and documentation
+consistency also passed after the final repair. Point 9a is complete with this
+commit; only point 10 remains open. The unchanged nine-group graph must now run
+from the beginning on the committed candidate. Previous graph failures are not
+reused as PASS. Backend stays excluded and RM-014 remains a draft.
+
+
+## Final report
+
+RM-2026-013 delivers maintenance **0.6.1**. Verified candidate:
+`b4401d1cda224826d62ba7da1d68c2721610349a`. All 47 selected final graph nodes
+passed with native zero exits, including strict security/image scans, real
+customer acquisition/update/team/production isolation, host transport, knowledge
+concurrency/recovery and fixed retrieval coverage. Python unit/contracts: 493 PASS;
+packaging: 2 PASS; strict types, lint and format PASS. Raw final graph and logs
+are preserved in .runtime/artifacts/RM-2026-013-passed-b4401d1c.
+
+Backend tests were explicitly excluded by the owner; their historical SIGSEGV
+remains deferred to RM-014. No backend PASS is inferred from this selection.
+The English model's two Polish probes remain visible failures outside required
+coverage; no multilingual support is claimed. Baseline comparison reports no
+raw-hit regressions and complete required evidence coverage. Finer passages
+increase index size and lexical cost; no new model, dependency or service was added.
+
+Closure reviewed current knowledge/command/quality guides, owner/customer
+instruction routing, README release state, independent module versions and
+production exclusions. Final edits are release metadata/checklist/evidence and
+predecessor-link synchronization only. VERSION/platform manifest become 0.6.1;
+Auth/Audit/Permissions and application manifests retain their independent versions.
+No real production deployment or persistent database reset occurred. Acceptance
+harnesses removed their exact owned fixture containers, networks, disposable
+volumes and production image tags; live development/test data, Qdrant/model caches,
+shared build/dependency caches, backups and reports remain preserved. Uncertain
+older management-image ownership is not grounds for deletion.
+
+Owner requests closure before adding the separate 0.6.3 maintenance draft on main;
+this authorizes that planning-order exception only. RM-014 remains draft and is
+not activated by this closure. Merge, main sanity and publication follow the
+release workflow using this immutable report as the technical record.

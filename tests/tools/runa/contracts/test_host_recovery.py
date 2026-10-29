@@ -4,6 +4,7 @@ import fcntl
 import json
 import os
 import signal
+import unittest
 from pathlib import Path
 from unittest.mock import patch
 
@@ -48,3 +49,23 @@ def test_recovery_checks_current_workspace_process_identity(
                 with pytest.raises(ValueError, match="ownership is uncertain"):
                     service.stop()
                 kill.assert_not_called()
+
+
+class QueueLifetimePreservationContracts(unittest.TestCase):
+    def test_only_proven_single_healthy_queue_lifetime_exit_is_accepted(self) -> None:
+        from tests.tools.runa.acceptance.host_executor_host import natural_queue_rollover
+
+        log = "2026-10-29 10:09:50 Worker STOPPED Maximum run time exceeded"
+        self.assertTrue(natural_queue_rollover("queue", 1, True, True, log))
+        for service, delta, running, healthy, evidence in (
+            ("app", 1, True, True, log),
+            ("postgres", 1, True, True, log),
+            ("queue", 2, True, True, log),
+            ("queue", 1, False, True, log),
+            ("queue", 1, True, False, log),
+            ("queue", 1, True, True, ""),
+            ("queue", 1, True, True, "Worker STOPPED Memory limit exceeded"),
+            ("queue", 1, True, True, log + "\n" + log),
+        ):
+            with self.subTest(service=service, delta=delta, running=running, healthy=healthy):
+                self.assertFalse(natural_queue_rollover(service, delta, running, healthy, evidence))

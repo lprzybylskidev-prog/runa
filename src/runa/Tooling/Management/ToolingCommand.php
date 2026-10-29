@@ -18,7 +18,7 @@ abstract class ToolingCommand extends Command
         'dev' => ['initialize', 'prepare', 'up', 'down', 'config', 'shell', 'profile', 'embeddings', 'build', 'recreate', 'restart', 'logs', 'status', 'setup', 'knowledge-init', 'knowledge-status'],
         'doctor' => ['templates', 'repository', 'config', 'maintenance', 'hooks', 'frontend', 'database-migrations', 'database', 'seeding', 'boost', 'tooling', 'docs', 'development', 'production'],
         'quality' => ['show', 'roadmap', 'final', 'status'],
-        'knowledge' => ['search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
+        'knowledge' => ['read', 'search', 'index', 'status', 'rebuild', 'stale', 'doctor', 'eval', 'initialize'],
         'security' => ['trivy', 'review-changed-surface', 'dependencies', 'secrets'],
         'python' => ['setup', 'format', 'lint', 'typecheck'],
         'xdebug' => ['on', 'off', 'status'],

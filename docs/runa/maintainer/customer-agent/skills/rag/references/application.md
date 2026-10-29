@@ -1,10 +1,14 @@
 # Application rag guidance
 
-Read docs/runa/handbook/development/knowledge.md and ai/knowledge-system.md. Query local knowledge before broad loading; check availability/freshness once. On failure, lock or staleness, explain and use focused source searches without bootstrapping AI merely to navigate. Open original sources before applying significant retrieved rules. Stage durable App/handbook/installed instruction changes, then run runa:knowledge:index incrementally; do not rebuild for normal edits. Keep chats/secrets/runtime/dependencies and copied owner material out of the corpus.
+Query available knowledge before broad loading and verify significant rules in original sources. Use short English queries with explicit current/history/audit intent, bounded read expansion and distinct facts/inferences/unknowns. On unavailable/stale/locked services report the reason and use focused source search; do not bootstrap AI just for navigation.
 
-Fresh projects use empty project-scoped Qdrant and first-start initialization from delivered customer sources only. Never import owner vectors/snapshots or clear existing project/model caches for a fresh-install proof. Reopen preserves state; optional AI failure does not block application readiness. Dedicated doctor/eval and selected final AI gates remain strict. Use supported search/status/stale/index/doctor/eval commands, explain only for diagnosis and rebuild only for an explicit model/schema/repair need. Production contains no knowledge runtime or commands. Application agents maintain their local domain guidance; they never alter owner authoring templates.
+Load only the relevant canonical procedure:
 
-After a delivered tooling/parser update, a stale parser fingerprint normally needs
-incremental `runa:knowledge:index`; it does not itself require `rebuild`. Follow the
-public knowledge guide's package/ownership composition procedure. Customer loaders
-use delivered resources only; private owner corpus/golden additions are excluded.
+- Commands, evidence, applicability and reports: `docs/runa/handbook/development/knowledge.md`.
+- Knowledge architecture/trust: `docs/runa/handbook/ai/knowledge-system.md`.
+- Local guidance maintenance: `docs/runa/handbook/ai/skills-policy.md`.
+
+Maintain application-specific patterns in local guidance/docs/app. Ordinary App
+code and optional app modules are supported; copied owner files or a Contracts
+namespace never authorize platform/internal APIs. Preserve installed local
+extensions during reviewed updates. This default contains no owner-only procedure.

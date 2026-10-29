@@ -1,6 +1,6 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `1.0.2`, with no
+`runa.audit` is a platform-owned Core module, version `1.0.4`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
 automatic model capture, local suppression and permission-protected reads. No Audit viewer or administration interface is supplied.
 
@@ -124,7 +124,7 @@ Use `Runa\Modules\Audit\Contracts\Auditable` on a model with a durable UUIDv7
 `public_id`, and declare a source-owned `AuditModelPolicy`. Module models retain
 ModuleModel ownership/schema/relationship guards. Ordinary App Eloquent models may
 also opt in; their existing public-ID generation and write validation still apply.
-A consuming module declares its required Audit dependency (`^0.2.0` for these
+A consuming module declares its required Audit dependency (`^1.0.0` for these
 capabilities), uses only public Contracts and keeps its own table ownership.
 
 ```php

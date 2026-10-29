@@ -9,14 +9,41 @@ from pathlib import Path
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
 from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfig, golden, load
 from tools.application.knowledge.context import KnowledgeContext
+from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
-from tools.application.knowledge.retrieval import FILTERS, Retriever, doctor, evaluate
+from tools.application.knowledge.retrieval import (
+    FILTERS,
+    INTENTS,
+    PURPOSE_WEIGHTS,
+    REFERENCE_WEIGHT,
+    Retriever,
+    doctor,
+    evaluate,
+)
 from tools.application.knowledge.store import Store
 from tools.core.context import ExecutionContext, ExecutionLocation
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import InputMode, ProcessSpec
 from tools.core.reporting import SafeFailure
-from tools.core.state import FileLock, StateDirectory
+from tools.core.state import FileLock, JsonStore, StateDirectory, json_value
+
+READ_COMMANDS = frozenset(("read", "search", "status", "stale", "doctor", "eval"))
+
+
+def operation_lock(root: Path, command: str) -> FileLock:
+    """Coordinate one checkout: concurrent snapshots or one exclusive mutation."""
+    shared = command in READ_COMMANDS
+    return FileLock(
+        StateDirectory(root / ".runtime/knowledge", private=False, anchor=root),
+        "index.lock",
+        private=False,
+        shared=shared,
+        busy_message=(
+            "Knowledge read blocked by an exclusive writer; retry after it completes."
+            if shared
+            else "Knowledge write blocked by active readers or another writer; retry after completion."
+        ),
+    )
 
 
 def run(
@@ -32,7 +59,17 @@ def run(
     )
     parser.add_argument(
         "command",
-        choices=["search", "index", "status", "rebuild", "stale", "doctor", "eval", "initialize"],
+        choices=[
+            "read",
+            "search",
+            "index",
+            "status",
+            "rebuild",
+            "stale",
+            "doctor",
+            "eval",
+            "initialize",
+        ],
     )
     parser.add_argument(
         "--device",
@@ -43,11 +80,25 @@ def run(
     parser.add_argument("query", nargs="?")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--explain", action="store_true")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Structured response (legacy JSON commands remain JSON).",
+    )
+    parser.add_argument("--intent", choices=INTENTS, default="legacy")
+    parser.add_argument("--per-source", type=int)
+    parser.add_argument("--neighbors", type=int, default=0)
+    parser.add_argument(
+        "--section", action="store_true", help="Expand chunks in the same heading section."
+    )
+    parser.add_argument("--max-chars", type=int, default=12000)
     for field in ("document_type", "scope", "roadmap_id", "status", "source_path"):
         parser.add_argument("--" + field.replace("_", "-"))
     args = parser.parse_args(argv)
-    if args.command == "search" and not args.query:
-        parser.error("search requires a query")
+    if args.command in ("search", "read") and not args.query:
+        parser.error(args.command + " requires a query or chunk ID")
+    if args.command != "read" and (args.neighbors or args.section or args.max_chars != 12000):
+        parser.error("context expansion options require read")
     context.assert_development()
     if context.environment.get("APP_ENV") == "production" or not (ROOT / "artisan").exists():
         raise ValueError("Knowledge CLI is unavailable in production.")
@@ -69,18 +120,22 @@ def run(
         raise ValueError("Knowledge CLI requires the local development environment.")
     config = config or load(ROOT)
     dataset = golden(ROOT) if dataset is None else dataset
-    # Accept the original regular operator-owned lock without changing its inode.
-    lock_dir = StateDirectory(ROOT / ".runtime/knowledge", private=False, anchor=ROOT)
-    with FileLock(
-        lock_dir,
-        "index.lock",
-        private=False,
-        busy_message="Knowledge indexing is running; retry after completion.",
-    ).acquire():
+    # Retain stable inode/ownership/symlink safeguards for legacy coordination files.
+    with operation_lock(ROOT, args.command).acquire():
         local = ROOT / ".env.dev.local"
         cuda = local.exists() and "EMBEDDINGS_CUDA=1" in local.read_text().splitlines()
         device = args.device or ("auto" if cuda else "cpu")
         indexer = KnowledgeIndexer(context, config, Store(config), device=device)
+        if args.command == "read":
+            result = read(
+                indexer,
+                args.query,
+                neighbors=args.neighbors,
+                section=args.section,
+                max_chars=args.max_chars,
+            )
+            print(json.dumps(result, indent=2))
+            return 0
         if args.command == "rebuild":
             return indexer.rebuild()
         if args.command in ("search", "doctor", "eval"):
@@ -103,11 +158,21 @@ def run(
                 filters = {
                     key: getattr(args, key) for key in FILTERS if getattr(args, key) is not None
                 }
-                hits = retriever.search(args.query, args.top_k, filters)
-                if args.explain:
+                hits = retriever.search(
+                    args.query, args.top_k, filters, intent=args.intent, per_source=args.per_source
+                )
+                if args.explain or args.json:
                     print(
                         json.dumps(
-                            {"filters": filters, "retrieval": config["retrieval"], "results": hits},
+                            {
+                                "filters": filters,
+                                "retrieval": config["retrieval"],
+                                "intent": args.intent,
+                                "purpose_weights": PURPOSE_WEIGHTS.get(args.intent, {}),
+                                "reference_weight": REFERENCE_WEIGHT,
+                                "per_source": args.per_source,
+                                "results": hits,
+                            },
                             indent=2,
                         )
                     )
@@ -120,6 +185,12 @@ def run(
                     print("Open original source files before acting on retrieved rules.")
                 return 0
             result = doctor(retriever) if args.command == "doctor" else evaluate(retriever, dataset)
+            if args.command == "eval":
+                report_dir = StateDirectory(ROOT / ".runtime/knowledge", private=False, anchor=ROOT)
+                stamp = context.clock.now().strftime("%Y%m%dT%H%M%S%fZ")
+                JsonStore(report_dir, max_bytes=2 * 1024 * 1024).write(
+                    "evaluation-" + stamp + ".json", json_value(result)
+                )
             print(json.dumps(result, indent=2))
             return 0 if result["passed"] else 1
         if args.command == "initialize":

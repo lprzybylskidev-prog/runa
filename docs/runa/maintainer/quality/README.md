@@ -269,6 +269,14 @@ Native updater acceptance derives its original release tag from the installed pl
 
 The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual group selection does not change individual test bodies or add Playwright skip flags.
 
+Native host-executor acceptance preserves exact development/test container IDs and
+start times. The established queue lifetime exception requires one restart of the
+same queue container, a running healthy state, and exactly one logged
+`Worker STOPPED Maximum run time exceeded` during observation. Other services,
+multiple restarts, missing/other exit evidence and unhealthy states still fail.
+This matches native installation acceptance; it does not waive crashes or change
+queue configuration.
+
 Native installation acceptance protects persistent development and manually owned
 test containers belonging to this checkout. Containers carrying the automatic
 runa.testing.run label belong to the concurrent browser runner and its recovery
@@ -277,10 +285,10 @@ continues to verify exact ownership and cleanup. Missing or restarted persistent
 services still fail the installation preservation check.
 
 Knowledge CLI doctor/evaluation/freshness checks and development/hook diagnostics
-that invoke that CLI share the knowledge-state exclusive group. Even read commands
-hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
-refusal. Serialization retains strict checks and requires no automatic retry or
-weaker freshness policy.
+that invoke that CLI share the knowledge-state exclusive group. CLI readers share admission while writers remain exclusive. The quality graph
+retains conservative serialization because live acceptance also indexes temporary
+state. This does not change reader concurrency or introduce retries or weaker
+freshness policy.
 
 ## Python tooling group
 

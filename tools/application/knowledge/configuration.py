@@ -9,6 +9,38 @@ from urllib.parse import urlsplit
 
 from tools.core.state import json_value
 
+Purpose = Literal["current_guidance", "historical_evidence", "proposal", "unknown"]
+
+
+class Decision(TypedDict):
+    id: str
+    problem: str
+    solution: str
+    rationale: str | None
+    status: Literal["accepted", "superseded", "proposed", "unknown"]
+    date: str | None
+    version: str | None
+    supersedes: list[str]
+
+
+class Applicability(TypedDict):
+    purpose: Purpose
+    effective_date: str | None
+    applicable_version: str | None
+    decisions: list[Decision]
+
+
+class MetadataRule(TypedDict):
+    pattern: str
+    purpose: Purpose
+
+
+class SourceAnnotation(TypedDict):
+    source_path: str
+    source_hash: str
+    section: str
+    metadata: Applicability
+
 
 class RetrievalConfig(TypedDict):
     candidates: int
@@ -21,6 +53,9 @@ class RetrievalConfig(TypedDict):
 
 
 class KnowledgeConfig(TypedDict):
+    payload_schema_version: NotRequired[int]
+    metadata_rules: NotRequired[list[MetadataRule]]
+    annotations: NotRequired[list[SourceAnnotation]]
     collection: str
     schema_version: int
     model_id: str
@@ -42,9 +77,23 @@ class KnowledgeConfig(TypedDict):
     retrieval: RetrievalConfig
 
 
+class EvidenceExpectation(TypedDict):
+    source_path: str
+    section: NotRequired[str]
+    purpose: NotRequired[Purpose]
+    decision_ids: NotRequired[list[str]]
+    unknown_fields: NotRequired[list[str]]
+
+
 class GoldenCase(TypedDict):
     query: str
     source_path: str
+    intent: NotRequired[str]
+    per_source: NotRequired[int]
+    expected: NotRequired[list[EvidenceExpectation]]
+    forbidden_sources: NotRequired[list[str]]
+    max_chars: NotRequired[int]
+    probe_only: NotRequired[bool]
     top_k: NotRequired[int]
     section: NotRequired[str]
     filters: NotRequired[dict[str, str]]
@@ -110,32 +159,38 @@ def validate(value: object) -> KnowledgeConfig:
         number = settings.get(key)
         if type(number) is not int or not 1 <= number <= 1000:
             raise ValueError("Retrieval limits must be integers between 1 and 1000.")
+    from tools.application.knowledge.applicability import validate_policy
+
+    validate_policy(data)
     return cast(KnowledgeConfig, data)
 
 
 def load(root: Path, *, additions: dict[str, object] | None = None) -> KnowledgeConfig:
     config = validate(json.loads((root / "tools/application/knowledge/config.json").read_text()))
     if additions is not None:
-        if set(additions) != {"files", "markdown_roots"}:
-            raise ValueError("Owner knowledge configuration may only add source paths.")
-        config = validate(
-            {
-                **config,
-                **{
-                    key: list(
-                        dict.fromkeys(
-                            [
-                                *source_paths(
-                                    config[cast(Literal["files", "markdown_roots"], key)]
-                                ),
-                                *source_paths(value),
-                            ]
-                        )
-                    )
-                    for key, value in additions.items()
-                },
-            }
-        )
+        if not {"files", "markdown_roots"} <= set(additions) or set(additions) - {
+            "files",
+            "markdown_roots",
+            "metadata_rules",
+            "annotations",
+        }:
+            raise ValueError(
+                "Owner knowledge configuration may only add source paths and reviewed metadata."
+            )
+        composed: dict[str, object] = dict(config)
+        for key, value in additions.items():
+            if key in ("files", "markdown_roots"):
+                existing = config[key]
+                composed[key] = list(dict.fromkeys([*existing, *source_paths(value)]))
+            elif key == "metadata_rules":
+                if not isinstance(value, list):
+                    raise ValueError("Metadata rules must be a list.")
+                composed[key] = [*config.get("metadata_rules", []), *value]
+            else:
+                if not isinstance(value, list):
+                    raise ValueError("Annotations must be a list.")
+                composed[key] = [*config.get("annotations", []), *value]
+        config = validate(composed)
     return config
 
 
@@ -162,6 +217,39 @@ def golden_file(path: Path) -> list[GoldenCase]:
             raise ValueError("Invalid golden top-k.")
         if not isinstance(case.get("section", ""), str):
             raise ValueError("Invalid golden section.")
+        if case.get("intent", "legacy") not in ("legacy", "current", "history", "audit"):
+            raise ValueError("Invalid golden retrieval intent.")
+        max_chars = case.get("max_chars", 24000)
+        if type(max_chars) is not int or not 1000 <= max_chars <= 60000:
+            raise ValueError("Invalid golden context budget.")
+        per_source = case.get("per_source", 1)
+        if type(per_source) is not int or not 1 <= per_source <= 10:
+            raise ValueError("Invalid golden source budget.")
+        if type(case.get("probe_only", False)) is not bool:
+            raise ValueError("Invalid golden probe flag.")
+        source_paths(case.get("forbidden_sources", []))
+        expectations = case.get("expected", [])
+        if not isinstance(expectations, list):
+            raise ValueError("Golden evidence expectations must be a list.")
+        for expectation in expectations:
+            if not isinstance(expectation, dict):
+                raise ValueError("Invalid golden evidence expectation.")
+            source_paths([expectation.get("source_path")])
+            if not isinstance(expectation.get("section", ""), str) or expectation.get(
+                "purpose", "unknown"
+            ) not in ("current_guidance", "historical_evidence", "proposal", "unknown"):
+                raise ValueError("Invalid golden evidence scope.")
+            for key in ("decision_ids", "unknown_fields"):
+                values = expectation.get(key, [])
+                if not isinstance(values, list) or any(
+                    not isinstance(value, str) for value in values
+                ):
+                    raise ValueError("Invalid golden evidence labels.")
+            unknown_fields = expectation.get("unknown_fields", [])
+            if not isinstance(unknown_fields, list) or any(
+                value not in ("effective_date", "applicable_version") for value in unknown_fields
+            ):
+                raise ValueError("Invalid unknown applicability field.")
         filters = case.get("filters", {})
         if not isinstance(filters, dict) or any(
             key not in ("document_type", "scope", "roadmap_id", "status", "source_path")

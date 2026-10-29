@@ -1,5 +1,18 @@
 # Audit, Auth and Permissions foundations
 
+## Applicability
+
+This is an evolving engineering record of RM-2026-011 implementation, including
+intermediate pre-stable versions and intended delivery states. Those sections are
+historical evidence, not current installation/version instructions. Released
+0.6.0 contains Auth 1.1.4, Audit 1.0.4 and Permissions 1.0.4; the source manifests
+and central [changelog](../CHANGELOG.md) establish that release state. Use the
+current [module foundations contract](../../handbook/architecture/module-foundations.md)
+and individual public module guides for supported consumption. Dates or versions
+not explicitly recorded in an older section remain unknown.
+
+## RM-2026-011 implementation record
+
 RM-2026-011 point 1 establishes the framework adapters below. Points 2–3 deliver the Audit store, transactional participation, automatic capture and authorized reads. Point 4 adds Auth identity storage, current-time eligibility and audited lifecycle operations. Point 5 adds Fortify cookie/session/CSRF entry transport, registration/invitations and verification. Point 6 adds tracked sessions, deadlines, revocation, real-activity heartbeat and account/source abuse windows. Auth entry/account UI and Permissions dictionaries, declaration sync and current authorization are delivered; ordinary assignment/custom-role/preset/copy APIs, protected authority and last-superadministrator participation are delivered; cross-module bootstrap, installer invitations and explicit development contributors are delivered.
 See the [Auth transport contract](../../handbook/modules/auth/transport.md).
 The public usage contract is [module foundations](../../handbook/architecture/module-foundations.md).

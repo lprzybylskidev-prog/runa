@@ -163,6 +163,7 @@ it('binds every named operation to its own fixed action in cold preview', functi
         ...json_decode(file_get_contents(base_path('runa/Tooling/Management/development.json')), true, flags: JSON_THROW_ON_ERROR)];
     $examples = ['runa:deploy' => ['v0.2.1'], 'runa:dev:profile:set' => ['low'],
         'runa:dev:embeddings:set' => ['cpu'], 'runa:dev:recreate' => ['nginx'],
+        'runa:knowledge:read' => ['00000000-0000-0000-0000-000000000001'],
         'runa:knowledge:search' => ['literal $(false); query'], 'runa:hook:commit-msg' => ['message.txt']];
     foreach ($definitions as $definition) {
         $arguments = $examples[$definition['name']] ?? [];

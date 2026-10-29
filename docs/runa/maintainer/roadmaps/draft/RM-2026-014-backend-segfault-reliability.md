@@ -26,7 +26,7 @@ backend testing, including failures seen only in the full quality workload.
 Preserve native failure reporting, test assertions, isolation and cleanup.
 
 The owner explicitly requested a fix roadmap targeting **0.6.2**, after
-[RM-2026-013](RM-2026-013-knowledge-retrieval-reliability.md) maintenance 0.6.1,
+[RM-2026-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md) maintenance 0.6.1,
 on 2026-10-28. This is a PATCH increment from that planned predecessor; refresh
 the baseline and release ordering at activation. Drafting does not activate work,
 change VERSION or authorize implementation before RM-013 closes and the owner

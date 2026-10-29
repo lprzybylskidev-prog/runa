@@ -3,5 +3,133 @@
     "docs/runa/maintainer/quality/gates.yml",
     "docs/runa/maintainer/maintenance/registry.yml"
   ],
-  "markdown_roots": ["docs/runa/maintainer"]
+  "markdown_roots": ["docs/runa/maintainer"],
+  "metadata_rules": [
+    {
+      "pattern": "docs/runa/maintainer/workflows/*",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/roadmaps/closed/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/roadmaps/draft/*",
+      "purpose": "proposal"
+    },
+    {
+      "pattern": "docs/runa/maintainer/roadmaps/active/*",
+      "purpose": "proposal"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/core-module-foundations.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/CHANGELOG.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/evidence/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/security/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/production/postgresql-alpine-assessment.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/api-boundary/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/python-rebuild/*",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/python-rebuild/toolchain.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/agent-contract.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/deferred-module-concerns.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/application-architecture.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/tooling/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/testing/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/quality/README.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/quality/core-module-acceptance.md",
+      "purpose": "historical_evidence"
+    },
+    {
+      "pattern": "docs/runa/maintainer/development/*.md",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/maintenance/*",
+      "purpose": "current_guidance"
+    },
+    {
+      "pattern": "docs/runa/maintainer/architecture/RM-2026-013-knowledge-review.md",
+      "purpose": "historical_evidence"
+    }
+  ],
+  "annotations": [
+    {
+      "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
+      "source_hash": "2360483776dac45e1db6f1c3cde6e497d346f552d048d19e576523e36df20d33",
+      "section": "RM-2026-005 \u2014 Platform ownership, installation and GitHub updates > Specification > Decisions",
+      "metadata": {
+        "purpose": "historical_evidence",
+        "effective_date": null,
+        "applicable_version": null,
+        "decisions": [
+          {
+            "id": "RM005-deploy-platform-excluded",
+            "problem": "Deployment ownership of platform data steps.",
+            "solution": "Exclude platform migrations from deploy.",
+            "rationale": null,
+            "status": "superseded",
+            "date": "2026-10-20",
+            "version": null,
+            "supersedes": []
+          },
+          {
+            "id": "RM005-deploy-platform-forward",
+            "problem": "Deployment ownership of platform data steps.",
+            "solution": "Deploy scoped forward Runa migrations and required idempotent seeds before application data steps.",
+            "rationale": null,
+            "status": "accepted",
+            "date": "2026-10-21",
+            "version": null,
+            "supersedes": ["RM005-deploy-platform-excluded"]
+          }
+        ]
+      }
+    }
+  ]
 }

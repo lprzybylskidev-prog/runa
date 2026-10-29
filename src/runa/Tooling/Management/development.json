@@ -231,10 +231,17 @@
     "description": "Show the latest application quality result"
   },
   {
+    "name": "runa:knowledge:read",
+    "tool": "knowledge",
+    "prefix": ["read"],
+    "signature": "{chunk_id} {--neighbors=0} {--section} {--max-chars=12000} {--json}",
+    "description": "Read source-verified indexed evidence with bounded context"
+  },
+  {
     "name": "runa:knowledge:search",
     "tool": "knowledge",
     "prefix": ["search"],
-    "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=}",
+    "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=} {--json} {--intent=legacy} {--per-source=}",
     "description": "Development knowledge search"
   },
   {
@@ -255,7 +262,7 @@
     "name": "runa:knowledge:status",
     "tool": "knowledge",
     "prefix": ["status"],
-    "signature": "",
+    "signature": " {--json}",
     "description": "Development knowledge status"
   },
   {

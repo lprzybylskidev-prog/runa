@@ -538,45 +538,14 @@ class Updater(unittest.TestCase):
         for area in ("backend", "laravel", "postgresql", "security", "frontend"):
             relative = ".agents/skills/" + area + "/references/application.md"
             self.assertEqual(rows[relative]["action"], "manual-reconciliation")
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/README.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/transport.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/sessions.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/security.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/profile.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/preferences.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/auth/policies-and-operators.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/permissions/README.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/modules/permissions/authority.md",
-                (self.fixture.target / relative).read_text(),
-            )
-            self.assertIn(
-                "docs/runa/handbook/data/seeding.md#explicit-module-development-contributors",
-                (self.fixture.target / relative).read_text(),
+            self.assertEqual(
+                (self.fixture.target / relative).read_bytes(),
+                (
+                    ROOT
+                    / "docs/runa/maintainer/customer-agent/skills"
+                    / area
+                    / "references/application.md"
+                ).read_bytes(),
             )
             self.assertEqual(
                 (self.fixture.installed / relative).read_text(), "customer domain extension"

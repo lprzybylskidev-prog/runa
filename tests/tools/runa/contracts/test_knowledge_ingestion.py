@@ -24,6 +24,7 @@ from tools.maintainer.knowledge_cli import configuration
 ROOT = Path(__file__).resolve().parents[4]
 
 CONFIG, _ = configuration(ROOT)
+CONFIG["annotations"] = []
 
 
 class KnowledgeContracts(unittest.TestCase):
@@ -66,6 +67,331 @@ class KnowledgeContracts(unittest.TestCase):
     def index(self) -> int:
         with contextlib.redirect_stdout(io.StringIO()):
             return self.indexer.index()
+
+    def test_evidence_read_preserves_source_order_budget_and_never_embeds(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.write(
+            "AGENTS.md",
+            "# Policy\n## First\nUnique first paragraph.\n## Second\nUnique second paragraph.\n## Third\nUnique third paragraph.\n",
+        )
+        self.index()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        ids = manifest["sources"]["AGENTS.md"]["chunks"]
+        calls = list(Provider.calls)
+        result = read(self.indexer, ids[1], neighbors=1)
+        self.assertEqual([row["id"] for row in result["results"]], ids)
+        self.assertEqual(result["omitted_chunks"], 0)
+        self.assertEqual(result["results"][1]["citation"]["start_line"], 5)
+        self.assertEqual(result["results"][1]["citation"]["end_line"], 5)
+        self.assertEqual(Provider.calls, calls)
+        with self.assertRaisesRegex(ValueError, "absent"):
+            read(self.indexer, "00000000-0000-0000-0000-000000000001")
+        self.write("AGENTS.md", "# Changed\nSource changed.\n")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            read(self.indexer, ids[1])
+
+    def test_evidence_read_reports_omitted_chunks_and_unknown_duplicate_coordinates(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.write(
+            "AGENTS.md",
+            "# Policy\n## Same\n"
+            + ("Repeated text. " * 250)
+            + "\n## Other\n"
+            + ("Repeated text. " * 250)
+            + "\n",
+        )
+        self.index()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        ids = manifest["sources"]["AGENTS.md"]["chunks"]
+        result = read(self.indexer, ids[0], section=True, neighbors=1, max_chars=2000)
+        self.assertLessEqual(result["content_characters"], 2000)
+        self.assertGreater(result["omitted_chunks"], 0)
+        self.assertIsNone(result["results"][0]["citation"]["start_line"])
+        with self.assertRaisesRegex(ValueError, "exceeds evidence budget"):
+            read(self.indexer, ids[0], max_chars=1000)
+        with self.assertRaisesRegex(ValueError, "UUID"):
+            read(self.indexer, "../../outside")
+        manifest["pending"] = True
+        self.indexer.store.write_manifest(manifest)
+        with self.assertRaisesRegex(ValueError, "stale"):
+            read(self.indexer, ids[0])
+
+    def test_semantic_passages_keep_lists_and_fenced_examples_grounded(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        body = (
+            "# Release\n\nOpening context.\n\n"
+            "- Independent module versions.\n"
+            "  Continued version detail.\n"
+            "- Unrelated runtime recovery.\n\n"
+            "```markdown\n- Example item\n\n- Still an example\n```\n"
+        )
+        self.write("AGENTS.md", body)
+        self.index()
+        points = list(self.indexer.store.all_points().values())
+        self.assertEqual(len(points), 4)
+        version = next(p for p in points if "Independent module" in p["content"])
+        self.assertIn("Continued version detail", version["content"])
+        self.assertNotIn("Unrelated runtime recovery", version["content"])
+        example = next(p for p in points if "```markdown" in p["content"])
+        self.assertIn("- Example item\n\n- Still an example", example["content"])
+        for point in points:
+            identifier = point.get("chunk_id")
+            assert identifier is not None
+            evidence = read(self.indexer, identifier)["results"][0]
+            self.assertIsNotNone(evidence["citation"]["start_line"])
+            self.assertIsNotNone(evidence["citation"]["end_line"])
+        identifier = version.get("chunk_id")
+        assert identifier is not None
+        expanded = read(self.indexer, identifier, section=True)
+        self.assertEqual(len(expanded["results"]), 4)
+
+    def test_citation_expansion_uses_release_context_and_only_selected_sources(self) -> None:
+        from tools.application.knowledge.retrieval import references, tokens
+
+        self.write(
+            "AGENTS.md",
+            (
+                "# Component history\n\nCurrent Mercury Neptune versions are 1.2.3 and 4.5.6. "
+                "Read [release evidence](docs/app/releases.md), "
+                "[an external site](https://example.invalid/private.md), "
+                "[an unindexed file](../private.md) and "
+                "[an absolute path](/etc/passwd).\n"
+            ),
+        )
+        self.write(
+            "docs/app/releases.md",
+            (
+                "# Release history\n\n## Old release\nMercury 0.1.0 and Neptune 0.2.0.\n\n"
+                "## Released versions\nMercury 1.2.3 and Neptune 4.5.6.\n"
+            ),
+        )
+        self.track()
+        self.index()
+        points = self.indexer.store.all_points()
+        seed = next(key for key, point in points.items() if point["source_path"] == "AGENTS.md")
+        query = "current Mercury Neptune component versions"
+        expanded = references(query, points, {seed: 1.0})
+        self.assertEqual(len(expanded), 1)
+        self.assertIn("Released versions", points[expanded[0][0]]["section"])
+        selected = {
+            key: point for key, point in points.items() if point["source_path"] == "AGENTS.md"
+        }
+        self.assertEqual(references(query, selected, {seed: 1.0}), [])
+        self.assertLessEqual(len(expanded), 15)
+        self.assertTrue(
+            {"version", "dependency", "compatible", "runa.auth"}
+            <= set(tokens("versions dependencies compatibility runa.auth"))
+        )
+
+    def test_metadata_refresh_reuses_vectors_and_retains_unknown_scope(self) -> None:
+        from tools.application.knowledge.applicability import policy_hash
+
+        self.index()
+        before = self.indexer.store.all_points()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        manifest.pop("metadata_policy_hash")
+        self.indexer.store.write_manifest(manifest)
+        self.assertTrue(self.indexer.status().get("metadata_changed"))
+        calls = len(Provider.calls)
+        self.index()
+        self.assertEqual(len(Provider.calls) - calls, 1)  # Capability probe only.
+        after = self.indexer.store.all_points()
+        self.assertEqual(list(before), list(after))
+        refreshed = self.indexer.store.manifest()
+        assert refreshed is not None
+        self.assertEqual(refreshed.get("metadata_policy_hash"), policy_hash(CONFIG))
+        for row in after.values():
+            self.assertEqual(row.get("payload_schema_version"), 2)
+            applicability = row.get("applicability")
+            assert applicability is not None
+            self.assertIsNone(applicability["effective_date"])
+            self.assertIsNone(applicability["applicable_version"])
+
+    def test_source_decisions_preserve_explicit_supersession_and_missing_rationale(self) -> None:
+        import json
+
+        declaration = {
+            "purpose": "historical_evidence",
+            "effective_date": None,
+            "applicable_version": None,
+            "decisions": [
+                {
+                    "id": "local-deploy-forward",
+                    "problem": "Data ownership",
+                    "solution": "Coordinated forward steps",
+                    "rationale": None,
+                    "status": "accepted",
+                    "date": "2026-10-21",
+                    "version": None,
+                    "supersedes": ["local-deploy-excluded"],
+                }
+            ],
+        }
+        self.write(
+            "AGENTS.md",
+            "# Rules\n<!-- runa-knowledge "
+            + json.dumps(declaration)
+            + " -->\nForward steps apply.\n",
+        )
+        self.index()
+        row = next(iter(self.indexer.store.all_points().values()))
+        self.assertEqual(row.get("applicability"), declaration)
+        self.assertNotIn("runa-knowledge", row["content"])
+        self.assertNotIn("rationale", row["content"])
+
+    def test_external_annotation_hash_is_required_without_rewriting_history(self) -> None:
+        text = "# History\n## Decisions\nKeep the original decision.\n"
+        name = "docs/runa/maintainer/roadmaps/closed/RM-2026-098-history.md"
+        text = "---\nid: RM-2026-098\nstatus: closed\n---\n" + text
+        path = self.write(name, text)
+        self.track()
+        config = copy.deepcopy(CONFIG)
+        config["annotations"] = [
+            {
+                "source_path": name,
+                "source_hash": corpus.digest(text),
+                "section": "History > Decisions",
+                "metadata": {
+                    "purpose": "historical_evidence",
+                    "effective_date": None,
+                    "applicable_version": None,
+                    "decisions": [],
+                },
+            }
+        ]
+        self.indexer.config = config
+        self.index()
+        self.assertEqual(path.read_text(), text)
+        before = copy.deepcopy(Store.points)
+        path.write_text(text + "Unreviewed change.\n")
+        with self.assertRaisesRegex(ValueError, "source hash changed"):
+            self.index()
+        self.assertEqual(Store.points, before)
+
+    def test_fenced_annotation_example_does_not_establish_applicability(self) -> None:
+        from tools.application.knowledge.applicability import extract
+
+        example = '```html\n<!-- runa-knowledge {"example": true} -->\n```'
+        self.assertEqual(extract(example), (example, []))
+
+    def test_retrieval_intents_expose_factors_without_hiding_contrary_evidence(self) -> None:
+        import json
+
+        from tools.application.knowledge.configuration import Applicability, Purpose
+        from tools.application.knowledge.contracts import QueryPoint
+        from tools.application.knowledge.retrieval import Retriever
+
+        declarations: tuple[tuple[str, Purpose], ...] = (
+            ("current", "current_guidance"),
+            ("history", "historical_evidence"),
+        )
+        for name, purpose in declarations:
+            declaration: Applicability = {
+                "purpose": purpose,
+                "effective_date": None,
+                "applicable_version": None,
+                "decisions": [],
+            }
+            self.write(
+                "docs/app/" + name + ".md",
+                "# Rules\n<!-- runa-knowledge "
+                + json.dumps(declaration)
+                + " -->\nForward migration deployment.\n## Other\nForward migration steps.\n",
+            )
+        self.track()
+        self.index()
+
+        class RankedStore(Store):
+            def query(self, body: dict[str, object]) -> list[QueryPoint]:
+                return [{"id": key, "score": 1.0} for key in self.all_points()]
+
+        retriever = Retriever(
+            self.root,
+            CONFIG,
+            context=self.context,
+            store=RankedStore(CONFIG),
+            provider_factory=Provider,
+        )
+        current = retriever.search("forward migration", 3, intent="current")
+        history = retriever.search("forward migration", 3, intent="history")
+        current_metadata = current[0]["payload"].get("applicability")
+        history_metadata = history[0]["payload"].get("applicability")
+        assert current_metadata is not None and history_metadata is not None
+        self.assertEqual(current_metadata["purpose"], "current_guidance")
+        self.assertEqual(history_metadata["purpose"], "historical_evidence")
+        audit = retriever.search("forward migration", 3, intent="audit")
+        self.assertEqual(
+            {hit["payload"]["source_path"] for hit in audit},
+            {"AGENTS.md", "docs/app/current.md", "docs/app/history.md"},
+        )
+        self.assertTrue(
+            all(hit.get("ranking_factors") == {"status": 1.0, "purpose": 1.0} for hit in audit)
+        )
+        expanded = retriever.search("forward migration", 6, {"source_path": "docs/app/current.md"})
+        self.assertEqual(len(expanded), 2)
+        self.assertEqual(
+            len(
+                retriever.search(
+                    "forward migration", 6, {"source_path": "docs/app/current.md"}, per_source=1
+                )
+            ),
+            1,
+        )
+        with self.assertRaisesRegex(ValueError, "Intent"):
+            retriever.search("forward", intent="guessed")
+        with self.assertRaisesRegex(ValueError, "Per-source"):
+            retriever.search("forward", per_source=True)
+
+    def test_evaluation_reports_missing_coverage_forbidden_sources_and_probes(self) -> None:
+        from tools.application.knowledge.configuration import GoldenCase
+        from tools.application.knowledge.contracts import QueryPoint
+        from tools.application.knowledge.retrieval import Retriever, evaluate
+
+        self.index()
+
+        class RankedStore(Store):
+            def query(self, body: dict[str, object]) -> list[QueryPoint]:
+                return [{"id": key, "score": 1.0} for key in self.all_points()]
+
+        retriever = Retriever(
+            self.root,
+            CONFIG,
+            context=self.context,
+            store=RankedStore(CONFIG),
+            provider_factory=Provider,
+        )
+        case: GoldenCase = {"query": "secrets index", "source_path": "AGENTS.md"}
+        result = evaluate(retriever, [{**case, "expected": [{"source_path": "missing.md"}]}])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["cases"][0].get("coverage"), [False])
+        self.assertFalse(
+            evaluate(retriever, [{**case, "forbidden_sources": ["AGENTS.md"]}])["passed"]
+        )
+        probe = evaluate(
+            retriever,
+            [{"query": "diagnostic probe", "source_path": "missing.md", "probe_only": True}],
+        )
+        self.assertTrue(probe["passed"])
+        self.assertFalse(probe["cases"][0]["passed"])
+        self.assertTrue(probe["cases"][0].get("probe_only"))
+
+    def test_evidence_refuses_modified_content_and_index_repairs_payload(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.index()
+        key, payload = next(iter(self.indexer.store.all_points().items()))
+        payload["content"] = "Invented evidence absent from the source."
+        self.indexer.store.payload(key, payload)
+        with self.assertRaisesRegex(ValueError, "content/schema"):
+            read(self.indexer, key)
+        self.index()
+        self.assertIn("Keep secrets", read(self.indexer, key)["results"][0]["payload"]["content"])
 
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [

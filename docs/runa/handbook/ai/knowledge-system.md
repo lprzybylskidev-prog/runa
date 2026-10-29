@@ -98,7 +98,11 @@ Chunk structurally/semantically, not by one fixed character/token window.
 
 Use document-type-aware chunking.
 
-Preserve heading hierarchy in metadata/content context.
+Preserve heading hierarchy in metadata/content context. Index paragraphs and
+top-level list items as independent passages, including when their whole section
+would fit the model window. Preserve fenced examples; split oversized passages
+within the configured token budget. See the development knowledge guide for
+bounded citation navigation and incremental parser refresh.
 
 Examples:
 
@@ -165,6 +169,10 @@ Document replacement should be atomic-ish:
 - prepare/validate new chunks/embeddings,
 - replace the previous document state only when the new set is ready,
 - avoid half-old/half-new state without an error signal.
+
+Supported CLI readers share a checkout lock; writers hold it exclusively. Read
+contention and write contention are distinct diagnostics. Pending writes refuse
+retrieval until explicit repair. See the development knowledge guide for scope.
 
 Indexer source roots are allowlisted.
 
@@ -254,26 +262,28 @@ When implementation or release finalization changes durable current-state docume
 
 If knowledge sources changed and the index is stale, the hook blocks/instructs:
 
-`./bin/artisan runa:knowledge:index`
+`php artisan runa:knowledge:index`
 
 ## CLI
 
 Canonical interface:
 
-- `./bin/artisan runa:knowledge:search`
-- `./bin/artisan runa:knowledge:index`
-- `./bin/artisan runa:knowledge:initialize` (first-index startup)
-- `./bin/artisan runa:knowledge:status`
-- `./bin/artisan runa:knowledge:rebuild`
-- `./bin/artisan runa:knowledge:stale`
-- `./bin/artisan runa:knowledge:doctor`
-- `./bin/artisan runa:knowledge:eval`
+- `php artisan runa:knowledge:read` (bounded source-verified evidence/context)
+- `php artisan runa:knowledge:search`
+- `php artisan runa:knowledge:index`
+- `php artisan runa:knowledge:initialize` (first-index startup)
+- `php artisan runa:knowledge:status`
+- `php artisan runa:knowledge:rebuild`
+- `php artisan runa:knowledge:stale`
+- `php artisan runa:knowledge:doctor`
+- `php artisan runa:knowledge:eval`
 
-It should work from both host and devcontainer where appropriate, with consistent semantics.
+Use the configured PHP terminal normally; `./bin/artisan` is the host setup/recovery
+transport. Both retain the same registry and semantics.
 
 Search supports a diagnostic mode such as:
 
-`./bin/artisan runa:knowledge:search "query" --explain`
+`php artisan runa:knowledge:search "query" --explain`
 
 Explain mode may show:
 
@@ -337,7 +347,7 @@ Qdrant snapshots are not required as the primary backup of project knowledge.
 
 ## Doctor
 
-`./bin/artisan runa:knowledge:doctor` should validate:
+`php artisan runa:knowledge:doctor` should validate:
 
 - Qdrant health,
 - embedding service health,
@@ -373,7 +383,7 @@ Production self-test verifies these assertions.
 
 Select an English technical-documentation embedding model; multilingual support is not required. Record the researched model/provider, license, limits, dimensions and pinned version during the environment roadmap. Do not silently install a large RAG framework or an external API provider as part of the local provider abstraction.
 
-Qdrant and local embeddings start with the development stack automatically, independently of application readiness. The restartable `knowledge-init` service calls `./bin/artisan runa:knowledge:initialize` after bounded readiness probes; it creates a missing index under the shared CLI lock and retries failures independently. Existing stale indexes require explicit incremental indexing. Application setup and post-create contain no knowledge operations. Application diagnostics report bounded AI degradation without failing application readiness; dedicated knowledge doctor/evals and selected final AI gates remain strict. Application code has no runtime dependency on these services.
+Qdrant and local embeddings start with the development stack automatically, independently of application readiness. The restartable `knowledge-init` service calls `php artisan runa:knowledge:initialize` after bounded readiness probes; it creates a missing index under the shared CLI lock and retries failures independently. Existing stale indexes require explicit incremental indexing. Application setup and post-create contain no knowledge operations. Application diagnostics report bounded AI degradation without failing application readiness; dedicated knowledge doctor/evals and selected final AI gates remain strict. Application code has no runtime dependency on these services.
 
 Staleness is primarily a source/content and index-schema comparison, with Git context for traceability. A commit changing only non-indexed content does not by itself require re-embedding unchanged sources. After branch changes/merge remove or supersede obsolete branch chunks so stale policy cannot win retrieval.
 
@@ -384,3 +394,10 @@ Source templates may be indexed only after secret-safe allowlisting; actual `.en
 Public configuration indexes application/public documentation and supplied agent guidance only. Owner source/golden additions live in excluded tools/maintainer files and load only in a receipt-free owner checkout. A customer receipt prevents all maintainer roots from entering the corpus, including copied private documents. Real application and owner roadmaps use separate identities while preserving identity across lifecycle moves. Validate source freshness, removal of obsolete paths and retrieval/doctor behavior after relocation. See docs/README.md for placement rules.
 
 Customer instruction authoring templates are excluded from owner retrieval even with a broad owner allowlist. Customer retrieval reads only the installed AGENTS/skills product. Incremental indexing removes obsolete source identities after substitutions or lifecycle moves. For multiple checkouts use an explicitly separate Compose project identity; never point a fresh customer project at an existing owner's Qdrant volume. Inspect actual volume mounts and preserve model caches.
+
+## Statement applicability
+
+Source synchronization does not establish statement applicability. Use reviewed
+purpose/decision declarations, preserve unknown scope and expand original plus
+superseding evidence. The supported annotation format and incremental payload
+migration live in [the development knowledge guide](../development/knowledge.md#applicability-and-decision-annotations).

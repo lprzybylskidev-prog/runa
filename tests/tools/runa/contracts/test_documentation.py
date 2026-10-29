@@ -97,6 +97,39 @@ class DocumentationOwnership(unittest.TestCase):
         self.assertFalse(any("/maintainer/" in p for p in paths))
         self.assertTrue(all("/maintainer/" not in q["source_path"] for q in golden(self.root)))
 
+    def test_fresh_customer_navigation_uses_public_routes_and_preserves_local_extensions(
+        self,
+    ) -> None:
+        # No owner docs or prior chat exist in this projected fixture.
+        cases = {
+            "backend": "architecture/application-architecture.md",
+            "frontend": "development/frontend/customization.md",
+            "laravel": "testing/strategy.md",
+            "docker": "production/deployment.md",
+            "rag": "development/knowledge.md",
+        }
+        for domain, guide in cases.items():
+            entry = self.root / ".agents/skills" / domain / "SKILL.md"
+            reference = entry.parent / "references/application.md"
+            self.assertIn("references/application.md", entry.read_text())
+            public = "docs/runa/handbook/" + guide
+            self.assertIn(public, reference.read_text())
+            self.assertTrue((self.root / public).is_file())
+            self.assertNotIn("docs/runa/maintainer", reference.read_text())
+        reference = self.root / ".agents/skills/frontend/references/application.md"
+        reference.write_text(
+            reference.read_text() + "\nLocal customer extension: invoice editor pattern.\n"
+        )
+        self.track()
+        self.validate()
+        self.assertIn("Local customer extension", reference.read_text())
+        # The same public placement/knowledge procedures remain reachable offline.
+        for domain in cases:
+            self.assertIn(
+                "shared-point-workflow",
+                (self.root / ".agents/skills" / domain / "SKILL.md").read_text(),
+            )
+
     def test_copied_owner_sources_and_broad_allowlist_cannot_cross_customer_receipt(self) -> None:
         self.copy_owner_inputs()
         self.assertFalse(maintainer_checkout(self.root))

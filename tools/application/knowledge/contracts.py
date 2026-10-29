@@ -2,7 +2,7 @@
 
 from typing import NotRequired, Protocol, TypedDict
 
-from tools.application.knowledge.configuration import KnowledgeConfig
+from tools.application.knowledge.configuration import Applicability, KnowledgeConfig
 
 
 class SourceMetadata(TypedDict):
@@ -24,10 +24,14 @@ class SourceMetadata(TypedDict):
     embedding_model: NotRequired[str]
     embedding_revision: NotRequired[str]
     embedding_dimension: NotRequired[int]
-    indexed_at: NotRequired[str]
+    indexed_at: NotRequired[str | None]
+    metadata_updated_at: NotRequired[str]
 
 
 class ChunkPayload(SourceMetadata):
+    applicability: NotRequired[Applicability]
+    payload_schema_version: NotRequired[int]
+    source_order: NotRequired[int]
     section: str
     content: str
     content_hash: str
@@ -48,6 +52,7 @@ class SourceState(TypedDict):
 class Manifest(TypedDict):
     space: dict[str, object]
     sources: dict[str, SourceState]
+    metadata_policy_hash: NotRequired[str]
     pending: NotRequired[bool]
     parser_hash: NotRequired[str]
     git_branch: NotRequired[str]
@@ -67,6 +72,7 @@ class Health(TypedDict):
     orphan_chunks: NotRequired[int]
     interrupted: NotRequired[bool]
     branch_changed: NotRequired[bool]
+    metadata_changed: NotRequired[bool]
     parser_changed: NotRequired[bool]
     embedded_chunks: NotRequired[int]
     removed_chunks: NotRequired[int]
@@ -107,6 +113,7 @@ class RankSignal(TypedDict):
 class SearchHit(TypedDict):
     id: str
     score: float
+    ranking_factors: NotRequired[dict[str, float]]
     signals: dict[str, RankSignal]
     payload: ChunkPayload
 
@@ -116,6 +123,13 @@ class CaseResult(TypedDict):
     passed: bool
     seconds: float
     sources: list[str]
+    intent: NotRequired[str]
+    probe_only: NotRequired[bool]
+    coverage: NotRequired[list[bool]]
+    forbidden_hits: NotRequired[list[str]]
+    content_characters: NotRequired[int]
+    distinct_sources: NotRequired[int]
+    unknown_applicability: NotRequired[int]
 
 
 class Evaluation(TypedDict):
@@ -124,6 +138,8 @@ class Evaluation(TypedDict):
 
 
 class DoctorReport(Health):
+    unknown_applicability_chunks: NotRequired[int]
+    missing_provenance_chunks: NotRequired[int]
     invalid_metadata_chunks: int
     average_chunk_words: float
     median_chunk_words: float

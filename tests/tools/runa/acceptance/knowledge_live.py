@@ -13,13 +13,16 @@ import tempfile
 import uuid
 from pathlib import Path
 
+from tools.application.knowledge.cli import operation_lock
 from tools.application.knowledge.configuration import load
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import Health
 from tools.application.knowledge.corpus import chunks, identity
+from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
+from tools.core.state import StateFailure
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -86,6 +89,36 @@ def main() -> None:
             assert run_index().get("embedded_chunks") == 1
             assert run_index().get("embedded_chunks") == 0
             assert run_index("cpu").get("embedded_chunks") == 0
+            from concurrent.futures import ThreadPoolExecutor
+            from threading import Barrier
+
+            barrier = Barrier(2)
+            indexer = KnowledgeIndexer(KnowledgeContext.for_workspace(root), config, store)
+            target = next(iter(store.all_points()))
+
+            def reader() -> str:
+                with operation_lock(root, "read").acquire():
+                    barrier.wait(timeout=30)
+                    value = read(indexer, target)
+                    return value["results"][0]["id"]
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first = pool.submit(reader)
+                second = pool.submit(reader)
+                assert first.result(timeout=120) == second.result(timeout=120) == target
+            with operation_lock(root, "read").acquire():
+                try:
+                    with operation_lock(root, "index").acquire():
+                        raise AssertionError("Writer entered active reader snapshot")
+                except StateFailure as error:
+                    assert "write blocked" in str(error)
+            with operation_lock(root, "index").acquire():
+                try:
+                    with operation_lock(root, "read").acquire():
+                        raise AssertionError("Reader entered active write")
+                except StateFailure as error:
+                    assert "read blocked" in str(error)
+
             (root / "docs/app").mkdir(parents=True)
             document = root / "docs/app/architecture.md"
             document.write_text("# Runtime\n\nNever deploy knowledge services into production.\n")
@@ -144,6 +177,7 @@ def main() -> None:
         finally:
             # Only this random test collection is removed; never the developer corpus.
             if store.exists():
+                print("Scoped disposable Qdrant cleanup: " + config["collection"], flush=True)
                 store.http.request("DELETE", store.path)
     print(
         json.dumps(
@@ -156,6 +190,8 @@ def main() -> None:
                     "cpu_fallback",
                     "initial_index",
                     "no_op",
+                    "concurrent_source_verified_reads",
+                    "reader_writer_exclusion",
                     "add_edit_delete",
                     "orphan_cleanup",
                     "interrupted_recovery",
