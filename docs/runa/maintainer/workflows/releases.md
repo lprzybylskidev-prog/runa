@@ -93,7 +93,9 @@ The GitHub Release may be richer than `docs/runa/maintainer/CHANGELOG.md`, but b
 Near roadmap completion:
 
 1. complete implementation,
-2. run the complete agreed quality selection and its mandatory/prerequisite gates,
+2. run complete affected-area checks and mandatory/real prerequisite gates; apply
+   the [periodic all-group cadence](../quality/README.md#manual-group-selection) at
+   0.10.0, 0.15.0 and later five-minor checkpoints, and before 1.0.0,
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
 5. compute the version from current `VERSION` and `release_type`,

@@ -40,6 +40,20 @@ When finished or interrupted:
 - show full log paths,
 - finish with the overall status.
 
+## Affected-area closure and periodic verification
+
+Ordinary application roadmap closure runs complete checks for affected behavior,
+contracts and real prerequisites, with the mandatory baseline/hooks. A knowledge-
+ranking change alone does not require full installation or deployment acceptance.
+Explain each heavy area selected and disclose excluded checks as unexecuted.
+Selected security/AI checks stay strict; do not bypass supported runners/guards.
+
+A full all-group run is a distinct periodic integration checkpoint. Application
+owners define their cadence independently of Runa platform versions. The Runa
+maintainer's platform release schedule is owner-only and does not automatically
+become the customer's application release policy. Use `--all` and record exact
+candidate/results when an application checkpoint or readiness review is due.
+
 ## Manual group selection
 
 The agent normally chooses proportionate groups using the roadmap, changed behavior

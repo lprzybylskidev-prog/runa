@@ -68,7 +68,18 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
-The final point is full verification and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
+The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
+
+Ordinary roadmap closure runs only complete checks for changed behavior/contracts
+and their real prerequisites, plus the mandatory baseline/hooks. Explain each
+heavy selection; knowledge-only changes do not imply installation/deployment tests.
+Excluded areas are not PASS. Periodic all-group verification is separate from
+ordinary affected-area closure; follow the owning quality guide for its cadence.
+
+For platform releases, run the supported full graph with `--all` at 0.10.0,
+0.15.0, 0.20.0 and subsequent 0.x.0 minor milestones divisible by five, and before
+1.0.0 under its readiness requirements. PATCH releases do not advance this cadence.
+Record complete all-group PASS for the milestone; a scoped result is insufficient.
 
 If verification finds work:
 
@@ -79,7 +90,7 @@ If verification finds work:
 
 During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
 
-For a backend segfault (exit 139/SIGSEGV), follow the nondestructive development-container restart and complete backend rerun procedure in [the testing guide](docs/runa/handbook/testing/strategy.md#backend-segfault-recovery) before changing code. A recurrence requires diagnosis; a successful retry does not establish a root cause.
+For owner backend verification, treat a run whose only test execution failure is a confirmed worker SIGSEGV/exit 139 as PASS under the `docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance`. Preserve native failed reports, require successful cleanup and disclose interrupted coverage. Other failures remain blocking. This standing owner decision requires no repeated approval, mandatory restart, retry loop or root-cause investigation; customer application policy is unchanged.
 
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
