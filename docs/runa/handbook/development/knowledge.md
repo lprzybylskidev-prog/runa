@@ -233,3 +233,31 @@ that no contrary decision exists. Expand/read cited sections and open originals.
 High score, source synchronization, recent Git context and ingestion time establish
 neither current behavior nor approval. Polish query probes measure observed
 usability; they do not establish multilingual model support.
+
+## Evaluation coverage and reports
+
+Golden cases retain their original required source/optional section and bounded
+top-k. They may additionally declare explicit `intent`, `per_source`, `max_chars`,
+`expected` evidence (source/section, purpose, decision IDs, nullable scope fields)
+and `forbidden_sources`. Evaluation accounts for selected hit content before
+bounded section expansion through the supported evidence service. Missing coverage,
+forbidden sources and required-source regressions fail; output reports each
+coverage result, distinct sources, context characters, unknown scope and elapsed
+time. Unknown scope checks establish faithful labels, not factual correctness.
+
+`probe_only: true` marks a diagnostic query: its actual pass/fail remains visible
+but it does not affect required-case PASS. Polish/English probes are reported this
+way without relaxing any original English expectation. They do not certify
+multilingual support. Doctor reports unknown applicability separately from missing
+provenance/invalid schema/model metadata; unknown applicability alone is not failure.
+
+`runa:knowledge:eval` prints JSON and preserves timestamped evaluation reports under
+`.runtime/knowledge`. Owner-only real-corpus comparison runs in final documentation
+acceptance: the exact search module from activation commit 36460e62 and the current
+search run on the identical current corpus/model with compatible current transport
+seams. It records the baseline module hash, branch/commit, raw-hit coverage,
+per-case latency and candidate bounded evidence coverage. This measures retrieval
+changes; it is not a replay of an old installation or proof of historical truth.
+Baseline PASS becoming candidate FAIL is a regression; candidate required evidence
+must pass. Existing CPU/CUDA/fallback, interruption/branch, concurrent-reader and
+customer-source/production-isolation scenarios run only during final acceptance.

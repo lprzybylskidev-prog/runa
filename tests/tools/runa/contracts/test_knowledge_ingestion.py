@@ -270,6 +270,38 @@ class KnowledgeContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Per-source"):
             retriever.search("forward", per_source=True)
 
+    def test_evaluation_reports_missing_coverage_forbidden_sources_and_probes(self) -> None:
+        from tools.application.knowledge.contracts import QueryPoint
+        from tools.application.knowledge.retrieval import Retriever, evaluate
+
+        self.index()
+
+        class RankedStore(Store):
+            def query(self, body: dict[str, object]) -> list[QueryPoint]:
+                return [{"id": key, "score": 1.0} for key in self.all_points()]
+
+        retriever = Retriever(
+            self.root,
+            CONFIG,
+            context=self.context,
+            store=RankedStore(CONFIG),
+            provider_factory=Provider,
+        )
+        case = {"query": "secrets index", "source_path": "AGENTS.md"}
+        result = evaluate(retriever, [{**case, "expected": [{"source_path": "missing.md"}]}])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["cases"][0]["coverage"], [False])
+        self.assertFalse(
+            evaluate(retriever, [{**case, "forbidden_sources": ["AGENTS.md"]}])["passed"]
+        )
+        probe = evaluate(
+            retriever,
+            [{"query": "diagnostic probe", "source_path": "missing.md", "probe_only": True}],
+        )
+        self.assertTrue(probe["passed"])
+        self.assertFalse(probe["cases"][0]["passed"])
+        self.assertTrue(probe["cases"][0]["probe_only"])
+
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [
             "docs/untracked.md",

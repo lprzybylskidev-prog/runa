@@ -29,5 +29,38 @@
     "filters": {
       "source_path": "docs/app/README.md"
     }
+  },
+  {
+    "query": "protected Runa public API application extensions",
+    "source_path": "docs/runa/handbook/architecture/public-api.md",
+    "top_k": 5,
+    "intent": "current",
+    "filters": {
+      "source_path": "docs/runa/handbook/architecture/public-api.md"
+    },
+    "forbidden_sources": ["docs/runa/maintainer/agent-contract.md"]
+  },
+  {
+    "query": "knowledge source synchronization unknown applicability effective dates",
+    "source_path": "docs/runa/handbook/development/knowledge.md",
+    "top_k": 5,
+    "intent": "current",
+    "filters": {
+      "source_path": "docs/runa/handbook/development/knowledge.md"
+    },
+    "expected": [
+      {
+        "source_path": "docs/runa/handbook/development/knowledge.md",
+        "purpose": "current_guidance",
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "wiedza produkcja Qdrant embeddings zakaz",
+    "source_path": "docs/runa/handbook/ai/knowledge-system.md",
+    "top_k": 5,
+    "intent": "current",
+    "probe_only": true
   }
 ]

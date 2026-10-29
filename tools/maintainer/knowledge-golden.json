@@ -93,5 +93,96 @@
     "filters": {
       "source_path": "docs/runa/handbook/production/architecture.md"
     }
+  },
+  {
+    "query": "deploy platform migrations excluded forward decisions 2026-10-20 2026-10-21",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
+    "section": "Decisions",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-005"
+    },
+    "intent": "history",
+    "per_source": 4,
+    "max_chars": 24000,
+    "expected": [
+      {
+        "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
+        "section": "Decisions",
+        "purpose": "historical_evidence",
+        "decision_ids": [
+          "RM005-deploy-platform-excluded",
+          "RM005-deploy-platform-forward"
+        ],
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "Auth Permissions Audit independent eligibility grants transactional manual bulk history",
+    "source_path": "docs/runa/handbook/modules/auth/README.md",
+    "top_k": 6,
+    "intent": "current",
+    "max_chars": 24000,
+    "expected": [
+      {
+        "source_path": "docs/runa/handbook/modules/auth/README.md",
+        "purpose": "current_guidance"
+      },
+      {
+        "source_path": "docs/runa/handbook/modules/permissions/README.md",
+        "purpose": "current_guidance"
+      },
+      {
+        "source_path": "docs/runa/handbook/modules/audit/README.md",
+        "purpose": "current_guidance"
+      }
+    ]
+  },
+  {
+    "query": "current Auth Audit Permissions module versions dependency compatibility",
+    "source_path": "docs/runa/maintainer/CHANGELOG.md",
+    "section": "0.6.0",
+    "top_k": 6,
+    "intent": "current",
+    "max_chars": 24000,
+    "expected": [
+      {
+        "source_path": "docs/runa/maintainer/CHANGELOG.md",
+        "section": "0.6.0",
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "why Qdrant selected alternatives rationale",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-001"
+    },
+    "intent": "history",
+    "max_chars": 16000,
+    "expected": [
+      {
+        "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-001-development-environment.md",
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "aktualne wersje modułów Auth Audit Permissions zależności",
+    "source_path": "docs/runa/maintainer/CHANGELOG.md",
+    "section": "0.6.0",
+    "top_k": 6,
+    "intent": "current",
+    "probe_only": true
+  },
+  {
+    "query": "Auth Permissions Audit uprawnienia niezależna dostępność transakcja historia",
+    "source_path": "docs/runa/handbook/modules/auth/README.md",
+    "top_k": 6,
+    "intent": "current",
+    "probe_only": true
   }
 ]

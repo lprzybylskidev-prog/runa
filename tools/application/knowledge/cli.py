@@ -24,7 +24,7 @@ from tools.core.context import ExecutionContext, ExecutionLocation
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import InputMode, ProcessSpec
 from tools.core.reporting import SafeFailure
-from tools.core.state import FileLock, StateDirectory
+from tools.core.state import FileLock, JsonStore, StateDirectory, json_value
 
 READ_COMMANDS = frozenset(("read", "search", "status", "stale", "doctor", "eval"))
 
@@ -183,6 +183,12 @@ def run(
                     print("Open original source files before acting on retrieved rules.")
                 return 0
             result = doctor(retriever) if args.command == "doctor" else evaluate(retriever, dataset)
+            if args.command == "eval":
+                report_dir = StateDirectory(ROOT / ".runtime/knowledge", private=False, anchor=ROOT)
+                stamp = context.clock.now().strftime("%Y%m%dT%H%M%S%fZ")
+                JsonStore(report_dir, max_bytes=2 * 1024 * 1024).write(
+                    "evaluation-" + stamp + ".json", json_value(result)
+                )
             print(json.dumps(result, indent=2))
             return 0 if result["passed"] else 1
         if args.command == "initialize":

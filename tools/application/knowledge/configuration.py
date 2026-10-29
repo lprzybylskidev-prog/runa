@@ -77,9 +77,23 @@ class KnowledgeConfig(TypedDict):
     retrieval: RetrievalConfig
 
 
+class EvidenceExpectation(TypedDict):
+    source_path: str
+    section: NotRequired[str]
+    purpose: NotRequired[Purpose]
+    decision_ids: NotRequired[list[str]]
+    unknown_fields: NotRequired[list[str]]
+
+
 class GoldenCase(TypedDict):
     query: str
     source_path: str
+    intent: NotRequired[str]
+    per_source: NotRequired[int]
+    expected: NotRequired[list[EvidenceExpectation]]
+    forbidden_sources: NotRequired[list[str]]
+    max_chars: NotRequired[int]
+    probe_only: NotRequired[bool]
     top_k: NotRequired[int]
     section: NotRequired[str]
     filters: NotRequired[dict[str, str]]
@@ -203,6 +217,40 @@ def golden_file(path: Path) -> list[GoldenCase]:
             raise ValueError("Invalid golden top-k.")
         if not isinstance(case.get("section", ""), str):
             raise ValueError("Invalid golden section.")
+        if case.get("intent", "legacy") not in ("legacy", "current", "history", "audit"):
+            raise ValueError("Invalid golden retrieval intent.")
+        if (
+            type(case.get("max_chars", 24000)) is not int
+            or not 1000 <= case.get("max_chars", 24000) <= 60000
+        ):
+            raise ValueError("Invalid golden context budget.")
+        if type(case.get("per_source", 1)) is not int or not 1 <= case.get("per_source", 1) <= 10:
+            raise ValueError("Invalid golden source budget.")
+        if type(case.get("probe_only", False)) is not bool:
+            raise ValueError("Invalid golden probe flag.")
+        source_paths(case.get("forbidden_sources", []))
+        expectations = case.get("expected", [])
+        if not isinstance(expectations, list):
+            raise ValueError("Golden evidence expectations must be a list.")
+        for expectation in expectations:
+            if not isinstance(expectation, dict):
+                raise ValueError("Invalid golden evidence expectation.")
+            source_paths([expectation.get("source_path")])
+            if not isinstance(expectation.get("section", ""), str) or expectation.get(
+                "purpose", "unknown"
+            ) not in ("current_guidance", "historical_evidence", "proposal", "unknown"):
+                raise ValueError("Invalid golden evidence scope.")
+            for key in ("decision_ids", "unknown_fields"):
+                values = expectation.get(key, [])
+                if not isinstance(values, list) or any(
+                    not isinstance(value, str) for value in values
+                ):
+                    raise ValueError("Invalid golden evidence labels.")
+            if any(
+                value not in ("effective_date", "applicable_version")
+                for value in expectation.get("unknown_fields", [])
+            ):
+                raise ValueError("Invalid unknown applicability field.")
         filters = case.get("filters", {})
         if not isinstance(filters, dict) or any(
             key not in ("document_type", "scope", "roadmap_id", "status", "source_path")

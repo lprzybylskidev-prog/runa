@@ -446,7 +446,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Retain the current provider/model and source-diversity baseline unless measured
     evidence and the required separate approvals justify an additional proposal.
 
-- [ ] 6. Extend representative retrieval evaluation and truthful diagnostics.
+- [x] 6. Extend representative retrieval evaluation and truthful diagnostics.
   - Prerequisite: points 1–5 candidate behavior and fixed expectations.
   - Integrate evidence coverage, negative/uncertain cases, paired language probes,
     budgets/latency and structured reports into existing golden/doctor commands.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -604,3 +604,21 @@ source expansion/budgets and invalid intent/limit refusal. Existing real researc
 cases remain frozen for final baseline/candidate comparison. Updated public
 CLI/knowledge guidance and owner/customer RAG references; their entrypoints already
 link to these procedures, so root instruction products require no new invariant.
+
+### Point 6 — coverage evaluation and final acceptance scenarios (2026-10-29)
+
+Extended golden validation/evaluation with explicit source/section/purpose/decision
+coverage, unknown-field labels, forbidden sources, context budgets, source diversity,
+latency and separately visible diagnostic probes. Original English cases remain
+required. Doctor separates unknown applicability from invalid metadata/missing
+provenance; eval preserves timestamped reports in .runtime/knowledge.
+Added final-only unchanged pinned-search/current-corpus comparison with module hash,
+raw-hit regressions and candidate evidence coverage. It reuses current compatible
+transport seams and explicitly does not claim historical installation replay.
+Existing documentation-live acceptance now exercises CPU/CUDA/fallback and actual
+concurrent source-verified reads/write exclusion; customer acceptance uses named
+search/read and refuses deleted IDs. Existing production development guards apply
+to the new catalogue entry. One focused offline evaluator case passed, proving
+missing coverage/forbidden sources fail and probe failures remain visible.
+No broad/live acceptance has run. Public procedures are synchronized; owner/customer
+RAG products already reference the canonical guide and need no duplicated recipe.

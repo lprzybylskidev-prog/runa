@@ -123,6 +123,13 @@ class CaseResult(TypedDict):
     passed: bool
     seconds: float
     sources: list[str]
+    intent: NotRequired[str]
+    probe_only: NotRequired[bool]
+    coverage: NotRequired[list[bool]]
+    forbidden_hits: NotRequired[list[str]]
+    content_characters: NotRequired[int]
+    distinct_sources: NotRequired[int]
+    unknown_applicability: NotRequired[int]
 
 
 class Evaluation(TypedDict):
@@ -131,6 +138,8 @@ class Evaluation(TypedDict):
 
 
 class DoctorReport(Health):
+    unknown_applicability_chunks: NotRequired[int]
+    missing_provenance_chunks: NotRequired[int]
     invalid_metadata_chunks: int
     average_chunk_words: float
     median_chunk_words: float

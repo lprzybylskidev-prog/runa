@@ -149,11 +149,48 @@ print(json.dumps(sorted(paths)))"""
         "docs/app/knowledge-acceptance.md" in json.loads(app("python3", "-c", probe)),
         "incremental indexing adds application knowledge",
     )
+    found = json.loads(
+        app(
+            "php",
+            "artisan",
+            "runa:knowledge:search",
+            "Customer knowledge incremental acceptance",
+            "--source-path=docs/app/knowledge-acceptance.md",
+            "--json",
+        )
+    )
+    chunk_id = found["results"][0]["id"]
+    evidence = json.loads(
+        app("php", "artisan", "runa:knowledge:read", chunk_id, "--section", "--json")
+    )
+    check(
+        evidence["results"][0]["payload"]["source_path"] == "docs/app/knowledge-acceptance.md",
+        "supported customer evidence read preserves source provenance",
+    )
     call(["git", "-C", str(root), "rm", "-f", "docs/app/knowledge-acceptance.md"])
     app("php", "artisan", "runa:knowledge:index")
     check(
         "docs/app/knowledge-acceptance.md" not in json.loads(app("python3", "-c", probe)),
         "incremental indexing removes obsolete source identities",
+    )
+    removed_read = call(
+        [
+            "docker",
+            "exec",
+            "-w",
+            "/workspace",
+            project + "-app-1",
+            "php",
+            "artisan",
+            "runa:knowledge:read",
+            chunk_id,
+        ],
+        capture=True,
+        check=False,
+    )
+    check(
+        removed_read.returncode != 0,
+        "obsolete customer chunk IDs are refused after incremental deletion",
     )
     hits = app(
         "php",
