@@ -26,6 +26,7 @@ class EvidenceRead(TypedDict):
     schema_version: int
     collection: str
     chunk_schema_version: int
+    payload_schema_version: int
     results: list[Evidence]
     omitted_chunks: int
     content_characters: int
@@ -110,6 +111,7 @@ def read(
         "schema_version": 1,
         "collection": indexer.config["collection"],
         "chunk_schema_version": indexer.config["schema_version"],
+        "payload_schema_version": 2,
         "results": [
             {"id": key, "payload": points[key], "citation": citation(points[key], text)}
             for key in ids

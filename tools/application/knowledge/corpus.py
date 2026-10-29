@@ -180,6 +180,8 @@ def metadata(path: Path, root: Path, text: str) -> SourceMetadata:
 def chunks(
     path: Path, root: Path, text: str, provider: EmbeddingProvider, config: KnowledgeConfig
 ) -> tuple[SourceMetadata, list[Point]]:
+    from tools.application.knowledge.applicability import declared, extract
+
     meta = metadata(path, root, text)
     # Strip roadmap frontmatter from semantic content, retaining metadata above.
     content = re.sub(r"\A---\n.*?\n---\n", "", text, count=1, flags=re.S)
@@ -189,6 +191,10 @@ def chunks(
         if meta["status"] == "closed" and "Implementation plan" in headings:
             continue
         context = " > ".join(headings)
+        applicability = declared(config, meta["source_path"], text, context, body)
+        body = extract(body)[0].strip()
+        if not body:
+            continue
         if context and provider.counts([context])[0] > 100:
             raise ValueError(f"Heading hierarchy exceeds token budget: {meta['source_path']}")
         # Keep whole sections when they fit. Split oversized sections at paragraph,
@@ -225,6 +231,9 @@ def chunks(
                     "payload": {
                         **meta,
                         "kind": "chunk",
+                        "payload_schema_version": 2,
+                        "source_order": len(result),
+                        "applicability": applicability,
                         "chunk_id": chunk_id,
                         "chunk_schema_version": config["schema_version"],
                         "heading_path": headings,

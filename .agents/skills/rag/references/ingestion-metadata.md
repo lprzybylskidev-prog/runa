@@ -53,3 +53,7 @@ refresh incrementally and reuse unchanged semantic vectors; relocation alone nev
 authorizes collection deletion. Keep private corpus/golden composition out of the
 delivered configuration loader. Test storage/HTTP/time boundaries through injected
 knowledge dependencies rather than replacing module globals.
+
+For explicit purpose, nullable applicability and source-owned decision declarations,
+follow `docs/runa/handbook/development/knowledge.md#applicability-and-decision-annotations`.
+Metadata refresh reuses semantic vectors; unknown dates/rationale remain unknown.

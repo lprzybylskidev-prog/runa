@@ -9,6 +9,38 @@ from urllib.parse import urlsplit
 
 from tools.core.state import json_value
 
+Purpose = Literal["current_guidance", "historical_evidence", "proposal", "unknown"]
+
+
+class Decision(TypedDict):
+    id: str
+    problem: str
+    solution: str
+    rationale: str | None
+    status: Literal["accepted", "superseded", "proposed", "unknown"]
+    date: str | None
+    version: str | None
+    supersedes: list[str]
+
+
+class Applicability(TypedDict):
+    purpose: Purpose
+    effective_date: str | None
+    applicable_version: str | None
+    decisions: list[Decision]
+
+
+class MetadataRule(TypedDict):
+    pattern: str
+    purpose: Purpose
+
+
+class SourceAnnotation(TypedDict):
+    source_path: str
+    source_hash: str
+    section: str
+    metadata: Applicability
+
 
 class RetrievalConfig(TypedDict):
     candidates: int
@@ -21,6 +53,9 @@ class RetrievalConfig(TypedDict):
 
 
 class KnowledgeConfig(TypedDict):
+    payload_schema_version: NotRequired[int]
+    metadata_rules: NotRequired[list[MetadataRule]]
+    annotations: NotRequired[list[SourceAnnotation]]
     collection: str
     schema_version: int
     model_id: str
@@ -110,32 +145,38 @@ def validate(value: object) -> KnowledgeConfig:
         number = settings.get(key)
         if type(number) is not int or not 1 <= number <= 1000:
             raise ValueError("Retrieval limits must be integers between 1 and 1000.")
+    from tools.application.knowledge.applicability import validate_policy
+
+    validate_policy(data)
     return cast(KnowledgeConfig, data)
 
 
 def load(root: Path, *, additions: dict[str, object] | None = None) -> KnowledgeConfig:
     config = validate(json.loads((root / "tools/application/knowledge/config.json").read_text()))
     if additions is not None:
-        if set(additions) != {"files", "markdown_roots"}:
-            raise ValueError("Owner knowledge configuration may only add source paths.")
-        config = validate(
-            {
-                **config,
-                **{
-                    key: list(
-                        dict.fromkeys(
-                            [
-                                *source_paths(
-                                    config[cast(Literal["files", "markdown_roots"], key)]
-                                ),
-                                *source_paths(value),
-                            ]
-                        )
-                    )
-                    for key, value in additions.items()
-                },
-            }
-        )
+        if not {"files", "markdown_roots"} <= set(additions) or set(additions) - {
+            "files",
+            "markdown_roots",
+            "metadata_rules",
+            "annotations",
+        }:
+            raise ValueError(
+                "Owner knowledge configuration may only add source paths and reviewed metadata."
+            )
+        composed: dict[str, object] = dict(config)
+        for key, value in additions.items():
+            if key in ("files", "markdown_roots"):
+                existing = config[cast(Literal["files", "markdown_roots"], key)]
+                composed[key] = list(dict.fromkeys([*existing, *source_paths(value)]))
+            elif key == "metadata_rules":
+                if not isinstance(value, list):
+                    raise ValueError("Metadata rules must be a list.")
+                composed[key] = [*config.get("metadata_rules", []), *value]
+            else:
+                if not isinstance(value, list):
+                    raise ValueError("Annotations must be a list.")
+                composed[key] = [*config.get("annotations", []), *value]
+        config = validate(composed)
     return config
 
 

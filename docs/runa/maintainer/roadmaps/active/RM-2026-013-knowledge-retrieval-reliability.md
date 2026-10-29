@@ -427,7 +427,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Implement deterministic reader/reader, reader/writer, interruption and recovery
     scenarios; defer broad real-service concurrency acceptance to point 10.
 
-- [ ] 4. Deliver explicit applicability and decision-history metadata.
+- [x] 4. Deliver explicit applicability and decision-history metadata.
   - Prerequisite: point 1 claim ledger and point 3 isolation contract.
   - Add minimal source annotations, provenance fields and immutable-history
     references; distinguish historical evidence, proposals and current guidance.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -575,3 +575,19 @@ interruption release, legacy inode preservation and symlink refusal; cleanup 0).
 Real-service concurrency/recovery scenarios remain final acceptance. Updated the
 canonical knowledge procedure; owner/customer RAG entrypoints already link there,
 so no further instruction-product edit is needed for this internal lock change.
+
+### Point 4 — applicability and decision provenance (2026-10-29)
+
+Added payload schema 2 alongside unchanged embedding/chunk schema 1. Reviewed
+source-purpose rules, standalone source/section declarations and hash-bound owner
+annotations preserve explicit unknown dates/versions/rationale and supersession.
+RM-005's excluded/forward deployment decisions are annotated externally against
+its exact source hash/full heading; closed bytes remain unchanged. Fenced examples
+do not become declarations. Missing/moved annotation sections or changed hashes
+refuse persistence. Customer composition never loads owner annotations.
+Metadata policy/parser fingerprints require explicit incremental index refresh;
+unchanged semantic vectors/IDs are reused, without collection deletion or rebuild.
+Four narrow offline scenarios passed: vector reuse/backfill, explicit supersession,
+immutable hash refusal and literal fenced examples. Canonical guides and both RAG
+reference products are synchronized; no additional always-loaded AGENTS rule is
+needed. Broad migration/retrieval acceptance remains point 10.

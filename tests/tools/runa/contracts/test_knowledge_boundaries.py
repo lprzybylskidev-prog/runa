@@ -110,6 +110,7 @@ def test_store_rejects_invalid_query_scores_without_echoing_response(score: Json
 def test_retrieval_composes_typed_rankings_with_branch_and_source_filters(tmp_path: Path) -> None:
     from dataclasses import replace
 
+    from tools.application.knowledge.applicability import policy_hash
     from tools.application.knowledge.context import KnowledgeContext
     from tools.application.knowledge.corpus import digest, metadata
     from tools.application.knowledge.ingest import parser_hash, space
@@ -140,6 +141,7 @@ def test_retrieval_composes_typed_rankings_with_branch_and_source_filters(tmp_pa
             }
         },
         "parser_hash": parser_hash(),
+        "metadata_policy_hash": policy_hash(config),
         "git_branch": "fixture",
     }
     scroll = json_value(

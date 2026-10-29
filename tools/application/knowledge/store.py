@@ -166,6 +166,12 @@ class Store:
                         )
                     ):
                         raise ValueError("Invalid knowledge chunk payload.")
+                    if "payload_schema_version" in payload:
+                        from tools.application.knowledge.applicability import validate_metadata
+
+                        if payload["payload_schema_version"] != 2:
+                            raise ValueError("Unsupported knowledge payload schema.")
+                        validate_metadata(payload.get("applicability"))
                     identity = point["id"]
                     assert isinstance(identity, str)
                     result[identity] = cast(ChunkPayload, payload)

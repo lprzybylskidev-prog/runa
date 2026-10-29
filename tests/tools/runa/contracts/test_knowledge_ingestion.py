@@ -24,6 +24,7 @@ from tools.maintainer.knowledge_cli import configuration
 ROOT = Path(__file__).resolve().parents[4]
 
 CONFIG, _ = configuration(ROOT)
+CONFIG["annotations"] = []
 
 
 class KnowledgeContracts(unittest.TestCase):
@@ -118,6 +119,96 @@ class KnowledgeContracts(unittest.TestCase):
         self.indexer.store.write_manifest(manifest)
         with self.assertRaisesRegex(ValueError, "stale"):
             read(self.indexer, ids[0])
+
+    def test_metadata_refresh_reuses_vectors_and_retains_unknown_scope(self) -> None:
+        from tools.application.knowledge.applicability import policy_hash
+
+        self.index()
+        before = self.indexer.store.all_points()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        manifest.pop("metadata_policy_hash")
+        self.indexer.store.write_manifest(manifest)
+        self.assertTrue(self.indexer.status()["metadata_changed"])
+        calls = len(Provider.calls)
+        self.index()
+        self.assertEqual(len(Provider.calls) - calls, 1)  # Capability probe only.
+        after = self.indexer.store.all_points()
+        self.assertEqual(list(before), list(after))
+        refreshed = self.indexer.store.manifest()
+        assert refreshed is not None
+        self.assertEqual(refreshed["metadata_policy_hash"], policy_hash(CONFIG))
+        for row in after.values():
+            self.assertEqual(row["payload_schema_version"], 2)
+            self.assertIsNone(row["applicability"]["effective_date"])
+            self.assertIsNone(row["applicability"]["applicable_version"])
+
+    def test_source_decisions_preserve_explicit_supersession_and_missing_rationale(self) -> None:
+        import json
+
+        declaration = {
+            "purpose": "historical_evidence",
+            "effective_date": None,
+            "applicable_version": None,
+            "decisions": [
+                {
+                    "id": "local-deploy-forward",
+                    "problem": "Data ownership",
+                    "solution": "Coordinated forward steps",
+                    "rationale": None,
+                    "status": "accepted",
+                    "date": "2026-10-21",
+                    "version": None,
+                    "supersedes": ["local-deploy-excluded"],
+                }
+            ],
+        }
+        self.write(
+            "AGENTS.md",
+            "# Rules\n<!-- runa-knowledge "
+            + json.dumps(declaration)
+            + " -->\nForward steps apply.\n",
+        )
+        self.index()
+        row = next(iter(self.indexer.store.all_points().values()))
+        self.assertEqual(row["applicability"], declaration)
+        self.assertNotIn("runa-knowledge", row["content"])
+        self.assertNotIn("rationale", row["content"])
+
+    def test_external_annotation_hash_is_required_without_rewriting_history(self) -> None:
+        text = "# History\n## Decisions\nKeep the original decision.\n"
+        name = "docs/runa/maintainer/roadmaps/closed/RM-2026-098-history.md"
+        text = "---\nid: RM-2026-098\nstatus: closed\n---\n" + text
+        path = self.write(name, text)
+        self.track()
+        config = copy.deepcopy(CONFIG)
+        config["annotations"] = [
+            {
+                "source_path": name,
+                "source_hash": corpus.digest(text),
+                "section": "History > Decisions",
+                "metadata": {
+                    "purpose": "historical_evidence",
+                    "effective_date": None,
+                    "applicable_version": None,
+                    "decisions": [],
+                },
+            }
+        ]
+        self.indexer.config = config
+        self.index()
+        self.assertEqual(path.read_text(), text)
+        before = copy.deepcopy(Store.points)
+        path.write_text(text + "Unreviewed change.\n")
+        with self.assertRaisesRegex(ValueError, "source hash changed"):
+            self.index()
+        self.assertEqual(Store.points, before)
+
+    def test_fenced_annotation_example_does_not_establish_applicability(self) -> None:
+        from tools.application.knowledge.applicability import extract
+
+        example = '```html\n<!-- runa-knowledge {"example": true} -->\n```'
+        self.assertEqual(extract(example), (example, []))
 
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [

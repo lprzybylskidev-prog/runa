@@ -8,3 +8,7 @@ After a delivered tooling/parser update, a stale parser fingerprint normally nee
 incremental `runa:knowledge:index`; it does not itself require `rebuild`. Follow the
 public knowledge guide's package/ownership composition procedure. Customer loaders
 use delivered resources only; private owner corpus/golden additions are excluded.
+
+For explicit purpose, nullable applicability and source-owned decision declarations,
+follow `docs/runa/handbook/development/knowledge.md#applicability-and-decision-annotations`.
+Metadata refresh reuses semantic vectors; unknown dates/rationale remain unknown.

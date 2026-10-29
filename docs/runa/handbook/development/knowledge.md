@@ -47,7 +47,7 @@ The provider validates model/revision/runtime/input limits and vector dimensions
 
 Unchanged chunks are reused without embedding; source/Git metadata refreshes independently. A small embedding capability probe still runs on each index command. All changed vectors are prepared before content mutation. A remote `pending` marker is written before mutation and cleared only after upserts and obsolete/orphan deletion complete. Thus interrupted writes are visible even if local runtime state is lost; rerunning incremental indexing repairs them. A stable-inode checkout lock now gives search/read/status/stale/doctor/eval shared snapshot admission; index/rebuild/initialize retain exclusive admission across preparation, persistence and cleanup. Readers can run concurrently, while writers exclude every reader and other writer. Contention fails immediately with a reader-versus-writer diagnostic; it does not imply Qdrant itself lacks concurrent reads. Interrupted writes retain the pending marker and block search/evidence until explicit incremental repair. Locks are never replaced or unlinked. Do not run two checkouts against the same Compose project/collection.
 
-Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; payload/chunk contract changes still require an explicit schema bump. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/artisan runa:knowledge:rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
+Freshness compares source hashes, model/schema identity, parser implementation hash, branch, missing points, orphans and pending state. Parser implementation changes reparse sources while reusing unchanged chunk embeddings; embedding/chunk identity changes still require an explicit schema bump. Additive payload schema 2 has a separate reviewed metadata-policy fingerprint and refreshes incrementally without changing the embedding space or deleting the collection. A new Git commit alone does not require embeddings. Model/schema changes require an explicit `./bin/artisan runa:knowledge:rebuild`. Sources modified during preparation cause failure before content writes; modifications during persistence leave the final status stale.
 
 ## Package and ownership composition
 
@@ -163,3 +163,46 @@ null; an indexing timestamp or Git revision never supplies an effective date or
 release version. Open the cited original source before acting on a rule. Use
 bounded expansion to gather missing context, and distinguish source facts, agent
 inferences and absent evidence in the answer.
+
+## Applicability and decision annotations
+
+Payload schema 2 separates an `applicability` record from source/hash/Git freshness.
+It always records `purpose` (`current_guidance`, `historical_evidence`, `proposal`,
+`unknown`), nullable `effective_date`/`applicable_version`, and a `decisions` list.
+Reviewed `metadata_rules` in the existing knowledge configuration assign purpose
+by explicit literal/glob source patterns, in order; the last matching rule wins.
+Unmatched sources remain unknown. These reviewed declarations are not evidence
+that every sentence in a guide is currently applicable. Section declarations
+refine mixed records, and contradictions still need source review.
+
+A source author may add a standalone single-line HTML comment outside code fences:
+
+```html
+<!-- runa-knowledge {"purpose":"historical_evidence","effective_date":null,"applicable_version":null,"decisions":[]} -->
+```
+
+Place it before the first heading for source scope or inside a section for that
+section. Declarations are excluded from embedded semantic text; examples inside
+fences remain literal content. Each decision has `id`, `problem`, `solution`,
+nullable `rationale`, `status` (`accepted`, `superseded`, `proposed`, `unknown`),
+nullable ISO `date` and `version`, and `supersedes` (stable decision IDs). Record
+only source-supported facts. Missing rationale/date/version stays null; an index
+timestamp, Git commit or document age cannot fill the gap. Section-level decision
+annotations describe the section as a whole, not a claim that every returned
+fragment contains its full supporting text. Expand/read the section before using it.
+
+Immutable history uses reviewed external annotations in the existing owner
+`tools/maintainer/knowledge.json`: exact `source_path`, SHA256 `source_hash`, full
+heading `section`, and `metadata` with the same applicability shape. A changed
+hash or missing section refuses indexing until reviewed; never rewrite closed
+history. These annotations aid navigation and do not replace the original decision
+record. Owner configuration/annotations are excluded from customer delivery and
+receipt-scoped composition. Application authors keep declarations in their own
+allowlisted docs/app sources; editing protected platform configuration is unsupported.
+
+The metadata policy has a separate manifest fingerprint. Schema-1 indexes become
+explicitly stale and use supported `runa:knowledge:index` for payload backfill;
+unchanged semantic chunk IDs/vectors are reused. Model/cache/collection/data stay
+intact; no rebuild is needed for this additive metadata change. A real embedding
+space mismatch still requires separately reviewed explicit rebuild. Branch,
+removed-source, pending-write and source guards retain their normal behavior.

@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import cast
 
+from tools.application.knowledge.applicability import policy_hash
 from tools.application.knowledge.configuration import KnowledgeConfig
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import (
@@ -36,7 +37,11 @@ def space(config: KnowledgeConfig) -> dict[str, object]:
 
 
 def parser_hash() -> str:
-    return digest(Path(__file__).with_name("corpus.py").read_text())
+    return digest(
+        "\n".join(
+            Path(__file__).with_name(name).read_text() for name in ("corpus.py", "applicability.py")
+        )
+    )
 
 
 def source_state(
@@ -94,8 +99,10 @@ class KnowledgeIndexer:
         branch = self.context.git_value("branch", "--show-current")
         branch_changed = manifest.get("git_branch") != branch
         parser_changed = manifest.get("parser_hash") != self.parser_fingerprint()
+        metadata_changed = manifest.get("metadata_policy_hash") != policy_hash(config)
         stale = bool(
-            parser_changed
+            metadata_changed
+            or parser_changed
             or changed
             or deleted
             or missing
@@ -115,6 +122,7 @@ class KnowledgeIndexer:
             "interrupted": bool(manifest.get("pending")),
             "branch_changed": branch_changed,
             "parser_changed": parser_changed,
+            "metadata_changed": metadata_changed,
         }
 
     def index(self) -> int:
@@ -145,6 +153,7 @@ class KnowledgeIndexer:
             if (
                 old is not None
                 and previous.get("parser_hash") == self.parser_fingerprint()
+                and previous.get("metadata_policy_hash") == policy_hash(config)
                 and old.get("source_hash") == digest(text)
                 and all(i in current for i in old["chunks"])
             ):
@@ -179,6 +188,8 @@ class KnowledgeIndexer:
                     embedding_revision=config["model_revision"],
                     embedding_dimension=config["dimension"],
                 )
+                row["payload"].setdefault("indexed_at", None)
+                row["payload"]["metadata_updated_at"] = timestamp
                 if "vector" in row:
                     row["payload"]["indexed_at"] = timestamp
             prepared.extend(rows)
@@ -187,6 +198,15 @@ class KnowledgeIndexer:
                 "document_id": meta["document_id"],
                 "chunks": [r["id"] for r in rows],
             }
+        for annotation in config.get("annotations", []):
+            if not any(
+                row["payload"]["source_path"] == annotation["source_path"]
+                and row["payload"]["section"] == annotation["section"]
+                for row in prepared
+            ):
+                raise ValueError(
+                    "External annotation source/section is absent; review its coordinates."
+                )
         # Reject sources modified while preparing vectors; no content writes have happened yet.
         if {
             n: digest(t) for n, (_, t) in source_state(root, config, context=self.context).items()
@@ -215,6 +235,7 @@ class KnowledgeIndexer:
                 "sources": state,
                 "pending": False,
                 "parser_hash": self.parser_fingerprint(),
+                "metadata_policy_hash": policy_hash(config),
                 "git_branch": branch,
                 "git_commit": commit,
                 "indexed_at": timestamp,

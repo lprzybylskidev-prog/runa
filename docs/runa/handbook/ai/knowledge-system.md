@@ -389,3 +389,10 @@ Source templates may be indexed only after secret-safe allowlisting; actual `.en
 Public configuration indexes application/public documentation and supplied agent guidance only. Owner source/golden additions live in excluded tools/maintainer files and load only in a receipt-free owner checkout. A customer receipt prevents all maintainer roots from entering the corpus, including copied private documents. Real application and owner roadmaps use separate identities while preserving identity across lifecycle moves. Validate source freshness, removal of obsolete paths and retrieval/doctor behavior after relocation. See docs/README.md for placement rules.
 
 Customer instruction authoring templates are excluded from owner retrieval even with a broad owner allowlist. Customer retrieval reads only the installed AGENTS/skills product. Incremental indexing removes obsolete source identities after substitutions or lifecycle moves. For multiple checkouts use an explicitly separate Compose project identity; never point a fresh customer project at an existing owner's Qdrant volume. Inspect actual volume mounts and preserve model caches.
+
+## Statement applicability
+
+Source synchronization does not establish statement applicability. Use reviewed
+purpose/decision declarations, preserve unknown scope and expand original plus
+superseding evidence. The supported annotation format and incremental payload
+migration live in [the development knowledge guide](../development/knowledge.md#applicability-and-decision-annotations).
