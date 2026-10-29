@@ -210,6 +210,66 @@ class KnowledgeContracts(unittest.TestCase):
         example = '```html\n<!-- runa-knowledge {"example": true} -->\n```'
         self.assertEqual(extract(example), (example, []))
 
+    def test_retrieval_intents_expose_factors_without_hiding_contrary_evidence(self) -> None:
+        import json
+
+        from tools.application.knowledge.contracts import QueryPoint
+        from tools.application.knowledge.retrieval import Retriever
+
+        for name, purpose in (("current", "current_guidance"), ("history", "historical_evidence")):
+            declaration = {
+                "purpose": purpose,
+                "effective_date": None,
+                "applicable_version": None,
+                "decisions": [],
+            }
+            self.write(
+                "docs/app/" + name + ".md",
+                "# Rules\n<!-- runa-knowledge "
+                + json.dumps(declaration)
+                + " -->\nForward migration deployment.\n## Other\nForward migration steps.\n",
+            )
+        self.track()
+        self.index()
+
+        class RankedStore(Store):
+            def query(self, body: dict[str, object]) -> list[QueryPoint]:
+                return [{"id": key, "score": 1.0} for key in self.all_points()]
+
+        retriever = Retriever(
+            self.root,
+            CONFIG,
+            context=self.context,
+            store=RankedStore(CONFIG),
+            provider_factory=Provider,
+        )
+        current = retriever.search("forward migration", 3, intent="current")
+        history = retriever.search("forward migration", 3, intent="history")
+        self.assertEqual(current[0]["payload"]["applicability"]["purpose"], "current_guidance")
+        self.assertEqual(history[0]["payload"]["applicability"]["purpose"], "historical_evidence")
+        audit = retriever.search("forward migration", 3, intent="audit")
+        self.assertEqual(
+            {hit["payload"]["source_path"] for hit in audit},
+            {"AGENTS.md", "docs/app/current.md", "docs/app/history.md"},
+        )
+        self.assertTrue(
+            all(hit["ranking_factors"] == {"status": 1.0, "purpose": 1.0} for hit in audit)
+        )
+        expanded = retriever.search("forward migration", 6, {"source_path": "docs/app/current.md"})
+        self.assertEqual(len(expanded), 2)
+        self.assertEqual(
+            len(
+                retriever.search(
+                    "forward migration", 6, {"source_path": "docs/app/current.md"}, per_source=1
+                )
+            ),
+            1,
+        )
+        with self.assertRaisesRegex(ValueError, "Intent"):
+            retriever.search("forward", intent="guessed")
+        with self.assertRaisesRegex(ValueError, "Per-source"):
+            retriever.search("forward", per_source=True)
+
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [
             "docs/untracked.md",

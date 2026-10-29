@@ -241,7 +241,7 @@
     "name": "runa:knowledge:search",
     "tool": "knowledge",
     "prefix": ["search"],
-    "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=} {--json}",
+    "signature": "{query} {--top-k=5} {--explain} {--document-type=} {--scope=} {--roadmap-id=} {--status=} {--source-path=} {--device=} {--json} {--intent=legacy} {--per-source=}",
     "description": "Development knowledge search"
   },
   {

@@ -12,3 +12,7 @@ use delivered resources only; private owner corpus/golden additions are excluded
 For explicit purpose, nullable applicability and source-owned decision declarations,
 follow `docs/runa/handbook/development/knowledge.md#applicability-and-decision-annotations`.
 Metadata refresh reuses semantic vectors; unknown dates/rationale remain unknown.
+
+Choose explicit current/history/audit intent and bounded per-source/context expansion
+using the public knowledge guide. Keep facts, inferences and missing evidence distinct;
+a score or source freshness never settles applicability or suppresses contrary history.

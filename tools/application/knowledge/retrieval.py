@@ -23,6 +23,24 @@ from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
 
+INTENTS = ("legacy", "current", "history", "audit")
+
+# Reviewed heuristics rank declared purpose; none establishes semantic truth.
+PURPOSE_WEIGHTS = {
+    "current": {
+        "current_guidance": 1.2,
+        "historical_evidence": 0.65,
+        "proposal": 0.9,
+        "unknown": 1.0,
+    },
+    "history": {
+        "current_guidance": 0.9,
+        "historical_evidence": 1.2,
+        "proposal": 0.8,
+        "unknown": 1.0,
+    },
+}
+
 FILTERS = ("document_type", "scope", "roadmap_id", "status", "source_path")
 
 
@@ -73,10 +91,20 @@ class Retriever:
         self.health = health
 
     def search(
-        self, query: str, top_k: int = 5, filters: Mapping[str, str] | None = None
+        self,
+        query: str,
+        top_k: int = 5,
+        filters: Mapping[str, str] | None = None,
+        *,
+        intent: str = "legacy",
+        per_source: int | None = None,
     ) -> list[SearchHit]:
         if not query.strip() or type(top_k) is not int or not 1 <= top_k <= 50:
             raise ValueError("Provide a nonempty query and top-k between 1 and 50.")
+        if intent not in INTENTS:
+            raise ValueError("Intent must be legacy, current, history or audit.")
+        if per_source is not None and (type(per_source) is not int or not 1 <= per_source <= 10):
+            raise ValueError("Per-source budget must be between 1 and 10.")
         filters = filters or {}
         if set(filters) - set(FILTERS):
             raise ValueError("Unsupported metadata filter.")
@@ -127,24 +155,44 @@ class Retriever:
             for rank, (key, score) in enumerate(ranking, 1):
                 scores[key] = scores.get(key, 0) + weight / (settings["rrf_k"] + rank)
                 diagnostics.setdefault(key, {})[name] = {"rank": rank, "score": score}
+        factors: dict[str, dict[str, float]] = {}
         for key in scores:
             state = selected[key].get("status")
-            scores[key] *= (
-                settings["active_boost"]
-                if state == "active"
-                else settings["historical_weight"]
-                if state in ("closed", "paused", "deprecated")
-                else 1
+            status_factor = (
+                (
+                    settings["active_boost"]
+                    if state == "active"
+                    else settings["historical_weight"]
+                    if state in ("closed", "paused", "deprecated")
+                    else 1.0
+                )
+                if intent in ("legacy", "current")
+                else 1.0
             )
+            purpose = selected[key].get("applicability", {}).get("purpose", "unknown")
+            purpose_factor = PURPOSE_WEIGHTS.get(intent, {}).get(purpose, 1.0)
+            factors[key] = {"status": status_factor, "purpose": purpose_factor}
+            scores[key] *= status_factor * purpose_factor
+        source_budget = (
+            per_source
+            if per_source is not None
+            else (top_k if filters.get("source_path") else settings["per_source"])
+        )
         results: list[SearchHit] = []
         counts: Counter[str] = Counter()
         for key in sorted(scores, key=lambda key: (-scores[key], key)):
             point = selected[key]
-            if counts[point["source_path"]] >= settings["per_source"]:
+            if counts[point["source_path"]] >= source_budget:
                 continue
             counts[point["source_path"]] += 1
             results.append(
-                {"id": key, "score": scores[key], "signals": diagnostics[key], "payload": point}
+                {
+                    "id": key,
+                    "score": scores[key],
+                    "signals": diagnostics[key],
+                    "payload": point,
+                    "ranking_factors": factors[key],
+                }
             )
             if len(results) == top_k:
                 break

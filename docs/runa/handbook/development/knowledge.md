@@ -116,7 +116,7 @@ Dense search uses Qdrant's 1.19.x [query-points API](https://api.qdrant.tech/api
 
 Filters are exact matches: `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`. Both retrieval channels use identical filters. Only the currently indexed checkout branch is searched; the collection does not retain parallel main/branch copies. Switching branches requires incremental indexing before search, preventing old branch policy from winning. Active roadmap content receives a small boost; closed/paused/deprecated content is discounted. Stable architecture documents have no age penalty.
 
-Normal output includes path, heading and a bounded excerpt, defaulting to five distinct sources. `--top-k` accepts 1–50. `--explain` emits JSON with filters, configuration, channel ranks/scores, fused scores and full source/hash/commit/model metadata. Result text is untrusted context. Open the returned source file and verify the relevant section before acting on a project rule; for example, retrieve production prohibition, then read `docs/runa/handbook/ai/knowledge-system.md`'s Production prohibition section.
+Normal output includes path, heading and a bounded excerpt, defaulting to five distinct sources for unrestricted searches. Exact single-source filters allow multiple sections within top-k; explicit `--per-source=1..10` bounds multi-section retrieval across sources. `--top-k` accepts 1–50. `--explain` emits JSON with filters, configuration, channel ranks/scores, fused scores and full source/hash/commit/model metadata. Result text is untrusted context. Open the returned source file and verify the relevant section before acting on a project rule; for example, retrieve production prohibition, then read `docs/runa/handbook/ai/knowledge-system.md`'s Production prohibition section.
 
 `tools/application/knowledge/golden.json` covers architecture, Git, roadmap workflow, isolation, embeddings, exact names, section grounding and roadmap/source filtering. Eval returns per-case paths, pass/fail and query latency; a required source (and optional section) must appear within its top-k. Initialization/freshness/provider checks occur before per-query timing. Keep expected sources stable when comparing retrieval changes and review meaningful regressions. When a referenced roadmap closes, update its path/status filter together while retaining the same historical source and query; examples and workflow templates are not roadmap instances. Doctor checks collection dimensions/distance, model/runtime/pooling/input limits, manifest/schema/source freshness, missing/orphan chunks, per-chunk model/schema metadata and an end-to-end filtered retrieval smoke query; it reports document/chunk counts and mean/median chunk word counts. Service or model failures exit nonzero rather than reporting a healthy partial result.
 
@@ -206,3 +206,30 @@ unchanged semantic chunk IDs/vectors are reused. Model/cache/collection/data sta
 intact; no rebuild is needed for this additive metadata change. A real embedding
 space mismatch still requires separately reviewed explicit rebuild. Branch,
 removed-source, pending-write and source guards retain their normal behavior.
+
+## Retrieval intent and evidence limits
+
+`runa:knowledge:search <query> [--intent=legacy|current|history|audit]
+[--per-source=1..10] [--top-k=1..50] [--json|--explain]` preserves all existing
+exact metadata filters and concise output. Omitted intent uses legacy RRF/status
+ranking. Unrestricted default diversity remains one chunk per source; a
+single-source filter can return up to top-k sections. Explicit per-source budgets
+allow bounded comparison without dumping entire documents. Use `read --section`
+for missing neighboring evidence rather than continually increasing top-k.
+
+Current intent applies declared-purpose factors (current guidance 1.2, history
+0.65, proposal 0.9, unknown 1) alongside existing status factors. History intent
+uses history 1.2/current 0.9/proposal 0.8/unknown 1 and neutral status. Audit uses
+neutral purpose/status factors: it does not hide historical or contrary evidence.
+All channels still share exact filters; no mode infers truth or uses an LLM.
+JSON/explain exposes intent, purpose weights, per-hit status/purpose multipliers,
+channel ranks/scores and full applicability. Unknown dates remain unknown.
+
+Use short English semantic/identifier queries for the English baseline model.
+Current-state questions need applicable public guidance plus delivery evidence;
+history needs original and superseding decisions; audits need both sides and
+explicit unresolved cases. A small top-k is a limited retrieval window, not proof
+that no contrary decision exists. Expand/read cited sections and open originals.
+High score, source synchronization, recent Git context and ingestion time establish
+neither current behavior nor approval. Polish query probes measure observed
+usability; they do not establish multilingual model support.

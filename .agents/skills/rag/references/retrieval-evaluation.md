@@ -40,3 +40,7 @@
 38. Old stable architecture docs are not invalid merely because of age.
 39. Deprecated docs should be metadata-marked/deprioritized when retained for history.
 40. Removed/obsolete knowledge must not continue winning search after source deletion/update.
+
+Choose explicit current/history/audit intent and bounded per-source/context expansion
+using the public knowledge guide. Keep facts, inferences and missing evidence distinct;
+a score or source freshness never settles applicability or suppresses contrary history.

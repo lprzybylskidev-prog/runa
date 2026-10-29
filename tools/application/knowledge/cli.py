@@ -11,7 +11,14 @@ from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfi
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
-from tools.application.knowledge.retrieval import FILTERS, Retriever, doctor, evaluate
+from tools.application.knowledge.retrieval import (
+    FILTERS,
+    INTENTS,
+    PURPOSE_WEIGHTS,
+    Retriever,
+    doctor,
+    evaluate,
+)
 from tools.application.knowledge.store import Store
 from tools.core.context import ExecutionContext, ExecutionLocation
 from tools.core.lifecycle import interrupt_signals
@@ -77,6 +84,8 @@ def run(
         action="store_true",
         help="Structured response (legacy JSON commands remain JSON).",
     )
+    parser.add_argument("--intent", choices=INTENTS, default="legacy")
+    parser.add_argument("--per-source", type=int)
     parser.add_argument("--neighbors", type=int, default=0)
     parser.add_argument(
         "--section", action="store_true", help="Expand chunks in the same heading section."
@@ -148,11 +157,20 @@ def run(
                 filters = {
                     key: getattr(args, key) for key in FILTERS if getattr(args, key) is not None
                 }
-                hits = retriever.search(args.query, args.top_k, filters)
+                hits = retriever.search(
+                    args.query, args.top_k, filters, intent=args.intent, per_source=args.per_source
+                )
                 if args.explain or args.json:
                     print(
                         json.dumps(
-                            {"filters": filters, "retrieval": config["retrieval"], "results": hits},
+                            {
+                                "filters": filters,
+                                "retrieval": config["retrieval"],
+                                "intent": args.intent,
+                                "purpose_weights": PURPOSE_WEIGHTS.get(args.intent, {}),
+                                "per_source": args.per_source,
+                                "results": hits,
+                            },
                             indent=2,
                         )
                     )

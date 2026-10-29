@@ -113,6 +113,7 @@ class RankSignal(TypedDict):
 class SearchHit(TypedDict):
     id: str
     score: float
+    ranking_factors: NotRequired[dict[str, float]]
     signals: dict[str, RankSignal]
     payload: ChunkPayload
 

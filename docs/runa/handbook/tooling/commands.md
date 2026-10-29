@@ -399,3 +399,8 @@ bounded context as JSON. Search/status accept `--json`; existing search
 `--explain` and JSON status output remain compatible. See
 [evidence reading](../development/knowledge.md#evidence-reading-and-structured-output)
 for budgets, citation nulls, freshness refusals and the development-only boundary.
+
+Knowledge search accepts explicit `--intent=legacy|current|history|audit` and
+`--per-source=1..10`, retaining existing filters/top-k/explain. See
+[retrieval intent](../development/knowledge.md#retrieval-intent-and-evidence-limits)
+for ranking factors, single-source expansion and interpretation limits.

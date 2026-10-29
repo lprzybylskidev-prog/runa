@@ -437,7 +437,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Implement migration, missing-date/rationale and supersession fixtures; update
     the authoritative knowledge/decision-authoring guidance in this point.
 
-- [ ] 5. Improve retrieval for current state, history and audit questions.
+- [x] 5. Improve retrieval for current state, history and audit questions.
   - Prerequisite: points 2–4 evidence, isolation and applicability contracts.
   - Implement explicit intent, bounded multi-section retrieval/context expansion,
     transparent applicability ranking and preserved source filters/legacy calls.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -591,3 +591,16 @@ Four narrow offline scenarios passed: vector reuse/backfill, explicit supersessi
 immutable hash refusal and literal fenced examples. Canonical guides and both RAG
 reference products are synchronized; no additional always-loaded AGENTS rule is
 needed. Broad migration/retrieval acceptance remains point 10.
+
+### Point 5 — explicit intent and bounded source diversity (2026-10-29)
+
+Search supports legacy/current/history/audit intent and explicit per-source budgets;
+exact-source filters now allow multiple sections within top-k. Unrestricted legacy
+source diversity remains unchanged. Current/history ranking uses declared purpose,
+with visible multipliers; audit neutralizes status/purpose discounts and retains
+contrary evidence. No age heuristic, model/dependency change or inferred truth.
+A focused offline scenario passed for current/history ranking, neutral audit,
+source expansion/budgets and invalid intent/limit refusal. Existing real research
+cases remain frozen for final baseline/candidate comparison. Updated public
+CLI/knowledge guidance and owner/customer RAG references; their entrypoints already
+link to these procedures, so root instruction products require no new invariant.
