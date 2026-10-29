@@ -1,10 +1,10 @@
 ---
 id: RM-2026-013
 title: Knowledge retrieval and agent guidance maintainability
-status: draft
+status: active
 branch: roadmap/RM-2026-013-knowledge-retrieval-reliability
 created_at: 2026-10-28
-activated_at: null
+activated_at: 2026-10-29
 closed_at: null
 release_type: maintenance
 proposed_version: 0.6.1
@@ -44,10 +44,10 @@ prepare this draft; no implementation source was inspected for those analyses.
 
 The owner explicitly requested version **0.6.1** and confirmed
 `release_type: maintenance` on 2026-10-28. This is a PATCH increment after the
-planned compatible feature **0.6.0**, not after today's VERSION 0.5.0. The required
+released compatible feature **0.6.0**. The completed
 predecessor is [RM-2026-012](../closed/RM-2026-012-runa-architecture-refactor.md).
-Refresh that link, actual baseline and projected arithmetic after its release.
-This draft does not activate work, change VERSION or extend RM-012 implementation.
+RM-012 closed, merged and released as v0.6.0 on 2026-10-28.
+Activation preserves VERSION until release finalization and does not extend RM-012 implementation.
 
 ### Scope
 
@@ -81,6 +81,10 @@ does not reopen RM-012's platform architecture or impose new customer app layers
 ## Specification
 
 ### Decisions
+
+- 2026-10-29 — Owner explicitly approves activation and execution of RM-013.
+  Confirmed maintenance 0.6.1 follows released v0.6.0; implementation begins on
+  the dedicated roadmap branch. Broad verification remains exclusively point 10.
 
 - 2026-10-28 — Owner requests a separate 0.6.1 roadmap based on all three Qdrant-only
   exercises and explicitly confirms maintenance classification. Activation remains
@@ -529,9 +533,8 @@ acceptance as a prerequisite for subsequent implementation.
     Reconcile any actually changed independent module versions/contracts; do not
     bump Auth/Permissions/Audit merely for corrected knowledge prose.
 
-## Planning state
+## Execution state
 
-Draft only. No implementation point is started and no release gate has run.
-The two additional research tasks were completed without changing sources or the
-Qdrant index. Their grounded findings and the separately labeled hypothetical are
-recorded above as planning evidence, not current implementation claims.
+Activated on 2026-10-29 after owner approval. Point 1 is in progress; no release
+gate has run. The earlier research findings and separately labeled hypothetical
+remain planning evidence rather than current implementation claims.
