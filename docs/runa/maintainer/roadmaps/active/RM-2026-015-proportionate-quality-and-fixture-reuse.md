@@ -195,7 +195,7 @@ approved guarantee or justification for weakening coverage.
 
 ## Implementation plan
 
-- [ ] 1. Establish the changed-contract scope and cost model from existing evidence.
+- [x] 1. Establish the changed-contract scope and cost model from existing evidence.
   - Read the active roadmap, source catalogue, current harnesses and prior timings.
   - Identify repeated setup and indispensable fresh-state scenarios; document
     dependencies and the before/after scenario matrix without broad reruns.
@@ -233,3 +233,74 @@ approved guarantee or justification for weakening coverage.
   - Finalize maintenance 0.6.2 after refreshing the predecessor baseline. Perform
     release metadata/documentation synchronization, merge commit, main sanity,
     annotated tag/publication and branch deletion only after actual required PASS.
+
+## Point 1 — Source-verified scope and cost model
+
+Reviewed 2026-10-29 against activation commit c034719c. Knowledge status was
+current (191 documents, 9251 chunks before activation); the bounded current-intent
+query `quality group prerequisites production fixture scanning` returned the
+owner/public quality guides and AGENTS. Opened the owner guide and relevant source
+before acting. No broad baseline rerun, build, scanner or acceptance was executed.
+
+### Existing timing evidence
+
+Read `.runtime/artifacts/RM-2026-013-failed-c929ecda/state.json` and its three
+native logs. Candidate is c929ecdacfbb3ac0007ea45cbc27d30f55a90736; overall
+2368.371 seconds. This historical run failed unrelated selected gates; these
+measurements establish cost, not PASS for this roadmap.
+
+| Existing stage               |  Seconds | Distinct logged container creations | One-off names |
+| ---------------------------- | -------: | ----------------------------------: | ------------: |
+| installation-host-acceptance | 1037.401 |                                  53 |            23 |
+| production-acceptance        |  841.809 |                                  64 |            58 |
+| repository-container-scan    |  381.504 |                                  21 |            16 |
+
+Counts use distinct `Container NAME Creating/Created` names within each log;
+they are not a Docker-event inventory. Native reports remain under
+`.runtime/ownership/installation-host-{b49593dfd0,531259f52b,74a00f7136}.json`.
+Existing caches were available; a new cold-host comparison is not implied.
+
+### Source findings and before/after scenario matrix
+
+`gates.yml` already keeps docs/tooling/knowledge selections independent of broad
+native acceptance. Remaining coarse boundaries are explicit security selection
+(expanded review depends on image scanning) and the absence of named narrow
+delivery/production-guard selection. Preserve existing broad group semantics;
+expose narrow source boundaries explicitly instead of weakening security.
+`quality_planning.resolve` records group/prerequisite reasons and a complete graph
+fingerprint; reuse it, not a second classifier/coordinator.
+
+| Contract/scenario                         | Current execution                                                                                                                                                   | Planned relationship                                                                                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Internal knowledge ranking                | Knowledge live acceptance, doctor/evals and mandatory source checks                                                                                                 | Keep independent of installation/update/production/image acceptance.                                                                                                                                  |
+| Customer source/instructions/corpus scope | Real disposable Git projection in test_documentation.py; receipt fencing in test_repository_boundary.py; live disposable Qdrant transition in documentation_live.py | Expose narrow source/guard checks and retain real knowledge transition when affected. No Docker production setup prerequisite.                                                                        |
+| Command wiring and production denial      | Command-adapter, production and deployment boundary contracts                                                                                                       | Make directly selectable without native deployment.                                                                                                                                                   |
+| Standalone production acceptance          | Fresh installer fixture plus customer deployment exercise                                                                                                           | Preserve all native setup, forward data changes, recovery and failure assertions.                                                                                                                     |
+| Standalone image security acceptance      | Fresh production-only fixture plus repository/exact selected runtime image scans                                                                                    | Preserve strict scans and raw reports.                                                                                                                                                                |
+| Production plus image security            | Two complete production-only fixture preparations                                                                                                                   | Prepare one exact compatible production fixture; validate/scan its healthy selected images, then exercise customer deployment failures. Preserve separate phase evidence and selected graph identity. |
+| Installation/update/team propagation      | Shared native installer fixture with additional distinct source/release states                                                                                      | Retain fresh acquisition, teammate source comparison, target-release migrations and actual update/restart transport. Do not reuse a running old-release PHP process.                                  |
+| Immutable PHP image inspection            | Three equal-context read-only transient containers: PHP policy, shell tool exclusion, FPM config                                                                    | Group compatible probes in one container with separate processes and failure propagation; retain distinct Nginx image/context.                                                                        |
+| Resource cleanup                          | Installer finally block removes exact projects/tags and preserves active development identities                                                                     | Keep one fixture owner through all shared phases; persist recovery identities before setup and preserve failed/interrupted evidence.                                                                  |
+
+`installation_host.main` already accepts both `--security-scan` and
+`--customer-deployment`; the scan runs before the deliberately unhealthy fenced
+failure scenarios. This supplies the composition point. Its report currently
+records images, revisions, assertions and removals but no preparation/scan/cleanup
+phase costs or pre-setup recovery inventory. Add these within the existing report.
+`ProductionRuntime.verify_images` currently launches four probes (three PHP-image,
+one Nginx-image); `DeploymentRuntime.artisan` deliberately uses fresh `compose run`.
+Optimize immutable read-only probes first; leave runtime migration execution intact.
+
+### Dependencies, instruction assessment and remaining evidence
+
+Point 2 owns selectable narrow boundaries; point 3 owns exact graph-bound shared
+fixture evidence and truthful failure/interruption handling; point 4 owns grouped
+probes and timings. Implement the independent/combined and missing-phase regression
+scenarios there, execute their broad/native acceptance only in point 6. Final
+comparison must disclose workload/cache differences from c929ecda rather than
+promise the observed six-minute setup saving.
+
+This point changes planning/evidence only. Root owner instructions, domain skills
+and customer instruction products need no behavior update here; their affected
+execution guidance is assessed and synchronized with implementation in points 2–5.
+No dependencies, runtime configuration, databases or Docker resources were changed.
