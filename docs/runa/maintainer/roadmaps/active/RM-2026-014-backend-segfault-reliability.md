@@ -253,14 +253,14 @@ Dockerfile/dependency-pin change and must be removed after the last approved use
   Development services, base test data, Qdrant/model caches, source and all raw
   successful/failed reports remain preserved.
 
-### Proposed next diagnostic scope — owner decision pending
+### Approved instrumented diagnostic scope — 2026-10-29
 
 The current stripped PHP stack ends in invalid memory during object destruction;
 no native source line identifies the original corruption. The official SimpleXML
 regression remains possible but unproven as the worker cause. Do not implement
 that upstream patch merely to obtain a passing retry.
 
-Proposed explicit extension of point 1:
+Owner-approved explicit extension of point 1:
 
 1. Build one disposable diagnostic image, tagged `runa-rm014-native-debug:8.4.27`,
    from the exact current development image
@@ -287,10 +287,11 @@ Proposed explicit extension of point 1:
    reports, development/base test databases and shared caches. Review the first
    invalid-access evidence before choosing any supported correction in point 2.
 
-This is a focused instrumentation build before implementation is complete, which
-exceeds the currently approved unchanged-runtime/gdb scope and the ordinary
-final-only image-build rule. Obtain the owner's explicit decision on this
-exception before building or running it. No such image has been built yet.
+The owner explicitly approves this focused instrumentation build and bounded
+diagnostics on 2026-10-29, including the exception to ordinary final-only image
+builds. This extends point 1 beyond the original unchanged-runtime/gdb scope.
+It does not activate a correction or authorize production/development runtime
+replacement. Image preparation is in progress.
 
 ## Implementation plan
 
