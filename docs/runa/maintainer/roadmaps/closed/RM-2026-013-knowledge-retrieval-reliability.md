@@ -1,11 +1,11 @@
 ---
 id: RM-2026-013
 title: Knowledge retrieval and agent guidance maintainability
-status: active
+status: closed
 branch: roadmap/RM-2026-013-knowledge-retrieval-reliability
 created_at: 2026-10-28
 activated_at: 2026-10-29
-closed_at: null
+closed_at: 2026-10-29
 release_type: maintenance
 proposed_version: 0.6.1
 quality_groups: docs,tooling,development,knowledge,installation,updates,transport,production,security
@@ -510,7 +510,7 @@ acceptance as a prerequisite for subsequent implementation.
     restarts and scoped cleanup.
   - Owner explicitly excludes backend tests; do not investigate or repair SIGSEGV.
 
-- [ ] 10. Full verification, release finalization, merge and final report.
+- [x] 10. Full verification, release finalization, merge and final report.
   - Prerequisites: points 1–9 and inserted repairs complete and committed.
     Restart this point only after complete affected-area repair checks pass.
   - Review current-state docs, CLI/help, source/version claims, owner/customer
@@ -549,13 +549,11 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Implementation points 1–9 are
-complete and committed. The first point-10 run failed (39 passed, 9 failed, 4 blocked). Repair point 9a
-is complete after the additional corrections below; backend tests are excluded from the next selected graph by owner
-instruction. Failed evidence is retained under
-.runtime/artifacts/RM-2026-013-failed-3bcc0884.
-VERSION remains 0.6.0 pending verified maintenance release 0.6.1. The earlier research findings and separately labeled hypothetical
-remain planning evidence rather than current implementation claims.
+Activated and closed on 2026-10-29 with owner authorization. All implementation
+and repair points are committed. Final verification on b4401d1c passed all 47
+selected checks in 2628.135 seconds (43 minutes 48 seconds), without backend tests.
+Maintenance 0.6.1 finalizes the planned PATCH increment from 0.6.0. Earlier failed
+runs and research limits remain historical evidence below.
 
 ### Point 1 — predecessor and fixed research evidence (2026-10-29)
 
@@ -798,3 +796,37 @@ consistency also passed after the final repair. Point 9a is complete with this
 commit; only point 10 remains open. The unchanged nine-group graph must now run
 from the beginning on the committed candidate. Previous graph failures are not
 reused as PASS. Backend stays excluded and RM-014 remains a draft.
+
+
+## Final report
+
+RM-2026-013 delivers maintenance **0.6.1**. Verified candidate:
+`b4401d1cda224826d62ba7da1d68c2721610349a`. All 47 selected final graph nodes
+passed with native zero exits, including strict security/image scans, real
+customer acquisition/update/team/production isolation, host transport, knowledge
+concurrency/recovery and fixed retrieval coverage. Python unit/contracts: 493 PASS;
+packaging: 2 PASS; strict types, lint and format PASS. Raw final graph and logs
+are preserved in .runtime/artifacts/RM-2026-013-passed-b4401d1c.
+
+Backend tests were explicitly excluded by the owner; their historical SIGSEGV
+remains deferred to RM-014. No backend PASS is inferred from this selection.
+The English model's two Polish probes remain visible failures outside required
+coverage; no multilingual support is claimed. Baseline comparison reports no
+raw-hit regressions and complete required evidence coverage. Finer passages
+increase index size and lexical cost; no new model, dependency or service was added.
+
+Closure reviewed current knowledge/command/quality guides, owner/customer
+instruction routing, README release state, independent module versions and
+production exclusions. Final edits are release metadata/checklist/evidence and
+predecessor-link synchronization only. VERSION/platform manifest become 0.6.1;
+Auth/Audit/Permissions and application manifests retain their independent versions.
+No real production deployment or persistent database reset occurred. Acceptance
+harnesses removed their exact owned fixture containers, networks, disposable
+volumes and production image tags; live development/test data, Qdrant/model caches,
+shared build/dependency caches, backups and reports remain preserved. Uncertain
+older management-image ownership is not grounds for deletion.
+
+Owner requests closure before adding the separate 0.6.3 maintenance draft on main;
+this authorizes that planning-order exception only. RM-014 remains draft and is
+not activated by this closure. Merge, main sanity and publication follow the
+release workflow using this immutable report as the technical record.
