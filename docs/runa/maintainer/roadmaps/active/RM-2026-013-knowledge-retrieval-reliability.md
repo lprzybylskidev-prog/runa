@@ -8,8 +8,8 @@ activated_at: 2026-10-29
 closed_at: null
 release_type: maintenance
 proposed_version: 0.6.1
-quality_groups: docs,tooling,backend,development,knowledge,installation,updates,production,security
-quality_rationale: Knowledge command contracts, locks, corpus ownership, provenance, retrieval and the owner/customer instruction and documentation system affect delivered development tooling. Include real customer acquisition/update, production isolation and security evidence alongside documentation, instruction-product, strict knowledge and tooling checks; preserve mandatory checks and all actual prerequisites. Reconcile the selection with the implemented scope before final verification.
+quality_groups: docs,tooling,backend,development,knowledge,installation,updates,transport,production,security
+quality_rationale: Verify delivered knowledge commands, shared snapshots, payload provenance and evidence retrieval; instruction/documentation ownership; Python tooling and named PHP/host transports; real customer acquisition/update and production isolation. Include backend, strict security/image scanning and mandatory prerequisites. No application UI, business schema or module behavior changed, so standalone frontend/e2e/database/container groups are excluded; transitive real prerequisites remain selected.
 impact_areas:
   - ai_environment
   - tooling
@@ -535,8 +535,9 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is complete; point 9 is complete; final verification is next. No release
-gate has run. The earlier research findings and separately labeled hypothetical
+Activated on 2026-10-29 after owner approval. Implementation points 1–9 are
+complete and committed. Point 10 is in progress; the full gate has not yet run.
+VERSION remains 0.6.0 pending verified maintenance release 0.6.1. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
 ### Point 1 — predecessor and fixed research evidence (2026-10-29)
@@ -669,3 +670,37 @@ values; its focused privacy regression passed. Added final deterministic
 online/offline navigation fixtures; recorded their exact
 limits and unaffected-product reasons in the review record. No broad checks ran.
 All implementation points are complete; full selected verification remains open.
+
+### Point 10 — final review and selected graph (2026-10-29, in progress)
+
+Reviewed current README/maintainer state and docs/README ownership; public
+knowledge architecture/development/command/Python guides; root owner and customer
+AGENTS/CLAUDE and all skill routing; module version/manifests/changelogs; public API
+placement; environment/startup and production projection; package resource lists;
+and the complete grouped review record. Findings from points 1/7/8 are resolved
+in mutable guidance; closed roadmaps and dated evidence remain historical. New
+capabilities are documented as implemented but not yet final-acceptance PASS.
+No runtime dependency, business-module version, migration or real deployment changed.
+
+The selected ten groups above were previewed with repeated --group flags through
+`python3 tools/maintainer/quality-plan`. Added transport because named Artisan
+catalogue/options cross local/cold/host boundaries. Inspected the exact graph:
+mandatory repository/secrets/docs/ownership/cleanliness/release/freshness baseline;
+parallel backend and PHP analysis; Python setup/format/lint/strict types/contracts/
+packaging; live development/hooks; actual CPU/CUDA/fallback/evidence/concurrency/
+comparison/navigation; customer acquisition/update/team/knowledge; host/management
+acceptance; production deployment and actual repository/runtime-image scanning;
+and strict dependency/security/AI checks with all actual prerequisite edges.
+Excluded standalone groups are not PASS; selected acceptance retains its genuine
+frontend/build/runtime prerequisites. No automatic classifier or gate relaxation.
+
+Actual changed-surface security review covers the knowledge input/file/corpus,
+lock/pending-write, provenance/output-budget, private owner/customer boundary,
+Artisan process transport and final baseline-loader boundaries. Tampered evidence
+and source-date diagnostic leaks were corrected with focused regression cases.
+Private content-bound review evidence is preserved under .runtime/security.
+Final full verification is the next operation; point 10 remains open until its
+actual results, any inserted repairs, release metadata and closure are completed.
+Task-created management image tags and disposable final-acceptance resources remain
+subject to scoped cleanup after their final use. Active development/test data,
+Qdrant/model caches, backups, reports and operation state are protected.
