@@ -96,7 +96,8 @@ def validate_metadata(value: object) -> Applicability:
             validate_date(decision["date"])
         links = decision["supersedes"]
         if not isinstance(links, list) or any(
-            not isinstance(link, str) or not link or link == identifier for link in links
+            not isinstance(link, str) or not link or link == identifier
+            for link in cast(list[object], links)
         ):
             raise ValueError("Invalid decision supersession links.")
     return cast(Applicability, data)
@@ -112,16 +113,18 @@ def validate_policy(config: dict[str, object]) -> None:
     annotations = config.get("annotations", [])
     if not isinstance(rules, list) or not isinstance(annotations, list):
         raise ValueError("Knowledge metadata policy must contain lists.")
-    for rule in rules:
-        if (
-            not isinstance(rule, dict)
-            or set(rule) != {"pattern", "purpose"}
-            or rule.get("purpose") not in PURPOSES
-        ):
+    for item in cast(list[object], rules):
+        if not isinstance(item, dict):
+            raise ValueError("Invalid reviewed knowledge metadata rule.")
+        rule = cast(dict[str, object], item)
+        if set(rule) != {"pattern", "purpose"} or rule.get("purpose") not in PURPOSES:
             raise ValueError("Invalid reviewed knowledge metadata rule.")
         source_paths([rule.get("pattern")])
-    for annotation in annotations:
-        if not isinstance(annotation, dict) or set(annotation) != {
+    for item in cast(list[object], annotations):
+        if not isinstance(item, dict):
+            raise ValueError("Invalid external knowledge annotation.")
+        annotation = cast(dict[str, object], item)
+        if set(annotation) != {
             "source_path",
             "source_hash",
             "section",

@@ -180,7 +180,7 @@ def load(root: Path, *, additions: dict[str, object] | None = None) -> Knowledge
         composed: dict[str, object] = dict(config)
         for key, value in additions.items():
             if key in ("files", "markdown_roots"):
-                existing = config[cast(Literal["files", "markdown_roots"], key)]
+                existing = config[key]
                 composed[key] = list(dict.fromkeys([*existing, *source_paths(value)]))
             elif key == "metadata_rules":
                 if not isinstance(value, list):

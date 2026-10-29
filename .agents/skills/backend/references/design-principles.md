@@ -45,15 +45,14 @@ Do not introduce a new abstraction because one method is long. First identify wh
 Public consumption is defined by [the API boundary](../../../../docs/runa/handbook/architecture/public-api.md),
 not visibility or namespace names. Engines/Core bridges remain internal.
 
-| Concern                                                        | Canonical procedure to load when needed                                                           |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Manifest, health, lifecycle, fences, work, events, settings    | [Module framework](../../../../docs/runa/handbook/architecture/module-framework.md)               |
-| Generate, version, source ownership and overwrite preview      | [Module development](../../../../docs/runa/handbook/development/modules.md)                       |
-| Core transaction/identity and reserved integration             | [Module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md)           |
-| Append-only transactional history, manual aggregates and reads | [Audit](../../../../docs/runa/handbook/modules/audit/README.md)                                   |
-| Identity/security and public lifecycle                         | [Auth](../../../../docs/runa/handbook/modules/auth/README.md)                                     |
-| Grants, assignment/authority and protected-role operations     | [Permissions](../../../../docs/runa/handbook/modules/permissions/README.md)                       |
-| Future module concerns                                         | [Owner deferred scope](../../../../docs/runa/maintainer/architecture/deferred-module-concerns.md) |
+| Concern                                                        | Canonical procedure to load when needed                                                 |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Manifest, health, lifecycle, fences, work, events, settings    | [Module framework](../../../../docs/runa/handbook/architecture/module-framework.md)     |
+| Generate, version, source ownership and overwrite preview      | [Module development](../../../../docs/runa/handbook/development/modules.md)             |
+| Core transaction/identity and reserved integration             | [Module foundations](../../../../docs/runa/handbook/architecture/module-foundations.md) |
+| Append-only transactional history, manual aggregates and reads | [Audit](../../../../docs/runa/handbook/modules/audit/README.md)                         |
+| Identity/security and public lifecycle                         | [Auth](../../../../docs/runa/handbook/modules/auth/README.md)                           |
+| Grants, assignment/authority and protected-role operations     | [Permissions](../../../../docs/runa/handbook/modules/permissions/README.md)             |
 
 Keep availability, authorization, record policy and transactional consistency
 independent. A guarded public call never permits foreign SQL/models/storage,

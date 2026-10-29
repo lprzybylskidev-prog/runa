@@ -277,10 +277,10 @@ continues to verify exact ownership and cleanup. Missing or restarted persistent
 services still fail the installation preservation check.
 
 Knowledge CLI doctor/evaluation/freshness checks and development/hook diagnostics
-that invoke that CLI share the knowledge-state exclusive group. Even read commands
-hold the same exclusive CLI lock; scheduling them concurrently can produce a lock
-refusal. Serialization retains strict checks and requires no automatic retry or
-weaker freshness policy.
+that invoke that CLI share the knowledge-state exclusive group. CLI readers share admission while writers remain exclusive. The quality graph
+retains conservative serialization because live acceptance also indexes temporary
+state. This does not change reader concurrency or introduce retries or weaker
+freshness policy.
 
 ## Python tooling group
 

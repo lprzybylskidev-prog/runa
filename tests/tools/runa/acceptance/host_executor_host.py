@@ -327,6 +327,7 @@ def main() -> None:
                 "runa:dev:profile:set": ["low"],
                 "runa:dev:embeddings:set": ["cpu"],
                 "runa:knowledge:search": ["fixture query"],
+                "runa:knowledge:read": ["00000000-0000-0000-0000-000000000000"],
                 "runa:hook:commit-msg": ["message.txt"],
             }
             development = json.loads(

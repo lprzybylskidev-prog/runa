@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
+from tools.application.documentation import maintainer_checkout
 from tools.application.knowledge.cli import operation_lock
+from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.retrieval import Retriever
@@ -45,7 +48,13 @@ def main() -> None:
     ]
     results: list[dict[str, object]] = []
     with operation_lock(ROOT, "search").acquire():
-        retriever = Retriever(ROOT, config)
+        retriever = Retriever(
+            ROOT,
+            config,
+            context=replace(
+                KnowledgeContext.for_workspace(ROOT), owner_corpus=maintainer_checkout(ROOT)
+            ),
+        )
         indexer = KnowledgeIndexer(retriever.context, config, retriever.store)
         for domain, reference, canonical, query in cases:
             route = [

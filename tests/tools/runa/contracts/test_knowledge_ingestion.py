@@ -129,7 +129,7 @@ class KnowledgeContracts(unittest.TestCase):
         assert manifest is not None
         manifest.pop("metadata_policy_hash")
         self.indexer.store.write_manifest(manifest)
-        self.assertTrue(self.indexer.status()["metadata_changed"])
+        self.assertTrue(self.indexer.status().get("metadata_changed"))
         calls = len(Provider.calls)
         self.index()
         self.assertEqual(len(Provider.calls) - calls, 1)  # Capability probe only.
@@ -137,11 +137,13 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertEqual(list(before), list(after))
         refreshed = self.indexer.store.manifest()
         assert refreshed is not None
-        self.assertEqual(refreshed["metadata_policy_hash"], policy_hash(CONFIG))
+        self.assertEqual(refreshed.get("metadata_policy_hash"), policy_hash(CONFIG))
         for row in after.values():
-            self.assertEqual(row["payload_schema_version"], 2)
-            self.assertIsNone(row["applicability"]["effective_date"])
-            self.assertIsNone(row["applicability"]["applicable_version"])
+            self.assertEqual(row.get("payload_schema_version"), 2)
+            applicability = row.get("applicability")
+            assert applicability is not None
+            self.assertIsNone(applicability["effective_date"])
+            self.assertIsNone(applicability["applicable_version"])
 
     def test_source_decisions_preserve_explicit_supersession_and_missing_rationale(self) -> None:
         import json
@@ -171,7 +173,7 @@ class KnowledgeContracts(unittest.TestCase):
         )
         self.index()
         row = next(iter(self.indexer.store.all_points().values()))
-        self.assertEqual(row["applicability"], declaration)
+        self.assertEqual(row.get("applicability"), declaration)
         self.assertNotIn("runa-knowledge", row["content"])
         self.assertNotIn("rationale", row["content"])
 
@@ -213,11 +215,16 @@ class KnowledgeContracts(unittest.TestCase):
     def test_retrieval_intents_expose_factors_without_hiding_contrary_evidence(self) -> None:
         import json
 
+        from tools.application.knowledge.configuration import Applicability, Purpose
         from tools.application.knowledge.contracts import QueryPoint
         from tools.application.knowledge.retrieval import Retriever
 
-        for name, purpose in (("current", "current_guidance"), ("history", "historical_evidence")):
-            declaration = {
+        declarations: tuple[tuple[str, Purpose], ...] = (
+            ("current", "current_guidance"),
+            ("history", "historical_evidence"),
+        )
+        for name, purpose in declarations:
+            declaration: Applicability = {
                 "purpose": purpose,
                 "effective_date": None,
                 "applicable_version": None,
@@ -245,15 +252,18 @@ class KnowledgeContracts(unittest.TestCase):
         )
         current = retriever.search("forward migration", 3, intent="current")
         history = retriever.search("forward migration", 3, intent="history")
-        self.assertEqual(current[0]["payload"]["applicability"]["purpose"], "current_guidance")
-        self.assertEqual(history[0]["payload"]["applicability"]["purpose"], "historical_evidence")
+        current_metadata = current[0]["payload"].get("applicability")
+        history_metadata = history[0]["payload"].get("applicability")
+        assert current_metadata is not None and history_metadata is not None
+        self.assertEqual(current_metadata["purpose"], "current_guidance")
+        self.assertEqual(history_metadata["purpose"], "historical_evidence")
         audit = retriever.search("forward migration", 3, intent="audit")
         self.assertEqual(
             {hit["payload"]["source_path"] for hit in audit},
             {"AGENTS.md", "docs/app/current.md", "docs/app/history.md"},
         )
         self.assertTrue(
-            all(hit["ranking_factors"] == {"status": 1.0, "purpose": 1.0} for hit in audit)
+            all(hit.get("ranking_factors") == {"status": 1.0, "purpose": 1.0} for hit in audit)
         )
         expanded = retriever.search("forward migration", 6, {"source_path": "docs/app/current.md"})
         self.assertEqual(len(expanded), 2)
@@ -291,7 +301,7 @@ class KnowledgeContracts(unittest.TestCase):
         case: GoldenCase = {"query": "secrets index", "source_path": "AGENTS.md"}
         result = evaluate(retriever, [{**case, "expected": [{"source_path": "missing.md"}]}])
         self.assertFalse(result["passed"])
-        self.assertEqual(result["cases"][0]["coverage"], [False])
+        self.assertEqual(result["cases"][0].get("coverage"), [False])
         self.assertFalse(
             evaluate(retriever, [{**case, "forbidden_sources": ["AGENTS.md"]}])["passed"]
         )
@@ -301,7 +311,7 @@ class KnowledgeContracts(unittest.TestCase):
         )
         self.assertTrue(probe["passed"])
         self.assertFalse(probe["cases"][0]["passed"])
-        self.assertTrue(probe["cases"][0]["probe_only"])
+        self.assertTrue(probe["cases"][0].get("probe_only"))
 
     def test_evidence_refuses_modified_content_and_index_repairs_payload(self) -> None:
         from tools.application.knowledge.evidence import read

@@ -8,8 +8,8 @@ activated_at: 2026-10-29
 closed_at: null
 release_type: maintenance
 proposed_version: 0.6.1
-quality_groups: docs,tooling,backend,development,knowledge,installation,updates,transport,production,security
-quality_rationale: Verify delivered knowledge commands, shared snapshots, payload provenance and evidence retrieval; instruction/documentation ownership; Python tooling and named PHP/host transports; real customer acquisition/update and production isolation. Include backend, strict security/image scanning and mandatory prerequisites. No application UI, business schema or module behavior changed, so standalone frontend/e2e/database/container groups are excluded; transitive real prerequisites remain selected.
+quality_groups: docs,tooling,development,knowledge,installation,updates,transport,production,security
+quality_rationale: Verify delivered knowledge commands, shared snapshots, payload provenance and evidence retrieval; instruction/documentation ownership; Python tooling and named PHP/host transports; real customer acquisition/update and production isolation. Retain strict security/image scanning and mandatory prerequisites. Per owner correction, exclude the full backend suite because no business backend behavior changed; its intermittent SIGSEGV remains RM-014 scope. No application UI, business schema or module behavior changed, so standalone frontend/e2e/database/container groups are excluded; transitive real prerequisites remain selected.
 impact_areas:
   - ai_environment
   - tooling
@@ -82,6 +82,9 @@ does not reopen RM-012's platform architecture or impose new customer app layers
 
 ### Decisions
 
+- 2026-10-29 — After the failed first final run, owner requests Python repairs
+  and another run of necessary checks without backend tests. Backend SIGSEGV
+  diagnosis stays in RM-014. No retrieval/security failure is waived.
 - 2026-10-29 — Owner explicitly approves activation and execution of RM-013.
   Confirmed maintenance 0.6.1 follows released v0.6.0; implementation begins on
   the dedicated roadmap branch. Broad verification remains exclusively point 10.
@@ -497,8 +500,16 @@ acceptance as a prerequisite for subsequent implementation.
     production exclusions. Record unaffected instruction products with reasons.
     The original draft authorized no capability change before owner activation.
 
+- [ ] 9a. Repair failed final-verification Python, guidance and retrieval checks.
+  - Preserve the first failed run; correct strict typing, delivery assertions,
+    owner-context composition and fixed retrieval cases without weakening gates.
+  - Run complete affected Python/documentation/knowledge checks, receive results
+    and commit repairs before restarting final verification.
+  - Owner explicitly excludes backend tests; do not investigate or repair SIGSEGV.
+
 - [ ] 10. Full verification, release finalization, merge and final report.
-  - Prerequisites: points 1–9 complete and committed; only this point remains open.
+  - Prerequisites: points 1–9 and inserted repairs complete and committed.
+    Owner-requested reruns may record remaining failures; closure requires PASS.
   - Review current-state docs, CLI/help, source/version claims, owner/customer
     products, startup and production exclusions against actual implementation.
     Record findings and preserve closed roadmaps and dated evidence.
@@ -536,7 +547,10 @@ acceptance as a prerequisite for subsequent implementation.
 ## Execution state
 
 Activated on 2026-10-29 after owner approval. Implementation points 1–9 are
-complete and committed. Point 10 is in progress; the full gate has not yet run.
+complete and committed. The first point-10 run failed (39 passed, 9 failed, 4 blocked). Repair point 9a
+is in progress; backend tests are excluded from the next selected graph by owner
+instruction. Failed evidence is retained under
+.runtime/artifacts/RM-2026-013-failed-3bcc0884.
 VERSION remains 0.6.0 pending verified maintenance release 0.6.1. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -699,8 +713,41 @@ lock/pending-write, provenance/output-budget, private owner/customer boundary,
 Artisan process transport and final baseline-loader boundaries. Tampered evidence
 and source-date diagnostic leaks were corrected with focused regression cases.
 Private content-bound review evidence is preserved under .runtime/security.
-Final full verification is the next operation; point 10 remains open until its
+The first full verification failed; point 9a records the required repairs.
+Point 10 remains open until its
 actual results, any inserted repairs, release metadata and closure are completed.
 Task-created management image tags and disposable final-acceptance resources remain
 subject to scoped cleanup after their final use. Active development/test data,
 Qdrant/model caches, backups, reports and operation state are protected.
+
+### Repair point 9a — Python and acceptance corrections (2026-10-29)
+
+Corrected 26 strict Python type errors without disabling analysis or changing
+optional migration contracts. Acquisition/update tests now verify exact authored
+skill references and preserve customer extensions instead of requiring duplicated
+procedures in every skill. The mutable reconciliation index points to closed
+RM-012; historical inventory/roadmap bytes are preserved. Removed a private owner
+link from the publicly validated skill reference. Production command acceptance
+now supplies the required evidence-read argument before testing the real guard.
+The comparison/navigation harnesses use receipt-guarded owner context consistently.
+Single-source filtered retrieval expands within existing top-k even when selected
+by roadmap identity rather than a literal source path; original golden cases and
+budgets remain unchanged.
+
+Received repair checks: strict Pyright 0 errors; Ruff lint/format PASS; complete
+unit/contracts 490 PASS, 3 deselected, cleanup 0; separate packaging 2 PASS;
+complete documentation consistency PASS; complete host-executor acceptance PASS,
+scoped fixture containers/network removed, no volumes created and live data
+preserved. Complete documentation-live rerun passes CPU/CUDA/fallback, concurrent
+reads/write exclusion, interruption/branch repair and disposable collection cleanup;
+comparison now executes and reports no raw-hit regression, but fails fixed candidate
+evidence coverage. Knowledge evaluation still has three required retrieval failures
+(two intents for current module versions; cross-module Permissions coverage) and
+two nonblocking Polish probes. These are actual ranking/coverage gaps, not Python
+type errors or backend crashes. No benchmark/source expectation was weakened.
+
+The owner-requested rerun selects nine groups and the preview contains no backend
+suite or backend-analysis node. This repair remains open for the unresolved
+retrieval failures; no release, merge or complete PASS is claimed. First-run raw
+logs are preserved in .runtime/artifacts/RM-2026-013-failed-3bcc0884; subsequent
+runs retain their own native statuses.

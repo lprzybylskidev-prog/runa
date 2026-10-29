@@ -182,7 +182,11 @@ class Retriever:
         source_budget = (
             per_source
             if per_source is not None
-            else (top_k if filters.get("source_path") else settings["per_source"])
+            else (
+                top_k
+                if filters and len({p["source_path"] for p in selected.values()}) == 1
+                else settings["per_source"]
+            )
         )
         results: list[SearchHit] = []
         counts: Counter[str] = Counter()
@@ -218,7 +222,7 @@ def covers(payload: ChunkPayload, expectation: EvidenceExpectation) -> bool:
             not expectation.get("decision_ids")
             or (
                 applicability is not None
-                and set(expectation["decision_ids"])
+                and set(expectation.get("decision_ids", []))
                 <= {d["id"] for d in applicability["decisions"]}
             )
         )
@@ -226,7 +230,10 @@ def covers(payload: ChunkPayload, expectation: EvidenceExpectation) -> bool:
             not expectation.get("unknown_fields")
             or (
                 applicability is not None
-                and all(applicability.get(field) is None for field in expectation["unknown_fields"])
+                and all(
+                    applicability.get(field) is None
+                    for field in expectation.get("unknown_fields", [])
+                )
             )
         )
     )

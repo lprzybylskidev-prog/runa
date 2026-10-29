@@ -7,11 +7,14 @@ import importlib.util
 import json
 import tempfile
 from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 from typing import Protocol, cast
 
+from tools.application.documentation import maintainer_checkout
 from tools.application.knowledge.cli import operation_lock
 from tools.application.knowledge.configuration import GoldenCase
+from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import SearchHit
 from tools.application.knowledge.retrieval import Retriever, evaluate
 from tools.core.state import JsonStore, StateDirectory, json_value
@@ -33,7 +36,13 @@ def main() -> None:
     with directory.open():
         pass
     with operation_lock(ROOT, "eval").acquire():
-        candidate = Retriever(ROOT, config)
+        candidate = Retriever(
+            ROOT,
+            config,
+            context=replace(
+                KnowledgeContext.for_workspace(ROOT), owner_corpus=maintainer_checkout(ROOT)
+            ),
+        )
         source = candidate.context.git(
             "show", BASELINE + ":tools/application/knowledge/retrieval.py"
         )
@@ -62,7 +71,13 @@ def main() -> None:
                 ) -> list[SearchHit]:
                     return legacy_search(self, query, top_k, filters)
 
-            baseline = BaselineRetriever(ROOT, config)
+            baseline = BaselineRetriever(
+                ROOT,
+                config,
+                context=replace(
+                    KnowledgeContext.for_workspace(ROOT), owner_corpus=maintainer_checkout(ROOT)
+                ),
+            )
             # The baseline has no supported read API. Both search modules use the
             # same current evaluation budgets; raw-hit coverage is compared below.
             fixed: list[GoldenCase] = [{**case, "expected": []} for case in dataset]
