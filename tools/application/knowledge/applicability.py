@@ -40,6 +40,13 @@ def extract(text: str) -> tuple[str, list[Applicability]]:
     return "\n".join(output), declarations
 
 
+def validate_date(value: str) -> None:
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        raise ValueError("Knowledge annotation date must be an ISO calendar date.") from None
+
+
 def validate_metadata(value: object) -> Applicability:
     if not isinstance(value, dict):
         raise ValueError("Knowledge annotation must be an object.")
@@ -53,7 +60,7 @@ def validate_metadata(value: object) -> Applicability:
         if data[key] is not None and not isinstance(data[key], str):
             raise ValueError("Applicability scope must be a string or null.")
     if isinstance(data["effective_date"], str):
-        date.fromisoformat(data["effective_date"])
+        validate_date(data["effective_date"])
     decisions = data["decisions"]
     if not isinstance(decisions, list):
         raise ValueError("Decision annotations must be a list.")
@@ -86,7 +93,7 @@ def validate_metadata(value: object) -> Applicability:
             if decision[key] is not None and not isinstance(decision[key], str):
                 raise ValueError("Unknown decision rationale/scope must remain null.")
         if isinstance(decision["date"], str):
-            date.fromisoformat(decision["date"])
+            validate_date(decision["date"])
         links = decision["supersedes"]
         if not isinstance(links, list) or any(
             not isinstance(link, str) or not link or link == identifier for link in links

@@ -26,9 +26,11 @@ ROOT = Path(__file__).resolve().parents[4]
 def main() -> None:
     from tests.tools.runa.acceptance.knowledge_comparison import main as comparison
     from tests.tools.runa.acceptance.knowledge_live import main as knowledge_acceptance
+    from tests.tools.runa.acceptance.knowledge_navigation import main as navigation
 
     knowledge_acceptance()
     comparison()
+    navigation()
     collection = "runa_documentation_test_" + uuid.uuid4().hex
     with tempfile.TemporaryDirectory(prefix="runa-documentation-live-") as folder:
         root = Path(folder)

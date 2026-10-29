@@ -155,7 +155,12 @@ class KnowledgeIndexer:
                 and previous.get("parser_hash") == self.parser_fingerprint()
                 and previous.get("metadata_policy_hash") == policy_hash(config)
                 and old.get("source_hash") == digest(text)
-                and all(i in current for i in old["chunks"])
+                and all(
+                    i in current
+                    and current[i].get("payload_schema_version") == 2
+                    and digest(current[i]["content"]) == current[i]["content_hash"]
+                    for i in old["chunks"]
+                )
             ):
                 meta = metadata(path, root, text)
                 rows: list[Point] = [{"id": i, "payload": current[i].copy()} for i in old["chunks"]]

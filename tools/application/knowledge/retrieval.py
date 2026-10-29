@@ -174,7 +174,8 @@ class Retriever:
                 if intent in ("legacy", "current")
                 else 1.0
             )
-            purpose = selected[key].get("applicability", {}).get("purpose", "unknown")
+            applicability = selected[key].get("applicability")
+            purpose = applicability["purpose"] if applicability is not None else "unknown"
             purpose_factor = PURPOSE_WEIGHTS.get(intent, {}).get(purpose, 1.0)
             factors[key] = {"status": status_factor, "purpose": purpose_factor}
             scores[key] *= status_factor * purpose_factor
@@ -229,6 +230,20 @@ def covers(payload: ChunkPayload, expectation: EvidenceExpectation) -> bool:
             )
         )
     )
+
+
+def unknown_scope(payload: ChunkPayload) -> bool:
+    applicability = payload.get("applicability")
+    return (
+        applicability is None
+        or applicability["effective_date"] is None
+        or applicability["applicable_version"] is None
+    )
+
+
+def unknown_purpose(payload: ChunkPayload) -> bool:
+    applicability = payload.get("applicability")
+    return applicability is None or applicability["purpose"] == "unknown"
 
 
 def evaluate(retriever: Retriever, dataset: Sequence[GoldenCase]) -> Evaluation:
@@ -295,11 +310,7 @@ def evaluate(retriever: Retriever, dataset: Sequence[GoldenCase]) -> Evaluation:
                 "forbidden_hits": forbidden,
                 "content_characters": size,
                 "distinct_sources": len({p["source_path"] for p in evidence.values()}),
-                "unknown_applicability": sum(
-                    p.get("applicability", {}).get("effective_date") is None
-                    or p.get("applicability", {}).get("applicable_version") is None
-                    for p in evidence.values()
-                ),
+                "unknown_applicability": sum(unknown_scope(p) for p in evidence.values()),
             }
         )
     return {
@@ -339,10 +350,7 @@ def doctor(retriever: Retriever) -> DoctorReport:
     return {
         **retriever.health,
         "invalid_metadata_chunks": invalid,
-        "unknown_applicability_chunks": sum(
-            p.get("applicability", {}).get("purpose", "unknown") == "unknown"
-            for p in points.values()
-        ),
+        "unknown_applicability_chunks": sum(unknown_purpose(p) for p in points.values()),
         "missing_provenance_chunks": missing_provenance,
         "average_chunk_words": round(statistics.mean(sizes), 1) if sizes else 0,
         "median_chunk_words": statistics.median(sizes) if sizes else 0,

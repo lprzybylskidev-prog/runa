@@ -158,8 +158,8 @@ for mixed documents. Nothing claims source freshness certifies factual currency.
 
 ## Point 8 consolidation and measured context
 
-Before values come from exact activation commit 36460e62; after values use the
-same tracked Markdown path set after consolidation. Original upstream pins and
+Before values come from exact activation commit 36460e62; after values come from consolidation commit 490bbe96 using the
+same tracked Markdown path set. Original upstream pins and
 review dates are unchanged; this is local routing/placement maintenance only.
 
 | Product          | Before lines / words | After lines / words |
@@ -203,3 +203,26 @@ The projected-customer regression fixture now traverses backend, frontend, modul
 testing, operational and knowledge routes without owner docs/prior chat, and checks
 that validation preserves a local application extension. Full projection/navigation
 and live RAG acceptance remain point 10; no broad check ran in this point.
+
+## Point 9 delivery and agent-grounding reconciliation
+
+Owner/customer root summaries now route Qdrant-only versus source-verified research,
+short English intent queries and bounded evidence to the canonical knowledge guide.
+RAG trigger/reference text matches the supported named catalogue and payload version.
+No other domain instruction product needs another knowledge recipe; they already
+route shared workflow and relevant public contracts. CLAUDE remains delegation-only.
+
+`pyproject.toml` already packages the entire tools.application.knowledge package and
+explicit config/golden resources, so evidence/applicability need no second package
+or resource registry. Private owner config/goldens remain only in maintainer package
+data. Existing receipt composition and source discovery exclude owner additions and
+customer authoring templates. The production Dockerfile copies only operational
+management definitions, omitting development catalogue/knowledge packages; final
+real projection/build/denial evidence remains required rather than inferred PASS.
+
+Evidence reading now additionally verifies payload/chunk schema and literal semantic
+body/content hash against the verified source; annotations are excluded consistently
+without fabricating citation lines. A focused offline tampered-payload/refill case
+passed. Added final-only deterministic source-route fixtures with online canonical
+search/read and offline source-only navigation; they do not claim autonomous LLM
+choice certification. Both paths retain source authority and strict final gates.

@@ -219,12 +219,11 @@ def golden_file(path: Path) -> list[GoldenCase]:
             raise ValueError("Invalid golden section.")
         if case.get("intent", "legacy") not in ("legacy", "current", "history", "audit"):
             raise ValueError("Invalid golden retrieval intent.")
-        if (
-            type(case.get("max_chars", 24000)) is not int
-            or not 1000 <= case.get("max_chars", 24000) <= 60000
-        ):
+        max_chars = case.get("max_chars", 24000)
+        if type(max_chars) is not int or not 1000 <= max_chars <= 60000:
             raise ValueError("Invalid golden context budget.")
-        if type(case.get("per_source", 1)) is not int or not 1 <= case.get("per_source", 1) <= 10:
+        per_source = case.get("per_source", 1)
+        if type(per_source) is not int or not 1 <= per_source <= 10:
             raise ValueError("Invalid golden source budget.")
         if type(case.get("probe_only", False)) is not bool:
             raise ValueError("Invalid golden probe flag.")
@@ -246,9 +245,9 @@ def golden_file(path: Path) -> list[GoldenCase]:
                     not isinstance(value, str) for value in values
                 ):
                     raise ValueError("Invalid golden evidence labels.")
-            if any(
-                value not in ("effective_date", "applicable_version")
-                for value in expectation.get("unknown_fields", [])
+            unknown_fields = expectation.get("unknown_fields", [])
+            if not isinstance(unknown_fields, list) or any(
+                value not in ("effective_date", "applicable_version") for value in unknown_fields
             ):
                 raise ValueError("Invalid unknown applicability field.")
         filters = case.get("filters", {})

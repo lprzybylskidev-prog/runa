@@ -271,6 +271,7 @@ class KnowledgeContracts(unittest.TestCase):
             retriever.search("forward", per_source=True)
 
     def test_evaluation_reports_missing_coverage_forbidden_sources_and_probes(self) -> None:
+        from tools.application.knowledge.configuration import GoldenCase
         from tools.application.knowledge.contracts import QueryPoint
         from tools.application.knowledge.retrieval import Retriever, evaluate
 
@@ -287,7 +288,7 @@ class KnowledgeContracts(unittest.TestCase):
             store=RankedStore(CONFIG),
             provider_factory=Provider,
         )
-        case = {"query": "secrets index", "source_path": "AGENTS.md"}
+        case: GoldenCase = {"query": "secrets index", "source_path": "AGENTS.md"}
         result = evaluate(retriever, [{**case, "expected": [{"source_path": "missing.md"}]}])
         self.assertFalse(result["passed"])
         self.assertEqual(result["cases"][0]["coverage"], [False])
@@ -301,6 +302,18 @@ class KnowledgeContracts(unittest.TestCase):
         self.assertTrue(probe["passed"])
         self.assertFalse(probe["cases"][0]["passed"])
         self.assertTrue(probe["cases"][0]["probe_only"])
+
+    def test_evidence_refuses_modified_content_and_index_repairs_payload(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.index()
+        key, payload = next(iter(self.indexer.store.all_points().items()))
+        payload["content"] = "Invented evidence absent from the source."
+        self.indexer.store.payload(key, payload)
+        with self.assertRaisesRegex(ValueError, "content/schema"):
+            read(self.indexer, key)
+        self.index()
+        self.assertIn("Keep secrets", read(self.indexer, key)["results"][0]["payload"]["content"])
 
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [

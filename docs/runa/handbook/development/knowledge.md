@@ -33,9 +33,8 @@ Services run without published ports, Docker socket, privileged mode or extra ca
 
 ## Ingestion and freshness
 
-Inside the devcontainer:
-
-The same CLI delegates to the app container from the host. Status/stale exit 1 when missing, stale or incompatible; errors also exit nonzero with a diagnostic. Search/eval refuse stale indexes; doctor reports freshness failures with repair instructions. All commands return nonzero on failures.
+Use `php artisan runa:knowledge:<operation>` in the configured development PHP terminal.
+The host setup/recovery transport `./bin/artisan` delegates to the app container. Status/stale exit 1 when missing, stale or incompatible; errors also exit nonzero with a diagnostic. Search/eval refuse stale indexes; doctor reports freshness failures with repair instructions. All commands return nonzero on failures.
 
 The corpus is the intersection of Git-tracked paths and `tools/application/knowledge/config.json`'s explicit allowlist: Markdown under `docs/app`, `docs/runa/handbook` and `.agents/skills`, AGENTS/README/docs index and the application quality definition. Newly created durable documents must be staged before indexing. Untracked notes, raw chat files, application source, environment files, dependencies, logs and generated artifacts are excluded. Symlink sources or parents are rejected. Do not place transcripts or secrets in allowlisted durable documentation.
 
@@ -261,3 +260,25 @@ changes; it is not a replay of an old installation or proof of historical truth.
 Baseline PASS becoming candidate FAIL is a regression; candidate required evidence
 must pass. Existing CPU/CUDA/fallback, interruption/branch, concurrent-reader and
 customer-source/production-isolation scenarios run only during final acceptance.
+
+## Agent research and implementation grounding
+
+A Qdrant-only exercise reports retrieved source claims and its sampled scope;
+it does not establish actual installed code, manifest versions or runtime behavior.
+For implementation, open the applicable original and inspect the relevant source,
+then label which claims are source-verified. Keep deductions and unresolved gaps
+separate. Prefer later applicable decisions/current contracts over superseded
+history, while retaining original and contrary evidence for history/audit questions.
+Use short English queries, explicit intent and bounded search/read expansion.
+On unavailable services, lock contention or staleness, report the concrete reason
+and use focused repository search; do not bootstrap optional AI merely to navigate.
+Recheck after recovery/at the next relevant point. Fallback does not waive mandatory
+freshness/hooks or selected strict final doctor/eval gates.
+
+Python evidence/applicability modules ship through the existing application
+knowledge package; config/golden resources remain explicit package data. Owner
+annotations/goldens and customer authoring templates stay outside customer source
+and corpus composition. Production omits the development package and catalogue;
+physical presence in a development checkout never makes knowledge a runtime
+application dependency or an extension API. Final delivery tests inspect the real
+projection, receipt scope and production denial rather than trusting prose alone.

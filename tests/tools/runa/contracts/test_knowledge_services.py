@@ -326,3 +326,19 @@ def test_knowledge_lock_refuses_symlink_and_preserves_legacy_inode(tmp_path: Pat
         with operation_lock(tmp_path, "read").acquire():
             pytest.fail("Followed a lock symlink")
     assert target.read_text() == "unchanged"
+
+
+def test_knowledge_invalid_annotation_date_never_echoes_source_payload() -> None:
+    from tools.application.knowledge.applicability import validate_metadata
+
+    with pytest.raises(ValueError) as failure:
+        validate_metadata(
+            {
+                "purpose": "current_guidance",
+                "effective_date": "private-invalid-fixture",
+                "applicable_version": None,
+                "decisions": [],
+            }
+        )
+    assert "private-invalid-fixture" not in str(failure.value)
+    assert "ISO calendar date" in str(failure.value)

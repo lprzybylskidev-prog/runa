@@ -7,7 +7,7 @@ description: 'Runa development-only knowledge/RAG guidance for ingestion, chunki
 
 Use this skill when changing or diagnosing the development-only project knowledge system.
 
-Read `docs/runa/handbook/ai/knowledge-system.md`. For implemented commands, source allowlisting, image/model pins and hardware lifecycle, consult `docs/runa/handbook/development/knowledge.md`; it documents search filters, RRF/BM25 configuration, golden evals, doctor, explicit rebuild and source-grounding workflow.
+Read `docs/runa/handbook/ai/knowledge-system.md`. For implemented commands, source allowlisting, image/model pins and hardware lifecycle, consult `docs/runa/handbook/development/knowledge.md`; it owns supported intent/search/read, applicability, snapshot locking, golden reports, recovery and source-grounding procedures.
 
 Load only:
 

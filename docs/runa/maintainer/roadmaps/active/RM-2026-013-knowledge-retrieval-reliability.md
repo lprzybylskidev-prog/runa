@@ -485,7 +485,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Add navigation/selection and duplicate-removal regression scenarios to existing
     harnesses; broad end-to-end acceptance remains point 10.
 
-- [ ] 9. Synchronize agent behavior, delivery and knowledge composition.
+- [x] 9. Synchronize agent behavior, delivery and knowledge composition.
   - Prerequisite: points 2–8 stable supported behavior and concise source products.
   - Update affected root owner guidance and existing RAG skill/references, plus
     separately authored customer guidance. Teach query intent, English baseline
@@ -495,7 +495,7 @@ acceptance as a prerequisite for subsequent implementation.
     handbook procedures or making retrieved text operating authority.
   - Reconcile public commands, package resources, owner annotations/evals and
     production exclusions. Record unaffected instruction products with reasons.
-    This planning-only draft itself changes no delivered capability or agent rule.
+    The original draft authorized no capability change before owner activation.
 
 - [ ] 10. Full verification, release finalization, merge and final report.
   - Prerequisites: points 1–9 complete and committed; only this point remains open.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is complete; point 9 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is complete; point 9 is complete; final verification is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -653,3 +653,19 @@ Added projected-customer navigation/local-extension scenarios to the existing
 ownership harness. No broad checks ran; mandatory hooks/source refresh apply.
 No upstream update, new skill, dependency, arbitrary size gate or constitutional
 change was introduced. Only authored defaults change, never installed extensions.
+
+### Point 9 — agent grounding and delivery composition (2026-10-29)
+
+Synchronized owner/customer root knowledge summaries, RAG trigger and public
+research procedure: Qdrant-only findings remain distinct from source-verified
+implementation, inferences and unknowns; English intent queries, bounded evidence,
+source authority and truthful fallback share one canonical procedure.
+Reconciled existing package/resource catalogues, private owner annotations/goldens,
+receipt/template guards and production exclusions without adding packaging machinery.
+Strengthened source-verified reads against altered content/schema and refreshed
+cache eligibility; one focused offline tampered-content/repair case passed.
+Invalid annotation dates now return a fixed diagnostic without echoing source
+values; its focused privacy regression passed. Added final deterministic
+online/offline navigation fixtures; recorded their exact
+limits and unaffected-product reasons in the review record. No broad checks ran.
+All implementation points are complete; full selected verification remains open.
