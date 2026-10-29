@@ -10,6 +10,7 @@ import sys
 import time
 from collections.abc import Sequence
 from pathlib import Path
+from typing import TextIO
 
 import pytest
 
@@ -18,7 +19,7 @@ from tests.tools.runa.support.quality import decoded_definition as quality_defin
 from tools.application.quality_cli import service
 from tools.application.quality_execution import QualityExecutor
 from tools.application.quality_planning import arguments, resolve, select, validate_declared
-from tools.application.quality_reporting import status
+from tools.application.quality_reporting import read_state, status
 from tools.application.quality_service import QualityPlanner, QualityService
 from tools.application.quality_state import run_record
 from tools.core.context import ExecutionLocation, WorkspaceContext
@@ -95,6 +96,55 @@ def test_failure_blocks_dependents_preserves_native_exit_and_host_transport(tmp_
     assert state["steps"]["app"]["status"] == "passed"
     assert calls == [["application-command"]]
     assert not (tmp_path / "blocked.log").exists()
+
+
+def test_dependency_results_are_published_before_dependent_spawn(tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def spawn(
+        args: Sequence[str],
+        *,
+        cwd: Path,
+        env: dict[str, str],
+        stdout: TextIO,
+        stderr: int,
+        start_new_session: bool,
+    ) -> subprocess.Popen[bytes]:
+        recorded = read_state(tmp_path, anchor=tmp_path)
+        key = env["RUNA_QUALITY_STEP"]
+        assert env["RUNA_QUALITY_RUN_ID"] == recorded.get("run_id")
+        assert env["RUNA_QUALITY_DIRECTORY"] == str(tmp_path)
+        if key == "consumer":
+            assert recorded["steps"]["producer"]["status"] == "passed"
+            assert recorded["steps"]["producer"].get("exit_code") == 0
+        calls.append(key)
+        return subprocess.Popen(
+            args,
+            cwd=cwd,
+            env=env,
+            stdout=stdout,
+            stderr=stderr,
+            start_new_session=start_new_session,
+        )
+
+    state = run_record(
+        dict(
+            status="running",
+            steps={
+                n["id"]: dict(n, status="pending")
+                for n in [node("producer"), node("consumer", deps=["producer"])]
+            },
+        )
+    )
+    executor = QualityExecutor(
+        WorkspaceContext(tmp_path),
+        ExecutionLocation.CONTAINER,
+        tuple,
+        spawn,
+        {"RUNA_QUALITY_STEP": "forged", "RUNA_QUALITY_RUN_ID": "old"},
+    )
+    assert executor.execute(tmp_path, state) == 0
+    assert calls == ["producer", "consumer"]
 
 
 def test_exclusive_groups_serialize_independent_steps_overlap(tmp_path: Path) -> None:

@@ -12,7 +12,17 @@ The complete customer host source matches development at the selected commit, wi
 
 ## Isolated acceptance
 
-Only dedicated customer-repository `mode=prod` fixtures may execute production gates. Development or unknown targets remain blocked regardless of caller `APP_ENV`. The owner production-acceptance gate runs installation-host.py --production-only --customer-deployment, building fresh customer images/data and invoking public validate/self-test/verify-ai-isolation there. The repository-container-scan gate uses another disposable production fixture with --security-scan: Trivy scans the owner repository and the exact images resolved from that customer deployment; Composer/pnpm audits use the owner development toolchain; selected deployment lock hashes must match the scanned/audited candidate or the scan blocks. Neither gate runs production operations against the maintenance checkout.
+Only dedicated customer-repository `mode=prod` fixtures may execute production
+gates. Development/unknown targets remain blocked regardless of caller APP_ENV.
+Standalone production acceptance prepares fresh images/data and invokes public
+validation, health and AI isolation; standalone scanning prepares its own healthy
+fixture. When both are selected, the existing quality graph shares one preparation,
+scans the healthy exact images, then runs deployment/failure scenarios. Separate
+selected results require exact-run phase evidence, including successful cleanup;
+see [fixture composition](../quality/README.md#parallel-execution).
+Trivy retains owner repository scope while Composer/pnpm audits use the owner
+development toolchain. Selected deployment lock hashes must match the scanned
+candidate or the scan blocks. No production operation targets the maintenance checkout.
 
 Set `RUNA_PRODUCTION_MODE=simulation` and pass `--simulation`. Installer `simulation_project` selects a fresh `runa-prod-simulation-*` project with loopback TLS and disposable databases/storage. Real mode selects `runa-prod` and refuses custom simulation project names. Unknown existing containers/volumes cannot be adopted. Neither simulations nor real installation publish a production-history flag.
 
@@ -22,7 +32,7 @@ Run native installation/customer deployment acceptance on the Docker host:
 python3 -m tests.tools.runa.acceptance.installation_host --customer-deployment
 ```
 
-The harness snapshots current source into isolated fixtures, exercises fresh customer dev/prod, native tests/docs/hooks, TLS/SMTP rejection/resume and repeated installation. The deployment extension uses an actual separate customer Git repository and production images/PostgreSQL/HTTP. It proves default/explicit targets, platform/application code/schema/reference-data changes, additional real Redis services, idempotent required seeds/no-op preservation, existing history/data/storage preservation, lock/manual-maintenance ownership, failed fetch/build/migration/seeding/health and recovery fencing. Fixture-only reviewed recovery retains partial data and never reverses schema. Reports live under `.runtime/ownership`; the harness prints exact task-created containers/networks/volumes before cleanup and preserves active development/test data, caches, backups and evidence.
+The harness snapshots current source into isolated fixtures, exercises fresh customer dev/prod, native tests/docs/hooks, TLS/SMTP rejection/resume and repeated installation. The deployment extension uses an actual separate customer Git repository and production images/PostgreSQL/HTTP. It proves default/explicit targets, platform/application code/schema/reference-data changes, additional real Redis services, idempotent required seeds/no-op preservation, existing history/data/storage preservation, lock/manual-maintenance ownership, failed fetch/build/migration/seeding/health and recovery fencing. Fixture-only reviewed recovery retains partial data and never reverses schema. Installer reports and disposable workspaces live under private `.runtime/acceptance/installation`; legacy `.runtime/ownership` evidence is preserved. The harness prints exact task-created containers/networks/volumes before cleanup and preserves active development/test data, caches, backups and evidence.
 
 For focused production-only verification, add `--production-only`; it skips development installation/tests and retains fresh TLS/SMTP/platform setup and the full customer deployment extension. The harness also removes inspected unused image tags created by its own fixtures.
 

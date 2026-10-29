@@ -56,6 +56,19 @@ candidate/results when an application checkpoint or readiness review is due.
 
 ## Manual group selection
 
+The Runa-owned development tooling exposes public CLI consumption through
+`php artisan runa:quality:{plan|roadmap|final} [--group=NAME ... | --all]`, with
+`--background` on roadmap/final only, and `runa:quality:status` without options.
+Implementation lives in `tools/application/quality*.py` with the Laravel management
+adapter in `src/runa/Tooling/Management`; it is delivered development tooling,
+excluded from production images. Python implementation names are internal.
+
+Use `--group=security-source` for dependency audits without runtime image scanning.
+`--group=security` still requires both dependency audits and real image scans;
+`--group=containers` selects image scanning directly. Select actual image checks
+when their inputs or the agreed scope change. A source-only result never claims an
+image scan PASS. The owner-only `delivery` group is unavailable in customer projects.
+
 The agent normally chooses proportionate groups using the roadmap, changed behavior
 and relevant dependencies; the owner may steer it. No source-diff classifier chooses
 tests. Use repeated `--group=NAME` or standalone `--all` on plan/roadmap/final.
@@ -64,18 +77,19 @@ Combining them, malformed arguments and unavailable groups fail before execution
 Flag-free calls retain their legacy base/impact/final behavior for compatibility.
 Explicit plan/roadmap/final resolve the same mandatory checks and dependency graph.
 
-| Group       | Delivered application checks                                                       |
-| ----------- | ---------------------------------------------------------------------------------- |
-| docs        | Documentation consistency (also mandatory)                                         |
-| tooling     | Tooling diagnostics and shared Python setup/format/lint/strict typing              |
-| backend     | App tests, PHP analysis, module source/version contracts, formatting/lint          |
-| frontend    | Frontend build, types, tests, formatting/lint                                      |
-| e2e         | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
-| database    | Application tests and database/migration/seeding diagnostics                       |
-| development | Development and hook diagnostics                                                   |
-| containers  | Existing Trivy container/repository security contract                              |
-| security    | Dependency audits and Trivy                                                        |
-| knowledge   | Knowledge doctor/evals and Boost                                                   |
+| Group           | Delivered application checks                                                       |
+| --------------- | ---------------------------------------------------------------------------------- |
+| docs            | Documentation consistency (also mandatory)                                         |
+| tooling         | Tooling diagnostics and shared Python setup/format/lint/strict typing              |
+| backend         | App tests, PHP analysis, module source/version contracts, formatting/lint          |
+| frontend        | Frontend build, types, tests, formatting/lint                                      |
+| e2e             | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
+| database        | Application tests and database/migration/seeding diagnostics                       |
+| development     | Development and hook diagnostics                                                   |
+| containers      | Existing Trivy container/repository security contract                              |
+| security        | Dependency audits and Trivy                                                        |
+| security-source | Dependency audits; runtime image scans remain unexecuted                           |
+| knowledge       | Knowledge doctor/evals and Boost                                                   |
 
 The exact step matrix is in `tools/application/quality.yml`. Every explicit selection
 includes configuration/templates, repository/roadmap state, documentation, secrets,

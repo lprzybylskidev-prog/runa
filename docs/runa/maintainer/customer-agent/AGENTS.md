@@ -396,7 +396,9 @@ or `--all`, records final `quality_groups` and `quality_rationale` in the roadma
 and previews the exact graph before final execution. Mandatory baseline/hooks and
 real prerequisites always apply. Selected security/AI checks stay strict; excluded
 groups are not passing tests. Flag-free calls retain legacy behavior. No automatic
-change classifier is authorized. See docs/runa/handbook/quality/README.md for the catalogue and evidence
+change classifier is authorized. Use the catalogue's source/dependency scope when
+runtime images are unaffected; justify image scanning separately without narrowing
+a selected scanner. See docs/runa/handbook/quality/README.md for the catalogue and evidence
 contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported operation in `docs/runa/handbook/tooling/commands.md` and Artisan list/help before choosing a runner. Use its documented host/container transport (`./bin/artisan` from the host). Preserve command guards, locks, reporting and exit codes. Application default `runa:test` runs backend, frontend and tooling; focused `runa:test:backend`, `runa:test:frontend`, `runa:test:python` and `runa:test:e2e` retain explicit scope. Author application tooling/tests and optional discovery configuration under src/app; consume delivered support through the public testing guide. Owner commands are unavailable. Do not substitute internal runners or detached log-only processes for supported tests/acceptance/quality. A direct runner is allowed only as a documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result before completing the point. Propose a missing command only for a reusable operational need.

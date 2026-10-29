@@ -144,6 +144,7 @@ groups:
   development: [application-development, application-hooks]
   containers: [application-container-security]
   security: [application-dependencies, application-container-security]
+  security-source: [application-dependencies]
   knowledge:
     [
       application-knowledge-doctor,

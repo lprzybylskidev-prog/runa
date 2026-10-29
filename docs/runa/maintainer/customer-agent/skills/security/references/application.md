@@ -10,6 +10,7 @@ Load only the relevant canonical procedure:
 - Transaction-safe history: `docs/runa/handbook/modules/audit/README.md`.
 - Protected authority: `docs/runa/handbook/modules/permissions/authority.md`.
 - Production/operator responsibility: `docs/runa/handbook/production/architecture.md`.
+- Dependency/source versus real image checks: `docs/runa/handbook/quality/README.md#manual-group-selection`.
 
 Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts

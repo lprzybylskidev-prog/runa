@@ -6,6 +6,7 @@ import os
 import signal
 import subprocess
 import time
+import uuid
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -47,6 +48,8 @@ class QualityExecutor:
         started: dict[str, float] = {}
         run_started = time.monotonic()
         state["started_at"] = datetime.now(UTC).isoformat()
+        state["run_id"] = uuid.uuid4().hex
+        save(directory, state, anchor=self.workspace.root)
         interrupted = False
 
         def stop(signum: int, frame: FrameType | None) -> None:
@@ -58,6 +61,7 @@ class QualityExecutor:
         }
         try:
             while True:
+                completed = False
                 for key, (process, log) in list(running.items()):
                     code = process.poll()
                     if code is not None:
@@ -70,6 +74,10 @@ class QualityExecutor:
                             duration_seconds=round(time.monotonic() - started.pop(key), 3),
                         )
                         del running[key]
+                        completed = True
+                # Dependents may inspect prerequisite evidence immediately after spawn.
+                if completed:
+                    save(directory, state, anchor=self.workspace.root)
                 if interrupted:
                     for key, (process, _log) in running.items():
                         signal_group(process, signal.SIGTERM)
@@ -110,7 +118,12 @@ class QualityExecutor:
                             process = self.spawn(
                                 arguments,
                                 cwd=self.workspace.root,
-                                env=self.environment,
+                                env=dict(
+                                    self.environment,
+                                    RUNA_QUALITY_DIRECTORY=str(directory),
+                                    RUNA_QUALITY_RUN_ID=state["run_id"],
+                                    RUNA_QUALITY_STEP=key,
+                                ),
                                 stdout=log,
                                 stderr=subprocess.STDOUT,
                                 start_new_session=True,

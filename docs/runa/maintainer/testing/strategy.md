@@ -37,6 +37,12 @@ mail/TLS acceptance does not prove a real domain/provider or production deployme
 
 ## Disposable test resources
 
+Use the owner quality catalogue's `delivery` scope for source projection,
+command/transport and production-guard contracts without native deployment.
+Changes to the native acceptance harness also need its explicit `fixture-acceptance`
+qualification; see [quality phase evidence and selection](../quality/README.md#parallel-execution)
+for shared versus standalone runs, failure results and scoped cleanup ownership.
+
 Owner `test-backend` shares the [public worker lifecycle](../../handbook/testing/strategy.md#test-resource-lifecycle): suite-locked guarded cleanup before and after execution, preserving the base database and refusing active workers. Native application tests participate in the same lock. `test-e2e` host startup uses the delivered journaled endpoint lifecycle and removes only its newly created, labeled testing containers; manually provisioned endpoints remain externally owned. Do not bypass these entrypoints to run suites. `TestResourceContracts` in testing/management.py covers ownership, manual preservation, startup failure and interrupted recovery; WorkerCleanupTest covers active-worker and non-testing refusal. Broad live browser/installation acceptance remains in final verification.
 
 ## Backend test framework

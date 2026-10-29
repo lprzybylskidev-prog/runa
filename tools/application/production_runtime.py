@@ -96,24 +96,13 @@ class ProductionRuntime:
             .removeprefix("<?php")
             .lstrip()
         )
-        self.context.run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--name",
-                "runa-production-probe-" + uuid.uuid4().hex[:12],
-                "--read-only",
-                "--tmpfs",
-                "/tmp",
-                "--cap-drop=ALL",
-                "--security-opt=no-new-privileges:true",
-                "--entrypoint",
-                "php",
-                php,
-                "-r",
-                code,
-            ]
+        # Each probe keeps its own PHP/FPM process; the immutable image/context is shared.
+        script = (
+            'set -eu\nphp -r "$1"\n'
+            "for tool in composer node npm pnpm codex python3 git gcc g++; do "
+            'if command -v "$tool" >/dev/null 2>&1; then '
+            'echo "Development tool in runtime: $tool" >&2; exit 1; fi; done\n'
+            "exec php-fpm -tt"
         )
         self.context.run(
             [
@@ -131,25 +120,9 @@ class ProductionRuntime:
                 "sh",
                 php,
                 "-c",
-                'for tool in composer node npm pnpm codex python3 git gcc g++; do if command -v "$tool" >/dev/null 2>&1; then echo "Development tool in runtime: $tool" >&2; exit 1; fi; done',
-            ]
-        )
-        self.context.run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--name",
-                "runa-production-probe-" + uuid.uuid4().hex[:12],
-                "--read-only",
-                "--tmpfs",
-                "/tmp",
-                "--cap-drop=ALL",
-                "--security-opt=no-new-privileges:true",
-                "--entrypoint",
-                "php-fpm",
-                php,
-                "-tt",
+                script,
+                "runa-image-policy",
+                code,
             ]
         )
         self.context.run(

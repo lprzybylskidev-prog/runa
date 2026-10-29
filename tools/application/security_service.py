@@ -131,7 +131,11 @@ class SecurityService:
         return selected["images"]
 
     def trivy(
-        self, production_root: Path | None = None, *, additional_images: Sequence[str] = ()
+        self,
+        production_root: Path | None = None,
+        *,
+        additional_images: Sequence[str] = (),
+        report_directory: Path | None = None,
     ) -> None:
         if self.location is ExecutionLocation.CONTAINER:
             raise ValueError("Run repository and runtime-image scanning on the Docker host.")
@@ -140,7 +144,9 @@ class SecurityService:
         selected = self.production_images(production_root or self.workspace.root) + list(
             additional_images
         )
-        reports = self.workspace.root / ".runtime/security"
+        reports = report_directory or self.workspace.root / ".runtime/security"
+        if not reports.is_relative_to(self.workspace.root / ".runtime/security"):
+            raise ValueError("Scanner reports must remain under the workspace security directory.")
         from tools.core.state import StateDirectory
 
         with StateDirectory(reports, anchor=self.workspace.root).open():

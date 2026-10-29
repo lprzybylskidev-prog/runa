@@ -158,6 +158,73 @@ class QualityCompatibility(unittest.TestCase):
             with self.assertRaises(ValueError):
                 quality.resolve(customer, [], groups=[group])
 
+    def test_narrow_owner_scopes_do_not_prepare_unrelated_native_stacks(self) -> None:
+        definition = quality_definition(
+            reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        )
+        assert "mandatory" in definition
+        heavy = {
+            "installation-host-acceptance",
+            "production-acceptance",
+            "repository-container-scan",
+            "host-executor-acceptance",
+            "management-host-acceptance",
+            "frontend-browser",
+            "backend-tests",
+        }
+        for groups in (
+            ["knowledge"],
+            ["tooling"],
+            ["delivery"],
+            ["security-source"],
+            ["knowledge", "tooling", "delivery", "security-source"],
+        ):
+            with self.subTest(groups=groups):
+                nodes, scope = quality.resolve(
+                    definition, ["production", "security"], groups=groups
+                )
+                self.assertFalse(heavy & nodes.keys())
+                assert scope["mode"] == "groups"
+                self.assertTrue(set(definition["mandatory"]) <= nodes.keys())
+                self.assertIn("production", scope["excluded_groups"])
+                self.assertEqual(scope["graph_hash"], quality.graph_hash(nodes))
+        delivery, _ = quality.resolve(definition, [], groups=["delivery"])
+        self.assertTrue(
+            {
+                "production-source-contracts",
+                "deployment-boundary-contracts",
+                "documentation-ownership-contracts",
+                "host-executor-contracts",
+            }
+            <= delivery.keys()
+        )
+
+    def test_explicit_security_retains_images_and_source_scope_still_requires_review(self) -> None:
+        definition = quality_definition(
+            reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
+        )
+        narrow, _ = quality.resolve(definition, [], groups=["security-source"])
+        broad, _ = quality.resolve(definition, [], groups=["security"])
+        combined, _ = quality.resolve(definition, [], groups=["security-source", "containers"])
+        self.assertTrue(
+            {"dependency-audit", "security-review-contracts", "expanded-security-review"}
+            <= narrow.keys()
+        )
+        self.assertNotIn("repository-container-scan", narrow)
+        for nodes in (broad, combined):
+            self.assertIn("repository-container-scan", nodes)
+            self.assertIn(
+                "repository-container-scan", nodes["expanded-security-review"]["depends_on"]
+            )
+        customer = quality_definition(reader.yaml(ROOT / "tools/application/quality.yml"))
+        narrow, _ = quality.resolve(customer, [], groups=["security-source"])
+        self.assertIn("application-dependencies", narrow)
+        self.assertNotIn("application-container-security", narrow)
+        broad, _ = quality.resolve(customer, [], groups=["security"])
+        self.assertIn("application-container-security", broad)
+        with self.assertRaises(ValueError):
+            quality.resolve(customer, [], groups=["delivery"])
+
     def test_closure_requires_agreed_scope_complete_results_and_unchanged_candidate(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -327,8 +394,7 @@ class QualityCompatibility(unittest.TestCase):
         for key in ("production-acceptance", "repository-container-scan"):
             assert "exclusive_group" in nodes[key]
             self.assertEqual(nodes[key].get("exclusive_group"), "production-simulation", key)
-            self.assertIn(
-                "tests.tools.runa.acceptance.installation_host --production-only",
-                nodes[key]["command"],
-            )
+            self.assertIn("tests.tools.runa.acceptance.installation_host", nodes[key]["command"])
             self.assertNotIn("./bin/artisan runa:production:", nodes[key]["command"])
+        self.assertIn("--shared-quality-producer", nodes["production-acceptance"]["command"])
+        self.assertIn("--verify-shared-quality", nodes["repository-container-scan"]["command"])

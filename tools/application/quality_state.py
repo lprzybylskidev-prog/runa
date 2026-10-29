@@ -22,6 +22,7 @@ class StepRecord(TypedDict):
     execution_context: NotRequired[Literal["application", "host"]]
     exclusive_group: NotRequired[str | None]
     depends_on_if_selected: NotRequired[list[str]]
+    command_if_selected: NotRequired[dict[str, str]]
     pid: NotRequired[int | None]
     exit_code: NotRequired[int | None]
     started_at: NotRequired[str | None]
@@ -36,6 +37,7 @@ class RunRecord(TypedDict):
     roadmap: NotRequired[str]
     branch: NotRequired[str]
     commit: NotRequired[str]
+    run_id: NotRequired[str]
     last_step: NotRequired[str]
     impact_areas: NotRequired[list[str]]
     selection: NotRequired[QualityScope]
@@ -78,7 +80,7 @@ def run_record(value: object) -> RunRecord:
     if decoded.get("status") not in ("running", "passed", "failed", "interrupted"):
         raise ValueError("Invalid quality run status.")
     timing(decoded)
-    for key in ("mode", "roadmap", "branch", "commit", "last_step"):
+    for key in ("mode", "roadmap", "branch", "commit", "last_step", "run_id"):
         if key in decoded and not isinstance(decoded[key], str):
             raise ValueError("Invalid quality run identity.")
     if decoded.get("rationale") is not None and not isinstance(decoded["rationale"], str):

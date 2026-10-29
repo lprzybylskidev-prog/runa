@@ -37,6 +37,11 @@ Customer deployment fetches only the explicitly configured customer repository i
 
 Production image scanning resolves images from the selected deployment in the locally prepared production checkout. Keep repository/dependency scan scope explicit when the tested runtime belongs to a separate fixture. Never set APP_ENV or synthesize an upstream acquisition receipt to bypass a development/unknown target guard. A normal customer clone prepares its own local production role; follow docs/runa/handbook/production/deployment.md.
 
+For changed acceptance-fixture composition, use the owner quality guide's combined
+and standalone qualification scopes. Reuse requires the same exact source/images
+and compatible state; follow its phase evidence and cleanup ownership contract.
+Do not select native production acceptance merely for an internal knowledge change.
+
 Supported test runners own disposable workers and automatically created browser
 containers according to the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle).
 Use its guarded teardown/recovery; preserve manual endpoints, base test data,

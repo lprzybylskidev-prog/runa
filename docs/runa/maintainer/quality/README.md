@@ -57,10 +57,11 @@ Ordinary roadmap closure selects only changed behaviors/contracts and their real
 prerequisites, plus the mandatory baseline/hooks. Each heavy native installation,
 update, production, browser or image-scan selection needs a concrete affected
 contract; shared tooling or security labels alone do not justify unrelated suites.
-Knowledge ranking alone does not require complete installation/deployment. If a
-coarse catalogue node currently bundles necessary and unrelated work, disclose the
-limitation; do not bypass guards or pretend an unexecuted prerequisite passed.
-Catalogue/fixture optimization is planned separately in RM-2026-015.
+Knowledge ranking alone does not require complete installation/deployment. Use
+`delivery` for changed source/projection/command/production-guard contracts and
+`security-source` for dependency audits and content-bound source review. Neither
+prepares a native installation or production fixture. Add broad groups when their
+runtime behavior or images are affected; an excluded image scan is not PASS.
 
 Platform-wide verification uses supported `--all` for release 0.10.0, then 0.15.0,
 0.20.0 and subsequent 0.x.0 minor milestones divisible by five. The current 0.6.x
@@ -89,22 +90,24 @@ Explicit plan/roadmap/final resolve the same graph. Final rejects a selection th
 differs from the roadmap declaration. Plan lists exact commands, mandatory checks,
 prerequisites with reasons and excluded groups without creating run evidence.
 
-| Group        | Scope                                                                                |
-| ------------ | ------------------------------------------------------------------------------------ |
-| docs         | Documentation ownership source contracts                                             |
-| tooling      | Quality coordinator contracts and tooling diagnostics                                |
-| backend      | Owner backend tests, PHP analysis, module contracts, formatting/lint                 |
-| frontend     | Build, types, unit tests, formatting/lint                                            |
-| e2e          | Browser and render diagnostics; includes build/unit prerequisites                    |
-| database     | Migration, constraints and seeding acceptance; includes backend tests                |
-| development  | Dependency composition, startup, live development and hooks                          |
-| containers   | Real repository/image scan and assessed artifact disposition                         |
-| installation | Acquisition/bootstrap/customer initialization and complete native acceptance         |
-| updates      | Preflight/execution and complete native installation/update acceptance               |
-| transport    | Management/host executor source and native acceptance                                |
-| production   | Production operation/source contracts and real isolated deployment acceptance        |
-| security     | Dependency audit, security contracts and changed-surface review; includes image scan |
-| knowledge    | Documentation live contracts, knowledge doctor/evals and Boost                       |
+| Group           | Scope                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| docs            | Documentation ownership source contracts                                                                   |
+| tooling         | Quality coordinator contracts and tooling diagnostics                                                      |
+| backend         | Owner backend tests, PHP analysis, module contracts, formatting/lint                                       |
+| frontend        | Build, types, unit tests, formatting/lint                                                                  |
+| e2e             | Browser and render diagnostics; includes build/unit prerequisites                                          |
+| database        | Migration, constraints and seeding acceptance; includes backend tests                                      |
+| development     | Dependency composition, startup, live development and hooks                                                |
+| containers      | Real repository/image scan and assessed artifact disposition                                               |
+| installation    | Acquisition/bootstrap/customer initialization and complete native acceptance                               |
+| updates         | Preflight/execution and complete native installation/update acceptance                                     |
+| transport       | Management/host executor source and native acceptance                                                      |
+| production      | Production operation/source contracts and real isolated deployment acceptance                              |
+| security        | Dependency audit, security contracts and changed-surface review; includes image scan                       |
+| security-source | Dependency audit, security contracts and content-bound review; excludes image scanning                     |
+| delivery        | Customer projection/instructions, command transport and production source/guard contracts; no native stack |
+| knowledge       | Documentation live contracts, knowledge doctor/evals and Boost                                             |
 
 The authoritative step matrix is `gates.yml` (`mandatory`, `groups`, `group_steps`).
 Mandatory owner checks cover repository/release state, secrets, debug/scratch
@@ -124,13 +127,17 @@ python3 tools/maintainer/quality-plan --group=backend
 python3 tools/maintainer/quality-plan --group=frontend --group=e2e
 python3 tools/maintainer/quality-plan --group=installation --group=updates
 python3 tools/maintainer/quality-plan --group=containers
+python3 tools/maintainer/quality-plan --group=knowledge --group=delivery --group=security-source
 python3 tools/maintainer/quality-plan --all
 python3 tools/maintainer/quality-final --all --background
 ```
 
 Installation/update groups retain full updater/team/customer-knowledge acceptance;
-production retains actual data/security/isolation acceptance. Security review needs
-real image scans and content-bound agent findings. No lightweight tools/docs group
+production retains actual data/security/isolation acceptance. `security` retains
+real image scans and content-bound agent findings; `security-source` requires the
+same audits/review but leaves images unexecuted. Source review waits for image
+scanning when both are selected; its content binding does not itself require
+building a production fixture. No lightweight tools/docs group
 pulls these suites in merely because `impact_areas` includes tooling/security.
 
 State/status retain requested/excluded groups, mandatory checks, prerequisite
@@ -155,6 +162,58 @@ Persist only the latest local run under a gitignored directory such as:
 Starting a new run replaces the prior completed/interrupted run; reject a concurrent start while a run is still active.
 
 ## Parallel execution
+
+The owner-only `fixture-acceptance` group qualifies changes to the acceptance
+harness itself: it runs the combined production/scanning prerequisites and fresh
+standalone production-only and scan-only invocations. It deliberately adds native
+work and is not a prerequisite of ordinary tooling/knowledge/delivery/production
+selection. Use it for changed fixture composition or at an explicit all-group
+checkpoint, not as a shortcut to measure an ordinary release's elapsed cost.
+
+When both production acceptance and repository/image scanning are selected, the
+source-owned `command_if_selected` alternatives compose them through one installer
+invocation. The production node scans the healthy exact selected images before
+deployment/failure scenarios; the scanner node then validates the persisted phases
+instead of preparing a second fixture. Both selected node IDs/results remain in
+the graph. Standalone selections keep their full original native workflows.
+Resolved commands, alternatives and dependencies enter the graph fingerprint and
+plan preview. Selected frontend preparation still precedes the shared scan.
+
+The coordinator supplies a fresh run ID and the exact evidence directory/step to
+children, overriding ambient values. Shared evidence under
+`.runtime/quality/production-fixture.json` must match run ID, branch, candidate,
+selection and command graph; it requires successful preparation, healthy validation,
+scanning, deployment and cleanup with ordered timings and exact image IDs. A failed
+producer blocks its scanner dependent; missing/stale/incomplete phase evidence
+fails verification. This is private owner composition, not customer evidence reuse.
+
+Installer native reports under `.runtime/acceptance/installation/installation-host-*.json` are
+atomically updated before setup and at phase transitions. They retain the fixture
+root, exact projects/SMTP/certificate ownership and interrupted/failed phase state
+for recovery, including abrupt termination where the last phase remains RUNNING.
+SIGTERM/interrupt attempts normal guarded cleanup. Successful fixtures are removed;
+failed source context and all reports remain. No prior-run resource is reused.
+This private installer area is independent of legacy `.runtime/ownership` reports,
+which may have group-writable permissions from older harnesses. Preserve those
+reports and permissions; do not weaken private state checks or chmod a shared
+legacy directory to prepare new fixture evidence.
+Each native scanner fixture retains raw reports in its own
+`.runtime/security/installation-host-<token>/` directory. Standalone qualification
+therefore cannot overwrite the combined fixture's raw evidence. Default direct
+security commands retain `.runtime/security`; report paths stay inside that root.
+Shared publication also refuses a dirty source candidate, and the coordinator
+persists prerequisite completion before spawning its evidence-consuming dependent.
+
+Native installer reports retain cache/workload conditions, unique removed project
+resource/tag counts and successful production preparation `phase_costs` from the
+existing deployment journal. Those split source preparation, image/dependency
+build, configuration/image assertions, startup, forward data and restart/health;
+top-level phases separately measure preparation, healthy validation, scanning,
+deployment scenarios and cleanup. These nested timings overlap and must not be
+summed as independent stage costs. They describe the successful preparation attempt;
+the outer preparation duration also includes intentional rejected/resumed attempts.
+Auto-removed transient containers are counted from native creation logs during the
+final comparison, not represented as removed project survivors in the JSON counts.
 
 Independent steps may run in parallel.
 
@@ -280,7 +339,14 @@ Owner database-constraints and seeding-contract gates use the dedicated maintain
 
 ## Production fixture routing
 
-Owner production gates never target the maintenance checkout or customer development. production-acceptance runs the native installation harness with --production-only --customer-deployment; repository-container-scan runs --production-only --security-scan. Each creates a separate complete customer repository and locally prepared production role, builds exact images and tests actual health/AI isolation. Security scans retain the owner repository scope while resolving images from the customer fixture and auditing owner development locks. Fresh TLS/SMTP rejection/resume and scoped cleanup are part of both runs. Selected frontend artifact preparation precedes repository scanning. See [production acceptance](../production/deployment.md).
+Owner production gates target dedicated customer production fixtures, never the
+maintenance checkout or customer development. Standalone production/scanner
+selections each retain native source preparation, TLS/SMTP rejection/resume,
+exact-image health/isolation and cleanup. Combined selection shares that preparation
+and scans before deployment failures under the phase evidence contract above.
+Security retains the owner repository/audit scope while resolving exact images
+from the compatible customer fixture; selected frontend preparation precedes the
+scan. See [production acceptance](../production/deployment.md).
 
 ## Security source scope and additional-service fixture
 

@@ -2,6 +2,17 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.6.2] - 2026-10-29
+
+Maintenance release — RM-2026-015.
+
+- Add explicit narrow delivery/source-security quality scopes while preserving mandatory checks, strict selected scans and existing broad group behavior.
+- Share one exact production fixture across selected production acceptance and healthy-image scanning, retaining independent phase evidence, interruption recovery and scoped cleanup.
+- Group compatible immutable PHP-image probes and expose preparation, build, assertion, scanning and cleanup costs in existing reports.
+- Synchronize owner/customer execution guidance and repair private fixture report placement, strict Python types and coordinator environment contracts. All 47 selected final checks pass, including combined and standalone native fixture qualification.
+
+Production plus scanning measured 874.928 seconds combined versus 1204.183 seconds separately on the same candidate: 329.255 seconds (27.3%) saved, with logged Compose creations reduced from 85 to 64. Cache/order differences limit this single-run comparison. The complete qualification graph took 3368.879 seconds and intentionally includes both extra standalone runs. Excluded backend/frontend/database/browser/knowledge-runtime groups are not claimed as PASS. Application/module versions remain unchanged; no migration or real production deployment occurred. Disposable fixtures were scoped-cleaned while preserving development/test data, caches, backups and reports.
+
 ## [0.6.1] - 2026-10-29
 
 Maintenance release — RM-2026-013.

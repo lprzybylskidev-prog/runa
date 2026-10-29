@@ -11,7 +11,7 @@
 9. Add a regression test for a reproducible security bug when feasible.
 10. Gitleaks is the pre-commit secret-scanning baseline.
 11. When selected directly or as prerequisites, strict Trivy final checks cover applicable filesystem/dependency/secrets/Dockerfile/Compose/built-image concerns.
-12. The security group runs `composer audit` and `pnpm audit`; baseline secret protection and hooks remain mandatory for every group.
+12. Choose source/dependency review versus actual image scanning using the owner quality catalogue (`docs/runa/maintainer/quality/README.md`). `security-source` retains both dependency audits and exact changed-surface review; `security` additionally requires real images. Baseline secret protection/hooks remain mandatory; excluded scans are unexecuted.
 13. Evaluate high/critical image/dependency findings with actual exploitability while still treating them as blocking until dispositioned.
 14. Do not add WAF/Vault/KMS/RLS/SAST/DAST platforms as baseline without a real roadmap need.
 15. Full OWASP ASVS and formal threat models are not mandatory for ordinary CRUD; higher-risk work may explicitly require them.
