@@ -155,3 +155,51 @@ dated security/engineering records, current procedures and proposals. Unknown
 unclassified sources stay unknown. Directory/age is not independently authoritative:
 these are reviewed source declarations, with section-specific declarations available
 for mixed documents. Nothing claims source freshness certifies factual currency.
+
+## Point 8 consolidation and measured context
+
+Before values come from exact activation commit 36460e62; after values use the
+same tracked Markdown path set after consolidation. Original upstream pins and
+review dates are unchanged; this is local routing/placement maintenance only.
+
+| Product          | Before lines / words | After lines / words |
+| ---------------- | -------------------: | ------------------: |
+| owner AGENTS     |           394 / 3361 |          389 / 3353 |
+| owner skills     |         2063 / 21557 |        1694 / 16017 |
+| customer product |         1499 / 13955 |         1025 / 7897 |
+
+Representative selected source sets below count words in actual files, including
+their canonical public contract. They measure a declared fresh-context route, not
+hidden model tokens or proof that a future agent cannot over-read. Knowledge routes
+now contain additional supported capabilities, so a larger canonical guide is
+justified by scope rather than treated as a failed size cap.
+
+| Task / selected route                                                         | Before words | After words |
+| ----------------------------------------------------------------------------- | -----------: | ----------: |
+| Owner backend / AGENTS + backend/Laravel + design + public API                |         8280 |        6410 |
+| Owner frontend / AGENTS + frontend/Vue/Tailwind + component route + catalogue |        11314 |       10195 |
+| Owner operations / AGENTS + Docker + commands                                 |         7570 |        7521 |
+| Owner history / AGENTS + RAG + retrieval route + knowledge                    |         6425 |        7072 |
+| Customer extension / AGENTS + frontend + application route + customization    |         8622 |        7115 |
+
+All nine owner SKILL.md files retain their triggers and selective references while
+sharing one workflow route; frontend and RAG references now route complete public
+procedures instead of growing per-delivery appendices. Backend design keeps generic
+principles and exact module-contract navigation. Other domain references retain
+distinct framework, database, accessibility, CSS, async and security guidance:
+no edit was needed where they add a separate implementation decision rather than
+copying a public procedure. All nine customer entrypoints/references were reconciled
+as independent application defaults, with public routes and protected-source limits.
+
+Owner/customer AGENTS retain authority, activation, failure, quality, security and
+data boundaries before retrieval. Only duplicated documentation-maintenance prose
+was replaced with a justified always-loaded summary and canonical editing link.
+CLAUDE needs no edit: it already delegates to installed AGENTS instead of duplicating
+the contract. Source metadata retains original research pins; local owner appendices
+were consolidated without claiming fresh upstream/license review. Installed customer
+extensions are not touched; only the separately authored defaults change.
+
+The projected-customer regression fixture now traverses backend, frontend, module/
+testing, operational and knowledge routes without owner docs/prior chat, and checks
+that validation preserves a local application extension. Full projection/navigation
+and live RAG acceptance remain point 10; no broad check ran in this point.

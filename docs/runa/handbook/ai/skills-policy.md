@@ -109,13 +109,44 @@ Those generated skills are not Runa's durable policy.
 
 Use the safety procedure in `docs/runa/handbook/ai/laravel-boost.md` to remove generated skills, preserve local guidance and verify MCP/docs functionality.
 
-## Self-maintenance
+## Shared point workflow
 
-The agent may autonomously update local docs/skills when implementation establishes a durable reusable project rule.
+Root AGENTS owns authority, roadmap activation, essential invariants and failure
+boundaries. Domain skills select only relevant references/code. Follow
+[documentation ownership](../../../README.md), the active roadmap and the owning
+[public command guide](../tooling/commands.md). Implementation points deliver code,
+test scenarios and synchronized guidance; only necessary small focused diagnostics
+run there. Broad verification belongs to the final point under the applicable
+application or owner workflow; final-verification repairs retain its complete
+area rerun exception. Hooks remain mandatory and selected security/AI checks strict.
 
-Prefer editing/replacing obsolete guidance over appending duplicates.
+For reusable rule/capability changes, assess both instruction products: owner root
+AGENTS/.agents/skills and the separately authored customer application bundle.
+Update affected products in the same point or record why they need no change.
+Owner maintenance records remain private; customer templates are product data,
+never owner operating authority. Customers maintain installed local extensions;
+upstream updates require reviewed reconciliation, never directory replacement.
 
-Do not silently change constitution-level project policy; those changes require user discussion.
+## Editing reusable guidance
+
+1. Identify the reader, activation trigger, canonical home and affected products.
+2. Update or replace the existing owning rule before adding another. Remove obsolete
+   claims/duplicates; preserve immutable history and source provenance.
+3. Put procedures/examples in their handbook or maintainer guide, domain selection
+   in SKILL.md/references, and application-specific patterns in docs/app/local skills.
+4. Keep only essential cross-task invariants in always-loaded AGENTS. Explain why
+   a new always-loaded summary is required before retrieval and link its authority.
+5. Keep summaries short and purposeful. A summary routes to its owning contract;
+   it is not an independently maintained copy or per-delivery change journal.
+6. Record actual context/size before and after substantial consolidation. Counts
+   expose duplication/growth; they are not caps or correctness/coverage proofs.
+7. Synchronize affected public links, examples, discovery and staged knowledge
+   freshness. Run supported full checks only at the appropriate final phase.
+
+The agent may maintain durable local guidance within agreed scope. New
+constitution-level policy still requires owner discussion. Do not persist task
+chatter, speculation, abandoned approaches or temporary debugging notes as current
+instructions. No LLM semantic gate or parallel rule registry is implied.
 
 ## Research and provenance integrity
 

@@ -319,22 +319,17 @@ Never create `src/app/docs`, duplicate owner guidance into public instructions, 
 
 ## Documentation maintenance
 
-Documentation updates are part of implementation: synchronize affected current-state claims when behavior, tooling, availability or project state changes. Update durable docs/skills when implementation establishes or changes a reusable project rule. Preserve historical evidence; follow `docs/README.md` and the roadmap review procedure.
+Synchronize affected current-state docs and durable guidance in the owning point,
+preserving historical evidence. Follow [documentation ownership](docs/README.md)
+and [guidance editing](docs/runa/handbook/ai/skills-policy.md#editing-reusable-guidance):
+replace obsolete rules, remove duplication and keep procedures in their canonical
+home. Current instructions exclude task chatter, speculation, abandoned ideas and
+temporary debugging notes. Assess affected instruction products in the same point.
 
-Do not append blindly:
-
-- update or replace obsolete rules,
-- remove duplication,
-- preserve the intended source of truth.
-
-Do not persist:
-
-- task noise,
-- speculation,
-- abandoned ideas,
-- temporary debugging notes.
-
-Constitution-level changes require user discussion: roadmap workflow, branch/merge policy, test/quality gates, external dependency policy, security policy, and broad architecture.
+Constitution-level changes require user discussion: roadmap workflow, branch/merge
+policy, test/quality gates, external dependency policy, security policy and broad
+architecture. This summary stays always loaded because those boundaries apply
+before any domain skill or retrieval.
 
 ## Public APIs and platform internals
 

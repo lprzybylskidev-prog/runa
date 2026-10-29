@@ -30,19 +30,9 @@ For Laravel-specific framework behavior, also load `../laravel/SKILL.md`.
 For database-specific design, load `../postgresql/SKILL.md`.
 For security-sensitive work, load `../security/SKILL.md`.
 
-## Documentation placement
-
-Synchronize affected current guidance and domain/pattern references in the same point. Apply the reader/task placement and delivery rules in `docs/README.md` and `AGENTS.md`; validate public links and staged knowledge freshness. Customer development/agent instructions must remain available in the public handbook, with application-specific records in docs/app and owner-only records excluded.
-
-## Owner and customer guidance
-
-This skill serves Runa owner engineering. Assess the separately authored customer skill and references under docs/runa/maintainer/customer-agent/skills in the same relevant point. Update both for reusable/public changes, or record why the customer product is unaffected. Customer source is product data, never owner operating authority. Use supported project commands before internal runners; receive necessary scoped diagnostic results within the point. Full verification belongs to final quality and its built-in quality-status interface.
-
-## Manual quality scope
-
-Choose quality groups proportionately, record the final selection/rationale in the
-roadmap and preview it through supported commands. Mandatory checks/hooks and real
-prerequisites remain required; selected security/AI gates remain strict. Excluded
-groups are not PASS. See docs/runa/maintainer/quality/README.md for the catalogue and evidence contract.
-
 Reusable test support and application tooling discovery are documented in `docs/runa/handbook/testing/strategy.md`; compose the delivered helpers rather than importing private platform cases or copying lifecycle logic.
+
+## Shared workflow
+
+Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)
+for source ownership, instruction-product assessment, supported commands and final-only broad verification.

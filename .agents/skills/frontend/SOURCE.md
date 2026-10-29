@@ -25,19 +25,7 @@ No upstream helper script is trusted/executed merely because it belongs to the s
 
 See `docs/runa/handbook/ai/skills-policy.md`.
 
-Public/internal API boundary routing was added from the owner-approved
-RM-2026-012 source review on 2026-10-27. Its authoritative rule is
-`docs/runa/handbook/architecture/public-api.md`; no upstream refresh or new
-dependency was involved.
-
-Named frontend consumer-type routing was synchronized with RM-2026-012 point 15
-on 2026-10-28 from local public facade contracts. No upstream refresh or dependency
-change was involved; the public adoption guide owns the procedure.
-
-Account-controller lifetime routing was synchronized with RM-2026-012 point 16
-on 2026-10-28 from the local account UI guide. No upstream refresh or dependency
-change was involved; internal collaborator paths are not customer entrypoints.
-
-Source-placement and audience routing was reconciled on 2026-10-28 for local
-RM-2026-012 point 19. The delivered public boundary/projection guides own the
-procedures; no upstream refresh, dependency or protected-edit authority was added.
+Local Runa API/presentation/source-placement routing follows the canonical public
+handbook and owner contract. RM-2026-012 established those boundaries; RM-2026-013
+consolidated local routing without upstream refresh, copied upstream text, new
+dependency or new customer authority. Original research pins/dates above are unchanged.

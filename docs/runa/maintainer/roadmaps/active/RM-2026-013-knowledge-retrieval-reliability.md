@@ -470,7 +470,7 @@ acceptance as a prerequisite for subsequent implementation.
   - Keep any behavior or constitutional question requiring a changed premise in
     discussion; do not resolve an architectural conflict by rewriting guidance alone.
 
-- [ ] 8. Consolidate instruction products and establish growth prevention.
+- [x] 8. Consolidate instruction products and establish growth prevention.
   - Prerequisite: point 7 canonical ownership and reviewed corrections.
   - Refine owner AGENTS and every affected existing SKILL.md/reference to retain
     essential invariants, precise triggers and selective loading. Move duplicated
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is complete; point 5 is complete; point 6 is complete; point 7 is complete; point 8 is complete; point 9 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -637,3 +637,19 @@ All nine owner/customer skill families were assessed for point 8 consolidation;
 canonical public procedures remain their source of detail. No new constitutional
 rule, runtime behavior, dependency or broad check was introduced. Both instruction
 products need consolidation rather than duplicated fixes to these guide claims.
+
+### Point 8 — instruction consolidation and growth maintenance (2026-10-29)
+
+Consolidated shared skill workflow and the guidance-editing procedure in the
+existing skills-policy guide. All nine owner/customer entrypoints route there;
+frontend/RAG and customer domain references now point to canonical public contracts
+instead of repeated delivery narratives. Backend design retains generic choices
+and routes module detail. Root owner/customer AGENTS retain critical boundaries
+with a short justified documentation-maintenance summary. CLAUDE already delegates
+and needs no edit; unrelated distinct domain references remain intentional.
+The review record contains exact activation/current counts and representative
+source-set costs, retained-duplication/no-edit reasons and provenance limits.
+Added projected-customer navigation/local-extension scenarios to the existing
+ownership harness. No broad checks ran; mandatory hooks/source refresh apply.
+No upstream update, new skill, dependency, arbitrary size gate or constitutional
+change was introduced. Only authored defaults change, never installed extensions.
