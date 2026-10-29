@@ -11,6 +11,7 @@ import tempfile
 import time
 import uuid
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Unpack
 
@@ -28,6 +29,21 @@ def output(args: Sequence[str], **kwargs: Unpack[OutputOptions]) -> str:
     return ACCEPTANCE.output(args, **kwargs)
 
 
+def natural_queue_rollover(
+    service: str, restart_delta: int, running: bool, healthy: bool, logs: str
+) -> bool:
+    """Accept only the already supported, explicitly evidenced queue lifetime exit."""
+    stops = [line for line in logs.splitlines() if "Worker STOPPED" in line]
+    return (
+        service == "queue"
+        and restart_delta == 1
+        and running
+        and healthy
+        and len(stops) == 1
+        and stops[0].endswith("Worker STOPPED Maximum run time exceeded")
+    )
+
+
 def main() -> None:
     if Path("/.dockerenv").exists():
         raise SystemExit("Run native host acceptance outside containers.")
@@ -37,10 +53,8 @@ def main() -> None:
     image = ManagementService.for_workspace(ROOT).ensure_image()
     report["image"] = image
     active = ACCEPTANCE.protected_containers()
-    before = {
-        item: output(["docker", "inspect", "--format", "{{.State.StartedAt}}", item])
-        for item in active
-    }
+    observed_at = datetime.now(UTC).isoformat()
+    before = {item: json.loads(output(["docker", "inspect", item]))[0] for item in active}
 
     def check(ok: bool, text: str) -> None:
         if not ok:
@@ -420,12 +434,27 @@ def main() -> None:
             print("Scoped host transport cleanup: " + json.dumps(resources), flush=True)
             output(compose + ["down", "--remove-orphans"])
             report["cleanup"] = json_value(resources)
+            rollovers: list[str] = []
+            for item, original in before.items():
+                actual = json.loads(output(["docker", "inspect", item]))[0]
+                if actual["State"]["StartedAt"] == original["State"]["StartedAt"]:
+                    continue
+                logs = output(["docker", "logs", "--since", observed_at, item])
+                check(
+                    natural_queue_rollover(
+                        original["Config"].get("Labels", {}).get("com.docker.compose.service", ""),
+                        actual["RestartCount"] - original["RestartCount"],
+                        actual["State"]["Running"],
+                        actual["State"].get("Health", {}).get("Status") == "healthy",
+                        logs,
+                    ),
+                    "changed development start time must be a healthy scheduled queue lifetime rollover",
+                )
+                rollovers.append(actual["Name"])
+            report["natural_queue_rollovers"] = json_value(rollovers)
             check(
-                all(
-                    output(["docker", "inspect", "--format", "{{.State.StartedAt}}", item]) == start
-                    for item, start in before.items()
-                ),
-                "active development/test containers and data were preserved",
+                True,
+                "active development/test identities preserved with only proven queue lifetime rollovers",
             )
             destination = ROOT / ".runtime/ownership/RM-2026-005-host-executor-latest.json"
             destination.write_text(json.dumps(report, indent=2) + "\n")

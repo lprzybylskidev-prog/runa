@@ -177,6 +177,36 @@ def metadata(path: Path, root: Path, text: str) -> SourceMetadata:
     }
 
 
+def passages(body: str) -> list[str]:
+    """Keep Markdown paragraphs and top-level list items independently retrievable.
+
+    Fenced examples remain whole so their blank lines and list-like syntax do not
+    become document structure. Oversized passages still use the token-budget split.
+    """
+    result: list[str] = []
+    lines: list[str] = []
+    fence: tuple[str, int] | None = None
+    for line in body.splitlines():
+        marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
+        if fence is None and (not line.strip() or re.match(r"^(?:[-+*]|\d+[.)])\s", line)):
+            if "\n".join(lines).strip():
+                result.append("\n".join(lines).strip())
+            lines = []
+        if marker:
+            if fence is None:
+                fence = (marker[1][0], len(marker[1]))
+            elif (
+                fence[0] == marker[1][0]
+                and len(marker[1]) >= fence[1]
+                and not line.strip().strip(fence[0])
+            ):
+                fence = None
+        lines.append(line)
+    if "\n".join(lines).strip():
+        result.append("\n".join(lines).strip())
+    return result
+
+
 def chunks(
     path: Path, root: Path, text: str, provider: EmbeddingProvider, config: KnowledgeConfig
 ) -> tuple[SourceMetadata, list[Point]]:
@@ -197,9 +227,9 @@ def chunks(
             continue
         if context and provider.counts([context])[0] > 100:
             raise ValueError(f"Heading hierarchy exceeds token budget: {meta['source_path']}")
-        # Keep whole sections when they fit. Split oversized sections at paragraph,
-        # then line/word boundaries; preserve all text and no silent truncation.
-        queue = [body]
+        # Keep semantic passages separate even when a multi-topic section fits the
+        # model window. Split oversized passages without truncating source text.
+        queue = passages(body)
         pieces: list[tuple[str, str]] = []
         while queue:
             piece = queue.pop(0)

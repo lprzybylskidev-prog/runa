@@ -269,6 +269,14 @@ Native updater acceptance derives its original release tag from the installed pl
 
 The shared quality runner records UTC start/finish timestamps and monotonic elapsed seconds for every started stage in its latest `state.json`. Python owner `quality-status` and application `runa:quality:status` show elapsed seconds for running/completed stages; the completed report also shows total elapsed time. Parallel stage durations overlap and must not be summed as total runtime. Pending/blocked stages have no execution duration; older reports without timing fields remain readable. Timings describe quality stages (such as backend tests or browser acceptance), not every assertion. Test-runner logs retain their own detailed timings. Manual group selection does not change individual test bodies or add Playwright skip flags.
 
+Native host-executor acceptance preserves exact development/test container IDs and
+start times. The established queue lifetime exception requires one restart of the
+same queue container, a running healthy state, and exactly one logged
+`Worker STOPPED Maximum run time exceeded` during observation. Other services,
+multiple restarts, missing/other exit evidence and unhealthy states still fail.
+This matches native installation acceptance; it does not waive crashes or change
+queue configuration.
+
 Native installation acceptance protects persistent development and manually owned
 test containers belonging to this checkout. Containers carrying the automatic
 runa.testing.run label belong to the concurrent browser runner and its recovery

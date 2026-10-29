@@ -1,6 +1,7 @@
 """Dense Qdrant retrieval plus local BM25 and weighted reciprocal-rank fusion."""
 
 import math
+import posixpath
 import re
 import statistics
 from collections import Counter
@@ -11,6 +12,7 @@ from tools.application.knowledge.configuration import (
     EvidenceExpectation,
     GoldenCase,
     KnowledgeConfig,
+    RetrievalConfig,
 )
 from tools.application.knowledge.context import KnowledgeContext
 from tools.application.knowledge.contracts import (
@@ -29,13 +31,14 @@ from tools.application.knowledge.provider import Embeddings
 from tools.application.knowledge.store import Store
 
 INTENTS = ("legacy", "current", "history", "audit")
+REFERENCE_WEIGHT = 3.0
 
 # Reviewed heuristics rank declared purpose; none establishes semantic truth.
 PURPOSE_WEIGHTS = {
     "current": {
         "current_guidance": 1.2,
         "historical_evidence": 0.65,
-        "proposal": 0.9,
+        "proposal": 0.5,
         "unknown": 1.0,
     },
     "history": {
@@ -50,7 +53,24 @@ FILTERS = ("document_type", "scope", "roadmap_id", "status", "source_path")
 
 
 def tokens(text: str) -> list[str]:
-    return re.findall(r"[\w]+(?:[-/.][\w]+)*", text.lower())
+    # Preserve exact technical identifiers while matching their component words
+    # and ordinary English inflections (version/versions, dependency/dependencies).
+    original = re.findall(r"[\w]+(?:[-/.][\w]+)*", text.lower())
+    result: list[str] = []
+    for token in original:
+        variants = {token, *re.findall(r"[\w]+", token)}
+        for word in tuple(variants):
+            if word.isalpha():
+                if word.endswith("ies") and len(word) > 5:
+                    variants.add(word[:-3] + "y")
+                elif word.endswith("s") and len(word) > 4 and not word.endswith(("ss", "us")):
+                    variants.add(word[:-1])
+                if word.endswith("ability"):
+                    variants.add(word[:-7] + "able")
+                elif word.endswith("ibility"):
+                    variants.add(word[:-7] + "ible")
+        result.extend(sorted(variants))
+    return result
 
 
 def lexical(query: str, points: Mapping[str, ChunkPayload]) -> list[tuple[str, float]]:
@@ -69,6 +89,76 @@ def lexical(query: str, points: Mapping[str, ChunkPayload]) -> list[tuple[str, f
         if score:
             scores[key] = score
     return sorted(scores.items(), key=lambda row: (-row[1], row[0]))
+
+
+def references(
+    query: str, points: Mapping[str, ChunkPayload], seed_scores: Mapping[str, float]
+) -> list[tuple[str, float]]:
+    """Follow one bounded hop of explicit local citations inside the filtered corpus.
+
+    A cited passage supplies lexical context (including exact release identifiers),
+    rather than repeating a broad query that originally preferred the summary.
+    Links are navigation evidence, never authority or executable instructions.
+    """
+    by_source: dict[str, dict[str, ChunkPayload]] = {}
+    for key, point in points.items():
+        by_source.setdefault(point["source_path"], {})[key] = point
+    seeds = list(
+        dict.fromkeys(
+            points[key]["source_path"]
+            for key in sorted(seed_scores, key=lambda key: (-seed_scores[key], key))
+        )
+    )[:5]
+    terms = set(tokens(query))
+    result: list[tuple[str, float]] = []
+    visited: set[str] = set()
+    for source in seeds:
+        count = 0
+        lead = dict(
+            sorted(by_source[source].items(), key=lambda item: item[1].get("source_order", 0))[:16]
+        )
+        for key, _ in lexical(query, lead):
+            context = lead[key]["content"]
+            if len(terms & set(tokens(context))) < min(3, len(terms)):
+                continue
+            for target in re.findall(r"\[[^\]\n]+\]\(([^\s)]+)(?:\s+[^)]*)?\)", context):
+                if target.startswith(("/", "#")) or any(
+                    char in target for char in (":", "\\", "?")
+                ):
+                    continue
+                name = posixpath.normpath(
+                    posixpath.join(posixpath.dirname(source), target.split("#", 1)[0])
+                )
+                if name == source or name in visited or name not in by_source:
+                    continue
+                visited.add(name)
+                matches = lexical(context, by_source[name])
+                if matches:
+                    result.append(matches[0])
+                    count += 1
+                if count == 3:
+                    break
+            if count == 3:
+                break
+    return result
+
+
+def boosts(point: ChunkPayload, settings: RetrievalConfig, intent: str) -> dict[str, float]:
+    state = point.get("status")
+    status = (
+        (
+            settings["active_boost"]
+            if state == "active"
+            else settings["historical_weight"]
+            if state in ("closed", "paused", "deprecated")
+            else 1.0
+        )
+        if intent in ("legacy", "current")
+        else 1.0
+    )
+    applicability = point.get("applicability")
+    purpose = applicability["purpose"] if applicability is not None else "unknown"
+    return {"status": status, "purpose": PURPOSE_WEIGHTS.get(intent, {}).get(purpose, 1.0)}
 
 
 class Retriever:
@@ -160,25 +250,16 @@ class Retriever:
             for rank, (key, score) in enumerate(ranking, 1):
                 scores[key] = scores.get(key, 0) + weight / (settings["rrf_k"] + rank)
                 diagnostics.setdefault(key, {})[name] = {"rank": rank, "score": score}
-        factors: dict[str, dict[str, float]] = {}
+        seed_scores = {
+            key: score * math.prod(boosts(selected[key], settings, intent).values())
+            for key, score in scores.items()
+        }
+        for rank, (key, score) in enumerate(references(query, selected, seed_scores), 1):
+            scores[key] = scores.get(key, 0) + REFERENCE_WEIGHT / (settings["rrf_k"] + rank)
+            diagnostics.setdefault(key, {})["reference"] = {"rank": rank, "score": score}
+        factors = {key: boosts(selected[key], settings, intent) for key in scores}
         for key in scores:
-            state = selected[key].get("status")
-            status_factor = (
-                (
-                    settings["active_boost"]
-                    if state == "active"
-                    else settings["historical_weight"]
-                    if state in ("closed", "paused", "deprecated")
-                    else 1.0
-                )
-                if intent in ("legacy", "current")
-                else 1.0
-            )
-            applicability = selected[key].get("applicability")
-            purpose = applicability["purpose"] if applicability is not None else "unknown"
-            purpose_factor = PURPOSE_WEIGHTS.get(intent, {}).get(purpose, 1.0)
-            factors[key] = {"status": status_factor, "purpose": purpose_factor}
-            scores[key] *= status_factor * purpose_factor
+            scores[key] *= math.prod(factors[key].values())
         source_budget = (
             per_source
             if per_source is not None

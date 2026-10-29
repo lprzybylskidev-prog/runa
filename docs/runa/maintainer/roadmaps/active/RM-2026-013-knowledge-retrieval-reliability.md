@@ -500,16 +500,19 @@ acceptance as a prerequisite for subsequent implementation.
     production exclusions. Record unaffected instruction products with reasons.
     The original draft authorized no capability change before owner activation.
 
-- [ ] 9a. Repair failed final-verification Python, guidance and retrieval checks.
+- [x] 9a. Repair failed final-verification Python, guidance and retrieval checks.
   - Preserve the first failed run; correct strict typing, delivery assertions,
     owner-context composition and fixed retrieval cases without weakening gates.
   - Run complete affected Python/documentation/knowledge checks, receive results
     and commit repairs before restarting final verification.
+  - Correct the host acceptance preservation assertion using the established
+    evidence-bound queue lifetime rollover contract; retain rejection of other
+    restarts and scoped cleanup.
   - Owner explicitly excludes backend tests; do not investigate or repair SIGSEGV.
 
 - [ ] 10. Full verification, release finalization, merge and final report.
   - Prerequisites: points 1–9 and inserted repairs complete and committed.
-    Owner-requested reruns may record remaining failures; closure requires PASS.
+    Restart this point only after complete affected-area repair checks pass.
   - Review current-state docs, CLI/help, source/version claims, owner/customer
     products, startup and production exclusions against actual implementation.
     Record findings and preserve closed roadmaps and dated evidence.
@@ -548,7 +551,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 Activated on 2026-10-29 after owner approval. Implementation points 1–9 are
 complete and committed. The first point-10 run failed (39 passed, 9 failed, 4 blocked). Repair point 9a
-is in progress; backend tests are excluded from the next selected graph by owner
+is complete after the additional corrections below; backend tests are excluded from the next selected graph by owner
 instruction. Failed evidence is retained under
 .runtime/artifacts/RM-2026-013-failed-3bcc0884.
 VERSION remains 0.6.0 pending verified maintenance release 0.6.1. The earlier research findings and separately labeled hypothetical
@@ -747,7 +750,51 @@ two nonblocking Polish probes. These are actual ranking/coverage gaps, not Pytho
 type errors or backend crashes. No benchmark/source expectation was weakened.
 
 The owner-requested rerun selects nine groups and the preview contains no backend
-suite or backend-analysis node. This repair remains open for the unresolved
-retrieval failures; no release, merge or complete PASS is claimed. First-run raw
+suite or backend-analysis node. At that stage the repair remained open for the unresolved
+retrieval failures; the additional corrections below resolve them. No release,
+merge or complete final-graph PASS is claimed. First-run raw
 logs are preserved in .runtime/artifacts/RM-2026-013-failed-3bcc0884; subsequent
 runs retain their own native statuses.
+
+### Remaining final-verification repairs (2026-10-29)
+
+The c929ecda run completed 41 PASS, three FAILED and three blocked; backend was
+excluded. Raw logs are preserved under
+.runtime/artifacts/RM-2026-013-failed-c929ecda. The two knowledge failures shared
+fixed retrieval coverage gaps; host transport failed its start-time assertion
+when the queue logged its configured maximum-lifetime exit at 10:09:50 UTC.
+No segfault investigation or service restart was performed for these repairs.
+
+Corrected semantic passage boundaries and lexical identifier/inflection matching;
+added bounded one-hop citation navigation within the same filtered corpus, using
+citing context to retrieve actual linked evidence. Intent weighting now selects
+citation seeds as well as final results; current proposals receive weight 0.5.
+All original required query/source/section/top-k/budget expectations remain fixed.
+No query, module name, release number or roadmap path is hardcoded in ranking.
+Canonical public knowledge guides own the mechanics, limits and incremental parser
+refresh. Owner/customer RAG instructions already link those guides and need no
+additional always-loaded rule or duplicated procedure.
+
+Host acceptance now recognizes the established evidence-bound healthy queue
+lifetime rollover while retaining exact container identities and rejecting other
+restarts. Regression cases cover non-queue services, multiple restarts, unhealthy/
+stopped workers, absent logs and other exit causes. Its complete native acceptance
+passed and removed only its own listed containers/network; it created no volumes.
+Application/runtime queue configuration and all persistent data are unchanged.
+
+Received complete repair checks: 493 Python unit/contracts PASS, cleanup 0;
+required knowledge evaluation PASS; documentation-live PASS including real CPU/
+CUDA/fallback, reader/writer exclusion, recovery, unchanged-baseline comparison
+with no regressions, all four source navigation routes and customer receipt
+isolation. Disposable Qdrant collections were removed by their owning harnesses.
+The English baseline remains required; two Polish probes remain visible failures,
+not multilingual support or release exceptions. More granular passages increase
+corpus size and lexical cost; normal searches measured about 0.65 seconds on this
+checkout, without changing the model or adding a service/dependency. Source hash,
+branch, schema, unknown applicability and evidence budgets retain their guards.
+
+Strict Pyright, Ruff lint/format, separate packaging (2 PASS) and documentation
+consistency also passed after the final repair. Point 9a is complete with this
+commit; only point 10 remains open. The unchanged nine-group graph must now run
+from the beginning on the committed candidate. Previous graph failures are not
+reused as PASS. Backend stays excluded and RM-014 remains a draft.

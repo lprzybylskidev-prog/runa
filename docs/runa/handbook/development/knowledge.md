@@ -109,9 +109,9 @@ CUDA startup exceeded the initial 2 GiB container RAM limit (Docker OOM/exit 137
 
 ## Retrieval, evaluation and diagnostics
 
-Dense search uses Qdrant's 1.19.x [query-points API](https://api.qdrant.tech/api-reference/search/query-points), with the pinned model's query prefix. A standard-library BM25 implementation scans the same filtered chunk payloads for lexical matching (including identifiers). This is intentionally local lexical retrieval rather than another stored sparse-vector representation. Weighted reciprocal-rank fusion combines both ranked lists. There are no additional dependencies, embedding spaces or collections. Loading/scanning the corpus per CLI process is suitable for this small development corpus; revisit it if measured latency grows.
+Dense search uses Qdrant's 1.19.x [query-points API](https://api.qdrant.tech/api-reference/search/query-points), with the pinned model's query prefix. A standard-library BM25 implementation scans the same filtered chunk payloads for lexical matching. It retains exact identifiers and also matches their component words and basic English inflections (for example version/versions and dependency/dependencies). This is intentionally local lexical retrieval rather than another stored sparse-vector representation. Weighted reciprocal-rank fusion combines both ranked lists. There are no additional dependencies, embedding spaces or collections. Loading/scanning the corpus per CLI process is suitable for this small development corpus; revisit it if measured latency grows.
 
-`tools/application/knowledge/config.json` controls candidate count, dense/lexical weights, RRF constant, source diversity and active/historical multipliers. Baseline: 60 candidates per channel, dense weight 2, lexical weight 1, RRF constant 60, one result per source, active multiplier 1.03 and historical multiplier 0.8. Initial equal weights returned the expected isolation-policy document sixth; dense weighting and source diversity brought all eight golden cases into top five without changing the expectations. This is a small baseline, not evidence of general optimality. No global similarity cutoff is applied.
+`tools/application/knowledge/config.json` controls candidate count, dense/lexical weights, RRF constant, source diversity and active/historical multipliers. Dense/lexical baseline: 60 candidates per channel, dense weight 2, lexical weight 1, RRF constant 60, one result per source, active multiplier 1.03 and historical multiplier 0.8. Initial equal weights returned the expected isolation-policy document sixth; dense weighting and source diversity brought all eight golden cases into top five without changing the expectations. This is a small baseline, not evidence of general optimality. No global similarity cutoff is applied.
 
 Filters are exact matches: `--document-type`, `--scope`, `--roadmap-id`, `--status` and `--source-path`. Both retrieval channels use identical filters. Only the currently indexed checkout branch is searched; the collection does not retain parallel main/branch copies. Switching branches requires incremental indexing before search, preventing old branch policy from winning. Active roadmap content receives a small boost; closed/paused/deprecated content is discounted. Stable architecture documents have no age penalty.
 
@@ -202,7 +202,15 @@ allowlisted docs/app sources; editing protected platform configuration is unsupp
 The metadata policy has a separate manifest fingerprint. Schema-1 indexes become
 explicitly stale and use supported `runa:knowledge:index` for payload backfill;
 unchanged semantic chunk IDs/vectors are reused. Model/cache/collection/data stay
-intact; no rebuild is needed for this additive metadata change. A real embedding
+intact; no rebuild is needed for this additive metadata change.
+
+Parser updates also make an existing index explicitly stale. Passage-level
+chunking keeps paragraphs and top-level list items independently retrievable,
+retains fenced examples and heading context, and splits over-budget passages
+without truncation. Run normal incremental indexing after this update: unchanged
+pieces retain IDs/vectors, changed pieces receive deterministic IDs and obsolete
+IDs are removed. Expand a section through supported read rather than guessing an
+old ID. Model/space pins and persistent data remain unchanged. A real embedding
 space mismatch still requires separately reviewed explicit rebuild. Branch,
 removed-source, pending-write and source guards retain their normal behavior.
 
@@ -210,19 +218,31 @@ removed-source, pending-write and source guards retain their normal behavior.
 
 `runa:knowledge:search <query> [--intent=legacy|current|history|audit]
 [--per-source=1..10] [--top-k=1..50] [--json|--explain]` preserves all existing
-exact metadata filters and concise output. Omitted intent uses legacy RRF/status
-ranking. Unrestricted default diversity remains one chunk per source; a
+exact metadata filters and concise output. Omitted intent uses RRF/status
+ranking without purpose bias; ranking order can improve across compatible updates. Unrestricted default diversity remains one chunk per source; a
 single-source filter can return up to top-k sections. Explicit per-source budgets
 allow bounded comparison without dumping entire documents. Use `read --section`
 for missing neighboring evidence rather than continually increasing top-k.
 
 Current intent applies declared-purpose factors (current guidance 1.2, history
-0.65, proposal 0.9, unknown 1) alongside existing status factors. History intent
+0.65, proposal 0.5, unknown 1) alongside existing status factors. History intent
 uses history 1.2/current 0.9/proposal 0.8/unknown 1 and neutral status. Audit uses
 neutral purpose/status factors: it does not hide historical or contrary evidence.
 All channels still share exact filters; no mode infers truth or uses an LLM.
 JSON/explain exposes intent, purpose weights, per-hit status/purpose multipliers,
 channel ranks/scores and full applicability. Unknown dates remain unknown.
+
+Retrieval also follows one bounded hop of explicit relative Markdown citations.
+It considers five leading sources after intent weighting, ranks their first sixteen
+passages for the query, and follows at most three distinct target sources per seed
+(fifteen total). Both seeds and targets must already belong to the exact filtered,
+current-branch corpus. External/absolute paths, unindexed targets, self-links and
+recursive traversal are excluded; this performs no file/network fetch. The citing
+passage supplies lexical context, including explicit release identifiers, to select
+one target chunk. The reference channel adds RRF weight 3 before normal target
+status/purpose factors and final top-k/source budgets. JSON/explain exposes its
+weight and per-hit reference signal. Citations aid navigation, not authority or
+proof of applicability; open and verify the original target source.
 
 Use short English semantic/identifier queries for the English baseline model.
 Current-state questions need applicable public guidance plus delivery evidence;

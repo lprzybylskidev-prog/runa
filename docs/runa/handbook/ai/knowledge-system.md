@@ -98,7 +98,11 @@ Chunk structurally/semantically, not by one fixed character/token window.
 
 Use document-type-aware chunking.
 
-Preserve heading hierarchy in metadata/content context.
+Preserve heading hierarchy in metadata/content context. Index paragraphs and
+top-level list items as independent passages, including when their whole section
+would fit the model window. Preserve fenced examples; split oversized passages
+within the configured token budget. See the development knowledge guide for
+bounded citation navigation and incremental parser refresh.
 
 Examples:
 

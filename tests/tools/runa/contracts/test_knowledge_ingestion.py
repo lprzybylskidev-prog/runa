@@ -120,6 +120,74 @@ class KnowledgeContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale"):
             read(self.indexer, ids[0])
 
+    def test_semantic_passages_keep_lists_and_fenced_examples_grounded(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        body = (
+            "# Release\n\nOpening context.\n\n"
+            "- Independent module versions.\n"
+            "  Continued version detail.\n"
+            "- Unrelated runtime recovery.\n\n"
+            "```markdown\n- Example item\n\n- Still an example\n```\n"
+        )
+        self.write("AGENTS.md", body)
+        self.index()
+        points = list(self.indexer.store.all_points().values())
+        self.assertEqual(len(points), 4)
+        version = next(p for p in points if "Independent module" in p["content"])
+        self.assertIn("Continued version detail", version["content"])
+        self.assertNotIn("Unrelated runtime recovery", version["content"])
+        example = next(p for p in points if "```markdown" in p["content"])
+        self.assertIn("- Example item\n\n- Still an example", example["content"])
+        for point in points:
+            identifier = point.get("chunk_id")
+            assert identifier is not None
+            evidence = read(self.indexer, identifier)["results"][0]
+            self.assertIsNotNone(evidence["citation"]["start_line"])
+            self.assertIsNotNone(evidence["citation"]["end_line"])
+        identifier = version.get("chunk_id")
+        assert identifier is not None
+        expanded = read(self.indexer, identifier, section=True)
+        self.assertEqual(len(expanded["results"]), 4)
+
+    def test_citation_expansion_uses_release_context_and_only_selected_sources(self) -> None:
+        from tools.application.knowledge.retrieval import references, tokens
+
+        self.write(
+            "AGENTS.md",
+            (
+                "# Component history\n\nCurrent Mercury Neptune versions are 1.2.3 and 4.5.6. "
+                "Read [release evidence](docs/app/releases.md), "
+                "[an external site](https://example.invalid/private.md), "
+                "[an unindexed file](../private.md) and "
+                "[an absolute path](/etc/passwd).\n"
+            ),
+        )
+        self.write(
+            "docs/app/releases.md",
+            (
+                "# Release history\n\n## Old release\nMercury 0.1.0 and Neptune 0.2.0.\n\n"
+                "## Released versions\nMercury 1.2.3 and Neptune 4.5.6.\n"
+            ),
+        )
+        self.track()
+        self.index()
+        points = self.indexer.store.all_points()
+        seed = next(key for key, point in points.items() if point["source_path"] == "AGENTS.md")
+        query = "current Mercury Neptune component versions"
+        expanded = references(query, points, {seed: 1.0})
+        self.assertEqual(len(expanded), 1)
+        self.assertIn("Released versions", points[expanded[0][0]]["section"])
+        selected = {
+            key: point for key, point in points.items() if point["source_path"] == "AGENTS.md"
+        }
+        self.assertEqual(references(query, selected, {seed: 1.0}), [])
+        self.assertLessEqual(len(expanded), 15)
+        self.assertTrue(
+            {"version", "dependency", "compatible", "runa.auth"}
+            <= set(tokens("versions dependencies compatibility runa.auth"))
+        )
+
     def test_metadata_refresh_reuses_vectors_and_retains_unknown_scope(self) -> None:
         from tools.application.knowledge.applicability import policy_hash
 
