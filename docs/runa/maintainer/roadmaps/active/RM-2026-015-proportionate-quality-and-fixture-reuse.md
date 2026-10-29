@@ -433,3 +433,31 @@ behavior; they are excluded from the ordinary combined-path cost comparison.
 Backend/frontend/browser/database/knowledge-runtime suites are excluded, never PASS.
 The final checklist stays open and release 0.6.2 remains unfinalized until results,
 comparison, cleanup, focused release checks and normal merge/publication complete.
+
+### Exact preview and source review
+
+Supported quality-plan preview resolves 47 nodes for the declared nine groups.
+Graph fingerprint is
+`b6a69241d8c66456e0697d26b54e3fece9e4b965231c8c39adfdd994a451ed62`.
+Exact commands/reasons and structured graph are retained under
+`.runtime/artifacts/RM-2026-015-quality-plan.{txt,json}`. The combined production
+command includes healthy scanning and publishes shared evidence; the selected
+scanner command verifies that completed evidence. Two additional native nodes
+exercise standalone modes under the same production-simulation exclusion group.
+
+Reviewed the 20 changed source-surface files against main, including literal command
+arguments, run/source/graph binding, atomic phase publication, private report paths,
+failure/interruption propagation, image process isolation and exact cleanup scope.
+Report and content hashes are in
+`.runtime/artifacts/RM-2026-015-security-review.md` and
+`.runtime/security-review.json`. No blocking source finding remains; this is not
+test/scanner PASS. Full selected results and the final measured comparison remain
+pending. Source review also made optional evidence access explicit before final
+execution; all code and guidance are committed before starting the background gate.
+
+Host source-inspection imports created CPython bytecode outside the canonical
+runtime tree. Relocated those generated caches without overwriting existing copies
+into `.runtime/python/pycache`; the exact inventory is retained in
+`.runtime/artifacts/RM-2026-015-bytecode-relocation.json`. Future ad hoc host
+inspection disables bytecode generation. No persistent service/data/cache deletion
+or Docker resource cleanup was needed during implementation.
