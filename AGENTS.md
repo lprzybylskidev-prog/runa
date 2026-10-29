@@ -396,7 +396,9 @@ or `--all`, records final `quality_groups` and `quality_rationale` in the roadma
 and previews the exact graph before final execution. Mandatory baseline/hooks and
 real prerequisites always apply. Selected security/AI checks stay strict; excluded
 groups are not passing tests. Flag-free calls retain legacy behavior. No automatic
-change classifier is authorized. See docs/runa/maintainer/quality/README.md for the catalogue and evidence
+change classifier is authorized. Use the catalogue's narrow source/delivery scopes
+when those contracts alone change; justify native acceptance and image scanning
+separately. See docs/runa/maintainer/quality/README.md for the catalogue and evidence
 contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner default `python3 tools/maintainer/test` and application default `runa:test` run backend, frontend and tooling. Focused owner `test-backend`, `test-frontend`, `test-e2e`, `test-python` and application Artisan scopes retain explicit ownership. Follow the testing guides for public support, filters and reports. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.

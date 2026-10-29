@@ -9,7 +9,7 @@ closed_at: null
 release_type: maintenance
 proposed_version: 0.6.2
 quality_groups: docs,tooling,development,installation,updates,transport,production,security,fixture-acceptance
-quality_rationale: Verify changes to quality selection, shared acceptance environments, isolated command execution and evidence ownership across the actual installation, update, transport, production and security harnesses being changed. This roadmap changes those harnesses themselves; their final acceptance is relevant even though an isolated future knowledge-ranking change would not require them. Reconcile the exact selection and prerequisites before final execution; backend and application UI suites are excluded unless implementation actually affects them.
+quality_rationale: Verify the changed owner/customer quality catalogues, coordinator command composition and reporting through docs/tooling; development and transport cover changed management group discovery and mandatory hook integration. Installation/updates exercise the modified shared installer harness and its customer/team paths; production/security cover grouped runtime image policy, additive deployment costs, actual exact-image scanning and source review. Fixture-acceptance additionally qualifies fresh standalone production and scanner paths alongside the combined fixture. Backend, frontend, database, browser and knowledge-runtime behavior is unchanged and those suites are excluded; mandatory source ownership, secrets, freshness and release checks remain selected. No all-group milestone is due for maintenance 0.6.2.
 impact_areas:
   - tooling
   - development
@@ -214,7 +214,7 @@ approved guarantee or justification for weakening coverage.
     process isolation, native exits and real deployment lifecycle scenarios.
   - Add bounded phase/resource measurements to existing reports and synchronize
     affected current-state guides in the same point.
-- [ ] 5. Synchronize owner/customer execution guidance and instruction products.
+- [x] 5. Synchronize owner/customer execution guidance and instruction products.
   - Reconcile root AGENTS, skills, customer authoring bundle and canonical quality/
     testing/workflow guides around the agreed proportionate execution rule.
   - Remove duplicated obsolete blanket instructions; retain strict selected checks,
@@ -397,3 +397,39 @@ native fixture ownership is validated before creating its workspace directory.
 Authored deterministic spawn-time publication and report-path containment contracts.
 The focused real-store producer/consumer diagnostic passed (one case, 0.13 seconds)
 before these extra guards; the complete contracts remain part of final verification.
+
+## Point 5 — Canonical execution guidance and instruction products
+
+Owner AGENTS and customer AGENTS now give short selection hints before retrieval,
+because blanket native/image selection can otherwise happen before the owning
+guide is opened. Procedures remain in the canonical owner/public quality guides.
+Owner security/Docker references and the customer security reference route to those
+guides; the customer product contains no owner fixture procedure or platform cadence.
+The public group table and command discovery agree on `security-source`.
+
+Replaced obsolete separate-production-fixture claims in owner quality/deployment
+guidance; synchronized testing discovery and the maintainer README active-roadmap
+projection. Root README, workflows and skills-policy already describe affected-area
+closure, final-only broad verification, strict selected security/AI checks and
+mandatory baseline/hooks correctly; no duplicate workflow or new constitution rule
+was added. Historical roadmaps/reports remain unchanged.
+
+## Final verification preparation
+
+Current-state source review on 2026-10-29 covered root README, maintainer README,
+owner/public quality and command guides, owner testing/deployment guides, public
+production architecture, owner roadmap/release workflows, root AGENTS, affected
+owner domain references and customer AGENTS/security defaults. Findings were the
+stale separate-fixture claims, missing public source-security table entry and active
+roadmap projection; all are corrected before the gate. No environment/startup,
+database, topology, dependency, module API/version or application presentation
+contract changed. Additive deployment diagnostics and management group discovery
+are development/operator tooling; Python implementation remains internal.
+
+Final declared scope includes actual native installation/update/team/transport and
+production/security because their harness/command/evidence contracts changed.
+The extra fixture qualification runs are necessary for independent versus combined
+behavior; they are excluded from the ordinary combined-path cost comparison.
+Backend/frontend/browser/database/knowledge-runtime suites are excluded, never PASS.
+The final checklist stays open and release 0.6.2 remains unfinalized until results,
+comparison, cleanup, focused release checks and normal merge/publication complete.

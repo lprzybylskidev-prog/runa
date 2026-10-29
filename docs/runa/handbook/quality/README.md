@@ -77,18 +77,19 @@ Combining them, malformed arguments and unavailable groups fail before execution
 Flag-free calls retain their legacy base/impact/final behavior for compatibility.
 Explicit plan/roadmap/final resolve the same mandatory checks and dependency graph.
 
-| Group       | Delivered application checks                                                       |
-| ----------- | ---------------------------------------------------------------------------------- |
-| docs        | Documentation consistency (also mandatory)                                         |
-| tooling     | Tooling diagnostics and shared Python setup/format/lint/strict typing              |
-| backend     | App tests, PHP analysis, module source/version contracts, formatting/lint          |
-| frontend    | Frontend build, types, tests, formatting/lint                                      |
-| e2e         | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
-| database    | Application tests and database/migration/seeding diagnostics                       |
-| development | Development and hook diagnostics                                                   |
-| containers  | Existing Trivy container/repository security contract                              |
-| security    | Dependency audits and Trivy                                                        |
-| knowledge   | Knowledge doctor/evals and Boost                                                   |
+| Group           | Delivered application checks                                                       |
+| --------------- | ---------------------------------------------------------------------------------- |
+| docs            | Documentation consistency (also mandatory)                                         |
+| tooling         | Tooling diagnostics and shared Python setup/format/lint/strict typing              |
+| backend         | App tests, PHP analysis, module source/version contracts, formatting/lint          |
+| frontend        | Frontend build, types, tests, formatting/lint                                      |
+| e2e             | Browser tests and frontend diagnostics; includes build/frontend-test prerequisites |
+| database        | Application tests and database/migration/seeding diagnostics                       |
+| development     | Development and hook diagnostics                                                   |
+| containers      | Existing Trivy container/repository security contract                              |
+| security        | Dependency audits and Trivy                                                        |
+| security-source | Dependency audits; runtime image scans remain unexecuted                           |
+| knowledge       | Knowledge doctor/evals and Boost                                                   |
 
 The exact step matrix is in `tools/application/quality.yml`. Every explicit selection
 includes configuration/templates, repository/roadmap state, documentation, secrets,
