@@ -166,6 +166,10 @@ Document replacement should be atomic-ish:
 - replace the previous document state only when the new set is ready,
 - avoid half-old/half-new state without an error signal.
 
+Supported CLI readers share a checkout lock; writers hold it exclusively. Read
+contention and write contention are distinct diagnostics. Pending writes refuse
+retrieval until explicit repair. See the development knowledge guide for scope.
+
 Indexer source roots are allowlisted.
 
 Do not follow symlinks outside allowed repository roots.

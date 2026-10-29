@@ -19,6 +19,24 @@ from tools.core.process import InputMode, ProcessSpec
 from tools.core.reporting import SafeFailure
 from tools.core.state import FileLock, StateDirectory
 
+READ_COMMANDS = frozenset(("read", "search", "status", "stale", "doctor", "eval"))
+
+
+def operation_lock(root: Path, command: str) -> FileLock:
+    """Coordinate one checkout: concurrent snapshots or one exclusive mutation."""
+    shared = command in READ_COMMANDS
+    return FileLock(
+        StateDirectory(root / ".runtime/knowledge", private=False, anchor=root),
+        "index.lock",
+        private=False,
+        shared=shared,
+        busy_message=(
+            "Knowledge read blocked by an exclusive writer; retry after it completes."
+            if shared
+            else "Knowledge write blocked by active readers or another writer; retry after completion."
+        ),
+    )
+
 
 def run(
     argv: Sequence[str],
@@ -92,14 +110,8 @@ def run(
         raise ValueError("Knowledge CLI requires the local development environment.")
     config = config or load(ROOT)
     dataset = golden(ROOT) if dataset is None else dataset
-    # Accept the original regular operator-owned lock without changing its inode.
-    lock_dir = StateDirectory(ROOT / ".runtime/knowledge", private=False, anchor=ROOT)
-    with FileLock(
-        lock_dir,
-        "index.lock",
-        private=False,
-        busy_message="Knowledge indexing is running; retry after completion.",
-    ).acquire():
+    # Retain stable inode/ownership/symlink safeguards for legacy coordination files.
+    with operation_lock(ROOT, args.command).acquire():
         local = ROOT / ".env.dev.local"
         cuda = local.exists() and "EMBEDDINGS_CUDA=1" in local.read_text().splitlines()
         device = args.device or ("auto" if cuda else "cpu")

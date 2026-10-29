@@ -420,7 +420,7 @@ acceptance as a prerequisite for subsequent implementation.
     unavailable service and compatibility with existing concise/explain output.
   - Update command/help and public knowledge guidance in this point.
 
-- [ ] 3. Allow safe parallel readers and correct contention diagnostics.
+- [x] 3. Allow safe parallel readers and correct contention diagnostics.
   - Prerequisite: point 2 read paths identified; preserve existing write protocol.
   - Separate shared reads from exclusive writers with bounded lock behavior.
     Prevent pending/mixed-index reads and retain lock ownership/inode safeguards.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is complete; point 4 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -563,3 +563,15 @@ coordinates, omitted budgets, stale/pending state and no embedding writes.
 Synchronized command/knowledge guides and owner/customer RAG entrypoints. Root
 owner/customer AGENTS need no new always-loaded rule: existing source grounding
 already applies. No new dependency, module behavior or version change.
+
+### Point 3 — shared readers and exclusive writes (2026-10-29)
+
+CLI read/search/status/stale/doctor/eval now use shared admission on the existing
+stable-inode lock; index/rebuild/initialize remain exclusive throughout their
+operation. Contention returns immediately with mode-specific diagnostics. Remote
+pending/freshness refusal and all core lock ownership/no-follow checks remain.
+Two focused offline lock scenarios passed (reader coexistence, blocked writer/read,
+interruption release, legacy inode preservation and symlink refusal; cleanup 0).
+Real-service concurrency/recovery scenarios remain final acceptance. Updated the
+canonical knowledge procedure; owner/customer RAG entrypoints already link there,
+so no further instruction-product edit is needed for this internal lock change.
