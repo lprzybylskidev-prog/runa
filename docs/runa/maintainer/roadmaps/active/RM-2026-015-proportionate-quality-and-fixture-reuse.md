@@ -1,10 +1,10 @@
 ---
 id: RM-2026-015
 title: Proportionate quality verification and container fixture reuse
-status: draft
+status: active
 branch: roadmap/RM-2026-015-proportionate-quality-and-fixture-reuse
 created_at: 2026-10-29
-activated_at: null
+activated_at: 2026-10-29
 closed_at: null
 release_type: maintenance
 proposed_version: 0.6.2
@@ -34,8 +34,8 @@ subsequent draft release versions. This roadmap now targets **0.6.2**, directly
 after released [RM-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md)
 maintenance 0.6.1. Retain the owner-delegated `maintenance` classification:
 compatible engineering/process optimization, a PATCH increment from 0.6.1.
-Refresh the baseline and ordering at activation. This draft does not change
-VERSION, activate work or authorize implementation.
+Activation confirms the released 0.6.1 baseline and ordering. VERSION remains
+unchanged until verified release finalization.
 
 The owner also requests an explicit execution rule: a change confined to knowledge
 retrieval must not automatically trigger full installation/update/deployment
@@ -61,6 +61,11 @@ suppression, weaker selected security/AI checks or manufactured PASS.
 ## Specification
 
 ### Decisions
+
+- 2026-10-29 — Owner requests starting the next roadmap, authorizing activation
+  of RM-015. Confirm clean main equals origin/main at f34903b4 and VERSION 0.6.1;
+  retain the previously authorized maintenance 0.6.2 release metadata. The plan
+  reserves broad verification for point 6; no earlier broad gate is required.
 
 - 2026-10-29 — Owner cancels/removes RM-014 and requests version reordering.
   Retarget this draft from 0.6.3 to maintenance 0.6.2 after released 0.6.1;
