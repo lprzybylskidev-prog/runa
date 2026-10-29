@@ -1,10 +1,10 @@
 ---
 id: RM-2026-016
 title: Admin Panel Core administration framework
-status: draft
+status: active
 branch: roadmap/RM-2026-016-admin-panel
 created_at: 2026-10-29
-activated_at: null
+activated_at: 2026-10-29
 closed_at: null
 release_type: feature
 proposed_version: 0.7.0
@@ -35,17 +35,18 @@ through documented public entrypoints, without protected edits or copied securit
 
 Baseline: released 0.6.2 after closed
 [RM-2026-015](../closed/RM-2026-015-proportionate-quality-and-fixture-reuse.md).
-There is no active roadmap. The owner confirmed `feature` / `0.7.0` on 2026-10-29:
-a MINOR increment for substantial compatible functionality. This draft neither changes
-VERSION nor authorizes activation, implementation or an incompatible module MAJOR.
-Refresh baseline, predecessor order and projected version before agreement.
+The owner confirmed `feature` / `0.7.0` on 2026-10-29:
+a MINOR increment for substantial compatible functionality. The owner explicitly
+requested activation on 2026-10-29 after confirming ARCH-001–004. Baseline and
+predecessor order remain current. Activation does not change VERSION or approve
+an incompatible module MAJOR.
 
 ### Scope and exclusions
 
 The [architecture review](../../architecture/RM-2026-016-admin-review.md) contains
 the source inventory, complete Core API matrix, architecture, configuration audit,
 four approval decisions, acceptance cases and quality rationale. It is part of
-this draft specification; all proposed contracts remain unimplemented.
+this roadmap specification; all proposed contracts remain unimplemented.
 
 Scope includes `/admin` dashboard and account-menu-only entry; developer-controlled
 module/page navigation; complete supported Auth/Permissions/Audit administration;
@@ -64,7 +65,7 @@ Existing standard table exports remain supported within owning read permissions.
 
 ## Specification
 
-### Decisions and activation blockers
+### Decisions and activation
 
 - 2026-10-29 — Owner requests architecture review and draft preparation only.
   Functional requirements are planning input; no significant architectural choice
@@ -86,11 +87,14 @@ Existing standard table exports remain supported within owning read permissions.
   presentation precedence and fallback across consumers.
 - 2026-10-29 — **Release metadata confirmed:** the owner explicitly confirms
   `release_type: feature` and `proposed_version: 0.7.0`. This resolves the release
-  metadata blocker. ARCH-001–004 were subsequently resolved above; activation remains pending.
-- **Activation — BLOCKED:** explicit owner declaration after decisions and complete
-  proposed public signatures are recorded. Resolving metadata alone is not activation.
+  metadata blocker. ARCH-001–004 were subsequently resolved above.
+- 2026-10-29 — **Activation approved:** the owner explicitly requests activation
+  and reiterates the recorded architecture decisions. Complete PHP/TS signatures
+  are agent-owned specification work in point 1, before runtime implementation in
+  point 2; they are not another owner architecture approval or activation blocker.
 
-Record owner responses individually with dates and update the review/draft.
+Record subsequent significant owner decisions individually with dates and update
+the review/roadmap.
 If decisions require incompatible existing module APIs, obtain explicit module
 MAJOR approval before that implementation; preserve compatible existing APIs by
 default. Admin develops at 0.x.y and receives independent 1.0.0 only at verified
@@ -136,7 +140,8 @@ and central changelog entries; platform versioning is separate.
 
 ## Implementation plan
 
-All points remain open. No implementation may begin before activation. Points
+All points remain open. Activation is complete; finalize the public contracts in
+point 1 before runtime implementation. Points
 deliver code, test code and synchronized current-state documentation, including
 affected owner/customer instruction products. Only small, fast checks needed to
 resolve a concrete uncertainty may run during implementation; do not schedule
@@ -294,9 +299,10 @@ inside renderer code. No new dependency or infrastructure requirement is propose
 
 ## Planning validation and instruction products
 
-This task is documentation-only architecture preparation. Review source paths,
-relative links, draft metadata, open checklist and final-only verification ordering;
-run no broad test/quality graph or native resource operation. Root owner and
+Activation is documentation-only. Review source paths, relative links, active
+metadata, open checklist and final-only verification ordering; run no broad
+test/quality graph or native resource operation. Root owner and
 customer instructions need no present update because no reusable operating rule
 or delivered capability changes here. Their assessment is required in every
-future affected implementation point. No roadmap is activated or closed here.
+affected implementation point. No implementation point or release is complete
+at activation.

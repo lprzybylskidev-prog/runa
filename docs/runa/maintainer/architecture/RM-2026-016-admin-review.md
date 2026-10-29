@@ -1,10 +1,11 @@
 # Admin Panel architecture review and proposal
 
 Review date: 2026-10-29. Planning baseline: platform `0.6.2`, clean `main` after
-RM-2026-015. No active roadmap. This is an owner proposal, not a delivered public
-API. Owner decisions recorded below approve design directions, not implementation
-or activation. Implementation belongs to the inactive
-[RM-2026-016 draft](../roadmaps/draft/RM-2026-016-admin-panel.md).
+RM-2026-015. This review specifies proposed contracts, not a delivered public API.
+The owner approved the design directions below and explicitly requested activation
+on 2026-10-29. Work belongs to the active
+[RM-2026-016 roadmap](../roadmaps/active/RM-2026-016-admin-panel.md); point 1
+finalizes complete public signatures before runtime implementation.
 
 ## Authority and evidence
 
@@ -79,7 +80,8 @@ Primary evidence (repository-root-relative paths):
 
 Sections 1–2 and 31–34 define the review process, reporting and execution limits;
 this review and linked draft satisfy the planning artifacts. Architectural decisions
-and release metadata have owner dispositions recorded below; activation remains pending.
+and release metadata have owner dispositions recorded below; activation is recorded
+in the roadmap.
 
 ### Complete Core API integration matrix
 
@@ -519,6 +521,8 @@ task changes neither product: it introduces no operating rule or delivered API.
   cross-module coordination approved; ARCH-002 selects CLI-only maintenance;
   ARCH-003 existing security reviews/proofs approved; ARCH-004 app-owned dynamic
   presentation approved, with code-owned Runa logo and DB-backed customer override.
-- Activation requires the resolved contract specification, confirmed release
-  metadata, refreshed baseline/order and a separate explicit owner declaration
-  that the draft is ready. No implementation or activation occurred in this task.
+- 2026-10-29 — The owner explicitly requests activation after resolving the four
+  architecture decisions and confirming release metadata. Baseline/order remain
+  current. Complete public signatures are agent-owned point 1 specification work,
+  required before runtime implementation rather than before activation. No runtime
+  implementation is delivered by this review or activation.
