@@ -162,6 +162,7 @@ class QualityCompatibility(unittest.TestCase):
         definition = quality_definition(
             reader.yaml(ROOT / "docs/runa/maintainer/quality/gates.yml")
         )
+        assert "mandatory" in definition
         heavy = {
             "installation-host-acceptance",
             "production-acceptance",

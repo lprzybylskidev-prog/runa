@@ -1134,8 +1134,15 @@ def main() -> None:
                 call(["docker", "image", "rm", *removable])
             report["removed_images"] = removable
             report["resource_counts"] = {
-                kind: len({item for row in report.get("cleanup", []) for item in row[kind]})
-                for kind in ("containers", "networks", "volumes")
+                "containers": len(
+                    {item for row in report.get("cleanup", []) for item in row["containers"]}
+                ),
+                "networks": len(
+                    {item for row in report.get("cleanup", []) for item in row["networks"]}
+                ),
+                "volumes": len(
+                    {item for row in report.get("cleanup", []) for item in row["volumes"]}
+                ),
             }
             report["resource_counts"]["removed_image_tags"] = len(removable)
             if output(["docker", "ps", "-a", "-q", "--filter", "name=^/" + smtp + "$"]):
