@@ -51,7 +51,7 @@ Scope includes `/admin` dashboard and account-menu-only entry; developer-control
 module/page navigation; complete supported Auth/Permissions/Audit administration;
 generated and customizable tables/forms; field/section/page/action authorization;
 compatible atomic cross-module Save; diagnostics/work/Optional lifecycle/settings/
-integrations/recovery; safe maintenance access subject to approval; application
+integrations/recovery; CLI-only maintenance diagnostics/recovery; application
 global settings; independent pages; customer replacements; opt-in generator
 scaffolding; tests and complete developer documentation.
 
@@ -71,20 +71,22 @@ Existing standard table exports remain supported within owning read permissions.
   below is implicitly approved by that request.
 - Existing framework/public API/ownership/security/quality rules remain authority.
   New declarations must preserve backend isolation and required dependency direction.
-- **ARCH-001 — BLOCKED:** approve bounded trusted cross-module transaction
-  participation, exact compatibility/lock/proof/preview/refusal boundaries and
-  nontransactional exclusions; or explicitly revise unified Save scope.
-- **ARCH-002 — BLOCKED:** approve the complete narrow manual-maintenance admission
-  matrix across HTTP, availability, Auth/Permissions/Audit guards; or explicitly
-  retain CLI-only maintenance diagnostics. No blanket Admin bypass.
-- **ARCH-003 — BLOCKED:** confirm existing reviewed access/policy/bulk workflows and
-  owner-specific stronger proof remain exceptions to ordinary direct Save.
-- **ARCH-004 — BLOCKED:** approve app-owned dynamic presentation/settings ownership,
-  separate canonical identity/presentation projection and fallback semantics; or
-  explicitly retain developer-managed name/logo and revise dynamic branding scope.
+- 2026-10-29 — **ARCH-001 — APPROVED:** modules remain backend-independent while
+  Admin supplies the bounded coordination layer for mixed forms and atomic Save.
+  Preserve owning validation, grants, Audit, lock/proof/preview/revision protocols
+  and explicit exclusions for nontransactional operations.
+- 2026-10-29 — **ARCH-002 — RESOLVED: CLI ONLY:** retain existing HTTP/module
+  maintenance guards. Diagnostics/recovery during maintenance use supported CLI;
+  no Admin maintenance exception or new admission context is in scope.
+- 2026-10-29 — **ARCH-003 — APPROVED:** existing reviewed access/policy/bulk workflows
+  and owner-specific stronger proof remain exceptions to ordinary direct Save.
+- 2026-10-29 — **ARCH-004 — APPROVED:** Runa's default logo remains code-owned;
+  customers can set their own presentation/logo through DB-backed application
+  settings. Preserve canonical identity and source defaults, with explicit runtime
+  presentation precedence and fallback across consumers.
 - 2026-10-29 — **Release metadata confirmed:** the owner explicitly confirms
   `release_type: feature` and `proposed_version: 0.7.0`. This resolves the release
-  metadata blocker only; ARCH-001–004 and activation remain pending.
+  metadata blocker. ARCH-001–004 were subsequently resolved above; activation remains pending.
 - **Activation — BLOCKED:** explicit owner declaration after decisions and complete
   proposed public signatures are recorded. Resolving metadata alone is not activation.
 
@@ -229,8 +231,9 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
     integration configuration, health policy and permitted work cancellation/status.
     Add mandatory transactional Audit participation where engines lack it; retain
     pending/recovery_required and module-owned recovery semantics.
-  - Implement only the approved maintenance admission matrix across all guards;
-    preserve update/Core failure fencing and no operator/shell/install/update controls.
+  - Retain current maintenance guards and update/Core failure fencing; maintenance
+    diagnostics/recovery remain CLI-only. Add no Admin availability exception,
+    operator/shell/install/update controls or maintenance-marker mutation.
   - Author diagnostics/redaction/permission/failure isolation/lifecycle/maintenance/
     work/optional fallback tests, plus deployment-fence scenarios if affected.
 - [ ] 10. Deliver approved application global settings and runtime presentation.
@@ -238,6 +241,7 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
   - Add source-declared app-owned safe settings/defaults, storage/migration, revisions,
     validation/grants and atomic Audit, independent of module settings. Implement
     approved identity/presentation precedence and browser/mail/error fallbacks.
+    Keep the Runa default logo in code and customer-selected branding/logo in DB.
   - Keep technical/.env/source compatibility fields read-only; no infrastructure
     controls or generic asset/upload subsystem. Author no-restart persistence,
     ownership/rollback/CSP/fallback and customer extension cases; document classification.
@@ -282,7 +286,7 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
 ## Risks and unresolved scope
 
 The highest risks are unsupported composite operation ordering/proof reuse,
-maintenance exceptions escaping the guards, incomplete Core coverage hidden by
+accidental maintenance bypasses, incomplete Core coverage hidden by
 metadata-only scaffolds, field/lookup/export disclosure, and runtime branding
 diverging across browser/mail/error/build consumers. Exact contract signatures
 must be completed after owner decisions and before implementation, not invented

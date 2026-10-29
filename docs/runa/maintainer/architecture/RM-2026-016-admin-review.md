@@ -2,7 +2,8 @@
 
 Review date: 2026-10-29. Planning baseline: platform `0.6.2`, clean `main` after
 RM-2026-015. No active roadmap. This is an owner proposal, not a delivered public
-API or approval of changes. Implementation belongs to the blocked
+API. Owner decisions recorded below approve design directions, not implementation
+or activation. Implementation belongs to the inactive
 [RM-2026-016 draft](../roadmaps/draft/RM-2026-016-admin-panel.md).
 
 ## Authority and evidence
@@ -10,7 +11,7 @@ API or approval of changes. Implementation belongs to the blocked
 The requested functional scope is accepted as planning input: a mandatory English
 administration framework, automatic module integration, application-owned
 customization, unified forms, complete supported Core administration and safe
-operational diagnostics. Architecture choices below remain proposals. Existing
+operational diagnostics. Owner-approved design directions and the remaining implementation proposals are distinguished below. Existing
 AGENTS, roadmap, public API, transaction, security and delivery rules still apply.
 No source contract, runtime configuration, dependency or migration changes are
 authorized by this review.
@@ -67,7 +68,7 @@ Primary evidence (repository-root-relative paths):
 | 14, 17–18: diagnostics/work                                    | Persisted ModuleHealth observations, availability root causes, scheduler recovery, active work and cancellation exist.                             | Authorized sanitized HTTP adapters, timestamps/expiry/dependencies, enabled-default filtering and explicit re-evaluation. Preserve bounded progress semantics; no invented percentage if none exists. |
 | 16: management                                                 | ModuleTransitions previews/apply/resume/cancel, ModuleSettings revisions/recovery, ModuleIntegrations exist. Core cannot be disabled.              | Permissioned domain adapters and missing Audit records for newly exposed meaningful framework mutations. No install/update/upload/migration APIs.                                                     |
 | 16, 20: complete Core administration                           | Public Auth/Permissions writes and Audit reads exist; management metadata covers only a subset.                                                    | Use the full API matrix below, add bounded owner reads where missing, and keep self/operator capabilities in their proper audience.                                                                   |
-| 19: maintenance                                                | Ordinary HTTP and guarded module APIs fail during effective maintenance. Only health/ready HTTP is exempt.                                         | ARCH-002: any safe Admin access requires an explicit admitted subset across all guards, not a route exception alone.                                                                                  |
+| 19: maintenance                                                | Ordinary HTTP and guarded module APIs fail during effective maintenance. Only health/ready HTTP is exempt.                                         | ARCH-002 resolved: retain existing guards; maintenance diagnostics/recovery remain CLI-only, without an Admin exception.                                                                              |
 | 20: Audit                                                      | Manual/automatic append-only history, guarded cursor page/detail and atomic records exist.                                                         | Read-only viewer and adapters; reuse owning events without duplicates. No generic undo or arbitrary Audit writer endpoint.                                                                            |
 | 21: global settings                                            | DB-backed module settings exist; business settings belong in DB. Global identity/name/logo currently come from source manifests.                   | App-owned dynamic setting declarations/storage and safe runtime presentation projection; ARCH-004 for identity/branding ownership.                                                                    |
 | 22–23: independent pages/replacement                           | Ordinary app Laravel/Vue and Auth presentation/headless seams exist. Module frontend pages are module-owned and fixed-path.                        | Public application bootstrap page/contribution registration, Admin facade/controllers/providers, nested replacements. No artificial module requirement.                                               |
@@ -78,7 +79,7 @@ Primary evidence (repository-root-relative paths):
 
 Sections 1–2 and 31–34 define the review process, reporting and execution limits;
 this review and linked draft satisfy the planning artifacts. Architectural decisions
-remain unconfirmed; the owner confirmed release metadata as recorded below.
+and release metadata have owner dispositions recorded below; activation remains pending.
 
 ### Complete Core API integration matrix
 
@@ -143,7 +144,7 @@ Suggested responsibilities below are design descriptions, not implemented symbol
 | Admin projection, entry, dashboard and composite Save      | Admin-owned guarded consumption; named authenticated HTTP adapters                                           | Admin module backend; runtime                                                                               |
 | Framework diagnostics/lifecycle/settings/work adapters     | Named source-owned trusted integration, exposed only through authorized Admin use cases                      | Framework engines retain ownership; no customer import of private engines                                   |
 | Admin defaults/headless controllers/presentation providers | Public consumption/composition through proposed `@/runa/admin` facade, implemented in app-owned replacements | Admin frontend and facade; built assets with module manifest identity                                       |
-| Composite transaction participation                        | Proposed bounded trusted protocol; approval in ARCH-001                                                      | Neutral framework participation plus module-owned implementations; no arbitrary callback through ModuleApis |
+| Composite transaction participation                        | Bounded trusted protocol; direction approved in ARCH-001                                                     | Neutral framework participation plus module-owned implementations; no arbitrary callback through ModuleApis |
 | Generator examples and extension test bridges              | Developer-only public support                                                                                | Existing generator/testing homes; excluded from production                                                  |
 
 ### Routing, shell and entry security
@@ -289,7 +290,7 @@ because an advanced provider becomes unavailable.
 | Existing source                                                                                             | Classification                                                     | Proposal                                                                                                                                                                                                                            |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/application.json`: id, version, supported Runa range                                               | Developer-owned application identity/compatibility                 | Remain in source, read-only in Admin.                                                                                                                                                                                               |
-| Same manifest: name and branding.logo                                                                       | Currently developer-owned canonical presentation identity          | ARCH-004; runtime administrator override cannot silently replace this authority.                                                                                                                                                    |
+| Same manifest: name and branding.logo                                                                       | Currently developer-owned canonical presentation identity          | ARCH-004 approved: preserve canonical source defaults; customer presentation/logo overrides persist separately in DB.                                                                                                               |
 | `src/runa/platform.json`, root VERSION                                                                      | Platform release identity                                          | Read-only; never runtime settings.                                                                                                                                                                                                  |
 | `src/runa/config/branding.php`, app-owned override, CSP/mail settings                                       | Developer-managed presentation/technical policy                    | Keep technical layout/assets/CSP/mail transport in source/config; classify an individual safe presentation option before exposing it.                                                                                               |
 | ModuleSettings including Auth policy                                                                        | Module-owned dynamic configuration, encrypted, revisioned, audited | Reuse owner declarations and publication/recovery. Keep module settings in module sections.                                                                                                                                         |
@@ -305,9 +306,10 @@ values. No new asset library or generic upload system; safe same-origin logo ass
 selection is enough initially unless a concrete upload requirement is agreed.
 Missing DB during emergency/static rendering uses validated build defaults.
 
-## C. Architectural decisions requiring approval
+## C. Architectural decisions and owner dispositions
 
-These four decisions are unresolved. Ordinary new renderer/adapters, additive
+The owner resolved all four decisions on 2026-10-29 as recorded individually below.
+Ordinary new renderer/adapters, additive
 declarations, field permissions, bounded Auth directory reads and public
 presentation seams are implementation work, not separate constitutional conflicts.
 Their exact public signatures still require specification before implementation.
@@ -342,7 +344,9 @@ module saves with explicit partial results (violates requested all-or-nothing).
 **Recommendation:** Approve bounded compatible participation, retaining current
 APIs and exclusions; do not introduce a universal distributed transaction engine.
 
-**Approval required:** Yes. Pending; blocks aggregate contract and implementation.
+**Approval required:** Yes; obtained on 2026-10-29. The owner approves a coordination
+layer in Admin for mixed forms while modules remain independent. The bounded
+atomicity, ownership and nontransactional exclusions above remain applicable.
 
 ### ARCH-002 — Admin access during effective maintenance
 
@@ -352,31 +356,26 @@ Module availability also includes maintenance. Auth/Permissions/Audit guarded ca
 therefore cannot become safe merely by exempting `/admin` in HTTP middleware.
 Infrastructure/update fencing may prevent PHP traffic entirely.
 
-**Proposed:** A narrowly admitted diagnostic/control subset for manual maintenance
-only, conditional on intact Auth, Permissions, Audit, database and source/data
-readiness. Explicit named operations must retain target fences, eligibility,
-current grants, proof and Audit. No admission during deployment/update, unavailable
-Core, recovery fences or stopped infrastructure. This requires a reviewed neutral
-admission context propagated through the existing guard layers, never a client flag.
+**Proposed:** Retain the current HTTP/module maintenance block. Use supported
+trusted CLI diagnostics/recovery during maintenance; no Admin exception, propagated
+admission context or maintenance-marker controls are introduced.
 
-**Reason:** Meet safe maintenance inspection while avoiding an uncontrolled `/admin/*`
-availability bypass or unusable proof-confirmation route.
+**Reason:** The owner explicitly chooses CLI-only maintenance operation instead of
+extending Admin availability. This resolves the original maintenance UI requirement
+by an agreed scope reduction and preserves existing guards.
 
-**Impact:** MaintenanceState, HTTP middleware/manual-maintenance route treatment,
-OperationGuard/ModuleAvailability, trusted Auth session/proof and Permissions/Audit
-integration. Requires explicit allowed-route/operation matrix, diagnostics redaction,
-negative tests and maintenance/production guidance. Runtime readiness semantics
-outside this subset remain unchanged.
+**Impact:** No maintenance admission API or guard changes. Admin negative tests
+must prove maintenance remains blocked, and operator documentation points to
+existing CLI diagnostics/recovery. Existing health/ready and scheduler recovery
+exceptions retain their established scope.
 
-**Alternatives:** Retain current complete HTTP maintenance block and trusted CLI
-diagnostics/recovery; defer maintenance Admin support explicitly. A blanket Admin
-exception is unsafe and is not recommended.
+**Alternatives:** A narrowly admitted manual-maintenance Admin subset would require
+a separately agreed guard/integration design. It is excluded from this roadmap.
 
-**Recommendation:** Approve the narrowly scoped manual-maintenance design only after
-reviewing its complete admission matrix; otherwise explicitly retain CLI-only
-maintenance access. This proposal does not assume that the exception already exists.
+**Recommendation:** Follow the owner-selected CLI-only boundary.
 
-**Approval required:** Yes. Pending; blocks maintenance admission design and code.
+**Approval required:** Yes; resolved on 2026-10-29. The owner chooses CLI only and
+rejects introducing maintenance access through Admin in this roadmap.
 
 ### ARCH-003 — Existing reviewed security workflows versus ordinary Save UX
 
@@ -407,7 +406,8 @@ Permissions/security policy (larger risk and outside this recommendation).
 **Recommendation:** Confirm the security-workflow exception; preserve ordinary
 direct Save for edits without an owning review requirement.
 
-**Approval required:** Yes. Pending owner resolution of the conflicting UX premise.
+**Approval required:** Yes; obtained on 2026-10-29. The owner accepts preserving
+the existing reviewed security workflows and stronger action-specific proofs.
 
 ### ARCH-004 — Dynamic application branding versus manifest identity
 
@@ -418,9 +418,11 @@ ModuleSettings is module-scoped; no non-module global dynamic store is supplied.
 
 **Proposed:** Keep immutable application ID/version/compatibility in the manifest;
 introduce app-owned dynamic display-name/logo/presentation values with explicit
-runtime projection and fallback precedence. Decide/document whether `/api/identity`
-continues canonical identity with a separate presentation projection (recommended)
-or changes name/logo semantics compatibly across all consumers.
+runtime projection and fallback precedence. Preserve `/api/identity` canonical
+identity and supply a separate presentation projection. The Runa default logo
+stays in code; a customer-selected logo/presentation override is stored in the
+application database and takes precedence for application presentation, with the
+code-owned default as fallback. Do not mutate protected Runa assets or manifests.
 
 **Reason:** Administrator changes without redeploy cannot be implemented by writing
 source manifests/config cache. A separate uncontrolled override would conflict with
@@ -438,7 +440,9 @@ make canonical runtime identity DB-backed (larger cross-consumer compatibility c
 **Recommendation:** Approve an additive app-owned runtime presentation layer with
 manifest fallback and a separate projection, preserving canonical identity.
 
-**Approval required:** Yes. Pending; blocks dynamic branding ownership/API work.
+**Approval required:** Yes; obtained on 2026-10-29. The owner accepts the proposed
+separation and specifies that Runa's logo remains code-owned while the customer's
+customization is database-backed.
 
 ## D. Quality, compatibility and documentation plan
 
@@ -457,7 +461,7 @@ input and stale revisions/preview/ABA; rollback of every participant, proof, que
 intent and success Audit; refusal history after root rollback; self-demotion and
 last-superadministrator constraints; compatible operation order and multi-subject
 locks; nontransactional operation refusal; diagnostic freshness/redaction;
-maintenance allow/deny matrix; lifecycle Core/Optional restrictions and recovery;
+maintenance denial with CLI-only recovery; lifecycle Core/Optional restrictions and recovery;
 settings redaction/publication; optional fallback; account-switch/abort races;
 dirty draft reconciliation and no replay; independent pages, partial and complete
 customer replacements; generator output without Admin; light/dark, keyboard,
@@ -479,8 +483,9 @@ No containers/security-image/production/development/transport/knowledge-runtime
 group solely from Admin scope: no image/service/startup/host-executor/knowledge
 algorithm change is proposed. Mandatory baseline/hooks, freshness and real selected
 prerequisites still apply; a selected prerequisite may broaden execution. Reassess
-production if the approved maintenance design changes deployment/update fencing or
-runtime packaging, and knowledge if runtime/source registration behavior changes.
+production if implementation changes deployment/update fencing or runtime packaging,
+and knowledge if runtime/source registration behavior changes. The selected CLI-only
+maintenance boundary itself introduces no production admission change.
 Excluded groups are not PASS. Preview the actual graph before executing final
 verification. Proposed 0.7.0 is not a scheduled five-minor all-group checkpoint;
 refresh cadence if release order changes.
@@ -510,8 +515,10 @@ task changes neither product: it introduces no operating rule or delivered API.
 - Existing application and Core manifests cap platform support below 0.7.0.
   Explicitly review/adapt their compatibility declarations in implementation;
   never have the updater silently rewrite a customer's compatibility choice.
-- ARCH-001, ARCH-002, ARCH-003 and ARCH-004 require individual owner decisions.
-  A rejection requires a deliberate roadmap/scope revision, not silent omission.
+- 2026-10-29 — All four architecture decisions are resolved: ARCH-001 bounded
+  cross-module coordination approved; ARCH-002 selects CLI-only maintenance;
+  ARCH-003 existing security reviews/proofs approved; ARCH-004 app-owned dynamic
+  presentation approved, with code-owned Runa logo and DB-backed customer override.
 - Activation requires the resolved contract specification, confirmed release
   metadata, refreshed baseline/order and a separate explicit owner declaration
   that the draft is ready. No implementation or activation occurred in this task.
