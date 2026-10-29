@@ -390,3 +390,12 @@ nodes retain ownership. See [API enforcement](../architecture/public-api.md#loca
 for diagnostics, supported consumers and static-analysis limits. Module source/runtime
 checks remain trusted operator diagnostics in production; developer analysis,
 generation and test commands remain development-only.
+
+### Knowledge evidence
+
+`php artisan runa:knowledge:read <chunk_id> [--neighbors=0..5] [--section]
+[--max-chars=1000..60000] [--json]` returns source-verified indexed content and
+bounded context as JSON. Search/status accept `--json`; existing search
+`--explain` and JSON status output remain compatible. See
+[evidence reading](../development/knowledge.md#evidence-reading-and-structured-output)
+for budgets, citation nulls, freshness refusals and the development-only boundary.

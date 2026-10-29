@@ -131,3 +131,35 @@ The customer allowlist includes AGENTS.md, README.md, docs/README.md, tools/appl
 Owner checkouts explicitly add their private roots and historical golden cases through excluded tools/maintainer configuration. A customer acquisition receipt disables those additions and forbids private maintainer sources even if accidentally copied or broadly allowlisted. Incremental refresh removes old paths/chunks; source moves do not authorize an automatic destructive rebuild. Doctor and public retrieval evaluation must pass after documentation changes.
 
 Customer instruction authoring templates are excluded from owner retrieval even with a broad owner allowlist. Customer retrieval reads only the installed AGENTS/skills product. Incremental indexing removes obsolete source identities after substitutions or lifecycle moves. For multiple checkouts use an explicitly separate Compose project identity; never point a fresh customer project at an existing owner's Qdrant volume. Inspect actual volume mounts and preserve model caches.
+
+## Evidence reading and structured output
+
+Runa owns the development-only evidence CLI. Application developers and agents
+consume `php artisan runa:knowledge:read <chunk_id> [--neighbors=0..5] [--section]
+[--max-chars=1000..60000] [--json]` through the existing Artisan transport.
+The implementation lives in `tools/application/knowledge/evidence.py`; Python
+classes are internal, not an application extension API. Production remains denied.
+
+Use IDs from `runa:knowledge:search --json` (or existing `--explain`). Search JSON
+preserves filters, retrieval settings, full hit payloads and ranking signals;
+ordinary search stays concise. Status accepts `--json` and retains its existing
+JSON shape and native stale/nonzero exit semantics. Read always emits JSON, with
+response schema version, collection/chunk schema identity, results, content size
+and omitted-chunk count. It never embeds, indexes or reads a different collection.
+
+Read verifies the current allowed corpus, manifest, branch and source hash. Missing
+IDs require a new search; stale/missing/incompatible indexes and pending writes
+fail explicitly. Neighbor expansion stays within one document; section expansion
+selects the exact heading path. Results retain manifest/source order. The requested
+chunk is always included or the command refuses an insufficient budget; expansion
+omits whole chunks and reports the count, without silent text truncation. The
+default content budget is 12000 characters; serialized response is capped at
+256000 characters. Full payloads retain source, document/chunk identity, heading,
+hash, Git context, indexing timestamp and embedding metadata when recorded.
+
+Citations include source path/hash and one-based body line coordinates only for a
+unique literal match in the verified current source. Ambiguous coordinates are
+null; an indexing timestamp or Git revision never supplies an effective date or
+release version. Open the cited original source before acting on a rule. Use
+bounded expansion to gather missing context, and distinguish source facts, agent
+inferences and absent evidence in the answer.

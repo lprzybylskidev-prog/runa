@@ -412,7 +412,7 @@ acceptance as a prerequisite for subsequent implementation.
     canonical contract; capture size/context baselines and predecessor coverage.
     Plan all-skill review without loading every reference before its own review task.
 
-- [ ] 2. Deliver supported full evidence reading, citations and context expansion.
+- [x] 2. Deliver supported full evidence reading, citations and context expansion.
   - Prerequisite: point 1 ownership/source map and existing typed engine boundaries.
   - Implement bounded read/section expansion, structured responses and stable
     provenance using the existing service and narrow Artisan adapters.
@@ -535,7 +535,7 @@ acceptance as a prerequisite for subsequent implementation.
 
 ## Execution state
 
-Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is next. No release
+Activated on 2026-10-29 after owner approval. Point 1 is complete; point 2 is complete; point 3 is next. No release
 gate has run. The earlier research findings and separately labeled hypothetical
 remain planning evidence rather than current implementation claims.
 
@@ -549,3 +549,17 @@ labeled intermediate foundations as historical engineering material. Manifests,
 module behavior and historical bytes are unchanged. Owner/customer instructions
 need no rule change for this source-only reconciliation. No broad checks ran;
 mandatory hooks and incremental source refresh accompany the point commit.
+
+### Point 2 — supported evidence reading (2026-10-29)
+
+Added development-only `runa:knowledge:read` through the existing named Artisan
+catalogue and internal Python service. It verifies allowed sources/current hash,
+manifest and branch, expands exact sections or bounded neighbors in source order,
+reports whole omitted chunks and refuses insufficient target/serialized budgets.
+Unique literal source bodies receive one-based citation lines; ambiguous matches
+remain null. Search/status structured options preserve legacy output and exits.
+Focused offline evidence cases passed (2 tests, cleanup 0), resolving ordering,
+coordinates, omitted budgets, stale/pending state and no embedding writes.
+Synchronized command/knowledge guides and owner/customer RAG entrypoints. Root
+owner/customer AGENTS need no new always-loaded rule: existing source grounding
+already applies. No new dependency, module behavior or version change.

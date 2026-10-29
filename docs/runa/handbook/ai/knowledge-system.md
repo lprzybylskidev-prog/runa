@@ -260,6 +260,7 @@ If knowledge sources changed and the index is stale, the hook blocks/instructs:
 
 Canonical interface:
 
+- `./bin/artisan runa:knowledge:read` (bounded source-verified evidence/context)
 - `./bin/artisan runa:knowledge:search`
 - `./bin/artisan runa:knowledge:index`
 - `./bin/artisan runa:knowledge:initialize` (first-index startup)

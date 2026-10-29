@@ -9,6 +9,7 @@ from pathlib import Path
 from tools.application.development_runtime import DevelopmentRuntime, execution_location
 from tools.application.knowledge.configuration import GoldenCase, KnowledgeConfig, golden, load
 from tools.application.knowledge.context import KnowledgeContext
+from tools.application.knowledge.evidence import read
 from tools.application.knowledge.ingest import KnowledgeIndexer
 from tools.application.knowledge.retrieval import FILTERS, Retriever, doctor, evaluate
 from tools.application.knowledge.store import Store
@@ -32,7 +33,17 @@ def run(
     )
     parser.add_argument(
         "command",
-        choices=["search", "index", "status", "rebuild", "stale", "doctor", "eval", "initialize"],
+        choices=[
+            "read",
+            "search",
+            "index",
+            "status",
+            "rebuild",
+            "stale",
+            "doctor",
+            "eval",
+            "initialize",
+        ],
     )
     parser.add_argument(
         "--device",
@@ -43,11 +54,23 @@ def run(
     parser.add_argument("query", nargs="?")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--explain", action="store_true")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Structured response (legacy JSON commands remain JSON).",
+    )
+    parser.add_argument("--neighbors", type=int, default=0)
+    parser.add_argument(
+        "--section", action="store_true", help="Expand chunks in the same heading section."
+    )
+    parser.add_argument("--max-chars", type=int, default=12000)
     for field in ("document_type", "scope", "roadmap_id", "status", "source_path"):
         parser.add_argument("--" + field.replace("_", "-"))
     args = parser.parse_args(argv)
-    if args.command == "search" and not args.query:
-        parser.error("search requires a query")
+    if args.command in ("search", "read") and not args.query:
+        parser.error(args.command + " requires a query or chunk ID")
+    if args.command != "read" and (args.neighbors or args.section or args.max_chars != 12000):
+        parser.error("context expansion options require read")
     context.assert_development()
     if context.environment.get("APP_ENV") == "production" or not (ROOT / "artisan").exists():
         raise ValueError("Knowledge CLI is unavailable in production.")
@@ -81,6 +104,16 @@ def run(
         cuda = local.exists() and "EMBEDDINGS_CUDA=1" in local.read_text().splitlines()
         device = args.device or ("auto" if cuda else "cpu")
         indexer = KnowledgeIndexer(context, config, Store(config), device=device)
+        if args.command == "read":
+            result = read(
+                indexer,
+                args.query,
+                neighbors=args.neighbors,
+                section=args.section,
+                max_chars=args.max_chars,
+            )
+            print(json.dumps(result, indent=2))
+            return 0
         if args.command == "rebuild":
             return indexer.rebuild()
         if args.command in ("search", "doctor", "eval"):
@@ -104,7 +137,7 @@ def run(
                     key: getattr(args, key) for key in FILTERS if getattr(args, key) is not None
                 }
                 hits = retriever.search(args.query, args.top_k, filters)
-                if args.explain:
+                if args.explain or args.json:
                     print(
                         json.dumps(
                             {"filters": filters, "retrieval": config["retrieval"], "results": hits},

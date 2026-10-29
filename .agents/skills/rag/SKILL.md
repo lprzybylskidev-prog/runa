@@ -31,3 +31,6 @@ Choose quality groups proportionately, record the final selection/rationale in t
 roadmap and preview it through supported commands. Mandatory checks/hooks and real
 prerequisites remain required; selected security/AI gates remain strict. Excluded
 groups are not PASS. See docs/runa/maintainer/quality/README.md for the catalogue and evidence contract.
+
+For full cited evidence and bounded context, use `runa:knowledge:read` following
+[the public evidence contract](../../../docs/runa/handbook/development/knowledge.md#evidence-reading-and-structured-output).

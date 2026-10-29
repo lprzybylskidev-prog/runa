@@ -67,6 +67,58 @@ class KnowledgeContracts(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             return self.indexer.index()
 
+    def test_evidence_read_preserves_source_order_budget_and_never_embeds(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.write(
+            "AGENTS.md",
+            "# Policy\n## First\nUnique first paragraph.\n## Second\nUnique second paragraph.\n## Third\nUnique third paragraph.\n",
+        )
+        self.index()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        ids = manifest["sources"]["AGENTS.md"]["chunks"]
+        calls = list(Provider.calls)
+        result = read(self.indexer, ids[1], neighbors=1)
+        self.assertEqual([row["id"] for row in result["results"]], ids)
+        self.assertEqual(result["omitted_chunks"], 0)
+        self.assertEqual(result["results"][1]["citation"]["start_line"], 5)
+        self.assertEqual(result["results"][1]["citation"]["end_line"], 5)
+        self.assertEqual(Provider.calls, calls)
+        with self.assertRaisesRegex(ValueError, "absent"):
+            read(self.indexer, "00000000-0000-0000-0000-000000000001")
+        self.write("AGENTS.md", "# Changed\nSource changed.\n")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            read(self.indexer, ids[1])
+
+    def test_evidence_read_reports_omitted_chunks_and_unknown_duplicate_coordinates(self) -> None:
+        from tools.application.knowledge.evidence import read
+
+        self.write(
+            "AGENTS.md",
+            "# Policy\n## Same\n"
+            + ("Repeated text. " * 250)
+            + "\n## Other\n"
+            + ("Repeated text. " * 250)
+            + "\n",
+        )
+        self.index()
+        manifest = self.indexer.store.manifest()
+        assert manifest is not None
+        ids = manifest["sources"]["AGENTS.md"]["chunks"]
+        result = read(self.indexer, ids[0], section=True, neighbors=1, max_chars=2000)
+        self.assertLessEqual(result["content_characters"], 2000)
+        self.assertGreater(result["omitted_chunks"], 0)
+        self.assertIsNone(result["results"][0]["citation"]["start_line"])
+        with self.assertRaisesRegex(ValueError, "exceeds evidence budget"):
+            read(self.indexer, ids[0], max_chars=1000)
+        with self.assertRaisesRegex(ValueError, "UUID"):
+            read(self.indexer, "../../outside")
+        manifest["pending"] = True
+        self.indexer.store.write_manifest(manifest)
+        with self.assertRaisesRegex(ValueError, "stale"):
+            read(self.indexer, ids[0])
+
     def test_allowlist_excludes_untracked_secrets_and_application_code(self) -> None:
         for name in [
             "docs/untracked.md",
