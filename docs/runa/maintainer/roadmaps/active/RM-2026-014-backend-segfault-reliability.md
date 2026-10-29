@@ -41,6 +41,13 @@ unapproved dependency or destructive data reset is authorized.
 
 ### Decisions
 
+- 2026-10-29 — Owner explicitly extends point 1 to temporary installation of gdb
+  in the existing development container and narrow native-stack diagnostics.
+  This permits tracing the official reproducer and a focused historical failure
+  area through the supported runner. It does not authorize PHP pin/configuration
+  changes, a rebuild, full-suite repetition or data deletion. Retain raw evidence
+  and remove the temporary debugger/packages after their last diagnostic use.
+
 - 2026-10-29 — Owner authorizes activation and execution after released RM-013.
   Retain confirmed fix 0.6.2. Owner also adopts affected-area verification for
   ordinary closures and periodic all-group verification at minor milestones
@@ -163,8 +170,8 @@ Facts:
 - Retained suite failures report worker SIGSEGV/exit 139, including AuthEntryTest
   and PermissionsTest; they supply no native stack identifying SimpleXML. No
   existing relevant core/backtrace was found in the inspected runtime and host
-  crash locations. The host core handler uses Apport; gdb is absent from the
-  development container. Current resource snapshots cannot establish resource
+  crash locations. The host core handler uses Apport; gdb was absent from the
+  development container at initial inspection. Current resource snapshots cannot establish resource
   pressure at historical failure time.
 
 Inference: **possible but unproven** as the cause of historical backend worker
@@ -179,10 +186,111 @@ runtime symbols and identify whether it reaches the SimpleXML/GC path. There is
 no retained core to analyze with the current tools. Adding debugger support,
 changing core capture or temporarily backporting the official runtime correction
 requires an explicit diagnostic/correction plan beyond the bounded unchanged-
-container reproducer. Do not silently rebuild or change PHP pins to obtain a
+container reproducer. The owner subsequently approved temporary gdb installation
+and focused tracing, as recorded in Decisions; PHP changes remain unapproved. Do not silently rebuild or change PHP pins to obtain a
 passing suite. Point 1 remains open pending that evidence/plan decision; point 2
 has not started. Both instruction products already carry the reusable quality
 policy; this diagnostic introduces no delivered capability or customer rule.
+
+### Approved native-stack diagnostics — 2026-10-29
+
+Installed Debian gdb 13.1-3 with `--no-install-recommends` in the existing
+`runa-dev-app-1`; 13 new packages, no upgraded packages. Exact package versions
+and the unchanged image identity are retained in
+`.runtime/artifacts/RM-2026-014/gdb-install.json`. This temporary tooling is not a
+Dockerfile/dependency-pin change and must be removed after the last approved use.
+
+- The unchanged official GH-24488 reproducer under gdb stopped on SIGABRT after
+  `zend_mm_heap corrupted`. The visible stack includes `_zend_new_array`,
+  `execute_ex` and the abort path; many PHP frames lack symbols because the
+  installed PHP executable is stripped. This captures the manifestation, not
+  the original double-free site. Raw stack: `gh24488-gdb.txt` in the artifact
+  directory above. No core file or PHP payload/local-variable dump was requested.
+- Ran the supported owner entrypoint under multiprocess gdb tracing:
+  `python3 tools/maintainer/test-backend --parallel --processes=4 --filter=AuthEntryTest`.
+  All descendants remained under debugger observation; native fault signals would
+  be logged and delivered to the child so the runner could report/clean up.
+  Result: **76 tests, 1861 assertions PASS, 189.76 seconds**, runner exit 0,
+  cleanup 0, no captured SIGSEGV/SIGABRT. The supported cleanup removed its
+  inactive `runa_test_test_4` worker database; the base database was preserved.
+  `auth-entry-gdb.txt`, `auth-entry-results.json` and `worker-diagnostic.gdb`
+  retain the trace, native result and exact diagnostic setup. This focused run is
+  not full-backend acceptance and does not exclude an intermittent/order-dependent
+  crash. Four workers were configured; the selected file ran in one worker.
+
+- The same supported entrypoint with `--filter=PermissionsTest` reproduced an
+  actual worker **SIGSEGV/exit 139** under gdb. Native frames include
+  `zend_object_std_dtor`, `zend_objects_store_del`, `zend_array_destroy`,
+  `execute_ex` and `zend_call_function`; the top frames point into unrecognized
+  memory. The runner reported failure (exit 1) and successful cleanup (0),
+  removing its inactive worker database. Raw trace and native result are retained
+  as `permissions-gdb.txt` and `permissions-results.json`. This is actionable
+  worker evidence, but does not yet identify the initial corruption or SimpleXML.
+- A harmless PHP type probe established that Xdebug supplies compatible Zend
+  structure types even though the PHP executable lacks complete symbols. A second
+  focused Permissions diagnostic uses those types to capture only PHP function
+  names/source locations, native addresses and destructor disassembly when a
+  fault occurs; no PHP arguments, object properties or application payloads are
+  dumped. Its purpose is to locate the fault, not retry until PASS. That run
+  passed: **33 tests, 360 assertions, 94.63 seconds**, runner/cleanup 0, with no
+  fault to inspect. Raw trace/result: `permissions-php-stack-gdb.txt` and
+  `permissions-php-stack-results.json`. This unchanged-runtime failure/PASS
+  sequence confirms intermittent behavior within the focused selection.
+- Validated the PHP-stack reader against a harmless function calling
+  `gc_collect_cycles()`; it reports only the expected function names/locations.
+  A further focused Permissions run adds native verbose output to distinguish
+  test progress and capture the PHP stack if the fault recurs. This is a bounded
+  diagnostic decision, not an automatic retry policy or acceptance run. Result:
+  **33 tests, 360 assertions PASS, 93.60 seconds**, runner/cleanup 0; no native
+  fault occurred and therefore no PHP crash stack was available. Trace/result:
+  `permissions-verbose-php-stack-gdb.txt` and
+  `permissions-verbose-php-stack-results.json`. The three Permissions traces
+  preserve FAILED/PASS/PASS separately. There are no additional automatic reruns.
+- After the last approved trace, simulated and then purged exactly the 13 newly
+  installed packages listed in `gdb-install.json`, without autoremove or unrelated
+  package changes. `gdb-removal.txt` retains the scoped operation. All test child
+  processes exited through their supported wrapper; worker cleanup returned 0.
+  Development services, base test data, Qdrant/model caches, source and all raw
+  successful/failed reports remain preserved.
+
+### Proposed next diagnostic scope — owner decision pending
+
+The current stripped PHP stack ends in invalid memory during object destruction;
+no native source line identifies the original corruption. The official SimpleXML
+regression remains possible but unproven as the worker cause. Do not implement
+that upstream patch merely to obtain a passing retry.
+
+Proposed explicit extension of point 1:
+
+1. Build one disposable diagnostic image, tagged `runa-rm014-native-debug:8.4.27`,
+   from the exact current development image
+   `sha256:b98cd06c77128d28123c43fe49f0e0a33f52719e969c3001b7782c1142032751`.
+   Keep build files, logs and evidence solely under
+   `.runtime/artifacts/RM-2026-014/`. Do not rebuild/restart development services
+   or change release Dockerfiles/pins.
+2. Compile a separate debug/AddressSanitizer PHP CLI from the existing official
+   PHP 8.4.27 archive, SHA-256
+   `dcf93923b0e38e0d5252b25b796520b5a47761a08b3488b6d0b5d1115764d3f0`.
+   Rebuild necessary extensions, retaining their versions, for that diagnostic
+   ABI. Record the exact compiler/configure options and capability differences.
+   Install build/debug packages only in that disposable image. No rollback,
+   third-party PHP patch or production/development runtime replacement.
+3. Validate the known upstream reproducer in that image, then run at most three
+   focused `PermissionsTest` diagnostics through the supported owner wrapper,
+   preserving four-worker configuration and its suite lock/database guards and
+   cleanup. Use `USE_ZEND_ALLOC=0` only inside this instrumented diagnostic to
+   expose allocator accesses to ASan; document the difference from native runs.
+   Keep ASan memory-value dumps disabled and retain source locations/native fault
+   results separately from the existing native-mode evidence. Stop after an
+   actionable failure or the bounded attempts; absence of failure is inconclusive.
+4. Remove the exact disposable container/image resources after use; preserve all
+   reports, development/base test databases and shared caches. Review the first
+   invalid-access evidence before choosing any supported correction in point 2.
+
+This is a focused instrumentation build before implementation is complete, which
+exceeds the currently approved unchanged-runtime/gdb scope and the ordinary
+final-only image-build rule. Obtain the owner's explicit decision on this
+exception before building or running it. No such image has been built yet.
 
 ## Implementation plan
 
