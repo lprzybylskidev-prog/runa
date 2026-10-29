@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "status": "existing-public-boundary-fixtures",
+  "cases": [
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '1.0.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Permissions\\Contracts\\PermissionsAccess; use Runa\\Modules\\Permissions\\Contracts\\AssignmentPreview; function apply(PermissionsAccess $access, AssignmentPreview $reviewed): array { return $access->applyAssignments($reviewed); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Audit\\Contracts\\AuditReads; use Runa\\Modules\\Audit\\Contracts\\AuditQuery; function history(AuditReads $reads, AuditQuery $query): void { $reads->page($query); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Models\\User;",
+      "expected": ["foreign_module_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\ModuleFramework\\ModuleRegistry;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthorizationIdentity;",
+      "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Audit\\Contracts\\AuditWriter;",
+      "expected": ["reserved_api_import"]
+    }
+  ]
+}

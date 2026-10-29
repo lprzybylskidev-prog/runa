@@ -20,6 +20,11 @@ Classify supported consumers and complete signatures before moving files; update
 public consumers and owner/customer guidance together. Frontend replacement uses
 supported facades/controllers without copied security logic.
 
+For Admin declarations, adapters or cross-module forms, consult
+[Admin contract status and ownership](../../../docs/runa/handbook/modules/admin/README.md)
+and its composition contract. Specification-only APIs are not delivered entrypoints;
+preserve existing owner APIs until their additive implementation is complete.
+
 ## References
 
 - `references/design-principles.md` — responsibilities, abstractions, dependencies, naming, hidden behavior

@@ -31,6 +31,11 @@ security/session orchestration stays in Runa. The public customization/forms gui
 own cleanup, preference hydration and dirty-draft/read-reconciliation procedures.
 Do not copy those procedures into this entrypoint after each delivery.
 
+For Admin replacement work, consult
+[Admin frontend contract and delivery status](../../../docs/runa/handbook/modules/admin/frontend.md).
+Use only implemented exports for the installed version; the specification does not
+itself deliver controllers, routes or presentation providers.
+
 ## Shared workflow
 
 Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)

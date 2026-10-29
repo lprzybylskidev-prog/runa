@@ -1,0 +1,646 @@
+{
+  "schema_version": 1,
+  "roadmap": "RM-2026-016",
+  "baseline_commit": "b1f9f6a2e299e5577761557757f1892ede5556e3",
+  "status": "existing-contract-baseline-not-admin-runtime",
+  "apis": [
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthIdentities",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthIdentities.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/IdentityApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "identity": {
+          "signature": "identity(string $publicId): ?Identity",
+          "operation": "identity.read",
+          "permission": "runa.auth.identities.read",
+          "audience": "admin"
+        },
+        "eligibility": {
+          "signature": "eligibility(string $publicId): ?Eligibility",
+          "operation": "eligibility.read",
+          "permission": "runa.auth.eligibility.read",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\IdentityApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthLifecycle",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthLifecycle.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/LifecycleApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "create": {
+          "signature": "create(NewIdentity $input): Identity",
+          "operation": "identity.create",
+          "permission": "runa.auth.users.create",
+          "audience": "admin"
+        },
+        "change": {
+          "signature": "change(string $publicId, int $expectedVersion, LifecycleChange $change): Identity",
+          "operation": "identity.change",
+          "permission": "runa.auth.users.manage",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\LifecycleApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthInvitations",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthInvitations.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/InvitationsApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "invite": {
+          "signature": "invite(string $publicId, int $expectedVersion): bool",
+          "operation": "invitation.issue",
+          "permission": "runa.auth.invitations.manage",
+          "audience": "admin"
+        },
+        "invalidate": {
+          "signature": "invalidate(string $publicId, int $expectedVersion): bool",
+          "operation": "invitation.invalidate",
+          "permission": "runa.auth.invitations.manage",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\InvitationsApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthSessions",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthSessions.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/SessionsApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "listFor": {
+          "signature": "listFor(string $publicId, ?string $before = null): array",
+          "operation": "sessions.list",
+          "permission": "runa.auth.sessions.manage",
+          "audience": "admin"
+        },
+        "revoke": {
+          "signature": "revoke(string $publicId, string $sessionId): bool",
+          "operation": "sessions.revoke",
+          "permission": "runa.auth.sessions.manage",
+          "audience": "admin"
+        },
+        "revokeAll": {
+          "signature": "revokeAll(string $publicId): bool",
+          "operation": "sessions.revoke_all",
+          "permission": "runa.auth.sessions.manage",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\SessionsApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthSecurity",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthSecurity.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/SecurityApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "requestPasswordReset": {
+          "signature": "requestPasswordReset(string $publicId, int $expectedVersion): bool",
+          "operation": "password.admin_reset",
+          "permission": "runa.auth.passwords.reset",
+          "audience": "admin"
+        },
+        "resetFactors": {
+          "signature": "resetFactors(string $publicId, int $expectedVersion): bool",
+          "operation": "two_factor.admin_reset",
+          "permission": "runa.auth.two_factor.reset",
+          "audience": "admin"
+        },
+        "trustedDevices": {
+          "signature": "trustedDevices(string $publicId, ?string $before = null): array",
+          "operation": "trust.list",
+          "permission": "runa.auth.trust.manage",
+          "audience": "admin"
+        },
+        "revokeDevice": {
+          "signature": "revokeDevice(string $publicId, string $deviceId): bool",
+          "operation": "trust.revoke",
+          "permission": "runa.auth.trust.manage",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\SecurityApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthStepUp",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthStepUp.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/StepUpApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "assertVerified": {
+          "signature": "assertVerified(string $action, string $requirement, int $ttlSeconds = 300, bool $everyAction = false): bool",
+          "operation": "step_up.assert",
+          "permission": null,
+          "audience": "server-only"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\StepUpApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthProfiles",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthProfiles.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/ProfilesApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "edit": {
+          "signature": "edit(string $publicId, int $expectedVersion, ProfileChange $change): Identity",
+          "operation": "profile.edit",
+          "permission": "runa.auth.profiles.manage",
+          "audience": "admin"
+        },
+        "changeEmail": {
+          "signature": "changeEmail(string $publicId, int $expectedVersion, string $email): bool",
+          "operation": "email.admin_change",
+          "permission": "runa.auth.emails.manage",
+          "audience": "admin"
+        },
+        "replaceVerifiedEmail": {
+          "signature": "replaceVerifiedEmail(string $publicId, int $expectedVersion, string $email): bool",
+          "operation": "email.admin_bypass",
+          "permission": "runa.auth.emails.verify_bypass",
+          "audience": "admin"
+        },
+        "requireVerification": {
+          "signature": "requireVerification(string $publicId, int $expectedVersion): bool",
+          "operation": "email.require_verification",
+          "permission": "runa.auth.emails.reverify",
+          "audience": "admin"
+        },
+        "addSecondary": {
+          "signature": "addSecondary(string $publicId, int $expectedVersion, string $email): string",
+          "operation": "secondary.add",
+          "permission": "runa.auth.secondary.manage",
+          "audience": "admin"
+        },
+        "changeSecondary": {
+          "signature": "changeSecondary(string $publicId, int $expectedVersion, string $addressId, string $email): string",
+          "operation": "secondary.change",
+          "permission": "runa.auth.secondary.manage",
+          "audience": "admin"
+        },
+        "removeSecondary": {
+          "signature": "removeSecondary(string $publicId, int $expectedVersion, string $addressId): bool",
+          "operation": "secondary.remove",
+          "permission": "runa.auth.secondary.manage",
+          "audience": "admin"
+        },
+        "notificationEmails": {
+          "signature": "notificationEmails(string $publicId): array",
+          "operation": "addresses.notification",
+          "permission": "runa.auth.addresses.read",
+          "audience": "recipient-only"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\ProfilesApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthPreferences",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthPreferences.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/PreferencesApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "read": {
+          "signature": "read(PreferenceScope $scope): array",
+          "operation": "preferences.read",
+          "permission": null,
+          "audience": "self-service"
+        },
+        "write": {
+          "signature": "write(PreferenceScope $scope, PreferenceValue $value, int $revision): array",
+          "operation": "preferences.write",
+          "permission": null,
+          "audience": "self-service"
+        },
+        "reset": {
+          "signature": "reset(?string $module, ?PreferenceScope $scope, int $revision): array",
+          "operation": "preferences.reset",
+          "permission": null,
+          "audience": "self-service"
+        },
+        "resetAccount": {
+          "signature": "resetAccount(string $publicId, int $revision): array",
+          "operation": "preferences.admin_reset",
+          "permission": "runa.auth.preferences.reset",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\PreferencesApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthDelivery",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthDelivery.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/DeliveryApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "recipients": {
+          "signature": "recipients(string $publicId, string $module, string $category): array",
+          "operation": "delivery.recipients",
+          "permission": "runa.auth.delivery.resolve",
+          "audience": "recipient-only"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\DeliveryApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthPolicies",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthPolicies.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/PoliciesApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "history": {
+          "signature": "history(?int $before = null): array",
+          "operation": "policy.history",
+          "permission": "runa.auth.policy.read",
+          "audience": "admin"
+        },
+        "exceptions": {
+          "signature": "exceptions(string $publicId): array",
+          "operation": "policy.exceptions",
+          "permission": "runa.auth.policy.exceptions",
+          "audience": "admin"
+        },
+        "preview": {
+          "signature": "preview(array $patch, int $revision, int $generation): array",
+          "operation": "policy.preview",
+          "permission": "runa.auth.policy.write",
+          "audience": "admin"
+        },
+        "publish": {
+          "signature": "publish(array $patch, int $revision, int $generation): array",
+          "operation": "policy.publish",
+          "permission": "runa.auth.policy.write",
+          "audience": "admin"
+        },
+        "restore": {
+          "signature": "restore(int $sourceRevision, int $revision, int $generation): array",
+          "operation": "policy.restore",
+          "permission": "runa.auth.policy.write",
+          "audience": "admin"
+        },
+        "exception": {
+          "signature": "exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array",
+          "operation": "policy.exception",
+          "permission": "runa.auth.policy.exceptions",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\PoliciesApi"
+    },
+    {
+      "owner": "runa.auth",
+      "contract": "Runa\\Modules\\Auth\\Contracts\\AuthBulkSessions",
+      "source": "src/runa/modules/auth/backend/Contracts/AuthBulkSessions.php",
+      "definition": "src/runa/modules/auth/backend/Definitions/BulkSessionsApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "preview": {
+          "signature": "preview(SessionSelection $selection, bool $trust = false): array",
+          "operation": "sessions.bulk_preview",
+          "permission": "runa.auth.sessions.bulk_revoke",
+          "audience": "admin"
+        },
+        "revoke": {
+          "signature": "revoke(SessionSelection $selection, bool $trust, string $fingerprint): array",
+          "operation": "sessions.bulk_revoke",
+          "permission": "runa.auth.sessions.bulk_revoke",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Auth\\Definitions\\BulkSessionsApi"
+    },
+    {
+      "owner": "runa.permissions",
+      "contract": "Runa\\Modules\\Permissions\\Contracts\\Permissions",
+      "source": "src/runa/modules/permissions/backend/Contracts/Permissions.php",
+      "definition": "src/runa/modules/permissions/backend/Definitions/PermissionsApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "allows": {
+          "signature": "allows(string $permission): bool",
+          "operation": "permission.check",
+          "permission": null,
+          "audience": "admin"
+        },
+        "explain": {
+          "signature": "explain(string $userPublicId, ?string $after = null): PermissionPage",
+          "operation": "permission.explain",
+          "permission": "runa.permissions.introspection.read",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Permissions\\Definitions\\PermissionsApi"
+    },
+    {
+      "owner": "runa.permissions",
+      "contract": "Runa\\Modules\\Permissions\\Contracts\\PermissionsAccess",
+      "source": "src/runa/modules/permissions/backend/Contracts/PermissionsAccess.php",
+      "definition": "src/runa/modules/permissions/backend/Definitions/AccessApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "assignments": {
+          "signature": "assignments(string $userPublicId): array",
+          "operation": "access.assignments",
+          "permission": "runa.permissions.introspection.read",
+          "audience": "admin"
+        },
+        "previewAssignments": {
+          "signature": "previewAssignments(string $userPublicId, AssignmentSet $requested, string $mode = 'add'): AssignmentPreview",
+          "operation": "access.preview_assignments",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "previewCopy": {
+          "signature": "previewCopy(string $sourceUser, string $userPublicId, string $mode = 'add'): AssignmentPreview",
+          "operation": "access.preview_copy",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "previewPreset": {
+          "signature": "previewPreset(string $preset, string $userPublicId, string $mode = 'add'): AssignmentPreview",
+          "operation": "access.preview_preset",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "applyAssignments": {
+          "signature": "applyAssignments(AssignmentPreview $reviewed): array",
+          "operation": "access.apply_assignments",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "definitions": {
+          "signature": "definitions(string $kind, ?string $after = null): array",
+          "operation": "access.definitions",
+          "permission": "runa.permissions.introspection.read",
+          "audience": "admin"
+        },
+        "definition": {
+          "signature": "definition(string $kind, string $publicId): array",
+          "operation": "access.definition",
+          "permission": "runa.permissions.introspection.read",
+          "audience": "admin"
+        },
+        "previewDefinition": {
+          "signature": "previewDefinition(DefinitionInput $input): DefinitionPreview",
+          "operation": "access.preview_definition",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "saveDefinition": {
+          "signature": "saveDefinition(DefinitionPreview $reviewed): array",
+          "operation": "access.save_definition",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        },
+        "deleteDefinition": {
+          "signature": "deleteDefinition(string $kind, string $publicId, int $version): void",
+          "operation": "access.delete_definition",
+          "permission": "runa.permissions.access.manage",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Permissions\\Definitions\\AccessApi"
+    },
+    {
+      "owner": "runa.permissions",
+      "contract": "Runa\\Modules\\Permissions\\Contracts\\PermissionsAuthority",
+      "source": "src/runa/modules/permissions/backend/Contracts/PermissionsAuthority.php",
+      "definition": "src/runa/modules/permissions/backend/Definitions/AuthorityApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "previewAuthority": {
+          "signature": "previewAuthority(string $userPublicId, bool $grant): AuthorityPreview",
+          "operation": "authority.preview",
+          "permission": "runa.permissions.authority.manage",
+          "audience": "admin"
+        },
+        "applyAuthority": {
+          "signature": "applyAuthority(AuthorityPreview $reviewed): array",
+          "operation": "authority.apply",
+          "permission": "runa.permissions.authority.manage",
+          "audience": "admin"
+        },
+        "previewRoleDeletion": {
+          "signature": "previewRoleDeletion(string $publicId, int $version): RoleDeletionPreview",
+          "operation": "role.preview_delete",
+          "permission": "runa.permissions.roles.force_delete",
+          "audience": "admin"
+        },
+        "forceDeleteRole": {
+          "signature": "forceDeleteRole(RoleDeletionPreview $reviewed, bool $confirmed): void",
+          "operation": "role.force_delete",
+          "permission": "runa.permissions.roles.force_delete",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Permissions\\Definitions\\AuthorityApi"
+    },
+    {
+      "owner": "runa.permissions",
+      "contract": "Runa\\Modules\\Permissions\\Contracts\\PermissionsSelections",
+      "source": "src/runa/modules/permissions/backend/Contracts/PermissionsSelections.php",
+      "definition": "src/runa/modules/permissions/backend/Definitions/SelectionApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "users": {
+          "signature": "users(UserSelection $selection): UserSelection",
+          "operation": "selection.users",
+          "permission": "runa.permissions.users.select",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Permissions\\Definitions\\SelectionApi"
+    },
+    {
+      "owner": "runa.audit",
+      "contract": "Runa\\Modules\\Audit\\Contracts\\AuditRecords",
+      "source": "src/runa/modules/audit/backend/Contracts/AuditRecords.php",
+      "definition": "src/runa/modules/audit/backend/Definitions/AuditApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "record": {
+          "signature": "record(AuditEvent $event): AuditReference",
+          "operation": "audit.record",
+          "permission": null,
+          "audience": "server-only"
+        },
+        "attempt": {
+          "signature": "attempt(AuditEvent $event): AuditReference",
+          "operation": "audit.attempt",
+          "permission": null,
+          "audience": "server-only"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Audit\\Definitions\\AuditApi"
+    },
+    {
+      "owner": "runa.audit",
+      "contract": "Runa\\Modules\\Audit\\Contracts\\AuditReads",
+      "source": "src/runa/modules/audit/backend/Contracts/AuditReads.php",
+      "definition": "src/runa/modules/audit/backend/Definitions/AuditReadApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "page": {
+          "signature": "page(AuditQuery $query): AuditPage",
+          "operation": "audit.read.page",
+          "permission": "runa.audit.read",
+          "audience": "admin"
+        },
+        "detail": {
+          "signature": "detail(string $publicId): ?AuditEntry",
+          "operation": "audit.read.detail",
+          "permission": "runa.audit.read",
+          "audience": "admin"
+        },
+        "metadata": {
+          "signature": "metadata(): array",
+          "operation": "audit.read.metadata",
+          "permission": "runa.audit.read",
+          "audience": "admin"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Audit\\Definitions\\AuditReadApi"
+    },
+    {
+      "owner": "runa.audit",
+      "contract": "Runa\\Modules\\Audit\\Contracts\\OwnHistory",
+      "source": "src/runa/modules/audit/backend/Contracts/OwnHistory.php",
+      "definition": "src/runa/modules/audit/backend/Definitions/OwnHistoryApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "page": {
+          "signature": "page(string $module, string $entityType, array $actions, ?string $before = null): array",
+          "operation": "audit.own_history",
+          "permission": null,
+          "audience": "self-service"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Audit\\Definitions\\OwnHistoryApi"
+    },
+    {
+      "owner": "runa.audit",
+      "contract": "Runa\\Modules\\Audit\\Contracts\\OwnHistoryDetails",
+      "source": "src/runa/modules/audit/backend/Contracts/OwnHistoryDetails.php",
+      "definition": "src/runa/modules/audit/backend/Definitions/OwnHistoryDetailsApi.php",
+      "api_version": "1.0.0",
+      "methods": {
+        "detail": {
+          "signature": "detail(string $module, string $entityType, string $publicId, array $fieldsByAction): ?array",
+          "operation": "audit.own_history_detail",
+          "permission": null,
+          "audience": "self-service"
+        }
+      },
+      "imports": [],
+      "provider": "Runa\\Modules\\Audit\\Definitions\\OwnHistoryDetailsApi"
+    }
+  ],
+  "legacy": [
+    {
+      "source": "src/runa/Contracts/Modules/ManagementProvider.php",
+      "signatures": [
+        "permissions(): array",
+        "actions(): array",
+        "components(): array"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementEntityProvider.php",
+      "signatures": ["entities(): array"]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementAction.php",
+      "signatures": [
+        "__construct(public string $key, public string $permission, public array $names, public array $descriptions, public string $renderer = 'action', public int $rendererVersion = 1, public int $schemaVersion = 1)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementField.php",
+      "signatures": [
+        "__construct(public string $key, public string $type, public array $names, public array $descriptions, public bool $filterable = false, public bool $sortable = false, public bool $writable = false, public bool $sensitive = false, public ?string $referenceModule = null, public ?string $referenceOperation = null, public bool $required = false, public ?int $maxLength = null, public array $choices = [], public bool $multiple = false)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementOperation.php",
+      "signatures": [
+        "__construct(public ApiOperation $operation, public array $inputs = [], public string $stepUp = 'none', public bool $revisionRequired = true, public bool $previewRequired = false, public bool $bulk = false)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementEntity.php",
+      "signatures": [
+        "__construct(public string $key, public string $permission, public array $names, public array $descriptions, array $fields, array $operations, public int $schemaVersion = 1)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementComponent.php",
+      "signatures": [
+        "__construct(public string $key, public string $component, public string $permission, public string $renderer = 'panel', public int $rendererVersion = 1, public int $schemaVersion = 1)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ManagementPermission.php",
+      "signatures": [
+        "__construct(public string $key, public array $names, public array $descriptions, public int $schemaVersion = 1)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/ModuleManagement.php",
+      "signatures": [
+        "__construct(public string $moduleId, public int $generation, public ModuleStatus $status, public array $metadata, public ?array $settings, public array $integrations, public array $activeWork, public bool $workTruncated, public array $permissions, public array $actions, public array $components, public array $diagnostics, public array $entities = [])"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/SlotHost.php",
+      "signatures": [
+        "__construct(public string $id, public string $contract, public int $version, public array $props = [], public int $schemaVersion = 1)",
+        "jsonSerialize(): array"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/SlotContribution.php",
+      "signatures": [
+        "__construct(public string $id, public SlotHost $target, public string $component, public int $priority = 0, public ?string $permission = null, public int $schemaVersion = 1)"
+      ]
+    },
+    {
+      "source": "src/runa/Contracts/Modules/FrontendPage.php",
+      "signatures": [
+        "__construct(public string $key, public string $component, public array $names, public ?string $permission = null, public ?string $area = null, public string $icon = 'layers-intersect', public int $schemaVersion = 1)"
+      ]
+    }
+  ]
+}

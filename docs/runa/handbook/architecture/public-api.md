@@ -275,3 +275,16 @@ also works in production for trusted operator diagnostics, using production sour
 rules without development packages. SMTP verification remains an operator command.
 Acquisition receipts and customer source/configuration/test ownership are unchanged;
 updates do not move or overwrite customer-authored extensions implicitly.
+
+## Specified Admin extension contracts
+
+<!-- runa-knowledge {"purpose":"proposal","effective_date":null,"applicable_version":"0.7.0","decisions":[]} -->
+
+RM-2026-016 records the [Admin contract specification](../modules/admin/README.md):
+neutral optional management declarations, explicit owned handlers, bounded trusted
+atomic participation, app registration/settings and public frontend replacements.
+Its ownership table and PHP/TS signatures define the implementation target.
+These new symbols and routes are not yet delivered; namespace examples in that
+specification do not expand the current import allowlist. Existing supported APIs
+and reserved integration restrictions above remain in force until additive
+implementation and corresponding boundary checks are delivered together.

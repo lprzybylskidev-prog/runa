@@ -17,6 +17,11 @@ view, including future modules: retain defaults, compose public layouts/componen
 or own the frontend in src/app through supported contracts. Keep private platform
 source protected and reuse security/session controllers rather than copying them.
 
+For Admin presentation, check `docs/runa/handbook/modules/admin/frontend.md` and
+its delivery status before using named exports. Specifications are not installed
+capabilities; implemented replacement components stay in src/app and retain public
+session/security controllers.
+
 For data views, follow the public forms guide's automatic read reconciliation
 contract: refresh reads in place, merge clean/disjoint values, preserve dirty drafts
 and use local decisions only for overlapping/ambiguous changes. Share aggregate

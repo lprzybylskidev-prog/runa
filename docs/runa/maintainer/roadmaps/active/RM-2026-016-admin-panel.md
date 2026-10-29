@@ -140,8 +140,8 @@ and central changelog entries; platform versioning is separate.
 
 ## Implementation plan
 
-All points remain open. Activation is complete; finalize the public contracts in
-point 1 before runtime implementation. Points
+Activation is complete. Point 1 specifies the public contracts before runtime
+implementation in point 2. Points
 deliver code, test code and synchronized current-state documentation, including
 affected owner/customer instruction products. Only small, fast checks needed to
 resolve a concrete uncertainty may run during implementation; do not schedule
@@ -150,7 +150,7 @@ Mandatory commit hooks remain in force. Each completed point is committed with
 this roadmap ID and the checklist updated. Broad verification is exclusively point
 12, after every implementation point.
 
-- [ ] 1. Finalize the approved public contract specification and compatibility map.
+- [x] 1. Finalize the approved public contract specification and compatibility map.
   - Prerequisites: individual ARCH-001–004 decisions, release confirmation and activation.
   - Record complete signatures/DTOs/bounds/exceptions/props/slots/controller returns,
     owner/audience/entrypoint/home/delivery in the owning handbook. Define editable
@@ -294,15 +294,70 @@ The highest risks are unsupported composite operation ordering/proof reuse,
 accidental maintenance bypasses, incomplete Core coverage hidden by
 metadata-only scaffolds, field/lookup/export disclosure, and runtime branding
 diverging across browser/mail/error/build consumers. Exact contract signatures
-must be completed after owner decisions and before implementation, not invented
-inside renderer code. No new dependency or infrastructure requirement is proposed.
+are now recorded by point 1 and must be followed during implementation rather
+than invented inside renderer code. No new dependency or infrastructure requirement is proposed.
 
-## Planning validation and instruction products
+## Activation validation and instruction products
 
-Activation is documentation-only. Review source paths, relative links, active
-metadata, open checklist and final-only verification ordering; run no broad
-test/quality graph or native resource operation. Root owner and
-customer instructions need no present update because no reusable operating rule
-or delivered capability changes here. Their assessment is required in every
-affected implementation point. No implementation point or release is complete
-at activation.
+Activation was documentation-only: source paths, relative links, active metadata,
+open checklist and final-only verification ordering were reviewed without broad
+quality/native operations. At activation, neither instruction product required
+changes because no operating rule or delivered capability changed. The point 1
+assessment below records subsequent contract references. No implementation point
+or release was completed by activation itself.
+
+## Point 1 — Public contract specification
+
+Completed 2026-10-29. The [owning handbook specification](../../../handbook/modules/admin/README.md)
+records PHP declarations/DTOs/bounds/errors, explicit guarded bindings, wire schema,
+app registration, complete frontend controller/props/slots/events and component
+registry seams, trusted aggregate phases/lock order/proof/refusal behavior,
+per-Core operation coverage and maintenance/settings/presentation matrices.
+All new symbols/routes remain explicitly specified, not implemented or delivered.
+The original review now links to that source rather than claiming signatures
+remain undefined. ARCH-001–004 and feature/0.7.0 remain unchanged.
+
+### Source grounding and compatibility
+
+- Knowledge status was current: 193 documents / 9,448 chunks, no missing/orphan
+  chunks. Bounded current-intent retrieval located Audit reads, Auth capabilities
+  and transport. Original Audit/Auth guides, public API/database/module guides,
+  ManagementProvider/EntityProvider and value constructors, ModuleApis/OperationGuard,
+  Core contracts/definitions/manifests, AuthApplication presentation/controller types,
+  EntryTransaction, AccessTransaction/ChangeAssignments/AccessState, AuthorityLock
+  and framework lifecycle/health/settings/integration/work sources were opened.
+- Source-verified: assignment previews include identity version; profile-first
+  would invalidate them. Supported pair order is assignment then profile. Multiple
+  uses of the same every-action proof are incompatible, not implicitly reusable.
+  Applicable on-use/hybrid health checks cannot execute in an ambient transaction;
+  those participants use independent workflows initially, preserving current guards.
+- The private [compatibility ledger](../../architecture/admin-contract-baseline.json)
+  enumerates 19 existing guarded APIs / 59 methods with native signatures, imported
+  types, declarations, versions, operations, permissions and audience dispositions;
+  12 legacy declaration/slot contracts retain their signatures/schema.
+- Planned independent releases: Admin develops at 0.1.0 and closes at 1.0.0; Auth
+  1.2.0, Permissions/Audit 1.1.0 for additive surfaces. Existing API versions remain
+  exactly 1.0.0. Supplied Core platform ranges will retain their lower bound and
+  widen to <0.8.0 with delivered support; the app scaffold similarly widens its
+  current range. Current manifests/VERSION/changelogs are unchanged because this
+  point delivers specification/tests, not runtime capability. Customer ranges are
+  never rewritten automatically. No incompatible module MAJOR is approved.
+
+### Focused verification and instruction products
+
+The focused compatibility test file exercises actual current public import checks,
+legacy provider construction and schema refusal bounds, plus source signatures,
+API registration/version/permission preservation. Supported command:
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_admin_contract_specification.py`.
+Final focused result after fixture review: **4 passed**, exit 0, cleanup 0. This small check resolves whether the proposed additive
+extension preserves existing customer consumers; it is not an Admin runtime,
+concurrency or browser PASS. Reports remain under `.runtime/python/reports/`.
+Broad verification remains exclusively point 12.
+
+Owner backend/frontend skills and separately authored customer counterparts now
+route to canonical Admin contracts and require respecting delivery status. Root
+AGENTS and customer AGENTS, security/database/Vue/Tailwind skill entrypoints need
+no change: existing ownership, atomic Audit, guarded APIs and replacement rules
+already govern the specification; no new operating policy, dependency, security
+exception or implemented UI is introduced. No runtime services, database resources,
+containers or volumes were created or removed.

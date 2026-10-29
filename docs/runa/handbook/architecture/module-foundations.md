@@ -73,6 +73,10 @@ source, change manifests or introduce translation catalogs for dictionary values
 
 ## Future management declarations
 
+The [Admin contract specification](../modules/admin/README.md) defines the
+RM-2026-016 additive page/binding/participation target. It is not implemented;
+current schema-1 declarations below retain their existing meaning and signatures.
+
 ManagementEntityProvider optionally extends an existing ManagementProvider with
 version 1 ManagementEntity metadata. Bounded fields describe localized labels,
 types, sensitivity/editability, filters/sorts and UUID public reference lookups.

@@ -136,7 +136,9 @@ schema-version-1 consumers; version genuinely incompatible DTO changes explicitl
 
 Before implementation, record complete PHP/TS signatures, bounds, exceptions,
 props/slots/controller return shapes and audience in the owning public guide.
-Suggested responsibilities below are design descriptions, not implemented symbols:
+Point 1 records these complete signatures and bounds in the
+[owning Admin specification](../../handbook/modules/admin/README.md).
+Responsibilities below remain design descriptions, not implemented symbols:
 
 | Capability                                                 | Owner / supported consumer / entrypoint                                                                      | Home and delivery                                                                                           |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -314,7 +316,9 @@ The owner resolved all four decisions on 2026-10-29 as recorded individually bel
 Ordinary new renderer/adapters, additive
 declarations, field permissions, bounded Auth directory reads and public
 presentation seams are implementation work, not separate constitutional conflicts.
-Their exact public signatures still require specification before implementation.
+Their exact public signatures are specified in the
+[Admin contract](../../handbook/modules/admin/README.md) by point 1 before runtime
+implementation. They remain unavailable until the owning implementation point.
 
 ### ARCH-001 — Supported cross-module atomic form coordination
 
@@ -497,14 +501,17 @@ Review and update affected handbook procedures in the owning point, including al
 navigation/composition/tables/forms/components/backend operations/widgets,
 cross-module participation/transactions/authorization/availability,
 Core customization/independent pages/full replacement/generator/testing/limitations.
-Examples must execute against delivered signatures. Keep planning here; do not
-publish hypothetical APIs as implemented handbook guidance.
+Examples must execute against delivered signatures. The public Admin contract
+specification records the point 1 implementation target with explicit proposal
+metadata and unavailable status; it does not claim that its APIs are implemented.
 
 Assess root AGENTS/.agents/skills and separately authored customer-agent guidance
 for every reusable change. During implementation, update affected backend/security,
 frontend form/table/layout references and customer public consumption guidance
 without granting protected edits or copying canonical procedures. This planning
-task changes neither product: it introduces no operating rule or delivered API.
+task originally changed neither product. Point 1 subsequently adds delivery-status
+references to owner/customer backend/frontend skills; the canonical public guide
+owns the specification, without authorizing customer protected edits.
 
 ## E. Readiness and approval ledger
 

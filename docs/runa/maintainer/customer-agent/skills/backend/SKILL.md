@@ -12,6 +12,11 @@ extension/consumption APIs from platform internals. Consume documented backend
 adapters and frontend facades from application-owned code; neither a Contracts
 namespace nor a resolvable import permits private integration access.
 
+For Admin integration, check `docs/runa/handbook/modules/admin/README.md` for
+contract ownership and delivery status. Consume only APIs implemented in the
+installed version; a specification does not authorize protected edits or direct
+foreign persistence.
+
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope
 and protected-platform boundaries remain governed by installed AGENTS.
