@@ -2,7 +2,9 @@
 
 import argparse
 import re
-from collections.abc import Callable, Sequence
+import time
+from collections.abc import Callable, Generator, Sequence
+from contextlib import contextmanager
 from pathlib import Path
 
 from tools.application.deployment_context import OperationContext, read_env, stamp
@@ -91,6 +93,16 @@ class DeploymentService:
         database_setup: Callable[[Path], None] | None = None,
         source: Path | None = None,
     ) -> None:
+        costs: dict[str, float] = {}
+
+        @contextmanager
+        def measure(name: str) -> Generator[None, None, None]:
+            started = time.monotonic()
+            try:
+                yield
+            finally:
+                costs[name] = round(time.monotonic() - started, 3)
+
         previous = self.context.read_state()["current"]
         mode = read_env(self.context.workspace.root / ".env.prod.compose").get(
             "RUNA_PRODUCTION_MODE", "real"
@@ -142,9 +154,12 @@ class DeploymentService:
                     self.context.state / "install-resources.json",
                     {"sha": sha, "project": project, "started_at": stamp()},
                 )
-        release = (
-            self.source.checkout(sha, source) if source is not None else self.source.checkout(sha)
-        )
+        with measure("source_preparation"):
+            release = (
+                self.source.checkout(sha, source)
+                if source is not None
+                else self.source.checkout(sha)
+            )
         old_config = self.set_tag(sha)
         mutation_started = False
         pending: DeploymentProgress = {
@@ -153,6 +168,7 @@ class DeploymentService:
             "started_at": stamp(),
             "phase": "prepared",
             "data_steps_started": False,
+            "phase_costs": costs,
         }
 
         def phase(value: str) -> None:
@@ -162,40 +178,46 @@ class DeploymentService:
         try:
             self.runtime.dc(["config", "--quiet"], release)
             # Never overwrite an immutable image identity with a different source tree.
-            self.runtime.build_images(release)
-            self.runtime.validate(release)
+            with measure("image_build_and_dependencies"):
+                self.runtime.build_images(release)
+            with measure("configuration_and_image_assertions"):
+                self.runtime.validate(release)
             phase("startup-and-maintenance")
             mutation_started = True
-            self.runtime.dc(["up", "-d", "--wait", "--no-build", "postgres"], release)
-            self.runtime.pause_http(release)
-            pending["data_steps_started"] = True
-            if database_setup is not None:
-                phase("platform-installation")
-                database_setup(release)
-            else:
-                phase("platform-migrations")
-                self.runtime.platform_data(sha, "migrations", release)
-                phase("platform-seeding")
-                self.runtime.platform_data(sha, "required-seeds", release)
-                if any(
-                    (release / path).is_file()
-                    for path in (
-                        "src/runa/ModuleFramework/Updates/ModuleUpdates.php",
-                        "src/runa/Support/Modules/Updates/ModuleUpdates.php",
-                    )
-                ):
-                    phase("platform-modules")
-                    self.runtime.platform_data(sha, "modules", release)
-                phase("application-migrations")
-                self.runtime.artisan(["migrate", "--force"], release)
-                phase("application-seeding")
-                self.runtime.artisan(["db:seed", "--force"], release)
+            with measure("startup_and_maintenance"):
+                self.runtime.dc(["up", "-d", "--wait", "--no-build", "postgres"], release)
+                self.runtime.pause_http(release)
+            with measure("forward_data"):
+                pending["data_steps_started"] = True
+                if database_setup is not None:
+                    phase("platform-installation")
+                    database_setup(release)
+                else:
+                    phase("platform-migrations")
+                    self.runtime.platform_data(sha, "migrations", release)
+                    phase("platform-seeding")
+                    self.runtime.platform_data(sha, "required-seeds", release)
+                    if any(
+                        (release / path).is_file()
+                        for path in (
+                            "src/runa/ModuleFramework/Updates/ModuleUpdates.php",
+                            "src/runa/Support/Modules/Updates/ModuleUpdates.php",
+                        )
+                    ):
+                        phase("platform-modules")
+                        self.runtime.platform_data(sha, "modules", release)
+                    phase("application-migrations")
+                    self.runtime.artisan(["migrate", "--force"], release)
+                    phase("application-seeding")
+                    self.runtime.artisan(["db:seed", "--force"], release)
             # Cache is per container. Entrypoint builds configuration; routes/events are safe to cache here only per-container.
             phase("restart-and-health")
-            self.runtime.resume_http(release, recreate=True)
-            self.runtime.health(release, verify_source=True)
+            with measure("restart_and_health"):
+                self.runtime.resume_http(release, recreate=True)
+                self.runtime.health(release, verify_source=True)
             if verification is not None:
-                verification(release)
+                with measure("endpoint_assertions"):
+                    verification(release)
             identity: ReleaseRecord = {
                 "sha": sha,
                 "version": manifest_version(release / "src/runa/platform.json"),
@@ -206,6 +228,7 @@ class DeploymentService:
                 "deployed_at": stamp(),
                 "simulation": simulation,
                 "images": self.runtime.images(release),
+                "phase_costs": costs,
             }
             self.context.atomic(
                 self.context.state / "deployment.json", {"current": identity, "previous": previous}

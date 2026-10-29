@@ -18,6 +18,7 @@ class ReleaseRecord(TypedDict):
     deployed_at: str
     simulation: bool
     images: dict[str, str]
+    phase_costs: NotRequired[dict[str, float]]
 
 
 class DeploymentState(TypedDict):
@@ -31,6 +32,7 @@ class DeploymentProgress(TypedDict):
     started_at: str
     phase: str
     data_steps_started: bool
+    phase_costs: NotRequired[dict[str, float]]
 
 
 class ComposeService(TypedDict):

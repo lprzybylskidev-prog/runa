@@ -45,6 +45,7 @@ from tests.tools.runa.acceptance.installation_evidence import (
 from tools.application.repository_boundary_service import OWNER_PATHS, RepositoryPolicy
 from tools.core.context import WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
+from tools.core.state import json_value
 
 ROOT = Path(__file__).resolve().parents[4]
 ACCEPTANCE = AcceptanceContext(WorkspaceContext(ROOT))
@@ -284,6 +285,12 @@ def main() -> None:
     before_images = set(
         output(["docker", "image", "ls", "--format", "{{.Repository}}:{{.Tag}}"]).splitlines()
     )
+    report["conditions"] = {
+        "cache_policy": "Existing dependency/model/build/scanner caches preserved; no forced cold build.",
+        "initial_image_tag_count": len(before_images),
+        "scenario_flags": sorted(sys.argv[1:]),
+        "resource_counts_scope": "Unique removed owned project resources; auto-removed transient probes remain in native Docker/Compose logs.",
+    }
     task_images: set[str] = set()
     try:
         with evidence.phase("preparation"):
@@ -1016,6 +1023,7 @@ def main() -> None:
             )
             report["dev_sha"], report["prod_sha"] = dev_sha, sha
             report["images"] = deployment["current"]["images"]
+            report["preparation_costs"] = json_value(deployment["current"].get("phase_costs", {}))
             if team:
                 team.deploy(prod, prod_project, updated_customer_sha)
             if "--updater-preflight" in sys.argv[1:]:
@@ -1119,6 +1127,11 @@ def main() -> None:
             if removable:
                 call(["docker", "image", "rm", *removable])
             report["removed_images"] = removable
+            report["resource_counts"] = {
+                kind: len({item for row in report.get("cleanup", []) for item in row[kind]})
+                for kind in ("containers", "networks", "volumes")
+            }
+            report["resource_counts"]["removed_image_tags"] = len(removable)
             if output(["docker", "ps", "-a", "-q", "--filter", "name=^/" + smtp + "$"]):
                 print("Scoped fixture container cleanup: " + smtp, flush=True)
                 call(["docker", "rm", "--force", smtp])

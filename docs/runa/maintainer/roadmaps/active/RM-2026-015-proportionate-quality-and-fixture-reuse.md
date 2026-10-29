@@ -209,7 +209,7 @@ approved guarantee or justification for weakening coverage.
     standalone workflows, phase results and scoped cleanup/recovery ownership.
   - Implement through existing harness/coordinator composition and author failure,
     interruption, missing-phase and selection-combination contracts.
-- [ ] 4. Group compatible probes and expose preparation versus assertion costs.
+- [x] 4. Group compatible probes and expose preparation versus assertion costs.
   - Reduce redundant transient image probes; preserve required cold starts,
     process isolation, native exits and real deployment lifecycle scenarios.
   - Add bounded phase/resource measurements to existing reports and synchronize
@@ -351,3 +351,27 @@ final point. The only diagnostic so far compiled the changed Python source to
 check indentation after wrapping existing phases; no suite or native acceptance
 ran. Owner quality guide is synchronized; customer instructions need no private
 fixture procedure, and domain skills continue routing to canonical lifecycle rules.
+
+## Point 4 — Grouped immutable probes and bounded phase costs
+
+PHP policy, tool exclusion and FPM configuration now share one read-only PHP-image
+container, retaining separate processes, literal code arguments, first-failure
+native exits and existing capability restrictions. Nginx keeps its own image/alias
+context. Each verification invocation needs two rather than four probe containers;
+runtime migration/Artisan cold execution is unchanged. A focused supported probe
+diagnostic checks synthetic shell/PHP/FPM native failure propagation; broad image
+and deployment acceptance remains scheduled for point 6.
+
+Additive phase costs are retained in existing deployment release/progress records,
+without new journal transitions, data behavior or telemetry storage. They measure
+source preparation, image/dependency layers, image/config assertions, startup,
+forward data, restart/health and optional endpoint assertions. Installer reports
+copy the successful preparation attempt's costs, record preserved-cache/workload
+conditions and count unique removed project survivors/image tags. Top-level scan,
+deployment-scenario and cleanup phases remain separate; nested timings are not
+summable and transient creation counts remain native-log evidence.
+
+Production architecture and owner quality guides document the actual boundaries
+and measurement limits. Both instruction products retain their existing lifecycle
+rules; point 5 reconciles their selection hints. No dependency or topology change,
+database reset or migration was introduced.

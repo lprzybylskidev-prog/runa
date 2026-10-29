@@ -187,6 +187,17 @@ for recovery, including abrupt termination where the last phase remains RUNNING.
 SIGTERM/interrupt attempts normal guarded cleanup. Successful fixtures are removed;
 failed source context and all reports remain. No prior-run resource is reused.
 
+Native installer reports retain cache/workload conditions, unique removed project
+resource/tag counts and successful production preparation `phase_costs` from the
+existing deployment journal. Those split source preparation, image/dependency
+build, configuration/image assertions, startup, forward data and restart/health;
+top-level phases separately measure preparation, healthy validation, scanning,
+deployment scenarios and cleanup. These nested timings overlap and must not be
+summed as independent stage costs. They describe the successful preparation attempt;
+the outer preparation duration also includes intentional rejected/resumed attempts.
+Auto-removed transient containers are counted from native creation logs during the
+final comparison, not represented as removed project survivors in the JSON counts.
+
 Independent steps may run in parallel.
 
 Steps that share mutable database/environment/migration/production-stack state must be sequenced safely.

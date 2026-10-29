@@ -216,6 +216,17 @@ def test_successful_repeat_verifies_health_without_replaying_data(tmp_path: Path
     current = deploy.context.read_state()["current"]
     assert current is not None and "rollback_safe" in current
     assert current["rollback_safe"] is False
+    costs = current.get("phase_costs")
+    assert costs is not None
+    assert {
+        "source_preparation",
+        "image_build_and_dependencies",
+        "configuration_and_image_assertions",
+        "startup_and_maintenance",
+        "forward_data",
+        "restart_and_health",
+    } <= costs.keys()
+    assert all(value >= 0 for value in costs.values())
 
 
 def test_unsafe_data_rollback_refuses_before_runtime_work(

@@ -59,6 +59,21 @@ Enforce isolation at multiple layers:
 
 Production scripts explicitly use production Compose/project context and never accidentally use development Compose.
 
+Immutable PHP image policy, development-tool exclusion and FPM configuration
+probes share one read-only, capability-dropped container with separate PHP/FPM
+processes. The first failure retains its native exit; Nginx uses its own image and
+network alias context. Migration/Artisan commands retain fresh release-specific
+processes and are not moved into an old running release.
+
+The existing deployment release journal includes additive `phase_costs` in seconds
+for source preparation, image build/dependency layers, image/configuration
+assertions, startup, forward data, restart/health and optional endpoint assertions.
+These are diagnostic elapsed costs for that deployment attempt, not verification
+PASS, portable performance guarantees or a separate telemetry store. Completed
+operations preserve them with exact source/image identity; failed journals may
+contain only phases completed before their latest normal checkpoint. Caches are
+preserved and image-build time includes dependency preparation within those layers.
+
 ## Runtime parity
 
 Capabilities required by application code must exist compatibly in both development and production.

@@ -100,6 +100,9 @@ class Report(TypedDict, total=False):
     phases: dict[str, PhaseRecord]
     quality_binding: dict[str, JsonValue]
     ownership: dict[str, JsonValue]
+    preparation_costs: JsonValue
+    conditions: dict[str, JsonValue]
+    resource_counts: dict[str, int]
 
 
 Snapshot = dict[str, tuple[int, str]]
