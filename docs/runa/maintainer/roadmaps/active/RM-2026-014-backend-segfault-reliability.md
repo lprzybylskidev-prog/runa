@@ -27,9 +27,9 @@ Preserve native failure reporting, test assertions, isolation and cleanup.
 
 The owner explicitly requested a fix roadmap targeting **0.6.2**, after
 [RM-2026-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md) maintenance 0.6.1,
-on 2026-10-28. This is a PATCH increment from that planned predecessor; refresh
-the baseline and release ordering at activation. RM-013 closed and released as v0.6.1; the owner explicitly activates this
-roadmap on 2026-10-29. VERSION remains 0.6.1 until verified fix release 0.6.2.
+on 2026-10-28. This is a PATCH increment from released predecessor v0.6.1.
+The owner explicitly activates this roadmap on 2026-10-29. VERSION remains
+0.6.1 until verified fix release 0.6.2.
 
 Scope includes PHP/runtime/extensions, Pest/ParaTest and supported transports,
 Docker resources, test concurrency/order, evidence collection and the temporary
@@ -93,9 +93,10 @@ Owner-supplied external analysis points to
 [php-src#24488](https://github.com/php/php-src/issues/24488), described as
 "GC double-frees the SimpleXMLElement properties table", and suggests a PHP
 8.4.27 regression. The issue, affected versions, necessary conditions, links to
-Laravel/Pest/ParaTest and fix availability have **not been independently verified**
-for this draft. Treat this as a concrete research lead, not an established cause
-or an approved PHP update/rollback.
+Laravel/Pest/ParaTest and fix availability were **not independently verified**
+when this draft was agreed. The activation investigation below records verified
+findings; historical suite causation remains unproven. The lead itself does not
+authorize a PHP update/rollback.
 
 After activation, use this bounded diagnostic sequence:
 
@@ -126,6 +127,62 @@ changes to PHP/dependency locks, Xdebug/OPcache/GC settings, container lifecycle
 destructive operations during investigation. Preserve reports, databases, volumes
 and caches. Any supported correction belongs to point 2 after evidence review;
 broad repetition and workload acceptance remain in the final point.
+
+### Activation investigation — 2026-10-29
+
+Facts:
+
+- Actual development runtime: PHP 8.4.27 CLI NTS Linux x86_64, SimpleXML
+  8.4.27, Xdebug 3.5.3 and OPcache 8.4.27. GC is enabled; CLI OPcache is
+  disabled and JIT is disabled. No runtime settings were changed.
+- [Official issue #24488](https://github.com/php/php-src/issues/24488) describes
+  a SimpleXML properties-table double free after materializing properties and
+  collecting a cycle containing the XML object. Plain XML presence or ordinary
+  property access alone does not establish the required conditions.
+- Inspected the official regression case from
+  [PR #24494 revision 1cf7720d](https://github.com/php/php-src/blob/1cf7720d219bac8aa9c17722abaf3ab241f59962/ext/simplexml/tests/gh24488.phpt),
+  extracted its unmodified `--FILE--` block and executed it once with:
+  `docker exec -w /workspace runa-dev-app-1 php .runtime/artifacts/RM-2026-014/gh24488.php`.
+  Actual result: exit **134**, stderr `zend_mm_heap corrupted`, no stdout.
+  The source, extracted case, SHA-256, command, runtime, native exit and raw
+  outputs are retained under `.runtime/artifacts/RM-2026-014/`. This diagnostic
+  used no database, source/test changes, configuration changes or restart.
+- The upstream correction is
+  [php-src commit f9634847](https://github.com/php/php-src/commit/f9634847258a8c3ed6c12bb79104eba60bb631ea):
+  release the properties table with `zend_array_release` instead of
+  `zend_hash_release`. PR #24494 was closed after manual application; it was not
+  merged through that PR. The corrected branch NEWS targets PHP 8.4.28 with an
+  unset release date. The [official release listing](https://www.php.net/releases/index.php?json&version=8.4)
+  still lists 8.4.27 as latest on the investigation date; no released corrected
+  8.4 image was established.
+- Focused source inspection found no direct SimpleXML use in Runa backend code
+  or its backend cases. ParaTest constructs SimpleXMLElement when parsing JUnit
+  reports in its coordinator; its inspected parser does not establish the
+  materialized-properties/cycle path in a crashing worker. Mockery is not an
+  installed dependency. Other dependency XML paths require reachability evidence.
+- Retained suite failures report worker SIGSEGV/exit 139, including AuthEntryTest
+  and PermissionsTest; they supply no native stack identifying SimpleXML. No
+  existing relevant core/backtrace was found in the inspected runtime and host
+  crash locations. The host core handler uses Apport; gdb is absent from the
+  development container. Current resource snapshots cannot establish resource
+  pressure at historical failure time.
+
+Inference: **possible but unproven** as the cause of historical backend worker
+crashes. The official regression is confirmed in the installed runtime, but the
+reproducer's exit 134 is not the recorded worker exit 139, and neither a reachable
+worker XML cycle nor a matching native stack has been established. This finding
+does not justify changing application assertions, disabling GC or lowering
+parallelism. Rolling back a security release is not an approved correction.
+
+Next discriminating diagnostic: capture a native worker crash stack with matching
+runtime symbols and identify whether it reaches the SimpleXML/GC path. There is
+no retained core to analyze with the current tools. Adding debugger support,
+changing core capture or temporarily backporting the official runtime correction
+requires an explicit diagnostic/correction plan beyond the bounded unchanged-
+container reproducer. Do not silently rebuild or change PHP pins to obtain a
+passing suite. Point 1 remains open pending that evidence/plan decision; point 2
+has not started. Both instruction products already carry the reusable quality
+policy; this diagnostic introduces no delivered capability or customer rule.
 
 ## Implementation plan
 
@@ -165,6 +222,8 @@ point. Mandatory hooks and final-verification repair rules remain in force.
 ## Execution state
 
 Activated on 2026-10-29 with explicit owner authorization. Point 1 is in progress.
-No root cause is established yet. The interim exception remains an owner decision,
+The upstream SimpleXML reproducer fails in this runtime, but historical suite
+causation remains unproven; see the activation investigation. No implementation
+correction has started. The interim exception remains an owner decision,
 not evidence that PHP code cannot cause the crash. All-group milestone verification
 is not due for fix 0.6.2; select complete affected suites and real prerequisites.
