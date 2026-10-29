@@ -1,11 +1,11 @@
 ---
 id: RM-2026-015
 title: Proportionate quality verification and container fixture reuse
-status: active
+status: closed
 branch: roadmap/RM-2026-015-proportionate-quality-and-fixture-reuse
 created_at: 2026-10-29
 activated_at: 2026-10-29
-closed_at: null
+closed_at: 2026-10-29
 release_type: maintenance
 proposed_version: 0.6.2
 quality_groups: docs,tooling,development,installation,updates,transport,production,security,fixture-acceptance
@@ -229,7 +229,7 @@ approved guarantee or justification for weakening coverage.
     complete native combined production/scanning and installation/update/team/
     customer-knowledge acceptance before committing this repair.
   - Refresh source review and knowledge; restart the declared final graph.
-- [ ] 7. Complete final verification, measured comparison, release and closure.
+- [x] 7. Complete final verification, measured comparison, release and closure.
   - Finish and commit points 1–6 first. Review current-state documentation and
     finalize quality groups/rationale against actual changes; preview exact graph.
   - Run complete affected suites and independent/combined native acceptance,
@@ -529,3 +529,81 @@ JsonValue conversions preserve scenario content, exact spawn assertions retain
 literal transport and safe failure diagnostics, and optional-field accesses are
 explicit. Root owner/customer instructions and skills need no new rule for this
 internal path/type repair; owning quality/deployment guides are synchronized.
+
+## Final report
+
+RM-2026-015 finalizes maintenance release **0.6.2**, the approved PATCH from 0.6.1.
+All implementation and repair points are committed. The complete restarted final
+graph passed **47/47**, with no failed/blocked/interrupted steps, on candidate
+`eee96c7109ca435ae2686dd0b2f67a40464964d5` in **3368.879 seconds**.
+Requested groups are development, docs, fixture-acceptance, installation, production,
+security, tooling, transport and updates; the exact declaration and rationale above
+match recorded evidence. Graph fingerprint:
+`b6a69241d8c66456e0697d26b54e3fece9e4b965231c8c39adfdd994a451ed62`.
+Native logs/state remain in `.runtime/quality`; the final status snapshot is
+`.runtime/artifacts/RM-2026-015-final-status.txt`. Shared producer/consumer evidence
+is `.runtime/quality/production-fixture.json`; original failed evidence is preserved
+separately. Backend/frontend/database/browser/knowledge-runtime groups were excluded,
+not PASS; customer application tests inside installer acceptance retain their real
+scope. No all-group milestone is due at 0.6.2.
+
+### Measured costs and limits
+
+| Comparable work on the final candidate | Seconds | Logged Compose creations | Logged one-off names |
+| --- | ---: | ---: | ---: |
+| Standalone production acceptance | 824.993 | 64 | 58 |
+| Standalone scanner including its preparation | 379.190 | 21 | 16 |
+| Separate modes combined | 1204.183 | 85 | 74 |
+| Shared production/scanning plus evidence verification | 874.928 | 64 | 58 |
+| Observed saving | 329.255 (27.3%) | 21 (24.7%) | 16 (21.6%) |
+
+The shared producer itself took 874.716 seconds; its scanner evidence consumer
+took 0.212 seconds. Native producer report
+`.runtime/acceptance/installation/installation-host-aac93bcb5d.json` records
+preparation 394.889s, healthy validation 12.987s, actual scan 9.925s, customer
+deployment/failure scenarios 445.932s and cleanup 10.213s. Standalone reports are
+`installation-host-b71ea44577.json` and `installation-host-bb84be5fe0.json` in the
+same directory. Their preparations were 334.477s and 352.964s, and the standalone
+scan itself took 10.115s. Setup elimination, rather than scanner acceleration,
+explains the saving. Code and native policy acceptance also establish two instead
+of four immutable image probe containers per verification call; those `docker run`
+probes are not included in the Compose creation-name counts.
+
+This is one candidate/host with sequential qualification and preserved caches,
+not a controlled cold/warm benchmark or portable guarantee. The shared fixture ran
+before standalone qualification; startup/health and cache variation remain material.
+Against historical c929ecda production+scan cost 1223.313s, observed saving is
+348.385s (28.5%), but that candidate/workload differs and its whole graph failed
+unrelated checks. Full installation/update/team/customer knowledge cost rose from
+historical 1037.401s to 1164.868s, so no installation-speed improvement is claimed.
+
+The final graph intentionally adds 1204.183s of standalone qualification, yielding
+3368.879s total (56m09s). Subtracting that extra work gives an arithmetic 2164.696s
+(36m05s); it is not a separately executed ordinary graph or an all-group result.
+Historical whole-run 2368.371s is not directly comparable because selection,
+candidate and results differ. Structured measurements/limits are retained in
+`.runtime/artifacts/RM-2026-015-performance.json`.
+
+### Cleanup, documentation and release disposition
+
+All four native installation/production fixtures record successful cleanup. Their
+reports and current Docker inspection confirm no surviving owned project
+containers/networks/volumes or source fixture workspaces. Reported project cleanup
+totals: 47 containers, two networks, 16 disposable volumes and 47 owned image tags;
+synthetic SMTP/certificate resources are additionally handled by exact inventory.
+These counts exclude the separately reported host/management transport cleanup.
+Exact report references and protected-resource dispositions are retained in
+`.runtime/artifacts/RM-2026-015-final-cleanup.json`. Active development/test data,
+Qdrant/model/dependency/build caches, rollback resources, backups, legacy ownership
+reports and all verification evidence remain preserved. No global prune occurred.
+
+The inserted repair point corrected initial contract/type/private-state failures
+and completed the full affected-area repair loop before final graph restart.
+Current-state documentation review and owner/customer instruction synchronization
+are recorded above. Closure removes the active README claim, keeps application
+version and independent module versions unchanged, and updates only approved
+release metadata after PASS. No migration, topology/dependency change or real
+production deployment occurred. Focused docs/release validation, merge commit,
+main sanity, immutable annotated v0.6.2 tag and GitHub publication follow the
+normal release workflow; their actual results are reported in chat without
+rewriting this closed historical record.
