@@ -7,7 +7,7 @@ created_at: 2026-10-29
 activated_at: null
 closed_at: null
 release_type: maintenance
-proposed_version: 0.6.3
+proposed_version: 0.6.2
 quality_groups: docs,tooling,development,installation,updates,transport,production,security
 quality_rationale: Verify changes to quality selection, shared acceptance environments, isolated command execution and evidence ownership across the actual installation, update, transport, production and security harnesses being changed. This roadmap changes those harnesses themselves; their final acceptance is relevant even though an isolated future knowledge-ranking change would not require them. Reconcile the exact selection and prerequisites before final execution; backend and application UI suites are excluded unless implementation actually affects them.
 impact_areas:
@@ -28,14 +28,14 @@ Reduce final-verification time by selecting checks for actual changed behavior a
 avoiding repeated preparation of equivalent disposable environments. Preserve the
 assertions, real execution, failure reporting and isolation those checks establish.
 
-The owner requests **0.6.3** after released [RM-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md)
-maintenance 0.6.1 and planned
-[RM-014](../active/RM-2026-014-backend-segfault-reliability.md) fix 0.6.2,
-and explicitly delegates release-type selection to the agent. Select
-`maintenance`: compatible engineering/process optimization, a PATCH increment
-from the planned 0.6.2 predecessor. Refresh the baseline and ordering at activation.
-This draft does not change VERSION, activate work or authorize implementation.
-RM-014 segfault diagnosis remains ahead of this roadmap.
+The owner initially requested 0.6.3 after RM-013 and planned RM-014. On
+2026-10-29 the owner cancels and removes RM-014 and explicitly requests shifting
+subsequent draft release versions. This roadmap now targets **0.6.2**, directly
+after released [RM-013](../closed/RM-2026-013-knowledge-retrieval-reliability.md)
+maintenance 0.6.1. Retain the owner-delegated `maintenance` classification:
+compatible engineering/process optimization, a PATCH increment from 0.6.1.
+Refresh the baseline and ordering at activation. This draft does not change
+VERSION, activate work or authorize implementation.
 
 The owner also requests an explicit execution rule: a change confined to knowledge
 retrieval must not automatically trigger full installation/update/deployment
@@ -62,6 +62,11 @@ suppression, weaker selected security/AI checks or manufactured PASS.
 
 ### Decisions
 
+- 2026-10-29 — Owner cancels/removes RM-014 and requests version reordering.
+  Retarget this draft from 0.6.3 to maintenance 0.6.2 after released 0.6.1;
+  retain RM-015 identity and draft status. The standing owner SIGSEGV acceptance
+  rule lives in the owner testing guide; retries/diagnosis are not this scope.
+
 - 2026-10-29 — Owner requests a follow-up draft targeting 0.6.3 and delegates
   release-type selection. Agent selects maintenance after planned fix 0.6.2;
   release metadata is authorized for planning, not roadmap activation.
@@ -71,7 +76,7 @@ suppression, weaker selected security/AI checks or manufactured PASS.
 - Owner explicitly requests closing and committing RM-013 before adding this
   draft on main. RM-013 closed and released as 0.6.1 after 47/47 selected checks
   passed; this separate planning commit preserves its implementation, raw results
-  and backend exclusion. RM-014 was explicitly activated on 2026-10-29 and remains ahead of this draft.
+  and backend exclusion. RM-014 was subsequently cancelled and removed on 2026-10-29; its proposed release no longer precedes this draft.
 
 ### Observed baseline and limits
 
@@ -220,6 +225,6 @@ approved guarantee or justification for weakening coverage.
     affected-area checks and restart final verification from the beginning.
   - Show and remove only owned disposable resources after their final use.
     Preserve persistent data, caches, backups and verification evidence.
-  - Finalize maintenance 0.6.3 after refreshing the predecessor baseline. Perform
+  - Finalize maintenance 0.6.2 after refreshing the predecessor baseline. Perform
     release metadata/documentation synchronization, merge commit, main sanity,
     annotated tag/publication and branch deletion only after actual required PASS.

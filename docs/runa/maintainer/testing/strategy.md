@@ -198,6 +198,46 @@ Scratch test/code files must be removed before roadmap closure or promoted to du
 
 When fixing a reproducible security defect such as XSS, access-control leakage, IDOR, unsafe validation, or related behavior, add a regression test when the scenario can be meaningfully automated.
 
+## Backend SIGSEGV owner acceptance
+
+Owner decision, 2026-10-29: when the only failure in an owner backend test run is
+an actual PHP worker SIGSEGV/exit 139, assess the backend test check as
+**PASS (owner SIGSEGV exception)**. This standing policy replaces mandatory
+restart/rerun/diagnosis for owner acceptance of that condition. Do not add automatic
+retries or modify runtime/dependency pins to implement this policy. No renewed
+per-run approval is needed.
+
+Eligibility requires retained execution evidence identifying the native worker
+signal, successful guarded cleanup (exit 0), and no other test execution failure.
+A ParaTest parent exit 1 can carry a worker exit 139; assess the underlying worker
+failure rather than accepting arbitrary exit 1 or an output string mentioning 139. Assertion failures, configured warning/risky/deprecation failures, guard or
+setup failures, cleanup errors, timeouts, SIGABRT/134, OOM/SIGKILL/137 and unknown
+crashes are outside this exception. Incomplete or ambiguous failure evidence does
+not establish eligibility. Expected application errors exercised by passing tests
+are not independent test failures.
+
+Keep the original failed logs, native exit/signal, runner and cleanup results,
+exact candidate, execution mode and worker count. Do not edit raw reports or the
+quality coordinator's state to manufacture native PASS. Record the owner PASS
+assessment separately, explicitly naming the exception and showing executed and
+interrupted/unexecuted backend coverage to the extent available. Acceptance does
+not claim that interrupted assertions ran or that the runtime fault was fixed.
+
+The exception applies only to the backend test execution check. All other selected
+checks and real prerequisites must actually complete successfully; unexecuted
+security, analysis, frontend or other gates are not covered. If the coordinator
+stops after the crash, retain its FAILED result and obtain remaining required
+check evidence through supported commands before accepting a release. An overall
+coordinator FAILED status must never be presented as a clean all-group PASS.
+
+This is Runa owner release policy, not customer application permission or a
+runtime recovery feature. The customer instruction product and delivered recovery
+procedure remain unchanged. No reusable skill behavior or product API changes.
+Retire this temporary tolerance when a separately authorized corrected runtime
+replacement passes complete parallel backend verification without using the
+exception; synchronize owner rules and remove obsolete exception-only machinery
+if any was introduced. Do not require root-cause diagnosis in the cancelled work.
+
 ## Test failures
 
 Do not weaken tests merely to make a gate green.

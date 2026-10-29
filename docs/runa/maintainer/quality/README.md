@@ -42,6 +42,15 @@ When finished or interrupted:
 - show full log paths,
 - finish with the overall status.
 
+## Owner backend SIGSEGV disposition
+
+The [owner testing policy](../testing/strategy.md#backend-sigsegv-owner-acceptance)
+accepts backend test execution as PASS when a confirmed worker SIGSEGV/139 is its
+only failure and guarded cleanup succeeds. Preserve the failed native/coordinator
+reports and disclose the policy assessment separately. It does not waive any
+other failed or unexecuted gate, including at all-group milestones. No retry loop,
+automatic state rewrite or new command is introduced by this documentation policy.
+
 ## Manual group selection
 
 Ordinary roadmap closure selects only changed behaviors/contracts and their real
