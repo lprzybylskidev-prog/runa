@@ -3,9 +3,10 @@
 # Admin contract specification
 
 This guide records the implementation status and remaining specification for
-RM-2026-016, targeting platform 0.7.0. Point 2 supplies Admin 0.1.0 source,
-explicit installation history, entry security and the guarded bootstrap below.
-Discovery, business adapters, frontend exports/routes and settings remain planned.
+RM-2026-016, targeting platform 0.7.0. Points 2–3 supply Admin 0.1.0 source,
+explicit installation history, entry security, declaration discovery and authorized
+bootstrap/page/section reads. Business adapters, writes, frontend exports/routes
+and settings remain planned.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -24,8 +25,11 @@ Read the contracts in dependency order:
 
 ## Ownership and supported entrypoints
 
-Except for the guarded AdminAccess foundation described below, new symbols in this
-table remain specified. Private engines retain their current homes and are never
+Page declarations, handler DTOs, App registration and guarded Admin reads below
+have an unfinished point-3 implementation. Capability-specific reads, field-bound
+options and typed widget freshness are implemented; complete component/build
+projection remains pending. Atomic participation, settings and frontend contracts
+remain specified. Private engines retain their current homes and are never
 ordinary application imports.
 
 | Capability                                              | Owner and audience                                                      | Supported entrypoint                                                                 | Implementation home and delivery                                                      |
@@ -85,18 +89,19 @@ Resolve `Runa\Modules\Admin\Contracts\AdminAccess` through ModuleApis with versi
 `1.0.0`. Every method requires current Core availability, `runa.admin.enter`, a
 current operational Auth session and password proof for `runa.admin.enter` with
 TTL 300 seconds and `everyAction=false`. Ordinary direct/role grants suffice;
-the protected system role does not bypass proof or session checks. Bootstrap is
-implemented; other declared methods refuse with `admin_page_unavailable` after
+the protected system role does not bypass proof or session checks. Bootstrap, page and section read are
+implemented; preview/save/command still refuse with `admin_page_unavailable` after
 entry checks until their owning implementation points.
 
 The implemented route is GET `/api/admin`, named `runa.admin.bootstrap`. Its fixed
 platform dispatcher loads the source-owned controller/FormRequest/JsonResource
 only after authenticated entry admission. The existing API middleware supplies
 cookies/session/CSRF; responses are no-store and errors expose fixed English
-messages/reasons. Bootstrap currently returns empty owners/widgets and existing
-source-default application presentation (revision 0). `/admin` HTML, page/write
-routes, contribution discovery and runtime presentation overrides are not supplied
-yet. The public welcome catalogue reads localized Admin manifest metadata and
+messages/reasons. Bootstrap returns authorized owners/pages/widgets and existing
+source-default application presentation (revision 0). No built-in business page
+provider is supplied yet, so the default catalogue remains empty. App providers
+can supply independent pages through the documented bootstrap registry. `/admin`
+HTML, page/section/write HTTP routes and runtime presentation overrides remain planned. The public welcome catalogue reads localized Admin manifest metadata and
 uses the existing adjustments icon; no Admin menu entry or rendered PASS is claimed.
 
 Named trusted `Runa\Integration\Core\AdminEntry`, `AdminHttpGuard`,
@@ -117,6 +122,9 @@ flags, dependencies, availability and observation timestamps/pass state. It excl
 paths, source hashes, settings, secret values, work payloads and native error text.
 No diagnostic HTTP operation or management mutation is exposed yet; point 9 owns
 that wiring and transactional Audit additions. No arbitrary engine dispatcher exists.
+
+Point 3 implements the declaration and projection subset described in
+[declarations](declarations.md#point-3-worktree-discovery-and-projection-unfinished).
 
 Point 1 records contracts and current-API compatibility fixtures. Points 2–11
 implement these contracts and author behavioral tests. Point 12 alone runs complete

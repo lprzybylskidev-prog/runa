@@ -13,6 +13,13 @@ filter and a disposable worker. The common fixture removes exact Admin registrat
 and update history before removing its Core prerequisites. No Admin tables exist.
 Complete suites/browser/native installation/update acceptance remain final-only.
 
+ProjectionTest authors independent App bootstrap/ownership/freeze cases, authorized
+field/value/control projection, read-only/unknown writes, filter/sort/options
+refusals, raw-secret and handler-error redaction, bounded DTOs and registry
+changes before/after owning reads. It uses source-owned temporary App classes and
+an explicit authorizer double to isolate projection from the real session/proof
+entry cases in EntryTest. Those doubles do not establish native grant acceptance.
+
 Native transaction cases in EntryTest use the target runtime and real session,
 password/factor enrollment and single-use proof. They author Auth-first joined
 commit, Audit rollback, stale review, duplicate writer/proof refusal and standalone

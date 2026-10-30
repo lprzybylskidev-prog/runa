@@ -1,10 +1,13 @@
-<!-- runa-knowledge {"purpose":"proposal","effective_date":null,"applicable_version":"0.7.0","decisions":[]} -->
+<!-- runa-knowledge {"purpose":"current_guidance","effective_date":"2026-10-30","applicable_version":"0.7.0","decisions":[]} -->
 
 # Admin declarations, bindings and wire values
 
-Status: specified by RM-2026-016 point 1. Point 2 implements AdminAccess and its
-guarded bootstrap only; see [ownership and delivery](README.md). Other PHP signatures below are declaration specifications, not
-copyable runtime implementations. Named value classes are final readonly, with
+Status: point 3 has unfinished declarations/discovery/projection work. The
+capability interfaces, field-bound options and typed widget results below are
+implemented; component/build projection remains specified for completion with
+the frontend registry. The complete wire contract is not yet delivered. Write dispatch, business adapters,
+HTTP routes other than bootstrap and frontend rendering remain planned. See
+[ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
 
@@ -64,7 +67,7 @@ targets `list<ManagementApiTarget>`; methods `list<string>`. `handler` is a
 `class-string<ManagementParticipant>`; targets name actual guarded contracts/API
 versions/methods used by that handler, not a reflection invocation instruction.
 The declaration loader validates ownership, required/optional dependencies and
-targets before executing a handler. Ordinary App registrations use owner `app`
+target shape before executing a handler; current availability is checked per binding. Ordinary App registrations use owner `app`
 and container-bound App classes; module registrations use their retained module ID.
 
 Keys/permissions/binding identities use `ApiOperation` syntax and 128-byte bound.
@@ -168,8 +171,8 @@ is accepted in these DTOs; Auth owns proof in the current server session. Unsupp
 handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
-The interfaces above are the revised point-2b specification; point 3 must update
-its unfinished implementations and consumers before claiming delivery. A handler
+The capability interfaces and read/result DTOs above are implemented in the
+point-3 worktree. Full discovery/projection delivery remains incomplete. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -204,9 +207,10 @@ participation becoming unavailable blocks Save; independent pages remain usable.
 
 ## App registration and guarded Admin API
 
-AdminAccess is implemented in point 2; only bootstrap currently returns data.
-Other methods fail closed after entry checks. AdminRegistry and page handlers
-remain planned. In the route table below, only `runa.admin.bootstrap` is implemented;
+AdminAccess bootstrap/page/read and AdminRegistry are implemented.
+Preview/save/command fail closed after entry checks. Handler interfaces are
+delivered; Core business handlers follow in their owning points.
+In the route table below, only `runa.admin.bootstrap` is implemented;
 HTML and remaining API routes belong to subsequent points.
 
 Admin contracts live in `Runa\Modules\Admin\Contracts`:
@@ -371,3 +375,67 @@ to 429 and unavailable maintenance/module/Audit to 503. Existing Auth proof
 challenge response semantics take precedence over a generic 403. Never echo
 unauthorized submitted values. Root rollback and refusal handling are specified
 in [composition](composition.md).
+
+## Point-3 worktree discovery and projection (unfinished)
+
+Management discovery reads only installed/registered, enabled and available owners
+whose manifest hash still matches their source. Existing legacy management
+providers keep their schema and do not become executable pages. It checks aggregate
+owner limits, default uniqueness, handler/participant source ownership, declared
+dependencies, exact guarded API versions/methods and component identity. Handlers
+are inspected without constructing them. They are constructed only for an admitted
+read after rechecking target availability. Optional target unavailability is
+isolated to its section/widget, preserving unrelated pages. Invalid/conflicting declarations discard that owner's pages, bindings,
+contributions and widgets with `admin_declaration_unavailable`; other owners remain
+independent. Mixed registry generations fail with `availability_changed`.
+
+Ordinary App providers implement ManagementPageProvider in `src/app/Management`.
+During an application provider's boot, explicitly bind each App handler class and
+register a Laravel `afterResolving(AdminRegistry::class, ...)` callback that calls
+`$registry->register($provider)`. This source-owned bootstrap callback is resolved
+by AdminAccess before its first discovery; cold installation/recovery boot never
+loads unavailable module classes. Do not eagerly resolve AdminRegistry in a
+provider constructor or during cold command boot. App providers return no
+permission declarations and consume already existing native grants plus their
+record Policies. Registration freezes before the first declaration
+discovery; duplicates, foreign classes and late replacement throw
+InvalidArgumentException. App classes under `App\Modules` use module declarations
+instead. Provider registration never installs modules or synchronizes grants.
+
+Source component keys resolve to their owning module's existing
+`frontend/components/<key>.vue`; App independent keys use `app.<key>` with source
+`src/app/resources/js/components/admin/<key>.vue`. Symlinks, imports, foreign keys
+and missing source are refused. Browser build registry wiring and replacements
+remain point 4; source validation alone is not rendered acceptance.
+
+Bootstrap selects the first authorized declared default, otherwise the first
+page ordered by order/key. Owners with no authorized page disappear. Page reads
+return authorized section/field/command descriptors with record=null; section
+reads explicitly fetch record/page/options through the owning handler. No private
+handler names, API targets or source paths appear on the wire; component build
+identities use only the explicit public shape above. Contributions
+retain owner authority and use section identity `<owner>.<contribution>.<section>`;
+they appear only under an authorized existing host. Host sections sort by order/key,
+then contributions by contribution order/owned identity. The dashboard host accepts
+widgets only. A missing required participant cannot be saved: all write dispatch
+remains refused until the atomic coordinator is delivered.
+
+Read projection removes denied and undeclared fields, choices and controls. It
+rejects unknown query fields, unreadable/nonfilterable/nonsortable filter/sort keys,
+internal IDs and excessive limits. Options authorize only the requested declared lookup field; denied siblings
+do not block an allowed lookup and a mismatched result field is refused. Owning handlers must authorize returned records, option labels,
+selection/counts/exports and record Policies before producing their bounded DTO;
+Admin never estimates totals or filters an unauthorized count after disclosure.
+Typed field projection rejects nested objects in scalar fields. Sensitive values
+must already be exactly `{set:boolean}`; a raw secret refuses the result. Unexpected
+handler failures become `admin_read_unavailable`, with no exception message.
+Widgets have an independently authorized ManagementWidgetReader binding; their
+owning handler returns safe JSON with explicit observation/expiry. Expired values
+carry admin_widget_stale; failures yield empty values/null timestamps plus
+`admin_widget_unavailable`. No arbitrary export endpoint is introduced.
+
+The shared private write-input intersection refuses read-only sections/fields,
+unknown keys, inaccessible command inputs and unconfirmed destructive commands.
+It executes no write and is not an application entrypoint. Future command/atomic
+coordinators must reuse it together with owning proofs, previews, revisions and
+Policies; declaration metadata cannot weaken the native owning API guard.

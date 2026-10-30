@@ -15,11 +15,14 @@ use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\LifecyclePolicies;
+use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
+use Runa\Modules\Admin\Contracts\AdminRegistry;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\ProfileMutation;
@@ -38,6 +41,7 @@ use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\CoreModuleStorage;
+use Tests\Fixtures\ModuleSources;
 use Tests\PlatformTestCase;
 
 uses(PlatformTestCase::class);
@@ -211,6 +215,42 @@ it('projects diagnostics through fixed source adapters without private metadata'
     expect($captured['modules'])->toHaveCount(4);
     foreach ($captured['modules'] as $module) {
         expect(array_keys($module))->not->toContain('source_path', 'manifest_hash', 'settings', 'config', 'work', 'payload');
+    }
+});
+
+it('registers lazy App declarations before guarded discovery and freezes replacement', function (): void {
+    $sources = new ModuleSources;
+    $namespace = 'Bootstrap'.bin2hex(random_bytes(6));
+    $directory = $sources->root.'/app/Management/'.$namespace;
+    mkdir($directory, 0775, true);
+    foreach (['Provider', 'Handler'] as $name) {
+        $file = $directory.'/'.$name.'.php';
+        file_put_contents($file, str_replace('FIXTURE_NAMESPACE', $namespace, file_get_contents(__DIR__.'/../../Fixtures/Management/Admin'.$name.'.php.stub')));
+        require $file;
+    }
+    $provider = 'App\\Management\\'.$namespace.'\\Provider';
+    $handler = 'App\\Management\\'.$namespace.'\\Handler';
+    $registrations = new ApplicationManagement(app(), $sources->root);
+    app()->instance(ApplicationManagement::class, $registrations);
+    app()->forgetInstance(ManagementPages::class);
+    app()->bind($handler, $handler);
+    $called = false;
+    app()->afterResolving(AdminRegistry::class, function ($registry) use ($provider, &$called): void {
+        $called = true;
+        $registry->register(new $provider);
+    });
+    try {
+        expect($called)->toBeFalse();
+        ($this->adminGrant)('runa.admin.enter');
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.owners.0.id', 'app')
+            ->assertJsonPath('data.owners.0.default_page', 'users')->assertJsonPath('data.dashboard.widgets', []);
+        expect($called)->toBeTrue();
+        expect(fn () => $registrations->register(new $provider))->toThrow(InvalidArgumentException::class);
+        $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.owners.0.id', 'app');
+    } finally {
+        $sources->remove();
     }
 });
 

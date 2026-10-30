@@ -505,15 +505,15 @@ created or removed. The roadmap remains active; point 3 is next.
 
 ## Point 3 — Declaration discovery and authorized projection (in progress)
 
-Worktree implementation and focused evidence, 2026-10-30; not committed or complete.
-The owner-approved revised ARCH-001 now resumes work through added point 2a;
-this point-3 worktree remains incomplete pending its prerequisites.
+Initial worktree implementation and focused evidence, 2026-10-30, recorded before
+points 2a–2b. The continuation below records the revised read/discovery checkpoint;
+point 3 remains incomplete, with its prerequisites now satisfied.
 The draft implementation adds additive ManagementPageProvider and bounded
 page/section/field/command/binding/target/widget/contribution values, owning handler
 interfaces and read/write/result DTOs without changing legacy provider methods,
 constructors or ModuleManagement schema 1. the earlier draft 0.2.0/no-op edge was retired in point 2a; Admin remains at
-unreleased development 0.1.0; existing Core versions/API signatures and
-platform VERSION remain unchanged. Its creation release remains 1.0.0 at verified
+unreleased development 0.1.0. Point 2a records current changed Core/API versions;
+platform VERSION remains unchanged. Its creation release remains 1.0.0 at verified
 closure; platform target remains feature/0.7.0.
 
 ### Implementation and source grounding
@@ -723,3 +723,43 @@ status, so need no duplicated contract rule. The existing point-3 backend guidan
 and runtime work remain outside this specification commit. No dependencies, database
 changes, Docker resources or infrastructure were created/removed; existing data,
 Qdrant/model caches and reports are preserved. Point 3 is next.
+
+## Point 3 continuation — field-bound reads and binding isolation
+
+2026-10-30: after point 2b, migrated the preserved declaration worktree to separate
+resource/options/widget/write capabilities and immutable field-bound options and
+widget freshness DTOs. Discovery verifies handler capabilities without constructing
+business handlers. Runtime target availability is checked per actual binding;
+structurally valid App/optional bindings with missing targets no longer discard
+unrelated pages. Required unavailable sections retain safe blocked descriptors.
+
+Lookup projection validates only the requested readable reference field, rejects
+unknown/denied fields before handler execution and rejects mismatched result field
+identity. Widget projection preserves owning observation/expiry, marks expired data
+stale and refuses future/invalid observations without exception disclosure. Existing
+native entry/proof, owning guarded calls, record Policies and write refusal remain.
+
+A necessary focused supported check resolved the new field/isolation wire behavior:
+`python3 tools/maintainer/test-backend --parallel --processes=1 --filter='authorizes one lookup|isolates an unavailable binding'` passed 2 tests / 19 assertions,
+0.93 seconds, native exit 0 and cleanup 0. A second focused run of the existing
+App field/value/query denial scenario after adding an independently readable lookup
+also passed: 1 test / 23 assertions, 0.86 seconds, native exit 0 / cleanup 0. The runner showed and removed only
+`runa_test_test_1`; base/development databases, containers, Qdrant/model caches and
+reports were preserved. No broad suite or rendered acceptance was run.
+
+After making capability checks explicit at invocation, the same three focused
+scenarios passed together: 3 tests / 42 assertions, 0.94 seconds, native exit 0 /
+cleanup 0. This repeated only the affected focused scenarios.
+
+Backend/Laravel/security guidance and Boost Laravel 13.x container documentation
+were consulted; the current knowledge query and original sources from point 2b
+remain applicable. Both instruction products already link the canonical Admin
+contracts and delivery status; customer backend guidance travels with this work.
+No root AGENTS/security policy or dependency change is needed.
+
+Point 3 remains OPEN. Remaining work is complete page/section/field/widget component
+and build identity projection with its source registry evidence, stale/missing-build
+scenarios and final review of discovery/read consumers. Point 4 still owns compiled
+registry resolution, shell/entry advertisement and frontend rendering. The read/
+discovery checkpoint is not a completed point or release PASS. Admin stays 0.1.0;
+no migration, reset, infrastructure or disposable Docker resource was introduced.

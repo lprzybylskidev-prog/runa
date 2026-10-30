@@ -31,6 +31,8 @@ use Runa\ModuleFramework\Frontend\ModuleFrontendRoutes;
 use Runa\ModuleFramework\HealthDeadline;
 use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\LifecyclePolicies;
+use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\Management\ManagementRenderers;
 use Runa\ModuleFramework\Management\ModuleManagement;
 use Runa\ModuleFramework\ModuleAutoloader;
@@ -79,6 +81,10 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(SettingTypes::class);
         $this->app->singleton(SettingsDefinitions::class);
         $this->app->singleton(ManagementRenderers::class);
+        $this->app->singleton(ApplicationManagement::class, fn () => new ApplicationManagement($this->app, base_path()));
+        $this->app->singleton(ManagementPages::class, fn () => new ManagementPages($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(ModuleAvailability::class), $this->app->make(ApplicationManagement::class), $this->app->make(ModuleApis::class), base_path()));
+        // String bindings preserve cold startup when Core module classes are unavailable.
+        $this->app->singleton('Runa\\Modules\\Admin\\Contracts\\AdminRegistry', 'Runa\\Modules\\Admin\\Registry');
         $this->app->singleton(ModuleManagement::class);
         $this->app->singleton(ModuleFrontendRoutes::class, fn () => new ModuleFrontendRoutes($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleFrontend::class), $this->app->make('router')));
         $this->app->bindIf(SettingsObserver::class, IgnoreSettingsChanges::class);

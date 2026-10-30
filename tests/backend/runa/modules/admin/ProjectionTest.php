@@ -1,0 +1,175 @@
+<?php
+
+use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\OperationAuthorizer;
+use Runa\Contracts\Modules\OperationContext;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\ManagementPages;
+use Runa\ModuleFramework\ModuleAvailability;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\Modules\Admin\Queries\Projection;
+use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Api\OperationRejected;
+use Tests\Fixtures\ModuleSources;
+use Tests\PlatformTestCase;
+
+uses(PlatformTestCase::class);
+
+beforeEach(function (): void {
+    app(ModuleRegistry::class)->synchronize('runa');
+    $this->sources = new ModuleSources;
+    $namespace = 'Fixture'.bin2hex(random_bytes(6));
+    $directory = $this->sources->root.'/app/Management/'.$namespace;
+    mkdir($directory, 0775, true);
+    foreach (['Provider', 'Handler'] as $name) {
+        $file = $directory.'/'.$name.'.php';
+        file_put_contents($file, str_replace('FIXTURE_NAMESPACE', $namespace, file_get_contents(__DIR__.'/../../Fixtures/Management/Admin'.$name.'.php.stub')));
+        require $file;
+    }
+    $this->providerClass = 'App\\Management\\'.$namespace.'\\Provider';
+    $this->handlerClass = 'App\\Management\\'.$namespace.'\\Handler';
+    app()->bind($this->handlerClass, $this->handlerClass);
+    $this->registration = new ApplicationManagement(app(), $this->sources->root);
+    $class = $this->providerClass;
+    $this->provider = new $class;
+    $this->registration->register($this->provider);
+    $this->declarations = new ManagementPages(app(ModuleRegistry::class), app(ModuleDeclarations::class), app(ModuleAvailability::class), $this->registration, app(ModuleApis::class), $this->sources->root);
+    $this->authority = new class implements OperationAuthorizer
+    {
+        public array $grants = ['runa.admin.enter'];
+
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return in_array($permission, $this->grants, true);
+        }
+    };
+    $this->projection = new Projection($this->declarations, $this->authority);
+});
+
+afterEach(function (): void {
+    $this->sources?->remove();
+});
+
+it('projects an independent App page and removes forbidden fields values choices queries and options', function (): void {
+    $bootstrap = $this->projection->bootstrap();
+    expect($bootstrap['owners'])->toHaveCount(1)->and($bootstrap['owners'][0]['id'])->toBe('app')
+        ->and($bootstrap['owners'][0]['default_page'])->toBe('users')->and($bootstrap['owners'][0]['pages'])->toHaveCount(1)
+        ->and($bootstrap['dashboard']['widgets'])->toBe([])->and($this->handlerClass::$calls)->toBe(0);
+    $page = $this->projection->page('app', 'users');
+    expect(array_column($page['sections'][0]['fields'], 'key'))->toBe(['name', 'token', 'allowed_reference'])
+        ->and($page['sections'][0]['readonly'])->toBeTrue()->and($page['sections'][0]['commands'])->toBe([])
+        ->and($page['sections'][1]['key'])->toBe('app.extra.details')
+        ->and(json_encode($page))->not->toContain('private_choice', 'hidden', '"key":"reference"');
+    $record = $this->projection->read('app', 'users', 'profile', []);
+    expect($record['values'])->toBe(['name' => 'Visible', 'token' => ['set' => true]])
+        ->and(json_encode($record))->not->toContain('private-value-marker', 'unlisted-marker');
+    $list = $this->projection->read('app', 'users', 'profile', ['kind' => 'page', 'filters' => ['name' => 'Visible'], 'sort' => [['key' => 'name', 'direction' => 'asc']]]);
+    expect($list['total'])->toBeNull()->and($list['items'][0]['values'])->toBe($record['values']);
+    $calls = $this->handlerClass::$calls;
+    foreach ([['filters' => ['hidden' => 'probe']], ['sort' => [['key' => 'hidden', 'direction' => 'asc']]], ['kind' => 'options'], ['selection' => ['internal-id']], ['limit' => 101]] as $query) {
+        expect(fn () => $this->projection->read('app', 'users', 'profile', $query))->toThrow(OperationRejected::class);
+    }
+    expect($this->handlerClass::$calls)->toBe($calls);
+    expect(fn () => $this->projection->page('app', 'hidden'))->toThrow(OperationRejected::class);
+    expect(fn () => $this->projection->read('app', 'users', 'missing', []))->toThrow(OperationRejected::class);
+});
+
+it('refuses read-only and unknown submitted fields before any owning write executes', function (): void {
+    $generation = app(ModuleRegistry::class)->snapshot()->generation;
+    $section = $this->provider->section();
+    $input = ['command' => 'update', 'public_id' => null, 'revision' => 'revision-1', 'values' => ['name' => 'Updated']];
+    expect(fn () => $this->projection->writeInput('app', $section, $input, $generation))->toThrow(OperationRejected::class);
+    $this->authority->grants[] = 'runa.auth.profile.update';
+    expect($this->projection->writeInput('app', $section, $input, $generation)->values)->toBe(['name' => 'Updated']);
+    foreach (['hidden', 'token', 'unknown'] as $field) {
+        $input['values'] = [$field => 'untrusted'];
+        expect(fn () => $this->projection->writeInput('app', $section, $input, $generation))->toThrow(OperationRejected::class);
+    }
+    expect($this->handlerClass::$calls)->toBe(0);
+});
+
+it('isolates invalid declarations and freezes App registrations without shadowing owners', function (): void {
+    $class = $this->providerClass;
+    $class::$duplicate = true;
+    expect($this->declarations->discover()['diagnostics'])->toBe(['app' => 'admin_declaration_unavailable'])
+        ->and($this->projection->bootstrap()['owners'])->toBe([]);
+    expect(fn () => $this->registration->register(new $class))->toThrow(InvalidArgumentException::class);
+    $class::$duplicate = false;
+    $class::$component = 'app.foreign.component';
+    expect($this->declarations->discover()['diagnostics'])->toBe(['app' => 'admin_declaration_unavailable']);
+    $class::$component = 'app.missing';
+    expect($this->declarations->discover()['diagnostics'])->toBe(['app' => 'admin_declaration_unavailable']);
+    $class::$component = null;
+    expect($this->projection->bootstrap()['owners'])->toHaveCount(1);
+    app()->offsetUnset($this->handlerClass);
+    expect(fn () => $this->declarations->handler('app', new ManagementBinding('profile', $this->handlerClass, [])))->toThrow(InvalidArgumentException::class);
+});
+
+it('rejects mixed generations at discovery and after an owning read', function (): void {
+    $class = $this->providerClass;
+    $class::$changed = true;
+    expect(fn () => $this->projection->bootstrap())->toThrow(OperationRejected::class);
+    $class::$changed = false;
+    $this->handlerClass::$changed = true;
+    expect(fn () => $this->projection->read('app', 'users', 'profile', []))->toThrow(OperationRejected::class);
+});
+
+it('refuses raw secrets and redacts owning failures and widget diagnostics', function (): void {
+    $this->handlerClass::$rawSecret = true;
+    expect(fn () => $this->projection->read('app', 'users', 'profile', []))->toThrow(OperationRejected::class);
+    $this->handlerClass::$failure = true;
+    expect(fn () => $this->projection->read('app', 'users', 'profile', []))->toThrow(OperationRejected::class);
+    $this->providerClass::$hiddenWidget = false;
+    $bootstrap = $this->projection->bootstrap();
+    expect($bootstrap['dashboard']['widgets'][0]['diagnostic'])->toBe('admin_widget_unavailable')
+        ->and($bootstrap['dashboard']['widgets'][0]['values'])->toBe([])
+        ->and(json_encode($bootstrap))->not->toContain('private-exception-marker', 'private-secret-marker');
+});
+
+it('bounds management input DTOs without accepting internal IDs or executable values', function (): void {
+    foreach ([fn () => new ManagementRead('42'), fn () => new ManagementRead(filters: ['name' => new stdClass]),
+        fn () => new ManagementRead(sort: [['key' => 'name', 'direction' => 'DROP']]), fn () => new ManagementRead(limit: 0)] as $invalid) {
+        expect($invalid)->toThrow(InvalidArgumentException::class);
+    }
+});
+
+it('authorizes one lookup without admitting its denied sibling or mismatched field results', function (): void {
+    $result = $this->projection->read('app', 'users', 'profile', ['kind' => 'options', 'field' => 'allowed_reference']);
+    expect($result['field'])->toBe('allowed_reference')->and($result['items'][0]['label'])->toBe('Private option');
+    $calls = $this->handlerClass::$calls;
+    foreach (['reference', 'unknown', 'name'] as $field) {
+        try {
+            $this->projection->read('app', 'users', 'profile', ['kind' => 'options', 'field' => $field]);
+        } catch (OperationRejected $error) {
+            expect($error->reason)->toBe('admin_lookup_unavailable');
+
+            continue;
+        }
+        test()->fail('Unauthorized lookup succeeded.');
+    }
+    expect($this->handlerClass::$calls)->toBe($calls);
+    $this->handlerClass::$optionField = 'reference';
+    expect(fn () => $this->projection->read('app', 'users', 'profile', ['kind' => 'options', 'field' => 'allowed_reference']))->toThrow(OperationRejected::class);
+});
+
+it('isolates an unavailable binding from a sibling page and preserves typed widget freshness', function (): void {
+    $this->providerClass::$optionalPage = true;
+    expect($this->projection->bootstrap()['owners'][0]['pages'])->toHaveCount(2);
+    $page = $this->projection->page('app', 'optional');
+    expect($page['sections'][0]['diagnostic'])->toBe('admin_binding_unavailable')
+        ->and($page['sections'][0]['readonly'])->toBeTrue()->and($page['sections'][0]['record'])->toBeNull();
+    expect($this->projection->read('app', 'users', 'profile', [])['values']['name'])->toBe('Visible');
+    expect(fn () => $this->projection->read('app', 'optional', 'remote', []))->toThrow(OperationRejected::class);
+    $this->providerClass::$hiddenWidget = false;
+    $this->handlerClass::$observedAt = '2020-01-01T00:00:00Z';
+    $this->handlerClass::$expiresAt = '2020-01-02T00:00:00Z';
+    $widget = $this->projection->bootstrap()['dashboard']['widgets'][0];
+    expect($widget['observed_at'])->toBe('2020-01-01T00:00:00Z')
+        ->and($widget['expires_at'])->toBe('2020-01-02T00:00:00Z')
+        ->and($widget['diagnostic'])->toBe('admin_widget_stale')->and($widget['values'])->toBe(['count' => 3]);
+    $this->handlerClass::$observedAt = null;
+    $widget = $this->projection->bootstrap()['dashboard']['widgets'][0];
+    expect($widget['values'])->toBe([])->and($widget['diagnostic'])->toBe('admin_widget_unavailable');
+});

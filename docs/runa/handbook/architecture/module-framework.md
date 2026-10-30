@@ -564,3 +564,16 @@ DevelopmentContributor map, module-ID dependencies and development ManagedSeeder
 They are opt-in local tooling, separate from native application production seeding,
 module required initialization and loose seed files. See [the fixture contract](../data/seeding.md#explicit-module-development-contributors)
 for safe public references, production refusal, idempotence, private setup and tuning.
+
+## Additive Admin page declarations
+
+Optional ManagementPageProvider extends the retained ManagementProvider without
+changing legacy metadata schema 1. Its pages/sections/field access, explicit
+API/handler bindings, widgets and editable contributions follow the evolving
+[Admin declaration contract](../modules/admin/declarations.md). Admin owns the
+authorized projection; full component/build projection remains pending in point 3.
+Owners keep their guarded business APIs and record Policies.
+No provider boot grants permissions, installs data or starts a business handler.
+Independent App pages use the frozen AdminRegistry bootstrap contract without a
+module manifest. Rendering, writes and atomic participation retain their explicit
+[delivery status](../modules/admin/README.md#delivery-status-and-acceptance-ownership).

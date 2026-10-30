@@ -154,7 +154,31 @@
     "Runa\\Contracts\\Modules\\MutationDefinition",
     "Runa\\Contracts\\Modules\\MutationAccess",
     "Runa\\Contracts\\Modules\\MutationProof",
-    "Runa\\Support\\Modules\\Data\\ModuleTransactions"
+    "Runa\\Support\\Modules\\Data\\ModuleTransactions",
+    "Runa\\Contracts\\Modules\\ManagementApiTarget",
+    "Runa\\Contracts\\Modules\\ManagementBinding",
+    "Runa\\Contracts\\Modules\\ManagementCommandDefinition",
+    "Runa\\Contracts\\Modules\\ManagementContribution",
+    "Runa\\Contracts\\Modules\\ManagementFieldAccess",
+    "Runa\\Contracts\\Modules\\ManagementHandler",
+    "Runa\\Contracts\\Modules\\ManagementOptions",
+    "Runa\\Contracts\\Modules\\ManagementOutcome",
+    "Runa\\Contracts\\Modules\\ManagementPage",
+    "Runa\\Contracts\\Modules\\ManagementPageProvider",
+    "Runa\\Contracts\\Modules\\ManagementPageResult",
+    "Runa\\Contracts\\Modules\\ManagementRead",
+    "Runa\\Contracts\\Modules\\ManagementRecord",
+    "Runa\\Contracts\\Modules\\ManagementReview",
+    "Runa\\Contracts\\Modules\\ManagementSection",
+    "Runa\\Contracts\\Modules\\ManagementWidget",
+    "Runa\\Contracts\\Modules\\ManagementWrite",
+    "Runa\\Modules\\Admin\\Contracts\\AdminRegistry",
+    "Runa\\Contracts\\Modules\\ManagementResourceReader",
+    "Runa\\Contracts\\Modules\\ManagementOptionsReader",
+    "Runa\\Contracts\\Modules\\ManagementWidgetReader",
+    "Runa\\Contracts\\Modules\\ManagementWriter",
+    "Runa\\Contracts\\Modules\\ManagementOptionsRead",
+    "Runa\\Contracts\\Modules\\ManagementWidgetResult"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [
@@ -193,7 +217,8 @@
       "src/runa/ModuleFramework/Api/OperationGuard.php",
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
       "src/runa/Providers/ModuleFrameworkServiceProvider.php",
-      "src/runa/Support/Modules/Frontend/ModuleFrontend.php"
+      "src/runa/Support/Modules/Frontend/ModuleFrontend.php",
+      "src/runa/modules/admin/backend/Queries/Projection.php"
     ],
     "Runa\\Contracts\\Modules\\PreparationContext": [
       "src/runa/Contracts/Modules/PreparationContext.php",
@@ -408,6 +433,31 @@
     ],
     "Runa\\Identity\\ApplicationIdentity": [
       "src/runa/modules/admin/backend/Queries/Access.php"
+    ],
+    "Runa\\ModuleFramework\\Management\\ApplicationManagement": [
+      "src/runa/modules/admin/backend/Registry.php"
+    ],
+    "Runa\\ModuleFramework\\Management\\ManagementPages": [
+      "src/runa/modules/admin/backend/Queries/Projection.php"
+    ],
+    "Runa\\ModuleFramework\\Management\\DeclarationRules": [
+      "src/runa/Contracts/Modules/ManagementApiTarget.php",
+      "src/runa/Contracts/Modules/ManagementBinding.php",
+      "src/runa/Contracts/Modules/ManagementCommandDefinition.php",
+      "src/runa/Contracts/Modules/ManagementContribution.php",
+      "src/runa/Contracts/Modules/ManagementFieldAccess.php",
+      "src/runa/Contracts/Modules/ManagementOptions.php",
+      "src/runa/Contracts/Modules/ManagementOutcome.php",
+      "src/runa/Contracts/Modules/ManagementPage.php",
+      "src/runa/Contracts/Modules/ManagementPageResult.php",
+      "src/runa/Contracts/Modules/ManagementRead.php",
+      "src/runa/Contracts/Modules/ManagementRecord.php",
+      "src/runa/Contracts/Modules/ManagementReview.php",
+      "src/runa/Contracts/Modules/ManagementSection.php",
+      "src/runa/Contracts/Modules/ManagementWidget.php",
+      "src/runa/Contracts/Modules/ManagementWrite.php",
+      "src/runa/Contracts/Modules/ManagementOptionsRead.php",
+      "src/runa/Contracts/Modules/ManagementWidgetResult.php"
     ]
   }
 }

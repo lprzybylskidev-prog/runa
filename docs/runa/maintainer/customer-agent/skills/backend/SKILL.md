@@ -15,7 +15,9 @@ namespace nor a resolvable import permits private integration access.
 For Admin integration, check `docs/runa/handbook/modules/admin/README.md` for
 contract ownership and delivery status. Consume only APIs implemented in the
 installed version; a specification does not authorize protected edits or direct
-foreign persistence.
+foreign persistence. Optional Admin page declarations use the canonical
+bootstrap registration procedure; retain owning record Policies and guarded
+reads, and respect the documented write/rendering delivery status.
 
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope

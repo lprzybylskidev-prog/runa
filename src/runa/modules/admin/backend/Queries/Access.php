@@ -6,32 +6,32 @@ use Runa\Contracts\Modules\OperationContext;
 use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminEntry;
 use Runa\Modules\Admin\Contracts\AdminAccess;
+use Runa\Modules\Admin\Contracts\AdminRegistry;
 use Runa\Support\Modules\Api\OperationRejected;
 
 final readonly class Access implements AdminAccess
 {
-    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity) {}
+    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity, private Projection $projection, AdminRegistry $registry)
+    {
+        // Resolving the bootstrap registry runs App-owned afterResolving registrations
+        // before discovery freezes them. Cold command boot never loads Admin classes.
+    }
 
     public function bootstrap(): array
     {
-        return $this->entry->read(fn (OperationContext $context): array => [
-            'schema_version' => 1,
-            'generation' => $context->generation,
-            'revision' => hash('sha256', 'admin:'.$context->generation),
-            'owners' => [],
-            'dashboard' => ['widgets' => []],
+        return $this->entry->read(fn (OperationContext $context): array => $this->projection->bootstrap() + [
             'presentation' => ['name' => $this->identity->applicationName, 'logo' => $this->identity->logo, 'revision' => 0],
         ]);
     }
 
     public function page(string $owner, string $page): array
     {
-        return $this->unavailable();
+        return $this->entry->read(fn (): array => $this->projection->page($owner, $page));
     }
 
     public function read(string $owner, string $page, string $section, array $query): array
     {
-        return $this->unavailable();
+        return $this->entry->read(fn (): array => $this->projection->read($owner, $page, $section, $query));
     }
 
     public function preview(string $owner, string $page, array $input): array

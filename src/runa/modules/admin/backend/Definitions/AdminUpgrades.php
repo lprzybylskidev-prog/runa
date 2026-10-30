@@ -10,7 +10,9 @@ final class AdminUpgrades implements UpgradeProvider
 {
     public function upgrades(): array
     {
-        return [new UpgradeDefinition('initialize', null, '0.1.0', InitializeAdmin::class)];
+        return [
+            new UpgradeDefinition('initialize', null, '0.1.0', InitializeAdmin::class),
+        ];
     }
 
     public function preflight(?string $installed, string $target): ?string
