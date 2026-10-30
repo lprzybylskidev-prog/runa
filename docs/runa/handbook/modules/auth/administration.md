@@ -97,7 +97,9 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 All named stronger proofs are single use. Lifecycle accepts every supported intent:
 activate/deactivate/approve/delete/restore, schedule activation/deactivation,
 set/clear expiry and attempt lock, set/clear security lock and password-change
-requirement. The form submits an operation, deadline and flag; only the relevant
+requirement. Auth declaration adapters map cleared optional name/login text to null before
+constructing NewIdentity/ProfileChange, so switching naming modes and clearing a
+login preserves the native nullable contract. The form submits an operation, deadline and flag; only the relevant
 argument enters LifecycleChange. Restore remains inactive and preserves historical
 UUID. Native conflict/refusal/Audit behavior remains authoritative.
 

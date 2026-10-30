@@ -100,6 +100,11 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $this->validateInput($input);
             $id = $input->publicId;
             $v = $input->values;
+            foreach (['name', 'first_name', 'surname', 'login'] as $key) {
+                if (($v[$key] ?? null) === '') {
+                    $v[$key] = null;
+                }
+            }
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
                 'creation.create' => $this->api(AuthLifecycle::class)->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'], $v['approved'])),

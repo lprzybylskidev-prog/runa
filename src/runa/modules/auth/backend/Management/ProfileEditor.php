@@ -94,7 +94,9 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'profile.edit', 422);
         }
         try {
-            return new ProfileChange($input->values['name'], $input->values['first_name'], $input->values['surname'], $input->values['login']);
+            $values = array_map(fn ($value) => $value === '' ? null : $value, $input->values);
+
+            return new ProfileChange($values['name'], $values['first_name'], $values['surname'], $values['login']);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'profile.edit', 422);
         }

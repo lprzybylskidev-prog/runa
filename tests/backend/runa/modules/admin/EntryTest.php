@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
+use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Integration\Core\AdminDiagnostics;
@@ -36,6 +37,7 @@ use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Management\AdministrationPages;
+use Runa\Modules\Auth\Management\ProfileEditor;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Permissions\Actions\ChangeAssignments;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -1008,3 +1010,13 @@ it('Auth administration runs native strong account actions with one use proof', 
     ['security', 'factor_reset', [], 'two_factor.reset', 'runa.auth.two_factor.reset'],
     ['exceptions', 'set', ['key' => 'session_idle_minutes', 'value' => 180, 'exception_version' => 0], 'policy.exceptions', 'runa.auth.policy.exception'],
 ]);
+
+it('Auth administration maps cleared optional naming fields to the native nullable contract', function (): void {
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('nullable-admin@example.test', name: 'Old name', login: 'old_login'));
+    authAdministrationLogin($this, ['runa.auth.profiles.manage', 'runa.auth.users.create']);
+    $outcome = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ProfileEditor::class)->execute(new ManagementWrite('save', $target->publicId, '1', ['name' => '', 'first_name' => 'New', 'surname' => 'Name', 'login' => ''])));
+    expect($outcome->status)->toBe('committed')->and($outcome->record->values)->toBe(['name' => null, 'first_name' => 'New', 'surname' => 'Name', 'login' => null]);
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'public_id' => null, 'revision' => '0',
+        'values' => ['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => '', 'active' => false, 'approved' => false]])->assertOk();
+    expect(User::where('email', 'nullable-create@example.test')->value('login'))->toBeNull();
+});
