@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-30
 
+- Add explicit record/table section presentation intent and default bounded table dispatch, with native resource/session ownership, replacement precedence and per-section diagnostic isolation. Section replacements receive the owning page controller for public resource composition.
+
 - Add optional framework page/section/field/binding/widget/contribution declarations and bounded handler values without changing legacy metadata constructors or schema.
 - Supply frozen App bootstrap registration, source/dependency/API/component validation and deterministic discovery with owner isolation.
 - Project authorized bootstrap/page/section reads through AdminAccess 1.0.0; remove denied values and controls, refuse forbidden filter/sort/lookup/write inputs, and require explicit secret set-state.

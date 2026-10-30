@@ -159,10 +159,14 @@ function command(value: unknown): AdminCommandData {
 function section(value: unknown): AdminSectionData {
   const v = object(value),
     id = text(v.key, 512);
-  if (!/^[a-z][a-z0-9_.]*$/.test(id))
+  if (
+    !/^[a-z][a-z0-9_.]*$/.test(id) ||
+    (v.view !== 'record' && v.view !== 'table')
+  )
     throw new TypeError('Invalid Admin section.');
   return {
     key: id,
+    view: v.view,
     title: text(v.title),
     readonly: boolean(v.readonly),
     required: boolean(v.required),

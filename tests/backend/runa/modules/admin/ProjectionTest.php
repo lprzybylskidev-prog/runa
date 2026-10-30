@@ -211,3 +211,12 @@ it('projects owned component evidence at every level and isolates missing stale 
     symlink($directory.'/js/helper.ts', $file);
     expect($this->projection->page('app', 'users')['component']['build_id'])->toBeNull();
 });
+
+it('projects explicit collection intent without executing a handler and rejects invalid view declarations', function (): void {
+    expect($this->projection->page('app', 'users')['sections'][0]['view'])->toBe('record');
+    $this->providerClass::$view = 'table';
+    expect($this->projection->page('app', 'users')['sections'][0]['view'])->toBe('table')
+        ->and($this->handlerClass::$calls)->toBe(0);
+    $this->providerClass::$view = 'arbitrary';
+    expect($this->declarations->discover()['diagnostics'])->toBe(['app' => 'admin_declaration_unavailable']);
+});

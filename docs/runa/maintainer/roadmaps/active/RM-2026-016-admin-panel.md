@@ -1004,3 +1004,56 @@ No Docker resources or databases were created/removed by this frontend selection
 active development services/data, durable volumes, Qdrant/model caches, backups
 and reports were preserved. Mandatory hooks and staged incremental knowledge
 freshness apply to this checkpoint.
+
+## Point 5 checkpoint — automatic declared collection sections
+
+2026-10-30: ManagementSection now declares source-owned `view: 'record'|'table'`
+(default record), projected through the exact section wire/TypeScript decoder.
+This distinguishes presentation intent for the existing reader's record/page
+capabilities without probing a handler or inferring intent from field names.
+Unsupported values refuse declaration/response decoding. This is an agent-owned
+presentation signature detail within point 5, not a new operation or authority.
+
+The default page dispatches table sections to one existing useAdminTable and
+AdminResourceTable scope. It retains owner cursor/query limits, secret set-state,
+English shared controls, admission, account fencing and disposal. A declared
+component precedes the generic provider; unavailable non-null source/build identity
+never falls back to a table. Binding diagnostics refuse mounting even custom
+section presentation. Existing per-section boundaries isolate rendering failures.
+Replacements receive public AdminSectionPresentationProps with section and owning
+page controller, allowing public resource/table composition without another
+session owner or a competing default read lane. Internal dispatch components are
+private; no extra facade runtime entrypoint is needed.
+
+Grounding: current local knowledge at entry (201 documents / 9,792 chunks), bounded
+current-intent retrieval and original Admin declarations/frontend/public boundary
+and frontend component/table/form guidance. Frontend/Vue/Tailwind and backend/
+Laravel/security skills were consulted. This change uses ordinary PHP value
+validation and existing projection; no new Laravel API was needed. Installed
+Tailwind remains 4.3.3; no new styling system, dependency or runtime configuration.
+Canonical Admin status/declarations/frontend/changelog and public API guide are
+synchronized. Owner and separately authored customer frontend/backend references
+already direct consumers to those canonical guides; both instruction products need
+no duplicate rule or reference change. Admin remains unreleased 0.1.0; the additive
+unreleased declaration/wire refinement needs no intermediate migration/history edge.
+
+Necessary focused diagnostics resolved automatic dispatch, replacement precedence,
+unknown intent refusal and unavailable-source behavior:
+
+- Supported frontend filter `Admin automatic tables`: four scenarios PASS,
+  3.94 seconds, exit 0 / cleanup 0; the added unavailable declared-component
+  fallback scenario then passed independently, 3.88 seconds, exit 0 / cleanup 0.
+  The existing Vite warning concerns generated Vitest runner dynamic import only.
+- Supported backend `--parallel --processes=1` filter
+  `projects explicit collection intent`: one test / four assertions PASS,
+  0.72 seconds, exit 0 / cleanup 0. An initial attempt during the frontend run
+  was refused by the suite lock before execution; it was rerun after that run ended.
+  Guarded cleanup displayed/removed only runa_test_test_1, preserving runa_test.
+
+Point 5 remains OPEN: generated record forms/controls, commands/confirmation,
+selection/views/exports/bulk, dirty navigation and aggregate revision/read
+reconciliation remain. Native atomic participant execution remains point 6.
+No broad suite/type/static/build/scanner/browser acceptance was run; point 12 owns
+final verification. No Docker resources were created/removed. Active services,
+development/base data, durable volumes, Qdrant/model caches, backups and reports
+were preserved. Mandatory hooks and staged incremental knowledge freshness apply.

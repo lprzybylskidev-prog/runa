@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
-import type { Component } from 'vue';
+import type { Component, PropType } from 'vue';
 import {
   AdminApplication,
   AdminPresentationProvider,
@@ -28,6 +28,7 @@ import type {
   AdminPageData,
   AdminResourceController,
   AdminTableController,
+  AdminSectionPresentationProps,
 } from '@/runa/admin';
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 
@@ -382,6 +383,7 @@ function resourcePage(): AdminPageData {
     sections: [
       {
         key: 'profile',
+        view: 'record',
         title: 'Profile',
         readonly: true,
         required: true,
@@ -913,4 +915,208 @@ it('Admin resource reads discard obsolete queries and refresh after readable sec
   expect(replies).toHaveLength(3);
   expect(resource.result.value).toBeUndefined();
   expect(resource.state.value).toBe('ready');
+});
+
+it('Admin automatic tables dispatch declared collections once and clear rows on session loss', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  const session = sessionFixture();
+  const queries: URLSearchParams[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.view = 'table';
+      return respond({ data });
+    }
+    queries.push(url.searchParams);
+    return respond({
+      data: {
+        items: [
+          {
+            public_id: identity,
+            revision: 'r1',
+            values: { name: 'Automatic record', token: { set: true } },
+          },
+        ],
+        next: null,
+        total: null,
+      },
+    });
+  });
+  const wrapper = mount(AdminApplication, { props: { session } });
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Automatic record'));
+  expect(queries).toHaveLength(1);
+  expect(queries[0]!.get('kind')).toBe('page');
+  expect(wrapper.text()).toContain('Set');
+  expect(wrapper.find('table').exists()).toBe(true);
+  session.pending.value = true;
+  await flushPromises();
+  expect(wrapper.text()).not.toContain('Automatic record');
+});
+
+it('Admin automatic tables give replacements the page controller without starting a default read', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  const reads = vi.fn();
+  let suppliedPage: AdminPageController | undefined;
+  const section = defineComponent({
+    props: {
+      section: {
+        type: Object as PropType<AdminSectionPresentationProps['section']>,
+        required: true,
+      },
+      page: {
+        type: Object as PropType<AdminSectionPresentationProps['page']>,
+        required: true,
+      },
+    },
+    setup(props) {
+      suppliedPage = props.page;
+      return () => h('p', 'Customer section');
+    },
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.view = 'table';
+      return respond({ data });
+    }
+    reads();
+    return respond({}, 404);
+  });
+  const session = sessionFixture();
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          AdminPresentationProvider,
+          { components: { section } },
+          {
+            default: () => h(AdminApplication, { session }),
+          },
+        ),
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Customer section'));
+  expect(suppliedPage?.page.value?.sections[0]?.view).toBe('table');
+  expect(reads).not.toHaveBeenCalled();
+  expect(wrapper.find('table').exists()).toBe(false);
+});
+
+it('Admin automatic tables isolate unavailable sections before mounting replacements or reading collections', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  const reads = vi.fn(),
+    replaced = vi.fn();
+  const section = defineComponent({
+    setup() {
+      replaced();
+      return () => h('p', 'Custom');
+    },
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.view = 'table';
+      data.sections[0]!.diagnostic = 'admin_binding_unavailable';
+      return respond({ data });
+    }
+    reads();
+    return respond({}, 404);
+  });
+  const session = sessionFixture();
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          AdminPresentationProvider,
+          { components: { section } },
+          {
+            default: () => h(AdminApplication, { session }),
+          },
+        ),
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('This section is currently unavailable.'),
+  );
+  expect(reads).not.toHaveBeenCalled();
+  expect(replaced).not.toHaveBeenCalled();
+});
+
+it('Admin automatic tables refuse unknown presentation intent before a resource request', async () => {
+  const data = resourcePage();
+  Object.assign(data.sections[0]!, { view: ['record'] });
+  const reads = vi.fn();
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') return respond({ data });
+    reads();
+    return respond({}, 404);
+  });
+  const { page } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('failed'));
+  expect(page.page.value).toBeUndefined();
+  expect(reads).not.toHaveBeenCalled();
+});
+
+it('Admin automatic tables never fall back from a missing declared component to a provider or collection', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  const replaced = vi.fn(),
+    reads = vi.fn();
+  const section = defineComponent({
+    setup() {
+      replaced();
+      return () => h('p', 'Custom');
+    },
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.view = 'table';
+      data.sections[0]!.component = {
+        key: 'app.missing',
+        owner: 'app',
+        manifest_hash: null,
+        build_id: null,
+      };
+      return respond({ data });
+    }
+    reads();
+    return respond({}, 404);
+  });
+  const session = sessionFixture();
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          AdminPresentationProvider,
+          { components: { section } },
+          {
+            default: () => h(AdminApplication, { session }),
+          },
+        ),
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain(
+      'This administration component is unavailable.',
+    ),
+  );
+  expect(replaced).not.toHaveBeenCalled();
+  expect(reads).not.toHaveBeenCalled();
 });

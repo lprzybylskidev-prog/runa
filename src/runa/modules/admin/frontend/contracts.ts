@@ -44,6 +44,7 @@ export interface AdminCommandData {
   preview_required: boolean;
 }
 export interface AdminSectionData {
+  view: 'record' | 'table';
   key: string;
   title: string;
   readonly: boolean;
@@ -130,6 +131,11 @@ export interface AdminPageController {
   page: Ref<AdminPageData | undefined>;
   error: Ref<AdminError | undefined>;
   refresh(): Promise<void>;
+}
+/** Live section replacement props; editable form orchestration follows separately. */
+export interface AdminSectionPresentationProps {
+  section: AdminSectionData;
+  page: AdminPageController;
 }
 export type AdminComponentRegistry = Readonly<
   Record<string, { readonly buildId: string; readonly component: Component }>

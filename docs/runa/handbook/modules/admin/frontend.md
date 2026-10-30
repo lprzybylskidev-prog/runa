@@ -12,8 +12,9 @@ home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
 Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
 all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
 
-Automatic section-to-resource dispatch, forms/actions, form controllers and their default
-components remain specified for points 5–6; no business write is available from
+Automatic collection-section dispatch is delivered through source-declared
+`ManagementSection(view: 'table')`. Record forms/actions, form controllers and their
+default components remain specified for points 5–6; no business write is available from
 this shell. All wire/controller types below are exported, including types for
 those future runtime functions. Rendered acceptance remains point 12.
 
@@ -193,8 +194,8 @@ revisions; form reconciliation remains in the rest of point 5.
 
 `command(input)` is deliberately unavailable at this checkpoint: it returns
 undefined, sets `admin_operation_unavailable` and sends no request. It does not
-claim a business write or silently replay an operation. Automatic section presentation,
-forms, preview/save and native write coordination retain their planned
+claim a business write or silently replay an operation. Generated record forms,
+preview/save and native write coordination retain their planned
 delivery status. Entry proof refusal from a resource read returns the owning Admin
 controller to native entry confirmation; stronger operation proof remains owner-owned.
 
@@ -213,9 +214,10 @@ Admin owns `useAdminTable(page: AdminPageController, section: string): AdminTabl
 and `AdminResourceTable` through `@/runa/admin`. Their implementation lives under
 Admin frontend and is bundled with the consuming presentation. Module and App
 page replacements can use this source-owned read presentation without private
-imports, an extra HTTP client or another session owner. Automatic section dispatch,
-editable forms, bulk/export command bindings and mutation reconciliation remain
-planned in point 5; this checkpoint supplies explicit collection composition.
+imports, an extra HTTP client or another session owner. The default page also
+composes this controller/component automatically for `view: 'table'` sections.
+Editable forms, bulk/export command bindings and mutation reconciliation remain
+planned in point 5.
 
 ```ts
 interface AdminTableController {
@@ -393,10 +395,23 @@ selects a default or loader. Module components continue through existing manifes
 build discovery. The supplied dispatcher forwards an App registry only when the
 application explicitly configures one; no sample screen is added to the scaffold.
 
-Point-4 page replacements receive `{controller: AdminPageController}`; section
-replacements receive `{section: AdminSectionData}`. The form/controller prop in
-the complete target signatures arrives with point 5. Defaults currently render
-page/section headings, safe unavailable/empty states and dashboard widget values;
+Page replacements receive `{controller: AdminPageController}`; section
+replacements receive the exported `AdminSectionPresentationProps`:
+`{section: AdminSectionData, page: AdminPageController}`.
+The page prop lets section replacements compose `useAdminTable(page, section.key)`
+or `useAdminResource(page, section.key)` in their own scope. Default dispatch mounts
+no competing read controller for a replacement. A section-specific source component
+takes precedence over a provider; an unavailable non-null build never falls back
+to the provider or default table. Binding diagnostics render a safe warning before
+mounting any section presentation. Each section keeps its own render boundary, so
+one broken custom presentation does not hide healthy siblings.
+
+A source-declared table mounts one bounded collection lane, with English shared
+controls, secret set-state and existing cursor/query/disposal behavior. Source
+`view` is presentation intent, never additional authority. The default `record`
+intent retains its unavailable-controls placeholder until generated forms arrive. The form/controller prop in
+the complete target signatures arrives with point 5. Defaults render
+page/section headings, collection tables, safe unavailable/empty states and dashboard widget values;
 they do not pretend to supply editable controls before their owning point.
 
 The public resolver signature is

@@ -289,7 +289,7 @@ final readonly class Projection
                 'requirement' => $command->safety->stepUp, 'preview_required' => $command->safety->previewRequired];
         }
 
-        return ['key' => $identity, 'title' => $section->title, 'readonly' => $readonly, 'required' => $section->required,
+        return ['key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,
             'component' => $this->component($ownerDefinition, $section->component), 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
     }
 

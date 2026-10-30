@@ -12,8 +12,11 @@ final readonly class ManagementSection
         public string $key, public string $title, public string $readPermission,
         public ?string $writePermission, public string $binding, public array $fields,
         public array $commands = [], public int $order = 0, public bool $required = true,
-        public ?string $component = null, public int $schemaVersion = 1,
+        public ?string $component = null, public int $schemaVersion = 1, public string $view = 'record',
     ) {
+        if (! in_array($view, ['record', 'table'], true)) {
+            throw new \InvalidArgumentException('Invalid management section view.');
+        }
         Rules::key($key);
         Rules::text($title);
         Rules::permission($readPermission);

@@ -37,6 +37,14 @@ interface ManagementPageProvider extends ManagementProvider
 
 Constructor signatures and complete property types:
 
+`ManagementSection.view` is source-owned presentation intent, `record` (default)
+or `table`; other values are refused. Both use the existing resource reader
+capability. It grants no read or command authority. Admin projects it unchanged
+for authorized sections, including unavailable sections. The table default is
+delivered; generated record forms retain their stated delivery status. Module and
+App providers select `view: 'table'` for automatic bounded collection composition,
+without changing handler capabilities or guessing intent from field names.
+
 ```php
 ManagementPage::__construct(string $key, string $title, string $permission,
     array $sections, int $order = 0, ?string $group = null,
@@ -44,7 +52,7 @@ ManagementPage::__construct(string $key, string $title, string $permission,
 ManagementSection::__construct(string $key, string $title, string $readPermission,
     ?string $writePermission, string $binding, array $fields,
     array $commands = [], int $order = 0, bool $required = true,
-    ?string $component = null, int $schemaVersion = 1)
+    ?string $component = null, int $schemaVersion = 1, string $view = 'record')
 ManagementFieldAccess::__construct(ManagementField $field, string $readPermission,
     ?string $writePermission = null, ?string $component = null)
 ManagementCommandDefinition::__construct(string $key, string $title,
@@ -292,7 +300,7 @@ Bootstrap = {schema_version:1, generation:int, revision:string,
     logo:{src:string,accessibleName:string}|null,revision:int}}
 Page = {schema_version:1, owner:string, key:string, title:string,
   generation:int, revision:string, component:Component|null, sections:[Section]}
-Section = {key:string,title:string,readonly:boolean,required:boolean,
+Section = {key:string,title:string,view:'record'|'table',readonly:boolean,required:boolean,
   component:Component|null,fields:[Field],commands:[Command],record:Record|null,
   diagnostic:string|null}
 Field = {key:string,type:string,label:string,readonly:boolean,sensitive:boolean,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRef } from 'vue';
-import { Alert, Button, Card } from '@/runa/ui';
+import { Alert, Button } from '@/runa/ui';
 import type {
   AdminComponentRegistry,
   AdminController,
@@ -11,6 +11,7 @@ import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminComponentBoundary from './AdminComponentBoundary.vue';
 import AdminLoading from './AdminLoading.vue';
+import AdminSectionContent from './AdminSectionContent.vue';
 const props = defineProps<{
   admin: AdminController;
   location: AdminLocation;
@@ -54,25 +55,11 @@ const presentation = useAdminPresentation();
         :key="section.key"
         :identity="page.revision + ':' + section.key"
       >
-        <component
-          v-if="section.component || presentation.section"
-          :is="
-            resolveAdminComponent(section.component, components).component ??
-            presentation.section
-          "
+        <AdminSectionContent
+          :page="controller"
           :section="section"
+          :components="components"
         />
-        <Card v-else>
-          <template #header
-            ><h2>{{ section.title }}</h2></template
-          >
-          <Alert v-if="section.diagnostic" tone="warning"
-            >This section is currently unavailable.</Alert
-          >
-          <p v-else class="text-sm text-muted">
-            No controls are available for this section.
-          </p>
-        </Card>
       </AdminComponentBoundary>
     </div>
   </AdminComponentBoundary>

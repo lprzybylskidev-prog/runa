@@ -18,6 +18,7 @@ use Runa\Contracts\Modules\ManagementWidget;
 final class Provider implements ManagementPageProvider
 {
     public static bool $duplicate = false;
+    public static string $view = 'record';
     public static bool $optionalPage = false;
     public static bool $changed = false;
     public static bool $hiddenWidget = true;
@@ -36,7 +37,7 @@ final class Provider implements ManagementPageProvider
             new ManagementFieldAccess(new ManagementField('token', 'text', $names, $names, sensitive: true), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('allowed_reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.auth.identities.read'),
-        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name']), 'profile')], component: self::$nestedComponent);
+        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name']), 'profile')], component: self::$nestedComponent, view: self::$view);
     }
     public function pages(): array
     {
