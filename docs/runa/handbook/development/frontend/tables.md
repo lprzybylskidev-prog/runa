@@ -131,3 +131,13 @@ version 2 and optional `statistics.mode` version 1 keys with server validation.
 The default adapter subscribes to account hydration, preserves guest separation,
 serializes revision writes and reports errors. Reset uses server defaults; custom
 stores own their own lifecycle. See [account preferences](../../modules/auth/preferences.md).
+
+## Admin cursor collections
+
+For projected Admin resource collections, compose public `useAdminTable` and
+`AdminResourceTable` from `@/runa/admin`; see the [exact Admin contract](../../modules/admin/frontend.md#delivered-cursor-table-composition).
+They adapt the existing resource read lane to this server Table contract, retain
+opaque cursors/nullable owner totals, and never apply local dataset processing.
+Collection composition is delivered; automatic section dispatch and owner-bound
+export/bulk operations remain in their later point-5 work. Owner/customer table
+references route here; no separate table engine or preference store is introduced.

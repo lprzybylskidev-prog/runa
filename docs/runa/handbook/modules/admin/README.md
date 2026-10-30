@@ -7,7 +7,7 @@ RM-2026-016, targeting platform 0.7.0. Points 2–4 supply Admin 0.1.0 source,
 explicit installation history, entry security, declaration discovery and authorized
 bootstrap/page/section reads, the English session shell, page-read HTTP and public
 frontend replacement seams. Point 5 adds named section-read HTTP and the public
-resource read controller. Business adapters, generated forms/writes and settings
+resource read controller and explicit cursor-table composition. Business adapters, generated forms/writes and settings
 remain planned.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
@@ -31,8 +31,10 @@ Page declarations, handler DTOs, App registration and guarded Admin reads below
 are implemented through point 3. Capability-specific reads, field-bound
 options, typed widget freshness and source-bound component/build projection are
 implemented, including compiled registry resolution and shell rendering. Atomic
-participation, settings and generated form/default resource presentation remain specified.
-Resource reads are delivered through `useAdminResource`; its command method refuses
+participation, settings and automatic form/resource dispatch remain specified.
+Resource reads are delivered through `useAdminResource`; `useAdminTable` and
+`AdminResourceTable` compose bounded collection reads with the existing Table.
+The resource command method refuses
 locally until write dispatch is delivered. Private engines retain their current homes and are never
 ordinary application imports.
 

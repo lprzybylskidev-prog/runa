@@ -44,3 +44,15 @@ cancel/fence changed queries and account/authority/page/disposal races, and refr
 the last query on return to a visible document. Retain the mounted same-session page
 during descriptor refresh. Resource commands refuse locally until write coordination;
 generated editable presentation and aggregate reconciliation remain planned in point 5.
+
+### Cursor resource tables
+
+Supply public useAdminTable and AdminResourceTable for explicit App/module page
+composition over the existing server Table/useTable. Preserve opaque cursor
+navigation and nullable owner totals, native typed filters, readable sort/filter
+allowlists, secret set-state and account/authority/descriptor response fencing.
+Refuse invalid public row identities and never scan/download all pages or process
+server rows locally. Expose headless query/provider/controller and toolbar/filter/
+row/cell slots; no extra session, preference persistence or dependency. Automatic
+section dispatch, forms, exports/bulk and writes remain planned. Development 0.1.0
+and installation history are unchanged; rendered/release acceptance is pending.

@@ -951,3 +951,56 @@ backend cleanup displayed/removed only runa_test_test_1. No Docker resources wer
 created or removed; base/development databases, active services, durable volumes,
 Qdrant/model caches, backups and reports were preserved. Mandatory hooks and staged
 incremental knowledge freshness remain required for this checkpoint commit.
+
+## Point 5 checkpoint — public cursor-table composition
+
+2026-10-30: added public useAdminTable/AdminResourceTable and exact exported
+controller/props/slots for explicit module/App page composition. The adapter owns
+one existing useAdminResource lane and feeds the shared server Table/useTable
+provider; it performs no second transport, local filtering/sorting/slicing or
+all-page scan. It remembers only visited opaque cursors, resets paging on query/
+descriptor changes, invalidates later changed cursors and refuses unvisited jumps.
+Nullable owner totals are preserved; unknown navigation counts prevent exact totals
+from manufacturing numbered cursor access. Backend/owner limits remain authority.
+
+Readable columns preserve sort/filter flags and secret Set/Not set. Integer/boolean
+filters retain native types; invalid conversion refuses locally instead of dropping
+the filter and sending a broader query. Missing/duplicate public UUID row identities
+refuse rendering. Account/authority/page changes erase protected query/cursor state.
+English Table controls retain shared responsive/theme/keyboard/loading/error behavior.
+Public filter/toolbar/cell/row slots and a customer composition fixture exercise
+partial replacement without private imports or copied admission logic. No preference
+storage, dependency, business write, backend/API signature or migration was added.
+Admin remains unreleased development 0.1.0; its initial forward edge is unchanged.
+
+Grounding: knowledge current at entry (201 documents / 9,777 chunks), bounded
+current-intent retrieval and original Admin frontend/declaration, public boundary,
+customization and shared tables guides. Frontend/Vue/Tailwind guidance, table/
+component/forms/accessibility references, installed Tailwind 4.3.3 and existing
+Table/provider/resource sources were consulted. No Laravel API was changed or
+guessed. Current Admin status/frontend/changelog, public boundary and canonical
+tables guide are synchronized. Owner and separately authored customer frontend
+references already route to these canonical contracts; both instruction products
+need no duplicate rule. Existing AGENTS/security/session/public-boundary policies
+apply unchanged; no new authorization or reusable operating rule is introduced.
+
+A necessary supported focused diagnostic resolved cursor-number bridging, typed
+filter refusal, row identity and public composition uncertainty:
+`python3 tools/maintainer/test-frontend --filter='Admin cursor tables'`.
+Initial three scenarios passed in 3.74 seconds. After correcting normalized-query
+refresh completion and adding the actual customer slot consumer, the same affected
+selection passed **4 tests**, 3.71 seconds, native exit 0 / cleanup 0. The existing
+Vite warning is in the generated Vitest runner's dynamic import; no application
+Vue warning was reported. Reports remain in the supported runner locations.
+No complete suite/type/static/build/scanner/browser-matrix/native acceptance or
+rendered/release PASS is claimed; broad verification remains point 12.
+
+Point 5 remains OPEN. Automatic section dispatch, generated forms/field controls,
+commands/confirmation, owner-bound selection/views/exports/bulk, dirty navigation
+and shared aggregate revision/read reconciliation remain to implement; atomic
+participant execution remains point 6. This commit records a functional public
+collection component, not completion of the whole generated CRUD contract.
+No Docker resources or databases were created/removed by this frontend selection;
+active development services/data, durable volumes, Qdrant/model caches, backups
+and reports were preserved. Mandatory hooks and staged incremental knowledge
+freshness apply to this checkpoint.

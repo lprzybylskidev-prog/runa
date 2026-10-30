@@ -7,12 +7,12 @@ routes, compiled component resolution, nested presentation providers and
 `useAdmin`/`useAdminPage`. Delivered facade components are `AdminApplication`,
 `AdminLayout`, `AdminLoading`, `AdminEntryProof` and `AdminPresentationProvider`;
 `useAdminPresentation`, `resolveAdminComponent` and the read side of
-`useAdminResource` are also delivered. Source
+`useAdminResource`, `useAdminTable` and `AdminResourceTable` are also delivered. Source
 home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
 Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
 all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
 
-Business tables/forms/actions, form controllers and their default
+Automatic section-to-resource dispatch, forms/actions, form controllers and their default
 components remain specified for points 5–6; no business write is available from
 this shell. All wire/controller types below are exported, including types for
 those future runtime functions. Rendered acceptance remains point 12.
@@ -193,8 +193,8 @@ revisions; form reconciliation remains in the rest of point 5.
 
 `command(input)` is deliberately unavailable at this checkpoint: it returns
 undefined, sets `admin_operation_unavailable` and sends no request. It does not
-claim a business write or silently replay an operation. Form/default resource
-presentation, preview/save and native write coordination retain their planned
+claim a business write or silently replay an operation. Automatic section presentation,
+forms, preview/save and native write coordination retain their planned
 delivery status. Entry proof refusal from a resource read returns the owning Admin
 controller to native entry confirmation; stronger operation proof remains owner-owned.
 
@@ -205,6 +205,90 @@ const resource = useAdminResource(page, 'profile');
 await resource.read({ kind: 'record', public_id: publicId });
 // For a readable reference field, retain the owning opaque next cursor.
 await resource.read({ kind: 'options', field: 'manager', limit: 25 });
+```
+
+## Delivered cursor table composition
+
+Admin owns `useAdminTable(page: AdminPageController, section: string): AdminTableController`
+and `AdminResourceTable` through `@/runa/admin`. Their implementation lives under
+Admin frontend and is bundled with the consuming presentation. Module and App
+page replacements can use this source-owned read presentation without private
+imports, an extra HTTP client or another session owner. Automatic section dispatch,
+editable forms, bulk/export command bindings and mutation reconciliation remain
+planned in point 5; this checkpoint supplies explicit collection composition.
+
+```ts
+interface AdminTableController {
+  section: ComputedRef<AdminSectionData | undefined>;
+  resource: AdminResourceController;
+  query: Ref<TableQuery>;
+  columns: ComputedRef<readonly TableColumn<AdminRecord>[]>;
+  provider: ComputedRef<TableProvider<AdminRecord>>;
+  error: ComputedRef<AdminError | undefined>;
+  refresh(): Promise<void>;
+}
+interface AdminResourceTableProps {
+  controller: AdminTableController;
+}
+```
+
+Create the controller once in the owning page's Vue scope. It owns the resource
+read lane: change `query` or call `refresh`, rather than sending independent
+record/options reads through `resource`. The latter exposes read status/error/busy
+and decoded results. Do not reuse a controller between pages or accounts.
+`useAdminResource` retains native admission, visibility refresh, response fencing
+and disposal. Account/authority/page changes erase table filters and cursor state;
+same-context descriptor updates preserve allowed query controls and restart page 1.
+No filters or records are persisted to browser preferences at this checkpoint.
+
+The adapter uses the existing server Table/useTable provider contract. Only the
+owner's current bounded cursor page is rendered; it is never sorted, filtered or
+sliced locally. Page numbers refer only to already visited opaque cursors. Query
+changes restart at page 1; unvisited numbered jumps normalize to page 1 without
+fetching intervening pages. A refreshed next cursor invalidates later cursors.
+Nullable owner totals are preserved. Provider `counts` remains `unknown`, even
+when the owner supplies a total, so exact totals never enable arbitrary numbered
+jumps. The displayed total remains the owner's value, including null, rather
+than a count of downloaded rows. Page size is bounded to 100 by the existing read
+contract; owners retain their lower limits and may refuse oversized requests.
+
+Columns contain only projected readable fields. Sorting/filter keys follow their
+flags; sensitive fields never support either. Search is disabled because the
+Admin read contract has no generic search field. Query filter strings convert to
+native integer/boolean values for those field types; invalid conversions fail
+locally without issuing a broader unfiltered read. Backend validation and record
+Policies remain authoritative. Missing/duplicate UUIDv7 row identities refuse
+rendering, with no fallback to internal IDs or row positions. Secrets display
+only Set/Not set; booleans use Yes/No, null uses the shared table placeholder.
+
+The supplied component is English and reuses Table's semantic tokens, horizontal
+keyboard scrolling, loading/empty/error feedback and previous/next controls.
+It emits no custom events. Slots are `toolbar({feedbackTarget: string})`,
+`filters({query: TableQuery, update(value: TableQuery): void})`,
+`actions({row: AdminRecord})`, and `cell-<field>({row: AdminRecord,
+value: string | number | null})`. Omitted slots retain default controls/cells;
+custom filters use `update` to reset paging. Row actions are application-owned
+presentation only and confer no mutation authority. Custom column/field components
+can be composed in cell slots; resolve projected component identities through
+`resolveAdminComponent` before rendering them.
+
+An application-owned replacement under `src/app/resources/js` can compose:
+
+```vue
+<script setup lang="ts">
+import { AdminResourceTable, useAdminTable } from '@/runa/admin';
+import type { AdminPageController } from '@/runa/admin';
+const props = defineProps<{ controller: AdminPageController }>();
+// Use the actual projected section key, including its contribution namespace.
+const table = useAdminTable(props.controller, 'directory');
+</script>
+<template>
+  <AdminResourceTable :controller="table">
+    <template #cell-name="{ value }"
+      ><strong>{{ value }}</strong></template
+    >
+  </AdminResourceTable>
+</template>
 ```
 
 ## Presentation provider, components, props, slots and events

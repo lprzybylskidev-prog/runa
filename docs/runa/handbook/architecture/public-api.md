@@ -291,8 +291,9 @@ Named document, advertisement, bootstrap, page-read and section-read routes are 
 Field-bound options, typed widget freshness and source/compiled component identity
 are implemented. The public `@/runa/admin` shell/controllers/provider/resolver and
 `@/runa/auth` ApplicationSessionShell share one session owner; exact runtime exports
-and the read-only `useAdminResource` controller are delivered; future form/default
-resource presentation contracts are listed in the Admin frontend guide.
+and the read-only `useAdminResource` controller are delivered. Public
+`useAdminTable`/`AdminResourceTable` supply explicit cursor collection composition;
+automatic form/resource dispatch contracts remain listed in the Admin frontend guide.
 Atomic participation, business adapters, write HTTP and settings remain
 planned.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted

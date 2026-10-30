@@ -4,6 +4,7 @@ import type {
   ApplicationSessionController,
 } from '@/runa/auth';
 import type { ApplicationLayoutProps } from '@/runa/ui';
+import type { TableColumn, TableProvider, TableQuery } from '@/runa/ui';
 export type AdminJson =
   null | boolean | number | string | AdminJson[] | { [key: string]: AdminJson };
 export type AdminFieldValue = AdminJson;
@@ -256,4 +257,29 @@ export interface AdminResourceController {
   error: Ref<AdminError | undefined>;
   read(query: AdminReadQuery): Promise<void>;
   command(input: AdminWrite): Promise<AdminCommandResult | undefined>;
+}
+/** One cursor-backed collection lane; instantiate inside the owning page scope. */
+export interface AdminTableController {
+  section: ComputedRef<AdminSectionData | undefined>;
+  resource: AdminResourceController;
+  query: Ref<TableQuery>;
+  columns: ComputedRef<readonly TableColumn<AdminRecord>[]>;
+  provider: ComputedRef<TableProvider<AdminRecord>>;
+  error: ComputedRef<AdminError | undefined>;
+  refresh(): Promise<void>;
+}
+export interface AdminResourceTableProps {
+  controller: AdminTableController;
+}
+export interface AdminResourceTableSlots {
+  toolbar?(scope: { feedbackTarget: string }): VNode[];
+  actions?(scope: { row: AdminRecord }): VNode[];
+  filters?(scope: {
+    query: TableQuery;
+    update: (value: TableQuery) => void;
+  }): VNode[];
+  [key: `cell-${string}`]: (scope: {
+    row: AdminRecord;
+    value: string | number | null;
+  }) => VNode[];
 }

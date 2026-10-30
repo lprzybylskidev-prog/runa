@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
+import type { Component } from 'vue';
 import {
   AdminApplication,
   AdminPresentationProvider,
@@ -9,6 +10,8 @@ import {
   useAdmin,
   useAdminPage,
   useAdminResource,
+  useAdminTable,
+  AdminResourceTable,
   useAdminPresentation,
 } from '@/runa/admin';
 import { ApplicationSessionShell } from '@/runa/auth';
@@ -24,10 +27,12 @@ import type {
   AdminPageController,
   AdminPageData,
   AdminResourceController,
+  AdminTableController,
 } from '@/runa/admin';
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 
 import CustomerAdmin from './fixtures/customization/CustomerAdmin.vue';
+import CustomerAdminTable from './fixtures/customization/CustomerAdminTable.vue';
 import { builds } from 'virtual:runa-module-components';
 enableAutoUnmount(afterEach);
 const identity = '01900000-0000-7000-8000-000000000001';
@@ -452,6 +457,192 @@ function resourceHarness() {
   );
   return { session, location, wrapper, resource, page };
 }
+
+function tableHarness(presentation: Component = AdminResourceTable) {
+  const session = sessionFixture();
+  let table!: AdminTableController, page!: AdminPageController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const admin = useAdmin({ session, navigate: vi.fn() });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        table = useAdminTable(page, 'profile');
+        return () => h(presentation, { controller: table });
+      },
+    }),
+  );
+  return { table, page, session, wrapper };
+}
+
+it('Admin cursor tables preserve owner pagination sorting and secret state without local dataset processing', async () => {
+  const queries: URLSearchParams[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    queries.push(url.searchParams);
+    return respond({
+      data: {
+        items: [
+          {
+            public_id: identity,
+            revision: 'r1',
+            values: {
+              name: url.searchParams.has('cursor') ? 'Second' : 'First',
+              token: { set: true },
+            },
+          },
+        ],
+        next: url.searchParams.has('cursor') ? null : 'opaque+/next',
+        total: 900,
+      },
+    });
+  });
+  const { table, wrapper } = tableHarness();
+  await vi.waitFor(() => expect(wrapper.text()).toContain('First'));
+  expect(wrapper.text()).toContain('Set');
+  expect(wrapper.text()).not.toContain('[object Object]');
+  expect(wrapper.find('input[type="search"]').exists()).toBe(false);
+  expect(queries).toHaveLength(1);
+  const signal = new AbortController().signal;
+  const initial = await table.provider.value(table.query.value, signal);
+  expect(initial).toMatchObject({
+    counts: 'unknown',
+    total: 900,
+    hasNext: true,
+  });
+  const next = wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Next')!;
+  await next.trigger('click');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Second'));
+  expect(queries[1]!.get('cursor')).toBe('opaque+/next');
+  table.query.value = {
+    ...table.query.value,
+    sort: { key: 'name', direction: 'desc' },
+  };
+  await vi.waitFor(() => expect(queries).toHaveLength(3));
+  expect(table.query.value.page).toBe(1);
+  expect(queries[2]!.has('cursor')).toBe(false);
+  expect(queries[2]!.get('sort[0][key]')).toBe('name');
+  expect(queries[2]!.get('sort[0][direction]')).toBe('desc');
+  table.query.value = { ...table.query.value, page: 400 };
+  await flushPromises();
+  expect(table.query.value.page).toBe(1);
+  expect(queries.every((q) => !q.has('page'))).toBe(true);
+});
+
+it('Admin cursor tables type filters refuse invalid input and reset cursors on authority changes', async () => {
+  const queries: URLSearchParams[] = [];
+  const data = resourcePage();
+  data.sections[0]!.fields.push({
+    ...data.sections[0]!.fields[0]!,
+    key: 'age',
+    label: 'Age',
+    type: 'integer',
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') return respond({ data });
+    queries.push(url.searchParams);
+    return respond({
+      data: {
+        items: [
+          { public_id: identity, revision: 'r1', values: { name: 'Visible' } },
+        ],
+        next: 'next',
+        total: null,
+      },
+    });
+  });
+  const { table, session, wrapper } = tableHarness();
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Visible'));
+  table.query.value = { ...table.query.value, filters: { age: '18' } };
+  await vi.waitFor(() => expect(queries).toHaveLength(2));
+  expect(JSON.parse(queries[1]!.get('filters')!)).toEqual({ age: 18 });
+  table.query.value = { ...table.query.value, filters: { age: 'invalid' } };
+  await vi.waitFor(() =>
+    expect(table.error.value?.reason).toBe('admin_input_invalid'),
+  );
+  expect(queries).toHaveLength(2);
+  expect(wrapper.text()).toContain('Enter a valid integer filter.');
+  table.query.value = {
+    ...table.query.value,
+    filters: { name: 'Sensitive filter' },
+  };
+  await vi.waitFor(() => expect(queries).toHaveLength(3));
+  session.authorityRevision.value++;
+  await vi.waitFor(() => expect(table.query.value.filters).toEqual({}));
+  await vi.waitFor(() => expect(queries.length).toBeGreaterThan(3));
+  expect(queries.at(-1)!.has('cursor')).toBe(false);
+  expect(JSON.parse(queries.at(-1)!.get('filters')!)).toEqual({});
+});
+
+it('Admin cursor tables reject missing and duplicate public row identities', async () => {
+  let ids: (string | null)[] = [null];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    return respond({
+      data: {
+        items: ids.map((id) => ({
+          public_id: id,
+          revision: 'r1',
+          values: { name: 'Hidden invalid row' },
+        })),
+        next: null,
+        total: null,
+      },
+    });
+  });
+  const { table, wrapper } = tableHarness();
+  await vi.waitFor(() => expect(table.resource.result.value).toBeDefined());
+  await expect(
+    table.provider.value(table.query.value, new AbortController().signal),
+  ).rejects.toThrow('Invalid Admin collection identity');
+  expect(wrapper.text()).not.toContain('Hidden invalid row');
+  ids = [identity, identity];
+  await table.refresh();
+  await expect(
+    table.provider.value(table.query.value, new AbortController().signal),
+  ).rejects.toThrow('Invalid Admin collection identity');
+  expect(wrapper.text()).not.toContain('Hidden invalid row');
+});
+
+it('Admin cursor tables compose public customer filter cell and row slots', async () => {
+  const queries: URLSearchParams[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    queries.push(url.searchParams);
+    return respond({
+      data: {
+        items: [
+          { public_id: identity, revision: 'r1', values: { name: 'Visible' } },
+        ],
+        next: null,
+        total: null,
+      },
+    });
+  });
+  const { wrapper } = tableHarness(CustomerAdminTable);
+  await vi.waitFor(() =>
+    expect(wrapper.find('strong').text()).toBe('Customer: Visible'),
+  );
+  expect(wrapper.find('[data-public-id]').attributes('data-public-id')).toBe(
+    identity,
+  );
+  await wrapper.find('input').setValue('Another');
+  await vi.waitFor(() => expect(queries).toHaveLength(2));
+  expect(JSON.parse(queries[1]!.get('filters')!)).toEqual({ name: 'Another' });
+  expect(queries[1]!.has('cursor')).toBe(false);
+});
 
 it('Admin resource reads preserve typed GET filters and bounded field lookup identity', async () => {
   const queries: URLSearchParams[] = [];
