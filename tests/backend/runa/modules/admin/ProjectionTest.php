@@ -6,6 +6,7 @@ use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\ManagementBuilds;
 use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleRegistry;
@@ -172,4 +173,41 @@ it('isolates an unavailable binding from a sibling page and preserves typed widg
     $this->handlerClass::$observedAt = null;
     $widget = $this->projection->bootstrap()['dashboard']['widgets'][0];
     expect($widget['values'])->toBe([])->and($widget['diagnostic'])->toBe('admin_widget_unavailable');
+});
+
+it('projects owned component evidence at every level and isolates missing stale and malformed builds', function (): void {
+    $directory = $this->sources->root.'/app/resources';
+    mkdir($directory.'/js/components/admin', 0775, true);
+    mkdir($this->sources->root.'/public/build', 0775, true);
+    file_put_contents($directory.'/js/components/admin/panel.vue', '<template>Panel</template>');
+    file_put_contents($directory.'/js/components/admin/control.vue', '<template>Control</template>');
+    $this->providerClass::$component = 'app.panel';
+    $this->providerClass::$nestedComponent = 'app.control';
+    $this->providerClass::$hiddenWidget = false;
+    $missing = $this->projection->page('app', 'users');
+    expect($missing['component'])->toBe(['key' => 'app.panel', 'owner' => 'app', 'manifest_hash' => null, 'build_id' => null])
+        ->and($missing['sections'][0]['component']['build_id'])->toBeNull()
+        ->and($missing['sections'][1]['component'])->toBeNull();
+    $evidence = (new ManagementBuilds($this->sources->root))->evidence($directory, null);
+    $manifest = ['schema_version' => 1, 'owners' => ['app' => ['manifest_hash' => null, ...$evidence, 'components' => ['app.control', 'app.panel']]]];
+    $file = $this->sources->root.'/public/build/runa-components.json';
+    file_put_contents($file, json_encode($manifest, JSON_THROW_ON_ERROR));
+    $page = $this->projection->page('app', 'users');
+    expect($page['revision'])->not->toBe($missing['revision'])
+        ->and($page['component']['build_id'])->toBe($evidence['build_id'])
+        ->and($page['sections'][0]['component']['build_id'])->toBe($evidence['build_id'])
+        ->and($page['sections'][0]['fields'][0]['component']['key'])->toBe('app.control')
+        ->and($this->projection->bootstrap()['dashboard']['widgets'][0]['component']['build_id'])->toBe($evidence['build_id'])
+        ->and(json_encode($page))->not->toContain($directory, 'sources', 'panel.vue');
+    // Imported helpers also change identity, not just the entry component bytes.
+    file_put_contents($directory.'/js/helper.ts', 'export const changed = true;');
+    $stale = $this->projection->page('app', 'users');
+    expect($stale['component']['build_id'])->toBeNull()
+        ->and($stale['revision'])->not->toBe($page['revision'])
+        ->and($this->projection->read('app', 'users', 'profile', [])['values']['name'])->toBe('Visible');
+    file_put_contents($file, '{malformed-private-build-marker');
+    expect($this->projection->page('app', 'users')['component']['build_id'])->toBeNull();
+    unlink($file);
+    symlink($directory.'/js/helper.ts', $file);
+    expect($this->projection->page('app', 'users')['component']['build_id'])->toBeNull();
 });

@@ -242,7 +242,8 @@ for independent page/field/section keys declared by App PHP providers. Keys use
 the `app.` prefix and match the source/build identity projection; duplicate/unknown
 or foreign module keys fail closed. App bootstrap imports these components
 statically and passes entries with their generated buildId, never resolves a request/database URL or private
-module source path. Module components continue through existing manifest-bound
+module source path. A projected non-null component whose build_id is null is unavailable; it never
+selects a default or loader. Module components continue through existing manifest-bound
 build discovery. The supplied dispatcher forwards an App registry only when the
 application explicitly configures one; no sample screen is added to the scaffold.
 

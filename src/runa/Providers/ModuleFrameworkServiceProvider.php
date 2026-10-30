@@ -82,7 +82,7 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsDefinitions::class);
         $this->app->singleton(ManagementRenderers::class);
         $this->app->singleton(ApplicationManagement::class, fn () => new ApplicationManagement($this->app, base_path()));
-        $this->app->singleton(ManagementPages::class, fn () => new ManagementPages($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(ModuleAvailability::class), $this->app->make(ApplicationManagement::class), $this->app->make(ModuleApis::class), base_path()));
+        $this->app->singleton(ManagementPages::class, fn () => new ManagementPages($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(ModuleAvailability::class), $this->app->make(ApplicationManagement::class), $this->app->make(ModuleApis::class), base_path(), $this->app->environment('production')));
         // String bindings preserve cold startup when Core module classes are unavailable.
         $this->app->singleton('Runa\\Modules\\Admin\\Contracts\\AdminRegistry', 'Runa\\Modules\\Admin\\Registry');
         $this->app->singleton(ModuleManagement::class);

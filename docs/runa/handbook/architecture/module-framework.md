@@ -481,7 +481,11 @@ Each page uses a stable snake_case key, PL/EN names, optional area, supported Ta
 
 `GET /api/modules/frontend` (`api.modules.frontend`) returns an explicitly unwrapped JsonResource with schemaVersion, coherent generation, safe pages/slots and diagnostic codes. It does not return settings, work, registry public IDs, source paths or exception text. Current manifest hashes are public build identity, not secret data. The endpoint evaluates cached health only and performs no registration, health recovery or management write. Disabled pages have hidden navigation; enabled unavailable pages remain disabled diagnostic navigation. Explicit public descriptors use null permission; protected pages/contributions consult the existing request-scoped OperationAuthorizer and deny by default. UI visibility is presentation; all business API operations still require their server guards.
 
-The supplied Vite `moduleComponentsPlugin` exposes `virtual:runa-module-components` only when imported. It scans canonical local `app/modules/<code>/frontend/components/<key>.vue` and corresponding Runa paths deterministically; symlinks and unsafe component filenames are rejected. Keys are `<owner>.<code>.<key>`. Lazy loaders include each manifest's SHA-256 identity. Production mapping excludes development probe/reference names; normal production packaging also excludes their source. Restart Vite or rebuild after manifest/component discovery changes. No database value becomes executable code. Management component descriptors may reference the same registry; a future authorized Admin renderer must still enforce its own permissions and renderer contract.
+The supplied Vite `moduleComponentsPlugin` exposes `virtual:runa-module-components` only when imported. It scans canonical local `app/modules/<code>/frontend/components/<key>.vue` and corresponding Runa paths deterministically; symlinks and unsafe component filenames are rejected. Keys are `<owner>.<code>.<key>`. Lazy loaders include each manifest's SHA-256 identity. Production mapping excludes development probe/reference names; normal production packaging also excludes their source. The same plugin emits source-bound `runa-components.json` build evidence and a
+`builds` named virtual export for Admin projection; see the [component identity
+contract](../modules/admin/declarations.md#component-identity-and-binding-availability).
+Compiled Admin resolution and development-server evidence publication remain
+planned in point 4. Restart Vite or rebuild after manifest/component discovery changes. No database value becomes executable code. Management component descriptors may reference the same registry; a future authorized Admin renderer must still enforce its own permissions and renderer contract.
 
 ```ts
 import loaders from 'virtual:runa-module-components';
@@ -571,7 +575,8 @@ Optional ManagementPageProvider extends the retained ManagementProvider without
 changing legacy metadata schema 1. Its pages/sections/field access, explicit
 API/handler bindings, widgets and editable contributions follow the evolving
 [Admin declaration contract](../modules/admin/declarations.md). Admin owns the
-authorized projection; full component/build projection remains pending in point 3.
+authorized projection, including owned component/build identities. Compiled
+component resolution remains point 4.
 Owners keep their guarded business APIs and record Policies.
 No provider boot grants permissions, installs data or starts a business handler.
 Independent App pages use the frozen AdminRegistry bootstrap contract without a

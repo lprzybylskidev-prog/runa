@@ -30,9 +30,9 @@ final readonly class ManagementPages
 {
     public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations,
         private ModuleAvailability $availability, private ApplicationManagement $application,
-        private ModuleApis $apis, private string $root) {}
+        private ModuleApis $apis, private string $root, private bool $compiledOnly = false) {}
 
-    /** @return array{generation:int,revision:string,owners:array<string, array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>}>,diagnostics:array<string,string>} */
+    /** @return array{generation:int,revision:string,owners:array<string, array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}>,diagnostics:array<string,string>} */
     public function discover(): array
     {
         $snapshot = $this->registry->snapshot();
@@ -104,10 +104,11 @@ final readonly class ManagementPages
     }
 
     /** @param list<ManagementPageProvider> $providers
-     * @return array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>}
+     * @return array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
      */
     private function collect(string $owner, array $providers, string $title, ?ModuleRecord $record): array
     {
+        $components = [];
         $result = ['title' => $title, 'pages' => [], 'bindings' => [], 'contributions' => [], 'widgets' => []];
         foreach ($providers as $provider) {
             foreach (['pages' => [ManagementPage::class, 32], 'bindings' => [ManagementBinding::class, 128],
@@ -128,8 +129,8 @@ final readonly class ManagementPages
         foreach ($result['bindings'] as $binding) {
             $this->binding($owner, $binding, $record);
         }
-        $section = function (ManagementSection $section) use ($owner, $record, $result): void {
-            $this->component($owner, $section->component, $record);
+        $section = function (ManagementSection $section) use ($owner, $record, $result, &$components): void {
+            $this->captureComponent($components, $owner, $section->component, $record);
             if (! isset($result['bindings'][$section->binding])) {
                 throw new InvalidArgumentException('Management section binding missing.');
             }
@@ -138,7 +139,7 @@ final readonly class ManagementPages
                 if ($field->field->referenceModule !== null) {
                     $this->capability($owner, $result['bindings'][$section->binding], ManagementOptionsReader::class, $record);
                 }
-                $this->component($owner, $field->component, $record);
+                $this->captureComponent($components, $owner, $field->component, $record);
                 if ($field->field->referenceModule !== null) {
                     $this->dependency($owner, $record, $field->field->referenceModule);
                 }
@@ -152,7 +153,7 @@ final readonly class ManagementPages
             }
         };
         foreach ($result['pages'] as $page) {
-            $this->component($owner, $page->component, $record);
+            $this->captureComponent($components, $owner, $page->component, $record);
             foreach ($page->sections as $item) {
                 $section($item);
             }
@@ -171,7 +172,7 @@ final readonly class ManagementPages
             $section($contribution->section);
         }
         foreach ($result['widgets'] as $widget) {
-            $this->component($owner, $widget->component, $record);
+            $this->captureComponent($components, $owner, $widget->component, $record);
             if (! isset($result['bindings'][$widget->binding])) {
                 throw new InvalidArgumentException('Management widget binding missing.');
             }
@@ -181,6 +182,8 @@ final readonly class ManagementPages
             uasort($result[$kind], static fn ($a, $b): int => ($a->order <=> $b->order) ?: strcmp($a->key, $b->key));
         }
         ksort($result['bindings']);
+        ksort($components);
+        $result['components'] = $components;
 
         return $result;
     }
@@ -254,6 +257,16 @@ final readonly class ManagementPages
         }
     }
 
+    /** @param array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}> $components */
+    private function captureComponent(array &$components, string $owner, ?string $key, ?ModuleRecord $record): void
+    {
+        $this->component($owner, $key, $record);
+        if ($key !== null && ! isset($components[$key])) {
+            $directory = $this->root.'/'.($record === null ? 'app/resources' : $record->sourcePath.'/frontend');
+            $components[$key] = (new ManagementBuilds($this->root, $this->compiledOnly))->component($owner, $key, $directory, $record?->manifestHash);
+        }
+    }
+
     private function component(string $owner, ?string $component, ?ModuleRecord $record): void
     {
         if ($component === null) {
@@ -263,6 +276,9 @@ final readonly class ManagementPages
         $key = substr($component, strlen($prefix));
         if (! str_starts_with($component, $prefix) || preg_match('/\A[a-z][a-z0-9_]*\z/D', $key) !== 1) {
             throw new InvalidArgumentException('Invalid management component ownership.');
+        }
+        if ($this->compiledOnly) {
+            return;
         }
         $relative = $record === null ? 'app/resources/js/components/admin/'.$key.'.vue' : $record->sourcePath.'/frontend/components/'.$key.'.vue';
         $file = ModuleDiscovery::ownedPath($this->root, $this->root.'/'.$relative);

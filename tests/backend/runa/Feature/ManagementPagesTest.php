@@ -6,6 +6,7 @@ use Runa\ModuleFramework\HealthDeadline;
 use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\LifecyclePolicies;
 use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\ManagementBuilds;
 use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\ModuleAutoloader;
 use Runa\ModuleFramework\ModuleAvailability;
@@ -80,4 +81,39 @@ it('discovers only available module declarations without constructing business h
     DB::table('shared.modules')->where('module_id', $this->id)->update(['manifest_hash' => str_repeat('0', 64)]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     expect($this->pages->discover()['owners'])->not->toHaveKey($this->id);
+});
+
+it('binds module component projection to source manifest and generated build evidence', function (): void {
+    DB::table('shared.modules')->where('module_id', $this->id)->update(['enabled' => true]);
+    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    $directory = $this->sources->root.'/app/modules/'.$this->code.'/frontend';
+    mkdir($directory.'/components', 0775, true);
+    mkdir($this->sources->root.'/public/build', 0775, true);
+    file_put_contents($directory.'/components/panel.vue', '<template>Panel</template>');
+    $this->pages->discover();
+    $class = $this->descriptor;
+    $class::$component = $this->id.'.panel';
+    $hash = $this->registry->snapshot()->modules[$this->id]->manifestHash;
+    $builds = new ManagementBuilds($this->sources->root);
+    $evidence = $builds->evidence($directory, $hash);
+    $entry = ['manifest_hash' => $hash, ...$evidence, 'components' => [$class::$component]];
+    $file = $this->sources->root.'/public/build/runa-components.json';
+    file_put_contents($file, json_encode(['schema_version' => 1, 'owners' => [$this->id => $entry]], JSON_THROW_ON_ERROR));
+    $view = $this->pages->discover()['owners'][$this->id]['components'][$class::$component];
+    expect($view)->toBe(['key' => $class::$component, 'owner' => $this->id, 'manifest_hash' => $hash, 'build_id' => $evidence['build_id']])
+        ->and(ApiCalls::$constructed)->toBe(0)->and(ApiCalls::$executed)->toBe(0);
+    $entry['manifest_hash'] = str_repeat('0', 64);
+    file_put_contents($file, json_encode(['schema_version' => 1, 'owners' => [$this->id => $entry]], JSON_THROW_ON_ERROR));
+    expect($this->pages->discover()['owners'][$this->id]['components'][$class::$component]['build_id'])->toBeNull();
+    // Production carries compiled evidence, not development-only Vue sources.
+    $entry['manifest_hash'] = $hash;
+    file_put_contents($file, json_encode(['schema_version' => 1, 'owners' => [$this->id => $entry]], JSON_THROW_ON_ERROR));
+    unlink($directory.'/components/panel.vue');
+    $compiled = new ManagementBuilds($this->sources->root, true);
+    expect($compiled->component($this->id, $class::$component, $directory, $hash))->toBe($view);
+    $compiledPages = new ManagementPages($this->registry, app(ModuleDeclarations::class), app(ModuleAvailability::class), new ApplicationManagement(app(), $this->sources->root), app(ModuleApis::class), $this->sources->root, true);
+    expect($compiledPages->discover()['owners'][$this->id]['components'][$class::$component])->toBe($view);
+    $entry['build_id'] = str_repeat('0', 64);
+    file_put_contents($file, json_encode(['schema_version' => 1, 'owners' => [$this->id => $entry]], JSON_THROW_ON_ERROR));
+    expect($compiled->component($this->id, $class::$component, $directory, $hash)['build_id'])->toBeNull();
 });

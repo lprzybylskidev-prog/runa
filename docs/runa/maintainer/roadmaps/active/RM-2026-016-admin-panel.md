@@ -228,7 +228,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Point 2a removed unpublished Admin 0.2.0/no-op history churn. Keep the current
     0.1.0 development version until the creation release unless a real need emerges.
     Update the plan/current guides and assess both instruction products.
-- [ ] 3. Implement declaration discovery and authorized projection.
+- [x] 3. Implement declaration discovery and authorized projection.
   - Prerequisites: 1–2, 2a–2b.
   - Extend existing management declarations with pages/sections/resource and command
     bindings, widgets and contribution metadata. Add trusted app independent-page
@@ -763,3 +763,62 @@ scenarios and final review of discovery/read consumers. Point 4 still owns compi
 registry resolution, shell/entry advertisement and frontend rendering. The read/
 discovery checkpoint is not a completed point or release PASS. Admin stays 0.1.0;
 no migration, reset, infrastructure or disposable Docker resource was introduced.
+
+## Point 3 completion — owned component/build projection
+
+Completed 2026-10-30. Discovery now captures source-owned component identities for
+pages, sections, fields, widgets and contributed sections, including current module
+manifest identity and matching generated build evidence. Admin projects that public
+shape without source paths or handler details; discovery/page/bootstrap revisions
+include component evidence. A null component still chooses the supplied default;
+a non-null component with build_id=null is explicitly unavailable and cannot select
+a loader or default. This nullable state completes the unreleased exact wire
+signature without changing the approved presentation/security architecture.
+
+The existing Vite plugin emits public/build/runa-components.json and retains the
+same evidence in its virtual builds export. Owner identity covers sorted relative
+source hashes from module frontend or ordinary App resources, including helper
+changes and additions. Missing, malformed, symlinked, stale, foreign-manifest and
+oversized evidence fail closed per component. Source changes during bundle
+production refuse mismatched evidence. Source-bearing discovery checks canonical
+Vue files and current tree hashes; production strips frontend source and verifies
+compiled evidence, owned membership and module manifest identity instead. This
+preserves production isolation without adding runtime Vue source or dependencies.
+
+Compiled registry resolution, development-server evidence publication, required
+form blocking and rendering remain point 4 (form orchestration in point 5). No
+business adapter, write coordinator, frontend route/controller or rendered UI is
+claimed by point 3. Admin stays development 0.1.0 with its real initial installation
+edge; no version churn, migration or reset was needed.
+
+Grounding: knowledge current at entry (201 documents / 9,727 chunks), bounded
+current-intent retrieval and original Admin declaration/frontend/public-boundary
+and framework sources. Backend/Laravel/security and relevant frontend guidance
+were loaded; Boost supplied installed-version filesystem guidance. Both owner and
+customer guidance already route component/build consumption to the canonical Admin
+guide, so neither instruction product needs a duplicate rule. Public/source
+boundaries, Admin status/changelog/declarations/frontend and framework guidance are
+synchronized; historical point-3 checkpoints above retain their actual open status.
+
+Focused evidence resolving build-wire and production-source uncertainty:
+
+- Supported backend command --parallel --processes=1 with filter
+  'projects owned component evidence|binds module component projection': final
+  2 tests / 21 assertions, 0.92 seconds, native exit 0 / cleanup 0. An initial
+  fixture accessed its module descriptor before the owned autoloader loaded it;
+  corrected the fixture to discover first. The earlier corrected run passed
+  2 tests / 20 assertions before adding stripped-source discovery coverage.
+- One Node source diagnostic selected only 'component evidence binds' from the
+  existing module-build.test.mjs: 1 passed, exit 0. It verifies deterministic
+  identity, virtual/asset agreement, source-change fencing and symlink refusal.
+  Direct Node is used because the supported frontend wrapper selects browser
+  .test.ts cases and has no selector for this Node-only build-plugin case.
+- One temporary Node/PHP parity diagnostic confirmed identical source maps and
+  build identity for a component plus an imported helper, exit 0. Its owned
+  temporary tree was removed in finally. Full builds/suites/static/browser/native
+  acceptance remain exclusively point 12; no broad or release PASS is claimed.
+
+Supported backend runners displayed their exact disposable scope and removed only
+runa_test_test_1. Base runa_test, development data, containers/volumes, Qdrant/model
+caches, backups and reports were preserved. No Docker resource was created or
+removed. Point 3 is complete; point 4 is next.

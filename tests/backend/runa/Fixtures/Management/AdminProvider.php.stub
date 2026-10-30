@@ -22,6 +22,7 @@ final class Provider implements ManagementPageProvider
     public static bool $changed = false;
     public static bool $hiddenWidget = true;
     public static ?string $component = null;
+    public static ?string $nestedComponent = null;
 
     public function permissions(): array { return []; }
     public function actions(): array { return []; }
@@ -30,12 +31,12 @@ final class Provider implements ManagementPageProvider
     {
         $names = ['pl' => 'Pole', 'en' => 'Field'];
         return new ManagementSection('profile', 'Profile', 'runa.admin.enter', 'runa.auth.profile.update', 'profile', [
-            new ManagementFieldAccess(new ManagementField('name', 'text', $names, $names, filterable: true, sortable: true, writable: true), 'runa.admin.enter', 'runa.auth.profile.update'),
+            new ManagementFieldAccess(new ManagementField('name', 'text', $names, $names, filterable: true, sortable: true, writable: true), 'runa.admin.enter', 'runa.auth.profile.update', component: self::$nestedComponent),
             new ManagementFieldAccess(new ManagementField('hidden', 'text', $names, $names, filterable: true, sortable: true, writable: true, choices: ['private_choice']), 'runa.auth.identities.read', 'runa.auth.profile.update'),
             new ManagementFieldAccess(new ManagementField('token', 'text', $names, $names, sensitive: true), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('allowed_reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.auth.identities.read'),
-        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name']), 'profile')]);
+        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name']), 'profile')], component: self::$nestedComponent);
     }
     public function pages(): array
     {
@@ -46,5 +47,5 @@ final class Provider implements ManagementPageProvider
     }
     public function bindings(): array { return [new ManagementBinding('profile', Handler::class, []), ... (self::$optionalPage ? [new ManagementBinding('remote', Handler::class, [new ManagementApiTarget('app.absent', 'App\\Absent\\Read', '1.0.0', ['read'])])] : [])]; }
     public function contributions(): array { return [new ManagementContribution('extra', 'app.users.profile', new ManagementSection('details', 'Extra', 'runa.admin.enter', null, 'profile', []))]; }
-    public function widgets(): array { return [new ManagementWidget('private', 'Private widget', self::$hiddenWidget ? 'runa.auth.identities.read' : 'runa.admin.enter', 'profile')]; }
+    public function widgets(): array { return [new ManagementWidget('private', 'Private widget', self::$hiddenWidget ? 'runa.auth.identities.read' : 'runa.admin.enter', 'profile', component: self::$nestedComponent)]; }
 }

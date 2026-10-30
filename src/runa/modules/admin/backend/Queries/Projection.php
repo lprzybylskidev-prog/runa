@@ -49,7 +49,7 @@ final readonly class Projection
                 if (! $this->allowed($owner, $widget->permission, $discovery['generation'])) {
                     continue;
                 }
-                $projected = ['id' => $owner.'.'.$widget->key, 'title' => $widget->title, 'component' => $widget->component,
+                $projected = ['id' => $owner.'.'.$widget->key, 'title' => $widget->title, 'component' => $this->component($definition, $widget->component),
                     'values' => [], 'observed_at' => null, 'expires_at' => null, 'diagnostic' => null];
                 try {
                     $binding = $definition['bindings'][$widget->binding];
@@ -90,13 +90,13 @@ final readonly class Projection
         $views = [];
         foreach ($sections as [$sectionOwner, $section, $identity]) {
             if ($this->allowed($sectionOwner, $section->readPermission, $discovery['generation'])) {
-                $views[] = $this->section($sectionOwner, $section, $identity, $discovery['generation'], $this->declarations->bindingAvailable($discovery['owners'][$sectionOwner]['bindings'][$section->binding]));
+                $views[] = $this->section($sectionOwner, $section, $identity, $discovery['generation'], $this->declarations->bindingAvailable($discovery['owners'][$sectionOwner]['bindings'][$section->binding]), $discovery['owners'][$sectionOwner]);
             }
         }
         $this->declarations->assertCurrent($discovery['generation']);
 
         return $this->bounded(['schema_version' => 1, 'owner' => $owner, 'key' => $page->key, 'title' => $page->title,
-            'generation' => $discovery['generation'], 'revision' => hash('sha256', serialize([$discovery['revision'], $owner, $key, $views])), 'sections' => $views]);
+            'generation' => $discovery['generation'], 'revision' => hash('sha256', serialize([$discovery['revision'], $owner, $key, $views])), 'component' => $this->component($discovery['owners'][$owner], $page->component), 'sections' => $views]);
     }
 
     /** @param array<string, mixed> $query
@@ -260,8 +260,10 @@ final readonly class Projection
         throw new OperationRejected('admin_page_unavailable', 'runa.admin', 'section.read', 404);
     }
 
-    /** @return array<string, mixed> */
-    private function section(string $owner, ManagementSection $section, string $identity, int $generation, bool $available): array
+    /** @param array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>} $ownerDefinition
+     * @return array<string, mixed>
+     */
+    private function section(string $owner, ManagementSection $section, string $identity, int $generation, bool $available, array $ownerDefinition): array
     {
         $readonly = ! $available || ! $this->allowed($owner, $section->writePermission, $generation);
         $fields = $this->fields($owner, $section, $generation);
@@ -272,7 +274,7 @@ final readonly class Projection
                 'readonly' => $readonly || ! $definition->writable || ! $this->allowed($owner, $field->writePermission, $generation),
                 'sensitive' => $definition->sensitive, 'filterable' => $definition->filterable, 'sortable' => $definition->sortable,
                 'lookup' => $definition->referenceModule !== null, 'required' => $definition->required, 'max_length' => $definition->maxLength,
-                'choices' => $definition->choices, 'multiple' => $definition->multiple, 'component' => $field->component];
+                'choices' => $definition->choices, 'multiple' => $definition->multiple, 'component' => $this->component($ownerDefinition, $field->component)];
         }
         foreach ($section->commands as $command) {
             if ($readonly || ! $this->allowed($owner, $command->safety->operation->permission, $generation)) {
@@ -288,7 +290,15 @@ final readonly class Projection
         }
 
         return ['key' => $identity, 'title' => $section->title, 'readonly' => $readonly, 'required' => $section->required,
-            'component' => $section->component, 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
+            'component' => $this->component($ownerDefinition, $section->component), 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
+    }
+
+    /** @param array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>} $definition
+     * @return array{key:string,owner:string,manifest_hash:?string,build_id:?string}|null
+     */
+    private function component(array $definition, ?string $key): ?array
+    {
+        return $key === null ? null : $definition['components'][$key];
     }
 
     /** @return array<string,ManagementFieldAccess> */

@@ -2,10 +2,9 @@
 
 # Admin declarations, bindings and wire values
 
-Status: point 3 has unfinished declarations/discovery/projection work. The
-capability interfaces, field-bound options and typed widget results below are
-implemented; component/build projection remains specified for completion with
-the frontend registry. The complete wire contract is not yet delivered. Write dispatch, business adapters,
+Status: point 3 implements declarations/discovery, capability interfaces,
+field-bound options, typed widget results and source-bound component/build
+projection. Compiled registry resolution and rendering remain point 4. The complete wire contract is not yet delivered. Write dispatch, business adapters,
 HTTP routes other than bootstrap and frontend rendering remain planned. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
@@ -172,7 +171,7 @@ handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
 The capability interfaces and read/result DTOs above are implemented in the
-point-3 worktree. Full discovery/projection delivery remains incomplete. A handler
+point-3 implementation. Rendering and write dispatch remain planned. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -291,7 +290,7 @@ Command = {key:string,title:string,mode:'independent'|'atomic',destructive:boole
   requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean}
 Widget = {id:string,title:string,component:Component|null,values:JsonMap,
   observed_at:string|null,expires_at:string|null,diagnostic:string|null}
-Component = {key:string,owner:string,manifest_hash:string|null,build_id:string}
+Component = {key:string,owner:string,manifest_hash:string|null,build_id:string|null}
 Record = {public_id:string|null,revision:string,values:JsonMap}
 Read = Record | {items:[Record],next:string|null,total:int|null}
   | {field:string,items:[{value:string,label:string}],next:string|null}
@@ -341,10 +340,27 @@ identity. A matching source file alone does not admit a browser component. The
 resolver matches owner/key/build_id and, for modules, manifest_hash against the
 existing manifest-bound registry. App registry entries carry buildId and component;
 keys retain the app prefix. No database/request value selects a module loader.
+A non-null component with `build_id=null` explicitly denotes missing, malformed
+or stale build evidence; it must never select the default or a loader.
 Missing/mismatched builds show a safe unavailable component; they never load an
 older implementation under a new declaration. Other components remain usable;
 a required form component failure blocks Save. Custom full presentation retains
 these checks. The build manifest contains no absolute paths or secrets.
+
+The existing Vite module-components plugin emits `public/build/runa-components.json`
+(schema 1) and retains the same `builds` named export in its virtual registry.
+Each owner entry contains `manifest_hash`, `build_id`, sorted relative `sources`
+(SHA256 values), and sorted owned `components` keys. Module evidence covers its
+entire `frontend` directory; ordinary App evidence covers `app/resources` and
+keys from `js/components/admin`. Identity is SHA256 of the module manifest hash
+(or literal `app`), newline, then sorted `<relative-path>:<sha256>\n` rows.
+Source-bearing reads rehash the tree, including added/imported helpers. Production
+uses the compiled evidence because development-only frontend source is absent;
+module manifest identity and component membership still must match. Malformed,
+missing, noncanonical or over-4-MiB evidence produces unavailable components.
+Changes during the Vite build refuse publication of mismatched registry evidence.
+The manifest exposes only relative names/hashes; Admin HTTP projects only the
+Component shape. Discovery revisions include build availability and identities.
 
 Discovery validates structure, ownership, dependency declaration and exact target
 contract/version/method shape separately from current runtime target availability.
@@ -376,7 +392,7 @@ challenge response semantics take precedence over a generic 403. Never echo
 unauthorized submitted values. Root rollback and refusal handling are specified
 in [composition](composition.md).
 
-## Point-3 worktree discovery and projection (unfinished)
+## Delivered discovery and read projection
 
 Management discovery reads only installed/registered, enabled and available owners
 whose manifest hash still matches their source. Existing legacy management
@@ -405,8 +421,10 @@ instead. Provider registration never installs modules or synchronizes grants.
 Source component keys resolve to their owning module's existing
 `frontend/components/<key>.vue`; App independent keys use `app.<key>` with source
 `src/app/resources/js/components/admin/<key>.vue`. Symlinks, imports, foreign keys
-and missing source are refused. Browser build registry wiring and replacements
-remain point 4; source validation alone is not rendered acceptance.
+and missing source are refused in source-bearing environments. Production strips
+Vue sources and validates the generated evidence against the current module
+manifest instead. Browser registry resolution, development-server evidence
+publication and replacements remain point 4; projection is not rendered acceptance.
 
 Bootstrap selects the first authorized declared default, otherwise the first
 page ordered by order/key. Owners with no authorized page disappear. Page reads

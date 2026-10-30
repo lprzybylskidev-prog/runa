@@ -26,9 +26,9 @@ Read the contracts in dependency order:
 ## Ownership and supported entrypoints
 
 Page declarations, handler DTOs, App registration and guarded Admin reads below
-have an unfinished point-3 implementation. Capability-specific reads, field-bound
-options and typed widget freshness are implemented; complete component/build
-projection remains pending. Atomic participation, settings and frontend contracts
+are implemented through point 3. Capability-specific reads, field-bound
+options, typed widget freshness and source-bound component/build projection are
+implemented; compiled registry resolution and rendering remain point 4. Atomic participation, settings and frontend contracts
 remain specified. Private engines retain their current homes and are never
 ordinary application imports.
 
@@ -124,7 +124,7 @@ No diagnostic HTTP operation or management mutation is exposed yet; point 9 owns
 that wiring and transactional Audit additions. No arbitrary engine dispatcher exists.
 
 Point 3 implements the declaration and projection subset described in
-[declarations](declarations.md#point-3-worktree-discovery-and-projection-unfinished).
+[declarations](declarations.md#delivered-discovery-and-read-projection).
 
 Point 1 records contracts and current-API compatibility fixtures. Points 2–11
 implement these contracts and author behavioral tests. Point 12 alone runs complete

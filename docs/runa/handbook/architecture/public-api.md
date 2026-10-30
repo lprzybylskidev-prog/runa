@@ -288,7 +288,8 @@ Points 2–3 implement guarded `Runa\Modules\Admin\Contracts\AdminAccess` 1.0.0
 bootstrap/page/section reads, optional ManagementPageProvider declarations and
 handler DTOs, plus bootstrap-only AdminRegistry. GET `/api/admin` remains the only
 implemented HTTP route. Field-bound options and typed widget freshness are delivered;
-complete page/component build projection remains pending in point 3. Atomic
+owned page/component build identity projection is implemented in point 3;
+compiled component resolution remains point 4. Atomic
 participation, frontend and remaining routes stay planned.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted
 integration, not customer imports. Namespace examples for unimplemented symbols
