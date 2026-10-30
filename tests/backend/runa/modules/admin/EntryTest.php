@@ -247,6 +247,28 @@ it('registers lazy App declarations before guarded discovery and freezes replace
         $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.owners.0.id', 'app')
             ->assertJsonPath('data.owners.0.default_page', 'users')->assertJsonPath('data.dashboard.widgets', []);
         expect($called)->toBeTrue();
+        $path = '/api/admin/app/users/sections/profile';
+        $this->getJson($path.'?'.http_build_query(['kind' => 'record', 'limit' => 7, 'filters' => json_encode(['name' => null])]))
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+            ->assertJsonPath('data.values.name', 'Visible')->assertJsonPath('data.values.token.set', true)
+            ->assertJsonMissingPath('data.values.hidden')->assertJsonMissingPath('data.values.unlisted');
+        expect($handler::$lastRead->limit)->toBe(7)->and($handler::$lastRead->filters)->toBe(['name' => null]);
+        foreach ([false, 12, '12', ''] as $value) {
+            $this->getJson($path.'?'.http_build_query(['kind' => 'page', 'filters' => json_encode(['name' => $value]),
+                'sort' => [['key' => 'name', 'direction' => 'desc']]]))->assertOk()->assertJsonPath('data.total', null);
+            expect($handler::$lastRead->filters)->toBe(['name' => $value])->and($handler::$lastRead->sort)->toBe([['key' => 'name', 'direction' => 'desc']]);
+        }
+        $calls = $handler::$calls;
+        foreach ([['limit' => 101], ['filters' => '{'], ['filters' => '[]'], ['filters' => '{"hidden":"probe"}'],
+            ['kind' => 'record', 'field' => 'name'], ['selection' => 'probe'], ['public_id' => '1']] as $query) {
+            $this->getJson($path.'?'.http_build_query($query))->assertUnprocessable()->assertJsonMissingPath('data');
+        }
+        $this->getJson($path.'?kind=options&field=reference')->assertNotFound()->assertJsonMissingPath('data');
+        expect($handler::$calls)->toBe($calls);
+        $this->getJson($path.'?kind=options&field=allowed_reference&limit=1')->assertOk()->assertJsonPath('data.field', 'allowed_reference');
+        $handler::$rawSecret = true;
+        $this->getJson($path)->assertServiceUnavailable()->assertJsonMissingPath('data');
+        expect(route('runa.admin.section.read', ['owner' => 'app', 'page' => 'users', 'section' => 'profile'], false))->toBe($path);
         expect(fn () => $registrations->register(new $provider))->toThrow(InvalidArgumentException::class);
         $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.owners.0.id', 'app');
     } finally {
@@ -402,9 +424,11 @@ it('advertises only current entry availability without requiring or consuming pa
 });
 
 it('routes Admin pages through guarded reads and never relaxes maintenance for advertisement', function (): void {
+    $this->getJson('/api/admin/app/users/sections/profile?limit=invalid')->assertUnauthorized()->assertJsonMissingPath('errors');
     ($this->adminGrant)('runa.admin.enter');
     ($this->adminLogin)();
     $this->getJson('/api/admin/app/users')->assertForbidden()->assertJsonPath('reason', 'step_up_required');
+    $this->getJson('/api/admin/app/users/sections/profile?limit=invalid')->assertForbidden()->assertJsonPath('reason', 'step_up_required')->assertJsonMissingPath('errors');
     ($this->adminProof)();
     $this->getJson('/api/admin/app/users')->assertNotFound()->assertJsonMissingPath('data');
     expect(route('runa.admin.dashboard', absolute: false))->toBe('/admin')

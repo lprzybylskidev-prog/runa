@@ -8,6 +8,8 @@ import type {
   AdminFieldData,
   AdminCommandData,
   AdminWidgetData,
+  AdminReadQuery,
+  AdminReadResult,
 } from './contracts';
 export function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value))
@@ -101,7 +103,7 @@ function json(value: unknown, depth = 0): AdminJson {
 function values(value: unknown): Record<string, AdminJson> {
   return object(json(object(value))) as Record<string, AdminJson>;
 }
-function record(value: unknown): AdminRecord {
+export function decodeRecord(value: unknown): AdminRecord {
   const v = object(value);
   return {
     public_id: nullable(v.public_id, (id) => {
@@ -167,7 +169,7 @@ function section(value: unknown): AdminSectionData {
     component: nullable(v.component, component),
     fields: unique(array(v.fields, field, 64), (f) => f.key),
     commands: unique(array(v.commands, command, 32), (c) => c.key),
-    record: nullable(v.record, record),
+    record: nullable(v.record, decodeRecord),
     diagnostic: nullable(v.diagnostic, text),
   };
 }
@@ -282,4 +284,96 @@ export function decodePage(value: unknown): AdminPageData {
     component: nullable(v.component, component),
     sections: unique(array(v.sections, section, 256), (s) => s.key),
   };
+}
+
+/** Decode only the requested capability and the still-readable field projection. */
+export function decodeRead(
+  value: unknown,
+  query: AdminReadQuery,
+  section: AdminSectionData,
+): AdminReadResult {
+  if (JSON.stringify(value).length > 1048576)
+    throw new TypeError('Admin response limit exceeded.');
+  const v = object(object(value).data);
+  function projectedRecord(value: unknown): AdminRecord {
+    const result = decodeRecord(value);
+    if (
+      query.public_id &&
+      query.kind === 'record' &&
+      result.public_id !== query.public_id
+    )
+      throw new TypeError('Admin subject changed.');
+    for (const [name, value] of Object.entries(result.values)) {
+      const field = section.fields.find((f) => f.key === name);
+      if (!field) throw new TypeError('Unexpected Admin field.');
+      if (field.sensitive) {
+        const state = object(value);
+        if (Object.keys(state).length !== 1 || typeof state.set !== 'boolean')
+          throw new TypeError('Invalid Admin secret state.');
+      } else if (value !== null) {
+        const valid =
+          field.type === 'text'
+            ? typeof value === 'string' &&
+              (field.max_length === null ||
+                [...value].length <= field.max_length)
+            : field.type === 'boolean'
+              ? typeof value === 'boolean'
+              : field.type === 'integer'
+                ? typeof value === 'number' && Number.isSafeInteger(value)
+                : field.type === 'datetime'
+                  ? typeof value === 'string' && timestamp(value) === value
+                  : field.type === 'dictionary'
+                    ? typeof value === 'string' &&
+                      (!field.choices.length || field.choices.includes(value))
+                    : field.type === 'uuid'
+                      ? field.multiple
+                        ? Array.isArray(value) &&
+                          value.length <= 100 &&
+                          value.every(isPublicId)
+                        : isPublicId(value)
+                      : false;
+        if (!valid) throw new TypeError('Invalid Admin field value.');
+      }
+    }
+    return result;
+  }
+  if (query.kind === 'record') return projectedRecord(v);
+  if (query.kind === 'options') {
+    if (
+      v.field !== query.field ||
+      !section.fields.some((f) => f.key === v.field && f.lookup)
+    )
+      throw new TypeError('Admin lookup field changed.');
+    return {
+      field: query.field,
+      items: unique(
+        array(
+          v.items,
+          (value) => {
+            const option = object(value);
+            return {
+              value: text(option.value),
+              label: text(option.label, 160),
+            };
+          },
+          query.limit ?? 25,
+        ),
+        (option) => option.value,
+      ),
+      next: nullable(v.next, (value) => text(value, 2048)),
+    };
+  }
+  return {
+    items: array(v.items, projectedRecord, query.limit ?? 25),
+    next: nullable(v.next, (value) => text(value, 2048)),
+    total: nullable(v.total, integer),
+  };
+}
+function isPublicId(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    /^[a-f0-9]{8}-[a-f0-9]{4}-7[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
+      value,
+    )
+  );
 }

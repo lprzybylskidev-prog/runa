@@ -21,13 +21,14 @@ final readonly class AdminBootstrapController
         $operation = match ($request->route()?->getName()) {
             'runa.admin.entry' => 'entry',
             'runa.admin.page.read' => 'page',
+            'runa.admin.section.read' => 'read',
             default => 'bootstrap',
         };
         $context = $this->guard->enter('runa.admin', new ApiOperation($operation, $operation === 'entry' ? null : 'runa.admin.enter'));
         $record = $this->registry->snapshot()->modules['runa.admin']
             ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'bootstrap');
         $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\'.match ($operation) {
-            'entry' => 'EntryController', 'page' => 'PageController', default => 'BootstrapController'
+            'entry' => 'EntryController', 'page' => 'PageController', 'read' => 'SectionController', default => 'BootstrapController'
         });
         $this->guard->assertCurrent($context);
 

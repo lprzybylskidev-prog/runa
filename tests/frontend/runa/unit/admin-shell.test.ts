@@ -8,6 +8,7 @@ import {
   resolveAdminComponent,
   useAdmin,
   useAdminPage,
+  useAdminResource,
   useAdminPresentation,
 } from '@/runa/admin';
 import { ApplicationSessionShell } from '@/runa/auth';
@@ -21,6 +22,8 @@ import type {
   AdminController,
   AdminLocation,
   AdminPageController,
+  AdminPageData,
+  AdminResourceController,
 } from '@/runa/admin';
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 
@@ -360,4 +363,363 @@ it('keeps full customer Admin content behind the public session and entry contro
   await flushPromises();
   expect(wrapper.find('[data-customer-admin]').exists()).toBe(false);
   expect(session.logout).not.toHaveBeenCalled();
+});
+
+function resourcePage(): AdminPageData {
+  return {
+    schema_version: 1,
+    owner: 'app',
+    key: 'settings',
+    title: 'Settings',
+    generation: 7,
+    revision: 'page-1',
+    component: null,
+    sections: [
+      {
+        key: 'profile',
+        title: 'Profile',
+        readonly: true,
+        required: true,
+        component: null,
+        diagnostic: null,
+        commands: [],
+        record: null,
+        fields: [
+          {
+            key: 'name',
+            type: 'text',
+            label: 'Name',
+            readonly: true,
+            sensitive: false,
+            filterable: true,
+            sortable: true,
+            lookup: false,
+            required: false,
+            max_length: 80,
+            choices: [],
+            multiple: false,
+            component: null,
+          },
+          {
+            key: 'reference',
+            type: 'uuid',
+            label: 'Reference',
+            readonly: true,
+            sensitive: false,
+            filterable: false,
+            sortable: false,
+            lookup: true,
+            required: false,
+            max_length: null,
+            choices: [],
+            multiple: false,
+            component: null,
+          },
+          {
+            key: 'token',
+            type: 'text',
+            label: 'Token',
+            readonly: true,
+            sensitive: true,
+            filterable: false,
+            sortable: false,
+            lookup: false,
+            required: false,
+            max_length: null,
+            choices: [],
+            multiple: false,
+            component: null,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function resourceHarness() {
+  const session = sessionFixture();
+  let resource!: AdminResourceController, page!: AdminPageController;
+  const location = ref<AdminLocation>({ owner: 'app', page: 'settings' });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const admin = useAdmin({ session, navigate: vi.fn() });
+        page = useAdminPage(admin, location);
+        resource = useAdminResource(page, 'profile');
+        return () => h('div');
+      },
+    }),
+  );
+  return { session, location, wrapper, resource, page };
+}
+
+it('Admin resource reads preserve typed GET filters and bounded field lookup identity', async () => {
+  const queries: URLSearchParams[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    queries.push(url.searchParams);
+    return respond({
+      data:
+        url.searchParams.get('kind') === 'options'
+          ? {
+              field: 'reference',
+              items: [{ value: identity, label: 'Owner' }],
+              next: 'opaque+cursor',
+            }
+          : {
+              items: [
+                {
+                  public_id: identity,
+                  revision: 'record-1',
+                  values: { name: 'Visible', token: { set: true } },
+                },
+              ],
+              next: null,
+              total: null,
+            },
+    });
+  });
+  const { resource, page } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  await resource.read({
+    kind: 'page',
+    limit: 7,
+    filters: { name: null, flag: false, count: 12, empty: '' },
+    sort: [{ key: 'name', direction: 'asc' }],
+  });
+  expect(resource.result.value).toMatchObject({
+    total: null,
+    items: [{ values: { token: { set: true } } }],
+  });
+  expect(JSON.parse(queries[0]!.get('filters')!)).toEqual({
+    name: null,
+    flag: false,
+    count: 12,
+    empty: '',
+  });
+  expect(queries[0]!.get('sort[0][key]')).toBe('name');
+  await resource.read({
+    kind: 'options',
+    field: 'reference',
+    cursor: 'opaque+cursor',
+  });
+  expect(resource.result.value).toMatchObject({
+    field: 'reference',
+    items: [{ value: identity }],
+    next: 'opaque+cursor',
+  });
+  expect(queries[1]!.get('cursor')).toBe('opaque+cursor');
+  const calls = queries.length;
+  await resource.read({ kind: 'options', field: 'hidden' });
+  expect(queries).toHaveLength(calls);
+  expect(resource.result.value).toBeUndefined();
+  expect(resource.error.value?.message).not.toContain('hidden');
+  await resource.read({ kind: 'options', field: 'reference' });
+  expect(resource.result.value).toHaveProperty('field', 'reference');
+});
+
+it('Admin resource reads coalesce requests and fence page account authority and disposal races', async () => {
+  const finishes: ((value: Response) => void)[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    return new Promise((resolve) => {
+      finishes.push(resolve);
+    });
+  });
+  const { resource, page, session, wrapper } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const record = (name: string) =>
+    respond({
+      data: { public_id: identity, revision: 'r1', values: { name } },
+    });
+  const first = resource.read({ kind: 'record', public_id: identity });
+  const same = resource.read({ kind: 'record', public_id: identity });
+  expect(same).toBe(first);
+  await flushPromises();
+  expect(finishes).toHaveLength(1);
+  session.paused.value = true;
+  finishes[0]!(record('Old account'));
+  await first;
+  expect(resource.result.value).toBeUndefined();
+  expect(resource.busy.value).toBe(false);
+  session.paused.value = false;
+  await vi.waitFor(() => expect(finishes.length).toBe(2));
+  finishes[1]!(record('Current'));
+  await vi.waitFor(() =>
+    expect(resource.result.value).toMatchObject({
+      values: { name: 'Current' },
+    }),
+  );
+  const stale = resource.read({
+    kind: 'record',
+    public_id: identity,
+    limit: 1,
+  });
+  await flushPromises();
+  session.authorityRevision.value++;
+  finishes[2]!(record('Old authority'));
+  await stale;
+  expect(resource.result.value).toBeUndefined();
+  await vi.waitFor(() => expect(finishes.length).toBe(4));
+  wrapper.unmount();
+  finishes[3]!(record('Disposed'));
+  await flushPromises();
+  expect(resource.result.value).toBeUndefined();
+});
+
+it('Admin resource reads reject foreign subjects denied fields raw secrets and mismatched options without disclosure', async () => {
+  let data: unknown;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    return respond({ data });
+  });
+  const { resource, page } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  for (const invalid of [
+    {
+      public_id: '01900000-0000-7000-8000-000000000002',
+      revision: 'r1',
+      values: {},
+    },
+    {
+      public_id: identity,
+      revision: 'r1',
+      values: { hidden: 'private-value' },
+    },
+    {
+      public_id: identity,
+      revision: 'r1',
+      values: { token: 'private-secret' },
+    },
+    { public_id: identity, revision: 'r1', values: { name: 12 } },
+  ]) {
+    data = invalid;
+    await resource.read({ kind: 'record', public_id: identity });
+    expect(resource.result.value).toBeUndefined();
+    expect(resource.state.value).toBe('failed');
+    expect(JSON.stringify(resource.error.value)).not.toContain('private-');
+  }
+  data = {
+    field: 'hidden',
+    items: [{ value: identity, label: 'Private label' }],
+    next: null,
+  };
+  await resource.read({ kind: 'options', field: 'reference' });
+  expect(resource.result.value).toBeUndefined();
+  const calls = vi.mocked(window.fetch).mock.calls.length;
+  expect(
+    await resource.command({
+      command: 'update',
+      public_id: identity,
+      revision: 'r1',
+      values: {},
+    }),
+  ).toBeUndefined();
+  expect(vi.mocked(window.fetch).mock.calls).toHaveLength(calls);
+  expect(resource.error.value?.reason).toBe('admin_operation_unavailable');
+});
+
+it('Admin page refresh retains the mounted page while a same-session descriptor read is pending', async () => {
+  let finish!: (value: Response) => void;
+  let slow = false;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/app/settings')
+      return slow
+        ? new Promise((resolve) => {
+            finish = resolve;
+          })
+        : respond({ data: resourcePage() });
+    return respond({
+      data: { public_id: identity, revision: 'r1', values: {} },
+    });
+  });
+  const { page, session } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const initial = page.page.value;
+  slow = true;
+  const refresh = page.refresh();
+  expect(page.state.value).toBe('ready');
+  expect(page.page.value).toBe(initial);
+  finish(respond({ data: resourcePage() }));
+  await refresh;
+  session.paused.value = true;
+  expect(page.page.value).toBeUndefined();
+});
+
+it('Admin resource reads discard obsolete queries and refresh after readable section changes', async () => {
+  const replies: ((value: Response) => void)[] = [];
+  let descriptor = resourcePage();
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/app/settings')
+      return respond({ data: descriptor });
+    return new Promise((resolve) => {
+      replies.push(resolve);
+    });
+  });
+  const { resource, page, session } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const older = resource.read({
+    kind: 'record',
+    public_id: identity,
+    filters: { name: 'old' },
+  });
+  await vi.waitFor(() => expect(replies.length).toBe(1));
+  const latest = resource.read({
+    kind: 'record',
+    public_id: identity,
+    filters: { name: 'new' },
+  });
+  await vi.waitFor(() => expect(replies.length).toBe(2));
+  replies[1]!(
+    respond({
+      data: {
+        public_id: identity,
+        revision: 'new',
+        values: { name: 'Current' },
+      },
+    }),
+  );
+  await latest;
+  replies[0]!(
+    respond({
+      data: { public_id: identity, revision: 'old', values: { name: 'Old' } },
+    }),
+  );
+  await older;
+  expect(resource.result.value).toMatchObject({ revision: 'new' });
+  descriptor = { ...resourcePage(), revision: 'page-2' };
+  descriptor.sections[0]!.fields = [];
+  await page.refresh();
+  expect(resource.result.value).toBeUndefined();
+  await vi.waitFor(() => expect(replies.length).toBe(3));
+  // Even an old response from a faulty backend cannot reintroduce a revoked field.
+  replies[2]!(
+    respond({
+      data: {
+        public_id: identity,
+        revision: 'new',
+        values: { name: 'Revoked' },
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(resource.state.value).toBe('failed'));
+  expect(resource.result.value).toBeUndefined();
+  session.session.value = {
+    ...session.session.value!,
+    public_id: '01900000-0000-7000-8000-000000000002',
+  };
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  await flushPromises();
+  expect(replies).toHaveLength(3);
+  expect(resource.result.value).toBeUndefined();
+  expect(resource.state.value).toBe('ready');
 });

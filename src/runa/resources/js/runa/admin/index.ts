@@ -1,4 +1,4 @@
-/** Public Admin session/controllers and presentation. Business forms arrive separately. */
+/** Public Admin session/read controllers and presentation. Business forms arrive separately. */
 export { default as AdminApplication } from '../../../../modules/admin/frontend/AdminApplication.vue';
 export { default as AdminLayout } from '../../../../modules/admin/frontend/AdminLayout.vue';
 export { default as AdminLoading } from '../../../../modules/admin/frontend/AdminLoading.vue';
@@ -7,5 +7,6 @@ export { default as AdminPresentationProvider } from '../../../../modules/admin/
 export { useAdminPresentation } from '../../../../modules/admin/frontend/presentation';
 export { useAdmin } from '../../../../modules/admin/frontend/useAdmin';
 export { useAdminPage } from '../../../../modules/admin/frontend/useAdminPage';
+export { useAdminResource } from '../../../../modules/admin/frontend/useAdminResource';
 export { resolveAdminComponent } from '../../../../modules/admin/frontend/components';
 export type * from '../../../../modules/admin/frontend/contracts';

@@ -23,3 +23,7 @@ Route::get('/admin/entry', AdminBootstrapController::class)->middleware(AdminHtt
 Route::get('/admin/{owner}/{page}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
     ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}'])
     ->name('runa.admin.page.read');
+
+Route::get('/admin/{owner}/{page}/sections/{section}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}', 'section' => '[a-z][a-z0-9_.]{0,511}'])
+    ->name('runa.admin.section.read');

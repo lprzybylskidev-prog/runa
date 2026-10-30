@@ -26,8 +26,10 @@ final class Handler implements ManagementResourceReader, ManagementOptionsReader
     public static ?string $optionField = null;
     public static ?string $observedAt = null;
     public static ?string $expiresAt = null;
+    public static ?ManagementRead $lastRead = null;
     public function read(ManagementRead $input): ManagementRecord
     {
+        self::$lastRead = $input;
         self::$calls++;
         if (self::$changed) { \Illuminate\Support\Facades\DB::table('shared.module_registry_state')->where('id', 1)->increment('generation'); }
         if (self::$failure) { throw new \RuntimeException('private-exception-marker'); }

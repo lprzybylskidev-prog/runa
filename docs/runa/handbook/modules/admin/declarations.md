@@ -6,7 +6,8 @@ Status: point 3 implements declarations/discovery, capability interfaces,
 field-bound options, typed widget results and source-bound component/build
 projection. Point 4 adds compiled resolution, the shared session shell, entry
 advertisement and page-read/document HTTP. The complete wire contract is not yet
-delivered: section-read/write HTTP, generated forms and business adapters remain planned. See
+delivered: point 5 now adds section-read HTTP and the frontend resource read lane;
+write HTTP, generated forms and business adapters remain planned. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -211,7 +212,7 @@ AdminAccess bootstrap/page/read and AdminRegistry are implemented.
 Preview/save/command fail closed after entry checks. Handler interfaces are
 delivered; Core business handlers follow in their owning points.
 In the route table below, document routes, entry, bootstrap and page.read are
-implemented. Section-read and write HTTP routes belong to subsequent points.
+implemented, including section-read HTTP in point 5. Write HTTP routes remain planned.
 
 Admin contracts live in `Runa\Modules\Admin\Contracts`:
 
@@ -256,6 +257,17 @@ bootstrap values. HTML shell admission also exposes no protected bootstrap value
 | POST `/api/admin/{owner}/{page}/preview`                     | `runa.admin.preview`      | AdminAccess.preview                             |
 | POST `/api/admin/{owner}/{page}/save`                        | `runa.admin.save`         | AdminAccess.save                                |
 | POST `/api/admin/{owner}/{page}/sections/{section}/commands` | `runa.admin.command`      | AdminAccess.command                             |
+
+Section reads use ordinary GET scalar parameters for `kind`, `field`, `public_id`,
+`cursor` and `limit`, and bracket parameters `sort[0][key]` / `sort[0][direction]`.
+The optional `filters` parameter is one URL-encoded JSON object, not bracket fields:
+`filters={"active":false,"limit":12,"empty":"","missing":null}` preserves exact
+scalar/null semantics. It is bounded to 64 KiB and 16 entries; owning readable
+filter allowlists still apply. The HTTP adapter converts only the validated integer
+limit; malformed filters, extra query keys, invalid kinds, foreign/denied fields and
+unsupported capabilities fail closed. The native PHP API still accepts the typed
+query array directly. Admission precedes Form Request validation and handler loading;
+all results and errors are `no-store, private`.
 
 All API operations are authenticated, CSRF-protected, no-store and maintenance
 blocked. Reads never mutate configuration or run diagnosis; diagnosis is a command.

@@ -167,7 +167,7 @@ export interface AdminEntryProofProps {
   controller: AdminController;
 }
 
-/** Wire contracts for forms/resources; their controllers are delivered in the next point. */
+/** Resource reads are delivered; form and write coordination follow separately. */
 export interface AdminRecordQuery {
   kind: 'record' | 'page';
   public_id?: string;

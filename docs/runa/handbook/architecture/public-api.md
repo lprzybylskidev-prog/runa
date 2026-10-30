@@ -287,12 +287,13 @@ Its ownership table and PHP/TS signatures define the implementation target.
 Points 2–4 implement guarded `Runa\Modules\Admin\Contracts\AdminAccess` 1.0.0
 bootstrap/page/section reads, proof-free entry advertisement, optional
 ManagementPageProvider declarations/handler DTOs and bootstrap-only AdminRegistry.
-Named document, advertisement, bootstrap and page-read routes are delivered.
+Named document, advertisement, bootstrap, page-read and section-read routes are delivered.
 Field-bound options, typed widget freshness and source/compiled component identity
 are implemented. The public `@/runa/admin` shell/controllers/provider/resolver and
 `@/runa/auth` ApplicationSessionShell share one session owner; exact runtime exports
-and future form/resource contracts are listed in the Admin frontend guide.
-Atomic participation, business adapters, section-read/write HTTP and settings remain
+and the read-only `useAdminResource` controller are delivered; future form/default
+resource presentation contracts are listed in the Admin frontend guide.
+Atomic participation, business adapters, write HTTP and settings remain
 planned.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted
 integration, not customer imports. Namespace examples for unimplemented symbols

@@ -898,3 +898,56 @@ or complete rendered acceptance is claimed. Supported runners displayed and remo
 only runa_test_test_1; base/development databases, active development containers,
 volumes, Qdrant/model caches, backups and reports were preserved. No task-created
 Docker resources required removal. Point 5 is next.
+
+## Point 5 checkpoint — section transport and resource read lifecycle
+
+2026-10-30: implemented named section-read HTTP through the existing lazy guarded
+dispatcher, a dedicated Form Request and JsonResource. Admission/proof precedes
+validation and handler construction; owning page/section/field/read/filter/sort/
+lookup Policies remain authoritative. GET filters use one bounded JSON object to
+preserve scalar/null types; PHP consumers retain their native typed array. Unknown
+keys, malformed input and denied reference fields fail closed. No write executes.
+
+The public useAdminResource read lane decodes record/page/options by the requested
+capability and readable descriptor, preserves unknown totals and secret set-state,
+and refuses foreign subjects, denied fields, raw secrets and mismatched options.
+Identical pending reads coalesce; newer reads, page/source/authority/account changes
+and scope disposal fence old responses. Protected query subjects/filters are erased
+on account/session or owning-page changes. The last same-context query refreshes
+after a descriptor update or return to a visible document, without polling. Resource
+command remains explicitly unavailable locally; it cannot send/replay a write.
+Same-session page refresh retains mounted content while pending, preparing for
+draft reconciliation without remounting the editor.
+
+Grounding: local knowledge current at entry (201 documents / 9,764 chunks), bounded
+current-intent retrieval and original Admin/frontend/form/table/public-boundary
+sources. Backend/Laravel/security and frontend/Vue/Tailwind guidance were consulted;
+Boost provided Laravel 13.x Form Request/named routing documentation. Both owner
+and customer instruction products already route consumption to canonical Admin
+delivery status and public forms/tables guides; no duplicated skill/root rule is
+needed. Current Admin status/declarations/frontend/changelog and public API boundary
+are synchronized. Admin stays development 0.1.0; this additive unreleased read
+delivery needs no source-only version edge, migration or dependency.
+
+Focused diagnostics resolved HTTP type/admission and lifecycle uncertainty:
+
+- Supported backend --parallel --processes=1 with filter 'registers lazy App
+  declarations|routes Admin pages through guarded': 2 tests / 75 assertions,
+  19.34 seconds, native exit 0 / cleanup 0. Includes typed/null filter round trips,
+  denied/unknown/malformed queries, options, secret refusal and pre-validation proof.
+- Supported frontend filter 'Admin resource reads|Admin page refresh retains|Admin
+  session diagnostic': 6 passed, 3.69 seconds, native exit 0 / cleanup 0. An earlier
+  fixture asserted before native Response decoding settled; it now awaits the
+  observable result. After adding query-erasure protection, the affected obsolete-
+  query/descriptor/account scenario alone passed, 3.64 seconds, exit 0 / cleanup 0.
+  Vite reported a dynamic-import analysis warning in its generated Vitest dependency;
+  no application Vue warning or complete rendered acceptance is claimed.
+
+Point 5 remains OPEN. Generated resource table/default controls, forms/commands,
+static hints, dirty navigation and aggregate revision/read reconciliation are next;
+atomic participant dispatch remains point 6. No broad suite/type/static/build/
+scanner/native acceptance was run; point 12 retains final verification. Supported
+backend cleanup displayed/removed only runa_test_test_1. No Docker resources were
+created or removed; base/development databases, active services, durable volumes,
+Qdrant/model caches, backups and reports were preserved. Mandatory hooks and staged
+incremental knowledge freshness remain required for this checkpoint commit.

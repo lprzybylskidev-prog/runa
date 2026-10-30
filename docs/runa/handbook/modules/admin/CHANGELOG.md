@@ -5,7 +5,7 @@
 - Add optional framework page/section/field/binding/widget/contribution declarations and bounded handler values without changing legacy metadata constructors or schema.
 - Supply frozen App bootstrap registration, source/dependency/API/component validation and deterministic discovery with owner isolation.
 - Project authorized bootstrap/page/section reads through AdminAccess 1.0.0; remove denied values and controls, refuse forbidden filter/sort/lookup/write inputs, and require explicit secret set-state.
-- Preserve entry proof and native owner Policies/grants; business handlers, write coordinators, generated forms and section/write HTTP follow in later points. Remain at development 0.1.0; no intermediate source-only edge.
+- Preserve entry proof and native owner Policies/grants; business handlers, write coordinators, generated forms and write HTTP follow in later points. Remain at development 0.1.0; no intermediate source-only edge.
 
 - Establish the Core module with explicit initialization history and required Audit/Auth/Permissions prerequisites; no Admin storage or automatic request-time installation.
 - Supply guarded AdminAccess 1.0.0 bootstrap and named `/api/admin` transport, current native grants, operational session and reusable 300-second password proof.
@@ -33,4 +33,14 @@ identity; Vite serve republishes evidence and reloads its registry on source cha
 The proof-free minimal entry advertisement is account-menu-only and never supplies
 protected metadata. Reuse Auth ApplicationSessionShell and one session controller;
 fence stale reads and erase transient entry passwords. Generated business forms,
-resource controllers, atomic Save and settings remain in their owning points.
+resource presentation, atomic Save and settings remain in their owning points.
+
+### Section-read transport and resource controller
+
+Supply named section-read HTTP and the public useAdminResource read lane for
+record/cursor-page/field-options shapes. Preserve exact typed/null GET filters,
+readable field intersection and explicit secret set-state. Coalesce identical reads,
+cancel/fence changed queries and account/authority/page/disposal races, and refresh
+the last query on return to a visible document. Retain the mounted same-session page
+during descriptor refresh. Resource commands refuse locally until write coordination;
+generated editable presentation and aggregate reconciliation remain planned in point 5.

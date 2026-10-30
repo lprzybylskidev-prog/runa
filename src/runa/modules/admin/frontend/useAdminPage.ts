@@ -11,6 +11,7 @@ import type {
 } from './contracts';
 import { adminPath, decodePage } from './decode';
 import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
+import { pageOwners } from './pageContext';
 export function useAdminPage(
   admin: AdminController,
   location: Ref<AdminLocation>,
@@ -21,6 +22,7 @@ export function useAdminPage(
   let epoch = 0,
     alive = true,
     abort = new AbortController();
+  let loadedStamp: string | undefined;
   async function refresh() {
     const own = ++epoch,
       stamp = sessionStamp(admin.session),
@@ -28,9 +30,14 @@ export function useAdminPage(
     const bootstrap = admin.bootstrap.value;
     abort.abort();
     abort = new AbortController();
-    page.value = undefined;
+    const retain =
+      loadedStamp === stamp &&
+      page.value?.owner === current.owner &&
+      page.value?.key === current.page &&
+      admin.state.value === 'ready';
+    if (!retain) page.value = undefined;
     error.value = undefined;
-    status.value = 'loading';
+    status.value = retain ? 'ready' : 'loading';
     if (admin.state.value !== 'ready' || !bootstrap) return;
     if (
       !bootstrap.owners.some(
@@ -38,6 +45,7 @@ export function useAdminPage(
           o.id === current.owner && o.pages.some((p) => p.key === current.page),
       )
     ) {
+      page.value = undefined;
       status.value = 'unavailable';
       return;
     }
@@ -54,11 +62,13 @@ export function useAdminPage(
       )
         throw new TypeError('Admin page identity changed.');
       page.value = result;
+      loadedStamp = stamp;
       status.value = 'ready';
     } catch (cause) {
       if (!alive || own !== epoch || stamp !== sessionStamp(admin.session))
         return;
       const failure = adminFailure(cause);
+      page.value = undefined;
       error.value = failure.error;
       status.value = failure.state;
       if (failure.state === 'proof_required' || failure.state === 'forbidden')
@@ -85,7 +95,7 @@ export function useAdminPage(
     page.value = undefined;
     stop();
   });
-  return {
+  const controller: AdminPageController = {
     state: computed(() =>
       admin.state.value === 'ready' ? status.value : admin.state.value,
     ),
@@ -93,4 +103,7 @@ export function useAdminPage(
     error,
     refresh,
   };
+  pageOwners.set(controller, admin);
+  onScopeDispose(() => pageOwners.delete(controller));
+  return controller;
 }

@@ -6,12 +6,13 @@ Status: point 4 delivers the session shell, entry/menu, named document and page-
 routes, compiled component resolution, nested presentation providers and
 `useAdmin`/`useAdminPage`. Delivered facade components are `AdminApplication`,
 `AdminLayout`, `AdminLoading`, `AdminEntryProof` and `AdminPresentationProvider`;
-`useAdminPresentation` and `resolveAdminComponent` are also delivered. Source
+`useAdminPresentation`, `resolveAdminComponent` and the read side of
+`useAdminResource` are also delivered. Source
 home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
 Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
 all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
 
-Business tables/forms/actions, resource/form controllers and their default
+Business tables/forms/actions, form controllers and their default
 components remain specified for points 5–6; no business write is available from
 this shell. All wire/controller types below are exported, including types for
 those future runtime functions. Rendered acceptance remains point 12.
@@ -166,6 +167,45 @@ explicitly discards local edits to the latest reconciled readable snapshot.
 calls preview silently to replace a stale review. Failure returns undefined and
 populates safe error state; callers do not infer success. `navigate` returns false
 when dirty navigation is declined. No unconditional polling or new global store.
+
+## Delivered resource reads
+
+`useAdminResource(page, section)` owns one section-read lane. Call `read(query)`
+explicitly for a record, bounded cursor page or field-specific options. `result`
+contains only the decoded requested shape; unknown totals remain null. A second
+identical pending read joins its promise; a different query cancels/fences the
+previous read. The controller snapshots caller query values and uses only the
+current page's readable section/fields. Denied/unknown lookup fields never issue
+a request. Malformed responses, foreign subjects, unknown field values and raw
+secrets clear the result and produce safe feedback without exposing payloads.
+
+The page controller created by `useAdminPage` retains its owning shared session
+internally. Account/authority/page invalidation and scope disposal erase resource
+results and cancel/fence pending responses. Queries never carry their subject or
+filters into a different account/session or owning page. An explicit same-session page refresh
+retains the mounted page while the read is pending; successful descriptor updates
+refresh the last resource query. Returning to a visible document also refreshes
+that query, with no timer/polling. A custom headless page controller owns timely
+invalidation of its page/state; use the supplied controller to retain native
+session admission. Call resource composables in a Vue scope and dispose them with
+their page. This resource read lane does not own editable drafts or mutation
+revisions; form reconciliation remains in the rest of point 5.
+
+`command(input)` is deliberately unavailable at this checkpoint: it returns
+undefined, sets `admin_operation_unavailable` and sends no request. It does not
+claim a business write or silently replay an operation. Form/default resource
+presentation, preview/save and native write coordination retain their planned
+delivery status. Entry proof refusal from a resource read returns the owning Admin
+controller to native entry confirmation; stronger operation proof remains owner-owned.
+
+```ts
+import { useAdminResource } from '@/runa/admin';
+// page is the supplied useAdminPage controller in the same Vue scope.
+const resource = useAdminResource(page, 'profile');
+await resource.read({ kind: 'record', public_id: publicId });
+// For a readable reference field, retain the owning opaque next cursor.
+await resource.read({ kind: 'options', field: 'manager', limit: 25 });
+```
 
 ## Presentation provider, components, props, slots and events
 
