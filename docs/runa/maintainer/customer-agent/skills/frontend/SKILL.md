@@ -46,3 +46,7 @@ static and use the public layout opt-out/motion contract when wrapping layouts.
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope
 and protected-platform boundaries remain governed by installed AGENTS.
+
+For session-shell and Admin composition, follow the public frontend contract's
+shared session shell section. Reuse one session owner and validate the projected
+component build identity; check delivery status before consuming specified exports.

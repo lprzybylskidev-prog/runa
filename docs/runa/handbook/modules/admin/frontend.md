@@ -27,8 +27,14 @@ import type { Component, ComputedRef, Ref, VNode } from 'vue';
 import type {
   ApplicationSessionController,
   ApplicationNavigate,
+  ActivitySession,
 } from '@/runa/auth';
-import type { ApplicationLayoutProps, ApplicationLayoutSlots } from '@/runa/ui';
+import type {
+  ApplicationLayoutProps,
+  ApplicationLayoutSlots,
+  NavigationEntry,
+  RouteContext,
+} from '@/runa/ui';
 
 type AdminState =
   | 'loading'
@@ -81,14 +87,26 @@ interface AdminResourceController {
   read(query: AdminReadQuery): Promise<void>;
   command(input: AdminWrite): Promise<AdminCommandResult | undefined>;
 }
-interface AdminReadQuery {
-  kind: 'record' | 'page' | 'options';
+interface AdminRecordQuery {
+  kind: 'record' | 'page';
   public_id?: string;
   cursor?: string;
   limit?: number;
   filters?: Record<string, string | number | boolean | null>;
   sort?: readonly { key: string; direction: 'asc' | 'desc' }[];
 }
+interface AdminOptionsQuery {
+  kind: 'options';
+  field: string;
+  public_id?: string;
+  cursor?: string;
+  limit?: number;
+  filters?: Record<string, string | number | boolean | null>;
+}
+type AdminReadQuery = AdminRecordQuery | AdminOptionsQuery;
+type AdminComponentRegistry = Readonly<
+  Record<string, { readonly buildId: string; readonly component: Component }>
+>;
 function useAdmin(options?: {
   navigate?: ApplicationNavigate;
   session?: ApplicationSessionController;
@@ -150,7 +168,8 @@ function useAdminPresentation(): ComputedRef<AdminPresentation>;
 
 interface AdminApplicationProps {
   navigate?: ApplicationNavigate;
-  components?: Readonly<Record<string, Component>>;
+  components?: AdminComponentRegistry;
+  session?: ApplicationSessionController;
 }
 interface AdminApplicationSlots {
   default?(scope: { controller: AdminController }): VNode[];
@@ -222,7 +241,7 @@ The optional components input is the explicit source-owned App component registr
 for independent page/field/section keys declared by App PHP providers. Keys use
 the `app.` prefix and match the source/build identity projection; duplicate/unknown
 or foreign module keys fail closed. App bootstrap imports these components
-statically and passes the map, never resolves a request/database URL or private
+statically and passes entries with their generated buildId, never resolves a request/database URL or private
 module source path. Module components continue through existing manifest-bound
 build discovery. The supplied dispatcher forwards an App registry only when the
 application explicitly configures one; no sample screen is added to the scaffold.
@@ -234,26 +253,73 @@ change to the account's ordinary app language. Light/dark, responsive keyboard a
 focus behavior are required in final rendered acceptance. No runtime/template
 compiler, new framework, UI dependency or duplicated table backend.
 
-## Additive Auth menu and navigation seam
+## Shared session shell and account menu seam
 
-Existing AuthApplicationProps `account?: boolean` and current slots remain
-unchanged. Add optional `navigation?: readonly NavigationEntry[]`,
-`topNavigation?: readonly NavigationEntry[]`, `current?: RouteContext`,
-`locale?: 'pl' | 'en'` and `accountMenu?: readonly AuthAccountMenuEntry[]`, all
-using public `@/runa/ui` navigation types. Export `AuthAccountMenuEntry` through
-`@/runa/auth` as `{key:string,label:string,href:string,current?:boolean}`.
-Values are app-owned trusted presentation; same-origin named-route URLs only.
-They are links, not arbitrary action callbacks or authorization declarations.
+Point 4 extracts the existing AuthApplication session/menu/activity orchestration
+into public `ApplicationSessionShell` in the `@/runa/auth` facade, implemented under
+Auth frontend. It is the shared platform shell used by AuthApplication and
+AdminApplication. Props and slots are specified as:
 
-Add slot `account-menu?(scope:{session:ActivitySession,entries:readonly
-AuthAccountMenuEntry[]}): VNode[]` through the existing Auth facade; it replaces
-only additional menu entries, retaining User panel/sign-out and session security.
-Admin entry is advertised only after a current guarded availability/grant check
-without protected bootstrap data; opening Admin then requests its entry proof.
-Existing `useApplicationSession` gets no required constructor argument or changed
-return member; any optional navigation input is additive. The custom application
-router can mount AdminApplication directly at its named paths without using the
-minimal default dispatcher. Existing `/modules/...` paths retain their semantics.
+```ts
+interface ApplicationSessionShellProps {
+  session: ApplicationSessionController;
+  navigation?: readonly NavigationEntry[];
+  topNavigation?: readonly NavigationEntry[];
+  current?: RouteContext;
+  locale?: 'pl' | 'en';
+  accountMenu?: readonly AuthAccountMenuEntry[];
+}
+interface ApplicationSessionShellSlots {
+  default?(scope: { session: ApplicationSessionController }): VNode[];
+  'account-menu'?(scope: {
+    session: ActivitySession;
+    entries: readonly AuthAccountMenuEntry[];
+  }): VNode[];
+}
+interface AuthAccountMenuEntry {
+  key: string;
+  label: string;
+  href: string;
+  current?: boolean;
+}
+```
+
+NavigationEntry/RouteContext use public `@/runa/ui` types. The shell has no emitted
+events and never creates a session controller. AuthApplication accepts these same
+optional navigation/current/locale/accountMenu props and optional
+`session?: ApplicationSessionController`, plus `account?: boolean`; it forwards
+the account-menu slot. Without a supplied session, the outer application creates
+one useApplicationSession controller. AdminApplication passes the same controller
+to useAdmin and ApplicationSessionShell directly; it does not nest AuthApplication.
+Only the creator owns disposal, request observation, heartbeat/activity listeners,
+logout and session refresh. Consumers never dispose a supplied controller. Account
+switch/expiry fences every Admin response and clears protected state; shell locale
+stays scoped. Actual facade consumers change together in point 4, without old-shape
+adapters or copied security logic. App routers can supply a controller across route
+changes; the default dispatcher owns one for its mounted application boundary.
+
+A minimal advertisement is separately specified on AdminAccess:
+`public function entry(): array`, guarded API operation `entry` under version
+1.0.0, session-authenticated GET `/api/admin/entry`, named `runa.admin.entry`.
+It returns only `{available:boolean}`. It checks current operational Auth session,
+Admin/Core availability, maintenance and current `runa.admin.enter` authority,
+without requiring or consuming entry password proof. Missing grant/unavailable
+Optional-independent dependencies yield false without diagnostic detail; missing
+session returns 401, maintenance keeps the normal blocked response. Backend/API
+failure leaves the link hidden. It returns no page/owner/widget/bootstrap data,
+permissions list, user identity, proof state or configurable URL. The fixed route
+precedes dynamic page routes. Every protected AdminAccess method still requires
+the existing action-bound entry proof and native owning checks. The advertisement
+cannot authorize a subsequent request or bypass protected bootstrap.
+
+The shell fetches advertisement once after session validation and revalidates on
+session/authority refresh and return to the application; it cancels/fences stale
+responses and removes the link on loss of authority. It uses the shared HTTP client
+and session controller, no second activity loop or global store. Default link URLs
+come from named routes. Extra source-owned accountMenu links use same-origin URLs;
+links do not declare grants. Replacing the additional account-menu slot retains
+User panel/sign-out and session security. No protected controller mounts before
+session admission. HTML shells carry no protected bootstrap values.
 
 The default entry link is next to User panel in the account dropdown only. Inside
 Admin, module/independent-page navigation is on the left, selected module pages on

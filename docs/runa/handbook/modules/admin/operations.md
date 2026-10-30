@@ -192,13 +192,30 @@ id, singleton CHECK/UNIQUE key, positive monotonic bigint revision, JSONB object
 values, UTC created_at/updated_at. No external row identity, therefore no mechanical
 public_id or soft deletion; clients address the aggregate, never its internal ID.
 CHECK object type and positive revision, no business triggers/functions/views.
-App-owned migration adds this table explicitly, outside automatic reopen; no
-foreign keys or coupling to Admin install data. The platform adapter validates
+The platform owns the forward migration
+`src/runa/database/migrations/2026_10_30_000001_create_application_settings.php`
+and the protected implementation under `src/runa/Settings`; this is point-10 work,
+not an already shipped migration. There are no foreign keys or Admin-owned rows.
+The public Contracts/Settings values and Support/Settings adapters above are thin
+entrypoints to that platform implementation. App owns registered definitions,
+selected values and deployed assets, never the platform migration.
+
+Explicit first installation/development initialization runs the platform migration
+primitive before required platform seeding/Core installation and App migration/
+seeding. Forward update uses the existing platform-migrations stage before Core
+forward steps and application migrations; it preserves existing values and revision.
+Delivery includes this protected migration and records it in shared.migrations
+through existing platform migration ownership. Point 10 updates the database scope/
+delivery declarations and installation/update fixtures accordingly. Reopen, provider
+boot, Admin install and HTTP never migrate or create the table. No App migration
+stub or customer-authored prerequisite is generated. Protected settings reads/writes
+fail safely when storage is absent; public presentation alone falls back to source
+defaults with revision 0. Admin availability cannot create or repair the store. The platform adapter validates
 source-owned keys on every read/write, applies explicit defaults and records one
 redacted `application.settings.changed` manual Audit event through AuditRecords in
 the same default transaction. No claim that Eloquent captures bulk JSON changes.
-App schema/version migration ownership is documented at delivery; owner module
-upgrades never overwrite a customer's migration or source provider.
+Platform updates never overwrite a customer's application migration or source
+provider. Module settings and Admin lifecycle do not own this global store.
 
 The supplied scaffold remains minimal: no sample business settings. Platform
 presentation has built-in optional keys `presentation.name` (string, 1–160) and

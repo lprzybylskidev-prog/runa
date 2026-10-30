@@ -40,3 +40,7 @@ itself deliver controllers, routes or presentation providers.
 
 Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)
 for source ownership, instruction-product assessment, supported commands and final-only broad verification.
+
+For session-shell and Admin composition, follow the public frontend contract's
+shared session shell section. Reuse one session owner and validate the projected
+component build identity; check delivery status before consuming specified exports.

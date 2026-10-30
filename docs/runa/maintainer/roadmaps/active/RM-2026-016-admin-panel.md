@@ -219,7 +219,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     run here; full suites/concurrency/native checks remain point 12.
   - Synchronize public/source boundaries, current consumers, module version/history
     and both instruction products. Retire obsolete whole-signature freeze gates.
-- [ ] 2b. Correct unreleased presentation/read contracts from the reassessment.
+- [x] 2b. Correct unreleased presentation/read contracts from the reassessment.
   - Prerequisites: 2a; update exact contracts before their implementation in 3–5.
   - Specify field-bound options, page/build identities and widget freshness results,
     per-binding availability isolation and one shared session-shell controller with
@@ -229,7 +229,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     0.1.0 development version until the creation release unless a real need emerges.
     Update the plan/current guides and assess both instruction products.
 - [ ] 3. Implement declaration discovery and authorized projection.
-  - Prerequisites: 1–2.
+  - Prerequisites: 1–2, 2a–2b.
   - Extend existing management declarations with pages/sections/resource and command
     bindings, widgets and contribution metadata. Add trusted app independent-page
     registration. Use registry/hash/schema/renderer checks and deterministic ordering.
@@ -240,7 +240,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Prerequisites: 2–3.
   - Add `/admin` and named page routing/default-dispatch integration; module-left,
     page-top navigation, no empty/mandatory Overview. Extend AuthApplication menu and
-    composition inputs additively; put entry only beside User panel.
+    shared session-shell composition inputs; put entry only beside User panel.
   - Provide English-scoped Application layout, session/proof orchestration, nested
     presentation provider and public `@/runa/admin` facade/controller types. Preserve
     app-owned routes and full replacement without copied security logic.
@@ -679,3 +679,47 @@ runa_test_test_1; base runa_test, development data, active containers/volumes,
 Qdrant/model caches, backups and reports were preserved. No Docker resources were
 created or removed. The preceding point-3 worktree is preserved separately and
 remains incomplete. Point 2b revises its read/presentation contracts next.
+
+## Point 2b — Revised read/presentation contracts
+
+Completed 2026-10-30 as specification work before resuming point 3. The canonical
+Admin declaration/frontend/operations guides now specify:
+
+- Field-bound options input and result, exact field authorization and bounded
+  subject/filter/cursor semantics; a denied sibling cannot block an allowed lookup.
+- Capability-specific resource/options/widget/write interfaces and explicit widget
+  observation/expiry results, including unknown/stale/unavailable behavior.
+- Page component projection and owned component/build/manifest identity for every
+  replacement, with fail-closed resolution and required-form blocking.
+- Structural declaration validation separately from binding availability; an
+  unavailable optional target cannot discard unrelated pages from the same owner.
+- One shared ApplicationSessionShell and session controller, with creator-owned
+  disposal and minimal authenticated AdminAccess.entry advertisement. The proof-free
+  availability boolean exposes no protected data; every protected method retains
+  entry proof and native authority. Point 4 delivers this contract and consumers.
+- Platform ownership of shared.application_settings, protected forward migration,
+  public adapters and existing installation/update order. App owns definitions,
+  values/assets; no customer-authored prerequisite migration or runtime DDL.
+
+These are corrections of unreleased specifications under the approved reassessment,
+not delivered runtime claims. Point 3 must migrate its preserved unfinished worktree
+and tests to the new DTO/interfaces, field isolation, component identity and widget
+results. Point 4 implements shell/advertisement/build resolution; points 5/10/11
+consume the revised contracts. Admin remains development 0.1.0, creation target
+1.0.0; platform feature/0.7.0 and approved security/maintenance decisions are unchanged.
+
+Grounding: current knowledge status (201 documents / 9,696 chunks), bounded current
+retrieval and original declaration/frontend/operations/reassessment sources; source
+inspection of AuthApplication/useApplicationSession, manifest-bound moduleFrontend
+registry and distribution update stages. Backend/frontend/security guidance applies.
+Only documentation/staged diff review and mandatory commit hooks belong to this
+point; no runtime suite, rendered acceptance or final verification PASS is claimed.
+Incremental knowledge freshness is refreshed for the source changes before commit.
+
+Instruction products: owner and customer frontend skills route session/build
+composition to its canonical guide. Root/customer AGENTS and backend/security skills
+already enforce public boundaries, server authority, protected source and delivery
+status, so need no duplicated contract rule. The existing point-3 backend guidance
+and runtime work remain outside this specification commit. No dependencies, database
+changes, Docker resources or infrastructure were created/removed; existing data,
+Qdrant/model caches and reports are preserved. Point 3 is next.

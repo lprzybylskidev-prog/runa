@@ -10,11 +10,12 @@ belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
 
 ## Optional provider and descriptors
 
-Keep `ManagementProvider::{permissions,actions,components}(): array`, optional
-`ManagementEntityProvider::entities(): array`, every current constructor/default,
-`ModuleManagement` schema 1 and `ManagementRenderers` v1 registrations unchanged.
-Legacy entities remain metadata; they do not acquire executable CRUD implicitly.
-The new optional interface is an independent additive extension:
+`ManagementProvider::{permissions,actions,components}(): array` and optional
+`ManagementEntityProvider::entities(): array` still serve metadata consumers through
+`ModuleManagement` schema 1 and `ManagementRenderers` v1. Entities describe existing
+non-executable metadata; pages describe executable owned bindings. Neither grants
+implicit CRUD. This distinction is intentional, not a signature freeze. The optional
+page extension is:
 
 ```php
 interface ManagementPageProvider extends ManagementProvider
@@ -108,22 +109,37 @@ contribution above is separate from a visual slot. No nested DTOs in slot props.
 ## Owned handler signatures
 
 ```php
-interface ManagementHandler
+interface ManagementHandler {}
+interface ManagementResourceReader extends ManagementHandler
 {
     public function page(ManagementRead $input): ManagementPageResult;
     public function read(ManagementRead $input): ManagementRecord;
-    public function options(ManagementRead $input): ManagementOptions;
+}
+interface ManagementOptionsReader extends ManagementHandler
+{
+    public function options(ManagementOptionsRead $input): ManagementOptions;
+}
+interface ManagementWidgetReader extends ManagementHandler
+{
+    public function widget(ManagementRead $input): ManagementWidgetResult;
+}
+interface ManagementWriter extends ManagementHandler
+{
     public function preview(ManagementWrite $input): ManagementReview;
     public function execute(ManagementWrite $input): ManagementOutcome;
 }
 ManagementRead::__construct(?string $publicId = null, ?string $cursor = null,
     int $limit = 25, array $filters = [], array $sort = [])
+ManagementOptionsRead::__construct(string $field, ?string $publicId = null,
+    ?string $cursor = null, int $limit = 25, array $filters = [])
+ManagementWidgetResult::__construct(array $values, ?string $observedAt = null,
+    ?string $expiresAt = null)
 ManagementWrite::__construct(string $command, ?string $publicId,
     string $revision, array $values, ?array $review = null,
     bool $confirmed = false)
 ManagementRecord::__construct(?string $publicId, string $revision, array $values)
 ManagementPageResult::__construct(array $items, ?string $next, ?int $total = null)
-ManagementOptions::__construct(array $items, ?string $next)
+ManagementOptions::__construct(string $field, array $items, ?string $next)
 ManagementReview::__construct(string $fingerprint, array $changes,
     string $requirement, bool $everyAction)
 ManagementOutcome::__construct(string $status, ?ManagementRecord $record = null,
@@ -152,6 +168,31 @@ is accepted in these DTOs; Auth owns proof in the current server session. Unsupp
 handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
+The interfaces above are the revised point-2b specification; point 3 must update
+its unfinished implementations and consumers before claiming delivery. A handler
+implements only its actual capabilities. Resource, lookup, widget and write bindings
+require their corresponding interface; no reader implements dummy write methods.
+A source-declared unsupported capability is a structural declaration error.
+
+`ManagementOptionsRead.field` is the exact declared field key within the requested
+section. It is required only for `kind=options`; record/page requests reject it.
+The result repeats that field identity and refuses a mismatch. Validate that field's
+read grant, lookup flag, owning reference policy and readable filter dependencies
+before invoking the adapter. An unreadable sibling lookup does not block it.
+Unknown/denied fields yield a safe 404 without labels, values, counts or field lists.
+Options use the same subject UUID, cursor, limit and scalar filter bounds as reads;
+sorting and writes are not accepted. Owners authorize option rows and labels before
+pagination. Filters cannot reference denied fields to infer their values.
+
+`ManagementWidgetResult` contains bounded safe JSON and explicit nullable RFC3339
+UTC timestamps. Expiry requires observation and must be later than observation;
+future observations are invalid. No observation means freshness is unknown, never
+fresh. Expired values remain visibly stale with `admin_widget_stale`; unavailable
+reads yield empty values/null timestamps with `admin_widget_unavailable`. Widgets
+never run diagnosis or invent timestamps from the request time or record revision.
+Owning health widgets use the persisted health observation/expiry. The projector
+validates the typed result rather than extracting special keys from `values`.
+
 Handlers validate and authorize their owning reads/writes, invoke explicit public
 APIs and map projections. They cannot access foreign persistence. A handler method
 does not bypass Admin entry, page/section/field checks or owning record Policies.
@@ -177,6 +218,7 @@ interface AdminRegistry
 }
 interface AdminAccess
 {
+    public function entry(): array;
     public function bootstrap(): array;
     public function page(string $owner, string $page): array;
     public function read(string $owner, string $page, string $section, array $query): array;
@@ -192,14 +234,18 @@ available over HTTP. App providers register instances implemented in `src/app`.
 Module providers continue through existing manifests. AdminAccess arrays use the
 exact transport shapes below, avoiding foreign/framework DTOs through ModuleApis.
 Admin private implementations own framework conversion. API version is `1.0.0`;
-all methods require `runa.admin.enter` plus password proof for action
+all protected methods require `runa.admin.enter` plus password proof for action
 `runa.admin.enter`, TTL 300 seconds, everyAction=false. Other grants/proof remain
-additive. HTML shell admission exposes no protected bootstrap values.
+additive. The specified `entry()` advertisement is the sole proof-free exception:
+see [shared session shell](frontend.md#shared-session-shell-and-account-menu-seam)
+for its exact `{available:boolean}` result and admission. It exposes no protected
+bootstrap values. HTML shell admission also exposes no protected bootstrap values.
 
 | Method / path                                                | Named route               | Operation                                       |
 | ------------------------------------------------------------ | ------------------------- | ----------------------------------------------- |
 | GET `/admin`                                                 | `runa.admin.dashboard`    | Empty application shell, then guarded bootstrap |
 | GET `/admin/{owner}/{page}`                                  | `runa.admin.page`         | Application shell, owner/page grammar above     |
+| GET `/api/admin/entry`                                       | `runa.admin.entry`        | AdminAccess.entry, minimal advertisement        |
 | GET `/api/admin`                                             | `runa.admin.bootstrap`    | AdminAccess.bootstrap                           |
 | GET `/api/admin/{owner}/{page}`                              | `runa.admin.page.read`    | AdminAccess.page                                |
 | GET `/api/admin/{owner}/{page}/sections/{section}`           | `runa.admin.section.read` | AdminAccess.read                                |
@@ -209,7 +255,8 @@ additive. HTML shell admission exposes no protected bootstrap values.
 
 All API operations are authenticated, CSRF-protected, no-store and maintenance
 blocked. Reads never mutate configuration or run diagnosis; diagnosis is a command.
-Query `kind` selects only `record|page|options`, with the ManagementRead fields.
+Query `kind` selects only `record|page|options`; options use ManagementOptionsRead,
+including required `field`, while other reads use ManagementRead.
 Command input is ManagementWrite, mapped camelCase to the exact wire spelling
 below; there is no class/method/permission query parameter. The owning adapter
 controls filter, selection, pagination, export and payload bounds. HTTP transport
@@ -228,21 +275,22 @@ Bootstrap = {schema_version:1, generation:int, revision:string,
   dashboard:{widgets:[Widget]}, presentation:{name:string,
     logo:{src:string,accessibleName:string}|null,revision:int}}
 Page = {schema_version:1, owner:string, key:string, title:string,
-  generation:int, revision:string, sections:[Section]}
+  generation:int, revision:string, component:Component|null, sections:[Section]}
 Section = {key:string,title:string,readonly:boolean,required:boolean,
-  component:string|null,fields:[Field],commands:[Command],record:Record|null,
+  component:Component|null,fields:[Field],commands:[Command],record:Record|null,
   diagnostic:string|null}
 Field = {key:string,type:string,label:string,readonly:boolean,sensitive:boolean,
   filterable:boolean,sortable:boolean,lookup:boolean,
   required:boolean,max_length:int|null,choices:[string],multiple:boolean,
-  component:string|null}
+  component:Component|null}
 Command = {key:string,title:string,mode:'independent'|'atomic',destructive:boolean,
   requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean}
-Widget = {id:string,title:string,component:string|null,values:JsonMap,
+Widget = {id:string,title:string,component:Component|null,values:JsonMap,
   observed_at:string|null,expires_at:string|null,diagnostic:string|null}
+Component = {key:string,owner:string,manifest_hash:string|null,build_id:string}
 Record = {public_id:string|null,revision:string,values:JsonMap}
 Read = Record | {items:[Record],next:string|null,total:int|null}
-  | {items:[{value:string,label:string}],next:string|null}
+  | {field:string,items:[{value:string,label:string}],next:string|null}
 Write = {command:string,public_id:string|null,revision:string,values:JsonMap,
   review?:JsonMap|null,confirmed?:boolean}
 AggregateInput = {revision:string,participants:[{id:string,input:Write}]}
@@ -276,6 +324,44 @@ reference binding; it never serializes a model or arbitrary URL. Filter/sort fla
 are removed or false when their underlying field is not readable. The new page
 projection has schema 1 independently of legacy ModuleManagement schema 1; do not
 reinterpret either one's serialized shape as the other.
+
+### Component identity and binding availability
+
+Every page/section/field/widget component uses the Component shape above; null
+selects the supplied default. `key` is an owned registry key, never a path/import.
+`manifest_hash` is the current source manifest SHA256 for a module, null only for
+ordinary App. `build_id` is a lowercase SHA256 identity from the generated trusted
+frontend build manifest, covering the owner's component entries and source content.
+The server projects that same build manifest; the compiled registry retains its
+identity. A matching source file alone does not admit a browser component. The
+resolver matches owner/key/build_id and, for modules, manifest_hash against the
+existing manifest-bound registry. App registry entries carry buildId and component;
+keys retain the app prefix. No database/request value selects a module loader.
+Missing/mismatched builds show a safe unavailable component; they never load an
+older implementation under a new declaration. Other components remain usable;
+a required form component failure blocks Save. Custom full presentation retains
+these checks. The build manifest contains no absolute paths or secrets.
+
+Discovery validates structure, ownership, dependency declaration and exact target
+contract/version/method shape separately from current runtime target availability.
+Malformed declarations may reject the owner with a safe diagnostic. An unavailable
+optional target does not invalidate structurally valid unrelated pages. Recheck
+each actual binding at projection/read/write admission. A denied section is omitted;
+an authorized unavailable section retains only safe descriptors with record=null,
+commands=[], readonly=true and `admin_binding_unavailable`. A widget fails in its
+own result. An unavailable page required binding keeps that page in a safe blocked
+state; independent pages under the same owner remain readable. Do not read values,
+options or counts through an unavailable binding. A required lost participant blocks
+the entire form Save with 409, even when hidden by a presentation replacement;
+optional omitted sections are excluded explicitly from the participant set. Every
+write revalidates availability; discovery is never authority for a later request.
+
+Point 3 covers two pages from one owner with one unavailable optional target,
+independent sibling lookup grants, mismatched option identities, typed widget
+freshness and page/build identity. Points 4–5 cover compiled registry mismatch,
+required component blocking and controlled lookup requests; final point 12 runs
+complete affected-area verification. No rendered or runtime PASS follows from
+these revised signatures.
 
 Malformed declarations/DTOs throw `InvalidArgumentException`; owning validation
 and revision conflicts retain their safe errors. HTTP maps unauthenticated to 401,
