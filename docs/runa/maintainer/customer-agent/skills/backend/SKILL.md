@@ -20,3 +20,8 @@ foreign persistence.
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope
 and protected-platform boundaries remain governed by installed AGENTS.
+
+Application-owned transactional contributions follow
+`docs/runa/handbook/architecture/module-transactions.md`. Implement only App-owned
+participants, use current documented guarded API versions and retain owning grants,
+proof and Audit. The protocol does not permit protected edits or foreign persistence.

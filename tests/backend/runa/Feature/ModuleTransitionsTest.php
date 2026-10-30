@@ -18,6 +18,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\Data\ModuleSchema;
 use Runa\Support\Modules\ModuleIdentity;
 use Runa\Support\Modules\Storage\ModuleStorage;
@@ -32,7 +33,7 @@ beforeEach(function (): void {
     $this->sources = new ModuleSources;
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $this->policies = new LifecyclePolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true), new HealthDeadline);
     $this->transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0', $this->health);
     $this->ids = [];
     $this->add = function (array $required = [], string $kind = 'optional'): string {

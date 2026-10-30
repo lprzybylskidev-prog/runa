@@ -260,8 +260,8 @@ names, computed imports, runtime object members and semantic compatibility still
 need review and behavioral tests. Checks prevent accidental coupling, not trusted
 code execution; a diagnostic path never confers runtime authority.
 
-Keep public value/extension signatures free of internal types. The five adapters
-ModuleApis, ModuleFrontend, ModuleEvents, ModuleSettings and ModuleWork retain container-owned
+Keep public value/extension signatures free of internal types. The six adapters
+ModuleApis, ModuleFrontend, ModuleEvents, ModuleSettings, ModuleWork and ModuleTransactions retain container-owned
 constructor collaborators; this does not make those engines customer extension APIs.
 Their supported operation signatures remain checked. PHPDoc alias/FQCN checks cover
 callback/generic/exception references; they are not a complete PHPDoc type theorem.
@@ -291,3 +291,13 @@ integration, not customer imports. Namespace examples for unimplemented symbols
 do not expand the current import allowlist. Existing supported APIs
 and reserved integration restrictions above remain in force until additive
 implementation and corresponding boundary checks are delivered together.
+
+## Native transactional source extension
+
+The framework supplies TransactionalMutation, MutationDefinition, MutationAccess
+and MutationProof plus the container-owned ModuleTransactions adapter under
+Runa\Support\Modules\Data. Follow [owning module transactions](module-transactions.md)
+for complete source-only signatures, owner phases and admission; objects are never
+HTTP callbacks or ModuleApis values. TransactionSecurity is a reserved fixed
+framework/Core bridge. AuthProfiles and PermissionsAccess are now guarded API
+2.0.0; callers use their owning current contracts, not a v1 compatibility alias.

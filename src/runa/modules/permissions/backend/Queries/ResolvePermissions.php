@@ -65,7 +65,7 @@ final readonly class ResolvePermissions implements Permissions
         $roleRows = $connection->query()->fromSub($ranked, 'grants')->where('position', '<=', 33)->orderBy('position')->get()->groupBy('permission_id');
         /** @var list<string> $modules */
         $modules = $page->pluck('module_id')->filter()->unique()->values()->all();
-        $statuses = $this->availability->statuses($modules, 'permissions.resolve');
+        $statuses = $this->availability->statuses($modules);
         $items = [];
         foreach ($page as $row) {
             $direct = in_array($row->id, $directIds, true);
@@ -81,12 +81,12 @@ final readonly class ResolvePermissions implements Permissions
 
     private function ready(): bool
     {
-        return $this->availability->statuses('runa.permissions', 'permissions.resolve')['runa.permissions']->available;
+        return $this->availability->statuses('runa.permissions')['runa.permissions']->available;
     }
 
     private function moduleAvailable(?string $module): bool
     {
-        return $module === null || $this->availability->statuses($module, 'permissions.resolve')[$module]->available;
+        return $module === null || $this->availability->statuses($module)[$module]->available;
     }
 
     private function superAdmin(string $user): bool

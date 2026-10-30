@@ -52,10 +52,15 @@ final readonly class AccessTransaction
             $refusal = $error;
         }
         if ($root) {
-            $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.permissions', 'access.refused', 'refused', context: ['reason' => $refusal->reason]));
+            $this->refused($refusal->reason);
         }
         // Nested consumers must roll back their root before recording independent refusal history.
         throw $refusal;
+    }
+
+    public function refused(string $reason): void
+    {
+        $this->apis->resolve('runa.audit', AuditRecords::class, '1.0.0')->attempt(new AuditEvent('runa.permissions', 'access.refused', 'refused', context: ['reason' => $reason]));
     }
 
     /** @param array<string, mixed>|null $before

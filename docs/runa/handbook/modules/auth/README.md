@@ -1,6 +1,7 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `1.1.5`, requiring
+Current Core `runa.auth` source develops at independent version `2.0.0` for
+platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
@@ -27,7 +28,9 @@ stable; private module implementation is not an application extension seam.
 
 ## Public values and access
 
-Resolve version `1.0.0` contracts through `ModuleApis`:
+Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
+`2.0.0`; other current Auth interfaces, including AuthIdentities below, use `1.0.0`.
+Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
 
 ```php
 use Runa\Modules\Auth\Contracts\AuthIdentities;

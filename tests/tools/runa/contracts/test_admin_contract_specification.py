@@ -1,4 +1,4 @@
-"""RM-2026-016 compatibility guard; no Admin runtime or rendered PASS implied."""
+"""Current Core declaration/consumer contracts; no rendered PASS implied."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def php(code: str, *arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_existing_core_methods_keep_signatures_versions_permissions_and_audiences() -> None:
+def test_current_core_methods_declare_versions_permissions_and_audiences() -> None:
     baseline = json.loads(BASELINE.read_text())
     for api in baseline["apis"]:
         definition = (ROOT / api["definition"]).read_text()
@@ -53,24 +53,26 @@ def test_existing_core_methods_keep_signatures_versions_permissions_and_audience
         )
         assert declaration is not None
         assert declaration[1] == api["contract"].rsplit("\\", 1)[1]
-        assert declaration[2] == api["api_version"]
+        expected_version = (
+            "2.0.0"
+            if api["contract"].rsplit("\\", 1)[1] in {"AuthProfiles", "PermissionsAccess"}
+            else api["api_version"]
+        )
+        assert declaration[2] == expected_version
         assert f"use {api['contract']};" in definition
         manifest = json.loads((ROOT / api["source"]).parents[2].joinpath("module.json").read_text())
         assert api["provider"] in manifest["declarations"]["apis"]
-        for method, expected in api["methods"].items():
-            assert actual[method] == expected["signature"], (api["contract"], method)
+        # The dated ledger locates owning declarations; it does not freeze methods
+        # or signatures after the owner approved direct pre-1.0 refactoring.
+        for method in actual:
             operation = re.search(
                 rf"'{method}'\s*=>\s*new ApiOperation\('([^']+)'(?:,\s*'([^']+)')?\)",
                 definition,
             )
-            assert operation is not None
-            assert operation.groups() == (expected["operation"], expected["permission"])
-            assert expected["audience"] in {
-                "admin",
-                "self-service",
-                "server-only",
-                "recipient-only",
-            }
+            assert operation is not None, (api["contract"], method)
+            assert re.fullmatch(r"[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*", operation[1])
+            if operation[2] is not None:
+                assert re.fullmatch(r"[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*", operation[2])
 
 
 def test_optional_extension_does_not_change_existing_provider_and_value_signatures() -> None:

@@ -6,6 +6,7 @@ use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\GraphBlocker;
 use Runa\Contracts\Modules\HealthContext;
 use Runa\Contracts\Modules\HealthDefinition;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\ModuleRecord;
 use RuntimeException;
 use Throwable;
@@ -16,7 +17,7 @@ final class ModuleHealth
     /** @var array<string, true> */
     private static array $running = [];
 
-    public function __construct(private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline) {}
+    public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline) {}
 
     /** Trusted management write with optimistic concurrency; source policy validates every override.
      * @param  array<string, mixed>  $overrides
@@ -77,6 +78,9 @@ final class ModuleHealth
             $fingerprint = hash('sha256', json_encode([$record->manifestHash, $record->healthRevision, $definition], JSON_THROW_ON_ERROR));
             $observations = $record->healthObservations;
             $run = $policy !== null && ($trigger === 'diagnostic' || ($trigger === 'use' && in_array($definition->mode, ['on_use', 'hybrid'], true)) || ($trigger === 'scheduled' && in_array($definition->mode, ['scheduled', 'hybrid'], true)));
+            if ($run && $trigger === 'use' && $checks !== [] && $this->admissions->reuse($record, $operation, $fingerprint)) {
+                $run = false;
+            }
             if ($run && $checks !== []) {
                 // Session advisory locks release on worker death; they have no expiring lease overlap.
                 // A contending operation cannot use a fresh cache to skip its required on-use check.
@@ -134,6 +138,9 @@ final class ModuleHealth
                     unset(self::$running[$record->id]);
                     $this->connection->selectOne('SELECT pg_advisory_unlock(73006, ?)', [$key]);
                 }
+            }
+            if ($run && $trigger === 'use' && $checks !== []) {
+                $this->admissions->remember($record, $operation, $fingerprint, $observations, array_values(array_map(static fn ($check): string => $check->id, $checks)));
             }
             $state = 'healthy';
             $blocked = false;

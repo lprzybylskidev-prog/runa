@@ -16,7 +16,7 @@ final readonly class AuthAuthorizationIdentity implements AuthorizationIdentity
     public function eligibility(string $publicId): ?Eligibility
     {
         $generation = $this->registry->snapshot()->generation;
-        if (! $this->availability->statuses('runa.auth', 'authorization.identity')['runa.auth']->available) {
+        if (! $this->availability->statuses('runa.auth')['runa.auth']->available) {
             return null;
         }
         $result = app(LookupIdentity::class)->eligibility($publicId);

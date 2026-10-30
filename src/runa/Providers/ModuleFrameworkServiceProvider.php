@@ -42,6 +42,7 @@ use Runa\ModuleFramework\ModuleTransitions;
 use Runa\ModuleFramework\Settings\IgnoreSettingsChanges;
 use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\ModuleFramework\Settings\SettingTypes;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Runtime\MaintenanceState;
@@ -69,7 +70,8 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(LifecyclePolicies::class, fn () => new LifecyclePolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleTransitions::class, fn () => new ModuleTransitions($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(LifecyclePolicies::class), $this->app->make(Encrypter::class), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->make(ModuleHealth::class)));
         $this->app->singleton(HealthPolicies::class, fn () => new HealthPolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
-        $this->app->singleton(ModuleHealth::class, fn () => new ModuleHealth($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(HealthPolicies::class), new HealthDeadline));
+        $this->app->singleton(HealthAdmissions::class);
+        $this->app->singleton(ModuleHealth::class, fn () => new ModuleHealth(app(HealthAdmissions::class), $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(HealthPolicies::class), new HealthDeadline));
         $this->app->singleton(ModuleAvailability::class, fn () => new ModuleAvailability($this->app->make(ModuleRegistry::class), $this->app->make(ModuleHealth::class), $this->app->make(LifecyclePolicies::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
         $this->app->singleton(MaintenanceState::class, fn () => new MaintenanceState($this->app, $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class)));
         $this->app->singleton(OperationScope::class);

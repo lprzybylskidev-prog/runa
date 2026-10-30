@@ -25,9 +25,9 @@ final class BuiltInModuleBoundaryTest extends TestCase
         $input = ['platform' => '0.7.0', 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
         $expected = [
             'runa.admin' => ['initialize'],
-            'runa.auth' => ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform'],
+            'runa.auth' => ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions'],
             'runa.audit' => ['platform_delivery', 'verification_contracts', 'admin_platform'],
-            'runa.permissions' => ['platform_delivery', 'verification_contracts', 'admin_platform'],
+            'runa.permissions' => ['platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions'],
         ];
         foreach ($input['modules'] as &$module) {
             $module['installed'] = null;

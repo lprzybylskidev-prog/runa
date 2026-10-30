@@ -16,6 +16,7 @@ use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Fixtures\ModuleSources;
@@ -38,7 +39,7 @@ beforeEach(function (): void {
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     app()->instance(ModuleRegistry::class, $this->registry);
     app()->instance(ModuleDeclarations::class, new ModuleDeclarations($this->sources->root, app(), $loader, true));
-    $health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     app()->instance(ModuleAvailability::class, new ModuleAvailability($this->registry, $health, new LifecyclePolicies($this->sources->root, app(), $loader, true), '0.4.0'));
     $this->registry->synchronize('app');
     app()->forgetInstance(ModuleFrontend::class);

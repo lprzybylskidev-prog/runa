@@ -28,6 +28,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -64,7 +65,7 @@ beforeEach(function (): void {
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     app()->instance(ModuleAutoloader::class, $loader);
     $this->lifecycle = new LifecyclePolicies($this->sources->root, app(), $loader, true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     $this->availability = new ModuleAvailability($this->registry, $this->health, $this->lifecycle, '0.4.0');
     $this->maintenance = new MaintenanceState(app(), DB::connection(), $this->registry, $this->availability);
     $this->declarations = new ModuleDeclarations($this->sources->root, app(), $loader, true);

@@ -991,7 +991,7 @@ it('requires dedicated permission fresh both factor proof and configured bypass 
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.0.0');
     expect(fn () => $api->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'))->toThrow(OperationRejected::class);
     app()->instance('request', credentialRequest('/'));
     $bypass = fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'));

@@ -3,7 +3,7 @@
   "status": "existing-public-boundary-fixtures",
   "cases": [
     {
-      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '1.0.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '2.0.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
       "expected": []
     },
     {
@@ -45,6 +45,14 @@
     {
       "source": "<?php namespace App; use Runa\\Modules\\Admin\\Queries\\Access;",
       "expected": ["foreign_module_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\TransactionalMutation; use Runa\\Contracts\\Modules\\MutationDefinition; use Runa\\Contracts\\Modules\\MutationAccess; use Runa\\Contracts\\Modules\\MutationProof; use Runa\\Support\\Modules\\Data\\ModuleTransactions; function commit(ModuleTransactions $transactions, TransactionalMutation $mutation): array { return $transactions->run([$mutation]); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\TransactionSecurity;",
+      "expected": ["reserved_api_import"]
     }
   ]
 }

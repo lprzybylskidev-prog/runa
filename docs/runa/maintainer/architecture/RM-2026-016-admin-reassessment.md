@@ -230,3 +230,13 @@ This review changes no runtime architecture and runs no broad gate. Documentatio
 links, roadmap open state and staged-content hooks are the proportionate checks
 for recording this review. Future contract/runtime corrections belong to the
 revised active roadmap, not to a separate active roadmap or an unapproved release.
+
+## Owner disposition — 2026-10-30
+
+The owner explicitly approves rebuilding native Auth/Permissions transaction APIs
+and framework admission while retaining current grants, stronger confirmations and
+atomic Audit. This accepts the recommended architecture direction in R1–R2 and
+resolves the implementation hold. Exact phased signatures are agent-owned work
+under the active roadmap's new point 2a; point 2b records the related unreleased
+read/presentation corrections before point 3 resumes. Earlier findings retain
+their reviewed source state; this approval is not a runtime or verification PASS.

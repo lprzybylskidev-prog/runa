@@ -46,3 +46,8 @@ Reusable test support and application tooling discovery are documented in `docs/
 
 Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)
 for source ownership, instruction-product assessment, supported commands and final-only broad verification.
+
+For standalone or aggregate module writes migrated to native phases, follow
+[owning module transactions](../../../docs/runa/handbook/architecture/module-transactions.md).
+Use the source-owned participant contract and current API versions; Admin does
+not wrap old whole writes or own foreign business validation/persistence.

@@ -13,7 +13,7 @@ final class ProfilesApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthProfiles::class, ProfilesProxy::class, ManageProfiles::class, '1.0.0', [
+        return new ApiDefinition(AuthProfiles::class, ProfilesProxy::class, ManageProfiles::class, '2.0.0', [
             'edit' => new ApiOperation('profile.edit', 'runa.auth.profiles.manage'),
             'changeEmail' => new ApiOperation('email.admin_change', 'runa.auth.emails.manage'),
             'replaceVerifiedEmail' => new ApiOperation('email.admin_bypass', 'runa.auth.emails.verify_bypass'),

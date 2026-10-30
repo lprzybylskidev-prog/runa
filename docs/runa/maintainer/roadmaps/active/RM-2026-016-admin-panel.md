@@ -105,7 +105,28 @@ Existing standard table exports remain supported within owning read permissions.
   beginning under that policy. Runtime implementation is held at point 3 pending
   the source-grounded [reassessment](../../architecture/RM-2026-016-admin-reassessment.md).
   Points 1–2 retain their actual historical completion; their design consequences
-  and the uncommitted point-3 worktree are subject to that review.
+  and the uncommitted point-3 worktree are subject to that review. The subsequent explicit revised
+  ARCH-001 approval below resolves the hold.
+
+- 2026-10-30 — **ARCH-001 revised — APPROVED:** the owner explicitly accepts
+  rebuilding native Auth/Permissions transaction APIs and framework admission so
+  shared Save does not depend on a special order of unchanged old API calls.
+  All owners validate the locked pre-write snapshot before any business apply;
+  standalone and aggregate execution reuse those owning phases. Framework admission
+  runs required health work before the root and revalidates sealed evidence inside.
+  Existing grants, stronger proofs, reviewed previews, atomic Audit and maintenance
+  boundaries remain required. Exact signatures are agent-owned implementation work,
+  as in the point-1 decision, not another architecture approval. See
+  [native transaction contract](../../../handbook/architecture/module-transactions.md).
+  This resolves the reassessment hold; feature/0.7.0 is unchanged.
+
+- 2026-10-30 — **Native version assessment:** Auth/Permissions move to independent
+  2.0.0 and guarded AuthProfiles/PermissionsAccess API 2.0.0 for the deliberate
+  replacement of ambient whole-write nesting with phased source composition.
+  Standing owner pre-1.0 authorization covers these breaks; no platform MAJOR is
+  inferred. Other guarded API versions remain unchanged. Both modules now require
+  target platform >=0.7.0 <0.8.0. Current native consumers and private target-runtime
+  fixtures are updated; published predecessor history is retained.
 
 Record subsequent significant owner decisions individually with dates and update
 the review/roadmap.
@@ -119,7 +140,7 @@ independent 1.0.0 only at verified creation closure; platform versioning is sepa
 ### Contract and behavior requirements
 
 1. Admin requires Audit/Auth/Permissions without introducing reverse dependencies.
-   Extend framework management declarations additively; keep module-owned business
+   Use coherent framework management declarations; keep module-owned business
    contracts and implementations with their owners. No module requires Admin to run
    its business logic. Independent app pages need no module manifest.
 2. Reuse manifest-bound component loading, slots, ManagementRenderers compatibility,
@@ -163,7 +184,8 @@ resolve a concrete uncertainty may run during implementation; do not schedule
 routine suites, static analysis, browser acceptance, builds or scanners here.
 Mandatory commit hooks remain in force. Each completed point is committed with
 this roadmap ID and the checklist updated. Broad verification is exclusively point
-12, after every implementation point.
+12, after every implementation point. Added points 2a–2b apply the approved
+reassessment before resuming point 3; completed point history remains evidence.
 
 - [x] 1. Finalize the approved public contract specification and compatibility map.
   - Prerequisites: individual ARCH-001–004 decisions, release confirmation and activation.
@@ -184,6 +206,28 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
   - Author entry/denial/non-superadministrator/session/proof/availability tests and
     source/runtime/install history fixtures. Add module documentation/changelog and
     welcome catalogue icon/localized descriptions without claiming rendered PASS.
+- [x] 2a. Rebuild native transaction/admission phases in the owning framework and Core.
+  - Prerequisites: 1–2 and the explicit revised ARCH-001 decision on 2026-10-30.
+  - Specify and implement source-owned transactional mutations, one root lock/
+    validate/proof/apply/result/refusal protocol and exact-operation health admission.
+    Move Auth profile and Permissions assignment standalone writes onto these same
+    owner phases; do not call unchanged whole writes from the aggregate or encode
+    assignment-before-profile ordering. Preserve current grants and strong proofs.
+  - Author mixed-owner success in canonical Auth-first order, stale preview/ABA,
+    rollback/proof/Audit/refusal, same-resource/proof duplication, admission expiry/
+    source change and scope-unwind cases. Only necessary focused uncertainty checks
+    run here; full suites/concurrency/native checks remain point 12.
+  - Synchronize public/source boundaries, current consumers, module version/history
+    and both instruction products. Retire obsolete whole-signature freeze gates.
+- [ ] 2b. Correct unreleased presentation/read contracts from the reassessment.
+  - Prerequisites: 2a; update exact contracts before their implementation in 3–5.
+  - Specify field-bound options, page/build identities and widget freshness results,
+    per-binding availability isolation and one shared session-shell controller with
+    minimal authenticated entry advertisement. Finalize platform ownership of the
+    shared application-settings store and installation path before point 10.
+  - Point 2a removed unpublished Admin 0.2.0/no-op history churn. Keep the current
+    0.1.0 development version until the creation release unless a real need emerges.
+    Update the plan/current guides and assess both instruction products.
 - [ ] 3. Implement declaration discovery and authorized projection.
   - Prerequisites: 1–2.
   - Extend existing management declarations with pages/sections/resource and command
@@ -215,7 +259,7 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
 - [ ] 6. Implement approved cross-module contributions and atomic Save.
   - Prerequisites: 1, 3, 5; ARCH-001 and ARCH-003 approved as recorded.
   - Add editable participation alongside existing visual slots; owner-namespaced
-    input/errors/revisions, compatibility validation and explicit lock/write order.
+    input/errors/revisions, compatibility validation and canonical owner phases and lock order.
     Root Action coordinates guarded owners and atomic Audit/proof; refusal records
     follow rollback. Exclude independent runners/file/network operations explicitly.
   - Author profile-plus-role plus future app contribution fixtures, both failure
@@ -462,12 +506,13 @@ created or removed. The roadmap remains active; point 3 is next.
 ## Point 3 — Declaration discovery and authorized projection (in progress)
 
 Worktree implementation and focused evidence, 2026-10-30; not committed or complete.
-The owner-requested architecture reassessment holds further implementation.
+The owner-approved revised ARCH-001 now resumes work through added point 2a;
+this point-3 worktree remains incomplete pending its prerequisites.
 The draft implementation adds additive ManagementPageProvider and bounded
 page/section/field/command/binding/target/widget/contribution values, owning handler
 interfaces and read/write/result DTOs without changing legacy provider methods,
-constructors or ModuleManagement schema 1. Admin develops at 0.2.0 with an appended
-source-only declarations edge from 0.1.0; existing Core versions/API signatures and
+constructors or ModuleManagement schema 1. the earlier draft 0.2.0/no-op edge was retired in point 2a; Admin remains at
+unreleased development 0.1.0; existing Core versions/API signatures and
 platform VERSION remain unchanged. Its creation release remains 1.0.0 at verified
 closure; platform target remains feature/0.7.0.
 
@@ -537,5 +582,100 @@ runa_test_test_1; initial cleanup lists were empty and final lists contained tha
 worker. Base runa_test, development data, containers/volumes, Qdrant/model caches,
 backups and reports were preserved. Source fixtures remove only their owned temporary
 directories. No Docker resources or persistent migrations were created/removed.
-The roadmap remains active at point 3. Resume only after resolving the architecture
-reassessment; point 4 has not started.
+The roadmap remains active at point 3. The architecture decision is resolved; added point 2a is current and point 4
+has not started.
+
+## Point 2a — Native owner transaction and admission protocol
+
+Implemented 2026-10-30 under the owner's explicit revised ARCH-001 decision.
+The framework supplies source-owned mutation definitions/access/proofs and
+ModuleTransactions, exact-operation HealthAdmissions and one default PostgreSQL
+root with registry/authority/sorted Auth subject locks. All participants validate
+before proof consumption and business applies; results follow all writes. Duplicate
+writers/single-use demands, ambient roots, source/generation/health expiry changes,
+missing admissions and non-JSON/oversized results refuse. Scope disposal and root
+rollback precede mandatory owning refusal Audit. No retries or external work run
+inside the root.
+
+Auth profile validation and writes now share the native phase implementation;
+Permissions validates the exact reviewed snapshot once under the shared lock and
+applies that snapshot without rerunning it after a profile write. Standalone
+administrative profile/assignment writes use that same runner. Canonical Auth-first
+order succeeds; no assignment-before-profile shim or generic ordering graph remains.
+Actual guard grants still recheck at each apply, and stronger session/action-bound
+both-factor proof is consumed once with its owning Audit in the root. A failed
+root invalidates the private prepared result rather than leaving a phantom model
+projection available to its owning caller.
+
+Authorization/introspection/effective-permission projection now consumes current
+cached availability; actual operation ingress owns on-use execution. The new
+admission scope reuses only its exact operation/source/policy/expiry evidence,
+rechecks native cached failures and refuses any new health work after sealing.
+Unmigrated readers/writers retain their owning protocols and require deliberate
+migration; there is no blanket declaration that all operations compose.
+
+Auth/Permissions independent versions and their changed guarded APIs are 2.0.0,
+with explicit source-only native_transactions edges retaining published predecessor
+history. Their platform floor is 0.7.0. Private owner fixtures select that candidate
+runtime explicitly, without changing canonical platform VERSION. Admin remains
+unreleased development 0.1.0, requires Auth/Permissions ^2.0.0 and retains its actual
+initial edge; the unneeded point-3 0.2.0/no-op edge was removed. Audit remains 1.0.5.
+No database migration or development/production reset was needed.
+
+### Grounding, focused evidence and remaining verification
+
+Knowledge was current: 200 documents / 9,658 chunks at start; bounded retrieval
+located Admin entry, Permissions authority/transaction guidance and the reviewed
+proposal. Original native guard/scope, availability/health, permission resolution,
+Auth profile/step-up/security and Permissions preview/transaction sources were
+opened. Backend/Laravel/security guidance applies; Laravel Boost 13.37.0 confirmed
+transaction behavior. No dependency or new infrastructure/service was introduced.
+
+Necessary supported checks used --parallel --processes=1 with exact native names:
+
+- Mixed Auth-first profile/assignment commit and atomic Audit/proof: 1 passed,
+  15 assertions initially. Rollback-on-Audit plus exact-operation health expiry/
+  source/unwind checks: 2 passed, 23 assertions. After the explicit API/module 2.0.0
+  and candidate-runtime changes, these same three scenarios passed together:
+  3 passed / 38 assertions, 7.29 seconds, native exit 0 / cleanup 0.
+- The focused standalone API 2.0.0/stale-preview/duplicate-writer/single-use test
+  passed: 1 test / 15 assertions, 4.40 seconds, native exit 0 / cleanup 0.
+  Its first attempt used an uppercase
+  UUID while expecting a duplicate-writer refusal; existing TrustedPrincipal's
+  lowercase grammar correctly rejected the constructor. The fixture now repeats
+  the actual canonical UUID; native UUID acceptance was not relaxed.
+
+The final focused run after adding the commit fence (current maintenance, source,
+required graph and health expiry without rechecking a consumed write grant) passed
+all three native write scenarios: 3 passed / 45 assertions, 11.52 seconds, exit 0 /
+cleanup 0. The separately received health admission scenario adds 8 assertions;
+these four focused cases total 53 assertions, not a complete backend suite.
+A separate focused double-failure case (business Audit and independent refusal
+Audit) passed 1 test / 14 assertions in 4.84 seconds, native exit 0 / cleanup 0.
+It verifies 503 refusal, rollback and invalidation of both owners' prepared results.
+All refusal hooks are attempted despite another hook's failure. The five focused
+scenarios total 67 assertions; this remains scoped implementation evidence.
+
+No full backend suite, static analysis, browser/concurrency/native installer or
+release PASS is claimed. Existing reviewed access/ABA/proof/Audit fixtures remain
+and current source consumers/API versions are updated; complete selected checks
+remain final point 12. The immutable historical compatibility ledger is inventory,
+while its executable checks now validate current declaration/consumer contracts
+rather than freezing every old signature.
+
+### Documentation, instruction products and resources
+
+The canonical native transaction guide owns signatures, audiences, phases and
+admission behavior. The Admin composition guide replaces obsolete plan/proof/
+identity-lock/ordering contracts with native owner participation; access/profile
+consumption guides, version changelogs and public import/signature boundaries are
+synchronized. Owner/customer backend skills link the source contract and preserve
+ordinary App ownership/protected-source restrictions. Root/customer AGENTS and
+Laravel/security/frontend skills require no new rule: the approved owner policy,
+server authority, atomic Audit and public source boundaries already apply.
+
+Each supported run inspected exact disposable worker scope and removed only
+runa_test_test_1; base runa_test, development data, active containers/volumes,
+Qdrant/model caches, backups and reports were preserved. No Docker resources were
+created or removed. The preceding point-3 worktree is preserved separately and
+remains incomplete. Point 2b revises its read/presentation contracts next.

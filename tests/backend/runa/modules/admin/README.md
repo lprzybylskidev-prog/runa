@@ -12,3 +12,10 @@ Use the supported owner backend runner with explicit module path or native name
 filter and a disposable worker. The common fixture removes exact Admin registration
 and update history before removing its Core prerequisites. No Admin tables exist.
 Complete suites/browser/native installation/update acceptance remain final-only.
+
+Native transaction cases in EntryTest use the target runtime and real session,
+password/factor enrollment and single-use proof. They author Auth-first joined
+commit, Audit rollback, stale review, duplicate writer/proof refusal and standalone
+API 2.0.0 consumption. ModuleHealthTest covers exact-operation admission without
+external work inside a transaction, expiry/source changes and scope disposal.
+Complete area/concurrency/native acceptance remains final-only.

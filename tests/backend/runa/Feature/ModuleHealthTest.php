@@ -13,6 +13,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Runtime\MaintenanceState;
 use Tests\Fixtures\HealthPolicy;
 use Tests\Fixtures\ModuleSources;
@@ -23,7 +24,7 @@ beforeEach(function (): void {
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     $this->lifecycle = new LifecyclePolicies($this->sources->root, app(), $loader, true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     $this->availability = new ModuleAvailability($this->registry, $this->health, $this->lifecycle, '0.4.0');
     $this->maintenance = new MaintenanceState(app(), DB::connection(), $this->registry, $this->availability);
     $this->ids = [];
@@ -343,4 +344,28 @@ it('bounds required cycles without poisoning disconnected availability', functio
     ($this->sync)();
     $statuses = $this->availability->statuses([$left, $independent], 'read');
     expect($statuses[$left]->available)->toBeFalse()->and($statuses[$independent]->available)->toBeTrue()->and(count($statuses[$left]->reasons))->toBeLessThan(129);
+});
+
+it('uses exact operation health admission inside one transaction and refuses missing expired or changed evidence', function (): void {
+    $id = ($this->add)('on_use');
+    ($this->sync)();
+    $admissions = app(HealthAdmissions::class);
+    $admissions->run(function () use ($id): void {
+        expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue();
+    }, function () use ($id): void {
+        DB::transaction(function () use ($id): void {
+            expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue()
+                ->and($this->availability->statuses($id, 'unprepared')[$id]->available)->toBeFalse()
+                ->and(HealthPolicy::$calls[$id])->toBe(1);
+            $this->travel(1)->weeks();
+            expect($this->availability->statuses($id, 'write')[$id]->available)->toBeFalse();
+            $this->travelBack();
+            DB::table('shared.modules')->where('module_id', $id)->increment('health_revision');
+            DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+            expect($this->availability->statuses($id, 'write')[$id]->available)->toBeFalse();
+        });
+    });
+    // The scope is gone: the next real use executes a new check, never stale admission.
+    expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue()
+        ->and(HealthPolicy::$calls[$id])->toBe(2);
 });

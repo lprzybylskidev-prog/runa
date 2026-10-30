@@ -13,7 +13,7 @@ final class AccessApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(PermissionsAccess::class, AccessProxy::class, ManageAccess::class, '1.0.0', [
+        return new ApiDefinition(PermissionsAccess::class, AccessProxy::class, ManageAccess::class, '2.0.0', [
             'assignments' => new ApiOperation('access.assignments', 'runa.permissions.introspection.read'),
             'previewAssignments' => new ApiOperation('access.preview_assignments', 'runa.permissions.access.manage'),
             'previewCopy' => new ApiOperation('access.preview_copy', 'runa.permissions.access.manage'),

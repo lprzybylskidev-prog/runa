@@ -149,7 +149,12 @@
     "Runa\\Modules\\Permissions\\Contracts\\PermissionsSelections",
     "Runa\\Modules\\Permissions\\Contracts\\RoleDeletionPreview",
     "Runa\\Modules\\Permissions\\Contracts\\UserSelection",
-    "Runa\\Modules\\Admin\\Contracts\\AdminAccess"
+    "Runa\\Modules\\Admin\\Contracts\\AdminAccess",
+    "Runa\\Contracts\\Modules\\TransactionalMutation",
+    "Runa\\Contracts\\Modules\\MutationDefinition",
+    "Runa\\Contracts\\Modules\\MutationAccess",
+    "Runa\\Contracts\\Modules\\MutationProof",
+    "Runa\\Support\\Modules\\Data\\ModuleTransactions"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [
@@ -320,6 +325,13 @@
     "Runa\\Modules\\Permissions\\Contracts\\DevelopmentAccess": [
       "src/runa/modules/permissions/backend/Contracts/DevelopmentAccess.php",
       "src/runa/modules/permissions/backend/Development/Access.php"
+    ],
+    "Runa\\Contracts\\Modules\\TransactionSecurity": [
+      "src/runa/Contracts/Modules/TransactionSecurity.php",
+      "src/runa/Integration/Core/TransactionSecurity.php",
+      "src/runa/Providers/CoreIntegrationServiceProvider.php",
+      "src/runa/Support/Modules/Data/ModuleTransactions.php",
+      "src/runa/modules/auth/backend/Support/TransactionSecurity.php"
     ]
   },
   "internal_callers": {

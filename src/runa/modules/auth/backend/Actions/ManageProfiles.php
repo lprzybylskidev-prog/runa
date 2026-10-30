@@ -15,16 +15,20 @@ use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Support\Modules\Api\OperationRejected;
+use Runa\Support\Modules\Data\ModuleTransactions;
 
 /** Administrative operations are exposed only through independently permissioned guarded APIs. */
 final readonly class ManageProfiles implements AuthProfiles
 {
     public function __construct(private EntryTransaction $transactions, private Profiles $profiles, private EmailAddresses $addresses,
-        private AuthorityGuard $authority, private StepUp $stepUp, private EntryTokens $tokens, private LookupIdentity $identities) {}
+        private AuthorityGuard $authority, private StepUp $stepUp, private EntryTokens $tokens, private LookupIdentity $identities, private ModuleTransactions $mutations) {}
 
     public function edit(string $publicId, int $expectedVersion, ProfileChange $change): Identity
     {
-        return $this->target($publicId, $expectedVersion, fn (Connection $connection, User $user): Identity => $this->profiles->editLocked($user, $expectedVersion, $change, false));
+        $mutation = new ProfileMutation($this->profiles, $publicId, $expectedVersion, $change);
+        $this->mutations->run([$mutation]);
+
+        return $mutation->identity();
     }
 
     public function changeEmail(string $publicId, int $expectedVersion, string $email): bool

@@ -44,6 +44,13 @@ final readonly class Profiles
 
     public function editLocked(User $user, int $version, ProfileChange $change, bool $own): Identity
     {
+        $this->validateEditLocked($user, $version, $change, $own);
+
+        return $this->applyEditLocked($user, $change, $own);
+    }
+
+    public function validateEditLocked(User $user, int $version, ProfileChange $change, bool $own): void
+    {
         $this->version($user, $version);
         $namesChanged = [$user->name, $user->first_name, $user->surname] !== [$change->name, $change->firstName, $change->surname];
         $loginChanged = $user->login !== $change->login;
@@ -56,6 +63,13 @@ final readonly class Profiles
         if ($loginChanged && $change->login !== null && User::withTrashed()->where('login_claim', $change->login)->where('id', '<>', $user->id)->exists()) {
             throw new IdentityConflict('identifier_conflict');
         }
+    }
+
+    /** Apply only after the owning locked validation phase; no cross-owner re-preview. */
+    public function applyEditLocked(User $user, ProfileChange $change, bool $own): Identity
+    {
+        $namesChanged = [$user->name, $user->first_name, $user->surname] !== [$change->name, $change->firstName, $change->surname];
+        $loginChanged = $user->login !== $change->login;
         if ($namesChanged || $loginChanged) {
             $before = $user->only(['name', 'first_name', 'surname', 'login']);
             $user->forceFill(['name' => $change->name, 'first_name' => $change->firstName, 'surname' => $change->surname,

@@ -20,12 +20,12 @@ final readonly class PermissionAuthorizer implements OperationAuthorizer
         try {
             if ($this->app->maintenanceMode()->active()
                 || file_exists($this->app->storagePath('framework/maintenance/enabled'))
-                || ! $this->availability->statuses([$context->moduleId, 'runa.permissions'], $context->operation)[$context->moduleId]->available
+                || ! $this->availability->statuses([$context->moduleId, 'runa.permissions'])[$context->moduleId]->available
                 || $this->registry->snapshot()->generation !== $context->generation) {
                 return false;
             }
             $record = $this->registry->snapshot()->modules['runa.permissions'] ?? null;
-            if ($record === null || ! $this->availability->statuses('runa.permissions', $context->operation)['runa.permissions']->available) {
+            if ($record === null || ! $this->availability->statuses('runa.permissions')['runa.permissions']->available) {
                 return false;
             }
             $resolver = $this->declarations->make($record, 'Runa\\Modules\\Permissions\\Queries\\ResolvePermissions', Permissions::class);

@@ -26,6 +26,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleGraph;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Modules\Events\ModuleEvents;
@@ -61,7 +62,7 @@ beforeEach(function (): void {
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     $declarations = new ModuleDeclarations($this->sources->root, app(), $loader, true);
-    $health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     $availability = new ModuleAvailability($this->registry, $health, new LifecyclePolicies($this->sources->root, app(), $loader, true), '0.4.0');
     $this->scope = new OperationScope;
     app()->instance(OperationScope::class, $this->scope);

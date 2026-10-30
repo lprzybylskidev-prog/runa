@@ -133,3 +133,11 @@ to that module's own central roots. They do not require test files in production
 or load test code during discovery. Existing module-relative `tests` declarations
 retain their prior ownership checks. Generator previews and exact overwrite
 hashes cover central test files, with owner/receipt and symlink guards unchanged.
+
+## Native transactional participation
+
+The [owning transaction protocol](../architecture/module-transactions.md) documents
+source-owned phases shared by standalone writes and aggregate forms, operation-
+specific health admission, locked review validation and atomic proof/Audit. Use
+its public source contracts for owned mutations; do not wrap a whole guarded write
+inside another transaction or import a foreign module's private mutation class.

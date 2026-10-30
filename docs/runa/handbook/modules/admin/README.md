@@ -46,35 +46,34 @@ does not authorize replacing an existing module's handler or security binding.
 Metadata and binding identities are source-owned; requests cannot supply PHP
 classes, methods, SQL, component imports, file paths or authorization definitions.
 
-## Compatibility and independent version plan
+## Current candidate versions and release plan
 
-Released baseline: platform 0.6.2; Auth 1.1.4, Permissions/Audit 1.0.4. Point 2
-prepares Auth 1.1.5 and Permissions/Audit 1.0.5 with compatible platform ranges
-`>=0.4.2 <0.8.0` and appended source-only `admin_platform` edges. Later feature
-versions below remain planned. The app scaffold range is widened in its owning
-integration point; platform VERSION is unchanged until release finalization.
+Released platform baseline is 0.6.2. The 0.7.0 candidate includes deliberate
+pre-1.0 native transaction changes approved by the owner on 2026-10-30. Current
+source versions below are not a claim of completed release acceptance.
 
-| Owner         | Planned release                  | Reason and prerequisites                                                                                                       |
-| ------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Platform      | 0.7.0                            | Compatible feature release; no existing API removal                                                                            |
-| Admin         | Develop at 0.1.0; close at 1.0.0 | New Core creation, explicit installation and forward history; required Audit/Auth/Permissions `^1.0.0`                         |
-| Auth          | 1.2.0                            | Additive directory/detail read API, composition implementation, menu/presentation inputs; keep current APIs at exactly `1.0.0` |
-| Permissions   | 1.1.0                            | Additive management/composition declarations and owned participant; preserve reviewed operation signatures and proofs          |
-| Audit         | 1.1.0                            | Additive viewer declarations/handler; keep read/record contracts unchanged                                                     |
-| Framework API | Keep `^1.0.0`                    | New optional interfaces, unchanged v1 provider methods and DTOs                                                                |
-| App scaffold  | Keep app version 0.0.0           | Explicitly widen Runa range to `>=0.2.1 <0.8.0` only when 0.7.0 support is delivered                                           |
+| Owner         | Current source / target                   | Contract disposition                                                                                                                    |
+| ------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform      | Target 0.7.0, feature                     | Canonical VERSION stays at the released baseline until finalization.                                                                    |
+| Admin         | Development 0.1.0; creation release 1.0.0 | Requires Audit ^1.0.0 and Auth/Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                             |
+| Auth          | 2.0.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Further Admin adapters belong to later points. |
+| Permissions   | 2.0.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions. |
+| Audit         | Current 1.0.5; planned 1.1.0              | Owning read/record contracts stay at 1.0.0; viewer declarations follow in their owning point.                                           |
+| Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                 |
+| App scaffold  | Keep 0.0.0                                | Widen its Runa range to >=0.2.1 <0.8.0 in the owning integration point.                                                                 |
 
-For supplied Core manifests preserve the existing lower bound and widen platform
-support to `>=0.4.2 <0.8.0`; new Admin targets `>=0.7.0 <0.8.0`. Do not widen customer
-manifests automatically. Review source/runtime/version checks and dependent module
-requirements at the owning implementation point, update the central module
-changelog and append forward edges without modifying historical identities.
-No incompatible module change or MAJOR is authorized. If later implementation
-cannot preserve this plan, discuss the changed premise before coding it.
+Auth/Permissions and Admin require platform `>=0.7.0 <0.8.0`. Audit retains its
+`>=0.4.2 <0.8.0` range. Do not rewrite customer manifests automatically. Retain
+actually published migration/upgrade identities and append required forward
+history. Pre-1.0 source refactoring does not require preserving obsolete API
+signatures or asking for another module-MAJOR approval; record the break and update
+current consumers. New behavioral/security/architecture premises still follow
+roadmap discussion. Neither platform promotion to 1.0.0 nor release closure is
+implied by these candidate module versions.
 
 ## Delivery status and acceptance ownership
 
-Admin 0.1.0 is Core and requires Audit/Auth/Permissions `^1.0.0`. Its platform
+Admin 0.1.0 is Core and requires Audit `^1.0.0`, Auth/Permissions `^2.0.0`. Its platform
 range is `>=0.7.0 <0.8.0`: source checkout at released 0.6.2 does not authorize
 installing it there. Explicit platform installation/update at the target version
 registers it and records `upgrade:initialize:install:0.1.0` after its prerequisites.
@@ -130,3 +129,15 @@ Core method signatures and operation declarations for every applicable method,
 including audience exclusions. It is owner evidence, excluded from customer
 delivery. The public [coverage map](operations.md#core-operation-coverage) owns
 the administrative behavior and boundaries.
+
+## Revised native transaction direction
+
+The owner approved direct native Auth/Permissions/framework refactoring on
+2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
+supersedes the earlier unchanged-API composition proposal. AuthProfiles and
+PermissionsAccess use guarded API 2.0.0 and independent module 2.0.0; standalone
+writes have a root boundary, while source composition joins native phases.
+Auth/Permissions require platform >=0.7.0 <0.8.0. Audit remains independent 1.0.5.
+The exact current native path is implemented before Admin aggregate dispatch;
+frontend/aggregate/read refinements retain their owning roadmap points. No
+intermediate unpublished Admin 0.2.0 update path is retained.

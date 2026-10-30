@@ -6,3 +6,5 @@
 - Supply guarded AdminAccess 1.0.0 bootstrap and named `/api/admin` transport, current native grants, operational session and reusable 300-second password proof.
 - Add fixed private entry/diagnostics framework adapters with bounded safe projections; no management mutation or generic engine dispatch.
 - Declare later API methods fail closed until their owning implementation points. Page discovery, UI, atomic Save and settings remain planned; release acceptance is pending.
+
+- Require native Auth/Permissions ^2.0.0 under the approved transaction redesign; Audit remains ^1.0.0.

@@ -44,7 +44,7 @@ DTO constructors, validation, safe errors, bounds and stronger proof requirement
 
 The private compatibility ledger enumerates **every** currently declared API
 method, its complete native signature, source definition, operation, permission,
-API version and audience. New Admin handlers must preserve those bindings; the
+API version and audience. It records the historical baseline; current handlers follow reviewed current contracts and versions, not a frozen signature requirement. the
 public table above records their disposition rather than exposing private classes.
 
 ## Additive Auth reads
@@ -239,3 +239,10 @@ break emergency rendering. Technical mail/CSP/layout policy remains source/confi
 owned and can reject a selected asset for that consumer. These rules do not make
 platform version, application ID, compatibility, APP_URL/KEY, debug, credentials,
 drivers, knowledge endpoints or infrastructure editable.
+
+The approved native transaction redesign uses independent Auth/Permissions 2.0.0
+and guarded AuthProfiles / PermissionsAccess API 2.0.0. Other current guarded
+interfaces remain at their declared versions. The
+[native transaction contract](../../architecture/module-transactions.md) and
+[current composition guide](composition.md) supersede the original unchanged-API
+lock/preview ordering proposal. No generic framework method dispatch is introduced.

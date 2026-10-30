@@ -51,6 +51,20 @@ final readonly class OperationGuard
         }
     }
 
+    /** Commit fence: availability/expiry/maintenance without rerunning write authorization. */
+    public function assertAvailable(OperationContext $context): void
+    {
+        $this->assertCurrent($context);
+        if ($this->maintenance->active()) {
+            throw new OperationRejected('platform_unavailable', $context->moduleId, $context->operation);
+        }
+        $status = $this->availability->statuses($context->moduleId, $context->operation)[$context->moduleId];
+        if (! $status->available) {
+            throw new OperationRejected('module_unavailable', $context->moduleId, $context->operation, reasons: $status->reasons);
+        }
+        $this->assertCurrent($context);
+    }
+
     public function assertCurrent(OperationContext $context): void
     {
         if ($this->registry->snapshot()->generation !== $context->generation || $this->app->maintenanceMode()->active()

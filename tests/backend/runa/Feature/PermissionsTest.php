@@ -316,7 +316,7 @@ function permissionAccessManager($test): array
     $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'permission-access-password'])->assertOk()->json('data');
     $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
     $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'permission-access-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
-    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '1.0.0');
+    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
 
     return $codes;
 }
@@ -396,12 +396,11 @@ it('refuses stale access previews and protected roles and rolls back aggregate c
         $preview = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         permissionAccessProof($this, $codes[0]);
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT access_fixture_refusal CHECK (action <> 'assignments.changed') NOT VALID");
-        DB::transaction(function () use ($api, $preview, $target): void {
-            expect(fn () => $api->applyAssignments($preview))->toThrow(AuditUnavailable::class);
-            expect(DB::table('runa_permissions.user_permissions')->where('user_public_id', $target->publicId)->count())->toBe(0)
-                ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
-                ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
-        });
+        expect(fn () => DB::transaction(fn () => $api->applyAssignments($preview)))->toThrow(OperationRejected::class);
+        expect(fn () => $api->applyAssignments($preview))->toThrow(AuditUnavailable::class);
+        expect(DB::table('runa_permissions.user_permissions')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT access_fixture_refusal');
         $api->applyAssignments($preview);
         permissionAccessProof($this, $codes[1]);
@@ -507,7 +506,7 @@ it('rolls back custom role and preset member writes after their aggregate Audit 
 })->group('permissions-access');
 
 it('denies access writers without native grants and bounds public assignment inputs', function (): void {
-    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
     expect(fn () => $api->definitions('role'))->toThrow(OperationRejected::class);
     ($this->asPermissionUser)(function () use ($api): void {
         expect(fn () => $api->previewAssignments($this->permissionUser->publicId, new AssignmentSet))->toThrow(OperationRejected::class);
@@ -558,7 +557,7 @@ it('preserves last eligible authority across lifecycle changes without blocking 
     $changes->change($this->permissionUser->publicId, 2, new LifecycleChange('activate'));
     expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue();
     ($this->asPermissionUser)(function (): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '1.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
         expect($api->assignments($this->permissionUser->publicId)['super_admin'])->toBeTrue();
     });
 })->group('permissions-authority');

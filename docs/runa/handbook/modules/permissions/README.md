@@ -1,7 +1,7 @@
 # Permissions
 
-Core `runa.permissions` has independent version `1.0.5`, requiring
-`runa.auth ^1.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
+Current Core `runa.permissions` source develops at independent version `2.0.0`
+for platform >=0.7.0 <0.8.0, requiring `runa.auth ^2.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -127,7 +127,7 @@ effective is still false without a grant and current eligibility/availability.
 ## Delivery boundary
 
 Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
-1.0.0 under the [ordinary access contract](access.md). Protected superadmin
+2.0.0 under the [ordinary access contract](access.md). Protected superadmin
 assignment/removal, last-superadmin participation and confirmed custom-role force
 deletion use the separate [protected authority contract](authority.md). The neutral
 AuthorityGuard now resolves the trusted Permissions participant and refuses missing
@@ -165,3 +165,5 @@ scenario ledger. It never replaces ordinary guarded PermissionsAccess or step-up
 never grants protected membership through ordinary fixtures and never runs in
 production initialization. The actual first fixture administrator uses Auth's
 existing trusted operator participant.
+
+Native assignment composition follows the [owning phase contract](../../architecture/module-transactions.md); arbitrary ambient whole-write nesting is intentionally replaced.

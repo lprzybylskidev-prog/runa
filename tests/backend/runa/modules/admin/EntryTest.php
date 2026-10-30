@@ -1,26 +1,40 @@
 <?php
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\PreparationParticipant;
+use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Integration\Core\AdminDiagnostics;
 use Runa\Integration\Core\AdminHttpGuard;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\LifecyclePolicies;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
+use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
+use Runa\Modules\Auth\Actions\ProfileMutation;
+use Runa\Modules\Auth\Actions\Profiles;
+use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Permissions\Actions\ChangeAssignments;
+use Runa\Modules\Permissions\Contracts\AssignmentSet;
+use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Api\OperationRejected;
+use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\CoreModuleStorage;
@@ -198,4 +212,133 @@ it('projects diagnostics through fixed source adapters without private metadata'
     foreach ($captured['modules'] as $module) {
         expect(array_keys($module))->not->toContain('source_path', 'manifest_hash', 'settings', 'config', 'work', 'payload');
     }
+});
+
+function nativeMutationProof(object $test): void
+{
+    ($test->adminLogin)();
+    $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'admin-entry-password'])->assertOk()->json('data');
+    $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
+    $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'admin-entry-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
+    $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
+        'current_password' => 'admin-entry-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $request = Request::create('/', 'POST');
+    $request->setLaravelSession(app('session')->driver());
+    app()->instance('request', $request);
+}
+
+it('validates both owners before Auth first apply and commits profile assignments proof and Audit together', function (): void {
+    foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
+        ($this->adminGrant)($code);
+    }
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-mutation@example.test', name: 'Before', active: true, approved: true));
+    nativeMutationProof($this);
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+        $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
+        $assignment = app(ChangeAssignments::class)->mutation($review);
+        $profile = new ProfileMutation(app(Profiles::class), $target->publicId, $target->version, new ProfileChange(name: 'After'));
+        $results = app(ModuleTransactions::class)->run([$assignment, $profile]);
+        expect(array_keys($results)[0])->toStartWith('runa.auth.profile.edit.')
+            ->and($results['runa.permissions.'.$assignment->definition()->key]['identity_version'])->toBe($target->version + 1)
+            ->and($results['runa.permissions.'.$assignment->definition()->key]['assigned']['permissions'])->toBe([$read])
+            ->and(User::where('public_id', $target->publicId)->value('name'))->toBe('After')
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->not->toBeNull()
+            ->and(DB::table('runa_audit.events')->where('action', 'profile.admin_changed')->count())->toBe(1)
+            ->and(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(1)
+            ->and(DB::transactionLevel())->toBe(0);
+    });
+});
+
+it('rolls back Auth first apply assignments and consumed proof before independent refusal Audit', function (): void {
+    foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
+        ($this->adminGrant)($code);
+    }
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-rollback@example.test', name: 'Before', active: true, approved: true));
+    nativeMutationProof($this);
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+        $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
+        $assignment = app(ChangeAssignments::class)->mutation($review);
+        $profile = new ProfileMutation(app(Profiles::class), $target->publicId, $target->version, new ProfileChange(name: 'After'));
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT native_mutation_refusal CHECK (action <> 'assignments.changed') NOT VALID");
+        try {
+            expect(fn () => app(ModuleTransactions::class)->run([$profile, $assignment]))->toThrow(AuditUnavailable::class);
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT native_mutation_refusal');
+        }
+        expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+            ->and(User::where('public_id', $target->publicId)->value('version'))->toBe($target->version)
+            ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull()
+            ->and(DB::table('runa_audit.events')->where('action', 'profile.admin_changed')->count())->toBe(0)
+            ->and(DB::table('runa_audit.events')->where('action', 'access.refused')->count())->toBe(1)
+            ->and(DB::transactionLevel())->toBe(0);
+    });
+});
+
+it('rejects stale prewrite review and duplicate native writers or single use demands without partial changes', function (): void {
+    foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
+        ($this->adminGrant)($code);
+    }
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-stale@example.test', name: 'Before', active: true, approved: true));
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('native-other@example.test', name: 'Other', active: true, approved: true));
+    nativeMutationProof($this);
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target, $other): void {
+        $apis = app(ModuleApis::class);
+        expect(fn () => $apis->resolve('runa.auth', AuthProfiles::class, '1.0.0'))->toThrow(OperationRejected::class);
+        $api = $apis->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+        $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
+        $second = $api->previewAssignments($other->publicId, new AssignmentSet(permissions: [$read]));
+        $assignments = app(ChangeAssignments::class);
+        $runner = app(ModuleTransactions::class);
+        expect(fn () => $runner->run([$assignments->mutation($review), $assignments->mutation($second)]))->toThrow(OperationRejected::class);
+        $profiles = app(Profiles::class);
+        $change = new ProfileChange(name: 'After');
+        expect(fn () => $runner->run([
+            new ProfileMutation($profiles, $target->publicId, $target->version, $change),
+            new ProfileMutation($profiles, $target->publicId, $target->version, $change),
+        ]))->toThrow(OperationRejected::class);
+        $updated = $apis->resolve('runa.auth', AuthProfiles::class, '2.0.0')->edit($target->publicId, $target->version, new ProfileChange(name: 'Intervening'));
+        $profile = new ProfileMutation($profiles, $target->publicId, $updated->version, $change);
+        expect(fn () => $runner->run([$profile, $assignments->mutation($review)]))->toThrow(OperationRejected::class);
+        expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Intervening')
+            ->and(DB::table('runa_permissions.user_access')->whereIn('user_public_id', [$target->publicId, $other->publicId])->count())->toBe(0)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+        expect(fn () => $profile->identity())->toThrow(LogicException::class);
+    });
+});
+
+it('fails closed when independent refusal Audit also fails and invalidates rolled back owner results', function (): void {
+    foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
+        ($this->adminGrant)($code);
+    }
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-refusal@example.test', name: 'Before', active: true, approved: true));
+    nativeMutationProof($this);
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+        $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
+        $assignment = app(ChangeAssignments::class)->mutation($review);
+        $profile = new ProfileMutation(app(Profiles::class), $target->publicId, $target->version, new ProfileChange(name: 'After'));
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT native_refusal_failure CHECK (action NOT IN ('assignments.changed', 'access.refused')) NOT VALID");
+        try {
+            try {
+                app(ModuleTransactions::class)->run([$profile, $assignment]);
+                $this->fail('Expected refused root.');
+            } catch (OperationRejected $error) {
+                expect($error->reason)->toBe('transaction_refusal_unavailable')->and($error->status)->toBe(503);
+            }
+            expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+                ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+                ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+            expect(fn () => $profile->identity())->toThrow(LogicException::class);
+            expect(fn () => $assignment->result())->toThrow(LogicException::class);
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT native_refusal_failure');
+        }
+    });
 });
