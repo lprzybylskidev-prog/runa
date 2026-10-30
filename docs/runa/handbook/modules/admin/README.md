@@ -8,7 +8,8 @@ explicit installation history, entry security, declaration discovery and authori
 bootstrap/page/section reads, the English session shell, page-read HTTP and public
 frontend replacement seams. Point 5 adds named section-read HTTP and the public
 resource read controller, explicit cursor-table composition and automatic declared
-collection sections. Business adapters, generated forms/writes and settings
+collection sections, controlled public fields with static validation hints and
+automatic read-only record sections. Business adapters, generated forms/writes and settings
 remain planned.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
@@ -35,6 +36,8 @@ implemented, including compiled registry resolution and shell rendering. Atomic
 participation, settings and generated record form dispatch remain specified.
 Resource reads are delivered through `useAdminResource`; `useAdminTable` and
 `AdminResourceTable` compose bounded collection reads with the existing Table.
+`AdminField` and `validateAdminField` supply controlled field composition; default
+record sections display native authorized record reads through those fields.
 The resource command method refuses
 locally until write dispatch is delivered. Private engines retain their current homes and are never
 ordinary application imports.

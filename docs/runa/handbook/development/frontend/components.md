@@ -8,6 +8,12 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## AppSelect
 
+Admin consumers can use public `AdminField` through `@/runa/admin` to compose these
+shared controls from authorized field metadata, including optional bounded lookup
+providers. Default Admin record sections render read-only fields. See the exact
+[Admin field contract](../../modules/admin/frontend.md#delivered-field-composition)
+for replacement precedence, props/events and remaining form delivery.
+
 - Source: `src/runa/resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.
 - All selection modes use the shared themed floating dialog/listbox, including simple single selection. Searchable adds a search field; multiple changes the value contract. No browser-owned option popup is used. String values are stable IDs; multiple=true uses string[]. Disabled options cannot be chosen. FormField supplies label/helper/warning/errors and required semantics; disabled/readonly block edits, clearable is explicit.
 - Search is locale-aware for local options; provider queries debounce (250ms default), abort prior requests and ignore stale responses even if a provider ignores cancellation. Loading/error/retry/empty states remain distinct. Escape restores trigger focus, outside pointer dismisses, arrows/Home/End move over enabled options and Enter selects; IME composition is preserved. Multiple selection stays open until Done.

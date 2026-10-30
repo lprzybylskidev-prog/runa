@@ -1,5 +1,11 @@
 # Form Patterns
 
+Admin's public `AdminField` composes these controls with source-projected field
+metadata, static hints, owner errors and customer replacements. See its exact
+[field composition and delivery contract](../../modules/admin/frontend.md#delivered-field-composition).
+Default Admin record sections currently display read-only native reads; editable
+aggregate forms and Save remain in their owning roadmap points.
+
 Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition

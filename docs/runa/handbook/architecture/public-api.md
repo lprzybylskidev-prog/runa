@@ -294,7 +294,9 @@ are implemented. The public `@/runa/admin` shell/controllers/provider/resolver a
 and the read-only `useAdminResource` controller are delivered. Public
 `useAdminTable`/`AdminResourceTable` supply explicit cursor collection composition;
 source-declared `ManagementSection(view: 'table')` also enables default collection
-dispatch. Generated record form contracts remain listed in the Admin frontend guide.
+dispatch. Public `AdminField`/`validateAdminField` supply controlled field composition,
+and default record sections display read-only authorized values through the same
+resource lane. Generated editable record form contracts remain listed in the Admin frontend guide.
 Atomic participation, business adapters, write HTTP and settings remain
 planned.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted

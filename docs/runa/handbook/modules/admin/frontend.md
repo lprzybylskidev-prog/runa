@@ -7,13 +7,16 @@ routes, compiled component resolution, nested presentation providers and
 `useAdmin`/`useAdminPage`. Delivered facade components are `AdminApplication`,
 `AdminLayout`, `AdminLoading`, `AdminEntryProof` and `AdminPresentationProvider`;
 `useAdminPresentation`, `resolveAdminComponent` and the read side of
-`useAdminResource`, `useAdminTable` and `AdminResourceTable` are also delivered. Source
+`useAdminResource`, `useAdminTable`, `AdminResourceTable`, `AdminField` and
+`validateAdminField` are also delivered. Source
 home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
 Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
 all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
 
 Automatic collection-section dispatch is delivered through source-declared
-`ManagementSection(view: 'table')`. Record forms/actions, form controllers and their
+`ManagementSection(view: 'table')`; default record sections now render authorized
+record reads with read-only fields. Standalone controlled field editing is available
+for customer composition. Record forms/actions, form controllers and their
 default components remain specified for points 5–6; no business write is available from
 this shell. All wire/controller types below are exported, including types for
 those future runtime functions. Rendered acceptance remains point 12.
@@ -293,6 +296,73 @@ const table = useAdminTable(props.controller, 'directory');
 </template>
 ```
 
+## Delivered field composition
+
+Admin owns public `AdminField` and
+`validateAdminField(field: AdminFieldData, value: AdminFieldValue): readonly string[]`
+through `@/runa/admin`, implemented under Admin frontend and delivered as built
+presentation. Module and ordinary App consumers can compose controlled fields
+without a form controller, private imports, transport or another session owner.
+`AdminFieldProps` and `AdminFieldEmits` below are the complete runtime signature;
+the component has no slots. Import `SelectionProvider` and `SelectOption` from
+`@/runa/ui` for its optional `AdminFieldLookup` input.
+
+The component resolves a field-specific owned build first, then the subtree field
+provider, then its supplied default. Missing/stale declared builds never fall back.
+Each field has its own render boundary. Read-only descriptor/consumer state and
+busy state block update emissions, including emissions from custom replacements.
+These are UX guards; backend grants, field admission and validation remain authority.
+
+Defaults compose existing FormField/TextInput/NumberInput/Checkbox/Select/TagsInput.
+Text and dictionary choices use the shared English selection; dictionaries without
+choices use text. Integers emit safe numbers when complete, null when empty, and
+the exact incomplete/out-of-range string otherwise, so invalid drafts never round
+or reuse a stale valid value. UUID fields accept only public UUIDv7 values through
+static hints; multiple UUIDs use TagsInput when there is no reference lookup.
+UTC timestamps use an explicit RFC3339 text control without implicit browser-timezone
+conversion. Boolean null retains the shared indeterminate state. Read-only values
+are associated text, including Yes/No and Set/Not set, rather than editable controls.
+
+Secret set-state never fills a password input. Replacement text is transient
+controlled input, with no reveal control or persistence here; the owning consumer
+must erase it on account/authority/subject invalidation. Static validation checks
+required/max-length/choices/type/public UUID/UTC syntax only. It returns safe English
+messages and never echoes values. After an edit the default merges these hints
+with supplied owner errors; untouched fields do not display required errors.
+Unicode length counts code points; IME input follows TextInput. Do not rely on
+native validation or truncate drafts with a native maxlength.
+
+A lookup requires an explicit field-bound `lookup.provider`; otherwise it renders
+unavailable instead of accepting arbitrary free text. `selectedOptions` supplies
+labels for selected/off-page UUIDs. Select owns bounded cursor pages, cancellation,
+keyboard/focus and English feedback; the owning consumer supplies authorized
+transport/filter semantics. Passing this presentation input grants no authority.
+Automatic lookup adaptation and editable default record forms remain in the rest
+of point 5; no field component sends a write or supplies Save/preview orchestration.
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { AdminField } from '@/runa/admin';
+import type { AdminFieldData, AdminFieldValue } from '@/runa/admin';
+defineProps<{ field: AdminFieldData }>();
+const value = ref<AdminFieldValue>(null);
+</script>
+<template>
+  <AdminField
+    :field="field"
+    :model-value="value"
+    :errors="[]"
+    :readonly="false"
+    :busy="false"
+    @update:model-value="value = $event"
+  />
+</template>
+```
+
+Generic field replacements render public UI controls
+using the same props/events, as the customer composition fixture does.
+
 ## Presentation provider, components, props, slots and events
 
 ```ts
@@ -349,6 +419,12 @@ interface AdminFieldProps {
   errors: readonly string[];
   readonly: boolean;
   busy: boolean;
+  lookup?: AdminFieldLookup;
+  components?: AdminComponentRegistry;
+}
+interface AdminFieldLookup {
+  provider: SelectionProvider;
+  selectedOptions?: readonly SelectOption[];
 }
 type AdminFieldEmits = { 'update:modelValue': [value: AdminFieldValue] };
 interface AdminFormProps {
@@ -409,9 +485,14 @@ one broken custom presentation does not hide healthy siblings.
 A source-declared table mounts one bounded collection lane, with English shared
 controls, secret set-state and existing cursor/query/disposal behavior. Source
 `view` is presentation intent, never additional authority. The default `record`
-intent retains its unavailable-controls placeholder until generated forms arrive. The form/controller prop in
+intent mounts one existing resource lane, reads the projected subject UUID (or
+the owning singleton when null), and displays only returned, readable values.
+Loading, safe failure/explicit Retry, descriptor/visibility refresh and account
+invalidation retain `useAdminResource` behavior. Omitted values have no fabricated
+empty field; secret values show only Set/Not set. This default is read-only until
+form orchestration arrives. The form/controller prop in
 the complete target signatures arrives with point 5. Defaults render
-page/section headings, collection tables, safe unavailable/empty states and dashboard widget values;
+page/section headings, record values, collection tables, safe unavailable/empty states and dashboard widget values;
 they do not pretend to supply editable controls before their owning point.
 
 The public resolver signature is

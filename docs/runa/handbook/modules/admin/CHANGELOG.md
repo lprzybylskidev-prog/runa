@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-30
 
+- Supply public controlled AdminField/validateAdminField with owner-error/static-hint composition, exact integer drafts, public UUID/UTC controls, secret set-state, bounded lookup inputs and owned/provider presentation replacement. Automatically display read-only record sections through the existing resource lane; editable forms and writes remain planned.
+
 - Add explicit record/table section presentation intent and default bounded table dispatch, with native resource/session ownership, replacement precedence and per-section diagnostic isolation. Section replacements receive the owning page controller for public resource composition.
 
 - Add optional framework page/section/field/binding/widget/contribution declarations and bounded handler values without changing legacy metadata constructors or schema.
@@ -56,5 +58,5 @@ allowlists, secret set-state and account/authority/descriptor response fencing.
 Refuse invalid public row identities and never scan/download all pages or process
 server rows locally. Expose headless query/provider/controller and toolbar/filter/
 row/cell slots; no extra session, preference persistence or dependency. Automatic
-section dispatch, forms, exports/bulk and writes remain planned. Development 0.1.0
+record editing, forms, exports/bulk and writes remain planned. Development 0.1.0
 and installation history are unchanged; rendered/release acceptance is pending.

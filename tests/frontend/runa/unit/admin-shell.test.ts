@@ -917,6 +917,86 @@ it('Admin resource reads discard obsolete queries and refresh after readable sec
   expect(resource.state.value).toBe('ready');
 });
 
+it('Admin automatic records display only readable values and secret state with one native read lane', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  const session = sessionFixture();
+  const queries: URLSearchParams[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.record = {
+        public_id: identity,
+        revision: 'r0',
+        values: {},
+      };
+      return respond({ data });
+    }
+    queries.push(url.searchParams);
+    return respond({
+      data: {
+        public_id: identity,
+        revision: 'r1',
+        values: { name: 'Readable record', token: { set: true } },
+      },
+    });
+  });
+  const wrapper = mount(AdminApplication, { props: { session } });
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Readable record'));
+  expect(queries).toHaveLength(1);
+  expect(queries[0]!.get('kind')).toBe('record');
+  expect(queries[0]!.get('public_id')).toBe(identity);
+  expect(wrapper.text()).toContain('Set');
+  expect(wrapper.text()).not.toContain('Reference');
+  expect(wrapper.find('input:not([type="search"])').exists()).toBe(false);
+  session.pending.value = true;
+  await flushPromises();
+  expect(wrapper.text()).not.toContain('Readable record');
+  expect(queries).toHaveLength(1);
+});
+
+it('Admin automatic records refuse raw secrets and recover only through an explicit read retry', async () => {
+  window.history.replaceState({}, '', '/admin/app/settings');
+  let reads = 0;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    expect(init?.method ?? 'GET').toBe('GET');
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+    if (url.pathname === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    reads++;
+    return respond({
+      data: {
+        public_id: identity,
+        revision: 'r1',
+        values: {
+          name: 'Safe record',
+          token: reads === 1 ? 'forbidden-raw-secret' : { set: false },
+        },
+      },
+    });
+  });
+  const wrapper = mount(AdminApplication, {
+    props: { session: sessionFixture() },
+  });
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Retry'));
+  expect(wrapper.html()).not.toContain('forbidden-raw-secret');
+  expect(wrapper.text()).not.toContain('Safe record');
+  expect(reads).toBe(1);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Retry')!
+    .trigger('click');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Safe record'));
+  expect(wrapper.text()).toContain('Not set');
+  expect(reads).toBe(2);
+});
+
 it('Admin automatic tables dispatch declared collections once and clear rows on session loss', async () => {
   window.history.replaceState({}, '', '/admin/app/settings');
   const session = sessionFixture();

@@ -1057,3 +1057,61 @@ No broad suite/type/static/build/scanner/browser acceptance was run; point 12 ow
 final verification. No Docker resources were created/removed. Active services,
 development/base data, durable volumes, Qdrant/model caches, backups and reports
 were preserved. Mandatory hooks and staged incremental knowledge freshness apply.
+
+## Point 5 checkpoint — controlled fields and native record presentation
+
+2026-10-30: delivered public AdminField/validateAdminField and exact exported
+props/emits/lookup input for controlled module/App field composition. Defaults
+reuse FormField/TextInput/NumberInput/Checkbox/Select/TagsInput, merging safe
+static hints with owner errors. Integer input retains incomplete/out-of-range
+drafts without rounding or stale valid fallback; UUIDv7/UTC/choices/required and
+Unicode max-length hints remain subordinate to backend validation. UTC text has
+no implicit browser-timezone conversion. Secret set-state never fills a password
+input; read-only values show only Set/Not set. IME and English shared controls
+retain their established behavior.
+
+Field-specific owned components precede the inherited provider and supplied
+default. Missing/stale declared builds never fall back; each field isolates render
+failures. Read-only/descriptor/busy state blocks even custom update emissions.
+Optional field-bound lookup providers use shared bounded Select cursor/cancellation
+and initial/off-page labels; missing providers refuse free-text lookup input.
+The public customer fixture consumes only Admin/UI facades and exact typed props.
+These presentation inputs confer no grant, operation or transport authority.
+
+Default record sections now mount one existing useAdminResource read lane for
+the projected public subject or owning singleton. They render only returned
+readable values, retain native account/authority/source fencing and descriptor/
+visibility refresh, and offer explicit safe read retry. Raw secret responses refuse
+the whole record before rendering. All default record fields remain read-only;
+no editable form/Save/command or competing write controller is claimed.
+
+Grounding: local knowledge current at entry (201 documents / 9,802 chunks), bounded
+current-intent retrieval and original Admin/frontend/forms/components/public-boundary
+sources. Frontend/Vue/Tailwind and secret/browser security skills and relevant
+references were consulted. Installed Tailwind is 4.3.3; no Laravel API, schema,
+configuration or dependency changed. Canonical Admin status/frontend/changelog,
+forms/components and public API guidance are synchronized. Owner frontend guidance
+and the separately authored customer frontend skill already direct consumers to
+canonical Admin delivery status, forms, public facades and shared session/build
+rules; both instruction products need no duplicated rule or reference change.
+Admin remains unreleased development 0.1.0 with its real initial installation edge;
+this frontend delivery needs no intermediate version/history or migration.
+
+Necessary focused diagnostics resolved precision/secret/input/replacement and
+native read-composition uncertainty. Supported frontend selections first passed
+six field scenarios (3.86 seconds), then two record scenarios and the field-bound
+lookup scenario (3.93 seconds). After adding invalid-calendar-date refusal,
+projected subject identity, associated read-only text and per-field render-failure
+isolation, the affected selection
+`python3 tools/maintainer/test-frontend --filter='Admin fields|Admin automatic records'`
+passed **10 tests**, 4.00 seconds, native exit 0 / cleanup 0. Existing Vite warning
+concerns only generated Vitest runner dynamic import. Reports are preserved.
+No broad suite/type/static/build/scanner/browser-matrix/native acceptance or
+rendered/release PASS is claimed; point 12 retains final verification.
+
+Point 5 remains OPEN: editable record form orchestration and automatic lookup
+adaptation, commands/confirmation, selection/views/exports/bulk, dirty navigation
+and shared aggregate revision/read reconciliation remain. Native atomic execution
+remains point 6. No Docker resources or databases were created/removed; active
+development services/data, durable volumes, Qdrant/model caches, backups and reports
+were preserved. Mandatory hooks and staged incremental knowledge freshness apply.

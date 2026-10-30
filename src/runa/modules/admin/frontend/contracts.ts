@@ -277,6 +277,23 @@ export interface AdminTableController {
 export interface AdminResourceTableProps {
   controller: AdminTableController;
 }
+/** The owning consumer supplies an authorized, field-bound lookup lane. */
+export interface AdminFieldLookup {
+  provider: import('@/runa/ui').SelectionProvider;
+  selectedOptions?: readonly import('@/runa/ui').SelectOption[];
+}
+export interface AdminFieldProps {
+  field: AdminFieldData;
+  modelValue: AdminFieldValue;
+  errors: readonly string[];
+  readonly: boolean;
+  busy: boolean;
+  lookup?: AdminFieldLookup | undefined;
+  components?: AdminComponentRegistry | undefined;
+}
+export type AdminFieldEmits = {
+  'update:modelValue': [value: AdminFieldValue];
+};
 export interface AdminResourceTableSlots {
   toolbar?(scope: { feedbackTarget: string }): VNode[];
   actions?(scope: { row: AdminRecord }): VNode[];

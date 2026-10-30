@@ -8,6 +8,7 @@ import type {
 import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminTableSection from './AdminTableSection.vue';
+import AdminRecordSection from './AdminRecordSection.vue';
 const props = defineProps<
   AdminSectionPresentationProps & {
     components?: AdminComponentRegistry | undefined;
@@ -43,8 +44,12 @@ const replacement = computed(
       :page="page"
       :section="section.key"
     />
-    <p v-else class="text-sm text-muted">
-      No controls are available for this section.
-    </p>
+    <AdminRecordSection
+      v-else
+      :key="section.key"
+      :page="page"
+      :section="section.key"
+      :components="components"
+    />
   </Card>
 </template>
