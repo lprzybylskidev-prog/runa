@@ -73,6 +73,18 @@
     {
       "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthAdministration; use Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery; use Runa\\Support\\Modules\\Api\\ModuleApis; function directory(ModuleApis $apis): void { $api = $apis->resolve('runa.auth', AuthAdministration::class, '1.0.0'); $api->users(new UserDirectoryQuery(limit: 25, search: 'Example')); }",
       "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Admin\\Contracts\\AdminOperations; use Runa\\Support\\Modules\\Api\\ModuleApis; function diagnostics(ModuleApis $apis): array { return $apis->resolve('runa.admin', AdminOperations::class, '1.0.0')->read('diagnostics'); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Integration\\Core\\AdminOperations;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\OperationalParticipant;",
+      "expected": ["reserved_api_import"]
     }
   ]
 }

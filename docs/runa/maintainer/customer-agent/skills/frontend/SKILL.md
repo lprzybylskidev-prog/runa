@@ -61,3 +61,8 @@ For Permissions/Audit administrative defaults, follow
 `docs/runa/handbook/modules/audit/administration.md`. Their public facades and
 AdminRecordBrowser compose owning guarded workflows; App presentation replacements
 retain the shared session, dirty guards and native proof/review protocols.
+
+For operational dashboard/editor replacements, follow
+`docs/runa/handbook/modules/admin/frontend.md#operational-dashboard-and-replacements`
+and the owning fixed operation catalogue. Keep the shared controller's session,
+dirty-draft, explicit retry and native pending/recovery semantics in App composition.

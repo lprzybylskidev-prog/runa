@@ -23,7 +23,10 @@
   },
   "providers": [],
   "declarations": {
-    "apis": ["Runa\\Modules\\Admin\\Definitions\\AdminApi"],
+    "apis": [
+      "Runa\\Modules\\Admin\\Definitions\\AdminApi",
+      "Runa\\Modules\\Admin\\Definitions\\OperationsApi"
+    ],
     "health": [],
     "lifecycle": ["Runa\\Modules\\Admin\\Definitions\\AdminLifecycle"],
     "settings": [],

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Card } from '@/runa/ui';
+import AdminOperations from './AdminOperations.vue';
+import type { AdminController } from './contracts';
 import type { AdminBootstrap, AdminComponentRegistry } from './contracts';
 import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminComponentBoundary from './AdminComponentBoundary.vue';
 const props = defineProps<{
   bootstrap: AdminBootstrap;
+  admin?: AdminController | undefined;
   components?: AdminComponentRegistry | undefined;
 }>();
 const presentation = useAdminPresentation();
@@ -13,6 +16,11 @@ const presentation = useAdminPresentation();
 <template>
   <div class="space-y-6">
     <h1 class="text-xl font-semibold">Administration</h1>
+    <component
+      v-if="admin"
+      :is="presentation.operations ?? AdminOperations"
+      :admin="admin"
+    />
     <p
       v-if="!props.bootstrap.dashboard.widgets.length"
       class="text-sm text-muted"

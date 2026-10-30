@@ -6,10 +6,12 @@ use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\IntegrationDefinition;
 use Runa\Contracts\Modules\IntegrationProvider;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\ModuleFramework\Api\BoundaryValues;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\NoOperationalParticipation;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\VersionCompatibility;
 use RuntimeException;
@@ -17,7 +19,7 @@ use RuntimeException;
 /** Trusted management writes; no HTTP management or implicit module activation. */
 final readonly class ModuleIntegrations
 {
-    public function __construct(private Connection $connection, private ModuleRegistry $registry, private ModuleDeclarations $declarations, private OperationGuard $guard) {}
+    public function __construct(private Connection $connection, private ModuleRegistry $registry, private ModuleDeclarations $declarations, private OperationGuard $guard, private OperationalParticipant $history = new NoOperationalParticipation) {}
 
     /** @return array<string, array{IntegrationDefinition, IntegrationProvider}> */
     private function definitions(ModuleRecord $record): array
@@ -70,7 +72,7 @@ final readonly class ModuleIntegrations
         return $this->connection->transaction(function () use ($module, $key, $enabled, $config, $expectedGeneration): int {
             $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
             $snapshot = $this->registry->snapshot();
-            if ($snapshot->generation !== $expectedGeneration || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
+            if ($snapshot->generation !== $expectedGeneration || $snapshot->fenced !== [] || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
                 throw new RuntimeException('Integration revision changed or transition unresolved.');
             }
             $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
@@ -82,6 +84,8 @@ final readonly class ModuleIntegrations
             $values[$key] = ['enabled' => $enabled, 'config' => $config];
             $this->connection->table('shared.modules')->where('module_id', $module)->update(['integration_values' => json_encode((object) $values, JSON_THROW_ON_ERROR), 'updated_at' => now()]);
             $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
+
+            $this->history->recording($this->connection, $module, 'integration.configure', ['key' => $key, 'enabled' => $enabled, 'generation' => $expectedGeneration + 1]);
 
             return $expectedGeneration + 1;
         });

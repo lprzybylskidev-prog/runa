@@ -12,7 +12,7 @@ collection sections and controlled fields, then completes generated record forms
 independent commands/previews, reconciliation, dirty navigation and owning
 collection adapter composition. Point 6 supplies native atomic preview/Save,
 source-owned participants and initial Auth profile/Permissions assignment composition.
-Point 7 delivers complete [Auth administration](../auth/administration.md). Point 8 supplies [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md); framework operations/settings retain points 9–10.
+Point 7 delivers complete [Auth administration](../auth/administration.md). Point 8 supplies [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md); point 9 supplies guarded framework operations and module settings. Application global settings retain point 10.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -123,7 +123,7 @@ nested replacement providers. Bootstrap returns authorized owners/pages/widgets
 and current source-default presentation (revision 0). Auth declares Users, Authentication policy and Bulk session revocation pages; the catalogue includes only currently authorized pages. App providers can supply
 independent pages and matching compiled/static components. Section reads,
 independent command/preview and bounded aggregate HTTP transports are delivered;
-Auth/Permissions administration, the read-only Audit viewer and native profile/ordinary assignment composition are delivered. Framework operations and DB-backed presentation retain points 9–10. Source/component
+Auth/Permissions administration, the read-only Audit viewer and native profile/ordinary assignment composition are delivered. Framework operations and module settings are delivered in point 9; application global settings and DB-backed presentation retain point 10. Source/component
 tests are not final rendered/release acceptance.
 The welcome catalogue remains independent localized manifest metadata.
 
@@ -143,8 +143,10 @@ registry/cached availability/management reads, and reject generation changes.
 Projection includes only module identity/kind, source/installed versions, registry
 flags, dependencies, availability and observation timestamps/pass state. It excludes
 paths, source hashes, settings, secret values, work payloads and native error text.
-No diagnostic HTTP operation or management mutation is exposed yet; point 9 owns
-that wiring and transactional Audit additions. No arbitrary engine dispatcher exists.
+Point 9 exposes these bounded diagnostics and allowed native operations through
+[AdminOperations](operations.md#operational-http-and-presentation-contract-point-9).
+Engine-owned transactional Audit covers meaningful operational writes; maintenance
+admission and CLI recovery remain unchanged. No arbitrary engine dispatcher exists.
 
 Point 3 implements the declaration and projection subset described in
 [declarations](declarations.md#delivered-discovery-and-read-projection).

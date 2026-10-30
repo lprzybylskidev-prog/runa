@@ -411,3 +411,10 @@ are exported by `@/runa/permissions`; Audit history/detail defaults by `@/runa/a
 Use the exact [record-browser contract](../../modules/admin/frontend.md#record-browser)
 and owning [Permissions](../../modules/permissions/administration.md) /
 [Audit](../../modules/audit/administration.md) presentation signatures.
+
+Admin operational defaults `AdminOperations`, `AdminOperationalEditor` and
+`AdminOperationResult` plus `useAdminOperations` are exported by `@/runa/admin`.
+Their typed props/slots/controller and replacement keys are documented in
+[operational dashboard composition](../../modules/admin/frontend.md#operational-dashboard-and-replacements).
+They reuse shared controls and retain native lifecycle, settings and cooperative
+work outcomes; no copied session/proof or foreign engine logic belongs in App views.

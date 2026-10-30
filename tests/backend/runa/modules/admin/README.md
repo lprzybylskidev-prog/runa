@@ -51,3 +51,11 @@ summaries from redacted detail, exact entity filters, unknown references and cur
 grant revocation. Frontend cases author dirty record selection, immutable/source
 presentation, effective-account cursor fencing and escaped entity history links.
 Built default E2E scenarios cover desktop/tablet/mobile light/dark in final verification.
+
+Point-9 operational fixtures author exact-grant and maintenance refusal, bounded
+cached diagnostics, safe settings/set-state, generation staleness, actor-bound
+Optional review, reservation/publication/compensation Audit failure and cooperative
+cancellation rollback/idempotency/privacy. Disposable module sources/queue rows are
+owned and removed by OperationalModule. Frontend scenarios cover delayed account
+responses, no replay, frozen destructive input, denied controls and retained secret
+drafts after conflict; responsive/theme browser scenarios remain final acceptance.

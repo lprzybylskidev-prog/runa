@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\JobDefinition;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\PublicEvent;
 use Runa\Contracts\Modules\WorkDecision;
@@ -20,6 +21,7 @@ use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\OperationScope;
 use Runa\ModuleFramework\Events\EventSubscriptions;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\NoOperationalParticipation;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use RuntimeException;
 use Throwable;
@@ -31,7 +33,7 @@ final readonly class ModuleWork
 {
     public const ACTIVE = ['pending', 'running', 'failed', 'recovery_required'];
 
-    public function __construct(private Connection $connection, private ModuleRegistry $registry, private WorkDefinitions $definitions, private OperationGuard $guard, private OperationScope $scope, private Encrypter $encrypter, private Factory $queues, private ?EventSubscriptions $subscriptions = null) {}
+    public function __construct(private Connection $connection, private ModuleRegistry $registry, private WorkDefinitions $definitions, private OperationGuard $guard, private OperationScope $scope, private Encrypter $encrypter, private Factory $queues, private ?EventSubscriptions $subscriptions = null, private OperationalParticipant $history = new NoOperationalParticipation) {}
 
     /** Database queue is the managed durable transport. Insert work and envelope atomically.
      * @param  array<array-key, mixed>  $payload
@@ -271,9 +273,26 @@ final readonly class ModuleWork
     /** Cooperative request only. Never confirms cancellation or kills a process. */
     public function requestCancellation(string $id): WorkStatus
     {
-        $this->query($id)->whereIn('status', self::ACTIVE)->update(['cancel_requested' => true, 'updated_at' => now()]);
+        return $this->connection->transaction(function () use ($id): WorkStatus {
+            $this->lock();
+            $row = $this->query($id)->lockForUpdate()->first();
+            if ($row === null) {
+                throw new RuntimeException('Unknown module work.');
+            }
+            $status = $this->status($id);
+            if (! in_array($status->status, self::ACTIVE, true)) {
+                return $status;
+            }
+            if ($status->cancellable !== true) {
+                throw new RuntimeException('Module work does not allow cancellation.');
+            }
+            if (! $row->cancel_requested) {
+                $this->query($id)->update(['cancel_requested' => true, 'updated_at' => now()]);
+                $this->history->recording($this->connection, $status->moduleId, 'work.cancel_requested', ['operation' => $id]);
+            }
 
-        return $this->status($id);
+            return $this->status($id);
+        });
     }
 
     public function status(string $id): WorkStatus

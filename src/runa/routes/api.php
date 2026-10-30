@@ -20,6 +20,11 @@ Route::get('/modules/frontend', ModuleFrontendController::class)->name('api.modu
 Route::get('/admin', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.bootstrap');
 
 Route::get('/admin/entry', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.entry');
+Route::get('/admin/operations/{operation}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where('operation', '[a-z][a-z.]*')->name('runa.admin.operations.read');
+Route::post('/admin/operations/{operation}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where('operation', '[a-z][a-z.]*')->name('runa.admin.operations.execute');
+
 Route::get('/admin/{owner}/{page}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
     ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}'])
     ->name('runa.admin.page.read');

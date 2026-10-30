@@ -121,6 +121,7 @@ const validPath = computed(
         <AdminDashboard
           v-else
           :bootstrap="bootstrap"
+          :admin="controller"
           :components="components"
         />
       </slot>

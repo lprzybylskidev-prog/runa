@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-30
 
+- Deliver guarded operational dashboard, Optional lifecycle review/status/recovery, module settings/integrations/health/work controls and public replacement/controller seams; preserve CLI-only maintenance and native independent runners.
+
 - Add public AdminRecordBrowser composition for guarded cursor catalogue/detail selection with dirty-draft preservation; compose Permissions and Audit owning defaults without new business engines.
 
 - Compose Auth-owned Users/policy/bulk administrative pages and independent native actions; expose reusable section dispatch/failure boundaries and read-lane clear. Selecting a directory subject overrides initial descriptor IDs and account/page ownership changes clear that selection.

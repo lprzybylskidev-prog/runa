@@ -4,10 +4,12 @@ namespace Runa\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\TransactionSecurity;
+use Runa\Integration\Core\AdminOperationalAuthority;
 use Runa\Integration\Core\AuditParticipation;
 use Runa\Integration\Core\AuthAuditActor;
 use Runa\Integration\Core\AuthAuthorizationIdentity;
@@ -26,11 +28,13 @@ final class CoreIntegrationServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(AuditSuppression::class);
+        $this->app->scoped(AdminOperationalAuthority::class);
         $this->app->bindIf(TransactionSecurity::class, \Runa\Integration\Core\TransactionSecurity::class);
         $this->app->bindIf(AuditActorResolver::class, AuthAuditActor::class);
         $this->app->bindIf(AuthorityGuard::class, ProtectedAuthority::class);
         $this->app->bindIf(OperatorAuthority::class, OperatorPermissions::class);
         $this->app->bindIf(BulkUserSelection::class, PermissionUserSelection::class);
+        $this->app->bindIf(OperationalParticipant::class, AuditParticipation::class);
         $this->app->bindIf(SettingsParticipant::class, AuditParticipation::class);
         $this->app->bindIf(PreparationParticipant::class, AuditParticipation::class);
         $this->app->bindIf(OperationAuthorizer::class, PermissionAuthorizer::class);

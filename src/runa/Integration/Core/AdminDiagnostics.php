@@ -39,6 +39,7 @@ final readonly class AdminDiagnostics
                     'source_present' => $record->sourcePresent, 'source_version' => $record->sourceVersion,
                     'installed_version' => $record->installedVersion, 'available' => $status->available,
                     'health' => $status->ownHealth,
+                    'reasons' => array_values(array_unique(array_map(static fn ($reason): string => $reason->code, $status->reasons))),
                     'required' => $record->required, 'optional' => $record->optional,
                     // Native blocker paths and diagnostic payloads stay private.
                     'diagnostic' => $status->available ? null : 'module_unavailable',

@@ -344,3 +344,11 @@ PermissionsAccess 2.0.0, PermissionsAuthority/Permissions and AuditReads 1.0.0.
 See [Permissions administration](../modules/permissions/administration.md) and
 [Audit administration](../modules/audit/administration.md). No new backend public
 signature, foreign private import or Admin reverse dependency is introduced.
+
+AdminOperations 1.0.0 is a guarded Admin consumption API for its finite operational
+views/commands. Complete signatures, source homes, grants, safe projections and
+native runner boundaries are owned by [Admin operations](../modules/admin/operations.md#operational-http-and-presentation-contract-point-9).
+The Integration/Core bridge and OperationalParticipant remain reserved framework
+integration; consumers cannot write Audit or invoke engines through them. Public
+Vue replacements use AdminOperations/useAdminOperations from `@/runa/admin` and
+retain the shared AdminController/session owner.

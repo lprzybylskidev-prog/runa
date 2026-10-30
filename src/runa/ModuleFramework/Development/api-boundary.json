@@ -150,6 +150,7 @@
     "Runa\\Modules\\Permissions\\Contracts\\RoleDeletionPreview",
     "Runa\\Modules\\Permissions\\Contracts\\UserSelection",
     "Runa\\Modules\\Admin\\Contracts\\AdminAccess",
+    "Runa\\Modules\\Admin\\Contracts\\AdminOperations",
     "Runa\\Contracts\\Modules\\TransactionalMutation",
     "Runa\\Contracts\\Modules\\MutationDefinition",
     "Runa\\Contracts\\Modules\\MutationAccess",
@@ -363,6 +364,18 @@
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
       "src/runa/Support/Modules/Data/ModuleTransactions.php",
       "src/runa/modules/auth/backend/Support/TransactionSecurity.php"
+    ],
+    "Runa\\Contracts\\Modules\\OperationalParticipant": [
+      "src/runa/Contracts/Modules/OperationalParticipant.php",
+      "src/runa/ModuleFramework/NoOperationalParticipation.php",
+      "src/runa/Integration/Core/AuditParticipation.php",
+      "src/runa/modules/audit/backend/Participation.php",
+      "src/runa/ModuleFramework/ModuleHealth.php",
+      "src/runa/ModuleFramework/ModuleTransitions.php",
+      "src/runa/ModuleFramework/Events/ModuleIntegrations.php",
+      "src/runa/Support/Modules/Work/ModuleWork.php",
+      "src/runa/Providers/CoreIntegrationServiceProvider.php",
+      "src/runa/Providers/ModuleFrameworkServiceProvider.php"
     ]
   },
   "internal_callers": {

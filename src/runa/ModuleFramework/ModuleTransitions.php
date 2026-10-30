@@ -8,6 +8,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\LifecyclePlan;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\TransitionContext;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Support\Modules\Work\ModuleWork;
@@ -32,6 +33,7 @@ final class ModuleTransitions
         private readonly Encrypter $encrypter,
         private readonly string $platformVersion,
         private readonly ModuleHealth $health,
+        private readonly OperationalParticipant $history = new NoOperationalParticipation,
     ) {}
 
     public function preview(string $intent, string $target): AdministrativePreview
@@ -111,6 +113,7 @@ final class ModuleTransitions
                     $this->connection->table('shared.module_work')->whereIn('module_id', $this->connection->table('shared.modules')->whereIn('module_id', $preview->graph->affected)->select('id'))
                         ->whereIn('status', ModuleWork::ACTIVE)->update(['cancel_requested' => true, 'updated_at' => now()]);
                 }
+                $this->history->recording($this->connection, $preview->graph->target, 'module.transition.reserved', ['operation' => $id, 'intent' => $preview->graph->intent, 'generation' => $preview->graph->generation]);
                 $this->bump(); // Publish fence and cooperative work signals with unchanged flags.
             });
 
@@ -296,7 +299,14 @@ final class ModuleTransitions
     private function save(string $id, string $status, array $payload): void
     {
         $this->assertRunner();
-        $this->connection->table('shared.module_transitions')->where('public_id', $id)->update(['status' => $status, 'payload' => $this->encode($payload), 'updated_at' => now()]);
+        $this->connection->transaction(function () use ($id, $status, $payload): void {
+            $row = $this->connection->table('shared.module_transitions')->where('public_id', $id)->lockForUpdate()->first();
+            if ($row === null) {
+                throw new RuntimeException('Unknown module transition.');
+            }
+            $this->connection->table('shared.module_transitions')->where('public_id', $id)->update(['status' => $status, 'payload' => $this->encode($payload), 'updated_at' => now()]);
+            $this->history->recording($this->connection, $row->target, 'module.transition.'.$status, ['operation' => $id, 'intent' => $row->intent]);
+        });
     }
 
     /** @param Payload $payload */

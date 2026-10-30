@@ -6,6 +6,7 @@ use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\GraphBlocker;
 use Runa\Contracts\Modules\HealthContext;
 use Runa\Contracts\Modules\HealthDefinition;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\ModuleRecord;
 use RuntimeException;
@@ -17,7 +18,7 @@ final class ModuleHealth
     /** @var array<string, true> */
     private static array $running = [];
 
-    public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline) {}
+    public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline, private readonly OperationalParticipant $history = new NoOperationalParticipation) {}
 
     /** Trusted management write with optimistic concurrency; source policy validates every override.
      * @param  array<string, mixed>  $overrides
@@ -45,6 +46,7 @@ final class ModuleHealth
                 'health_observations' => '{}', 'updated_at' => now(),
             ]);
             $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
+            $this->history->recording($this->connection, $id, 'health.configure', ['revision' => $record->healthRevision + 1, 'generation' => $generation + 1]);
         });
     }
 

@@ -287,7 +287,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     total-count invention, edits or undo; optional current identity labels use guarded Auth.
   - Author owner policy/preview/step-up/Audit atomicity regressions and frontend
     interaction cases; update changed module versions/changelogs and public guides.
-- [ ] 9. Deliver dashboard, module controls, work and approved maintenance behavior.
+- [x] 9. Deliver dashboard, module controls, work and approved maintenance behavior.
   - Prerequisites: 2–5, 7–8; recorded ARCH-002 decision.
   - Dashboard versions/safe runtime summary, health/dependencies/freshness/filtering,
     module widgets and explicit diagnosis use existing observations/engines.
@@ -1496,3 +1496,114 @@ runners displayed and removed only disposable runa_test_test_1. No Docker resour
 were created or removed. Active services, base/development databases, durable data,
 Qdrant/model caches, backups and verification evidence were preserved. Point 8 is
 complete; point 9 is next. The roadmap and release remain active/open.
+
+## Point 9 completion — Operational dashboard and native controls — 2026-10-30
+
+Delivered AdminOperations 1.0.0 with named lazy GET/POST operational transport,
+fixed explicit views/commands, entry/password proof and exact per-operation grants.
+Cached diagnostics project platform/application/PHP versions, registry filters,
+source/installed versions, dependencies, safe reasons and observation timestamps;
+reads execute no diagnosis. Explicit diagnosis runs the existing independent engine.
+Optional enable/disable/unregister use actor-bound, ten-minute encrypted review of
+the complete native preview and fresh source/generation/plan/work checks. Status,
+resume/cancel/compensation and settings recovery retain native outcomes and fences.
+No shell/operator/install/update/maintenance-marker endpoint or availability
+exception is added; maintenance and failed Core recovery remain CLI-only.
+
+Health/integration configuration, lifecycle reservation/durable phases/publication/
+compensation and first cooperative work cancellation now participate in required
+Audit at their actual default PostgreSQL write boundary. Fixed Core wiring supplies
+the reserved OperationalParticipant; installed Audit/source failures fail closed.
+Framework-only isolated engines retain their no-Audit default. No configuration,
+secret, runner token or work payload enters this operational history. Settings use
+the existing publication/restore participant. Auth policy settings remain readonly
+here and use their dedicated reviewed owning workflow. Cooperative cancellation
+checks current declared capability under registry/work locks, is idempotent and
+never claims terminal completion. Synchronous Admin configuration re-admits the
+resulting registry inside its locked entry transaction after intentional generation
+publication; independent native runners execute outside that transaction.
+Request-scoped native authorization is repeated within reservation/publication
+participant transactions and always unwinds. Revocation during a lifecycle hook
+refuses publication and retains native reconciliation state.
+
+Default English dashboard composes persisted module health, independently isolated
+module widgets, source-typed settings/secret set-state, health overrides/integration
+maps, explicit lifecycle review and retained-operation/work controls. Public
+AdminOperations/AdminOperationalEditor/AdminOperationResult and useAdminOperations
+provide partial/full App presentation replacement without copied session/proof logic.
+One write lane fences account changes/late responses, freezes confirmed input,
+retains dirty drafts on failure/conflict and never replays writes. Successful
+publication reconciles reads; pending/recovery outcomes remain visible. Responsive
+light/dark browser scenarios are authored for final acceptance.
+
+### Grounding and focused uncertainty checks
+
+Knowledge was current at entry: 204 documents / 9,956 chunks, no missing/orphan
+chunks. Bounded current-intent retrieval was checked against original Admin
+operation contracts, framework health/lifecycle/settings/integration/work engines,
+Audit participation/storage, guarded API/entry/HTTP and frontend controller sources.
+Backend/Laravel/security/PostgreSQL/frontend/Vue/Tailwind guidance was applied;
+Boost supplied installed Laravel 13 transaction/lock and allowed-array documentation.
+
+Necessary supported focused diagnostics received these final native results:
+
+- Operational diagnostics/grants/redaction/manual maintenance: 1 test,
+  27 assertions PASS, 10.13 seconds, native exit 0 / cleanup 0.
+- Synchronous configuration/generation and actual Audit rollback, integration and
+  sensitive settings publication: 1 test, 26 assertions PASS, 9.74 seconds,
+  native exit 0 / cleanup 0. Initial failure exposed omitted participant wiring
+  in explicit engine factories; corrected in the owning service provider.
+- Optional reviewed transition, stale generation, reservation Audit failure and
+  native publication/status: 1 test, 18 assertions PASS, 8.67 seconds,
+  native exit 0 / cleanup 0.
+- Cooperative work cancellation/privacy/idempotency and Audit rollback:
+  1 test, 17 assertions PASS, 6.20 seconds, native exit 0 / cleanup 0.
+  The fixture refreshes a work singleton retained from pre-candidate test bootstrap;
+  runtime engine admission remains unchanged.
+- Waiting/resume/publication Audit failure/native compensation: 1 test,
+  14 assertions PASS, 6.03 seconds, native exit 0 / cleanup 0.
+- Auth reviewed-workflow isolation and independent read grants: 1 test,
+  15 assertions PASS, 5.35 seconds, native exit 0 / cleanup 0. Controller-local
+  refusal projection preserves Admin reason/scope despite Laravel pipeline rendering.
+- After request-scoped native authorization wiring, the selected synchronous
+  configuration and Optional lifecycle diagnostics passed together: 2 tests /
+  44 assertions, 19.27 seconds, native exit 0 / cleanup 0.
+- Mid-hook grant revocation, refused native publication, conservative resume and
+  request-scope unwind: 1 test / 12 assertions PASS, 7.28 seconds, native exit 0 /
+  cleanup 0.
+- Selected operational frontend diagnostics: 4 scenarios PASS, 4.28 seconds,
+  native exit 0 / cleanup 0. Corrected shared HTTP prefix/query composition and
+  awaited real browser response completion. No application Vue warning remains;
+  the existing Vite module-runner dynamic-import warning is tooling output.
+- Public consumer/reserved-boundary fixture diagnostic: 1 test PASS, 0.05 seconds,
+  native exit 0 / cleanup 0.
+
+Additional authored actor/expiry/tampered/source/revocation cases and responsive
+browser acceptance await point 12, alongside complete backend/frontend/static/
+security/native installation/update/concurrency checks. No broad suite, rendered
+acceptance, deployment or release PASS is claimed. One attempted concurrent runner
+was refused by the checkout suite lock before execution; the selected frontend
+run subsequently completed normally.
+
+### Versions, documentation, instruction products and resources
+
+Admin remains its unreleased creation candidate 0.1.0; Audit remains the unreleased
+1.1.0 candidate with its existing admin_history source edge. These additive guarded
+Admin and reserved Audit integration additions require no extra version-only edge,
+public Audit API change or data migration. Auth/Permissions remain 2.0.0. Platform
+VERSION, feature/0.7.0, published tags and predecessor records are unchanged.
+
+Synchronized Admin delivery/operations/frontend contracts, public boundary/component
+catalogue, framework operational Audit guidance, module changelogs, consumer and
+central test inventories. Owner frontend layout reference and separately authored
+customer frontend skill route to the canonical operational composition guide.
+Root owner/customer AGENTS and backend/domain skill entrypoints need no added rule:
+existing guarded ownership, atomic Audit, App presentation and final-only verification
+requirements cover this capability; no authority/security/dependency policy changes.
+
+Stage and incrementally refresh knowledge before the mandatory completion hooks.
+Supported backend runners displayed and removed only runa_test_test_1; fixture-owned
+Optional sources, work/queue and transition rows were removed. No task Docker
+containers, networks, image tags or volumes were created or removed. Active services,
+base/development databases, Qdrant/model caches, backups and all evidence remain.
+Point 9 is complete; point 10 is next. Roadmap/release remain active/open.

@@ -46,13 +46,27 @@ final readonly class AdminEntry
      */
     public function read(Closure $read): mixed
     {
+        return $this->run($read, false);
+    }
+
+    /** Trusted synchronous configuration may deliberately publish a registry generation.
+     * @template T @param Closure(OperationContext):T $write @return T
+     */
+    public function write(Closure $write): mixed
+    {
+        return $this->run($write, true);
+    }
+
+    /** @template T @param Closure(OperationContext):T $read @return T */
+    private function run(Closure $read, bool $publishes): mixed
+    {
         if ($this->principals->current() === null) {
             throw new OperationRejected('authentication_required', 'runa.admin', 'enter', 401);
         }
         // Applicable on-use health checks run before acquiring the entry transaction.
         $this->guard->enter('runa.admin', new ApiOperation('enter', 'runa.admin.enter'));
 
-        return $this->database->connection()->transaction(function (Connection $connection) use ($read): mixed {
+        return $this->database->connection()->transaction(function (Connection $connection) use ($read, $publishes): mixed {
             $connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first()
                 ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'enter');
             $this->authority->acquire($connection);
@@ -60,7 +74,13 @@ final readonly class AdminEntry
             $this->apis->resolve('runa.auth', AuthStepUp::class, '1.0.0')
                 ->assertVerified('runa.admin.enter', 'password', 300, false);
             $result = $read($context);
-            $this->guard->assertCurrent($context);
+            if ($publishes) {
+                // Re-admit the resulting registry while authority/session locks remain held.
+                $current = $this->guard->enter('runa.admin', new ApiOperation('enter', 'runa.admin.enter'));
+                $this->guard->assertCurrent($current);
+            } else {
+                $this->guard->assertCurrent($context);
+            }
 
             return $result;
         });

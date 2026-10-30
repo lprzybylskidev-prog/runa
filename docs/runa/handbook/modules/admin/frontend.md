@@ -14,8 +14,9 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
-and initial profile/access record adapters; complete Core pages/operations and
-global settings retain points 9–10. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+and initial profile/access record adapters. Point 9 delivers operational dashboard,
+module settings, lifecycle and work controls. Application global settings retain
+point 10. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -808,3 +809,55 @@ Permissions and Audit defaults export their named page/section components throug
 `@/runa/permissions` and `@/runa/audit`; exact supplied pages/protocols live in their
 [Permissions](../permissions/administration.md) and [Audit](../audit/administration.md)
 guides. No security/session ownership moves into customer presentation.
+
+## Operational dashboard and replacements
+
+`@/runa/admin` exports `AdminOperations`, `AdminOperationalEditor`,
+`AdminOperationResult`, `useAdminOperations`, `AdminOperationsController`,
+`AdminOperationView`, `AdminOperationCommand` and `AdminOperationData`.
+The dashboard composes operational content alongside independently isolated module
+widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
+`{ controller: AdminOperationsController }`. The component exposes `controller`.
+`AdminPresentation.operations?: Component` replaces that default with the same prop.
+
+`AdminOperationalEditor` props are `{ controller: AdminOperationsController;
+module: string; kind: 'settings' | 'health' | 'integrations'; writable?: boolean }`.
+`AdminPresentation.operationalEditor?: Component` replaces it with the same props;
+its `saved` event requests safe dashboard read reconciliation after publication.
+`AdminOperationResult` accepts `{ result: AdminOperationData }` and renders native
+outcomes/IDs, health reasons and cooperative cancellation without inventing success.
+These views reuse Card/Select/TextInput/NumberInput/Checkbox/ConfirmDialog and
+remain English. Settings use native types and secret set-state; unsupported custom
+types require a module-specific editor replacement. Source-validated health overrides
+and non-sensitive integration maps use controlled JSON input.
+
+`useAdminOperations(admin: AdminController): AdminOperationsController` owns one
+request/write lane, session/proof failure propagation, context cancellation, dirty
+navigation and confirmation. Returns `busy: ComputedRef<boolean>`;
+`dirty`, `conflict`: `Ref<boolean>`; `error: Ref<string>`;
+`confirmation: Ref<string|undefined>`; `snapshot: Ref<AdminOperationData|undefined>`;
+`changed`, `contextRevision`: `Ref<number>`; and these methods:
+
+```ts
+read(view: AdminOperationView, input?: AdminOperationData): Promise<AdminOperationData | undefined>
+execute(command: AdminOperationCommand, input: AdminOperationData, destructive?: boolean): Promise<AdminOperationData | undefined>
+refresh(filter?: string): Promise<void>
+confirm(accepted: boolean): void
+beforeLeave(): Promise<boolean>
+```
+
+`AdminOperationData = Record<string, AdminJson>`. The exact finite views/commands,
+inputs, grants and native result shapes are in the
+[operational transport contract](operations.md#operational-http-and-presentation-contract-point-9).
+Replacement editors set `dirty`, call `beforeLeave()` before target/editor changes,
+clear account-local data on `contextRevision`, and observe `changed` for refreshed
+reads. Keep dirty drafts during read refresh/conflicts; an accepted reload may
+replace them. Explicit retries only: never replay failed or cancelled writes.
+Context invalidation cancels confirmations, aborts observation of requests and
+removes prior snapshots; a cancelled write may have completed on the server.
+
+Lifecycle preview retains affected modules/active work and an opaque actor-bound
+review. Changing the intent/target discards it; Apply confirms the reviewed input
+and native execution rechecks it. Pending/recovery/failed results remain visible.
+Retained operation UUID controls invoke only native status/resume/cancel/recover;
+maintenance/update/Core failure still blocks all protected HTTP.

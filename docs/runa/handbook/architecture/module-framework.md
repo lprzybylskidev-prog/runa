@@ -157,7 +157,9 @@ Blockers contain only a stable code, complete root-to-failure path and optional 
 
 `optionalBlockers($consumer, $dependency)` inspects one declared optional edge's presence/source/version compatibility without recursive activation, including when optional references form cycles. An undeclared edge returns `optional_not_declared`. These diagnostics do not change the consumer's required graph. Both-side operational availability and integration toggles are checked by ModuleIntegrations; an empty optional blocker list does not establish operational readiness.
 
-The transition publisher constructs a new graph from a fresh snapshot under the registry publication lock and calls `assertCurrent($preview)`. This recomputes and compares the complete DTO, rejecting changed generations, altered cascades and blocked graphs. Calling it on a retained old graph only validates that old generation and cannot certify freshness. The lifecycle publisher adds module-owned policy revisions, installed-data compatibility, preparation readiness and durable ingress fences before flags can change. PHP/HTTP/queue work adapters enforce health and fences; classified command/schedule adapters use managed queue dispatch; event adapters enforce owned subscriptions and optional integration state. `graphReady()` reports graph validity alone; null installed versions do not become installed data through a preview. The graph planner itself executes no transitions. Management HTTP endpoints are not exposed.
+The transition publisher constructs a new graph from a fresh snapshot under the registry publication lock and calls `assertCurrent($preview)`. This recomputes and compares the complete DTO, rejecting changed generations, altered cascades and blocked graphs. Calling it on a retained old graph only validates that old generation and cannot certify freshness. The lifecycle publisher adds module-owned policy revisions, installed-data compatibility, preparation readiness and durable ingress fences before flags can change. PHP/HTTP/queue work adapters enforce health and fences; classified command/schedule adapters use managed queue dispatch; event adapters enforce owned subscriptions and optional integration state. `graphReady()` reports graph validity alone; null installed versions do not become installed data through a preview. The graph planner itself executes no transitions. Admin exposes the fixed authorized operational catalogue documented in
+[Admin operations](../modules/admin/operations.md); no generic management engine
+endpoint exists.
 
 ### Delivered administrative transitions and retained data
 
@@ -584,3 +586,16 @@ No provider boot grants permissions, installs data or starts a business handler.
 Independent App pages use the frozen AdminRegistry bootstrap contract without a
 module manifest. Rendering, writes and atomic participation retain their explicit
 [delivery status](../modules/admin/README.md#delivery-status-and-acceptance-ownership).
+
+### Operational Audit participation
+
+Framework `OperationalParticipant` is reserved integration, not a customer event
+writer. The fixed Core adapter resolves installed Audit participation at the actual
+default PostgreSQL transaction. Health/integration configuration, durable lifecycle
+reservation/progress/publication/compensation and first cooperative cancellation
+requests include required Audit there. Failure rolls back that boundary; installed
+Audit/source failure cannot silently degrade to the framework-only no-op default.
+Contexts contain technical identities/revisions only; never values, runner tokens
+or work payloads. Settings retain SettingsParticipant publication/restore history.
+Work cancellation checks declared cancellability and current active state under
+registry/work locks, remains idempotent and does not assert terminal cancellation.

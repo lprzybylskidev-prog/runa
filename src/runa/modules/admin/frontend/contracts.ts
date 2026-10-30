@@ -147,6 +147,8 @@ export type AdminComponentRegistry = Readonly<
   Record<string, { readonly buildId: string; readonly component: Component }>
 >;
 export interface AdminPresentation {
+  operations?: Component;
+  operationalEditor?: Component;
   layout?: Component;
   page?: Component;
   section?: Component;

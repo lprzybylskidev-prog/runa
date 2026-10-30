@@ -5,8 +5,9 @@
 Status: independent commands, native atomic profile/access Save and complete Auth
 administration are delivered in RM-2026-016 points 5–7. Auth owns its declarations,
 reads and operation adapters; [Auth administration](../auth/administration.md)
-records the exact grants, signatures, proofs and independent protocols. Point 8 delivers [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md). Framework operational pages/settings retain points 9–10. Cached private
-diagnostics are available internally; HTTP diagnostics remain point 9.
+records the exact grants, signatures, proofs and independent protocols. Point 8 delivers [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md). Point 9 delivers framework operational dashboard/settings/work through the fixed
+AdminOperations API below, with native transactional Audit. Application global
+settings remain point 10; complete release acceptance remains point 12.
 
 ## Core operation coverage
 
@@ -80,9 +81,9 @@ target/source/revision checks. No generic engine-method dispatcher is allowed.
 
 If a signature above is abbreviated, parameter/return types are inherited exactly
 from the explicitly named first signature, never inferred from an HTTP payload.
-Source inspection at point 1 confirms SettingsParticipant publication hooks exist;
-health configure, integration configure, lifecycle and cancellation need the new
-transactional Audit integration in point 9. A post-commit wrapper record is
+SettingsParticipant publication hooks retain their native behavior. Point 9 adds
+OperationalParticipant for health configuration, integration configuration,
+lifecycle boundaries and cancellation. A post-commit wrapper record is
 insufficient. Recovery retains pending/recovery_required and owner cancellation
 limits; do not show committed before native completion. The new transaction/Audit
 participation is internal; preserve current engine callers and signatures.
@@ -227,3 +228,59 @@ interfaces remain at their declared versions. The
 [native transaction contract](../../architecture/module-transactions.md) and
 [current composition guide](composition.md) supersede the original unchanged-API
 lock/preview ordering proposal. No generic framework method dispatch is introduced.
+
+## Operational HTTP and presentation contract (point 9)
+
+Owner: framework for engines, Admin for guarded coordination. Supported audience:
+application presentation through AdminOperations 1.0.0 and the `@/runa/admin`
+controller; the `Runa\Integration\Core\AdminOperations` implementation is reserved.
+Runtime mode: independent native runners; synchronous configuration uses the entry
+transaction. Exact guarded PHP signatures:
+
+```php
+interface AdminOperations
+{
+    /** @param array<string,mixed> $input @return array<string,mixed> */
+    public function read(string $view, array $input = []): array;
+    /** @param array<string,mixed> $input @return array<string,mixed> */
+    public function execute(string $command, array $input): array;
+}
+```
+
+Named GET `/api/admin/operations/{operation}` (`runa.admin.operations.read`) and
+POST at the same path (`runa.admin.operations.execute`) admit only the fixed
+views/commands below. No request selects a class, engine method, actor or SQL.
+Unknown keys, stale generations, malformed UUIDs and unreviewed lifecycle writes
+fail closed. Every invocation rechecks entry/password proof and its exact grant.
+
+Read views: `capabilities` (entry-only safe grant advertisement), `diagnostics` (`filter=enabled|registered|all`), `module` (`module`),
+`settings` (`module`), `integrations` (`module`), `work` (`module`, optional
+`limit=1..1000`), `work.status` (`id`), `modules.status` (`id`), `settings.status`
+(`id`). Module reads isolate unavailable settings/integration/health declarations.
+Configuration values are projected only under their owning grants; settings
+secrets expose set-state only. Auth policy settings use the dedicated Auth policy
+workflow rather than bypassing reviewed publication.
+
+Commands: `health.diagnose` (`module`), `health.configure` (`module`, `generation`,
+`overrides`), `modules.preview` (`module`, `intent=enable|disable|unregister`),
+`modules.apply` (`review`, `confirmed=true`), `modules.resume` / `modules.cancel`
+(`id`), `settings.update` (`module`, `generation`, `revision`, `patch`),
+`settings.recover` (`id`), `integrations.configure` (`module`, `generation`, `key`,
+`enabled`, `config`), `work.cancel` (`id`). Lifecycle review is a ten-minute,
+actor-bound authenticated encrypted capability over the complete native preview;
+apply recomputes it and the engine rechecks source, plans, work and generation.
+Only Optional targets are admitted. A request-scoped trusted authority check is
+repeated by native participants inside reservation/publication transactions; it
+unwinds on refusal and never changes CLI authority. Grant/proof loss during hooks
+fences publication and retains the native operation for authorized reconciliation.
+Results retain native terminal/pending/recovery
+statuses; refusal/failure never becomes committed success.
+
+Framework OperationalParticipant is reserved integration, implemented by Audit:
+`recording(Connection $connection, string $module, string $operation, array $context): void`.
+Only fixed technical identities/revisions enter history; configuration, secrets,
+runner tokens and private work payloads never do. Health/integration configuration,
+transition reservation/durable phases/publication/compensation and first cooperative
+cancellation requests record inside their actual PostgreSQL write transaction.
+Installed Audit refusal rolls back that boundary. Framework-only installations
+without Audit retain a no-op participant. Settings use existing SettingsParticipant.

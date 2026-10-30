@@ -23,3 +23,15 @@ export { resolveAdminComponent } from '../../../../modules/admin/frontend/compon
 export type * from '../../../../modules/admin/frontend/contracts';
 
 export { default as AdminRecordBrowser } from '../../../../modules/admin/frontend/AdminRecordBrowser.vue';
+
+export { default as AdminOperations } from '../../../../modules/admin/frontend/AdminOperations.vue';
+export { default as AdminOperationalEditor } from '../../../../modules/admin/frontend/AdminOperationalEditor.vue';
+export { useAdminOperations } from '../../../../modules/admin/frontend/useAdminOperations';
+export type {
+  AdminOperationsController,
+  AdminOperationView,
+  AdminOperationCommand,
+  AdminOperationData,
+} from '../../../../modules/admin/frontend/useAdminOperations';
+
+export { default as AdminOperationResult } from '../../../../modules/admin/frontend/AdminOperationResult.vue';

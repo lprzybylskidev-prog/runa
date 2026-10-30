@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
@@ -9,10 +10,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\ManagementWrite;
+use Runa\Contracts\Modules\Preparation;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Integration\Core\AdminDiagnostics;
 use Runa\Integration\Core\AdminHttpGuard;
+use Runa\Integration\Core\AdminOperationalAuthority;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
@@ -51,9 +54,12 @@ use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
+use Runa\Support\Modules\Work\ModuleWork;
 use Tests\Fixtures\AggregateCompetition;
 use Tests\Fixtures\CoreModuleStorage;
 use Tests\Fixtures\ModuleSources;
+use Tests\Fixtures\OperationalModule;
+use Tests\Fixtures\TransitionPolicy;
 use Tests\PlatformTestCase;
 
 uses(PlatformTestCase::class);
@@ -1224,4 +1230,241 @@ it('Audit Admin pages complete large native detail without weakening management 
     } while ($cursor !== null);
     expect(json_decode($parts['changes'], true))->toEqual($tree)->and(json_decode($parts['context'], true))->toEqual($tree);
     $this->getJson('/api/admin/runa.audit/history/sections/detail?public_id='.$reference->publicId.'&cursor=999')->assertUnprocessable();
+});
+
+it('exposes fixed operational diagnostics with exact grants redaction and maintenance fencing', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $this->getJson('/api/admin/operations/capabilities')->assertOk()->assertJsonPath('data.capabilities', []);
+    $this->getJson('/api/admin/operations/diagnostics')->assertForbidden();
+    ($this->adminGrant)('runa.admin.diagnostics.read');
+    $response = $this->getJson('/api/admin/operations/diagnostics')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+    expect($response->json('data.modules'))->toHaveCount(4);
+    foreach ($response->json('data.modules') as $module) {
+        expect(array_keys($module))->not->toContain('source_path', 'manifest_hash', 'settings', 'config', 'payload', 'lease_token');
+    }
+    $this->getJson('/api/admin/operations/diagnostics?filter=invalid')->assertUnprocessable();
+    $this->getJson('/api/admin/operations/diagnostics?actor=forged')->assertUnprocessable();
+    $this->postJson('/api/admin/operations/health.diagnose', ['module' => 'runa.auth'])->assertForbidden();
+    ($this->adminGrant)('runa.admin.health.diagnose');
+    $this->postJson('/api/admin/operations/health.diagnose', ['module' => 'runa.auth'])->assertOk()->assertJsonPath('data.health', 'healthy');
+    $this->postJson('/api/admin/operations/install', ['module' => 'runa.auth'])->assertUnprocessable();
+    $this->postJson('/api/admin/operations/shell', ['command' => 'anything'])->assertUnprocessable();
+    ($this->adminGrant)('runa.admin.modules.manage');
+    $this->postJson('/api/admin/operations/modules.preview', ['module' => 'runa.auth', 'intent' => 'disable'])->assertUnprocessable();
+    $marker = app()->storagePath('framework/maintenance/enabled');
+    File::ensureDirectoryExists(dirname($marker));
+    file_put_contents($marker, '');
+    try {
+        $this->getJson('/api/admin/operations/diagnostics')->assertServiceUnavailable();
+        $this->postJson('/api/admin/operations/health.diagnose', ['module' => 'runa.auth'])->assertServiceUnavailable();
+    } finally {
+        unlink($marker);
+    }
+});
+
+it('keeps Auth policy settings in their reviewed owner workflow and isolates read authority', function (): void {
+    foreach (['runa.admin.enter', 'runa.admin.settings.read', 'runa.admin.settings.manage'] as $code) {
+        ($this->adminGrant)($code);
+    }
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $response = $this->getJson('/api/admin/operations/settings?module=runa.auth')->assertOk()->assertJsonPath('data.editable', false);
+    $this->postJson('/api/admin/operations/settings.update', ['module' => 'runa.auth', 'generation' => $response->json('data.generation'), 'revision' => $response->json('data.revision'), 'patch' => ['email_verification' => 'required']])
+        ->assertForbidden()->assertJsonPath('reason', 'admin_owner_workflow_required');
+    $this->getJson('/api/admin/operations/work?module=runa.auth')->assertForbidden();
+    ($this->adminGrant)('runa.admin.work.read');
+    $this->getJson('/api/admin/operations/work?module=runa.auth&limit=1')->assertOk()->assertJsonStructure(['data' => ['work', 'truncated']]);
+});
+
+it('publishes synchronous operational configuration only with atomic Audit and current generation', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'diagnostics.read', 'health.configure', 'settings.read', 'settings.manage', 'integrations.manage'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $generation = app(ModuleRegistry::class)->snapshot()->generation;
+        $input = ['module' => $fixture->id, 'generation' => $generation, 'overrides' => ['interval' => 11]];
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'health.configure') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/health.configure', $input)->assertConflict();
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
+        }
+        expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($generation);
+        $this->postJson('/api/admin/operations/health.configure', $input)->assertOk()->assertJsonPath('data.status', 'committed');
+        expect(DB::table('runa_audit.events')->where('action', 'health.configure')->count())->toBe(1);
+        $this->postJson('/api/admin/operations/health.configure', $input)->assertConflict();
+        $config = ['module' => $fixture->id, 'generation' => app(ModuleRegistry::class)->snapshot()->generation, 'key' => 'history', 'enabled' => true, 'config' => ['mode' => 'safe']];
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'integration.configure') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/integrations.configure', $config)->assertConflict();
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
+        }
+        expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($config['generation']);
+        $this->postJson('/api/admin/operations/integrations.configure', $config)->assertOk();
+        $this->getJson('/api/admin/operations/integrations?module='.$fixture->id)->assertOk()->assertJsonPath('data.integrations.history.enabled', true);
+        $settings = $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertOk()->json('data');
+        $this->postJson('/api/admin/operations/settings.update', ['module' => $fixture->id, 'generation' => $settings['generation'], 'revision' => $settings['revision'], 'patch' => ['title' => 'Updated', 'credential' => 'private-setting-value']])->assertOk()->assertJsonPath('data.transition.status', 'succeeded');
+        $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertOk()->assertJsonPath('data.settings.credential.set', true)->assertJsonMissingPath('data.settings.credential.value')->assertDontSee('private-setting-value');
+    } finally {
+        $fixture->remove();
+    }
+});
+
+it('binds Optional lifecycle review to actor source generation and native Audit phases', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'modules.manage'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $preview = $this->postJson('/api/admin/operations/modules.preview', ['module' => $fixture->id, 'intent' => 'disable'])->assertOk()->assertJsonPath('data.ready', true)->json('data');
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => false])->assertUnprocessable();
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertConflict();
+        $preview = $this->postJson('/api/admin/operations/modules.preview', ['module' => $fixture->id, 'intent' => 'disable'])->assertOk()->json('data');
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'module.transition.reserved') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertConflict();
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
+        }
+        expect(DB::table('shared.module_transitions')->where('target', $fixture->id)->count())->toBe(0);
+        $response = $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertOk()->assertJsonPath('data.transition.status', 'succeeded');
+        $id = $response->json('data.transition.operationId');
+        $this->getJson('/api/admin/operations/modules.status?id='.$id)->assertOk()->assertJsonPath('data.transition.status', 'succeeded');
+        expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeFalse()
+            ->and(DB::table('runa_audit.events')->where('module', $fixture->id)->whereIn('action', ['module.transition.reserved', 'module.transition.succeeded'])->count())->toBe(2);
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertConflict();
+    } finally {
+        $fixture->remove();
+    }
+});
+
+it('records cooperative cancellation atomically without disclosing payloads or inventing completion', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'work.read', 'work.cancel', 'health.diagnose'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $this->postJson('/api/admin/operations/health.diagnose', ['module' => $fixture->id])->assertOk();
+        app()->forgetInstance(ModuleWork::class);
+        $id = app(ModuleWork::class)->dispatch($fixture->id, 'process', ['private' => 'private-work-payload']);
+        $this->getJson('/api/admin/operations/work.status?id='.$id)->assertOk()->assertDontSee('private-work-payload')->assertJsonPath('data.work.cancellationRequested', false);
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'work.cancel_requested') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/work.cancel', ['id' => $id])->assertConflict();
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
+        }
+        expect(DB::table('shared.module_work')->where('public_id', $id)->value('cancel_requested'))->toBeFalse();
+        $this->postJson('/api/admin/operations/work.cancel', ['id' => $id])->assertOk()->assertJsonPath('data.work.cancellationRequested', true)->assertJsonPath('data.work.status', 'pending');
+        $this->postJson('/api/admin/operations/work.cancel', ['id' => $id])->assertOk();
+        expect(DB::table('runa_audit.events')->where('action', 'work.cancel_requested')->count())->toBe(1);
+    } finally {
+        $fixture->remove();
+    }
+});
+
+it('retains native waiting and compensation states under lifecycle publication Audit failure', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'modules.manage'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        TransitionPolicy::$prepare[$fixture->id] = static fn () => new Preparation('waiting');
+        $preview = $this->postJson('/api/admin/operations/modules.preview', ['module' => $fixture->id, 'intent' => 'disable'])->assertOk()->json('data');
+        $pending = $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertOk()->assertJsonPath('data.transition.status', 'pending')->json('data.transition.operationId');
+        $this->getJson('/api/admin/operations/modules.status?id='.$pending)->assertOk()->assertJsonPath('data.transition.status', 'pending');
+        unset(TransitionPolicy::$prepare[$fixture->id]);
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'module.transition.succeeded') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/modules.resume', ['id' => $pending])->assertOk()->assertJsonPath('data.transition.status', 'failed');
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
+        }
+        expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeTrue()
+            ->and(DB::table('runa_audit.events')->where('module', $fixture->id)->where('action', 'module.transition.succeeded')->count())->toBe(0)
+            ->and(DB::table('runa_audit.events')->where('module', $fixture->id)->where('action', 'module.transition.failed')->count())->toBe(1);
+    } finally {
+        $fixture->remove();
+    }
+});
+
+it('rejects expired foreign altered source and revoked Optional review capabilities', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'modules.manage'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $preview = $this->postJson('/api/admin/operations/modules.preview', ['module' => $fixture->id, 'intent' => 'disable'])->assertOk()->json('data');
+        $cipher = app(Encrypter::class);
+        $sealed = json_decode($cipher->decrypt($preview['review'], false), true, flags: JSON_THROW_ON_ERROR);
+        $foreign = $sealed;
+        $foreign['actor'] = (string) Str::uuid7();
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $cipher->encrypt(json_encode($foreign, JSON_THROW_ON_ERROR), false), 'confirmed' => true])->assertUnprocessable();
+        $expired = $sealed;
+        $expired['expires'] = now()->getTimestamp();
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $cipher->encrypt(json_encode($expired, JSON_THROW_ON_ERROR), false), 'confirmed' => true])->assertUnprocessable();
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'].'tampered', 'confirmed' => true])->assertConflict();
+        $path = $fixture->directory.'/module.json';
+        $original = file_get_contents($path);
+        $manifest = json_decode($original, true, flags: JSON_THROW_ON_ERROR);
+        $manifest['description']['en'] = 'Changed source';
+        file_put_contents($path, json_encode($manifest, JSON_THROW_ON_ERROR));
+        try {
+            $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertConflict();
+        } finally {
+            file_put_contents($path, $original);
+        }
+        $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.admin.modules.manage')->value('id');
+        DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', $permission)->delete();
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertForbidden();
+        expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeTrue()
+            ->and(DB::table('shared.module_transitions')->where('target', $fixture->id)->count())->toBe(0);
+    } finally {
+        $fixture->remove();
+    }
+});
+
+it('rechecks native publication authority after a lifecycle hook and unwinds request authorization', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'modules.manage'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $preview = $this->postJson('/api/admin/operations/modules.preview', ['module' => $fixture->id, 'intent' => 'disable'])->assertOk()->json('data');
+        TransitionPolicy::$prepare[$fixture->id] = function (): Preparation {
+            $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.admin.modules.manage')->value('id');
+            DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', $permission)->delete();
+
+            return new Preparation('ready');
+        };
+        $this->postJson('/api/admin/operations/modules.apply', ['review' => $preview['review'], 'confirmed' => true])->assertForbidden();
+        expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeTrue()
+            ->and(DB::table('runa_audit.events')->where('module', $fixture->id)->where('action', 'module.transition.succeeded')->count())->toBe(0);
+        // The trusted CLI scope must not inherit a former HTTP callback/principal.
+        app(AdminOperationalAuthority::class)->assertCurrent();
+        ($this->adminGrant)('runa.admin.modules.manage');
+        unset(TransitionPolicy::$prepare[$fixture->id]);
+        $id = DB::table('shared.module_transitions')->where('target', $fixture->id)->value('public_id');
+        $this->postJson('/api/admin/operations/modules.resume', ['id' => $id])->assertOk()->assertJsonPath('data.transition.status', 'failed');
+        expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeTrue();
+    } finally {
+        $fixture->remove();
+    }
 });

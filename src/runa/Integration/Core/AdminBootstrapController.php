@@ -19,6 +19,8 @@ final readonly class AdminBootstrapController
     public function __invoke(Request $request): mixed
     {
         $operation = match ($request->route()?->getName()) {
+            'runa.admin.operations.read' => 'operations.read',
+            'runa.admin.operations.execute' => 'operations.execute',
             'runa.admin.entry' => 'entry',
             'runa.admin.page.read' => 'page',
             'runa.admin.section.read' => 'read',
@@ -32,6 +34,7 @@ final readonly class AdminBootstrapController
         $record = $this->registry->snapshot()->modules['runa.admin']
             ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'bootstrap');
         $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\'.match ($operation) {
+            'operations.read', 'operations.execute' => 'OperationController',
             'entry' => 'EntryController', 'page' => 'PageController', 'read' => 'SectionController',
             'command', 'previewCommand' => 'CommandController', 'preview', 'save' => 'AggregateController',
             default => 'BootstrapController',

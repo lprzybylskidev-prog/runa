@@ -669,3 +669,121 @@ test('Permissions and Audit administration: built definition and immutable histo
   }
   expect(errors).toEqual([]);
 });
+
+test('Admin operations: persisted health, explicit cooperative cancellation and responsive themes', async ({
+  page,
+}, info) => {
+  await transport(page);
+  let cancellation = false;
+  await page.route('**/api/admin/operations/**', async (route) => {
+    const operation = new URL(route.request().url()).pathname.split('/').at(-1);
+    let data: unknown;
+    const work = {
+      workId: id,
+      moduleId: 'app.safe',
+      operation: 'process',
+      status: 'pending',
+      progress: 'queued',
+      cancellable: true,
+      cancellationRequested: cancellation,
+      limitations: 'safe_checkpoints_only',
+    };
+    if (operation === 'capabilities')
+      data = { capabilities: ['diagnostics.read', 'work.read', 'work.cancel'] };
+    else if (operation === 'diagnostics')
+      data = {
+        generation: 1,
+        platform_version: '0.7.0',
+        application_version: '1.0.0',
+        runtime: { php: '8.4' },
+        modules: [
+          {
+            id: 'app.safe',
+            kind: 'optional',
+            enabled: true,
+            available: false,
+            health: 'unknown',
+            registered: true,
+            source_version: '1.0.0',
+            installed_version: '1.0.0',
+            required: {},
+            optional: {},
+            reasons: ['health_expired'],
+            observations: [
+              {
+                passed: true,
+                observed_at: '2026-10-30T00:00:00Z',
+                expires_at: '2026-10-30T00:01:00Z',
+              },
+            ],
+          },
+        ],
+      };
+    else if (operation === 'work') data = { work: [work], truncated: false };
+    else if (operation === 'work.cancel') {
+      expect(route.request().postDataJSON()).toEqual({ id });
+      cancellation = true;
+      data = { work: { ...work, cancellationRequested: true } };
+    } else data = { work };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data }),
+    });
+  });
+  for (const [width, height, theme] of [
+    [1440, 1000, 'dark'],
+    [820, 1180, 'light'],
+    [390, 844, 'dark'],
+    [390, 844, 'light'],
+  ] as const) {
+    cancellation = false;
+    await page.setViewportSize({ width, height });
+    await page.addInitScript((theme) => {
+      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem('runa.locale', 'pl');
+    }, theme);
+    await page.goto('/admin');
+    const password = page.getByLabel('Current password', { exact: true });
+    await expect(
+      password.or(
+        page.getByRole('heading', { name: 'Administration', exact: true }),
+      ),
+    ).toBeVisible();
+    if (await password.count()) {
+      await password.fill('Example test password');
+      await page
+        .getByRole('button', { name: 'Confirm password', exact: true })
+        .click();
+    }
+    await expect(
+      page.getByText('health_expired', { exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'app.safe', exact: true }).click();
+    await page
+      .getByRole('button', { name: 'Active work', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Request cancellation', exact: true })
+      .click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Confirm', exact: true })
+      .click();
+    await expect(
+      page.getByText('Requested; completion is not confirmed.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`admin-operations-${width}-${theme}.png`),
+      fullPage: true,
+    });
+  }
+});
