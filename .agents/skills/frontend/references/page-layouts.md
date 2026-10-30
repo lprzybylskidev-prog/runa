@@ -7,3 +7,5 @@ For screen/controller replacement read [frontend adoption](../../../../docs/runa
 for exact module behavior follow its linked public guide. Maintain contracts and
 examples there, with application-specific patterns in local App guidance.
 Customer composition never authorizes protected platform edits or copied security logic.
+Welcome catalogue entries are source metadata, not installation or Admin access;
+follow the public guide's Admin delivery-status reference before adding navigation.

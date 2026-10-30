@@ -2,8 +2,8 @@
 
 # Admin declarations, bindings and wire values
 
-Status: specified by RM-2026-016 point 1; not implemented. See [ownership and
-delivery](README.md). PHP signatures below are declaration specifications, not
+Status: specified by RM-2026-016 point 1. Point 2 implements AdminAccess and its
+guarded bootstrap only; see [ownership and delivery](README.md). Other PHP signatures below are declaration specifications, not
 copyable runtime implementations. Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -162,6 +162,11 @@ Sensitive fields expose `{set:boolean}` only and never a stored secret. Required
 participation becoming unavailable blocks Save; independent pages remain usable.
 
 ## App registration and guarded Admin API
+
+AdminAccess is implemented in point 2; only bootstrap currently returns data.
+Other methods fail closed after entry checks. AdminRegistry and page handlers
+remain planned. In the route table below, only `runa.admin.bootstrap` is implemented;
+HTML and remaining API routes belong to subsequent points.
 
 Admin contracts live in `Runa\Modules\Admin\Contracts`:
 

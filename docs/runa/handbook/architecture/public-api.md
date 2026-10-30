@@ -284,7 +284,10 @@ RM-2026-016 records the [Admin contract specification](../modules/admin/README.m
 neutral optional management declarations, explicit owned handlers, bounded trusted
 atomic participation, app registration/settings and public frontend replacements.
 Its ownership table and PHP/TS signatures define the implementation target.
-These new symbols and routes are not yet delivered; namespace examples in that
-specification do not expand the current import allowlist. Existing supported APIs
+Point 2 implements guarded `Runa\Modules\Admin\Contracts\AdminAccess` 1.0.0 and
+GET `/api/admin` bootstrap; remaining declarations/frontend/routes stay planned.
+The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted
+integration, not customer imports. Namespace examples for unimplemented symbols
+do not expand the current import allowlist. Existing supported APIs
 and reserved integration restrictions above remain in force until additive
 implementation and corresponding boundary checks are delivered together.

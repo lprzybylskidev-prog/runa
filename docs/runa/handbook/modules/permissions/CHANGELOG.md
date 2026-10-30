@@ -1,5 +1,10 @@
 # Permissions module changelog
 
+## 1.0.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+
 ## 1.0.4 — 2026-10-28
 
 - Complete typed declaration and assignment contracts; serialize every role permission group as a JSON list.

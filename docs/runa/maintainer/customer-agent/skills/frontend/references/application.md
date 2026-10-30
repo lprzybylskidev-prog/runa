@@ -12,6 +12,7 @@ Load only the relevant canonical procedure:
 - Motion: `docs/runa/handbook/development/frontend/motion.md`.
 - Presentation replacement and controller lifetime: `docs/runa/handbook/development/frontend/customization.md`.
 - Account screens/security cleanup: `docs/runa/handbook/modules/auth/account-ui.md`.
+- Admin delivery status and catalogue versus access: `docs/runa/handbook/modules/admin/README.md#delivery-status-and-acceptance-ownership`.
 
 Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts

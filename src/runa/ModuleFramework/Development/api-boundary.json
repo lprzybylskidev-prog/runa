@@ -148,7 +148,8 @@
     "Runa\\Modules\\Permissions\\Contracts\\PermissionsAuthority",
     "Runa\\Modules\\Permissions\\Contracts\\PermissionsSelections",
     "Runa\\Modules\\Permissions\\Contracts\\RoleDeletionPreview",
-    "Runa\\Modules\\Permissions\\Contracts\\UserSelection"
+    "Runa\\Modules\\Permissions\\Contracts\\UserSelection",
+    "Runa\\Modules\\Admin\\Contracts\\AdminAccess"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [
@@ -389,6 +390,12 @@
     ],
     "Runa\\ModuleFramework\\Settings\\SettingsDefinitions": [
       "src/runa/modules/auth/backend/Actions/Policies.php"
+    ],
+    "Runa\\Integration\\Core\\AdminEntry": [
+      "src/runa/modules/admin/backend/Queries/Access.php"
+    ],
+    "Runa\\Identity\\ApplicationIdentity": [
+      "src/runa/modules/admin/backend/Queries/Access.php"
     ]
   }
 }

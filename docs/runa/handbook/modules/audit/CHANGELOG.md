@@ -1,5 +1,10 @@
 # Audit module changelog
 
+## 1.0.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+
 ## 1.0.4 — 2026-10-28
 
 - Complete typed capture, event and payload contracts with the actual public trait consumer; retain atomic history and redaction rules.

@@ -21,7 +21,14 @@ final class BuiltInModuleBoundaryTest extends TestCase
         }
         // Start at installation to validate every retained edge fingerprint, including
         // completed older edges that a 1.0.2 -> current plan no longer schedules.
-        $input = ['platform' => trim(file_get_contents($root.'/VERSION')), 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
+        // The retained pre-Admin installation upgrades into the declared 0.7 target.
+        $input = ['platform' => '0.7.0', 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
+        $expected = [
+            'runa.admin' => ['initialize'],
+            'runa.auth' => ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform'],
+            'runa.audit' => ['platform_delivery', 'verification_contracts', 'admin_platform'],
+            'runa.permissions' => ['platform_delivery', 'verification_contracts', 'admin_platform'],
+        ];
         foreach ($input['modules'] as &$module) {
             $module['installed'] = null;
         }
@@ -29,14 +36,14 @@ final class BuiltInModuleBoundaryTest extends TestCase
         $process = $this->planner($root, $input);
         $process->mustRun();
         foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
+            self::assertSame($expected[$module['module']], $module['pending_upgrades']);
         }
         // Installed-source planning must schedule the remaining compatible source-only edges.
         $input['modules'] = $modules;
         $process = $this->planner($root, $input);
         $process->mustRun();
         foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
+            self::assertSame($expected[$module['module']], $module['pending_upgrades']);
         }
         foreach ($input['modules'] as &$module) {
             $module['installed'] = null;

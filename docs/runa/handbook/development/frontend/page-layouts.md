@@ -34,6 +34,11 @@ The layout owns locale/theme composables once. Consumers use scoped `t`, preserv
 
 ## Preserved root welcome view
 
+The source-owned welcome catalogue uses localized module manifests, including
+Admin 0.1.0 with the existing adjustments icon. Catalogue visibility does not
+indicate installation, access grants or rendered Admin availability; see
+[Admin delivery status](../../modules/admin/README.md#delivery-status-and-acceptance-ownership).
+
 `src/app/resources/js/App.vue` delegates to public DefaultApplication; its platform-owned AuthWelcome composes MinimalLayout with the existing heading/description and session-aware entry links. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. Exact `/auth/...` paths now render the lazy AuthEntry component using this same layout; see the [Auth entry contract](../../modules/auth/entry-ui.md). The original root was accepted on 2026-10-18; the point-2 layout/footer and subsequent mobile corrections were accepted on 2026-10-18.
 
 ## Application layout

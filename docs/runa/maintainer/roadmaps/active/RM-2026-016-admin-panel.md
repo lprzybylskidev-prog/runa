@@ -46,7 +46,8 @@ an incompatible module MAJOR.
 The [architecture review](../../architecture/RM-2026-016-admin-review.md) contains
 the source inventory, complete Core API matrix, architecture, configuration audit,
 four approval decisions, acceptance cases and quality rationale. It is part of
-this roadmap specification; all proposed contracts remain unimplemented.
+this roadmap specification. Point 2 implements the guarded entry/bootstrap
+foundation; other proposed contracts retain the delivery status in the handbook.
 
 Scope includes `/admin` dashboard and account-menu-only entry; developer-controlled
 module/page navigation; complete supported Auth/Permissions/Audit administration;
@@ -160,7 +161,7 @@ this roadmap ID and the checklist updated. Broad verification is exclusively poi
     refresh independent module version plans and app/Core platform ranges below 0.7.0.
   - Deliver public boundary/schema/consumer fixture tests and updated instruction
     product references. No undocumented private integration shortcuts.
-- [ ] 2. Establish the Core module, guarded entry and framework adapters.
+- [x] 2. Establish the Core module, guarded entry and framework adapters.
   - Prerequisite: 1.
   - Add Admin manifest, lifecycle/explicit forward installation, permission declarations,
     guarded APIs/named HTTP endpoints, thin controllers/FormRequests/Resources and
@@ -361,3 +362,85 @@ no change: existing ownership, atomic Audit, guarded APIs and replacement rules
 already govern the specification; no new operating policy, dependency, security
 exception or implemented UI is introduced. No runtime services, database resources,
 containers or volumes were created or removed.
+
+## Point 2 — Core and guarded entry foundation
+
+Completed 2026-10-30. Admin source develops at 0.1.0 as a Core requiring
+Audit/Auth/Permissions ^1.0.0, with an explicit null → 0.1.0 initialization edge.
+The existing preparation participant supplies declaration synchronization and
+Audit; no Admin table, user assignment, runtime registration or migration was added.
+Guarded AdminAccess 1.0.0 provides bootstrap; other declared operations fail closed
+after entry checks until their owning points. Named GET `/api/admin` uses a fixed
+lazy platform dispatcher and owned controller/FormRequest/JsonResource. No HTML
+Admin route, menu, declaration discovery, business write or frontend facade is
+claimed. The welcome catalogue uses localized manifest descriptions and an
+existing adjustments icon; rendered acceptance is pending.
+
+### Source grounding, security and compatibility
+
+- Knowledge was current: 198 documents / 9,570 chunks with no missing/orphan chunks.
+  Bounded current-intent retrieval located Auth entry/session/security and the
+  architecture review. Original Admin contracts, public boundary/module guides,
+  StepUp/SecurityContext, ModuleApis/OperationGuard, HTTP ingress, Permissions
+  AccessTransaction/preparation participation and registry/availability/management
+  sources were opened. Laravel Boost confirmed Laravel 13.37.0 and supplied
+  version-aware middleware/FormRequest documentation. Backend/Laravel/security
+  skills and the frontend catalogue/layout reference guided implementation.
+- Entry requires current native `runa.admin.enter`, operational Auth session and
+  session/security-version-bound password proof for `runa.admin.enter`, TTL 300,
+  everyAction=false. Both middleware and protected read recheck authority/proof;
+  no generic system-role bypass. Registry → authority → Auth user/proof locks use
+  the default PostgreSQL transaction. HTTP admission ends before dispatch, leaving
+  future independent commands under their owning protocols. Maintenance has no
+  new exception. Fixed private diagnostics adapters require their additional grant
+  and project cached safe flags/versions/dependencies/observation times, not engine
+  objects, settings, paths, payloads or raw errors. Commands remain point 9.
+- Source review identified the cold/unregistered-module route-loading hazard:
+  direct module-controller registration attempted to load an unavailable class
+  before entry guards. The fixed platform dispatcher now defers owned controller
+  construction until admitted and rechecks source/current generation. This is a
+  technical implementation correction, without changing the approved HTTP paths.
+- Admin retains its specified >=0.7.0 <0.8.0 target. Existing Core ranges widen
+  compatibly to >=0.4.2 <0.8.0 with source-only `admin_platform` edges and assessed
+  PATCH versions: Auth 1.1.5, Audit/Permissions 1.0.5. Historical handlers/migrations,
+  guarded signatures/API versions and required dependency directions are unchanged.
+  Later Auth 1.2.0 and Audit/Permissions 1.1.0 feature plans remain applicable.
+  Platform VERSION/app scaffold range remain under their later owning points.
+
+### Focused verification and remaining acceptance
+
+The necessary focused check resolved whether actual native session admission,
+ordinary direct grants and reusable entry proof work together under nested owner
+transactions. Supported command:
+`python3 tools/maintainer/test-backend --parallel --processes=1 --filter='admits a direct Admin entry grant only with current session-bound password proof'`.
+An initial pre-execution bootstrap failure exposed the controller loading issue
+above; no test ran in that attempt. After correction: **1 passed, 20 assertions**,
+native exit 0, cleanup 0; duration 5.71 seconds. It covers missing entry grant,
+missing/wrong-action proof, access without a superadministrator role, reusable
+proof and its 300-second expiry. Coordinator evidence is
+`.runtime/tests/runa-results.json`; no broad suite/native/browser PASS is claimed.
+
+Additional authored cases cover anonymous/revoked authority, session/security
+proof binding, maintenance/missing Core, source/runtime declarations, installation
+history and safe diagnostics with independent grants. The retained-history planner
+fixture includes the new Admin install and appended compatible Core edges. Public
+consumer fixtures admit AdminAccess and reject private Admin engines/bridges.
+Complete suites, full source/static checks, native installation/update, browser
+and complete target-platform acceptance remain exclusively point 12.
+
+### Documentation, instruction products and resources
+
+Synchronized the Admin guide's exact delivered/planned split, declarations and
+operations status, independent changelogs/Core versions, public boundary and
+welcome layout catalogue reference. Owner frontend reference and separately
+authored customer frontend reference route to that canonical status/access
+distinction. Existing owner/customer backend skills already route to Admin
+delivery status; both AGENTS contracts and other domain skills need no changes:
+no new authority, dependency, security exception or workflow rule was introduced.
+The dated architecture review and point-1 record retain their historical baseline.
+
+The supported runner created and removed only `runa_test_test_1` after inspecting
+its exact identity; the initial/final scoped cleanup lists were [] and
+[runa_test_test_1]. The base runa_test database, development data, containers,
+volumes, caches, backups and reports were preserved. No Docker resources were
+created or removed. The roadmap remains active; point 3 is next.

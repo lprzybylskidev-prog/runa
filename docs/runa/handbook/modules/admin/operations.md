@@ -4,7 +4,9 @@
 
 Status: RM-2026-016 point 1 specification. Existing operations below are available
 through their owning guarded APIs; their Admin adapters, new reads/settings and
-UI are not implemented. API versions remain exactly `1.0.0`, independently of
+UI are not implemented except for the private point-2 cached diagnostics foundation
+described in [delivery status](README.md#delivery-status-and-acceptance-ownership).
+It has no HTTP diagnostics or management command yet. API versions remain exactly `1.0.0`, independently of
 module versions. Each adapter binds explicitly to the named method and current
 ApiOperation declaration; a management key is never assumed to be a PHP method.
 

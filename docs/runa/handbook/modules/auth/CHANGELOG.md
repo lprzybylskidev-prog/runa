@@ -1,5 +1,11 @@
 # Auth module changelog
 
+## 1.1.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+- Include Admin in the manifest-owned welcome catalogue with the existing adjustments icon; rendered acceptance remains pending.
+
 ## 1.1.4 — 2026-10-28
 
 - Preserve registration privacy and session behavior while completing typed request, model, settings and mail contracts; handle nullable profile names safely.

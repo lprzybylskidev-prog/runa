@@ -115,7 +115,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('account_orchestration', '1.1.0', '1.1.1', UpgradeAccountOrchestration::class),
             new UpgradeDefinition('platform_delivery', '1.1.1', '1.1.2', UpgradePlatformDelivery::class),
             new UpgradeDefinition('frontend_source_checks', '1.1.2', '1.1.3', UpgradePlatformDelivery::class),
-            new UpgradeDefinition('verification_contracts', '1.1.3', '1.1.4', UpgradePlatformDelivery::class)];
+            new UpgradeDefinition('verification_contracts', '1.1.3', '1.1.4', UpgradePlatformDelivery::class),
+            new UpgradeDefinition('admin_platform', '1.1.4', '1.1.5', UpgradePlatformDelivery::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

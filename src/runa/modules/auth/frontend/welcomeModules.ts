@@ -13,6 +13,7 @@ const manifests = import.meta.glob<WelcomeModule>('../../*/module.json', {
   import: 'default',
 });
 const icons: Record<string, IconName> = {
+  'runa.admin': 'adjustments-horizontal',
   'runa.audit': 'clipboard-list',
   'runa.auth': 'key',
   'runa.permissions': 'shield-lock',
